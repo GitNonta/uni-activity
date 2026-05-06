@@ -1,0 +1,422 @@
+
+  GET|HEAD        / .............................. generated::fkLskM2iMpaLcEUC
+                  ⇂ web
+  GET|HEAD        activities ..... activities.index › ActivityController@index
+                  ⇂ web
+                  ⇂ auth
+  GET|HEAD        activities/{id} .. activities.show › ActivityController@show
+                  ⇂ web
+                  ⇂ auth
+  GET|HEAD        activities/{id}/feedback feedback.create › FeedbackController@create
+                  ⇂ web
+                  ⇂ auth
+  POST            activities/{id}/feedback feedback.store › FeedbackController@store
+                  ⇂ web
+                  ⇂ auth
+  POST            activities/{id}/register activities.register › RegistrationController@store
+                  ⇂ web
+                  ⇂ auth
+  POST            activities/{id}/self-checkin activities.self-checkin › CheckInController@selfCheckIn
+                  ⇂ web
+                  ⇂ auth
+  GET|HEAD        admin ............................................... admin.
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  GET|HEAD        admin/activities admin.activities.index › Admin\ActivityAdminController@index
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  POST            admin/activities admin.activities.store › Admin\ActivityAdminController@store
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  GET|HEAD        admin/activities/create admin.activities.create › Admin\ActivityAdminController@create
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  POST            admin/activities/quick-store admin.activities.quick-store › Admin\ActivityAdminController@quickStore
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  GET|HEAD        admin/activities/{activity} admin.activities.show › Admin\ActivityAdminController@show
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  PUT|PATCH       admin/activities/{activity} admin.activities.update › Admin\ActivityAdminController@update
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  DELETE          admin/activities/{activity} admin.activities.destroy › Admin\ActivityAdminController@destroy
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  GET|HEAD        admin/activities/{activity}/edit admin.activities.edit › Admin\ActivityAdminController@edit
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  GET|HEAD        admin/activities/{id}/checkin admin.activities.checkin › Admin\ActivityAdminController@checkinMonitor
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  POST            admin/activities/{id}/manual-checkin admin.activities.manual-checkin › Admin\ActivityAdminController@manualCheckIn
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  GET|HEAD        admin/activities/{id}/participants admin.activities.participants › Admin\ActivityAdminController@participants
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  GET|HEAD        admin/activities/{id}/pending-requests admin.activities.pending-requests › Admin\ActivityAdminController@pendingRequests
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  POST            admin/activities/{id}/toggle-early-checkin admin.activities.toggle-early-checkin › Admin\ActivityAdminController@toggleEarlyCheckin
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  GET|HEAD        admin/announcements admin.announcements.index › Admin\AnnouncementAdminController@index
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  POST            admin/announcements admin.announcements.store › Admin\AnnouncementAdminController@store
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  GET|HEAD        admin/announcements/create admin.announcements.create › Admin\AnnouncementAdminController@create
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  GET|HEAD        admin/announcements/{announcement} admin.announcements.show › Admin\AnnouncementAdminController@show
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  PUT|PATCH       admin/announcements/{announcement} admin.announcements.update › Admin\AnnouncementAdminController@update
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  DELETE          admin/announcements/{announcement} admin.announcements.destroy › Admin\AnnouncementAdminController@destroy
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  GET|HEAD        admin/announcements/{announcement}/edit admin.announcements.edit › Admin\AnnouncementAdminController@edit
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  PATCH           admin/announcements/{id}/toggle-active admin.announcements.toggle-active › Admin\AnnouncementAdminController@toggleActive
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  POST            admin/attendances/{id}/approve admin.attendances.approve › Admin\ActivityAdminController@approveAttendance
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  POST            admin/attendances/{id}/reject admin.attendances.reject › Admin\ActivityAdminController@rejectAttendance
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  GET|HEAD        admin/audit-logs admin.audit-logs.index › Admin\AuditLogController@index
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:admin
+  GET|HEAD        admin/audit-logs/{id} admin.audit-logs.show › Admin\AuditLogController@show
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:admin
+  GET|HEAD        admin/categories admin.categories.index › Admin\CategoryAdminController@index
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:admin
+  POST            admin/categories admin.categories.store › Admin\CategoryAdminController@store
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:admin
+  POST            admin/categories/required-hours admin.categories.required-hours › Admin\CategoryAdminController@saveRequiredHours
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:admin
+  DELETE          admin/categories/required-hours/reset admin.categories.required-hours.reset › Admin\CategoryAdminController@resetRequiredHours
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:admin
+  PATCH           admin/categories/{id} admin.categories.update › Admin\CategoryAdminController@update
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:admin
+  DELETE          admin/categories/{id} admin.categories.destroy › Admin\CategoryAdminController@destroy
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:admin
+  GET|HEAD        admin/dashboard admin.dashboard › Admin\ActivityAdminController@dashboard
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  GET|HEAD        admin/exports admin.exports.index › Admin\ExcelExportController@index
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  POST            admin/exports/activities admin.exports.activities › Admin\ExcelExportController@exportActivities
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  POST            admin/exports/activity-details admin.exports.activity-details › Admin\ExcelExportController@exportActivityDetails
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  POST            admin/exports/statistics admin.exports.statistics › Admin\ExcelExportController@exportStatistics
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  POST            admin/exports/student-attendances admin.exports.student-attendances › Admin\ExcelExportController@exportStudentAttendances
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  POST            admin/exports/students admin.exports.students › Admin\ExcelExportController@exportStudents
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  GET|HEAD        admin/feedbacks admin.feedbacks.index › Admin\FeedbackAdminController@index
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  GET|HEAD        admin/feedbacks/activity/{id} admin.feedbacks.show › Admin\FeedbackAdminController@show
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  GET|HEAD        admin/forgot-password admin.password.request › Auth\ForgotPasswordController@showLinkRequestForm
+                  ⇂ web
+  POST            admin/forgot-password admin.password.email › Auth\ForgotPasswordController@sendResetLinkEmail
+                  ⇂ web
+  GET|HEAD        admin/inbox admin.inbox.index › Admin\AdminInboxController@index
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  GET|HEAD        admin/inbox/{jobId}/{userId} admin.inbox.show › Admin\AdminInboxController@show
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  POST            admin/inbox/{jobId}/{userId} admin.inbox.send › Admin\AdminInboxController@send
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  POST            admin/inbox/{jobId}/{userId}/read admin.inbox.read › Admin\AdminInboxController@markRead
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  GET|HEAD        admin/jobs admin.jobs.index › Admin\JobAdminController@index
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  POST            admin/jobs admin.jobs.store › Admin\JobAdminController@store
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  DELETE          admin/jobs/comments/{cid} admin.jobs.admin-comment-delete › Admin\JobAdminController@deleteComment
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  GET|HEAD        admin/jobs/create admin.jobs.create › Admin\JobAdminController@create
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  PATCH           admin/jobs/{id}/applicants/{aid} admin.jobs.update-applicant › Admin\JobAdminController@updateApplicant
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  GET|HEAD        admin/jobs/{id}/export-applicants admin.jobs.export-applicants › Admin\JobAdminController@exportApplicants
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  PATCH           admin/jobs/{id}/status admin.jobs.update-status › Admin\JobAdminController@updateStatus
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  GET|HEAD        admin/jobs/{job} admin.jobs.show › Admin\JobAdminController@show
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  PUT|PATCH       admin/jobs/{job} admin.jobs.update › Admin\JobAdminController@update
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  DELETE          admin/jobs/{job} admin.jobs.destroy › Admin\JobAdminController@destroy
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  GET|HEAD        admin/jobs/{job}/edit admin.jobs.edit › Admin\JobAdminController@edit
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  GET|HEAD        admin/login admin.login › Auth\StaffAuthController@showLogin
+                  ⇂ web
+  POST            admin/login generated::7oOzsvhmzKfamGoY › Auth\StaffAuthController@login
+                  ⇂ web
+  POST            admin/logout admin.logout › Auth\StaffAuthController@logout
+                  ⇂ web
+  GET|HEAD        admin/profile admin.profile.edit › Admin\ProfileAdminController@edit
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  PATCH           admin/profile admin.profile.update › Admin\ProfileAdminController@update
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  POST            admin/registrations/{id}/approve admin.registrations.approve › Admin\ActivityAdminController@approveRegistration
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  POST            admin/registrations/{id}/reject admin.registrations.reject › Admin\ActivityAdminController@rejectRegistration
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  POST            admin/reset-password admin.password.update › Auth\NewPasswordController@store
+                  ⇂ web
+  GET|HEAD        admin/reset-password/{token} admin.password.reset › Auth\NewPasswordController@create
+                  ⇂ web
+  GET|HEAD        admin/students admin.students.index › Admin\StudentAdminController@index
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  GET|HEAD        admin/students/{id} admin.students.show › Admin\StudentAdminController@show
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:staff
+  POST            admin/students/{id}/attendances admin.students.attendances.add › Admin\StudentAdminController@addAttendance
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:admin
+  PATCH           admin/students/{id}/attendances/{aid} admin.students.attendances.update › Admin\StudentAdminController@updateAttendance
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:admin
+  DELETE          admin/students/{id}/attendances/{aid} admin.students.attendances.delete › Admin\StudentAdminController@deleteAttendance
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:admin
+  GET|HEAD        admin/users admin.users.index › Admin\UserAdminController@index
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:admin
+  POST            admin/users admin.users.store › Admin\UserAdminController@store
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:admin
+  GET|HEAD        admin/users/create admin.users.create › Admin\UserAdminController@create
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:admin
+  PATCH           admin/users/{id} admin.users.update › Admin\UserAdminController@update
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:admin
+  DELETE          admin/users/{id} admin.users.destroy › Admin\UserAdminController@destroy
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:admin
+  GET|HEAD        admin/users/{id}/edit admin.users.edit › Admin\UserAdminController@edit
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:admin
+  PATCH           admin/users/{id}/toggle-active admin.users.toggle-active › Admin\UserAdminController@toggleActive
+                  ⇂ web
+                  ⇂ auth
+                  ⇂ role:admin
+  GET|HEAD        announcements announcements.index › Student\StudentAnnouncementController@index
+                  ⇂ web
+                  ⇂ auth
+  GET|HEAD        announcements/{id} announcements.show › Student\StudentAnnouncementController@show
+                  ⇂ web
+                  ⇂ auth
+  GET|POST|HEAD   broadcasting/auth generated::wDy4UcrrRf1uksGJ › Illuminate\Broadcasting › BroadcastController@authenticate
+                  ⇂ web
+  GET|HEAD        chat/threads ....... chat.threads › ChatController@myThreads
+                  ⇂ web
+                  ⇂ auth
+  GET|HEAD        check-in/{token} ..... checkin.show › CheckInController@show
+                  ⇂ web
+                  ⇂ auth
+  POST            check-in/{token} ... checkin.store › CheckInController@store
+                  ⇂ web
+                  ⇂ auth
+  GET|HEAD        history ........ student.history › StudentController@history
+                  ⇂ web
+                  ⇂ auth
+  GET|HEAD        jobs ...................... jobs.index › JobController@index
+                  ⇂ web
+                  ⇂ auth
+  DELETE          jobs/comments/{id} jobs.comment.delete › JobController@deleteComment
+                  ⇂ web
+                  ⇂ auth
+  GET|HEAD        jobs/{id} ................... jobs.show › JobController@show
+                  ⇂ web
+                  ⇂ auth
+  GET|HEAD        jobs/{id}/admin-online chat.admin-online › ChatController@adminOnlineStatus
+                  ⇂ web
+                  ⇂ auth
+  POST            jobs/{id}/apply ........... jobs.apply › JobController@apply
+                  ⇂ web
+                  ⇂ auth
+  GET|HEAD        jobs/{id}/chat ............. chat.show › ChatController@show
+                  ⇂ web
+                  ⇂ auth
+  POST            jobs/{id}/chat ............. chat.send › ChatController@send
+                  ⇂ web
+                  ⇂ auth
+  GET|HEAD        jobs/{id}/chat/messages chat.messages › ChatController@messages
+                  ⇂ web
+                  ⇂ auth
+  POST            jobs/{id}/chat/read .... chat.read › ChatController@markRead
+                  ⇂ web
+                  ⇂ auth
+  POST            jobs/{id}/comment ..... jobs.comment › JobController@comment
+                  ⇂ web
+                  ⇂ auth
+  GET|HEAD        login ......... login › Auth\StudentAuthController@showLogin
+                  ⇂ web
+  POST            login generated::bwsEAVu636sW7gse › Auth\StudentAuthController@login
+                  ⇂ web
+  POST            logout .......... logout › Auth\StudentAuthController@logout
+                  ⇂ web
+  GET|HEAD        my-activities .. student.my › StudentController@myActivities
+                  ⇂ web
+                  ⇂ auth
+  GET|HEAD        profile ........ student.profile › StudentController@profile
+                  ⇂ web
+                  ⇂ auth
+  POST            profile/photo profile.photo.upload › ProfilePhotoController@upload
+                  ⇂ web
+                  ⇂ auth
+  DELETE          profile/photo profile.photo.destroy › ProfilePhotoController@destroy
+                  ⇂ web
+                  ⇂ auth
+  GET|HEAD        register register › Auth\StudentAuthController@showRegister
+                  ⇂ web
+  POST            register generated::XdEND07vj9MbpqCi › Auth\StudentAuthController@register
+                  ⇂ web
+  DELETE          registrations/{id} registrations.destroy › RegistrationController@destroy
+                  ⇂ web
+                  ⇂ auth
+  GET|HEAD        storage/{path} ............................... storage.local
+  PUT             storage/{path} ........................ storage.local.upload
+  GET|HEAD        summary ........ student.summary › StudentController@summary
+                  ⇂ web
+                  ⇂ auth
+  GET|HEAD        summary/pdf student.summary.pdf › StudentController@downloadPdf
+                  ⇂ web
+                  ⇂ auth
+  GET|HEAD        up ............................. generated::NelFUF6o6Hw6BUpX
+  POST            user/ping ............ user.ping › UserStatusController@ping
+                  ⇂ web
+                  ⇂ auth
+  GET|HEAD        users/{id}/status user.status › UserStatusController@status
+                  ⇂ web
+                  ⇂ auth
+  GET|HEAD        walkin/{token} checkin.walkin › CheckInController@walkInPage
+                  ⇂ web
+  POST            walkin/{token} checkin.walkin.store › CheckInController@walkInStore
+                  ⇂ web
+  GET|HEAD        walkin/{token}/attendees checkin.walkin.attendees › CheckInController@walkInAttendees
+                  ⇂ web
+
+                                                          Showing [123] routes
+

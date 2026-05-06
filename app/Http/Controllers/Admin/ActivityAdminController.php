@@ -1,0 +1,376 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreActivityRequest;
+use App\Models\Activity;
+use App\Models\ActivityCategory;
+use App\Models\Attendance;
+use App\Models\Registration;
+use App\Models\User;
+use App\Services\QrCodeService;
+use App\Traits\LogsAdminActivity;
+use Illuminate\Http\Request;
+
+/**
+ * คอนโทรลเลอร์จัดการกิจกรรม (ฝั่งผู้ดูแล/Admin)
+ * จัดการ CRUD กิจกรรม, อนุมัติลงทะเบียน, เช็คอิน, สร้างกิจกรรมด่วน, สลับเปิดเช็คอินก่อนเวลา
+ */
+class ActivityAdminController extends Controller
+{
+    use LogsAdminActivity;
+    /** แสดงหน้า Dashboard: สถิติรวม + กิจกรรมล่าสุด + หมวดหมู่สำหรับ modal สร้างด่วน */
+    public function dashboard()
+    {
+        $stats = [
+            'totalActivities' => Activity::count(),
+            'upcomingActivities' => Activity::whereIn('status', ['upcoming', 'open'])->count(),
+            'totalStudents' => User::where('role', 'student')->count(),
+            'totalRegistrations' => Registration::whereIn('status', ['pending', 'approved'])->count(),
+            'pendingRegistrations' => Registration::where('status', 'pending')->count(),
+            'pendingAttendances' => Attendance::where('status', 'pending')->count(),
+            'upcomingThisWeek' => Activity::whereBetween('activity_date', [now()->startOfWeek(), now()->endOfWeek()])
+                ->whereIn('status', ['upcoming', 'open', 'ongoing'])
+                ->count(),
+        ];
+
+        $recentActivities = Activity::with('category')
+            ->orderByDesc('created_at')
+            ->take(5)
+            ->get();
+
+        $categories = ActivityCategory::all();
+
+        return view('admin.dashboard', compact('stats', 'recentActivities', 'categories'));
+    }
+
+    /** แสดงรายการกิจกรรมทั้งหมด รองรับกรองตามสถานะและค้นหา */
+    public function index(Request $request)
+    {
+        $activities = Activity::with(['category', 'creator'])
+            ->withCount([
+                'registrations as pending_registrations_count' => fn($q) => $q->where('status', 'pending'),
+                'attendances as pending_attendances_count' => fn($q) => $q->where('status', 'pending')
+            ])
+            ->when($request->status, fn($q) => $q->where('status', $request->status))
+            ->when($request->search, fn($q) => $q->where('title', 'like', "%{$request->search}%"))
+            ->orderByDesc('created_at')
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('admin.activities.index', compact('activities'));
+    }
+
+    /** ดึงรายการคำขออนุมัติ (Pending) สำหรับแสดงใน Popup */
+    public function pendingRequests($id)
+    {
+        $activity = Activity::findOrFail($id);
+        
+        $pendingRegs = \App\Models\Registration::with('user')
+            ->where('activity_id', $id)
+            ->where('status', 'pending')
+            ->get()
+            ->map(fn($r) => [
+                'id' => $r->id,
+                'type' => 'registration',
+                'student_id' => $r->user->student_id,
+                'name' => $r->user->full_name,
+                'faculty' => $r->user->faculty,
+                'time' => $r->created_at->format('d/m H:i'),
+                'details' => 'ลงทะเบียนขอเข้าร่วม'
+            ]);
+
+        $pendingAtts = \App\Models\Attendance::with('user')
+            ->where('activity_id', $id)
+            ->where('status', 'pending')
+            ->get()
+            ->map(fn($a) => [
+                'id' => $a->id,
+                'type' => 'attendance',
+                'student_id' => $a->user->student_id,
+                'name' => $a->user->full_name,
+                'faculty' => $a->user->faculty,
+                'time' => $a->created_at->format('d/m H:i'),
+                'details' => ($a->distance_meters ? "เช็คอินห่าง " . number_format($a->distance_meters, 0) . "ม." : "บันทึกกิจกรรมด้วยตนเอง")
+            ]);
+
+        return response()->json([
+            'activity_title' => $activity->title,
+            'items' => $pendingRegs->concat($pendingAtts)->sortByDesc('time')->values()
+        ]);
+    }
+
+    /** แสดงฟอร์มสร้างกิจกรรมใหม่ */
+    public function create()
+    {
+        $categories = ActivityCategory::all();
+        $faculties = Activity::whereNotNull('faculty')->distinct()->pluck('faculty')->sort()->values();
+        $departments = Activity::whereNotNull('department')->distinct()->pluck('department')->sort()->values();
+        return view('admin.activities.create', compact('categories', 'faculties', 'departments'));
+    }
+
+    /** บันทึกกิจกรรมใหม่ พร้อมสร้าง QR token + อัปโหลดรูป (ถ้ามี) */
+    public function store(StoreActivityRequest $request, QrCodeService $qrService)
+    {
+        $data = $request->validated();
+        $data['created_by'] = auth()->id();
+        $data['qr_token'] = $qrService->generateToken();
+        $data['is_mandatory'] = $request->boolean('is_mandatory');
+        if (($data['scope'] ?? 'university') === 'university') {
+            $data['faculty'] = null;
+            $data['department'] = null;
+        } elseif (($data['scope'] ?? 'university') === 'faculty') {
+            $data['department'] = null;
+        }
+
+        if ($request->hasFile('image')) {
+            $data['image_path'] = $request->file('image')->store('activities', 'public');
+        }
+
+        $activity = Activity::create($data);
+        $this->auditCreate($activity, "สร้างกิจกรรม \"{$activity->title}\"");
+
+        return redirect()->route('admin.activities.index')->with('success', 'สร้างกิจกรรมสำเร็จ!');
+    }
+
+    /** แสดงรายละเอียดกิจกรรม พร้อมข้อมูลผู้ลงทะเบียน/เช็คอิน */
+    public function show($id)
+    {
+        $activity = Activity::with(['category', 'registrations.user', 'attendances.user'])->findOrFail($id);
+        return view('admin.activities.show', compact('activity'));
+    }
+
+    /** แสดงฟอร์มแก้ไขกิจกรรม */
+    public function edit($id)
+    {
+        $activity = Activity::findOrFail($id);
+        $categories = ActivityCategory::all();
+        $faculties = Activity::whereNotNull('faculty')->distinct()->pluck('faculty')->sort()->values();
+        $departments = Activity::whereNotNull('department')->distinct()->pluck('department')->sort()->values();
+        return view('admin.activities.edit', compact('activity', 'categories', 'faculties', 'departments'));
+    }
+
+    /** อัปเดตข้อมูลกิจกรรม ตรวจสอบ validation + อัปโหลดรูปใหม่ (ถ้ามี) */
+    public function update(Request $request, $id)
+    {
+        $activity = Activity::findOrFail($id);
+
+        $data = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'location' => 'required|string|max:255',
+            'activity_date' => 'required|date',
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => 'required|date_format:H:i',
+            'activity_hours' => 'required|numeric|min:0.5',
+            'max_participants' => 'required|integer|min:1',
+            'register_open_at' => 'required|date',
+            'register_close_at' => 'required|date',
+            'checkin_open_at' => 'required|date',
+            'checkin_close_at' => 'required|date',
+            'category_id' => 'required|exists:activity_categories,id',
+            'scope' => 'required|in:university,faculty,department',
+            'faculty' => 'nullable|required_if:scope,faculty,department|string|max:100',
+            'department' => 'nullable|required_if:scope,department|string|max:100',
+            'status' => 'nullable|in:upcoming,open,full,ongoing,done,cancelled',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
+            'checkin_radius' => 'nullable|integer|min:10|max:5000',
+        ]);
+
+        $data['is_mandatory'] = $request->boolean('is_mandatory');
+        if ($data['scope'] === 'university') {
+            $data['faculty'] = null;
+            $data['department'] = null;
+        } elseif ($data['scope'] === 'faculty') {
+            $data['department'] = null;
+        }
+        $data['latitude'] = $request->filled('latitude') ? $request->latitude : null;
+        $data['longitude'] = $request->filled('longitude') ? $request->longitude : null;
+        $data['checkin_radius'] = $request->filled('checkin_radius') ? $request->checkin_radius : 200;
+
+        if ($request->hasFile('image')) {
+            $data['image_path'] = $request->file('image')->store('activities', 'public');
+        }
+
+        $oldValues = $activity->only(['title', 'location', 'activity_date', 'status', 'activity_hours']);
+        $activity->update($data);
+        $this->auditUpdate($activity, $oldValues, "แก้ไขกิจกรรม \"{$activity->title}\"");
+
+        return redirect()->route('admin.activities.index')->with('success', 'อัปเดตกิจกรรมสำเร็จ!');
+    }
+
+    /** ลบกิจกรรม */
+    public function destroy($id)
+    {
+        $activity = Activity::findOrFail($id);
+        $this->auditDelete($activity, "ลบกิจกรรม \"{$activity->title}\"");
+        $activity->delete();
+
+        return redirect()->route('admin.activities.index')->with('success', 'ลบกิจกรรมสำเร็จ');
+    }
+
+    /** แสดงรายชื่อผู้ลงทะเบียนกิจกรรม */
+    public function participants($id)
+    {
+        $activity = Activity::with(['registrations.user'])->findOrFail($id);
+
+        return view('admin.activities.participants', compact('activity'));
+    }
+
+    /** แสดงหน้าจอมอนิเตอร์เช็คอิน: ดูสถานะเช็คอินแบบ realtime */
+    public function checkinMonitor($id)
+    {
+        $activity = Activity::with(['attendances.user', 'registrations.user'])->findOrFail($id);
+
+        return view('admin.checkin.monitor', compact('activity'));
+    }
+
+    /** อนุมัติการลงทะเบียนของนักศึกษา */
+    public function approveRegistration($id)
+    {
+        $registration = Registration::findOrFail($id);
+        $registration->update(['status' => 'approved']);
+        $this->auditApprove($registration, "อนุมัติการลงทะเบียน #{$registration->id}");
+
+        return back()->with('success', 'อนุมัติการลงทะเบียนสำเร็จ');
+    }
+
+    /** ปฏิเสธการลงทะเบียนของนักศึกษา */
+    public function rejectRegistration($id)
+    {
+        $registration = Registration::findOrFail($id);
+        $registration->update(['status' => 'rejected']);
+        $this->auditReject($registration, "ปฏิเสธการลงทะเบียน #{$registration->id}");
+
+        return back()->with('success', 'ปฏิเสธการลงทะเบียนสำเร็จ');
+    }
+
+    /**
+     * เช็คอินแบบ manual โดยผู้ดูแล
+     * ค้นหานักศึกษาจากรหัส → ตรวจสอบลงทะเบียน → ตรวจซ้ำ → สร้าง attendance
+     */
+    public function manualCheckIn(Request $request, $activityId)
+    {
+        $request->validate(['student_id' => 'required|string']);
+
+        $user = User::where('student_id', $request->student_id)->first();
+        if (!$user) {
+            return back()->with('error', 'ไม่พบรหัสนักศึกษา');
+        }
+
+        $activity = Activity::findOrFail($activityId);
+
+        $registration = Registration::where('user_id', $user->id)
+            ->where('activity_id', $activity->id)
+            ->where('status', 'approved')
+            ->first();
+
+        if (!$registration) {
+            return back()->with('error', 'นักศึกษาไม่ได้ลงทะเบียนกิจกรรมนี้');
+        }
+
+        $exists = $activity->attendances()->where('user_id', $user->id)->exists();
+        if ($exists) {
+            return back()->with('error', 'นักศึกษาเช็คอินไปแล้ว');
+        }
+
+        $att = $activity->attendances()->create([
+            'user_id'     => $user->id,
+            'method'      => 'manual',
+            'status'      => 'approved',
+            'verified_by' => auth()->id(),
+            'is_verified' => true,
+            'ip_address'  => $request->ip(),
+        ]);
+        $this->auditCreate($att, "เช็คอิน manual: {$user->full_name} ในกิจกรรม \"{$activity->title}\"");
+
+        return back()->with('success', "เช็คอิน {$user->full_name} สำเร็จ");
+    }
+
+    /**
+     * สร้างกิจกรรมด่วน (จาก modal บน Dashboard)
+     * รับข้อมูลหลักเท่านั้น ค่าอื่นใช้ค่าเริ่มต้นอัตโนมัติ
+     */
+    public function quickStore(Request $request, QrCodeService $qrService)
+    {
+        $data = $request->validate([
+            'title'       => 'required|string|max:255',
+            'location'    => 'required|string|max:255',
+            'category_id' => 'required|exists:activity_categories,id',
+            'activity_date'  => 'required|date',
+            'start_time'     => 'required|date_format:H:i',
+            'end_time'       => 'required|date_format:H:i',
+            'activity_hours' => 'required|numeric|min:0.5',
+        ]);
+
+        $date = \Carbon\Carbon::parse($data['activity_date']);
+
+        $activity = Activity::create(array_merge($data, [
+            'max_participants'  => 50,
+            'register_open_at'  => now(),
+            'register_close_at' => $date->copy()->subHour(),
+            'checkin_open_at'   => $date->copy()->setTimeFromTimeString($data['start_time'])->subMinutes(30),
+            'checkin_close_at'  => $date->copy()->setTimeFromTimeString($data['end_time'])->addMinutes(30),
+            'is_mandatory'      => false,
+            'status'            => 'open',
+            'created_by'        => auth()->id(),
+            'qr_token'          => $qrService->generateToken(),
+        ]));
+        $this->auditCreate($activity, "สร้างกิจกรรมด่วน \"{$activity->title}\"");
+
+        return redirect()->route('admin.dashboard')->with('success', 'สร้างกิจกรรมด่วนสำเร็จ!');
+    }
+
+    /** อนุมัติการเข้าร่วมกิจกรรม (attendance) */
+    public function approveAttendance($id)
+    {
+        $attendance = Attendance::findOrFail($id);
+        $attendance->update([
+            'status'      => 'approved',
+            'is_verified' => true,
+            'verified_by' => auth()->id(),
+        ]);
+        $this->auditApprove($attendance, "อนุมัติการเข้าร่วม #{$attendance->id}");
+
+        // เปลี่ยนสถานะการลงทะเบียนเป็น 'completed' เมื่ออนุมัติการเข้าร่วมแล้ว
+        $registration = Registration::where('user_id', $attendance->user_id)
+            ->where('activity_id', $attendance->activity_id)
+            ->first();
+        
+        if ($registration && $registration->status === 'approved') {
+            $registration->markAsCompleted();
+        }
+
+        return back()->with('success', 'อนุมัติการเข้าร่วมสำเร็จ');
+    }
+
+    /** ปฏิเสธการเข้าร่วมกิจกรรม (attendance) */
+    public function rejectAttendance($id)
+    {
+        $attendance = Attendance::findOrFail($id);
+        $attendance->update([
+            'status'      => 'rejected',
+            'verified_by' => auth()->id(),
+        ]);
+        $this->auditReject($attendance, "ปฏิเสธการเข้าร่วม #{$attendance->id}");
+
+        return back()->with('success', 'ปฏิเสธการเข้าร่วมสำเร็จ');
+    }
+
+    /** สลับเปิด/ปิดอนุญาตบันทึกกิจกรรมก่อนเวลาเช็คอิน */
+    public function toggleEarlyCheckin($id)
+    {
+        $activity = Activity::findOrFail($id);
+        $activity->update(['allow_early_checkin' => !$activity->allow_early_checkin]);
+        $this->auditToggle($activity, ($activity->allow_early_checkin ? 'เปิด' : 'ปิด') . "เช็คอินก่อนเวลา: \"{$activity->title}\"");
+
+        $msg = $activity->allow_early_checkin
+            ? "เปิดอนุญาตบันทึกกิจกรรมก่อนเวลาแล้ว"
+            : "ปิดการบันทึกกิจกรรมก่อนเวลาแล้ว";
+
+        return back()->with('success', $msg);
+    }
+
+}

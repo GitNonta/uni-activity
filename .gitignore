@@ -1,0 +1,55 @@
+*.log
+.DS_Store
+.env
+.env.backup
+.env.production
+.env.docker
+.phpactor.json
+.phpunit.result.cache
+/.fleet
+/.idea
+/.nova
+/.phpunit.cache
+/.vscode
+/.zed
+/.zed
+/auth.json
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/vendor
+Homestead.json
+Homestead.yaml
+Thumbs.db
+
+# ==============================================
+# SENSITIVE / PRIVATE FILES — DO NOT COMMIT
+# ==============================================
+
+# Database backups (may contain real user data)
+backup.sql
+backup_utf8.sql
+*.sql.bak
+fix-mysql-auth.sql
+
+# Student personal data
+students_*.xlsx
+*.xlsx
+*.pdf
+
+# Patch/temp scripts
+bff_patch.php
+patch.php
+patch.js
+fix_role.php
+test_error.php
+
+# Local AI assistant config
+.claud/
+
+# Local env overrides
+.env.local
+.env.docker.local

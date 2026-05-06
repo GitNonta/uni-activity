@@ -1,0 +1,160 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Activity;
+use App\Models\Attendance;
+use App\Models\User;
+use App\Services\CheckInService;
+use Illuminate\Http\Request;
+
+/**
+ * คอนโทรลเลอร์เช็คอิน / บันทึกกิจกรรม
+ * จัดการเช็คอินผ่าน QR Code และบันทึกกิจกรรมด้วยตัวเอง (self check-in)
+ */
+class CheckInController extends Controller
+{
+    /** รับ service เช็คอินผ่าน dependency injection */
+    public function __construct(private CheckInService $checkInService)
+    {
+    }
+
+    /** แสดงหน้าเช็คอินจาก QR Code (ใช้ token จาก URL) */
+    public function show(string $token)
+    {
+        $activity = Activity::where('qr_token', $token)->firstOrFail();
+
+        return view('checkin.scan', compact('activity', 'token'));
+    }
+
+    /** ดำเนินการเช็คอินผ่าน QR Code → เรียก CheckInService พร้อมพิกัด GPS */
+    public function store(Request $request, string $token)
+    {
+        $result = $this->checkInService->processCheckIn(
+            $token,
+            $request->user(),
+            'qr_scan',
+            $request->filled('latitude') ? (float) $request->latitude : null,
+            $request->filled('longitude') ? (float) $request->longitude : null,
+        );
+
+        if ($result['success']) {
+            return view('checkin.success', [
+                'activity' => $result['activity'],
+                'status'   => $result['status'],
+                'distance' => $result['distance'],
+            ]);
+        }
+
+        return back()->with('error', $result['message']);
+    }
+
+    /** บันทึกกิจกรรมด้วยตัวเอง (ไม่ต้องสแกน QR) → ส่งพิกัด GPS เพื่อตรวจสอบอัตโนมัติ */
+    public function selfCheckIn(Request $request, $activityId)
+    {
+        $activity = Activity::findOrFail($activityId);
+
+        $result = $this->checkInService->processCheckIn(
+            $activity->qr_token,
+            $request->user(),
+            'self',
+            $request->filled('latitude') ? (float) $request->latitude : null,
+            $request->filled('longitude') ? (float) $request->longitude : null,
+        );
+
+        if ($result['success']) {
+            $msg = $result['status'] === 'approved'
+                ? "บันทึกกิจกรรม \"{$activity->title}\" สำเร็จ! (อนุมัติอัตโนมัติ)"
+                : "ส่งคำขอบันทึกกิจกรรม \"{$activity->title}\" แล้ว รอผู้จัดอนุมัติ";
+            return back()->with('success', $msg);
+        }
+
+        return back()->with('error', $result['message']);
+    }
+
+    /** แสดงหน้า Walk-in Check-in (ไม่ต้อง login กรอกรหัสนักศึกษาเอง) */
+    public function walkInPage(string $token)
+    {
+        $activity = Activity::where('qr_token', $token)->firstOrFail();
+
+        $attendances = Attendance::with('user')
+            ->where('activity_id', $activity->id)
+            ->orderByDesc('checked_in_at')
+            ->get();
+
+        return view('checkin.walkin', compact('activity', 'token', 'attendances'));
+    }
+
+    /** ดำเนินการ Walk-in Check-in: ค้นหานักศึกษาจากรหัส → บันทึก attendance อัตโนมัติ */
+    public function walkInStore(Request $request, string $token)
+    {
+        $request->validate([
+            'student_id' => 'required|string',
+        ]);
+
+        $activity = Activity::where('qr_token', $token)->firstOrFail();
+
+        $now = now();
+        if (!$activity->allow_early_checkin && $now->lt($activity->checkin_open_at)) {
+            return back()->with('error', 'ยังไม่ถึงเวลาเช็คอิน — เปิดเช็คอินเวลา ' . $activity->checkin_open_at->format('d/m/Y H:i'))->withInput();
+        }
+        if ($now->gt($activity->checkin_close_at)) {
+            return back()->with('error', 'หมดเวลาเช็คอินแล้ว (ปิดเมื่อ ' . $activity->checkin_close_at->format('d/m/Y H:i') . ')')->withInput();
+        }
+
+        $user = User::where('student_id', $request->student_id)
+            ->where('role', 'student')
+            ->first();
+
+        if (!$user) {
+            return back()->with('error', 'ไม่พบรหัสนักศึกษา "' . $request->student_id . '" ในระบบ')->withInput();
+        }
+
+        if (Attendance::where('user_id', $user->id)->where('activity_id', $activity->id)->exists()) {
+            return back()->with('error', 'นักศึกษา ' . $user->full_name . ' (' . $user->student_id . ') เช็คอินไปแล้ว')->withInput();
+        }
+
+        Attendance::create([
+            'user_id'      => $user->id,
+            'activity_id'  => $activity->id,
+            'method'       => 'walk_in',
+            'status'       => 'approved',
+            'is_verified'  => true,
+            'checked_in_at' => now(),
+            'ip_address'   => $request->ip(),
+        ]);
+
+        return back()
+            ->with('success', 'บันทึกการเข้าร่วมของ ' . $user->full_name . ' (' . $user->student_id . ') สำเร็จ')
+            ->with('checked_in_student', [
+                'id' => $user->id,
+                'name' => $user->full_name,
+                'student_id' => $user->student_id,
+                'activity_id' => $activity->id,
+                'activity_title' => $activity->title
+            ]);
+    }
+
+    /** API: ดึงรายชื่อผู้เข้าร่วมกิจกรรม walk-in แบบ real-time (JSON) */
+    public function walkInAttendees(string $token)
+    {
+        $activity = Activity::where('qr_token', $token)->firstOrFail();
+
+        $attendances = Attendance::with('user')
+            ->where('activity_id', $activity->id)
+            ->orderByDesc('checked_in_at')
+            ->get()
+            ->map(fn($att) => [
+                'student_id'    => $att->user->student_id,
+                'full_name'     => $att->user->full_name,
+                'faculty'       => $att->user->faculty ?? '-',
+                'checked_in_at' => $att->checked_in_at?->format('d/m/Y H:i:s') ?? $att->created_at->format('d/m/Y H:i:s'),
+                'method'        => $att->method,
+            ]);
+
+        return response()->json([
+            'count'       => $attendances->count(),
+            'attendances' => $attendances,
+        ]);
+    }
+}
