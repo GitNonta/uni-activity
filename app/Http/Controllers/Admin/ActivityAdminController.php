@@ -9,6 +9,10 @@ use App\Models\ActivityCategory;
 use App\Models\Attendance;
 use App\Models\Registration;
 use App\Models\User;
+use App\Models\JobListing;
+use App\Models\ChatMessage;
+use App\Models\ActivityFeedback;
+use App\Models\AdminAuditLog;
 use App\Services\QrCodeService;
 use App\Traits\LogsAdminActivity;
 use Illuminate\Http\Request;
@@ -33,6 +37,9 @@ class ActivityAdminController extends Controller
             'upcomingThisWeek' => Activity::whereBetween('activity_date', [now()->startOfWeek(), now()->endOfWeek()])
                 ->whereIn('status', ['upcoming', 'open', 'ongoing'])
                 ->count(),
+            'totalJobs' => JobListing::count(),
+            'unreadMessages' => ChatMessage::whereNull('read_at')->where('sender_role', 'student')->count(),
+            'totalFeedbacks' => ActivityFeedback::count(),
         ];
 
         $recentActivities = Activity::with('category')
@@ -53,8 +60,13 @@ class ActivityAdminController extends Controller
             ->get();
 
         $categories = ActivityCategory::all();
-
-        return view('admin.dashboard', compact('stats', 'recentActivities', 'pendingRegistrations', 'pendingAttendances', 'categories'));
+        
+        $recentAuditLogs = AdminAuditLog::with('user')
+            ->orderByDesc('created_at')
+            ->take(6)
+            ->get();
+        
+        return view('admin.dashboard', compact('stats', 'recentActivities', 'pendingRegistrations', 'pendingAttendances', 'categories', 'recentAuditLogs'));
     }
 
     /** แสดงรายการกิจกรรมทั้งหมด รองรับกรองตามสถานะและค้นหา */

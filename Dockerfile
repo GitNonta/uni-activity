@@ -52,7 +52,9 @@ RUN apk add --no-cache \
     postgresql-dev \
     oniguruma-dev \
     linux-headers \
-    openssl-dev
+    openssl-dev \
+    nodejs \
+    npm
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-webp --with-jpeg \
@@ -69,8 +71,8 @@ RUN docker-php-ext-configure gd --with-freetype --with-webp --with-jpeg \
         intl
 
 # Install MongoDB and Redis via PECL (Alpine packages don't work with Docker official PHP)
-RUN pecl install mongodb redis \
-    && docker-php-ext-enable mongodb redis
+RUN pecl install mongodb && docker-php-ext-enable mongodb
+RUN printf "\n" | pecl install redis && docker-php-ext-enable redis
 
 # PHP configuration
 RUN echo "upload_max_filesize = 50M" > /usr/local/etc/php/conf.d/uploads.ini \
@@ -92,7 +94,8 @@ COPY --from=frontend /app/public/build ./public/build
 RUN echo "opcache.memory_consumption=256" > /usr/local/etc/php/conf.d/opcache.ini \
     && echo "opcache.interned_strings_buffer=16" >> /usr/local/etc/php/conf.d/opcache.ini \
     && echo "opcache.max_accelerated_files=20000" >> /usr/local/etc/php/conf.d/opcache.ini \
-    && echo "opcache.revalidate_freq=60" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.revalidate_freq=0" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.validate_timestamps=1" >> /usr/local/etc/php/conf.d/opcache.ini \
     && echo "opcache.fast_shutdown=1" >> /usr/local/etc/php/conf.d/opcache.ini \
     && echo "opcache.enable_cli=1" >> /usr/local/etc/php/conf.d/opcache.ini
 

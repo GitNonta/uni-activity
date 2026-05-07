@@ -32,6 +32,26 @@
     </div>
 </div>
 
+{{-- การ์ดสถิติเพิ่มเติม (งาน / แชท / ประเมิน) --}}
+<div class="grid-4 mb-6">
+    <a href="{{ route('admin.jobs.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #10b981; text-decoration:none;">
+        <p class="stat-label">งานทั้งหมด</p>
+        <p class="stat-value" style="color:#059669;">{{ $stats['totalJobs'] }}</p>
+    </a>
+    <a href="{{ route('admin.inbox.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #f43f5e; text-decoration:none;">
+        <p class="stat-label">ข้อความใหม่</p>
+        <p class="stat-value" style="color:#e11d48;">{{ $stats['unreadMessages'] }}</p>
+    </a>
+    <a href="{{ route('admin.feedbacks.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #0ea5e9; text-decoration:none;">
+        <p class="stat-label">ผลการประเมิน</p>
+        <p class="stat-value" style="color:#0284c7;">{{ $stats['totalFeedbacks'] }}</p>
+    </a>
+    <div class="card stat-card" style="border-bottom:3px solid #64748b;">
+        <p class="stat-label">กิจกรรมสัปดาห์นี้</p>
+        <p class="stat-value" style="color:#475569;">{{ $stats['upcomingThisWeek'] }}</p>
+    </div>
+</div>
+
 {{-- Unified Approval Queue --}}
 @php
     $allPending = collect();
@@ -133,6 +153,42 @@
         <div class="flex items-center gap-2">
             <svg style="width:20px;height:20px;color:#10b981;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             <p class="font-semi" style="color:#15803d;">ไม่มีรายการรออนุมัติ ✅</p>
+        </div>
+    </div>
+</div>
+@endif
+
+{{-- ประวัติการทำงานล่าสุด --}}
+@if(auth()->user()->isAdmin())
+<div class="mb-8">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="font-bold flex items-center gap-2">
+            <svg style="width:20px;height:20px;color:#6366f1;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2-2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01"/></svg>
+            ประวัติการทำงานล่าสุด (Audit Logs)
+        </h2>
+        <a href="{{ route('admin.audit-logs.index') }}" class="text-sm text-indigo-600 hover:underline">ดูประวัติทั้งหมด →</a>
+    </div>
+    <div class="card p-0 overflow-hidden">
+        <div class="space-y-0">
+            @forelse($recentAuditLogs ?? [] as $log)
+                <div class="flex items-center gap-4 p-4 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
+                    <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="text-sm font-bold text-gray-900">{{ $log->user->full_name ?? 'System' }}</span>
+                            <span class="text-xs text-gray-400">{{ $log->created_at->diffForHumans() }}</span>
+                        </div>
+                        <p class="text-sm text-gray-600">{{ $log->description }}</p>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <span class="badge {{ $log->action_color }}" style="font-size:11px;">{{ $log->action_label }}</span>
+                    </div>
+                </div>
+            @empty
+                <div class="p-8 text-center text-gray-400">ไม่มีประวัติการทำงานล่าสุด</div>
+            @endforelse
         </div>
     </div>
 </div>

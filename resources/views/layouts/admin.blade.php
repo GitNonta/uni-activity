@@ -90,37 +90,49 @@
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                 <span class="sb-link-text">กิจกรรม</span>
             </a>
+            <div class="sb-section-label">ประกาศ & ประชาสัมพันธ์</div>
             <a href="{{ route('admin.announcements.index') }}" class="sb-link {{ request()->routeIs('admin.announcements.*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
-                <span class="sb-link-text">ประกาศ</span>
+                <span class="sb-link-text">ประกาศข่าวสาร</span>
+            </a>
+            <a href="{{ route('admin.jobs.index') }}" class="sb-link {{ request()->routeIs('admin.jobs.*') ? 'active' : '' }}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <span class="sb-link-text">งาน & พาร์ทไทม์</span>
+            </a>
+            <a href="{{ route('admin.inbox.index') }}" class="sb-link {{ request()->routeIs('admin.inbox.*') ? 'active' : '' }}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                <span class="sb-link-text">กล่องข้อความแชท</span>
             </a>
 
             @if(auth()->user()->isAdmin())
-            <div class="sb-section-label">จัดการระบบ</div>
-            <div class="sb-has-submenu {{ request()->routeIs('admin.users.*', 'admin.categories.*', 'admin.audit-logs.*') ? 'active open' : '' }}" onclick="toggleSubmenu(this)">
-                <div class="flex items-center gap-2">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                    <span class="sb-link-text">การตั้งค่าระบบ</span>
-                </div>
-                <svg class="sb-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            </div>
-            <div class="sb-submenu {{ request()->routeIs('admin.users.*', 'admin.categories.*', 'admin.audit-logs.*') ? 'open' : '' }}" style="{{ request()->routeIs('admin.users.*', 'admin.categories.*', 'admin.audit-logs.*') ? 'max-height:500px;' : '' }}">
-                <a href="{{ route('admin.users.index') }}" class="sb-submenu-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">ผู้ใช้ระบบ</a>
-                <a href="{{ route('admin.categories.index') }}" class="sb-submenu-item {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">หมวดหมู่</a>
-                <a href="{{ route('admin.audit-logs.index') }}" class="sb-submenu-item {{ request()->routeIs('admin.audit-logs.*') ? 'active' : '' }}">Audit Log</a>
-            </div>
+            <div class="sb-section-label">จัดการระบบ (Admin)</div>
+            <a href="{{ route('admin.audit-logs.index') }}" class="sb-link {{ request()->routeIs('admin.audit-logs.*') ? 'active' : '' }}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2-2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01"/></svg>
+                <span class="sb-link-text">Audit Logs (ประวัติ)</span>
+            </a>
+            <a href="{{ route('admin.users.index') }}" class="sb-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                <span class="sb-link-text">จัดการผู้ใช้ระบบ</span>
+            </a>
+            <a href="{{ route('admin.categories.index') }}" class="sb-link {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                <span class="sb-link-text">จัดการหมวดหมู่</span>
+            </a>
             @endif
 
-            <div class="sb-section-label">รายงาน & ข้อมูล</div>
+            <div class="sb-section-label">รายงาน & ผลการเรียน</div>
+            <a href="{{ route('admin.feedbacks.index') }}" class="sb-link {{ request()->routeIs('admin.feedbacks.*') ? 'active' : '' }}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                <span class="sb-link-text">ผลการประเมิน</span>
+            </a>
             <a href="{{ route('admin.students.index') }}" class="sb-link {{ request()->routeIs('admin.students.*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                <span class="sb-link-text">นักศึกษา</span>
+                <span class="sb-link-text">ทะเบียนนักศึกษา</span>
             </a>
             <a href="{{ route('admin.exports.index') }}" class="sb-link {{ request()->routeIs('admin.exports.*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                <span class="sb-link-text">ส่งออกรายงาน</span>
+                <span class="sb-link-text">ส่งออกข้อมูล</span>
             </a>
-        </nav>
         </nav>
 
         {{-- Sidebar Footer --}}
