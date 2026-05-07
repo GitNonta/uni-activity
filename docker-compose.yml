@@ -46,6 +46,7 @@ services:
       - CHOKIDAR_USEPOLLING=true
     ports:
       - "8000:80"
+      - "8080:8080"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 30s

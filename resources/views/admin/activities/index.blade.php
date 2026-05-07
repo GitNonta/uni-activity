@@ -169,12 +169,12 @@ function loadPendingRequests(activityId) {
                             <div class="text-right">
                                 <span class="text-xs text-muted">${item.time}</span>
                                 <div class="flex gap-1 mt-2">
-                                    <form method="POST" action="/admin/${item.type}s/${item.id}/approve" onsubmit="return handleAction(event)">
-                                        @csrf
+                                    <form method="POST" action="/admin/${item.type}s/${item.id}/approve">
+                                        <input type="hidden" name="_token" value="${document.querySelector('meta[name=\"csrf-token\"]').content}">
                                         <button type="submit" class="btn btn-success" style="padding:2px 10px; font-size:.7rem;">อนุมัติ</button>
                                     </form>
-                                    <form method="POST" action="/admin/${item.type}s/${item.id}/reject" onsubmit="return handleAction(event)">
-                                        @csrf
+                                    <form method="POST" action="/admin/${item.type}s/${item.id}/reject">
+                                        <input type="hidden" name="_token" value="${document.querySelector('meta[name=\"csrf-token\"]').content}">
                                         <button type="submit" class="btn btn-danger" style="padding:2px 10px; font-size:.7rem; background:#fee2e2; color:#dc2626; border-color:#fca5a5;">ปฏิเสธ</button>
                                     </form>
                                 </div>
