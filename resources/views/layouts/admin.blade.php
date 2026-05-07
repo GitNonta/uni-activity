@@ -107,9 +107,34 @@
 
 .sb-link:hover svg { transform: translateX(2px); }
 
+/* Fix Collapsed State UI */
+.sb-sidebar.collapsed .sb-link {
+    justify-content: center;
+    padding: 12px 0;
+}
+
+.sb-sidebar.collapsed .sb-link svg {
+    margin: 0;
+}
+
 .sb-sidebar.collapsed .sb-link-text, 
 .sb-sidebar.collapsed .sb-section-label { 
-    opacity: 0; visibility: hidden; 
+    display: none !important; 
+}
+
+.sb-sidebar.collapsed .sidebar-brand {
+    padding: 0;
+    justify-content: center;
+}
+
+.sb-sidebar.collapsed .sidebar-brand::after {
+    content: 'UA'; /* Short name when collapsed */
+}
+.sb-sidebar.collapsed .sidebar-brand {
+    font-size: 0; /* Hide full text */
+}
+.sb-sidebar.collapsed .sidebar-brand::after {
+    font-size: 1.2rem;
 }
 
 /* ── Sidebar Footer ── */
