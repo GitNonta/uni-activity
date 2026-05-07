@@ -18,17 +18,34 @@ class ChatController extends Controller
     public function show(int $jobId)
     {
         $job = JobListing::findOrFail($jobId);
+        $userId = Auth::id();
+
+        // Backfill legacy student messages into the current student thread.
+        ChatMessage::where('job_id', $jobId)
+            ->whereNull('student_id')
+            ->where(function ($q) use ($userId) {
+                $q->where('sender_id', $userId)
+                  ->orWhere(function ($q2) use ($userId) {
+                      $q2->where('sender_role', 'student')
+                         ->where('sender_id', $userId);
+                  });
+            })
+            ->update(['student_id' => $userId]);
+
         $messages = ChatMessage::where('job_id', $jobId)
-            ->where(function ($q) {
-                $q->where('sender_id', Auth::id())
-                  ->orWhere('sender_role', 'admin');
+            ->where(function ($q) use ($userId) {
+                $q->where('student_id', $userId)
+                  ->orWhere(function ($q2) use ($userId) {
+                      $q2->where('sender_role', 'student')
+                         ->where('sender_id', $userId);
+                  });
             })
             ->orderBy('created_at', 'asc')
             ->get();
 
         // Mark admin messages as read immediately when student opens chat
         ChatMessage::where('job_id', $jobId)
-            ->where('student_id', Auth::id())
+            ->where('student_id', $userId)
             ->where('sender_role', 'admin')
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
@@ -198,6 +215,10 @@ class ChatController extends Controller
                 'last_time'        => $time?->toISOString(),
                 'last_time_human'  => $time?->diffForHumans(),
                 'unread'           => (int) ($t['unread'] ?? 0),
+                'thread_room'      => 'chat:thread:' . (int) ($t['_id'] ?? 0) . ':' . Auth::id(),
+                'thread_token'     => SocketService::roomToken('chat:thread:' . (int) ($t['_id'] ?? 0) . ':' . Auth::id()),
+                'typing_room'      => 'chat:admin:' . (int) ($t['_id'] ?? 0),
+                'typing_token'     => SocketService::roomToken('chat:admin:' . (int) ($t['_id'] ?? 0)),
             ];
         })->values();
 

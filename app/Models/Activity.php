@@ -31,6 +31,7 @@ class Activity extends Model
         'category_id',
         'created_by',
         'qr_token',
+        'qr_expires_at',
         'image_path',
         'status',
         'scope',
@@ -51,6 +52,7 @@ class Activity extends Model
             'register_close_at' => 'datetime',
             'checkin_open_at' => 'datetime',
             'checkin_close_at' => 'datetime',
+            'qr_expires_at' => 'datetime',
             'is_mandatory' => 'boolean',
             'allow_early_checkin' => 'boolean',
             'activity_hours' => 'decimal:1',
@@ -123,6 +125,12 @@ class Activity extends Model
     public function hasGeolocation(): bool
     {
         return $this->latitude !== null && $this->longitude !== null;
+    }
+
+    /** ตรวจสอบว่า QR / walk-in token หมดอายุแล้วหรือไม่ */
+    public function hasExpiredQrToken(): bool
+    {
+        return $this->qr_expires_at !== null && now()->greaterThan($this->qr_expires_at);
     }
 
     /** นับจำนวนผู้ลงทะเบียนทั้งหมด (pending + approved) */

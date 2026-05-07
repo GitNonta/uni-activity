@@ -8,6 +8,7 @@ use App\Models\JobComment;
 use App\Models\ChatMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 /**
  * ตัวควบคุมฝั่งนักศึกษา: ดูรายการงาน, สมัครงาน, คอมเมนต์, สอบถาม
@@ -152,16 +153,29 @@ class JobController extends Controller
     /** เพิ่มคอมเมนต์ */
     public function comment(Request $request, $id)
     {
-        $request->validate([
+        $data = $request->validate([
             'body' => 'required|string|max:1000',
             'parent_id' => 'nullable|exists:job_comments,id',
         ]);
 
+        if (!empty($data['parent_id'])) {
+            $validParent = JobComment::where('id', $data['parent_id'])
+                ->where('job_listing_id', $id)
+                ->whereNull('parent_id')
+                ->exists();
+
+            if (!$validParent) {
+                throw ValidationException::withMessages([
+                    'parent_id' => 'คอมเมนต์ต้นทางไม่ถูกต้อง',
+                ]);
+            }
+        }
+
         JobComment::create([
             'job_listing_id' => $id,
             'user_id' => auth()->id(),
-            'parent_id' => $request->parent_id,
-            'body' => $request->body,
+            'parent_id' => $data['parent_id'] ?? null,
+            'body' => $data['body'],
         ]);
 
         return back()->with('success', 'แสดงความคิดเห็นเรียบร้อย');

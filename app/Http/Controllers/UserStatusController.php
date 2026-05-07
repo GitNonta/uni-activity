@@ -25,6 +25,11 @@ class UserStatusController extends Controller
     /** Return online/last-seen status for a given user */
     public function status(int $userId)
     {
+        $viewer = Auth::user();
+        if (!$viewer || ($viewer->id !== $userId && !$viewer->isStaffOrAdmin())) {
+            abort(403, 'คุณไม่มีสิทธิ์ดูสถานะผู้ใช้นี้');
+        }
+
         $user = User::select('id', 'full_name', 'last_seen_at')->findOrFail($userId);
 
         $lastSeen   = $user->last_seen_at;

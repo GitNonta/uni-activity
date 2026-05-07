@@ -364,6 +364,12 @@
 (function() {
     const JOB_ID   = {{ $job->id }};
     const USER_ID  = {{ auth()->id() }};
+    const studentRoom = 'chat:student:' + USER_ID;
+    const studentToken = '{{ \App\Services\SocketService::roomToken("chat:student:" . auth()->id()) }}';
+    const threadRoom = 'chat:thread:' + JOB_ID + ':' + USER_ID;
+    const threadToken = '{{ \App\Services\SocketService::roomToken("chat:thread:{$job->id}:" . auth()->id()) }}';
+    const typingRoom = 'chat:admin:' + JOB_ID;
+    const typingToken = '{{ \App\Services\SocketService::roomToken("chat:admin:{$job->id}") }}';
     const sendUrl  = '{{ route('chat.send', $job->id) }}';
     const readUrl  = '{{ route('chat.read', $job->id) }}';
     const msgsUrl  = '{{ route('chat.messages', $job->id) }}';
@@ -573,8 +579,8 @@
     // Socket.io
     if (typeof io !== 'undefined') {
         var socket = io('{{ config('socket.public_url') }}');
-        socket.emit('join', 'chat:student:' + USER_ID);
-        socket.emit('join', 'chat:thread:' + JOB_ID + ':' + USER_ID);
+        socket.emit('join', { room: studentRoom, token: studentToken });
+        socket.emit('join', { room: threadRoom, token: threadToken });
 
         var typingTimer;
         socket.on('chat:message', function(msg) {
@@ -618,7 +624,8 @@
 
         msgInput.addEventListener('input', function() {
             socket.emit('typing', {
-                toRoom: 'chat:admin:' + JOB_ID,
+                toRoom: typingRoom,
+                token: typingToken,
                 userId: USER_ID,
                 name: '{{ addslashes(auth()->user()->full_name ?? '') }}'
             });
@@ -684,4 +691,3 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endsection
-

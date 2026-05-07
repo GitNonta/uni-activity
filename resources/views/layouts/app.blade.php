@@ -39,13 +39,18 @@
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                     กิจกรรม
                 </a>
+                <a href="{{ route('student.calendar') }}" class="{{ request()->routeIs('student.calendar') ? 'active' : '' }}" title="ปฏิทิน">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/><rect x="3" y="9" width="18" height="12" rx="2" stroke-width="0" fill="currentColor" opacity=".12"/></svg>
+                    ปฏิทิน
+                </a>
                 <a href="{{ route('announcements.index') }}" class="{{ request()->routeIs('announcements.*') ? 'active' : '' }}">
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
                     ประกาศ
                 </a>
-                <a href="{{ route('student.my') }}" class="{{ request()->routeIs('student.my') ? 'active' : '' }}">
+                <a href="{{ route('student.my') }}" class="{{ request()->routeIs('student.my') ? 'active' : '' }}" style="position:relative;">
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                     ของฉัน
+                    <span id="nav-todo-badge" style="display:none;position:absolute;top:-4px;right:-6px;min-width:16px;height:16px;border-radius:8px;background:#ef4444;color:#fff;font-size:.6rem;font-weight:700;line-height:16px;text-align:center;padding:0 3px;"></span>
                 </a>
                 <a href="{{ route('student.history') }}" class="{{ request()->routeIs('student.history') ? 'active' : '' }}">
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -85,6 +90,19 @@
         </div>
     </header>
 
+    {{-- Notification Banner (กิจกรรมเร่งด่วน) --}}
+    @auth
+    @if(!in_array(auth()->user()->role ?? 'student', ['admin','staff']))
+    <div id="notif-banner" style="display:none;background:linear-gradient(90deg,#4f46e5,#7c3aed);color:#fff;padding:.55rem 1rem;font-size:.82rem;cursor:pointer;position:sticky;top:0;z-index:999;box-shadow:0 2px 8px rgba(79,70,229,.3);">
+        <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:.75rem;">
+            <span id="notif-banner-icon" style="font-size:1rem;flex-shrink:0;">🔔</span>
+            <span id="notif-banner-text" style="flex:1;"></span>
+            <a id="notif-banner-link" href="#" style="color:#c7d2fe;font-weight:600;font-size:.8rem;flex-shrink:0;text-decoration:none;">ไปเลย →</a>
+            <button onclick="document.getElementById('notif-banner').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,.7);font-size:1.1rem;cursor:pointer;flex-shrink:0;line-height:1;">✕</button>
+        </div>
+    </div>
+    @endif
+    @endauth
     {{-- เนื้อหาหลัก --}}
     <div class="container" style="padding-top:1rem; padding-bottom:5rem;">
         @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
@@ -99,13 +117,14 @@
             <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
             <span>หน้าหลัก</span>
         </a>
-        <a href="{{ route('student.my') }}" class="bottom-nav-item {{ request()->routeIs('student.my') ? 'active' : '' }}">
+        <a href="{{ route('student.calendar') }}" class="bottom-nav-item {{ request()->routeIs('student.calendar') ? 'active' : '' }}">
+            <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            <span>ปฏิทิน</span>
+        </a>
+        <a href="{{ route('student.my') }}" class="bottom-nav-item {{ request()->routeIs('student.my') ? 'active' : '' }}" style="position:relative;">
             <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             <span>ของฉัน</span>
-        </a>
-        <a href="{{ route('student.history') }}" class="bottom-nav-item {{ request()->routeIs('student.history') ? 'active' : '' }}">
-            <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <span>ประวัติ</span>
+            <span id="bottom-todo-badge" style="display:none;position:absolute;top:4px;right:calc(50% - 20px);min-width:16px;height:16px;border-radius:8px;background:#ef4444;color:#fff;font-size:.6rem;font-weight:700;line-height:16px;text-align:center;padding:0 3px;"></span>
         </a>
         <a href="{{ route('student.summary') }}" class="bottom-nav-item {{ request()->routeIs('student.summary') ? 'active' : '' }}">
             <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -128,6 +147,76 @@ document.addEventListener('click', function(e) {
     });
 });
 </script>
+
+@auth
+@if(!in_array(auth()->user()->role ?? 'student', ['admin','staff']))
+{{-- ── Notification Polling Script ── --}}
+<script>
+(function() {
+    var NOTIF_URL = '{{ route("student.notifications") }}';
+    var CSRF = document.querySelector('meta[name="csrf-token"]').content;
+    var dismissedKey = 'notif_dismissed_' + Date.now().toString().slice(0,-5);
+    var webNotifAsked = false;
+
+    function requestWebNotifPermission() {
+        if (!webNotifAsked && 'Notification' in window && Notification.permission === 'default') {
+            webNotifAsked = true;
+            Notification.requestPermission();
+        }
+    }
+
+    function showWebNotif(title, body, url) {
+        if ('Notification' in window && Notification.permission === 'granted') {
+            var n = new Notification(title, { body: body, icon: '/favicon.ico' });
+            n.onclick = function() { window.location.href = url; n.close(); };
+        }
+    }
+
+    function fetchNotifications() {
+        fetch(NOTIF_URL, { headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' } })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var alerts = data.alerts || [];
+                var banner = document.getElementById('notif-banner');
+                var navBadge = document.getElementById('nav-todo-badge');
+                var botBadge = document.getElementById('bottom-todo-badge');
+
+                if (!alerts.length) {
+                    if (banner) banner.style.display = 'none';
+                    if (navBadge) navBadge.style.display = 'none';
+                    if (botBadge) botBadge.style.display = 'none';
+                    return;
+                }
+
+                // Badge count
+                var urgentCount = alerts.filter(function(a) { return a.type === 'checkin_open' || a.type === 'checkin_soon'; }).length;
+                var count = alerts.length;
+                if (navBadge) { navBadge.textContent = count; navBadge.style.display = 'inline-block'; }
+                if (botBadge) { botBadge.textContent = count; botBadge.style.display = 'inline-block'; }
+
+                // Banner (แสดงเฉพาะ checkin alerts)
+                var urgent = alerts.filter(function(a) { return a.type === 'checkin_open' || a.type === 'checkin_soon'; });
+                if (urgent.length && banner) {
+                    var first = urgent[0];
+                    document.getElementById('notif-banner-icon').textContent = first.icon;
+                    document.getElementById('notif-banner-text').textContent = first.title + ' — ' + first.body;
+                    document.getElementById('notif-banner-link').href = first.url;
+                    banner.style.display = 'block';
+                    // Web push notification
+                    requestWebNotifPermission();
+                    showWebNotif(first.title, first.body, first.url);
+                }
+            })
+            .catch(function() {});
+    }
+
+    // ดึงทันทีและทุก 5 นาที
+    setTimeout(fetchNotifications, 2000);
+    setInterval(fetchNotifications, 5 * 60 * 1000);
+})();
+</script>
+@endif
+@endauth
 
 @auth
 @if(!in_array(auth()->user()->role ?? 'student', ['admin','staff']))
@@ -188,6 +277,8 @@ document.addEventListener('click', function(e) {
     var USER_ID     = {{ auth()->id() }};
     var MY_PHOTO    = '{{ auth()->user()->profile_photo ? asset("storage/".auth()->user()->profile_photo) : "" }}';
     var MY_NAME     = '{{ auth()->user()->full_name ?? auth()->user()->name ?? "คุณ" }}';
+    var STUDENT_ROOM = 'chat:student:' + USER_ID;
+    var STUDENT_TOKEN = '{{ \App\Services\SocketService::roomToken("chat:student:" . auth()->id()) }}';
 
     var panelOpen    = false;
     var threads      = [];
@@ -231,7 +322,8 @@ document.addEventListener('click', function(e) {
         document.getElementById('cfBackBtn').style.display  = 'inline-block';
         document.getElementById('cfHeaderTitle').textContent = jobTitle;
         updateHeaderOnline();
-        if (sock) sock.emit('join', 'chat:thread:' + jobId + ':' + USER_ID);
+        var thread = threads.find(function(t){ return t.job_id == jobId; });
+        if (sock && thread) sock.emit('join', { room: thread.thread_room, token: thread.thread_token });
         loadMessages(jobId);
         // Mark read
         fetch('/jobs/' + jobId + '/chat/read', { method: 'POST', headers: { 'X-CSRF-TOKEN': CSRF } });
@@ -499,7 +591,7 @@ document.addEventListener('click', function(e) {
     // ════════════════════════════════════════
     if (typeof io !== 'undefined') {
         sock = io('{{ config("socket.public_url") }}', { transports: ['websocket','polling'] });
-        sock.emit('join', 'chat:student:' + USER_ID);
+        sock.emit('join', { room: STUDENT_ROOM, token: STUDENT_TOKEN });
 
         sock.on('chat:message', function(msg) {
             var idx = threads.findIndex(function(t){ return t.job_id == msg.job_id; });
@@ -593,8 +685,11 @@ document.addEventListener('click', function(e) {
     // Typing emit
     document.getElementById('cfMsgInput').addEventListener('input', function() {
         if (!currentJobId) return;
+        var thread = threads.find(function(t){ return t.job_id == currentJobId; });
+        if (!thread) return;
         sock.emit('typing', {
-            toRoom: 'chat:admin:' + currentJobId,
+            toRoom: thread.typing_room,
+            token: thread.typing_token,
             userId: USER_ID,
             name: MY_NAME
         });

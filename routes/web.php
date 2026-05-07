@@ -40,7 +40,7 @@ Route::get('/', function () {
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [StudentAuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [StudentAuthController::class, 'login']);
+    Route::post('/login', [StudentAuthController::class, 'login'])->middleware('throttle:student-login');
     Route::get('/register', [StudentAuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [StudentAuthController::class, 'register']);
 });
@@ -50,22 +50,22 @@ Route::post('/logout', [StudentAuthController::class, 'logout'])->name('logout')
 // ── เส้นทางเจ้าหน้าที่: เข้าสู่ระบบด้วย email + password ──
 Route::middleware('guest')->group(function () {
     Route::get('/admin/login', [StaffAuthController::class, 'showLogin'])->name('admin.login');   // แสดงฟอร์ม login
-    Route::post('/admin/login', [StaffAuthController::class, 'login']);                            // ดำเนินการ login
+    Route::post('/admin/login', [StaffAuthController::class, 'login'])->middleware('throttle:staff-login'); // ดำเนินการ login
 });
 Route::post('/admin/logout', [StaffAuthController::class, 'logout'])->name('admin.logout');   // ออกจากระบบ
 
 // ── ระบบลืมรหัสผ่าน Staff ──
 Route::middleware('guest')->group(function () {
     Route::get('/admin/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('admin.password.request');
-    Route::post('/admin/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('admin.password.email');
+    Route::post('/admin/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->middleware('throttle:password-reset')->name('admin.password.email');
     Route::get('/admin/reset-password/{token}', [NewPasswordController::class, 'create'])->name('admin.password.reset');
-    Route::post('/admin/reset-password', [NewPasswordController::class, 'store'])->name('admin.password.update');
+    Route::post('/admin/reset-password', [NewPasswordController::class, 'store'])->middleware('throttle:password-reset')->name('admin.password.update');
 });
 
 // ── เส้นทาง Walk-in Check-in (ไม่ต้อง login กรอกรหัสนักศึกษาเอง) ──
 Route::get('/walkin/{token}', [CheckInController::class, 'walkInPage'])->name('checkin.walkin');             // หน้า walk-in check-in
-Route::post('/walkin/{token}', [CheckInController::class, 'walkInStore'])->name('checkin.walkin.store');     // บันทึก walk-in check-in
-Route::get('/walkin/{token}/attendees', [CheckInController::class, 'walkInAttendees'])->name('checkin.walkin.attendees'); // API รายชื่อ real-time
+Route::post('/walkin/{token}', [CheckInController::class, 'walkInStore'])->middleware('throttle:walkin')->name('checkin.walkin.store'); // บันทึก walk-in check-in
+Route::get('/walkin/{token}/attendees', [CheckInController::class, 'walkInAttendees'])->middleware('throttle:status')->name('checkin.walkin.attendees'); // API รายชื่อ real-time
 
 // ── เส้นทางนักศึกษา (ต้อง login ก่อน) ──────────────────
 Route::middleware('auth')->group(function () {
@@ -81,7 +81,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/summary', [StudentController::class, 'summary'])->name('student.summary');                          // สรุปชั่วโมง
     Route::get('/summary/pdf', [StudentController::class, 'downloadPdf'])->name('student.summary.pdf');              // ดาวน์โหลด PDF ใบแสดงผลกิจกรรม
     Route::get('/profile', [StudentController::class, 'profile'])->name('student.profile');                          // หน้าโปรไฟล์นักศึกษา
-    Route::post('/profile/photo', [ProfilePhotoController::class, 'store'])->name('profile.photo.upload');
+    // ── ปฏิทินกิจกรรม ──
+    Route::get('/calendar', [StudentController::class, 'calendar'])->name('student.calendar');                       // หน้าปฏิทิน
+    Route::get('/calendar/events', [StudentController::class, 'calendarEvents'])->name('student.calendar.events');   // JSON feed
+    // ── แจ้งเตือน ──
+    Route::get('/student/notifications', [StudentController::class, 'notifications'])->middleware('throttle:status')->name('student.notifications'); // JSON alerts
+    Route::post('/profile/photo', [ProfilePhotoController::class, 'store'])->middleware('throttle:upload')->name('profile.photo.upload');
 
     // ── ประเมินกิจกรรม ──
     Route::get('activities/{id}/feedback', [FeedbackController::class, 'create'])->name('feedback.create');
@@ -103,13 +108,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/chat/threads', [ChatController::class, 'myThreads'])->name('chat.threads');
     Route::get('/jobs/{id}/chat/messages', [ChatController::class, 'messages'])->name('chat.messages');
     Route::get('/jobs/{id}/chat', [ChatController::class, 'show'])->name('chat.show');
-    Route::post('/jobs/{id}/chat', [ChatController::class, 'send'])->name('chat.send');
+    Route::post('/jobs/{id}/chat', [ChatController::class, 'send'])->middleware('throttle:chat-send')->name('chat.send');
     Route::post('/jobs/{id}/chat/read', [ChatController::class, 'markRead'])->name('chat.read');
-    Route::get('/jobs/{id}/admin-online', [ChatController::class, 'adminOnlineStatus'])->name('chat.admin-online');
+    Route::get('/jobs/{id}/admin-online', [ChatController::class, 'adminOnlineStatus'])->middleware('throttle:status')->name('chat.admin-online');
 
     // ── User status (online/last seen) ──
-    Route::middleware('auth')->post('/user/ping', [UserStatusController::class, 'ping'])->name('user.ping');
-    Route::get('/users/{id}/status', [UserStatusController::class, 'status'])->name('user.status');
+    Route::middleware('auth')->post('/user/ping', [UserStatusController::class, 'ping'])->middleware('throttle:status')->name('user.ping');
+    Route::get('/users/{id}/status', [UserStatusController::class, 'status'])->middleware('throttle:status')->name('user.status');
 });
 
 // ── เส้นทางหลังบ้าน (staff + admin เข้าได้) ───────────
@@ -129,6 +134,9 @@ Route::middleware(['auth', 'role:staff'])->prefix('admin')->name('admin.')->grou
     Route::post('attendances/{id}/reject', [ActivityAdminController::class, 'rejectAttendance'])->name('attendances.reject');
     Route::post('activities/quick-store', [ActivityAdminController::class, 'quickStore'])->name('activities.quick-store');
     Route::post('activities/{id}/toggle-early-checkin', [ActivityAdminController::class, 'toggleEarlyCheckin'])->name('activities.toggle-early-checkin');
+    // ── AJAX: approve/reject จาก Dashboard unified queue ──
+    Route::post('quick-approve', [ActivityAdminController::class, 'quickApprove'])->name('quick.approve');
+    Route::post('quick-reject', [ActivityAdminController::class, 'quickReject'])->name('quick.reject');
 
     // ── ประกาศ ──
     Route::resource('announcements', AnnouncementAdminController::class);
@@ -144,7 +152,7 @@ Route::middleware(['auth', 'role:staff'])->prefix('admin')->name('admin.')->grou
     // ── กล่องข้อความ (Inbox) ──
     Route::get('inbox', [AdminInboxController::class, 'index'])->name('inbox.index');
     Route::get('inbox/{jobId}/{userId}', [AdminInboxController::class, 'show'])->name('inbox.show');
-    Route::post('inbox/{jobId}/{userId}', [AdminInboxController::class, 'send'])->name('inbox.send');
+    Route::post('inbox/{jobId}/{userId}', [AdminInboxController::class, 'send'])->middleware('throttle:chat-send')->name('inbox.send');
     Route::post('inbox/{jobId}/{userId}/read', [AdminInboxController::class, 'markRead'])->name('inbox.read');
 
     // ── นักศึกษา (ดูได้ทั้ง staff + admin) ──
@@ -153,11 +161,11 @@ Route::middleware(['auth', 'role:staff'])->prefix('admin')->name('admin.')->grou
 
     // ── ส่งออกรายงาน Excel ──
     Route::get('exports', [ExcelExportController::class, 'index'])->name('exports.index');
-    Route::post('exports/students', [ExcelExportController::class, 'exportStudents'])->name('exports.students');
-    Route::post('exports/activities', [ExcelExportController::class, 'exportActivities'])->name('exports.activities');
-    Route::post('exports/statistics', [ExcelExportController::class, 'exportStatistics'])->name('exports.statistics');
-    Route::post('exports/student-attendances', [ExcelExportController::class, 'exportStudentAttendances'])->name('exports.student-attendances');
-    Route::post('exports/activity-details', [ExcelExportController::class, 'exportActivityDetails'])->name('exports.activity-details');
+    Route::post('exports/students', [ExcelExportController::class, 'exportStudents'])->middleware('throttle:exports')->name('exports.students');
+    Route::post('exports/activities', [ExcelExportController::class, 'exportActivities'])->middleware('throttle:exports')->name('exports.activities');
+    Route::post('exports/statistics', [ExcelExportController::class, 'exportStatistics'])->middleware('throttle:exports')->name('exports.statistics');
+    Route::post('exports/student-attendances', [ExcelExportController::class, 'exportStudentAttendances'])->middleware('throttle:exports')->name('exports.student-attendances');
+    Route::post('exports/activity-details', [ExcelExportController::class, 'exportActivityDetails'])->middleware('throttle:exports')->name('exports.activity-details');
 
     // ── ผลการประเมิน ──
     Route::get('feedbacks', [FeedbackAdminController::class, 'index'])->name('feedbacks.index');

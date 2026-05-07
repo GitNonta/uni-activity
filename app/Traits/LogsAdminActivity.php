@@ -77,4 +77,10 @@ trait LogsAdminActivity
     {
         $this->auditLog('toggle', $description, get_class($model), $model->id);
     }
+
+    /** บันทึก log การส่งออกข้อมูล */
+    protected function auditExport(string $description, ?array $filters = null): void
+    {
+        $this->auditLog('export', $description, null, null, null, $filters);
+    }
 }

@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * เปลี่ยน staff คนแรก (สร้างเก่าสุด) เป็น admin
@@ -12,7 +13,9 @@ return new class extends Migration
     public function up(): void
     {
         // 1. แก้ไขประเภทคอลัมน์ ENUM ให้รองรับ 'admin' ก่อน (อิงตามฐานข้อมูล MySQL)
-        DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('student', 'staff', 'admin') DEFAULT 'student' NULL");
+        if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('student', 'staff', 'admin') DEFAULT 'student' NULL");
+        }
 
         // 2. ถ้ายังไม่มี admin สักคน ให้ promote staff คนแรกเป็น admin
         $hasAdmin = DB::table('users')->where('role', 'admin')->exists();

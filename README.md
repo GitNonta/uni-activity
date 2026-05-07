@@ -1,59 +1,79 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🎓 University Activity System (ระบบจัดการกิจกรรมมหาวิทยาลัย)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+![Laravel](https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)
+![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-00000F?style=for-the-badge&logo=mysql&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 
-## About Laravel
+ระบบจัดการกิจกรรมนักศึกษามหาวิทยาลัย พัฒนาด้วย **Laravel** เพื่อช่วยในการจัดการกิจกรรม การเช็คชื่อผ่าน QR Code การออกใบประกาศนียบัตร และการจัดการข้อมูลนักศึกษาอย่างมีประสิทธิภาพ
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## ✨ ฟีเจอร์หลัก (Key Features)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+*   📱 **ระบบเช็คชื่อด้วย QR Code:** นักศึกษาสามารถสแกน QR Code เพื่อเข้าร่วมกิจกรรมได้อย่างรวดเร็ว
+*   👥 **ระบบจัดการสิทธิ์ (Role & Permission):** แบ่งสิทธิ์การใช้งาน (ผู้ดูแลระบบ, เจ้าหน้าที่, นักศึกษา) อย่างชัดเจน
+*   📄 **ออกเอกสาร PDF:** สามารถสร้างและดาวน์โหลดใบรายงานผลการเข้าร่วมกิจกรรมเป็น PDF ได้
+*   📊 **นำเข้า/ส่งออก Excel:** จัดการข้อมูลนักศึกษาและข้อมูลกิจกรรมได้ง่ายๆ ผ่านไฟล์ Excel
+*   🔔 **การแจ้งเตือนแบบ Real-time:** แจ้งเตือนข้อมูลและกิจกรรมใหม่ๆ ทันที
+*   🎨 **หน้าเพจแจ้งเตือนข้อผิดพลาด (Custom Error Pages):** หน้า Error Pages (เช่น 404, 500) ที่ออกแบบมาอย่างสวยงามพร้อมคำแนะนำ
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 🛠️ เทคโนโลยีที่ใช้ (Tech Stack)
 
-## Learning Laravel
+*   **Framework:** Laravel 12.x
+*   **Language:** PHP 8.2+
+*   **Database:** MySQL
+*   **Styling:** Tailwind CSS
+*   **Real-time:** Laravel Reverb
+*   **Packages:**
+    *   `spatie/laravel-permission` (จัดการสิทธิ์การใช้งาน)
+    *   `simplesoftwareio/simple-qrcode` (สร้าง QR Code)
+    *   `barryvdh/laravel-dompdf` (สร้างไฟล์ PDF)
+    *   `maatwebsite/excel` (จัดการไฟล์ Excel)
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## 🚀 การติดตั้งและใช้งาน (Installation)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+1. **Clone โปรเจกต์:**
+   ```bash
+   git clone <repository-url>
+   cd uni-activity
+   ```
 
-## Laravel Sponsors
+2. **ติดตั้ง Dependencies:**
+   ```bash
+   composer install
+   npm install
+   ```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+3. **ตั้งค่า Environment:**
+   คัดลอกไฟล์ `.env.example` เป็น `.env` และตั้งค่าการเชื่อมต่อฐานข้อมูล:
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
 
-### Premium Partners
+4. **ตั้งค่าฐานข้อมูล (Database):**
+   ```bash
+   php artisan migrate --seed
+   ```
+   *(หมายเหตุ: หากพบปัญหา Database Connection สามารถดูวิธีแก้ได้ที่ [README_FIRST.md](./README_FIRST.md))*
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+5. **รันเซิร์ฟเวอร์:**
+   ```bash
+   npm run dev
+   php artisan serve
+   ```
+   *หรือสามารถใช้สคริปต์ `START_APPLICATION.bat` ในการรันระบบ*
 
-## Contributing
+## 📚 เอกสารคู่มือ (Documentation & Guides)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+โปรเจกต์นี้มีเอกสารคู่มือครอบคลุมการใช้งานและการแก้ไขปัญหาต่างๆ:
 
-## Code of Conduct
+*   **[คู่มือการแก้ไขปัญหา Database 500 Error (README_FIRST.md)](./README_FIRST.md)** - วิธีแก้ปัญหาเชื่อมต่อฐานข้อมูลอย่างรวดเร็ว
+*   **[คู่มือจัดการ Error Pages (BEAUTIFUL_ERROR_PAGES_README.md)](./BEAUTIFUL_ERROR_PAGES_README.md)** - รายละเอียดเกี่ยวกับหน้า Error 404, 500 ฯลฯ
+*   **[คู่มือ API Testing (API_TESTING_GUIDE.md)](./API_TESTING_GUIDE.md)** - สำหรับทดสอบระบบ API
+*   **[เอกสารสรุปการแก้ไขปัญหา (COMPLETE_SOLUTION_SUMMARY.md)](./COMPLETE_SOLUTION_SUMMARY.md)** - รายละเอียดเชิงเทคนิคและการแก้บั๊ก
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 👥 ผู้พัฒนา
+* **University Activity System Team**
 
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+*Developed with ❤️ using Laravel*

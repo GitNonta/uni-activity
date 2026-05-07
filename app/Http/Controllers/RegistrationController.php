@@ -23,16 +23,6 @@ class RegistrationController extends Controller
         $activity = Activity::findOrFail($id);
         $user = auth()->user();
 
-        // ตรวจสอบว่าลงทะเบียนซ้ำหรือไม่
-        $existing = Registration::where('user_id', $user->id)
-            ->where('activity_id', $activity->id)
-            ->whereIn('status', ['pending', 'approved'])
-            ->first();
-
-        if ($existing) {
-            return back()->with('error', 'คุณลงทะเบียนกิจกรรมนี้แล้ว');
-        }
-
         // ตรวจสอบช่วงเวลาลงทะเบียน
         $now = now();
         if ($now < $activity->register_open_at || $now > $activity->register_close_at) {
@@ -42,6 +32,15 @@ class RegistrationController extends Controller
         // ตรวจสอบจำนวนที่ว่าง (ใช้ transaction ป้องกัน race condition)
         try {
             DB::transaction(function () use ($activity, $user) {
+                $existing = Registration::where('user_id', $user->id)
+                    ->where('activity_id', $activity->id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($existing && in_array($existing->status, ['pending', 'approved', 'completed'], true)) {
+                    throw new \Exception('คุณลงทะเบียนกิจกรรมนี้แล้ว');
+                }
+
                 $count = Registration::where('activity_id', $activity->id)
                     ->whereIn('status', ['pending', 'approved'])
                     ->lockForUpdate()
@@ -51,11 +50,20 @@ class RegistrationController extends Controller
                     throw new \Exception('กิจกรรมนี้เต็มแล้ว');
                 }
 
-                Registration::create([
-                    'user_id'     => $user->id,
-                    'activity_id' => $activity->id,
-                    'status'      => 'approved',
-                ]);
+                if ($existing) {
+                    $existing->update([
+                        'status' => 'approved',
+                        'registered_at' => now(),
+                        'cancelled_at' => null,
+                        'note' => null,
+                    ]);
+                } else {
+                    Registration::create([
+                        'user_id'     => $user->id,
+                        'activity_id' => $activity->id,
+                        'status'      => 'approved',
+                    ]);
+                }
 
                 Notification::create([
                     'user_id' => $user->id,

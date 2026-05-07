@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\ActivityCategory;
 use App\Models\Attendance;
+use App\Models\Setting;
 use App\Models\User;
 use App\Services\ActivitySummaryService;
 use App\Traits\LogsAdminActivity;
@@ -31,24 +32,42 @@ class StudentAdminController extends Controller
                 });
             })
             ->when($request->faculty, fn($q) => $q->where('faculty', $request->faculty))
+            ->when($request->department, fn($q) => $q->where('department', $request->department))
             ->when($request->year, fn($q) => $q->where('year', $request->year))
             ->when($request->program, fn($q) => $q->where('program', $request->program));
 
-        $students = $query->orderBy('full_name')->paginate(20)->withQueryString();
+        $filteredStudents = $query->orderBy('full_name')->get();
 
         // คำนวณชั่วโมงรวมสำหรับแต่ละนักศึกษา
         $hoursMap = Attendance::where('status', 'approved')
-            ->whereIn('user_id', $students->pluck('id'))
+            ->whereIn('user_id', $filteredStudents->pluck('id'))
             ->with('activity:id,activity_hours')
             ->get()
             ->groupBy('user_id')
             ->map(fn($group) => $group->sum(fn($a) => (float) ($a->activity->activity_hours ?? 0)));
 
+        $totalRequired = (float) (Setting::get('total_required_hours') ?? ActivityCategory::sum('required_hours'));
+        if ($request->completion === 'complete') {
+            $filteredStudents = $filteredStudents->filter(fn($student) => (float) ($hoursMap[$student->id] ?? 0) >= $totalRequired);
+        } elseif ($request->completion === 'incomplete') {
+            $filteredStudents = $filteredStudents->filter(fn($student) => (float) ($hoursMap[$student->id] ?? 0) < $totalRequired);
+        }
+
+        $page = (int) $request->get('page', 1);
+        $students = new \Illuminate\Pagination\LengthAwarePaginator(
+            $filteredStudents->forPage($page, 20)->values(),
+            $filteredStudents->count(),
+            20,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
         $faculties = User::where('role', 'student')->whereNotNull('faculty')->distinct()->pluck('faculty')->sort()->values();
+        $departments = User::where('role', 'student')->whereNotNull('department')->distinct()->pluck('department')->sort()->values();
         $years     = User::where('role', 'student')->whereNotNull('year')->distinct()->pluck('year')->sort()->values();
         $programs  = User::where('role', 'student')->whereNotNull('program')->distinct()->pluck('program')->sort()->values();
 
-        return view('admin.students.index', compact('students', 'hoursMap', 'faculties', 'years', 'programs'));
+        return view('admin.students.index', compact('students', 'hoursMap', 'faculties', 'departments', 'years', 'programs', 'totalRequired'));
     }
 
     /** แสดงโปรไฟล์นักศึกษา + จัดการชั่วโมงกิจกรรม */

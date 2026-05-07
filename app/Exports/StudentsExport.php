@@ -16,10 +16,40 @@ class StudentsExport implements FromView, WithColumnWidths, WithStyles
 {
     /** ฟิลเตอร์ข้อมูล */
     protected $filters;
+    protected array $fields;
 
-    public function __construct($filters = [])
+    private const DEFAULT_FIELDS = [
+        'student_id',
+        'full_name',
+        'faculty',
+        'department',
+        'year',
+        'program',
+        'email',
+        'is_active',
+        'total_hours',
+        'approved_count',
+        'created_at',
+    ];
+
+    private const LABELS = [
+        'student_id' => 'รหัสนักศึกษา',
+        'full_name' => 'ชื่อ-นามสกุล',
+        'faculty' => 'คณะ',
+        'department' => 'สาขาวิชา',
+        'year' => 'ชั้นปี',
+        'program' => 'ภาคเรียน',
+        'email' => 'อีเมล',
+        'is_active' => 'สถานะ',
+        'total_hours' => 'ชั่วโมงทั้งหมด',
+        'approved_count' => 'กิจกรรมที่เข้าร่วม',
+        'created_at' => 'สร้างเมื่อ',
+    ];
+
+    public function __construct($filters = [], array $fields = [])
     {
         $this->filters = $filters;
+        $this->fields = array_values(array_intersect($fields ?: self::DEFAULT_FIELDS, self::DEFAULT_FIELDS));
     }
 
     /** ดึงข้อมูลจาก View */
@@ -51,26 +81,26 @@ class StudentsExport implements FromView, WithColumnWidths, WithStyles
 
         return view('exports.students', [
             'students' => $students,
-            'filters' => $this->filters
+            'filters' => $this->filters,
+            'fields' => $this->fields,
+            'labels' => self::LABELS,
         ]);
     }
 
     /** กำหนดความกว้างคอลัมน์ */
     public function columnWidths(): array
     {
-        return [
-            'A' => 15, // รหัสนักศึกษา
-            'B' => 25, // ชื่อ-นามสกุล
-            'C' => 20, // คณะ
-            'D' => 20, // สาขา
-            'E' => 10, // ชั้นปี
-            'F' => 15, // ภาคเรียน
-            'G' => 15, // อีเมล
-            'H' => 10, // สถานะ
-            'I' => 15, // ชั่วโมงทั้งหมด
-            'J' => 15, // กิจกรรมที่เข้าร่วม
-            'K' => 15, // สร้างเมื่อ
-        ];
+        $widths = [];
+        foreach (array_values($this->fields) as $index => $field) {
+            $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($index + 1);
+            $widths[$column] = match ($field) {
+                'full_name' => 25,
+                'faculty', 'department', 'email' => 22,
+                default => 15,
+            };
+        }
+
+        return $widths;
     }
 
     /** จัดรูปแบบสไตล์ */

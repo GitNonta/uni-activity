@@ -1,4 +1,4 @@
-{{-- หน้า Dashboard ผู้ดูแล: สถิติภาพรวม + ตารางกิจกรรมล่าสุด + ปุ่มสร้างกิจกรรมด่วน --}}
+{{-- หน้า Dashboard ผู้ดูแล: สถิติ + Unified Approval Queue + Quick Actions --}}
 @extends('layouts.admin')
 @section('title', 'Dashboard')
 
@@ -11,84 +11,134 @@
     </button>
 </div>
 
-{{-- การ์ดสถิติ: กิจกรรมทั้งหมด, เปิดรับสมัคร, นักศึกษา, ลงทะเบียน --}}
+{{-- การ์ดสถิติ --}}
 <div class="grid-4 mb-6">
-    <div class="card stat-card" style="border-bottom: 3px solid #6366f1;">
+    <div class="card stat-card" style="border-bottom:3px solid #6366f1;">
         <p class="stat-label">กิจกรรมทั้งหมด</p>
         <p class="stat-value">{{ $stats['totalActivities'] }}</p>
     </div>
-    <div class="card stat-card" style="border-bottom: 3px solid #8b5cf6;">
+    <div class="card stat-card" style="border-bottom:3px solid #8b5cf6;">
         <p class="stat-label">เปิดรับสมัคร</p>
         <p class="stat-value primary">{{ $stats['upcomingActivities'] }}</p>
     </div>
-    <div class="card stat-card" style="border-bottom: 3px solid #3b82f6;">
+    <div class="card stat-card" style="border-bottom:3px solid #3b82f6;">
         <p class="stat-label">นักศึกษา</p>
         <p class="stat-value">{{ $stats['totalStudents'] }}</p>
     </div>
-    <div class="card stat-card" style="border-bottom: 3px solid #10b981;">
-        <p class="stat-label">ลงทะเบียนทั้งหมด</p>
-        <p class="stat-value success">{{ $stats['totalRegistrations'] }}</p>
+    <div class="card stat-card" style="border-bottom:3px solid #f59e0b; position:relative;">
+        <p class="stat-label">รออนุมัติ</p>
+        <p class="stat-value" style="color:#d97706;" id="pending-badge-count">{{ $stats['pendingRegistrations'] + $stats['pendingAttendances'] }}</p>
+        <p class="text-xs text-muted">ลงทะเบียน {{ $stats['pendingRegistrations'] }} · เช็คอิน {{ $stats['pendingAttendances'] }}</p>
     </div>
 </div>
 
-{{-- การ์ดแจ้งเตือน --}}
-<div class="grid-3 mb-6">
-    <div class="card" style="border-left:4px solid #f59e0b;background:#fffbeb;">
-        <div class="card-body">
-            <div class="flex items-center justify-between mb-2">
-                <p class="font-semi" style="color:#92400e;">รอการอนุมัติ</p>
-                <svg class="icon-sm" style="color:#f59e0b;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            </div>
-            <p class="font-bold" style="font-size:1.5rem;color:#92400e;">{{ $stats['pendingRegistrations'] }}</p>
-            <p class="text-xs" style="color:#92400e;margin-top:.25rem;">การลงทะเบียนรออนุมัติ</p>
-        </div>
-    </div>
-    <div class="card" style="border-left:4px solid #d97706;background:#fef3c7;">
-        <div class="card-body">
-            <div class="flex items-center justify-between mb-2">
-                <p class="font-semi" style="color:#92400e;">เช็คอินรออนุมัติ</p>
-                <svg class="icon-sm" style="color:#d97706;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-            </div>
-            <p class="font-bold" style="font-size:1.5rem;color:#92400e;">{{ $stats['pendingAttendances'] }}</p>
-            <p class="text-xs" style="color:#92400e;margin-top:.25rem;">การเข้าร่วมรออนุมัติ</p>
-        </div>
-    </div>
-    <div class="card" style="border-left:4px solid #3b82f6;background:#eff6ff;">
-        <div class="card-body">
-            <div class="flex items-center justify-between mb-2">
-                <p class="font-semi" style="color:#1e40af;">กิจกรรมใกล้จะถึง</p>
-                <svg class="icon-sm" style="color:#3b82f6;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-            </div>
-            <p class="font-bold" style="font-size:1.5rem;color:#1e40af;">{{ $stats['upcomingThisWeek'] }}</p>
-            <p class="text-xs" style="color:#1e40af;margin-top:.25rem;">กิจกรรมในสัปดาห์นี้</p>
-        </div>
-    </div>
-</div>
+{{-- Unified Approval Queue --}}
+@php
+    $allPending = collect();
+    foreach($pendingRegistrations as $reg) {
+        $allPending->push([
+            'id'       => $reg->id,
+            'type'     => 'registration',
+            'name'     => $reg->user->full_name ?? '-',
+            'sid'      => $reg->user->student_id ?? '',
+            'faculty'  => $reg->user->faculty ?? '',
+            'activity' => $reg->activity->title ?? '-',
+            'time'     => $reg->created_at,
+            'detail'   => 'ขอลงทะเบียนเข้าร่วม',
+        ]);
+    }
+    foreach($pendingAttendances as $att) {
+        $allPending->push([
+            'id'       => $att->id,
+            'type'     => 'attendance',
+            'name'     => $att->user->full_name ?? '-',
+            'sid'      => $att->user->student_id ?? '',
+            'faculty'  => $att->user->faculty ?? '',
+            'activity' => $att->activity->title ?? '-',
+            'time'     => $att->created_at,
+            'detail'   => $att->distance_meters ? 'เช็คอิน GPS ห่าง '.number_format($att->distance_meters,0).' ม.' : 'บันทึกด้วยตนเอง',
+        ]);
+    }
+    $allPending = $allPending->sortByDesc('time');
+    $totalPending = $stats['pendingRegistrations'] + $stats['pendingAttendances'];
+@endphp
 
-{{-- กิจกรรมที่ต้องดำเนินการ --}}
-@if($stats['pendingRegistrations'] > 0 || $stats['pendingAttendances'] > 0)
-<div class="card mb-4" style="border-left:4px solid #ef4444;background:#fef2f2;">
+@if($totalPending > 0)
+<div class="card mb-6">
+    <div class="card-header" style="background:linear-gradient(135deg,#fff7ed,#fffbeb);border-bottom:2px solid #fbbf24;">
+        <div class="flex items-center gap-2">
+            <svg style="width:20px;height:20px;color:#d97706;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <h3 class="card-title" style="color:#92400e;">
+                รออนุมัติทั้งหมด
+                <span id="queue-count" style="background:#f59e0b;color:#fff;border-radius:999px;padding:2px 10px;font-size:.8rem;margin-left:6px;">{{ $totalPending }}</span>
+            </h3>
+        </div>
+        <div class="flex gap-2">
+            <a href="{{ route('admin.activities.index') }}" class="btn btn-outline btn-sm">ดูทั้งหมด</a>
+        </div>
+    </div>
+    <div id="approval-queue" style="max-height:480px;overflow-y:auto;">
+        @foreach($allPending as $item)
+        <div class="approval-row" id="row-{{ $item['type'] }}-{{ $item['id'] }}"
+             style="display:flex;align-items:center;gap:.75rem;padding:.85rem 1.1rem;border-bottom:1px solid #fef3c7;transition:background .2s;">
+            {{-- Type Badge --}}
+            <span style="flex-shrink:0;font-size:.7rem;font-weight:600;padding:3px 8px;border-radius:999px;
+                {{ $item['type'] === 'registration' ? 'background:#ede9fe;color:#6d28d9;' : 'background:#dcfce7;color:#15803d;' }}">
+                {{ $item['type'] === 'registration' ? 'ลงทะเบียน' : 'เช็คอิน' }}
+            </span>
+            {{-- Info --}}
+            <div style="flex:1;min-width:0;">
+                <div class="font-semi text-sm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                    {{ $item['name'] }}
+                    <span class="text-xs text-muted" style="font-weight:400;"> · {{ $item['sid'] }}</span>
+                    @if($item['faculty']) <span class="text-xs text-muted"> · {{ $item['faculty'] }}</span> @endif
+                </div>
+                <div class="text-xs text-muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                    📌 {{ $item['activity'] }} &nbsp;·&nbsp; {{ $item['detail'] }} &nbsp;·&nbsp; {{ $item['time']->diffForHumans() }}
+                </div>
+            </div>
+            {{-- Actions --}}
+            <div class="flex gap-1" style="flex-shrink:0;">
+                <button class="btn btn-success btn-sm"
+                    onclick="quickAction('approve','{{ $item['type'] }}',{{ $item['id'] }},this)"
+                    title="อนุมัติ">
+                    <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    อนุมัติ
+                </button>
+                <button class="btn btn-outline btn-sm" style="color:#dc2626;border-color:#fca5a5;"
+                    onclick="quickAction('reject','{{ $item['type'] }}',{{ $item['id'] }},this)"
+                    title="ปฏิเสธ">
+                    <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                    ปฏิเสธ
+                </button>
+            </div>
+        </div>
+        @endforeach
+    </div>
+    @if($totalPending > 8)
+    <div style="padding:.75rem 1.1rem;text-align:center;background:#fffbeb;">
+        <span class="text-xs text-muted">แสดง 8 รายการล่าสุด — <a href="{{ route('admin.activities.index') }}" style="color:#d97706;">ดูทั้งหมด {{ $totalPending }} รายการ</a></span>
+    </div>
+    @endif
+</div>
+{{-- Toast notification --}}
+<div id="toast" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;
+    background:#1e293b;color:#fff;padding:.75rem 1.25rem;border-radius:10px;
+    font-size:.875rem;box-shadow:0 4px 24px rgba(0,0,0,.2);transition:opacity .3s;"></div>
+@else
+<div class="card mb-6" style="border-left:4px solid #10b981;background:#f0fdf4;">
     <div class="card-body">
-        <div class="flex items-center gap-2 mb-3">
-            <svg class="icon-sm" style="color:#dc2626;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-            <h3 class="font-semi" style="color:#dc2626;">ต้องดำเนินการ</h3>
-        </div>
-        <div class="flex gap-4" style="flex-wrap:wrap;">
-            @if($stats['pendingRegistrations'] > 0)
-            <a href="{{ route('admin.activities.index') }}" class="text-sm" style="color:#dc2626;">
-                → มีการลงทะเบียน <strong>{{ $stats['pendingRegistrations'] }}</strong> รายการรออนุมัติ
-            </a>
-            @endif
-            @if($stats['pendingAttendances'] > 0)
-            <a href="{{ route('admin.activities.index') }}" class="text-sm" style="color:#dc2626;">
-                → มีการเช็คอิน <strong>{{ $stats['pendingAttendances'] }}</strong> รายการรออนุมัติ
-            </a>
-            @endif
+        <div class="flex items-center gap-2">
+            <svg style="width:20px;height:20px;color:#10b981;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <p class="font-semi" style="color:#15803d;">ไม่มีรายการรออนุมัติ ✅</p>
         </div>
     </div>
 </div>
 @endif
 
+{{-- กิจกรรมล่าสุด --}}
 <div class="flex items-center justify-between mb-2">
     <h2 class="font-bold">กิจกรรมล่าสุด</h2>
     <a href="{{ route('admin.activities.create') }}" class="btn btn-primary btn-sm">
@@ -96,8 +146,6 @@
         สร้างใหม่
     </a>
 </div>
-
-{{-- ตารางกิจกรรมล่าสุด --}}
 <div class="card">
     <div class="table-wrap">
         <table class="responsive-table">
@@ -118,8 +166,8 @@
                     <td data-label="สถานะ" class="text-center">@include('components.status-badge', ['status' => $act->computed_status])</td>
                     <td data-label="ผู้เข้าร่วม" class="text-center">
                         @php
-                            $regCount = $act->registrations()->where('status', 'approved')->count();
-                            $attCount = $act->attendances()->where('status', 'approved')->count();
+                            $regCount = $act->registrations()->where('status','approved')->count();
+                            $attCount = $act->attendances()->where('status','approved')->count();
                         @endphp
                         <span class="text-sm text-muted">{{ $regCount }}/{{ $act->max_participants }}</span>
                         @if($attCount > 0)
@@ -140,7 +188,8 @@
         </table>
     </div>
 </div>
-{{-- Modal สร้างกิจกรรมด่วน: กรอกแค่ชื่อ สถานที่ วันที่ เวลา ชั่วโมง หมวดหมู่ (ค่าอื่นใช้ค่าเริ่มต้น) --}}
+
+{{-- Modal สร้างกิจกรรมด่วน --}}
 <div id="quickModal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
     <div class="modal">
         <div class="modal-header">
@@ -191,7 +240,7 @@
                         <input type="time" name="end_time" class="form-control" value="12:00" required>
                     </div>
                 </div>
-                <p class="text-xs text-muted mb-4">* ค่าเริ่มต้น: รับสมัคร 50 คน, เปิดรับสมัครทันที, เช็คอินก่อนเริ่ม 30 นาที</p>
+                <p class="text-xs text-muted mb-4">* ค่าเริ่มต้น: รับสมัคร 50 คน, เปิดรับสมัครทันที</p>
                 <div class="flex gap-2" style="justify-content:flex-end;">
                     <button type="button" class="btn btn-outline" onclick="document.getElementById('quickModal').classList.remove('open')">ยกเลิก</button>
                     <button type="submit" class="btn btn-success">
@@ -203,4 +252,68 @@
         </div>
     </div>
 </div>
+
+{{-- AJAX Script --}}
+<script>
+const CSRF = '{{ csrf_token() }}';
+const APPROVE_URL = '{{ route("admin.quick.approve") }}';
+const REJECT_URL  = '{{ route("admin.quick.reject") }}';
+
+function showToast(msg, ok) {
+    const t = document.getElementById('toast');
+    if (!t) return;
+    t.textContent = msg;
+    t.style.background = ok ? '#15803d' : '#dc2626';
+    t.style.display = 'block';
+    t.style.opacity = '1';
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.style.display='none', 300); }, 2800);
+}
+
+function updateBadges(count) {
+    const el = document.getElementById('pending-badge-count');
+    const qc = document.getElementById('queue-count');
+    if (el) el.textContent = count;
+    if (qc) qc.textContent = count;
+}
+
+async function quickAction(action, type, id, btn) {
+    const row = document.getElementById(`row-${type}-${id}`);
+    const url = action === 'approve' ? APPROVE_URL : REJECT_URL;
+    btn.disabled = true;
+    row.style.opacity = '.5';
+    try {
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+            body: JSON.stringify({ type, id })
+        });
+        const data = await res.json();
+        if (data.ok) {
+            row.style.transition = 'all .3s';
+            row.style.maxHeight = row.offsetHeight + 'px';
+            row.style.overflow = 'hidden';
+            requestAnimationFrame(() => {
+                row.style.maxHeight = '0';
+                row.style.padding = '0';
+                row.style.opacity = '0';
+            });
+            setTimeout(() => row.remove(), 320);
+            updateBadges(data.pending_count);
+            showToast(data.message, true);
+            // ซ่อน section ถ้าหมดแล้ว
+            if (data.pending_count === 0) {
+                setTimeout(() => location.reload(), 600);
+            }
+        } else {
+            showToast('เกิดข้อผิดพลาด', false);
+            row.style.opacity = '1';
+            btn.disabled = false;
+        }
+    } catch (e) {
+        showToast('ไม่สามารถเชื่อมต่อได้', false);
+        row.style.opacity = '1';
+        btn.disabled = false;
+    }
+}
+</script>
 @endsection

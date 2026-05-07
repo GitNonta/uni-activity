@@ -100,6 +100,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const csrfToken  = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     const myId       = {{ Auth::id() }};
     const studentId  = {{ $student->id }};
+    const threadRoom = 'chat:thread:{{ $job->id }}:{{ $student->id }}';
+    const threadToken = '{{ \App\Services\SocketService::roomToken("chat:thread:{$job->id}:{$student->id}") }}';
+    const typingRoom = 'chat:admin:{{ $job->id }}';
+    const typingToken = '{{ \App\Services\SocketService::roomToken("chat:admin:{$job->id}") }}';
 
     // Scroll to bottom
     win.scrollTop = win.scrollHeight;
@@ -208,7 +212,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (typeof io !== 'undefined') {
         const socket = io('{{ config('socket.public_url') }}');
         // Join thread-specific room
-        socket.emit('join', 'chat:thread:{{ $job->id }}:{{ $student->id }}');
+        socket.emit('join', { room: threadRoom, token: threadToken });
 
         socket.on('chat:message', function (msg) {
             if (msg.sender_role === 'admin') return; // our own message already rendered
@@ -261,7 +265,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // Typing emit
     input.addEventListener('input', function() {
         socket?.emit('typing', {
-            toRoom: 'chat:admin:{{ $job->id }}',
+            toRoom: typingRoom,
+            token: typingToken,
             userId: myId,
             name: 'ผู้ดูแล'
         });

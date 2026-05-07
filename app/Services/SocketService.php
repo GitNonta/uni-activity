@@ -7,6 +7,11 @@ use Illuminate\Support\Facades\Log;
 
 class SocketService
 {
+    public static function roomToken(string $room): string
+    {
+        return hash_hmac('sha256', $room, config('socket.secret'));
+    }
+
     public static function emit(string $room, string $event, array $data): void
     {
         try {

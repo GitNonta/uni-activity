@@ -97,6 +97,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendUrl  = '{{ route('chat.send', $job->id) }}';
     const readUrl  = '{{ route('chat.read', $job->id) }}';
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    const studentRoom = 'chat:student:' + USER_ID;
+    const studentToken = '{{ \App\Services\SocketService::roomToken("chat:student:" . auth()->id()) }}';
+    const threadRoom = 'chat:thread:' + JOB_ID + ':' + USER_ID;
+    const threadToken = '{{ \App\Services\SocketService::roomToken("chat:thread:{$job->id}:" . auth()->id()) }}';
+    const typingRoom = 'chat:admin:' + JOB_ID;
+    const typingToken = '{{ \App\Services\SocketService::roomToken("chat:admin:{$job->id}") }}';
 
     const chatWindow = document.getElementById('chatWindow');
     const chatForm   = document.getElementById('chatForm');
@@ -245,8 +251,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Socket.io ──
     if (typeof io !== 'undefined') {
         const socket = io('{{ config('socket.public_url') }}');
-        socket.emit('join', 'chat:student:' + USER_ID);
-        socket.emit('join', 'chat:thread:' + JOB_ID + ':' + USER_ID);
+        socket.emit('join', { room: studentRoom, token: studentToken });
+        socket.emit('join', { room: threadRoom, token: threadToken });
 
         let typingTimer;
         socket.on('chat:message', (msg) => {
@@ -266,7 +272,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         msgInput.addEventListener('input', () => {
-            socket.emit('typing', { toRoom: 'chat:admin:' + JOB_ID, userId: USER_ID,
+            socket.emit('typing', { toRoom: typingRoom, token: typingToken, userId: USER_ID,
                 name: '{{ addslashes(auth()->user()->full_name ?? '') }}' });
         });
     }

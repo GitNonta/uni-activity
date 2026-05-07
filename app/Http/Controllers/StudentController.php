@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Activity;
+use App\Models\ActivityFeedback;
 use App\Models\Attendance;
 use App\Models\Registration;
 use App\Services\ActivitySummaryService;
@@ -11,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 
 /**
  * คอนโทรลเลอร์หน้านักศึกษา
- * จัดการหน้ากิจกรรมของฉัน, ประวัติการเข้าร่วม, สรุปชั่วโมง
+ * จัดการหน้ากิจกรรมของฉัน, ประวัติการเข้าร่วม, สรุปชั่วโมง, ปฏิทิน, แจ้งเตือน
  */
 class StudentController extends Controller
 {
@@ -41,21 +43,153 @@ class StudentController extends Controller
         ]);
     }
 
-    /** แสดงกิจกรรมที่ลงทะเบียนไว้ พร้อมสถานะการบันทึก (เช็คอิน) */
+    /**
+     * แสดงกิจกรรมที่ลงทะเบียนไว้ + ภารกิจที่ต้องทำ
+     * ส่ง attendanceMap, feedbackDoneIds, todoPending
+     */
     public function myActivities()
     {
+        $userId = auth()->id();
+
         $registrations = Registration::with('activity.category')
-            ->where('user_id', auth()->id())
+            ->where('user_id', $userId)
             ->whereIn('status', ['pending', 'approved'])
             ->orderByDesc('registered_at')
             ->get();
 
-        $checkedInActivityIds = Attendance::where('user_id', auth()->id())
-            ->where('status', 'approved')
+        // Map activity_id → attendance
+        $attendanceMap = Attendance::where('user_id', $userId)
+            ->get()
+            ->keyBy('activity_id');
+
+        // กิจกรรมที่ประเมินแล้ว
+        $feedbackDoneIds = ActivityFeedback::where('user_id', $userId)
             ->pluck('activity_id')
             ->toArray();
 
-        return view('student.my-activities', compact('registrations', 'checkedInActivityIds'));
+        // Legacy: checkedInActivityIds (ยังใช้ใน walk-in section)
+        $checkedInActivityIds = $attendanceMap
+            ->where('status', 'approved')
+            ->keys()
+            ->toArray();
+
+        // ── คำนวณ "ภารกิจที่ต้องทำ" ──
+        $todos = collect();
+
+        // Walk-in attendances (ไม่มี registration)
+        $walkInAttendances = Attendance::with('activity.feedbacks')
+            ->where('user_id', $userId)
+            ->where('method', 'walk_in')
+            ->whereNotIn('activity_id', $registrations->pluck('activity_id'))
+            ->orderByDesc('created_at')
+            ->get();
+
+        foreach ($registrations as $reg) {
+            $act = $reg->activity;
+            if (!$act) continue;
+            $att = $attendanceMap->get($reg->activity_id);
+            $status = $act->computed_status;
+
+            // 1. เช็คอินเปิดแล้ว — approved + window เปิด + ยังไม่เช็คอิน
+            $checkinOpen = $act->allow_early_checkin ||
+                (now() >= $act->checkin_open_at && now() <= $act->checkin_close_at);
+
+            if ($reg->status === 'approved' && !$att && $checkinOpen) {
+                $todos->push([
+                    'type'       => 'checkin_open',
+                    'priority'   => 1,
+                    'activity'   => $act,
+                    'reg_id'     => $reg->id,
+                    'label'      => 'เช็คอินได้แล้ว!',
+                    'color'      => '#16a34a',
+                    'bg'         => '#f0fdf4',
+                    'icon'       => 'check',
+                    'action_url' => route('activities.show', $act->id),
+                    'action_label' => 'เช็คอิน',
+                ]);
+                continue;
+            }
+
+            // 2. เช็คอินใกล้เปิด (ภายใน 2 ชม.)
+            if ($reg->status === 'approved' && !$att &&
+                $act->checkin_open_at && now()->diffInMinutes($act->checkin_open_at, false) > 0 &&
+                now()->diffInMinutes($act->checkin_open_at, false) <= 120) {
+                $todos->push([
+                    'type'       => 'checkin_soon',
+                    'priority'   => 2,
+                    'activity'   => $act,
+                    'label'      => 'เช็คอินเปิดใน '.now()->diffForHumans($act->checkin_open_at, true),
+                    'color'      => '#d97706',
+                    'bg'         => '#fffbeb',
+                    'icon'       => 'clock',
+                    'action_url' => route('activities.show', $act->id),
+                    'action_label' => 'ดูรายละเอียด',
+                ]);
+            }
+
+            // 3. รอประเมิน — เช็คอิน approved + กิจกรรมจบ + ยังไม่ประเมิน
+            if ($att && $att->status === 'approved' &&
+                in_array($status, ['done']) &&
+                !in_array($act->id, $feedbackDoneIds)) {
+                $todos->push([
+                    'type'       => 'feedback',
+                    'priority'   => 3,
+                    'activity'   => $act,
+                    'label'      => 'รอประเมิน',
+                    'color'      => '#7c3aed',
+                    'bg'         => '#faf5ff',
+                    'icon'       => 'star',
+                    'action_url' => route('feedback.create', $act->id),
+                    'action_label' => 'ประเมิน',
+                ]);
+            }
+
+            // 4. รออนุมัติ
+            if ($reg->status === 'pending') {
+                $todos->push([
+                    'type'       => 'pending',
+                    'priority'   => 4,
+                    'activity'   => $act,
+                    'label'      => 'รออนุมัติการลงทะเบียน',
+                    'color'      => '#0369a1',
+                    'bg'         => '#f0f9ff',
+                    'icon'       => 'pending',
+                    'action_url' => route('activities.show', $act->id),
+                    'action_label' => 'ดูกิจกรรม',
+                ]);
+            }
+        }
+
+        // walk-in รอประเมิน
+        foreach ($walkInAttendances as $att) {
+            if ($att->status === 'approved' &&
+                $att->activity &&
+                in_array($att->activity->computed_status, ['done']) &&
+                !in_array($att->activity_id, $feedbackDoneIds)) {
+                $todos->push([
+                    'type'       => 'feedback',
+                    'priority'   => 3,
+                    'activity'   => $att->activity,
+                    'label'      => 'รอประเมิน',
+                    'color'      => '#7c3aed',
+                    'bg'         => '#faf5ff',
+                    'icon'       => 'star',
+                    'action_url' => route('feedback.create', $att->activity_id),
+                    'action_label' => 'ประเมิน',
+                ]);
+            }
+        }
+
+        $todos = $todos->sortBy('priority')->values();
+
+        return view('student.my-activities', compact(
+            'registrations',
+            'checkedInActivityIds',
+            'attendanceMap',
+            'feedbackDoneIds',
+            'walkInAttendances',
+            'todos'
+        ));
     }
 
     /** แสดงประวัติการเข้าร่วมกิจกรรมทั้งหมดที่เช็คอินแล้ว */
@@ -77,6 +211,157 @@ class StudentController extends Controller
         return view('student.summary', $data);
     }
 
+    /** แสดงหน้าปฏิทินกิจกรรม */
+    public function calendar()
+    {
+        return view('student.calendar');
+    }
+
+    /**
+     * JSON endpoint: ดึงกิจกรรมสำหรับ FullCalendar
+     * รวม: กิจกรรมที่ลงทะเบียน, กิจกรรมทั่วไปที่ยังเปิดรับ
+     */
+    public function calendarEvents(Request $request)
+    {
+        $userId = auth()->id();
+        $user   = auth()->user();
+
+        // กิจกรรมที่ลงทะเบียนแล้ว
+        $registeredIds = Registration::where('user_id', $userId)
+            ->whereIn('status', ['pending', 'approved'])
+            ->pluck('activity_id')
+            ->toArray();
+
+        $checkedInIds = Attendance::where('user_id', $userId)
+            ->where('status', 'approved')
+            ->pluck('activity_id')
+            ->toArray();
+
+        $feedbackDoneIds = ActivityFeedback::where('user_id', $userId)
+            ->pluck('activity_id')
+            ->toArray();
+
+        // กิจกรรมทั้งหมดที่เกี่ยวข้อง (ลงทะเบียนแล้ว + ที่เปิดอยู่)
+        $activities = Activity::with('category')
+            ->where('status', '!=', 'cancelled')
+            ->where(function ($q) use ($registeredIds) {
+                $q->whereIn('id', $registeredIds)
+                  ->orWhereIn('status', ['upcoming', 'open', 'ongoing']);
+            })
+            ->where('activity_date', '>=', now()->subMonths(1))
+            ->where('activity_date', '<=', now()->addMonths(3))
+            ->get();
+
+        $events = $activities->map(function ($act) use ($registeredIds, $checkedInIds, $feedbackDoneIds) {
+            $isRegistered  = in_array($act->id, $registeredIds);
+            $isCheckedIn   = in_array($act->id, $checkedInIds);
+            $needsFeedback = $isCheckedIn && in_array($act->computed_status, ['done'])
+                             && !in_array($act->id, $feedbackDoneIds);
+
+            // สีตามสถานะ
+            if ($isCheckedIn) {
+                $color = '#16a34a'; // เขียว = เช็คอินแล้ว
+            } elseif ($isRegistered) {
+                $color = '#6366f1'; // ม่วง = ลงทะเบียนแล้ว
+            } elseif (in_array($act->computed_status, ['open', 'upcoming'])) {
+                $color = '#0ea5e9'; // ฟ้า = เปิดรับ
+            } else {
+                $color = '#94a3b8'; // เทา = อื่นๆ
+            }
+
+            return [
+                'id'             => $act->id,
+                'title'          => $act->title,
+                'start'          => $act->activity_date->format('Y-m-d') . 'T' . ($act->start_time ?? '08:00'),
+                'end'            => $act->activity_date->format('Y-m-d') . 'T' . ($act->end_time ?? '17:00'),
+                'color'          => $color,
+                'url'            => route('activities.show', $act->id),
+                'extendedProps'  => [
+                    'location'      => $act->location,
+                    'hours'         => $act->activity_hours,
+                    'category'      => $act->category->name ?? '-',
+                    'status'        => $act->computed_status,
+                    'is_registered' => $isRegistered,
+                    'is_checked_in' => $isCheckedIn,
+                    'needs_feedback'=> $needsFeedback,
+                ],
+            ];
+        });
+
+        return response()->json($events->values());
+    }
+
+    /**
+     * JSON endpoint: รายการแจ้งเตือนสำหรับ navbar/banner
+     * ส่งกลับ array ของ notifications
+     */
+    public function notifications()
+    {
+        $userId = auth()->id();
+        $alerts = collect();
+
+        $registrations = Registration::with('activity')
+            ->where('user_id', $userId)
+            ->where('status', 'approved')
+            ->get();
+
+        $attendanceIds = Attendance::where('user_id', $userId)
+            ->where('status', 'approved')
+            ->pluck('activity_id')
+            ->toArray();
+
+        $feedbackDoneIds = ActivityFeedback::where('user_id', $userId)
+            ->pluck('activity_id')
+            ->toArray();
+
+        foreach ($registrations as $reg) {
+            $act = $reg->activity;
+            if (!$act) continue;
+
+            $att = Attendance::where('user_id', $userId)
+                ->where('activity_id', $act->id)
+                ->first();
+
+            $checkinOpen = $act->allow_early_checkin ||
+                (now() >= $act->checkin_open_at && now() <= $act->checkin_close_at);
+
+            if (!$att && $checkinOpen) {
+                $alerts->push([
+                    'type'    => 'checkin_open',
+                    'title'   => 'เช็คอินได้แล้ว!',
+                    'body'    => $act->title,
+                    'url'     => route('activities.show', $act->id),
+                    'icon'    => '🟢',
+                ]);
+            } elseif (!$att && $act->checkin_open_at &&
+                now()->diffInMinutes($act->checkin_open_at, false) > 0 &&
+                now()->diffInMinutes($act->checkin_open_at, false) <= 60) {
+                $alerts->push([
+                    'type'    => 'checkin_soon',
+                    'title'   => 'เช็คอินเปิดใน ' . now()->diffForHumans($act->checkin_open_at, true),
+                    'body'    => $act->title,
+                    'url'     => route('activities.show', $act->id),
+                    'icon'    => '🔔',
+                ]);
+            }
+
+            // รอประเมิน
+            if ($att && $att->status === 'approved' &&
+                in_array($act->computed_status, ['done']) &&
+                !in_array($act->id, $feedbackDoneIds)) {
+                $alerts->push([
+                    'type'  => 'feedback',
+                    'title' => 'รอประเมินกิจกรรม',
+                    'body'  => $act->title,
+                    'url'   => route('feedback.create', $act->id),
+                    'icon'  => '⭐',
+                ]);
+            }
+        }
+
+        return response()->json(['alerts' => $alerts->values()]);
+    }
+
     /** ดาวน์โหลด PDF ใบแสดงผลการเข้าร่วมกิจกรรม */
     public function downloadPdf(ActivitySummaryService $summaryService)
     {
@@ -93,21 +378,17 @@ class StudentController extends Controller
         // Normalize Unicode สำหรับแก้ปัญหาสระซ้อนใน PDF
         $normalizeText = function($text) {
             if (!$text) return $text;
-            // แปลง Unicode เป็น NFC (Canonical Decomposition + Canonical Composition)
             return \Normalizer::normalize($text, \Normalizer::FORM_C) ?: $text;
         };
 
-        // Normalize ข้อมูลผู้ใช้
-        $user->full_name = $normalizeText($user->full_name);
-        $user->faculty = $normalizeText($user->faculty);
-        $user->department = $normalizeText($user->department);
+        $user->full_name   = $normalizeText($user->full_name);
+        $user->faculty     = $normalizeText($user->faculty);
+        $user->department  = $normalizeText($user->department);
 
-        // Normalize ข้อมูลหมวดหมู่
         foreach ($summaryData['byCategory'] as &$category) {
             $category['name'] = $normalizeText($category['name']);
         }
 
-        // Normalize ข้อมูลกิจกรรม
         foreach ($attendances as $attendance) {
             $attendance->activity->title = $normalizeText($attendance->activity->title);
             if ($attendance->activity->category) {
