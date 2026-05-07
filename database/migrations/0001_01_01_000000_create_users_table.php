@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('faculty', 100)->nullable();
             $table->string('department', 100)->nullable();
             $table->tinyInteger('year')->nullable();
-            $table->enum('role', ['student', 'staff'])->default('student');
+            $table->enum('role', ['student', 'staff', 'admin'])->default('student');
             $table->boolean('is_active')->default(true);
             $table->rememberToken();
             $table->timestamps();

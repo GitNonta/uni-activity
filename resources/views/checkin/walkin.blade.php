@@ -352,7 +352,8 @@
         </form>
     </div>
 
-    {{-- รายชื่อผู้เข้าร่วมแบบเรียลไทม์ --}}
+    {{-- รายชื่อผู้เข้าร่วมแบบเรียลไทม์ (แสดงเฉพาะ Staff/Admin) --}}
+    @if(auth()->check() && (auth()->user()->isStaff() || auth()->user()->isAdmin()))
     <div class="attendees-section">
         <div class="attendees-header">
             <h2><span class="live-dot"></span> ผู้เข้าร่วมกิจกรรม</h2>
@@ -373,6 +374,7 @@
             @endforelse
         </ul>
     </div>
+    @endif
 </div>
 
 {{-- Feedback Popup --}}
@@ -540,17 +542,24 @@ let autoCloseTimer = setTimeout(() => {
 @endif
 
 <script>
-// Auto-refresh รายชื่อทุก 5 วินาที
+@if(auth()->check() && (auth()->user()->isStaff() || auth()->user()->isAdmin()))
+// Auto-refresh รายชื่อทุก 5 วินาที สำหรับ Admin/Staff
 var refreshUrl = "{{ route('checkin.walkin.attendees', $token) }}";
 var refreshInterval = 5000;
 
 function refreshAttendees() {
     fetch(refreshUrl)
-        .then(function(res) { return res.json(); })
+        .then(function(res) { 
+            if(res.status === 403) throw new Error('Unauthorized');
+            return res.json(); 
+        })
         .then(function(data) {
-            document.getElementById('attendeeCount').textContent = data.count + ' คน';
+            var countEl = document.getElementById('attendeeCount');
+            if (countEl) countEl.textContent = data.count + ' คน';
 
             var list = document.getElementById('attendeeList');
+            if(!list) return;
+            
             if (data.attendances.length === 0) {
                 list.innerHTML = '<li class="empty-attendees" id="emptyMsg">ยังไม่มีผู้เข้าร่วม</li>';
                 return;
@@ -575,22 +584,26 @@ function refreshAttendees() {
 }
 
 function escapeHtml(text) {
+    if (!text) return '';
     var div = document.createElement('div');
     div.appendChild(document.createTextNode(text));
     return div.innerHTML;
 }
 
 setInterval(refreshAttendees, refreshInterval);
+@endif
 
 // หลังส่งฟอร์มสำเร็จ ให้เคลียร์ช่องกรอก และ focus กลับ
 document.addEventListener('DOMContentLoaded', function() {
     var input = document.getElementById('student_id');
     @if(session('success'))
         input.value = '';
-        // Refresh attendees list immediately after successful check-in
+        @if(auth()->check() && (auth()->user()->isStaff() || auth()->user()->isAdmin()))
+        // Refresh attendees list immediately after successful check-in (only for staff)
         setTimeout(function() {
-            refreshAttendees();
+            if(typeof refreshAttendees === 'function') refreshAttendees();
         }, 500);
+        @endif
     @endif
     input.focus();
     input.select();

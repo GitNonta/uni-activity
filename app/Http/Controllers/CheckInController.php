@@ -24,12 +24,20 @@ class CheckInController extends Controller
     {
         $activity = Activity::where('qr_token', $token)->firstOrFail();
 
+        if ($activity->qr_expires_at && now()->gt($activity->qr_expires_at)) {
+            abort(403, 'QR Code หมดอายุแล้ว');
+        }
+
         return view('checkin.scan', compact('activity', 'token'));
     }
 
     /** ดำเนินการเช็คอินผ่าน QR Code → เรียก CheckInService พร้อมพิกัด GPS */
     public function store(Request $request, string $token)
     {
+        $activity = Activity::where('qr_token', $token)->firstOrFail();
+        if ($activity->qr_expires_at && now()->gt($activity->qr_expires_at)) {
+            return back()->with('error', 'QR Code หมดอายุแล้ว');
+        }
         $result = $this->checkInService->processCheckIn(
             $token,
             $request->user(),
@@ -53,6 +61,10 @@ class CheckInController extends Controller
     public function selfCheckIn(Request $request, $activityId)
     {
         $activity = Activity::findOrFail($activityId);
+        
+        if ($activity->qr_expires_at && now()->gt($activity->qr_expires_at)) {
+            return back()->with('error', 'ระบบเช็คอินปิดรับแล้ว (Token หมดอายุ)');
+        }
 
         $result = $this->checkInService->processCheckIn(
             $activity->qr_token,
@@ -77,6 +89,10 @@ class CheckInController extends Controller
     {
         $activity = Activity::where('qr_token', $token)->firstOrFail();
 
+        if ($activity->qr_expires_at && now()->gt($activity->qr_expires_at)) {
+            abort(403, 'QR Code หมดอายุแล้ว');
+        }
+
         $attendances = Attendance::with('user')
             ->where('activity_id', $activity->id)
             ->orderByDesc('checked_in_at')
@@ -93,6 +109,10 @@ class CheckInController extends Controller
         ]);
 
         $activity = Activity::where('qr_token', $token)->firstOrFail();
+        
+        if ($activity->qr_expires_at && now()->gt($activity->qr_expires_at)) {
+            return back()->with('error', 'QR Code หมดอายุแล้ว')->withInput();
+        }
 
         $now = now();
         if (!$activity->allow_early_checkin && $now->lt($activity->checkin_open_at)) {
@@ -138,6 +158,10 @@ class CheckInController extends Controller
     /** API: ดึงรายชื่อผู้เข้าร่วมกิจกรรม walk-in แบบ real-time (JSON) */
     public function walkInAttendees(string $token)
     {
+        if (!auth()->check() || (!auth()->user()->isStaff() && !auth()->user()->isAdmin())) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
         $activity = Activity::where('qr_token', $token)->firstOrFail();
 
         $attendances = Attendance::with('user')

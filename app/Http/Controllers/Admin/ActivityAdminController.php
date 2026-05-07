@@ -459,4 +459,32 @@ class ActivityAdminController extends Controller
         ]);
     }
 
+    /** 
+     * สร้าง QR Code ใหม่ (Regenerate QR Token) และตั้งเวลาหมดอายุ (ถ้ามีการกำหนด)
+     */
+    public function regenerateQr(Request $request, $id, QrCodeService $qrService)
+    {
+        $activity = Activity::findOrFail($id);
+        
+        $request->validate([
+            'expires_in_hours' => 'nullable|integer|min:1|max:720'
+        ]);
+
+        $oldToken = $activity->qr_token;
+        $newToken = $qrService->generateToken();
+        
+        $expiresAt = null;
+        if ($request->filled('expires_in_hours')) {
+            $expiresAt = now()->addHours($request->expires_in_hours);
+        }
+
+        $activity->update([
+            'qr_token' => $newToken,
+            'qr_expires_at' => $expiresAt
+        ]);
+
+        $this->auditUpdate($activity, ['qr_token' => $oldToken], "สร้าง QR Code ใหม่สำหรับกิจกรรม \"{$activity->title}\"");
+
+        return back()->with('success', 'สร้าง QR Code ใหม่สำเร็จแล้ว' . ($expiresAt ? ' (หมดอายุใน ' . $request->expires_in_hours . ' ชั่วโมง)' : ''));
+    }
 }

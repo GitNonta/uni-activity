@@ -137,6 +137,9 @@ Route::middleware(['auth', 'role:staff'])->prefix('admin')->name('admin.')->grou
     // ── AJAX: approve/reject จาก Dashboard unified queue ──
     Route::post('quick-approve', [ActivityAdminController::class, 'quickApprove'])->name('quick.approve');
     Route::post('quick-reject', [ActivityAdminController::class, 'quickReject'])->name('quick.reject');
+    
+    // ── QR Code ──
+    Route::post('activities/{id}/regenerate-qr', [ActivityAdminController::class, 'regenerateQr'])->name('activities.regenerate-qr');
 
     // ── ประกาศ ──
     Route::resource('announcements', AnnouncementAdminController::class);
