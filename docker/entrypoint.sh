@@ -42,10 +42,9 @@ if [ -z "$APP_KEY" ] || [ "$APP_KEY" = "" ]; then
     php artisan key:generate --force
 fi
 
-# ── Clear cached config so new env vars take effect ──
-php artisan config:clear
-php artisan route:clear
-php artisan view:clear
+# ── Clear everything for a fresh start ──
+echo "Clearing caches..."
+php artisan optimize:clear
 
 # ── Wait for MySQL to be ready ──
 echo "Waiting for MySQL..."
@@ -58,13 +57,21 @@ until php artisan db:monitor --databases=mysql 2>/dev/null || [ $COUNT -ge $MAX_
 done
 
 # ── Run migrations ──
-php artisan migrate --force --no-interaction || echo "WARNING: Migration failed, continuing..."
+echo "Running migrations..."
+php artisan migrate --force --no-interaction
 
-# ── Re-cache for production (skip view cache if it fails) ──
-php artisan config:cache || echo "WARNING: Config cache failed"
-php artisan route:cache || echo "WARNING: Route cache failed"
-# Skip view cache as it may fail with missing components
-# php artisan view:cache
+# ── Environment specific setup ──
+if [ "$APP_ENV" = "production" ]; then
+    echo "Caching for production..."
+    php artisan config:cache
+    php artisan route:cache
+    php artisan view:cache
+else
+    echo "Skipping cache for $APP_ENV environment (Real-time mode enabled)"
+fi
+
+# ── Restart Queue Worker ──
+php artisan queue:restart || true
 
 # ── Fix permissions ──
 chown -R www-data:www-data \
