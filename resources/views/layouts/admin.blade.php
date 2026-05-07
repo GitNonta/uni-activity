@@ -128,13 +128,21 @@
 }
 
 .sb-sidebar.collapsed .sidebar-brand::after {
-    content: 'UA'; /* Short name when collapsed */
+    content: 'UA'; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-radius: 12px;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 800;
+    box-shadow: 0 4px 12px rgba(99,102,241,0.2);
 }
 .sb-sidebar.collapsed .sidebar-brand {
-    font-size: 0; /* Hide full text */
-}
-.sb-sidebar.collapsed .sidebar-brand::after {
-    font-size: 1.2rem;
+    font-size: 0; 
 }
 
 /* ── Sidebar Footer ── */
@@ -202,10 +210,37 @@
     border-bottom: 1px solid #e5e7eb; 
     display: flex; 
     align-items: center; 
-    padding: 0 32px; 
+    padding: 0 24px; 
     gap: 16px; 
     position: sticky; top: 0; z-index: 100; 
 }
+
+.sb-toggle-btn {
+    background: #f3f4f6;
+    border: none;
+    cursor: pointer;
+    color: #4b5563;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    transition: all .2s;
+}
+.sb-toggle-btn:hover {
+    background: #e5e7eb;
+    color: #111827;
+    transform: scale(1.05);
+}
+
+.sb-page-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #111827;
+    letter-spacing: -0.025em;
+}
+
 .sb-main { padding: 32px; max-width: 1400px; margin: 0 auto; }
 
 /* Mobile */
@@ -316,8 +351,10 @@
 
     <div class="sb-content" id="sbContent">
         <div class="sb-topbar">
-            <button onclick="toggleSidebar()">☰</button>
-            <span>@yield('title', 'Dashboard')</span>
+            <button onclick="toggleSidebar()" class="sb-toggle-btn">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+            <span class="sb-page-title">@yield('title', 'Dashboard')</span>
         </div>
         <div class="sb-main">
             @yield('content')
