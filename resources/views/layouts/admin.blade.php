@@ -17,46 +17,178 @@
 
 /* ════════════════════════════
    SIDEBAR LAYOUT
-════════════════════════════ */
-.sb-shell { display: flex; min-height: 100vh; }
-.sb-sidebar { width: 240px; background: #1e293b; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 300; transition: width .2s cubic-bezier(.4,0,.2,1); overflow: hidden; }
-.sb-sidebar.collapsed { width: 64px; }
-.sidebar-brand { height: 60px; display: flex; align-items: center; padding: 0 16px; color: #fff; font-weight: 700; white-space: nowrap; overflow: hidden; }
+   ════════════════════════════ */
+.sb-shell { display: flex; min-height: 100vh; background: #f8fafc; }
+.sb-sidebar { 
+    width: 260px; 
+    background: #111827; /* Darker, more modern navy */
+    display: flex; 
+    flex-direction: column; 
+    position: fixed; 
+    top: 0; left: 0; bottom: 0; 
+    z-index: 300; 
+    transition: all .3s cubic-bezier(.4,0,.2,1); 
+    overflow: hidden;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.05);
+}
+.sb-sidebar.collapsed { width: 80px; }
 
-/* Submenu Styles */
-.sb-has-submenu { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; cursor: pointer; color: #94a3b8; font-size: 13.5px; transition: all .2s; }
-.sb-has-submenu:hover { color: #e2e8f0; }
-.sb-chevron { width: 14px; height: 14px; transition: transform .3s; }
-.sb-has-submenu.open .sb-chevron { transform: rotate(90deg); }
-.sb-submenu { overflow: hidden; max-height: 0; transition: max-height .3s ease-out; background: rgba(0,0,0,0.1); }
-.sb-submenu-item { display: block; padding: 8px 14px 8px 40px; color: #94a3b8; font-size: 13px; text-decoration: none; }
-.sb-submenu-item:hover, .sb-submenu-item.active { color: #a5b4fc; }
+.sidebar-brand { 
+    height: 70px; 
+    display: flex; 
+    align-items: center; 
+    padding: 0 24px; 
+    color: #fff; 
+    font-weight: 800; 
+    font-size: 1.1rem;
+    letter-spacing: -0.025em;
+    white-space: nowrap; 
+    overflow: hidden;
+    background: rgba(255,255,255,0.02);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
 
-/* Nav */
-.sb-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 10px 8px; display: flex; flex-direction: column; gap: 2px; }
-.sb-section-label { font-size: 10px; font-weight: 600; color: #475569; text-transform: uppercase; padding: 8px; margin-top: 10px; }
-.sb-link { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 999px; color: #94a3b8; font-size: 13.5px; font-weight: 500; text-decoration: none; transition: all .2s; white-space: nowrap; }
-.sb-link:hover { background: rgba(255,255,255,.07); color: #e2e8f0; }
-.sb-link.active { background: rgba(99,102,241,.18); color: #a5b4fc; }
-.sb-link svg { width: 18px; height: 18px; flex-shrink: 0; }
-.sb-sidebar.collapsed .sb-link-text, .sb-sidebar.collapsed .sb-section-label, .sb-sidebar.collapsed .sb-has-submenu, .sb-sidebar.collapsed .sb-submenu { display: none; }
+/* Custom Slim Scrollbar */
+.sb-nav::-webkit-scrollbar { width: 5px; }
+.sb-nav::-webkit-scrollbar-track { background: transparent; }
+.sb-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+.sb-nav::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+.sb-nav { 
+    flex: 1; 
+    overflow-y: auto; 
+    overflow-x: hidden; 
+    padding: 20px 12px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 4px; 
+}
+
+.sb-section-label { 
+    font-size: 10px; 
+    font-weight: 700; 
+    color: #4b5563; 
+    text-transform: uppercase; 
+    letter-spacing: 0.1em;
+    padding: 12px 12px 6px; 
+}
+
+.sb-link { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    padding: 12px 16px; 
+    border-radius: 12px; 
+    color: #9ca3af; 
+    font-size: 14px; 
+    font-weight: 500; 
+    text-decoration: none; 
+    transition: all .2s; 
+    white-space: nowrap; 
+}
+
+.sb-link:hover { 
+    background: rgba(255,255,255,0.05); 
+    color: #f3f4f6; 
+}
+
+.sb-link.active { 
+    background: linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(139,92,246,0.15) 100%);
+    color: #a5b4fc; 
+    box-shadow: inset 0 0 0 1px rgba(99,102,241,0.2);
+}
+
+.sb-link svg { 
+    width: 20px; 
+    height: 20px; 
+    flex-shrink: 0; 
+    transition: transform .2s;
+}
+
+.sb-link:hover svg { transform: translateX(2px); }
+
+.sb-sidebar.collapsed .sb-link-text, 
+.sb-sidebar.collapsed .sb-section-label { 
+    opacity: 0; visibility: hidden; 
+}
+
+/* ── Sidebar Footer ── */
+.sb-footer { 
+    padding: 16px 12px; 
+    border-top: 1px solid rgba(255,255,255,0.05);
+    background: rgba(0,0,0,0.1);
+}
+.sb-user { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    padding: 10px; 
+    border-radius: 12px; 
+    transition: all .2s;
+    background: rgba(255,255,255,0.03);
+    text-decoration: none;
+}
+.sb-user:hover { 
+    background: rgba(255,255,255,0.06); 
+}
+.sb-avatar { 
+    width: 36px; height: 36px; 
+    background: linear-gradient(135deg, #6366f1, #8b5cf6); 
+    border-radius: 10px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    color: #fff; 
+    font-size: 14px; 
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+}
+.sb-user-info { flex: 1; min-width: 0; }
+.sb-user-name { 
+    font-size: 13px; font-weight: 600; color: #f3f4f6; 
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+}
+.sb-user-role { font-size: 11px; color: #6b7280; }
+
+.sb-logout-btn { 
+    background: none; border: none; cursor: pointer; color: #6b7280; 
+    padding: 6px; display: flex; align-items: center; justify-content: center; 
+    border-radius: 8px; transition: all .2s; 
+}
+.sb-logout-btn:hover { color: #f43f5e; background: rgba(244,63,94,0.1); }
+
+.sb-sidebar.collapsed .sb-user-info, 
+.sb-sidebar.collapsed .sb-logout-btn { 
+    display: none; 
+}
+.sb-sidebar.collapsed .sb-user { justify-content: center; padding: 10px 0; }
 
 /* Mobile Sidebar Overlay */
-.sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 250; display: none; }
+.sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 250; display: none; }
 .sidebar-overlay.open { display: block; }
 
 /* ── Content ── */
-.sb-content { flex: 1; margin-left: 240px; min-height: 100vh; transition: margin-left .2s cubic-bezier(.4,0,.2,1); background: #f8fafc; }
-.sb-content.collapsed { margin-left: 64px; }
-.sb-topbar { height: 60px; background: #fff; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; padding: 0 24px; gap: 12px; position: sticky; top: 0; z-index: 100; }
-.sb-main { padding: 24px 28px; }
+.sb-content { flex: 1; margin-left: 260px; min-height: 100vh; transition: margin-left .3s ease; }
+.sb-content.collapsed { margin-left: 80px; }
+.sb-topbar { 
+    height: 70px; 
+    background: rgba(255,255,255,0.8); 
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid #e5e7eb; 
+    display: flex; 
+    align-items: center; 
+    padding: 0 32px; 
+    gap: 16px; 
+    position: sticky; top: 0; z-index: 100; 
+}
+.sb-main { padding: 32px; max-width: 1400px; margin: 0 auto; }
 
 /* Mobile */
 @media (max-width: 768px) {
-    .sb-sidebar { left: -240px; transition: left 0.3s ease; }
+    .sb-sidebar { left: -260px; transition: left 0.3s ease; }
     .sb-sidebar.mobile-open { left: 0; }
     .sb-content { margin-left: 0 !important; }
-    .admin-mobile-header { display: flex; align-items: center; justify-content: space-between; background: #1e293b; color: #fff; padding: 0 1.25rem; height: 64px; }
+    .admin-mobile-header { display: flex; align-items: center; justify-content: space-between; background: #111827; color: #fff; padding: 0 1.25rem; height: 64px; }
     .sb-topbar { display: none; }
 }
 @media (min-width: 769px) { .admin-mobile-header { display: none !important; } }
@@ -136,21 +268,21 @@
         </nav>
 
         {{-- Sidebar Footer --}}
-        <div class="sb-footer" style="padding: 10px 8px; border-top: 1px solid rgba(255,255,255,.07);">
-            <div class="sb-user" style="display:flex; align-items:center; gap:8px; padding:8px; border-radius:8px; transition: background .15s;">
-                <a href="{{ route('admin.profile.edit') }}" style="display:flex; align-items:center; gap:10px; flex:1; text-decoration:none;">
-                    <div style="width:32px; height:32px; background:linear-gradient(135deg, #6366f1, #8b5cf6); border-radius:8px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px; font-weight:700;">
+        <div class="sb-footer">
+            <div class="sb-user">
+                <a href="{{ route('admin.profile.edit') }}" class="sb-user" style="padding:0; background:none; flex:1;">
+                    <div class="sb-avatar">
                         {{ strtoupper(substr(auth()->user()->full_name ?? 'A', 0, 1)) }}
                     </div>
-                    <div class="sb-link-text" style="flex:1; min-width:0;">
-                        <div style="font-size:12px; font-weight:600; color:#e2e8f0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ auth()->user()->full_name ?? 'User' }}</div>
-                        <div style="font-size:10px; color:#64748b;">{{ auth()->user()->isAdmin() ? 'Administrator' : 'Staff' }}</div>
+                    <div class="sb-user-info sb-link-text">
+                        <div class="sb-user-name">{{ auth()->user()->full_name ?? 'User' }}</div>
+                        <div class="sb-user-role">{{ auth()->user()->isAdmin() ? 'Administrator' : 'Staff' }}</div>
                     </div>
                 </a>
-                <form method="POST" action="{{ route('admin.logout') }}" style="margin:0;">
+                <form method="POST" action="{{ route('admin.logout') }}" class="sb-logout-btn">
                     @csrf
-                    <button type="submit" style="background:none; border:none; cursor:pointer; color:#64748b; padding:4px; display:flex; align-items:center; justify-content:center; border-radius:6px; transition:color .15s;">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    <button type="submit" class="sb-logout-btn" style="padding:0;">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                     </button>
                 </form>
             </div>
