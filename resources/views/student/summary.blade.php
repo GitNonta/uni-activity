@@ -22,14 +22,27 @@
 <h2 class="font-bold mb-2">ชั่วโมงแยกตามหมวดหมู่</h2>
 @foreach($byCategory as $cat)
     <div class="card mb-2">
-        <div class="card-body">
-            <div class="flex justify-between text-sm mb-1">
-                <span class="font-semi">{{ $cat['name'] }}</span>
-                <span>{{ number_format($cat['hours'], 1) }}/{{ $cat['required'] }} ชม.</span>
+        <div class="card-body" style="padding:.75rem 1rem;">
+            @php $p = $cat['required'] > 0 ? min(100, ($cat['hours']/$cat['required'])*100) : 0; @endphp
+            <div class="flex justify-between items-center mb-2">
+                <span class="font-semi text-sm">{{ $cat['name'] }}</span>
+                <span class="text-xs font-bold" style="background:#f1f5f9; padding:.15rem .4rem; border-radius:4px; color:#475569;">
+                    {{ number_format($p, 0) }}%
+                </span>
             </div>
-            <div class="progress">
-                @php $p = $cat['required'] > 0 ? min(100, ($cat['hours']/$cat['required'])*100) : 0; @endphp
-                <div class="progress-bar {{ $p >= 100 ? 'green' : ($p >= 50 ? 'yellow' : 'primary') }}" style="width:{{ $p }}%"></div>
+            <div class="progress" style="height: 10px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin-bottom: .4rem;">
+                <div class="progress-bar {{ $p >= 100 ? 'green' : ($p >= 50 ? 'yellow' : 'primary') }}" style="width:{{ $p }}%; height: 100%; transition: width 0.5s ease;"></div>
+            </div>
+            <div class="flex justify-between items-center">
+                @if($p >= 100)
+                    <p class="text-xs font-semi" style="color:#16a34a;">✓ ผ่านเกณฑ์ขั้นต่ำ</p>
+                @else
+                    <p class="text-xs text-muted">ต้องการอีก <span style="font-weight:600; color:#ef4444;">{{ number_format($cat['required'] - $cat['hours'], 1) }}</span> ชม.</p>
+                @endif
+                <span class="text-sm">
+                    <span style="color:{{ $p >= 100 ? '#16a34a' : '#1e40af' }};font-weight:700;">{{ number_format($cat['hours'], 1) }}</span>
+                    <span class="text-muted">/{{ number_format($cat['required'], 0) }} ชม.</span>
+                </span>
             </div>
         </div>
     </div>

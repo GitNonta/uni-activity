@@ -53,7 +53,7 @@ class StudentController extends Controller
 
         $registrations = Registration::with('activity.category')
             ->where('user_id', $userId)
-            ->whereIn('status', ['pending', 'approved'])
+            ->whereIn('status', ['pending', 'approved', 'waitlisted'])
             ->orderByDesc('registered_at')
             ->get();
 
@@ -228,7 +228,7 @@ class StudentController extends Controller
 
         // กิจกรรมที่ลงทะเบียนแล้ว
         $registeredIds = Registration::where('user_id', $userId)
-            ->whereIn('status', ['pending', 'approved'])
+            ->whereIn('status', ['pending', 'approved', 'waitlisted'])
             ->pluck('activity_id')
             ->toArray();
 

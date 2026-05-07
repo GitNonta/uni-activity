@@ -147,25 +147,40 @@
     <div class="card mb-2" style="{{ (!$att && $reg->status === 'approved' && $checkinOpen) ? 'border-left:3px solid #16a34a;' : '' }}">
         <div class="card-body flex items-center justify-between gap-4">
             <div style="flex:1;min-width:0;">
-                <div class="flex items-center gap-2 mb-1" style="flex-wrap:wrap;">
+                <div class="flex items-center gap-2 mb-1">
                     @include('components.status-badge', ['status' => $status])
-                    @php
-                        $sc = ['pending'=>'badge-yellow','approved'=>'badge-green','cancelled'=>'badge-gray','rejected'=>'badge-red'];
-                        $sl = ['pending'=>'รออนุมัติ','approved'=>'ลงทะเบียนแล้ว','cancelled'=>'ยกเลิก','rejected'=>'ปฏิเสธ'];
-                    @endphp
-                    <span class="badge {{ $sc[$reg->status] ?? 'badge-gray' }}" style="font-size:.72rem;">{{ $sl[$reg->status] ?? $reg->status }}</span>
-                    @if($att && $att->status === 'approved')
-                        <span class="badge badge-green" style="font-size:.72rem;">✓ เช็คอินแล้ว</span>
-                    @elseif($att && $att->status === 'pending')
-                        <span class="badge badge-yellow" style="font-size:.72rem;">รอยืนยันเช็คอิน</span>
-                    @endif
                 </div>
-                <h3 class="font-semi line-clamp-1">{{ $reg->activity->title }}</h3>
-                <p class="text-xs text-muted mt-1">
+                <h3 class="font-semi line-clamp-1" style="font-size:1.05rem; margin-bottom:.2rem;">{{ $reg->activity->title }}</h3>
+                <p class="text-xs text-muted mb-3">
                     📅 {{ $reg->activity->activity_date->format('d/m/Y') }}
                     · ⏰ {{ $reg->activity->start_time }} – {{ $reg->activity->end_time }}
                     · 📍 {{ $reg->activity->location }}
                 </p>
+                
+                {{-- Statuses separated --}}
+                <div class="flex gap-4 items-center bg-gray-50 p-2 rounded-lg" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:.5rem .75rem; display:inline-flex;">
+                    <div>
+                        <span class="text-[0.65rem] text-slate-500 uppercase tracking-wider block mb-1 font-semibold" style="font-size:.65rem; color:#64748b; margin-bottom:.15rem; font-weight:700;">สถานะลงทะเบียน</span>
+                        @php
+                            $sc = ['pending'=>'badge-yellow','approved'=>'badge-green','cancelled'=>'badge-gray','rejected'=>'badge-red', 'waitlisted'=>'badge-yellow'];
+                            $sl = ['pending'=>'รออนุมัติ','approved'=>'สำเร็จ','cancelled'=>'ยกเลิก','rejected'=>'ปฏิเสธ', 'waitlisted'=>'Waitlist (รอคิว)'];
+                        @endphp
+                        <span class="badge {{ $sc[$reg->status] ?? 'badge-gray' }}" style="font-size:.75rem; padding:.2rem .5rem;">{{ $sl[$reg->status] ?? $reg->status }}</span>
+                    </div>
+                    
+                    <div style="width:1px; height:24px; background:#cbd5e1; margin:0 .25rem;"></div>
+                    
+                    <div>
+                        <span class="text-[0.65rem] text-slate-500 uppercase tracking-wider block mb-1 font-semibold" style="font-size:.65rem; color:#64748b; margin-bottom:.15rem; font-weight:700;">สถานะเข้าร่วม</span>
+                        @if($att && $att->status === 'approved')
+                            <span class="badge badge-green" style="font-size:.75rem; padding:.2rem .5rem;">✓ เช็คอินแล้ว</span>
+                        @elseif($att && $att->status === 'pending')
+                            <span class="badge badge-yellow" style="font-size:.75rem; padding:.2rem .5rem;">รอยืนยัน</span>
+                        @else
+                            <span class="badge badge-gray" style="font-size:.75rem; padding:.2rem .5rem; background:#f1f5f9; color:#94a3b8; border:1px solid #e2e8f0;">ยังไม่เช็คอิน</span>
+                        @endif
+                    </div>
+                </div>
             </div>
             <div class="flex gap-1" style="flex-shrink:0;flex-direction:column;align-items:flex-end;">
                 {{-- QR Pass button --}}
