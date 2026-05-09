@@ -22,7 +22,7 @@
                 $initial   = mb_strtoupper(mb_substr($label, 0, 1));
                 $avatarBg  = $mine ? '#4f46e5' : '#64748b';
             @endphp
-            <div id="cm-{{ $msg->_id }}"
+            <div id="cm-{{ $msg->id }}"
                  style="display:flex;flex-direction:{{ $mine ? 'row-reverse' : 'row' }};align-items:flex-end;gap:.4rem;">
                 {{-- Avatar --}}
                 @if($photoUrl)
@@ -99,10 +99,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
     const studentRoom = 'chat:student:' + USER_ID;
     const studentToken = '{{ \App\Services\SocketService::roomToken("chat:student:" . auth()->id()) }}';
-    const threadRoom = 'chat:thread:' + JOB_ID + ':' + USER_ID;
-    const threadToken = '{{ \App\Services\SocketService::roomToken("chat:thread:{$job->id}:" . auth()->id()) }}';
-    const typingRoom = 'chat:admin:' + JOB_ID;
-    const typingToken = '{{ \App\Services\SocketService::roomToken("chat:admin:{$job->id}") }}';
+    const threadRoom = 'chat:thread:' + '{{ $room->id }}';
+    const threadToken = '{{ \App\Services\SocketService::roomToken("chat:thread:{$room->id}") }}';
+    const typingRoom = 'chat:room:' + '{{ $room->id }}';
+    const typingToken = '{{ \App\Services\SocketService::roomToken("chat:room:{$room->id}") }}';
 
     const chatWindow = document.getElementById('chatWindow');
     const chatForm   = document.getElementById('chatForm');
@@ -248,32 +248,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ── Socket.io ──
-    if (typeof io !== 'undefined') {
-        const socket = io('{{ config('socket.public_url') }}');
-        socket.emit('join', { room: studentRoom, token: studentToken });
-        socket.emit('join', { room: threadRoom, token: threadToken });
-
-        let typingTimer;
-        socket.on('chat:message', (msg) => {
-            if (msg.job_id != JOB_ID) return;
-            if (msg.sender_id == USER_ID) return;
-            if (!document.getElementById('cm-' + msg.id)) {
-                renderBubble(msg, false);
-            }
-            fetch(readUrl, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken } });
-        });
-
-        socket.on('typing', ({ userId }) => {
-            if (userId == USER_ID) return;
-            typingLabel.style.display = 'block';
-            clearTimeout(typingTimer);
-            typingTimer = setTimeout(() => { typingLabel.style.display = 'none'; }, 3000);
-        });
+    // ── Laravel Echo (Reverb) ──
+    if (window.Echo) {
+        window.Echo.private('chat.room.' + '{{ $room->id }}')
+            .listen('MessageSent', (msg) => {
+                // Ignore our own messages
+                if (msg.sender_id == USER_ID) return;
+                
+                if (!document.getElementById('cm-' + msg.id)) {
+                    renderBubble(msg, false);
+                }
+                // Mark as read
+                fetch(readUrl, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken } });
+            })
+            .listenForWhisper('typing', (e) => {
+                typingLabel.style.display = 'block';
+                clearTimeout(window.typingTimer);
+                window.typingTimer = setTimeout(() => { typingLabel.style.display = 'none'; }, 3000);
+            });
 
         msgInput.addEventListener('input', () => {
-            socket.emit('typing', { toRoom: typingRoom, token: typingToken, userId: USER_ID,
-                name: '{{ addslashes(auth()->user()->full_name ?? '') }}' });
+            window.Echo.private('chat.room.' + '{{ $room->id }}')
+                .whisper('typing', {
+                    userId: USER_ID,
+                    name: '{{ addslashes(auth()->user()->full_name ?? '') }}'
+                });
         });
     }
 });

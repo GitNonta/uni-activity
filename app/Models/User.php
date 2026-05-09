@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Database\Factories\UserFactory;
+use App\Models\Room;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -116,5 +118,15 @@ class User extends Authenticatable
         } else {
             parent::sendPasswordResetNotification($token);
         }
+    }
+
+    /**
+     * The rooms that the user belongs to.
+     */
+    public function rooms(): BelongsToMany
+    {
+        return $this->belongsToMany(Room::class)
+            ->withPivot(['role', 'last_read_at', 'joined_at'])
+            ->withTimestamps();
     }
 }

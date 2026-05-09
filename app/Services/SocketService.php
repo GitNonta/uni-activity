@@ -2,25 +2,26 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
+use App\Events\ChatMessageEvent;
 use Illuminate\Support\Facades\Log;
 
 class SocketService
 {
+    /**
+     * สำหรับความเข้ากันได้กับระบบเดิม
+     */
     public static function roomToken(string $room): string
     {
-        return hash_hmac('sha256', $room, config('socket.secret'));
+        return hash_hmac('sha256', $room, config('app.key'));
     }
 
+    /**
+     * ส่งข้อมูลผ่าน Laravel Broadcasting (Reverb)
+     */
     public static function emit(string $room, string $event, array $data): void
     {
         try {
-            Http::timeout(2)->post(config('socket.server_url') . '/emit', [
-                'secret' => config('socket.secret'),
-                'room'   => $room,
-                'event'  => $event,
-                'data'   => $data,
-            ]);
+            broadcast(new ChatMessageEvent($room, $event, $data));
         } catch (\Exception $e) {
             Log::warning('SocketService::emit failed — ' . $e->getMessage());
         }

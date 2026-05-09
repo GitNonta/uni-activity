@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('registrations', function (Blueprint $table) {
-            $table->enum('status', ['pending', 'approved', 'cancelled', 'rejected', 'completed', 'waitlisted'])->default('pending')->change();
-        });
+        if (Schema::getConnection()->getDriverName() !== 'pgsql') {
+            Schema::table('registrations', function (Blueprint $table) {
+                $table->enum('status', ['pending', 'approved', 'cancelled', 'rejected', 'completed', 'waitlisted'])->default('pending')->change();
+            });
+        }
     }
 
     /**

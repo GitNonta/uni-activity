@@ -123,7 +123,7 @@ class CheckInController extends Controller
         }
 
         $user = User::where('student_id', $request->student_id)
-            ->where('role', 'student')
+            ->where('users.role', 'student')
             ->first();
 
         if (!$user) {

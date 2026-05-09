@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('activity_id')->constrained('activities');
             $table->timestamp('checked_in_at')->useCurrent();
-            $table->enum('method', ['qr_scan', 'self', 'manual'])->default('qr_scan');
+            $table->enum('method', ['qr_scan', 'self', 'manual', 'walk_in'])->default('qr_scan');
             $table->foreignId('verified_by')->nullable()->constrained('users')->nullOnDelete();
             $table->boolean('is_verified')->default(false);
             $table->string('ip_address', 45)->nullable();

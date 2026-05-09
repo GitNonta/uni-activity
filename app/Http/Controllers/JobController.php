@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\JobListing;
 use App\Models\JobApplication;
 use App\Models\JobComment;
-use App\Models\ChatMessage;
+use App\Models\Message;
+use App\Models\Room;
+use App\Repositories\ChatRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
@@ -15,6 +17,7 @@ use Illuminate\Validation\ValidationException;
  */
 class JobController extends Controller
 {
+    public function __construct(protected ChatRepository $chatRepository) {}
     /** แสดงรายการประกาศงานทั้งหมด (พร้อม filter/search/map) */
     public function index(Request $request)
     {
@@ -103,16 +106,16 @@ class JobController extends Controller
 
         $chatMessages = [];
         if (auth()->check()) {
-            $chatMessages = ChatMessage::where('job_id', $id)
-                ->where(function ($q) {
-                    $q->where('student_id', auth()->id())
-                      ->orWhere(function ($q2) {
-                          $q2->where('sender_role', 'student')
-                             ->where('sender_id', auth()->id());
-                      });
+            $userId = auth()->id();
+            $room = Room::where('job_id', $id)
+                ->whereHas('users', function ($q) use ($userId) {
+                    $q->where('users.id', $userId);
                 })
-                ->orderBy('created_at', 'asc')
-                ->get();
+                ->first();
+
+            if ($room) {
+                $chatMessages = $this->chatRepository->getRecentMessages($room);
+            }
         }
 
         return view('jobs.show', compact('job', 'comments', 'userApplication', 'chatMessages'));

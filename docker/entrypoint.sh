@@ -46,13 +46,13 @@ fi
 echo "Clearing caches..."
 php artisan optimize:clear
 
-# ── Wait for MySQL to be ready ──
-echo "Waiting for MySQL..."
+# ── Wait for PostgreSQL to be ready ──
+echo "Waiting for PostgreSQL..."
 MAX_TRIES=30
 COUNT=0
-until php artisan db:monitor --databases=mysql 2>/dev/null || [ $COUNT -ge $MAX_TRIES ]; do
+until php artisan db:monitor --databases=pgsql 2>/dev/null || [ $COUNT -ge $MAX_TRIES ]; do
     COUNT=$((COUNT + 1))
-    echo "  MySQL not ready (attempt $COUNT/$MAX_TRIES)..."
+    echo "  PostgreSQL not ready (attempt $COUNT/$MAX_TRIES)..."
     sleep 2
 done
 

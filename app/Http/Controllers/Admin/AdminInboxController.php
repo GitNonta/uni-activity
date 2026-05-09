@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\ChatMessage;
+use App\Models\Message;
+use App\Models\Room;
 use App\Models\JobListing;
 use App\Models\User;
-use App\Services\SocketService;
+use App\Repositories\ChatRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -14,113 +15,64 @@ use Illuminate\Support\Str;
 
 class AdminInboxController extends Controller
 {
+    public function __construct(protected ChatRepository $chatRepository) {}
     /** รายการกล่องข้อความ - กลุ่มตาม job + student */
     public function index()
     {
-        // Aggregate: distinct (job_id, student_id) threads, sorted by latest message
-        $rawThreads = ChatMessage::raw(function ($collection) {
-            return $collection->aggregate([
-                ['$sort' => ['created_at' => -1]],
-                ['$group' => [
-                    '_id'          => ['job_id' => '$job_id', 'student_id' => '$student_id'],
-                    'last_message' => ['$first' => '$message'],
-                    'last_time'    => ['$first' => '$created_at'],
-                    'sender_name'  => ['$first' => [
-                        '$cond' => [
-                            'if'   => ['$eq' => ['$sender_role', 'student']],
-                            'then' => '$sender_name',
-                            'else' => '$$REMOVE',
-                        ],
-                    ]],
-                    'unread' => ['$sum' => [
-                        '$cond' => [
-                            'if'   => ['$and' => [
-                                ['$eq'  => ['$sender_role', 'student']],
-                                ['$eq'  => ['$read_at', null]],
-                            ]],
-                            'then' => 1,
-                            'else' => 0,
-                        ],
-                    ]],
-                ]],
-                ['$match' => ['_id.student_id' => ['$ne' => null]]],
-                ['$sort'  => ['last_time' => -1]],
-            ]);
-        });
+        $rooms = Room::with(['messages' => function($q) {
+                $q->latest()->limit(1);
+            }, 'users' => function($q) {
+                $q->where('users.role', 'student');
+            }, 'job'])
+            ->orderByDesc(
+                Message::select('created_at')
+                    ->whereColumn('room_id', 'rooms.id')
+                    ->latest()
+                    ->limit(1)
+            )
+            ->get();
 
-        // Batch-load MySQL data to avoid N+1
-        $threadsArr = [];
-        foreach ($rawThreads as $t) {
-            $threadsArr[] = $t;
-        }
-        $threads = collect($threadsArr);
-        $jobIds       = $threads->pluck('_id.job_id')->unique()->filter()->values()->all();
-        $studentIds   = $threads->pluck('_id.student_id')->unique()->filter()->values()->all();
-
-        $jobs     = JobListing::whereIn('id', $jobIds)->get()->keyBy('id');
-        $students = User::whereIn('id', $studentIds)->get()->keyBy('id');
-
-        $result = $threads->map(function ($t) use ($jobs, $students) {
-            $jobId     = $t['_id']['job_id']     ?? null;
-            $studentId = $t['_id']['student_id'] ?? null;
-            $job       = $jobs->get($jobId);
-            $student   = $students->get($studentId);
-
+        $result = $rooms->map(function ($room) {
+            $lastMsg = $room->messages->first();
+            $student = $room->users->first();
+            
             return [
-                'job_id'       => $jobId,
-                'student_id'   => $studentId,
-                'job_title'    => $job?->title    ?? "งาน #{$jobId}",
-                'student_name'  => $student?->full_name ?? ($t['sender_name'] ?? 'นักศึกษา'),
+                'job_id'       => $room->job_id,
+                'room_id'      => $room->id,
+                'job_title'    => $room->job?->title ?? "งาน #{$room->job_id}",
+                'student_name'  => $student?->full_name ?? 'นักศึกษา',
                 'student_photo' => $student?->profile_photo ? asset('storage/' . $student->profile_photo) : null,
-                'last_message' => $t['last_message'] ?? '',
-                'last_time'    => isset($t['last_time'])
-                    ? \Carbon\Carbon::parse($t['last_time']->toDateTime())
-                    : null,
-                'unread'       => (int) ($t['unread'] ?? 0),
+                'last_message' => $lastMsg?->body ?? '',
+                'last_time'    => $lastMsg?->created_at,
+                'unread'       => $room->messages()
+                    ->where('user_id', '!=', Auth::id())
+                    ->where('created_at', '>', $room->users()->find(Auth::id())->pivot->last_read_at ?? '1970-01-01')
+                    ->count(),
             ];
         });
 
         return view('admin.inbox.index', ['threads' => $result]);
     }
 
-    /** แสดงการสนทนาระหว่าง admin กับ student คนหนึ่งสำหรับงานหนึ่ง */
     public function show(int $jobId, int $studentId)
     {
         $job     = JobListing::findOrFail($jobId);
         $student = User::findOrFail($studentId);
 
-        $messages = ChatMessage::where('job_id', $jobId)
-            ->where(function ($q) use ($studentId) {
-                $q->where('student_id', $studentId)
-                  ->orWhere(function ($q2) use ($studentId) {
-                      $q2->where('sender_role', 'student')
-                         ->where('sender_id', $studentId);
-                  });
+        $room = Room::where('job_id', $jobId)
+            ->whereHas('users', function ($q) use ($studentId) {
+                $q->where('users.id', $studentId);
             })
-            ->orderBy('created_at', 'asc')
-            ->get();
+            ->firstOrFail();
 
-        // Mark student messages as read immediately when admin opens chat
-        ChatMessage::where('job_id', $jobId)
-            ->where('student_id', $studentId)
-            ->where('sender_role', 'student')
-            ->whereNull('read_at')
-            ->update(['read_at' => now()]);
+        $messages = $this->chatRepository->getRecentMessages($room);
 
-        // Also match old messages without student_id field
-        ChatMessage::where('job_id', $jobId)
-            ->where('sender_id', $studentId)
-            ->where('sender_role', 'student')
-            ->whereNull('read_at')
-            ->update(['read_at' => now()]);
+        // Mark messages as read for admin
+        $room->users()->updateExistingPivot(Auth::id(), ['last_read_at' => now()]);
 
-        // Emit read status to student in real-time
-        SocketService::emit('chat:student:' . $studentId, 'chat:read', ['job_id' => $jobId]);
-
-        return view('admin.inbox.show', compact('job', 'student', 'messages'));
+        return view('admin.inbox.show', compact('job', 'student', 'messages', 'room'));
     }
 
-    /** Admin ส่งข้อความในการสนทนานั้น */
     public function send(Request $request, int $jobId, int $studentId)
     {
         $request->validate([
@@ -133,38 +85,15 @@ class AdminInboxController extends Controller
             return response()->json(['error' => 'กรุณาพิมพ์ข้อความหรือแนบไฟล์'], 422);
         }
 
-        $attachments = [];
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-                $path     = $file->storeAs('chat', $filename, 'public');
-                $attachments[] = [
-                    'filename'      => $filename,
-                    'original_name' => $file->getClientOriginalName(),
-                    'mime_type'     => $file->getMimeType(),
-                    'size'          => $file->getSize(),
-                    'url'           => Storage::url($path),
-                ];
-            }
-        }
+        $room = Room::where('job_id', $jobId)
+            ->whereHas('users', function ($q) use ($studentId) {
+                $q->where('users.id', $studentId);
+            })
+            ->firstOrFail();
 
-        $msg = ChatMessage::create([
-            'job_id'      => $jobId,
-            'sender_id'   => Auth::id(),
-            'sender_role' => 'admin',
-            'sender_name'  => Auth::user()->full_name ?? Auth::user()->name ?? 'ผู้ดูแล',
-            'sender_photo' => Auth::user()->profile_photo ? asset('storage/' . Auth::user()->profile_photo) : null,
-            'student_id'   => $studentId,
-            'message'     => $request->message ?? '',
-            'attachments' => $attachments,
-        ]);
+        $msg = $this->chatRepository->sendMessage($room, Auth::user(), $request->message ?? '');
 
         $formatted = $this->formatMessage($msg);
-
-        // Notify the student's chat view
-        SocketService::emit('chat:student:' . $studentId, 'chat:message', $formatted);
-        // Notify the thread room (admin inbox show page, and student's thread join)
-        SocketService::emit('chat:thread:' . $jobId . ':' . $studentId, 'chat:message', $formatted);
 
         return response()->json(['success' => true, 'message' => $formatted]);
     }
@@ -172,33 +101,32 @@ class AdminInboxController extends Controller
     /** Mark ข้อความจาก student ว่าอ่านแล้ว */
     public function markRead(int $jobId, int $studentId)
     {
-        ChatMessage::where('job_id', $jobId)
-            ->where('student_id', $studentId)
-            ->where('sender_role', 'student')
-            ->whereNull('read_at')
-            ->update(['read_at' => now()]);
+        $room = Room::where('job_id', $jobId)
+            ->whereHas('users', function ($q) use ($studentId) {
+                $q->where('users.id', $studentId);
+            })
+            ->first();
 
-        // Also match old messages without student_id field
-        ChatMessage::where('job_id', $jobId)
-            ->where('sender_id', $studentId)
-            ->where('sender_role', 'student')
-            ->whereNull('read_at')
-            ->update(['read_at' => now()]);
+        if ($room) {
+            $room->users()->updateExistingPivot(Auth::id(), ['last_read_at' => now()]);
+        }
 
         return response()->json(['success' => true]);
     }
 
-    private function formatMessage(ChatMessage $msg): array
+    private function formatMessage(Message $msg): array
     {
+        $user = $msg->user;
+        $role = $user?->role ?? 'system';
+
         return [
-            'id'          => (string) $msg->_id,
-            'job_id'      => $msg->job_id,
-            'sender_id'   => $msg->sender_id,
-            'sender_role' => $msg->sender_role,
-            'sender_name'  => $msg->sender_name ?? 'ผู้ดูแล',
-            'sender_photo' => $msg->sender_photo,
-            'student_id'   => $msg->student_id,
-            'message'     => $msg->message,
+            'id'          => $msg->id,
+            'room_id'     => $msg->room_id,
+            'sender_id'   => $msg->user_id,
+            'sender_role' => $role,
+            'sender_name'  => $user?->full_name ?? 'ผู้ดูแล',
+            'sender_photo' => $user?->profile_photo ? asset('storage/' . $user->profile_photo) : null,
+            'message'     => $msg->body,
             'attachments' => $msg->attachments ?? [],
             'created_at'  => $msg->created_at?->toISOString(),
         ];

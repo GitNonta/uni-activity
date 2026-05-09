@@ -1,4 +1,3 @@
-{{-- เลย์เอาต์หลักฝั่งผู้ดูแล (Admin): Collapsible Sidebar (Desktop) + Bottom Nav (Mobile) --}}
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -384,5 +383,6 @@
         document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
     }
 </script>
+@yield('scripts')
 </body>
 </html>

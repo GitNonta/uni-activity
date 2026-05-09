@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         // 1. แก้ไขประเภทคอลัมน์ ENUM ให้รองรับ 'admin' ก่อน (อิงตามฐานข้อมูล MySQL)
-        if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+        if (Schema::getConnection()->getDriverName() === 'mysql') {
             DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('student', 'staff', 'admin') DEFAULT 'student' NULL");
         }
 

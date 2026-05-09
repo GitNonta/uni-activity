@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('activity_id')->constrained('activities')->cascadeOnDelete();
-            $table->enum('status', ['pending', 'approved', 'cancelled', 'rejected'])->default('pending');
+            $table->enum('status', ['pending', 'approved', 'cancelled', 'rejected', 'completed', 'waitlisted'])->default('pending');
             $table->timestamp('registered_at')->useCurrent();
             $table->timestamp('cancelled_at')->nullable();
             $table->text('note')->nullable();

@@ -12,7 +12,9 @@ return new class extends Migration
             return;
         }
 
-        DB::statement("ALTER TABLE attendances MODIFY COLUMN method ENUM('qr_scan','self','manual','walk_in') DEFAULT 'qr_scan'");
+        if (Schema::getConnection()->getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE attendances MODIFY COLUMN method ENUM('qr_scan','self','manual','walk_in') DEFAULT 'qr_scan'");
+        }
     }
 
     public function down(): void

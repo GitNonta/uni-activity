@@ -10,12 +10,15 @@ use App\Models\Attendance;
 use App\Models\Registration;
 use App\Models\User;
 use App\Models\JobListing;
-use App\Models\ChatMessage;
+use App\Models\Message;
+use App\Models\Room;
 use App\Models\ActivityFeedback;
 use App\Models\AdminAuditLog;
 use App\Services\QrCodeService;
 use App\Traits\LogsAdminActivity;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 /**
  * คอนโทรลเลอร์จัดการกิจกรรม (ฝั่งผู้ดูแล/Admin)
@@ -38,7 +41,13 @@ class ActivityAdminController extends Controller
                 ->whereIn('status', ['upcoming', 'open', 'ongoing'])
                 ->count(),
             'totalJobs' => JobListing::count(),
-            'unreadMessages' => ChatMessage::whereNull('read_at')->where('sender_role', 'student')->count(),
+            'unreadMessages' => Message::whereHas('room', function($q) {
+                $q->whereHas('users', function($u) {
+                    $u->where('users.id', Auth::id());
+                });
+            })->where('user_id', '!=', Auth::id())
+              ->whereColumn('created_at', '>', DB::raw('(SELECT last_read_at FROM room_user WHERE room_user.room_id = messages.room_id AND room_user.user_id = ' . Auth::id() . ')'))
+              ->count(),
             'totalFeedbacks' => ActivityFeedback::count(),
         ];
 

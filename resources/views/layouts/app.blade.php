@@ -137,611 +137,292 @@
     </nav>
     @endauth
 
-<script src="{{ config('socket.public_url') }}/socket.io/socket.io.js"></script>
-@yield('scripts')
-<script>
-// ปิด dropdown "แนะนำ" เมื่อคลิกข้างนอก
-document.addEventListener('click', function(e) {
-    document.querySelectorAll('.recommend-dropdown.open').forEach(function(d) {
-        if (!d.contains(e.target)) d.classList.remove('open');
+    @yield('scripts')
+    <script>
+    // ปิด dropdown "แนะนำ" เมื่อคลิกข้างนอก
+    document.addEventListener('click', function(e) {
+        document.querySelectorAll('.recommend-dropdown.open').forEach(function(d) {
+            if (!d.contains(e.target)) d.classList.remove('open');
+        });
     });
-});
-</script>
+    </script>
 
-@auth
-@if(!in_array(auth()->user()->role ?? 'student', ['admin','staff']))
-{{-- ── Notification Polling Script ── --}}
-<script>
-(function() {
-    var NOTIF_URL = '{{ route("student.notifications") }}';
-    var CSRF = document.querySelector('meta[name="csrf-token"]').content;
-    var dismissedKey = 'notif_dismissed_' + Date.now().toString().slice(0,-5);
-    var webNotifAsked = false;
+    @auth
+    @if(!in_array(auth()->user()->role ?? 'student', ['admin','staff']))
+    {{-- ── Notification Polling Script ── --}}
+    <script>
+    (function() {
+        var NOTIF_URL = '{{ route("student.notifications") }}';
+        var CSRF = document.querySelector('meta[name="csrf-token"]').content;
 
-    function requestWebNotifPermission() {
-        if (!webNotifAsked && 'Notification' in window && Notification.permission === 'default') {
-            webNotifAsked = true;
-            Notification.requestPermission();
+        function fetchNotifications() {
+            fetch(NOTIF_URL, { headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' } })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    var alerts = data.alerts || [];
+                    var banner = document.getElementById('notif-banner');
+                    var navBadge = document.getElementById('nav-todo-badge');
+                    var botBadge = document.getElementById('bottom-todo-badge');
+
+                    if (!alerts.length) {
+                        if (banner) banner.style.display = 'none';
+                        if (navBadge) navBadge.style.display = 'none';
+                        if (botBadge) botBadge.style.display = 'none';
+                        return;
+                    }
+
+                    var count = alerts.length;
+                    if (navBadge) { navBadge.textContent = count; navBadge.style.display = 'inline-block'; }
+                    if (botBadge) { botBadge.textContent = count; botBadge.style.display = 'inline-block'; }
+
+                    var urgent = alerts.filter(function(a) { return a.type === 'checkin_open' || a.type === 'checkin_soon'; });
+                    if (urgent.length && banner) {
+                        var first = urgent[0];
+                        document.getElementById('notif-banner-icon').textContent = first.icon;
+                        document.getElementById('notif-banner-text').textContent = first.title + ' — ' + first.body;
+                        document.getElementById('notif-banner-link').href = first.url;
+                        banner.style.display = 'block';
+                    }
+                })
+                .catch(function() {});
         }
-    }
+        setTimeout(fetchNotifications, 2000);
+        setInterval(fetchNotifications, 5 * 60 * 1000);
+    })();
+    </script>
+    @endif
+    @endauth
 
-    function showWebNotif(title, body, url) {
-        if ('Notification' in window && Notification.permission === 'granted') {
-            var n = new Notification(title, { body: body, icon: '/favicon.ico' });
-            n.onclick = function() { window.location.href = url; n.close(); };
-        }
-    }
-
-    function fetchNotifications() {
-        fetch(NOTIF_URL, { headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' } })
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                var alerts = data.alerts || [];
-                var banner = document.getElementById('notif-banner');
-                var navBadge = document.getElementById('nav-todo-badge');
-                var botBadge = document.getElementById('bottom-todo-badge');
-
-                if (!alerts.length) {
-                    if (banner) banner.style.display = 'none';
-                    if (navBadge) navBadge.style.display = 'none';
-                    if (botBadge) botBadge.style.display = 'none';
-                    return;
-                }
-
-                // Badge count
-                var urgentCount = alerts.filter(function(a) { return a.type === 'checkin_open' || a.type === 'checkin_soon'; }).length;
-                var count = alerts.length;
-                if (navBadge) { navBadge.textContent = count; navBadge.style.display = 'inline-block'; }
-                if (botBadge) { botBadge.textContent = count; botBadge.style.display = 'inline-block'; }
-
-                // Banner (แสดงเฉพาะ checkin alerts)
-                var urgent = alerts.filter(function(a) { return a.type === 'checkin_open' || a.type === 'checkin_soon'; });
-                if (urgent.length && banner) {
-                    var first = urgent[0];
-                    document.getElementById('notif-banner-icon').textContent = first.icon;
-                    document.getElementById('notif-banner-text').textContent = first.title + ' — ' + first.body;
-                    document.getElementById('notif-banner-link').href = first.url;
-                    banner.style.display = 'block';
-                    // Web push notification
-                    requestWebNotifPermission();
-                    showWebNotif(first.title, first.body, first.url);
-                }
-            })
-            .catch(function() {});
-    }
-
-    // ดึงทันทีและทุก 5 นาที
-    setTimeout(fetchNotifications, 2000);
-    setInterval(fetchNotifications, 5 * 60 * 1000);
-})();
-</script>
-@endif
-@endauth
-
-@auth
-@if(!in_array(auth()->user()->role ?? 'student', ['admin','staff']))
-{{-- ── Floating Chat Widget ── --}}
-<div id="chatFloatWidget" style="position:fixed;bottom:5.5rem;right:1.1rem;z-index:8500;display:flex;flex-direction:column;align-items:flex-end;gap:.5rem;">
-
-    {{-- Panel --}}
-    <div id="chatFloatPanel" style="display:none;width:330px;height:480px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.2);overflow:hidden;flex-direction:column;">
-
-        {{-- Dynamic header (thread-list or chat) --}}
-        <div id="cfHeader" style="background:#4f46e5;padding:.7rem 1rem;display:flex;align-items:center;gap:.5rem;flex-shrink:0;">
-            <button id="cfBackBtn" onclick="cfBackToList()" style="display:none;background:none;border:none;color:#fff;font-size:1rem;cursor:pointer;padding:.1rem .3rem;line-height:1;opacity:.85;">←</button>
-            <span id="cfHeaderTitle" style="color:#fff;font-weight:700;font-size:.88rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">💬 ข้อความของฉัน</span>
-            <button onclick="closeChatWidget()" style="background:none;border:none;color:#fff;font-size:1.1rem;cursor:pointer;line-height:1;padding:.1rem .3rem;opacity:.85;">✕</button>
-        </div>
-
-        {{-- VIEW 1: Thread list --}}
-        <div id="cfViewList" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;">
-            <div id="cfListContent" style="flex:1;">
-                <div style="padding:1.5rem;text-align:center;font-size:.85rem;color:#94a3b8;">กำลังโหลด...</div>
+    @auth
+    @if(!in_array(auth()->user()->role ?? 'student', ['admin','staff']))
+    {{-- ── Floating Chat Widget ── --}}
+    <div id="chatFloatWidget" style="position:fixed;bottom:5.5rem;right:1.1rem;z-index:8500;display:flex;flex-direction:column;align-items:flex-end;gap:.5rem;">
+        <div id="chatFloatPanel" style="display:none;width:330px;height:480px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.2);overflow:hidden;flex-direction:column;">
+            <div id="cfHeader" style="background:#4f46e5;padding:.7rem 1rem;display:flex;align-items:center;gap:.5rem;flex-shrink:0;">
+                <button id="cfBackBtn" onclick="cfBackToList()" style="display:none;background:none;border:none;color:#fff;font-size:1rem;cursor:pointer;padding:.1rem .3rem;line-height:1;opacity:.85;">←</button>
+                <span id="cfHeaderTitle" style="color:#fff;font-weight:700;font-size:.88rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">💬 ข้อความของฉัน</span>
+                <button onclick="closeChatWidget()" style="background:none;border:none;color:#fff;font-size:1.1rem;cursor:pointer;line-height:1;padding:.1rem .3rem;opacity:.85;">✕</button>
+            </div>
+            <div id="cfViewList" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;">
+                <div id="cfListContent" style="flex:1;">
+                    <div style="padding:1.5rem;text-align:center;font-size:.85rem;color:#94a3b8;">กำลังโหลด...</div>
+                </div>
+            </div>
+            <div id="cfViewChat" style="display:none;flex-direction:column;flex:1;min-height:0;">
+                <div id="cfChatWindow" style="flex:1;overflow-y:auto;padding:.75rem;display:flex;flex-direction:column;gap:.45rem;background:#f8fafc;"></div>
+                <div id="cfTypingBar" style="display:none;padding:.4rem .75rem;background:#f8fafc;font-size:.72rem;color:#6366f1;">✏️ ผู้ดูแลกำลังพิมพ์...</div>
+                <div style="border-top:1px solid #e2e8f0;padding:.5rem .75rem;background:#fff;flex-shrink:0;">
+                    <div id="cfAttachPreview" style="display:none;gap:.3rem;flex-wrap:wrap;margin-bottom:.3rem;"></div>
+                    <form id="cfChatForm" enctype="multipart/form-data" style="display:flex;gap:.35rem;align-items:flex-end;">
+                        @csrf
+                        <label style="cursor:pointer;padding:.4rem .5rem;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;font-size:.9rem;line-height:1;flex-shrink:0;" title="แนบไฟล์">
+                            📎<input type="file" id="cfFileInput" name="attachments[]" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.zip,.txt" style="display:none;">
+                        </label>
+                        <textarea id="cfMsgInput" name="message" rows="1" placeholder="พิมพ์ข้อความ..." style="flex:1;resize:none;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .6rem;font-size:.82rem;line-height:1.4;outline:none;font-family:inherit;max-height:80px;overflow-y:auto;"></textarea>
+                        <button type="submit" id="cfSendBtn" style="padding:.4rem .85rem;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-size:.82rem;cursor:pointer;font-weight:500;flex-shrink:0;">ส่ง</button>
+                    </form>
+                </div>
             </div>
         </div>
-
-        {{-- VIEW 2: Chat history (hidden by default) --}}
-        <div id="cfViewChat" style="display:none;flex-direction:column;flex:1;min-height:0;">
-            {{-- Messages --}}
-            <div id="cfChatWindow" style="flex:1;overflow-y:auto;padding:.75rem;display:flex;flex-direction:column;gap:.45rem;background:#f8fafc;"></div>
-            {{-- Typing indicator bar --}}
-            <div id="cfTypingBar" style="display:none;padding:.4rem .75rem;background:#f8fafc;font-size:.72rem;color:#6366f1;">✏️ ผู้ดูแลกำลังพิมพ์...</div>
-            {{-- Input --}}
-            <div style="border-top:1px solid #e2e8f0;padding:.5rem .75rem;background:#fff;flex-shrink:0;">
-                <div id="cfAttachPreview" style="display:none;gap:.3rem;flex-wrap:wrap;margin-bottom:.3rem;"></div>
-                <form id="cfChatForm" enctype="multipart/form-data" style="display:flex;gap:.35rem;align-items:flex-end;">
-                    @csrf
-                    <label style="cursor:pointer;padding:.4rem .5rem;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;font-size:.9rem;line-height:1;flex-shrink:0;" title="แนบไฟล์">
-                        📎<input type="file" id="cfFileInput" name="attachments[]" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.zip,.txt" style="display:none;">
-                    </label>
-                    <textarea id="cfMsgInput" name="message" rows="1" placeholder="พิมพ์ข้อความ..." style="flex:1;resize:none;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .6rem;font-size:.82rem;line-height:1.4;outline:none;font-family:inherit;max-height:80px;overflow-y:auto;"></textarea>
-                    <button type="submit" id="cfSendBtn" style="padding:.4rem .85rem;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-size:.82rem;cursor:pointer;font-weight:500;flex-shrink:0;">ส่ง</button>
-                </form>
-            </div>
-        </div>
-
+        <button id="chatFloatBtn" onclick="toggleChatWidget()" style="width:52px;height:52px;border-radius:50%;background:#4f46e5;color:#fff;border:none;cursor:pointer;box-shadow:0 4px 18px rgba(79,70,229,.45);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .15s;">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+            <span id="chatFloatBadge" style="display:none;position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;border-radius:9px;background:#ef4444;color:#fff;font-size:.65rem;font-weight:700;line-height:18px;text-align:center;padding:0 4px;border:2px solid #fff;"></span>
+        </button>
     </div>
 
-    {{-- Floating button --}}
-    <button id="chatFloatBtn" onclick="toggleChatWidget()"
-        style="width:52px;height:52px;border-radius:50%;background:#4f46e5;color:#fff;border:none;cursor:pointer;box-shadow:0 4px 18px rgba(79,70,229,.45);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .15s;">
-        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-        <span id="chatFloatBadge" style="display:none;position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;border-radius:9px;background:#ef4444;color:#fff;font-size:.65rem;font-weight:700;line-height:18px;text-align:center;padding:0 4px;border:2px solid #fff;"></span>
-    </button>
-</div>
+    <script>
+    (function () {
+        var THREADS_URL = '{{ route("chat.threads") }}';
+        var CSRF = document.querySelector('meta[name="csrf-token"]').content;
+        var USER_ID = '{{ auth()->id() }}';
+        var MY_PHOTO = '{{ auth()->user()->profile_photo ? asset("storage/".auth()->user()->profile_photo) : "" }}';
+        var MY_NAME = '{{ auth()->user()->full_name ?? auth()->user()->name ?? "คุณ" }}';
 
-<script>
-(function () {
-    var THREADS_URL = '{{ route("chat.threads") }}';
-    var CSRF        = document.querySelector('meta[name="csrf-token"]').content;
-    var USER_ID     = {{ auth()->id() }};
-    var MY_PHOTO    = '{{ auth()->user()->profile_photo ? asset("storage/".auth()->user()->profile_photo) : "" }}';
-    var MY_NAME     = '{{ auth()->user()->full_name ?? auth()->user()->name ?? "คุณ" }}';
-    var STUDENT_ROOM = 'chat:student:' + USER_ID;
-    var STUDENT_TOKEN = '{{ \App\Services\SocketService::roomToken("chat:student:" . auth()->id()) }}';
+        var panelOpen = false;
+        var threads = [];
+        var currentJobId = null;
 
-    var panelOpen    = false;
-    var threads      = [];
-    var currentJobId = null;
-    var sock         = null;
-
-    // ════════════════════════════════════════
-    // Panel open / close
-    // ════════════════════════════════════════
-    window.toggleChatWidget = function () { panelOpen ? closeChatWidget() : openChatWidget(); };
-    window.closeChatWidget  = function () {
-        panelOpen = false;
-        document.getElementById('chatFloatPanel').style.display = 'none';
-        document.getElementById('chatFloatBtn').style.transform = '';
-    };
-    function openChatWidget() {
-        panelOpen = true;
-        document.getElementById('chatFloatPanel').style.display = 'flex';
-        document.getElementById('chatFloatBtn').style.transform = 'scale(1.1)';
-        showListView();
-        loadThreads();
-    }
-
-    // ════════════════════════════════════════
-    // View switching
-    // ════════════════════════════════════════
-    function showListView() {
-        currentJobId = null;
-        document.getElementById('cfViewList').style.display = 'flex';
-        document.getElementById('cfViewChat').style.display = 'none';
-        document.getElementById('cfBackBtn').style.display  = 'none';
-        document.getElementById('cfHeaderTitle').textContent = '💬 ข้อความของฉัน';
-        if (sock) sock.emit('leave', 'chat:thread:__prev__');
-    }
-    window.cfBackToList = function () { showListView(); loadThreads(); };
-
-    function showChatView(jobId, jobTitle) {
-        currentJobId = jobId;
-        document.getElementById('cfViewList').style.display = 'none';
-        document.getElementById('cfViewChat').style.display = 'flex';
-        document.getElementById('cfBackBtn').style.display  = 'inline-block';
-        document.getElementById('cfHeaderTitle').textContent = jobTitle;
-        updateHeaderOnline();
-        var thread = threads.find(function(t){ return t.job_id == jobId; });
-        if (sock && thread) sock.emit('join', { room: thread.thread_room, token: thread.thread_token });
-        loadMessages(jobId);
-        // Mark read
-        fetch('/jobs/' + jobId + '/chat/read', { method: 'POST', headers: { 'X-CSRF-TOKEN': CSRF } });
-        // Clear unread for this thread locally
-        var idx = threads.findIndex(function(t){ return t.job_id == jobId; });
-        if (idx >= 0) { threads[idx].unread = 0; recalcBadge(); }
-        // Dispatch event for admin online status check
-        window.dispatchEvent(new CustomEvent('cfChatOpened', { detail: { jobId: jobId } }));
-    }
-
-    // ════════════════════════════════════════
-    // Load threads
-    // ════════════════════════════════════════
-    function loadThreads() {
-        fetch(THREADS_URL, { headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' } })
-            .then(function(r){ return r.json(); })
-            .then(function(data) {
-                threads = data.threads || [];
-                renderThreads();
-                updateBadge(data.total_unread || 0);
-            })
-            .catch(function() {
-                document.getElementById('cfListContent').innerHTML =
-                    '<div style="padding:1rem;text-align:center;font-size:.82rem;color:#94a3b8;">ไม่สามารถโหลดได้</div>';
-            });
-    }
-
-    function renderThreads() {
-        var el = document.getElementById('cfListContent');
-        if (!threads.length) {
-            el.innerHTML = '<div style="padding:2rem 1rem;text-align:center;font-size:.83rem;color:#94a3b8;">ยังไม่มีข้อความ</div>';
-            return;
-        }
-        el.innerHTML = threads.map(function(t) {
-            var isUnread   = t.unread > 0;
-            var isMine     = t.last_sender_role === 'student';
-            var readStatus = isMine
-                ? (t.last_read_at
-                    ? '<span style="color:#6366f1;font-size:.68rem;" title="อ่านแล้ว">✓✓</span>'
-                    : '<span style="color:#94a3b8;font-size:.68rem;" title="ส่งแล้ว">✓</span>')
-                : '';
-            var badge   = isUnread ? '<span style="min-width:18px;height:18px;border-radius:9px;background:#ef4444;color:#fff;font-size:.6rem;font-weight:700;line-height:18px;text-align:center;padding:0 4px;">' + t.unread + '</span>' : '';
-            var preview = t.last_message ? (t.last_message.length > 32 ? t.last_message.slice(0,32)+'…' : t.last_message) : '📎 ไฟล์แนบ';
-            return '<div onclick="cfOpenThread(' + t.job_id + ',\'' + escJs(t.job_title) + '\')" '
-                + 'style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;border-bottom:1px solid #f1f5f9;cursor:pointer;background:' + (isUnread?'#faf5ff':'#fff') + ';"'
-                + ' onmouseover="this.style.background=\'#f3f4f6\'" onmouseout="this.style.background=\'' + (isUnread?'#faf5ff':'#fff') + '\'">'
-                + '<div style="width:34px;height:34px;border-radius:50%;background:#4f46e5;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0;">' + escHtml(t.job_title.charAt(0).toUpperCase()) + '</div>'
-                + '<div style="flex:1;min-width:0;">'
-                + '<div style="font-size:.82rem;font-weight:' + (isUnread?'700':'500') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#1e293b;">' + escHtml(t.job_title) + '</div>'
-                + '<div style="display:flex;align-items:center;gap:.2rem;margin-top:.08rem;">'
-                + (isMine ? '<span style="font-size:.7rem;color:#94a3b8;flex-shrink:0;">คุณ:</span>' : '')
-                + readStatus
-                + '<span style="font-size:.7rem;color:' + (isUnread?'#1e293b':'#64748b') + ';font-weight:' + (isUnread?'600':'400') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escHtml(preview) + '</span>'
-                + '</div></div>'
-                + '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:.2rem;flex-shrink:0;">' + badge + '<span style="font-size:.62rem;color:#94a3b8;">' + (t.last_time_human||'') + '</span></div>'
-                + '</div>';
-        }).join('');
-    }
-
-    window.cfOpenThread = function(jobId, jobTitle) { showChatView(jobId, jobTitle); };
-
-    // ════════════════════════════════════════
-    // Load & render chat messages
-    // ════════════════════════════════════════
-    function loadMessages(jobId) {
-        var win = document.getElementById('cfChatWindow');
-        win.innerHTML = '<div style="padding:1.5rem;text-align:center;font-size:.82rem;color:#94a3b8;">กำลังโหลด...</div>';
-        fetch('/jobs/' + jobId + '/chat/messages', { headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' } })
-            .then(function(r){ return r.json(); })
-            .then(function(data) {
-                win.innerHTML = '';
-                var msgs = data.messages || [];
-                if (!msgs.length) {
-                    win.innerHTML = '<div style="margin:auto;font-size:.82rem;color:#94a3b8;text-align:center;">ยังไม่มีข้อความ</div>';
-                    return;
-                }
-                msgs.forEach(function(m) {
-                    var el = buildBubble(m);
-                    if (el && el.parentNode !== win) win.appendChild(el);
-                });
-                win.scrollTop = win.scrollHeight;
-            })
-            .catch(function() {
-                win.innerHTML = '<div style="padding:1rem;text-align:center;font-size:.8rem;color:#94a3b8;">โหลดข้อความไม่สำเร็จ</div>';
-            });
-    }
-
-    function buildBubble(msg) {
-        var existing = document.getElementById('cfm-' + msg.id);
-        if (existing) return existing; // Return existing element instead of creating duplicate
-
-        var mine  = msg.sender_id == USER_ID;
-        var label = mine ? 'คุณ' : (msg.sender_name || 'ผู้ดูแล');
-        var photo = msg.sender_photo || null;
-
-        var row = document.createElement('div');
-        row.id  = 'cfm-' + msg.id;
-        row.style.cssText = 'display:flex;flex-direction:' + (mine?'row-reverse':'row') + ';align-items:flex-end;gap:.3rem;';
-
-        // Avatar with online dot wrapper for admin
-        var avWrap = document.createElement('div');
-        avWrap.style.cssText = 'position:relative;flex-shrink:0;';
-        
-        var av = document.createElement(photo ? 'img' : 'div');
-        if (photo) { av.src = photo; av.alt = label; av.style.cssText = 'width:24px;height:24px;border-radius:50%;object-fit:cover;'; }
-        else { av.textContent = label.charAt(0).toUpperCase(); av.style.cssText = 'width:24px;height:24px;border-radius:50%;background:' + (mine?'#4f46e5':'#64748b') + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:700;'; }
-        avWrap.appendChild(av);
-        
-        // Online dot for admin messages (not mine = from admin)
-        if (!mine) {
-            var onlineDot = document.createElement('span');
-            onlineDot.id = 'admin-dot-' + msg.id;
-            onlineDot.className = 'admin-online-dot';
-            onlineDot.style.cssText = 'display:none;position:absolute;bottom:0;right:0;width:10px;height:10px;background:#10b981;border-radius:50%;border:2px solid #f8fafc;';
-            avWrap.appendChild(onlineDot);
-        }
-        
-        row.appendChild(avWrap);
-
-        // Column
-        var col = document.createElement('div');
-        col.style.cssText = 'display:flex;flex-direction:column;align-items:' + (mine?'flex-end':'flex-start') + ';max-width:75%;';
-
-        var nameEl = document.createElement('span');
-        nameEl.style.cssText = 'font-size:.63rem;color:#94a3b8;margin-bottom:.1rem;';
-        nameEl.textContent = label;
-        col.appendChild(nameEl);
-
-        var bubble = document.createElement('div');
-        bubble.style.cssText = 'padding:.42rem .72rem;border-radius:' + (mine?'14px 3px 14px 14px':'3px 14px 14px 14px') + ';background:' + (mine?'#4f46e5':'#fff') + ';color:' + (mine?'#fff':'#1e293b') + ';font-size:.82rem;box-shadow:0 1px 3px rgba(0,0,0,.07);word-break:break-word;';
-
-        if (msg.message) { var p = document.createElement('p'); p.style.margin='0'; p.textContent = msg.message; bubble.appendChild(p); }
-        (msg.attachments||[]).forEach(function(att) {
-            var isImg = (att.mime_type||'').startsWith('image/');
-            if (isImg) {
-                var img = document.createElement('img');
-                img.src = att.url; img.alt = att.original_name;
-                img.style.cssText = 'max-width:100%;border-radius:6px;margin-top:.25rem;display:block;cursor:pointer;';
-                img.onclick = function(){ window.open(att.url,'_blank'); };
-                bubble.appendChild(img);
-            } else {
-                var a = document.createElement('a');
-                a.href = att.url; a.target='_blank'; a.download = att.original_name;
-                a.style.cssText = 'display:flex;align-items:center;gap:.3rem;margin-top:.25rem;color:' + (mine?'#c7d2fe':'#4f46e5') + ';font-size:.75rem;text-decoration:none;';
-                a.innerHTML = '📎 ' + escHtml(att.original_name);
-                bubble.appendChild(a);
-            }
-        });
-        col.appendChild(bubble);
-
-        // Read/sent indicator (only for own messages)
-        if (mine) {
-            var st = document.createElement('span');
-            st.id = 'cfm-status-' + msg.id;
-            st.style.cssText = 'font-size:.6rem;margin-top:.08rem;';
-            if (msg.read_at) {
-                st.style.color='#6366f1';
-                var dt = new Date(msg.read_at);
-                st.textContent = '✓✓ เห็นเมื่อ ' + dt.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
-            } else {
-                st.style.color='#94a3b8';
-                st.textContent = '✓ ส่งแล้ว';
-            }
-            col.appendChild(st);
-        } else {
-            var tm = document.createElement('span');
-            tm.style.cssText = 'font-size:.6rem;color:#94a3b8;margin-top:.08rem;';
-            tm.textContent = msg.created_at ? new Date(msg.created_at).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}) : '';
-            col.appendChild(tm);
+        window.toggleChatWidget = function () { panelOpen ? closeChatWidget() : openChatWidget(); };
+        window.closeChatWidget = function () {
+            panelOpen = false;
+            document.getElementById('chatFloatPanel').style.display = 'none';
+            document.getElementById('chatFloatBtn').style.transform = '';
+        };
+        function openChatWidget() {
+            panelOpen = true;
+            document.getElementById('chatFloatPanel').style.display = 'flex';
+            document.getElementById('chatFloatBtn').style.transform = 'scale(1.1)';
+            showListView();
+            loadThreads();
         }
 
-        row.appendChild(col);
-        return row;
-    }
+        function showListView() {
+            currentJobId = null;
+            document.getElementById('cfViewList').style.display = 'flex';
+            document.getElementById('cfViewChat').style.display = 'none';
+            document.getElementById('cfBackBtn').style.display = 'none';
+            document.getElementById('cfHeaderTitle').textContent = '💬 ข้อความของฉัน';
+        }
+        window.cfBackToList = function () { showListView(); loadThreads(); };
 
-    // ════════════════════════════════════════
-    // Send message
-    // ════════════════════════════════════════
-    document.getElementById('cfChatForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        if (!currentJobId) return;
-        var text  = document.getElementById('cfMsgInput').value.trim();
-        var files = document.getElementById('cfFileInput').files;
-        if (!text && !files.length) return;
-
-        var btn = document.getElementById('cfSendBtn');
-        btn.disabled = true; btn.textContent = '...';
-
-        // Optimistic bubble
-        var noMsg = document.getElementById('cfNoMsg');
-        if (noMsg) noMsg.remove();
-        var optimistic = { id: 'tmp-'+Date.now(), sender_id: USER_ID, sender_role:'student',
-            sender_name: MY_NAME, sender_photo: MY_PHOTO||null,
-            message: text, attachments:[], read_at: null,
-            created_at: new Date().toISOString() };
-        var win = document.getElementById('cfChatWindow');
-        win.appendChild(buildBubble(optimistic));
-        win.scrollTop = win.scrollHeight;
-
-        var fd = new FormData(document.getElementById('cfChatForm'));
-        fetch('/jobs/' + currentJobId + '/chat', { method:'POST', headers:{'X-CSRF-TOKEN':CSRF}, body: fd })
-            .then(function(r){ return r.json(); })
-            .then(function(data) {
-                var tmp = document.getElementById('cfm-tmp-'+optimistic.id.split('-')[1]);
-                if (tmp && data.message) { var real = buildBubble(data.message); tmp.replaceWith(real); }
-                // Update thread preview
-                var idx = threads.findIndex(function(t){ return t.job_id == currentJobId; });
-                if (idx >= 0) { threads[idx].last_message = text; threads[idx].last_sender_role = 'student'; threads[idx].last_read_at = null; threads[idx].last_time_human = 'เมื่อกี้'; }
-            })
-            .catch(function(){})
-            .finally(function(){
-                btn.disabled = false; btn.textContent = 'ส่ง';
-                document.getElementById('cfMsgInput').value = '';
-                document.getElementById('cfFileInput').value = '';
-                document.getElementById('cfAttachPreview').innerHTML = '';
-                document.getElementById('cfAttachPreview').style.display = 'none';
-            });
-    });
-
-    // Auto-grow textarea
-    document.getElementById('cfMsgInput').addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 80) + 'px';
-    });
-    document.getElementById('cfMsgInput').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.getElementById('cfSendBtn').click(); }
-    });
-
-    // Attach file preview
-    document.getElementById('cfFileInput').addEventListener('change', function() {
-        var prev = document.getElementById('cfAttachPreview');
-        prev.innerHTML = '';
-        if (!this.files.length) { prev.style.display='none'; return; }
-        prev.style.display = 'flex';
-        Array.from(this.files).forEach(function(f) {
-            var chip = document.createElement('span');
-            chip.style.cssText = 'padding:.18rem .5rem;background:#e0e7ff;border-radius:12px;font-size:.7rem;color:#4f46e5;';
-            chip.textContent = f.name.length > 18 ? f.name.slice(0,18)+'...' : f.name;
-            prev.appendChild(chip);
-        });
-    });
-
-    // ════════════════════════════════════════
-    // Badge helpers
-    // ════════════════════════════════════════
-    function updateBadge(count) {
-        var badge = document.getElementById('chatFloatBadge');
-        if (count > 0) { badge.textContent = count > 99 ? '99+' : count; badge.style.display = 'inline-block'; }
-        else           { badge.style.display = 'none'; }
-    }
-    function recalcBadge() {
-        updateBadge(threads.reduce(function(s,t){ return s+(t.unread||0); }, 0));
-    }
-
-    // ════════════════════════════════════════
-    // Initial badge load
-    // ════════════════════════════════════════
-    fetch(THREADS_URL, { headers:{'X-CSRF-TOKEN':CSRF,'Accept':'application/json'} })
-        .then(function(r){ return r.json(); })
-        .then(function(data){ threads = data.threads||[]; updateBadge(data.total_unread||0); })
-        .catch(function(){});
-
-    // ════════════════════════════════════════
-    // Socket.io
-    // ════════════════════════════════════════
-    if (typeof io !== 'undefined') {
-        sock = io('{{ config("socket.public_url") }}', { transports: ['websocket','polling'] });
-        sock.emit('join', { room: STUDENT_ROOM, token: STUDENT_TOKEN });
-
-        sock.on('chat:message', function(msg) {
-            var idx = threads.findIndex(function(t){ return t.job_id == msg.job_id; });
-
-            if (msg.sender_role === 'admin') {
-                // ── Admin reply ──
-                if (idx >= 0) {
-                    if (currentJobId != msg.job_id) threads[idx].unread = (threads[idx].unread||0) + 1;
-                    threads[idx].last_message = msg.message; threads[idx].last_sender_role = 'admin';
-                    threads[idx].last_read_at = null; threads[idx].last_time_human = 'เมื่อกี้';
-                    threads.unshift(threads.splice(idx,1)[0]);
-                } else {
-                    fetch(THREADS_URL, {headers:{'X-CSRF-TOKEN':CSRF,'Accept':'application/json'}})
-                        .then(function(r){return r.json();})
-                        .then(function(d){ threads=d.threads||[]; updateBadge(d.total_unread||0); if(panelOpen) renderThreads(); });
-                    return;
-                }
-                recalcBadge();
-
-            } else if (msg.sender_role === 'student') {
-                // ── Student's own message (sent from popup or full chat page) ──
-                if (idx >= 0) {
-                    threads[idx].last_message = msg.message || (msg.attachments&&msg.attachments.length ? '📎 ไฟล์แนบ' : '');
-                    threads[idx].last_sender_role = 'student';
-                    threads[idx].last_read_at = null;
-                    threads[idx].last_time_human = 'เมื่อกี้';
-                    threads.unshift(threads.splice(idx,1)[0]);
-                } else {
-                    // New thread not yet in list — pull from server to get job_title
-                    fetch(THREADS_URL, {headers:{'X-CSRF-TOKEN':CSRF,'Accept':'application/json'}})
-                        .then(function(r){return r.json();})
-                        .then(function(d){ threads=d.threads||[]; updateBadge(d.total_unread||0); if(panelOpen) renderThreads(); });
-                    return;
-                }
-            }
-
-            // ── If chat view for this job is open, append bubble (skip if already rendered) ──
-            if (currentJobId == msg.job_id) {
-                var win = document.getElementById('cfChatWindow');
-                if (win && !document.getElementById('cfm-' + msg.id)) {
-                    win.appendChild(buildBubble(msg));
-                    win.scrollTop = win.scrollHeight;
-                }
-                if (msg.sender_role === 'admin') {
-                    fetch('/jobs/'+msg.job_id+'/chat/read', {method:'POST', headers:{'X-CSRF-TOKEN':CSRF}});
-                }
-            } else if (panelOpen && document.getElementById('cfViewList').style.display !== 'none') {
-                renderThreads();
-            }
-        });
-
-        sock.on('chat:read', function(data) {
-            var idx = threads.findIndex(function(t){ return t.job_id == data.job_id; });
+        function showChatView(jobId, jobTitle) {
+            currentJobId = jobId;
+            document.getElementById('cfViewList').style.display = 'none';
+            document.getElementById('cfViewChat').style.display = 'flex';
+            document.getElementById('cfBackBtn').style.display = 'inline-block';
+            document.getElementById('cfHeaderTitle').textContent = jobTitle;
+            loadMessages(jobId);
+            fetch('/jobs/' + jobId + '/chat/read', { method: 'POST', headers: { 'X-CSRF-TOKEN': CSRF } });
+            var idx = threads.findIndex(function(t){ return t.job_id == jobId; });
             if (idx >= 0) { threads[idx].unread = 0; recalcBadge(); }
-            if (panelOpen && document.getElementById('cfViewList').style.display !== 'none') renderThreads();
-            
-            // Update read status on own message bubbles in current chat view
-            if (currentJobId == data.job_id) {
-                document.querySelectorAll('[id^="cfm-status-"]').forEach(function(st) {
-                    if (st.textContent.includes('ส่งแล้ว')) {
-                        st.textContent = '✓✓ เห็นเมื่อ ' + new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
-                        st.style.color = '#6366f1';
-                    }
-                });
-            }
-        });
-
-        // Typing indicator from admin
-        sock.on('typing', function(d) {
-            if (currentJobId && d.toRoom === 'chat:admin:' + currentJobId) {
-                var bar = document.getElementById('cfTypingBar');
-                if (bar) {
-                    bar.style.display = 'block';
-                    clearTimeout(window.cfTypingTimer);
-                    window.cfTypingTimer = setTimeout(function(){ bar.style.display='none'; }, 3000);
-                }
-            }
-        });
-
-        // Online status from admin (user:online:{userId})
-        sock.on('user:online', function(d) {
-            // Could be used to update UI elsewhere if needed
-        });
-    }
-
-    // Ping every 60s to keep last_seen fresh
-    setInterval(function() {
-        fetch('/user/ping', { method:'POST', headers:{'X-CSRF-TOKEN':CSRF} }).catch(function(){});
-    }, 60000);
-
-    // Typing emit
-    document.getElementById('cfMsgInput').addEventListener('input', function() {
-        if (!currentJobId) return;
-        var thread = threads.find(function(t){ return t.job_id == currentJobId; });
-        if (!thread) return;
-        sock.emit('typing', {
-            toRoom: thread.typing_room,
-            token: thread.typing_token,
-            userId: USER_ID,
-            name: MY_NAME
-        });
-    });
-
-    // Online dot in header when chat view is open
-    function updateHeaderOnline() {
-        if (!currentJobId) return;
-        // For now, assume admin is online when chat is open; could be refined with /users/{id}/status
-        var header = document.getElementById('cfHeaderTitle');
-        if (header && !header.querySelector('.online-dot')) {
-            var dot = document.createElement('span');
-            dot.className = 'online-dot';
-            dot.style.cssText = 'display:inline-block;width:8px;height:8px;background:#10b981;border-radius:50%;margin-left:.4rem;vertical-align:middle;box-shadow:0 0 0 2px #fff;';
-            header.appendChild(dot);
         }
-    }
 
-    // Poll admin online status every 30s
-    function updateAdminOnlineDots() {
-        if (!currentJobId) return;
-        fetch('/jobs/' + currentJobId + '/admin-online', {headers:{'Accept':'application/json'}})
-            .then(function(r){ return r.json(); })
-            .then(function(d) {
-                var show = d.is_online ? 'inline-block' : 'none';
-                document.querySelectorAll('.admin-online-dot').forEach(function(el) {
-                    el.style.display = show;
+        function loadThreads() {
+            fetch(THREADS_URL, { headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' } })
+                .then(function(r){ return r.json(); })
+                .then(function(data) {
+                    threads = data.threads || [];
+                    renderThreads();
+                    updateBadge(data.total_unread || 0);
                 });
+        }
+
+        function renderThreads() {
+            var el = document.getElementById('cfListContent');
+            if (!threads.length) {
+                el.innerHTML = '<div style="padding:2rem 1rem;text-align:center;font-size:.83rem;color:#94a3b8;">ยังไม่มีข้อความ</div>';
+                return;
+            }
+            el.innerHTML = threads.map(function(t) {
+                var isUnread = (t.unread || 0) > 0;
+                var preview = t.last_message ? (t.last_message.length > 32 ? t.last_message.slice(0,32)+'…' : t.last_message) : '📎 ไฟล์แนบ';
+                var safeTitle = (t.job_title || 'งานกิจกรรม').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                return '<div onclick="showChatView(' + t.job_id + ',\'' + safeTitle + '\')" '
+                    + 'style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;border-bottom:1px solid #f1f5f9;cursor:pointer;background:' + (isUnread?'#faf5ff':'#fff') + ';">'
+                    + '<div style="width:34px;height:34px;border-radius:50%;background:#4f46e5;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0;">' + safeTitle.charAt(0).toUpperCase() + '</div>'
+                    + '<div style="flex:1;min-width:0;">'
+                    + '<div style="font-size:.82rem;font-weight:' + (isUnread?'700':'500') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#1e293b;">' + safeTitle + '</div>'
+                    + '<div style="font-size:.7rem;color:' + (isUnread?'#1e293b':'#64748b') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + preview + '</div>'
+                    + '</div>'
+                    + (isUnread ? '<div style="min-width:18px;height:18px;border-radius:9px;background:#ef4444;color:#fff;font-size:.6rem;font-weight:700;line-height:18px;text-align:center;padding:0 4px;">' + t.unread + '</div>' : '')
+                    + '</div>';
+            }).join('');
+        }
+        window.showChatView = showChatView;
+
+        function loadMessages(jobId) {
+            var win = document.getElementById('cfChatWindow');
+            win.innerHTML = '<div style="padding:1.5rem;text-align:center;font-size:.82rem;color:#94a3b8;">กำลังโหลด...</div>';
+            fetch('/jobs/' + jobId + '/chat/messages', { headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' } })
+                .then(function(r){ return r.json(); })
+                .then(function(data) {
+                    win.innerHTML = '';
+                    (data.messages || []).forEach(function(m) { win.appendChild(buildBubble(m)); });
+                    win.scrollTop = win.scrollHeight;
+                });
+        }
+
+        function buildBubble(msg) {
+            var mine = msg.sender_role === 'student';
+            var row = document.createElement('div');
+            row.style.cssText = 'display:flex;flex-direction:' + (mine?'row-reverse':'row') + ';align-items:flex-end;gap:.3rem;margin-bottom:.2rem;';
+            
+            var col = document.createElement('div');
+            col.style.cssText = 'display:flex;flex-direction:column;align-items:' + (mine?'flex-end':'flex-start') + ';max-width:75%;';
+            
+            var bubble = document.createElement('div');
+            bubble.style.cssText = 'padding:.45rem .75rem;border-radius:' + (mine?'14px 4px 14px 14px':'4px 14px 14px 14px') + ';background:' + (mine?'#4f46e5':'#fff') + ';color:' + (mine?'#fff':'#1e293b') + ';font-size:.82rem;box-shadow:0 1px 2px rgba(0,0,0,.08);word-break:break-word;';
+            
+            if (msg.message) {
+                var p = document.createElement('p');
+                p.style.margin = '0';
+                p.textContent = msg.message;
+                bubble.appendChild(p);
+            }
+            
+            if (msg.attachments && msg.attachments.length) {
+                msg.attachments.forEach(function(a) {
+                    var attDiv = document.createElement('div');
+                    attDiv.style.marginTop = '.3rem';
+                    if ((a.mime_type || '').indexOf('image/') === 0) {
+                        var img = document.createElement('img');
+                        img.src = a.url;
+                        img.style.cssText = 'max-width:100%;border-radius:8px;display:block;cursor:pointer;';
+                        img.onclick = function() { window.open(a.url, '_blank'); };
+                        attDiv.appendChild(img);
+                    } else {
+                        var link = document.createElement('a');
+                        link.href = a.url;
+                        link.target = '_blank';
+                        link.style.cssText = 'font-size:.75rem;text-decoration:none;display:flex;align-items:center;gap:.2rem;color:' + (mine?'#c7d2fe':'#4f46e5');
+                        link.innerHTML = '📎 ' + a.original_name;
+                        attDiv.appendChild(link);
+                    }
+                    bubble.appendChild(attDiv);
+                });
+            }
+            
+            col.appendChild(bubble);
+            row.appendChild(col);
+            return row;
+        }
+
+        document.getElementById('cfChatForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!currentJobId) return;
+            var form = this;
+            var msgInput = document.getElementById('cfMsgInput');
+            var text = msgInput.value.trim();
+            var fd = new FormData(form);
+            
+            // มั่นใจว่ามี message ส่งไปแน่นอน
+            if (!fd.has('message')) fd.append('message', text);
+
+            var btn = document.getElementById('cfSendBtn');
+            btn.disabled = true;
+
+            fetch('/jobs/' + currentJobId + '/chat', { 
+                method: 'POST', 
+                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' }, 
+                body: fd 
             })
-            .catch(function(){});
-    }
-    setInterval(updateAdminOnlineDots, 30000);
-    // Initial check when chat view opens
-    window.addEventListener('cfChatOpened', updateAdminOnlineDots);
+                .then(function(r) {
+                    if (!r.ok) {
+                        return r.json().then(function(err) { throw err; });
+                    }
+                    return r.json();
+                })
+                .then(function(data) {
+                    msgInput.value = '';
+                    loadMessages(currentJobId);
+                    btn.disabled = false;
+                })
+                .catch(function(err) {
+                    console.error('Chat Error:', err);
+                    alert(err.error || (err.errors && err.errors.message ? err.errors.message[0] : null) || 'ไม่สามารถส่งข้อความได้');
+                    btn.disabled = false;
+                });
+        });
 
-    // ════════════════════════════════════════
-    // Click outside to close
-    // ════════════════════════════════════════
-    document.addEventListener('click', function(e) {
-        if (!panelOpen) return;
-        var widget = document.getElementById('chatFloatWidget');
-        if (widget && !widget.contains(e.target)) closeChatWidget();
-    });
+        function updateBadge(count) {
+            var badge = document.getElementById('chatFloatBadge');
+            if (count > 0) { badge.textContent = count; badge.style.display = 'inline-block'; }
+            else { badge.style.display = 'none'; }
+        }
+        function recalcBadge() { updateBadge(threads.reduce(function(s,t){ return s+(t.unread||0); }, 0)); }
 
-    // ════════════════════════════════════════
-    // Utilities
-    // ════════════════════════════════════════
-    function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-    function escJs(s)   { return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
-})();
-</script>
-@endif
-@endauth
+        // Laravel Echo
+        if (window.Echo) {
+            // ฟังจากช่องส่วนตัวของนักศึกษา (สำหรับแจ้งเตือนรวม)
+            window.Echo.private('chat.student.' + USER_ID)
+                .listen('ChatMessageEvent', function(e) {
+                    if (currentJobId == e.job_id) { loadMessages(currentJobId); }
+                    else { loadThreads(); }
+                });
+        }
+    })();
+    </script>
+    @endif
+    @endauth
 </body>
 </html>

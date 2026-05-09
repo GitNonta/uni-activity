@@ -11,13 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('attendances', function (Blueprint $table) {
-            $table->dropColumn('method');
-        });
-        
-        Schema::table('attendances', function (Blueprint $table) {
-            $table->enum('method', ['qr_scan', 'self', 'manual'])->default('qr_scan')->after('activity_id');
-        });
+        if (Schema::getConnection()->getDriverName() !== 'pgsql') {
+            Schema::table('attendances', function (Blueprint $table) {
+                $table->dropColumn('method');
+            });
+            
+            Schema::table('attendances', function (Blueprint $table) {
+                $table->enum('method', ['qr_scan', 'self', 'manual', 'walk_in'])->default('qr_scan')->after('activity_id');
+            });
+        }
+
     }
 
     /**

@@ -1,4 +1,3 @@
-{{-- หน้าจัดการกิจกรรม (Admin): ค้นหา + กรองสถานะ + ตาราง CRUD --}}
 @extends('layouts.admin')
 @section('title', 'จัดการกิจกรรม')
 
@@ -207,3 +206,4 @@ document.getElementById('pendingModal').addEventListener('click', function(e) {
     if (e.target === this) closePendingModal();
 });
 </script>
+@endsection

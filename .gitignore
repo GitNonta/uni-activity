@@ -53,3 +53,23 @@ test_error.php
 # Local env overrides
 .env.local
 .env.docker.local
+
+# Project specific ignores
+/database_dumps/
+composer.phar
+test_db.php
+laravel-reverb-chat-agent.md
+*.svg
+*.bat
+*.ps1
+*.bat
+*.png
+*.jpg
+*.jpeg
+*.mp4
+*.zip
+*.csv
+*.pdf
+!README.md
+!*.svg # Allow architectural diagrams
+!*.ps1 # Allow setup scripts
