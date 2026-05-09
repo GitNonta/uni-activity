@@ -85,8 +85,7 @@ RUN echo "upload_max_filesize = 50M" > /usr/local/etc/php/conf.d/uploads.ini \
 
 WORKDIR /var/www/html
 
-# Copy optimized vendor and application
-COPY --from=vendor /app/vendor ./vendor
+# Copy application code and vendor from builder
 COPY --from=vendor /app .
 
 # Copy built frontend assets
@@ -106,23 +105,21 @@ COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY docker/php-fpm-pool.conf /usr/local/etc/php-fpm.d/www.conf
 COPY docker/supervisord.conf /etc/supervisord.conf
 
-# Ensure storage directory structure exists
+# Ensure directory structure and set permissions
 RUN mkdir -p /var/www/html/storage/app/public \
     && mkdir -p /var/www/html/storage/framework/cache/data \
     && mkdir -p /var/www/html/storage/framework/sessions \
     && mkdir -p /var/www/html/storage/framework/testing \
     && mkdir -p /var/www/html/storage/framework/views \
     && mkdir -p /var/www/html/storage/logs \
-    && mkdir -p /var/www/html/bootstrap/cache
-
-# Set permissions
-RUN chown -R www-data:www-data \
-    /var/www/html/storage \
-    /var/www/html/bootstrap/cache \
-    /var/www/html/public/build \
+    && mkdir -p /var/www/html/bootstrap/cache \
+    && chown -R www-data:www-data \
+        /var/www/html/storage \
+        /var/www/html/bootstrap/cache \
+        /var/www/html/public/build \
     && chmod -R 775 \
-    /var/www/html/storage \
-    /var/www/html/bootstrap/cache
+        /var/www/html/storage \
+        /var/www/html/bootstrap/cache
 
 # Copy and prepare entrypoint
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
