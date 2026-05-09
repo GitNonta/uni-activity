@@ -70,9 +70,11 @@ RUN docker-php-ext-configure gd --with-freetype --with-webp --with-jpeg \
         opcache \
         intl
 
-# Install MongoDB and Redis via PECL (Alpine packages don't work with Docker official PHP)
-RUN pecl install mongodb && docker-php-ext-enable mongodb
-RUN printf "\n" | pecl install redis && docker-php-ext-enable redis
+# Install MongoDB and Redis via PECL
+RUN pecl channel-update pecl.php.net \
+    && pecl install mongodb \
+    && pecl install redis \
+    && docker-php-ext-enable mongodb redis
 
 # PHP configuration
 RUN echo "upload_max_filesize = 50M" > /usr/local/etc/php/conf.d/uploads.ini \
