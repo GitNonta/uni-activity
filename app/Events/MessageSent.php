@@ -41,15 +41,17 @@ class MessageSent implements ShouldBroadcast
         $user = $this->message->user;
         
         return [
-            'id'           => $this->message->id,
-            'room_id'      => $this->message->room_id,
-            'sender_id'    => $this->message->user_id,
-            'sender_role'  => $user?->role ?? 'system',
-            'sender_name'  => $user?->full_name ?? 'ผู้ใช้',
-            'sender_photo' => $user?->profile_photo ? asset('storage/' . $user->profile_photo) : null,
-            'message'      => $this->message->body,
-            'attachments'  => $this->message->attachments ?? [],
-            'created_at'   => $this->message->created_at?->toISOString(),
+            'id'      => $this->message->id,
+            'room_id' => $this->message->room_id,
+            'message' => $this->message->body,
+            'user'    => [
+                'id'    => $this->message->user_id,
+                'name'  => $user?->full_name ?? 'ผู้ใช้',
+                'role'  => $user?->role ?? 'system',
+                'photo' => $user?->profile_photo ? asset('storage/' . $user->profile_photo) : null,
+            ],
+            'attachments' => $this->message->attachments ?? [],
+            'created_at'  => $this->message->created_at?->toISOString(),
         ];
     }
 }

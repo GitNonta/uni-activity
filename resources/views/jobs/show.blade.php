@@ -391,6 +391,8 @@
             .then(function(data) {
                 chatWindow.innerHTML = '';
                 var msgs = data.messages || [];
+                if (!Array.isArray(msgs)) msgs = Object.values(msgs);
+                
                 if (!msgs.length) {
                     chatWindow.innerHTML = '<p id="popupNoMsg" style="margin:auto;font-size:.85rem;color:#94a3b8;text-align:center;">ยังไม่มีข้อความ เริ่มสอบถามได้เลย</p>';
                     return;

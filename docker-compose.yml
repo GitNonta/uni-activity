@@ -5,7 +5,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: laravel-app
+    # container_name: laravel-app (Removed for scaling)
+    deploy:
+      replicas: 1
     restart: unless-stopped
     working_dir: /var/www/html
     volumes:
@@ -34,7 +36,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-root}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - CACHE_DRIVER=redis
+      - CACHE_STORE=redis
       - SESSION_DRIVER=redis
       - QUEUE_CONNECTION=redis
       - MONGODB_HOST=mongodb
@@ -49,16 +51,32 @@ services:
       - REVERB_APP_SECRET=uni-chat-secret
       - REVERB_HOST=0.0.0.0
       - REVERB_PORT=8080
-    ports:
-      - "8000:80"
-      - "8080:8080"
-      - "5173:5173"
+    # Ports moved to load-balancer
+    # ports:
+    #   - "8000:80"
+    #   - "8080:8080"
+    #   - "5173:5173"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 30s
+
+  load-balancer:
+    image: nginx:alpine
+    container_name: laravel-lb
+    restart: unless-stopped
+    volumes:
+      - ./docker/lb.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "8000:80"
+      - "8080:8080"
+    networks:
+      - laravel-network
+    depends_on:
+      app:
+        condition: service_healthy
 
   redis:
     image: redis:7-alpine
@@ -75,10 +93,12 @@ services:
   mysql:
     image: mysql:8.0
     container_name: laravel-mysql
+    profiles: ["extra"]
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: ${DB_DATABASE:-uni_activity}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     volumes:
       - mysql-data:/var/lib/mysql
       - ./docker/mysql.cnf:/etc/mysql/conf.d/mysql.cnf
@@ -96,6 +116,7 @@ services:
   mongodb:
     image: mongo:7
     container_name: laravel-mongodb
+    profiles: ["extra"]
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME:-root}
@@ -113,6 +134,7 @@ services:
   redis-commander:
     image: rediscommander/redis-commander:latest
     container_name: laravel-redis-ui
+    profiles: ["extra"]
     restart: unless-stopped
     environment:
       REDIS_HOSTS: local:redis:6379
@@ -130,7 +152,7 @@ services:
     restart: unless-stopped
     command:
       - "http"
-      - "app:80"
+      - "load-balancer:80"
       - "--log=stdout"
       - "--log-level=info"
     environment:
@@ -140,7 +162,7 @@ services:
     ports:
       - "4040:4040"
     depends_on:
-      - app
+      - load-balancer
 
   postgres:
     image: postgres:16-alpine
@@ -150,6 +172,8 @@ services:
       POSTGRES_DB: ${DB_DATABASE:-uni_activity}
       POSTGRES_USER: ${DB_USERNAME:-root}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-root}
+      LANG: en_US.utf8
+      LC_ALL: en_US.utf8
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
@@ -165,6 +189,7 @@ services:
   cassandra:
     image: cassandra:4.1
     container_name: laravel-cassandra
+    profiles: ["extra"]
     restart: unless-stopped
     environment:
       - CASSANDRA_CLUSTER_NAME=uni_chat_cluster
@@ -185,6 +210,7 @@ services:
   phpmyadmin:
     image: phpmyadmin:latest
     container_name: laravel-phpmyadmin
+    profiles: ["extra"]
     restart: unless-stopped
     environment:
       - PMA_HOST=mysql

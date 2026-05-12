@@ -317,7 +317,9 @@
                 .then(function(r){ return r.json(); })
                 .then(function(data) {
                     win.innerHTML = '';
-                    (data.messages || []).forEach(function(m) { win.appendChild(buildBubble(m)); });
+                    var msgs = data.messages || [];
+                    if (!Array.isArray(msgs)) msgs = Object.values(msgs);
+                    msgs.forEach(function(m) { win.appendChild(buildBubble(m)); });
                     win.scrollTop = win.scrollHeight;
                 });
         }

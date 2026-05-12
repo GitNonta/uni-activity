@@ -96,8 +96,9 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "Test services with:" -ForegroundColor Cyan
     Write-Host "  .\test-api-health.ps1`n" -ForegroundColor White
     
-    Write-Host "Access application at:" -ForegroundColor Cyan
+    Write-Host "Access application at (via Load Balancer):" -ForegroundColor Cyan
     Write-Host "  http://localhost:8000`n" -ForegroundColor White
+    Write-Host "Application is scaled to 3 instances for better performance.`n" -ForegroundColor Green
     
 } else {
     Write-Host "`n✗ Build failed!" -ForegroundColor Red

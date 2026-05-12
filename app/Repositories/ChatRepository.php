@@ -84,7 +84,8 @@ class ChatRepository
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get()
-            ->reverse();
+            ->reverse()
+            ->values();
     }
 
     /**

@@ -39,6 +39,7 @@ class AdminInboxController extends Controller
             return [
                 'job_id'       => $room->job_id,
                 'room_id'      => $room->id,
+                'student_id'   => $student?->id,
                 'job_title'    => $room->job?->title ?? "งาน #{$room->job_id}",
                 'student_name'  => $student?->full_name ?? 'นักศึกษา',
                 'student_photo' => $student?->profile_photo ? asset('storage/' . $student->profile_photo) : null,
@@ -117,16 +118,17 @@ class AdminInboxController extends Controller
     private function formatMessage(Message $msg): array
     {
         $user = $msg->user;
-        $role = $user?->role ?? 'system';
 
         return [
-            'id'          => $msg->id,
-            'room_id'     => $msg->room_id,
-            'sender_id'   => $msg->user_id,
-            'sender_role' => $role,
-            'sender_name'  => $user?->full_name ?? 'ผู้ดูแล',
-            'sender_photo' => $user?->profile_photo ? asset('storage/' . $user->profile_photo) : null,
-            'message'     => $msg->body,
+            'id'      => $msg->id,
+            'room_id' => $msg->room_id,
+            'message' => $msg->body,
+            'user'    => [
+                'id'    => $msg->user_id,
+                'name'  => $user?->full_name ?? 'ผู้ดูแล',
+                'role'  => $user?->role ?? 'system',
+                'photo' => $user?->profile_photo ? asset('storage/' . $user->profile_photo) : null,
+            ],
             'attachments' => $msg->attachments ?? [],
             'created_at'  => $msg->created_at?->toISOString(),
         ];

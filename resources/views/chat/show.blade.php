@@ -145,8 +145,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const noMsg = document.getElementById('noMsg');
         if (noMsg) noMsg.remove();
 
-        const label = mine ? 'คุณ' : (msg.sender_name || 'ผู้ดูแล');
-        const photo = msg.sender_photo || null;
+        const label = mine ? 'คุณ' : (msg.user?.name || 'ผู้ดูแล');
+        const photo = msg.user?.photo || null;
 
         const wrap = document.createElement('div');
         wrap.id = 'cm-' + msg.id;
@@ -251,9 +251,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Laravel Echo (Reverb) ──
     if (window.Echo) {
         window.Echo.private('chat.room.' + '{{ $room->id }}')
-            .listen('MessageSent', (msg) => {
+            .listen('.MessageSent', (msg) => {
                 // Ignore our own messages
-                if (msg.sender_id == USER_ID) return;
+                if (msg.user.id == USER_ID) return;
                 
                 if (!document.getElementById('cm-' + msg.id)) {
                     renderBubble(msg, false);

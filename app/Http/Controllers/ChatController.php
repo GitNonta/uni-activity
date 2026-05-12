@@ -185,19 +185,19 @@ class ChatController extends Controller
     private function formatMessage(Message $msg): array
     {
         $user = $msg->user;
-        $role = $user?->role ?? 'system';
         
         return [
-            'id'           => $msg->id,
-            'room_id'      => $msg->room_id,
-            'sender_id'    => $msg->user_id,
-            'sender_role'  => $role,
-            'sender_name'  => $user?->full_name ?? 'ผู้ใช้',
-            'sender_photo' => $user?->profile_photo ? asset('storage/' . $user->profile_photo) : null,
-            'message'      => $msg->body,
-            'attachments'  => $msg->attachments ?? [],
-            'created_at'   => $msg->created_at?->toISOString(),
-            'read_at'      => null, // Handled via room_user pivot in new system
+            'id'      => $msg->id,
+            'room_id' => $msg->room_id,
+            'message' => $msg->body,
+            'user'    => [
+                'id'    => $msg->user_id,
+                'name'  => $user?->full_name ?? 'ผู้ใช้',
+                'role'  => $user?->role ?? 'system',
+                'photo' => $user?->profile_photo ? asset('storage/' . $user->profile_photo) : null,
+            ],
+            'attachments' => $msg->attachments ?? [],
+            'created_at'  => $msg->created_at?->toISOString(),
         ];
     }
 }

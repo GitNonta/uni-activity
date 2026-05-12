@@ -31,6 +31,11 @@ class AppServiceProvider extends ServiceProvider
             str_contains(request()->header('Host', ''), 'ngrok')) {
             URL::forceScheme('https');
         }
+
+        // Force Port 8000 if behind local Load Balancer
+        if (request()->header('X-Forwarded-Port') === '8000') {
+            URL::forceRootUrl(config('app.url'));
+        }
     }
 
     private function configureRateLimiters(): void

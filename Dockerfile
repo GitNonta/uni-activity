@@ -70,10 +70,10 @@ RUN docker-php-ext-configure gd --with-freetype --with-webp --with-jpeg \
         opcache \
         intl
 
-# Install MongoDB and Redis via PECL
+# Install MongoDB and Redis via PECL with specific versions to avoid metadata issues
 RUN pecl channel-update pecl.php.net \
-    && pecl install mongodb \
-    && pecl install redis \
+    && (pecl install mongodb-1.19.1 || pecl install mongodb) \
+    && (pecl install redis-6.0.2 || pecl install redis) \
     && docker-php-ext-enable mongodb redis
 
 # PHP configuration

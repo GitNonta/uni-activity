@@ -12,3 +12,5 @@ README*
 *.sql
 *.zip
 *.log
+/public/storage
+socketserver/node_modules
