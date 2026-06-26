@@ -16,7 +16,10 @@ class CheckRole
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         if (!$request->user()) {
-            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงหน้านี้');
+            if ($request->expectsJson()) {
+                abort(401, 'Unauthorized');
+            }
+            return redirect()->route('login');
         }
 
         $userRole = $request->user()->role;
@@ -27,6 +30,11 @@ class CheckRole
         }
 
         if (!in_array($userRole, $roles)) {
+            // ถ้าเป็นนักศึกษาแต่พยายามเข้าหน้าที่มีสิทธิ์เป็น staff/admin ให้เด้งไปหน้าแรกนักศึกษา
+            if (!$request->expectsJson() && $userRole === 'student') {
+                return redirect()->route('activities.index')->with('error', 'คุณไม่มีสิทธิ์เข้าถึงหน้าดังกล่าว');
+            }
+            
             abort(403, 'คุณไม่มีสิทธิ์เข้าถึงหน้านี้');
         }
 

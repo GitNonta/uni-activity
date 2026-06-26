@@ -25,16 +25,16 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureRateLimiters();
 
-        // Force HTTPS URLs when behind proxy (ngrok, cloudflare, etc.)
-        if (request()->header('X-Forwarded-Proto') === 'https' || 
-            request()->header('X-Forwarded-Ssl') === 'on' ||
-            str_contains(request()->header('Host', ''), 'ngrok')) {
-            URL::forceScheme('https');
-        }
+        // ตรวจสอบและบังคับใช้โปรโตคอลและโดเมนตามที่เรียกเข้ามาจริง (รองรับทั้ง localhost และ ngrok)
+        if (!app()->runningInConsole()) {
+            $currentHost = request()->getSchemeAndHttpHost();
+            URL::forceRootUrl($currentHost);
 
-        // Force Port 8000 if behind local Load Balancer
-        if (request()->header('X-Forwarded-Port') === '8000') {
-            URL::forceRootUrl(config('app.url'));
+            if (request()->header('X-Forwarded-Proto') === 'https' || 
+                request()->header('X-Forwarded-Ssl') === 'on' ||
+                str_contains(request()->header('Host', ''), 'ngrok')) {
+                URL::forceScheme('https');
+            }
         }
     }
 

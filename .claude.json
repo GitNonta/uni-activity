@@ -1,0 +1,5 @@
+{
+  "model": "qwen/qwen3-coder:free",
+  "apiKey": "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",
+  "baseURL": "https://openrouter.ai/api/v1"
+}

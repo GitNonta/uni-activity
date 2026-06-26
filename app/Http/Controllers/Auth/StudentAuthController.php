@@ -24,9 +24,9 @@ class StudentAuthController extends Controller
 
     /**
      * ดำเนินการเข้าสู่ระบบนักศึกษา
-     * ตรวจสอบรหัสนักศึกษา → ตรวจบทบาท → ล็อกอิน
+     * ตรวจสอบรหัสนักศึกษา → ส่ง OTP → ไปหน้ายืนยัน
      */
-    public function login(Request $request)
+    public function login(Request $request, LoginOtpController $otpController)
     {
         $request->validate(['student_id' => 'required|string']);
 
@@ -44,9 +44,16 @@ class StudentAuthController extends Controller
             return back()->withErrors(['student_id' => 'ผู้จัดกิจกรรมกรุณาเข้าสู่ระบบทางหน้าผู้ดูแล'])->withInput();
         }
 
-        Auth::login($user, $request->boolean('remember'));
+        // --- เพิ่มระบบ OTP ก่อน Login ---
+        session([
+            'login_otp_user_id' => $user->id,
+            'login_otp_email'   => $user->email,
+            'login_otp_remember'=> $request->boolean('remember'),
+        ]);
 
-        return redirect()->intended(route('activities.index'));
+        $otpController->sendOtp($user, $request);
+
+        return redirect()->route('login.otp.show');
     }
 
     /** แสดงหน้าลงทะเบียนบัญชีนักศึกษาใหม่ */

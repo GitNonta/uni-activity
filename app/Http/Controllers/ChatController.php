@@ -67,11 +67,28 @@ class ChatController extends Controller
             })
             ->firstOrFail();
 
-        // Handle attachments (omitted for brevity, same logic as before)
+        $attachments = [];
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $path = $file->store('chat/attachments', 'public');
+                $attachments[] = [
+                    'original_name' => $file->getClientOriginalName(),
+                    'path'          => $path,
+                    'url'           => asset('storage/' . $path),
+                    'mime_type'     => $file->getMimeType(),
+                    'size'          => $file->getSize(),
+                ];
+            }
+        }
+
         $body = $request->message ?? '';
-        // In a real app, attachments would be part of the message body or separate fields
-        
-        $msg = $this->chatRepository->sendMessage($room, Auth::user(), $body);
+        $msg = $this->chatRepository->sendMessage(
+            $room, 
+            Auth::user(), 
+            $body, 
+            count($attachments) > 0 && empty($body) ? 'file' : 'text',
+            $attachments
+        );
 
         $formatted = $this->formatMessage($msg);
 
@@ -109,17 +126,20 @@ class ChatController extends Controller
             })
             ->with(['messages' => function ($q) {
                 $q->latest()->limit(1);
+            }, 'users' => function($q) use ($userId) {
+                $q->where('users.id', $userId);
             }, 'job'])
             ->get();
 
         $threads = $rooms->map(function ($room) use ($userId) {
             $lastMsg = $room->messages->first();
             $job = $room->job;
+            $me = $room->users->where('id', $userId)->first();
             
-            // Calculate unread (simplified for now)
+            // Calculate unread using eager loaded pivot
             $unread = $room->messages()
                 ->where('user_id', '!=', $userId)
-                ->where('created_at', '>', $room->users()->find($userId)->pivot->last_read_at ?? '1970-01-01')
+                ->where('created_at', '>', $me->pivot->last_read_at ?? '1970-01-01')
                 ->count();
 
             return [

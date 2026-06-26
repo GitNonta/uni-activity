@@ -39,10 +39,12 @@ class CassandraService
     public function logMessage(string $roomId, string $messageId, int $userId, string $body, string $type, \DateTime $createdAt): void
     {
         $conn = $this->getConnection();
-        $conn->query("
-            INSERT INTO messages (room_id, created_at, message_id, user_id, body, type)
+        $query = sprintf("
+            INSERT INTO %s.messages (room_id, created_at, message_id, user_id, body, type)
             VALUES (?, ?, ?, ?, ?, ?)
-        ", [
+        ", $this->keyspace);
+        
+        $conn->query($query, [
             $roomId,
             $createdAt->format('Y-m-d H:i:s.uO'), // Cassandra timestamp format
             $messageId,
@@ -58,7 +60,7 @@ class CassandraService
     public function getHistory(string $roomId, ?int $limit = 50, ?\DateTime $before = null): array
     {
         $conn = $this->getConnection();
-        $query = "SELECT * FROM messages WHERE room_id = ?";
+        $query = sprintf("SELECT * FROM %s.messages WHERE room_id = ?", $this->keyspace);
         $params = [$roomId];
 
         if ($before) {

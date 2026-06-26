@@ -60,31 +60,12 @@ class CheckInController extends Controller
     /** บันทึกกิจกรรมด้วยตัวเอง (ไม่ต้องสแกน QR) → ส่งพิกัด GPS เพื่อตรวจสอบอัตโนมัติ */
     public function selfCheckIn(Request $request, $activityId)
     {
-        $activity = Activity::findOrFail($activityId);
-        
-        if ($activity->qr_expires_at && now()->gt($activity->qr_expires_at)) {
-            return back()->with('error', 'ระบบเช็คอินปิดรับแล้ว (Token หมดอายุ)');
-        }
+        Activity::findOrFail($activityId);
 
-        $result = $this->checkInService->processCheckIn(
-            $activity->qr_token,
-            $request->user(),
-            'self',
-            $request->filled('latitude') ? (float) $request->latitude : null,
-            $request->filled('longitude') ? (float) $request->longitude : null,
-        );
-
-        if ($result['success']) {
-            $msg = $result['status'] === 'approved'
-                ? "บันทึกกิจกรรม \"{$activity->title}\" สำเร็จ! (อนุมัติอัตโนมัติ)"
-                : "ส่งคำขอบันทึกกิจกรรม \"{$activity->title}\" แล้ว รอผู้จัดอนุมัติ";
-            return back()->with('success', $msg);
-        }
-
-        return back()->with('error', $result['message']);
+        return back()->with('error', 'กรุณาสแกน QR Code หน้างานเพื่อเช็คอินกิจกรรม');
     }
 
-    /** แสดงหน้า Walk-in Check-in (ไม่ต้อง login กรอกรหัสนักศึกษาเอง) */
+    /** แสดงหน้า Walk-in Check-in สำหรับ staff/admin หน้างาน */
     public function walkInPage(string $token)
     {
         $activity = Activity::where('qr_token', $token)->firstOrFail();
@@ -101,7 +82,7 @@ class CheckInController extends Controller
         return view('checkin.walkin', compact('activity', 'token', 'attendances'));
     }
 
-    /** ดำเนินการ Walk-in Check-in: ค้นหานักศึกษาจากรหัส → บันทึก attendance อัตโนมัติ */
+    /** ดำเนินการ Walk-in Check-in: staff/admin ค้นหานักศึกษาจากรหัส → บันทึก attendance อัตโนมัติ */
     public function walkInStore(Request $request, string $token)
     {
         $request->validate([

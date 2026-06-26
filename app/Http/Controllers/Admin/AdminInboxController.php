@@ -16,13 +16,16 @@ use Illuminate\Support\Str;
 class AdminInboxController extends Controller
 {
     public function __construct(protected ChatRepository $chatRepository) {}
-    /** รายการกล่องข้อความ - กลุ่มตาม job + student */
     public function index()
     {
+        $currentUserId = Auth::id();
         $rooms = Room::with(['messages' => function($q) {
                 $q->latest()->limit(1);
-            }, 'users' => function($q) {
-                $q->where('users.role', 'student');
+            }, 'users' => function($q) use ($currentUserId) {
+                // Load students AND the current admin in one query
+                $q->where(function($sub) use ($currentUserId) {
+                    $sub->where('users.role', 'student')->orWhere('users.id', $currentUserId);
+                });
             }, 'job'])
             ->orderByDesc(
                 Message::select('created_at')
@@ -32,9 +35,10 @@ class AdminInboxController extends Controller
             )
             ->get();
 
-        $result = $rooms->map(function ($room) {
+        $result = $rooms->map(function ($room) use ($currentUserId) {
             $lastMsg = $room->messages->first();
-            $student = $room->users->first();
+            $student = $room->users->where('role', 'student')->first();
+            $me = $room->users->where('id', $currentUserId)->first();
             
             return [
                 'job_id'       => $room->job_id,
@@ -46,11 +50,11 @@ class AdminInboxController extends Controller
                 'last_message' => $lastMsg?->body ?? '',
                 'last_time'    => $lastMsg?->created_at,
                 'unread'       => $room->messages()
-                    ->where('user_id', '!=', Auth::id())
-                    ->where('created_at', '>', $room->users()->find(Auth::id())->pivot->last_read_at ?? '1970-01-01')
+                    ->where('user_id', '!=', $currentUserId)
+                    ->where('created_at', '>', $me?->pivot?->last_read_at ?? '1970-01-01')
                     ->count(),
             ];
-        });
+        })->filter(fn($t) => !empty($t['student_id']))->values();
 
         return view('admin.inbox.index', ['threads' => $result]);
     }
@@ -92,7 +96,27 @@ class AdminInboxController extends Controller
             })
             ->firstOrFail();
 
-        $msg = $this->chatRepository->sendMessage($room, Auth::user(), $request->message ?? '');
+        $attachments = [];
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $path = $file->store('chat/attachments', 'public');
+                $attachments[] = [
+                    'original_name' => $file->getClientOriginalName(),
+                    'path'          => $path,
+                    'url'           => asset('storage/' . $path),
+                    'mime_type'     => $file->getMimeType(),
+                    'size'          => $file->getSize(),
+                ];
+            }
+        }
+
+        $msg = $this->chatRepository->sendMessage(
+            $room, 
+            Auth::user(), 
+            $request->message ?? '', 
+            count($attachments) > 0 && empty($request->message) ? 'file' : 'text',
+            $attachments
+        );
 
         $formatted = $this->formatMessage($msg);
 

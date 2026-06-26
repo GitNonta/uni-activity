@@ -57,7 +57,7 @@ class CheckInWalkInTest extends TestCase
         ], $attributes));
     }
 
-    public function test_student_can_self_check_in_with_valid_qr()
+    public function test_registered_student_can_check_in_with_valid_qr()
     {
         $student = $this->createStudent();
         $activity = $this->createActivity();
@@ -77,7 +77,17 @@ class CheckInWalkInTest extends TestCase
         $this->assertDatabaseHas('attendances', [
             'user_id' => $student->id,
             'activity_id' => $activity->id,
+            'method' => 'qr_scan',
+            'status' => 'pending',
         ]);
+    }
+
+    public function test_guest_cannot_use_walk_in_page()
+    {
+        $activity = $this->createActivity();
+
+        $this->get(route('checkin.walkin', $activity->qr_token))
+            ->assertRedirect(route('login'));
     }
 
     public function test_expired_qr_token_prevents_check_in()
@@ -105,7 +115,9 @@ class CheckInWalkInTest extends TestCase
             'qr_expires_at' => now()->subHour()
         ]);
 
-        $response = $this->post(route('checkin.walkin.store', $activity->qr_token), [
+        $staff = $this->createStaff();
+
+        $response = $this->actingAs($staff)->post(route('checkin.walkin.store', $activity->qr_token), [
             'student_id' => '65012345'
         ]);
 

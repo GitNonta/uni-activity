@@ -18,28 +18,28 @@ services:
       - ./docker/supervisord.conf:/etc/supervisord.conf
     networks:
       - laravel-network
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_started
+    # depends_on:
+    #   postgres:
+    #     condition: service_healthy
+    #   redis:
+    #     condition: service_started
     environment:
       - APP_ENV=local
       - APP_DEBUG=true
       - APP_KEY=${APP_KEY}
       - APP_URL=${APP_URL:-http://localhost:8000}
       - DB_CONNECTION=pgsql
-      - DB_HOST=postgres
+      - DB_HOST=${DB_HOST:-postgres}
       - DB_PORT=5432
       - DB_DATABASE=${DB_DATABASE:-uni_activity}
       - DB_USERNAME=${DB_USERNAME:-root}
       - DB_PASSWORD=${DB_PASSWORD:-root}
-      - REDIS_HOST=redis
+      - REDIS_HOST=${REDIS_HOST:-redis}
       - REDIS_PORT=6379
       - CACHE_STORE=redis
       - SESSION_DRIVER=redis
       - QUEUE_CONNECTION=redis
-      - MONGODB_HOST=mongodb
+      - MONGODB_HOST=${MONGODB_HOST:-mongodb}
       - MONGODB_PORT=27017
       - MONGODB_DATABASE=${MONGODB_DATABASE:-uni_chat}
       - MONGODB_USERNAME=${MONGODB_USERNAME:-root}
@@ -180,11 +180,29 @@ services:
       - laravel-network
     ports:
       - "5432:5432"
+    command: ["postgres", "-c", "wal_level=replica", "-c", "max_wal_senders=10", "-c", "max_replication_slots=10", "-c", "hot_standby=on"]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-root} -d ${DB_DATABASE:-uni_activity}"]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  postgres-replica:
+    image: postgres:16-alpine
+    container_name: laravel-postgres-replica
+    restart: unless-stopped
+    user: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-root}
+    volumes:
+      - ./docker/setup-replica.sh:/usr/local/bin/setup-replica.sh
+      - postgres-replica-data:/var/lib/postgresql/data
+    entrypoint: ["/bin/sh", "-c", "cat /usr/local/bin/setup-replica.sh | tr -d '\\r' > /var/lib/postgresql/setup.sh && sh /var/lib/postgresql/setup.sh"]
+    networks:
+      - laravel-network
 
   cassandra:
     image: cassandra:4.1
@@ -238,6 +256,8 @@ volumes:
   storage-framework:
     driver: local
   postgres-data:
+    driver: local
+  postgres-replica-data:
     driver: local
   cassandra-data:
     driver: local

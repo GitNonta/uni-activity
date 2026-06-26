@@ -25,9 +25,9 @@ class StaffAuthController extends Controller
 
     /**
      * ดำเนินการเข้าสู่ระบบเจ้าหน้าที่
-     * ตรวจสอบ email + password → ล็อกอิน → ไปหน้า dashboard
+     * ตรวจสอบ email + password → ส่ง OTP → ไปหน้ายืนยัน
      */
-    public function login(Request $request)
+    public function login(Request $request, LoginOtpController $otpController)
     {
         $request->validate([
             'email'    => 'required|email',
@@ -45,9 +45,16 @@ class StaffAuthController extends Controller
             return back()->withErrors(['email' => 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'])->withInput();
         }
 
-        Auth::login($user, $request->boolean('remember'));
+        // --- เพิ่มระบบ OTP ก่อน Login ---
+        session([
+            'login_otp_user_id' => $user->id,
+            'login_otp_email'   => $user->email,
+            'login_otp_remember'=> $request->boolean('remember'),
+        ]);
 
-        return redirect()->intended(route('admin.dashboard'));
+        $otpController->sendOtp($user, $request);
+
+        return redirect()->route('login.otp.show');
     }
 
     /** ออกจากระบบเจ้าหน้าที่ → ลบ session → กลับหน้า admin login */

@@ -130,6 +130,12 @@
             <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             <span>สรุป</span>
         </a>
+        <a href="{{ route('student.my') }}" class="bottom-nav-item {{ request()->routeIs('student.my') ? 'active' : '' }}">
+            <div class="bg-indigo-600 text-white rounded-full p-2 -mt-6 shadow-lg border-4 border-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+            </div>
+            <span class="mt-1">บัตรของฉัน</span>
+        </a>
         <a href="{{ route('student.profile') }}" class="bottom-nav-item {{ request()->routeIs('student.profile') ? 'active' : '' }}">
             <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
             <span>โปรไฟล์</span>
@@ -325,15 +331,17 @@
         }
 
         function buildBubble(msg) {
-            var mine = msg.sender_role === 'student';
+            var mine = msg.user_id == USER_ID || (msg.user && msg.user.id == USER_ID);
+            var isTemp = String(msg.id).startsWith('tmp-');
             var row = document.createElement('div');
+            row.id = 'cf-msg-' + msg.id;
             row.style.cssText = 'display:flex;flex-direction:' + (mine?'row-reverse':'row') + ';align-items:flex-end;gap:.3rem;margin-bottom:.2rem;';
             
             var col = document.createElement('div');
             col.style.cssText = 'display:flex;flex-direction:column;align-items:' + (mine?'flex-end':'flex-start') + ';max-width:75%;';
             
             var bubble = document.createElement('div');
-            bubble.style.cssText = 'padding:.45rem .75rem;border-radius:' + (mine?'14px 4px 14px 14px':'4px 14px 14px 14px') + ';background:' + (mine?'#4f46e5':'#fff') + ';color:' + (mine?'#fff':'#1e293b') + ';font-size:.82rem;box-shadow:0 1px 2px rgba(0,0,0,.08);word-break:break-word;';
+            bubble.style.cssText = 'padding:.45rem .75rem;border-radius:' + (mine?'14px 4px 14px 14px':'4px 14px 14px 14px') + ';background:' + (mine?'#4f46e5':'#fff') + ';color:' + (mine?'#fff':'#1e293b') + ';font-size:.82rem;box-shadow:0 1px 2px rgba(0,0,0,.08);word-break:break-word;white-space:pre-wrap;';
             
             if (msg.message) {
                 var p = document.createElement('p');
@@ -365,6 +373,21 @@
             }
             
             col.appendChild(bubble);
+
+            // Add time and status
+            var timeStr = new Date(msg.created_at).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            var statusDiv = document.createElement('div');
+            statusDiv.style.cssText = 'display:flex;align-items:center;gap:.25rem;margin-top:.1rem;';
+            statusDiv.innerHTML = '<span style="font-size:.6rem;color:#94a3b8;">' + timeStr + '</span>';
+            
+            if (mine) {
+                var statusText = document.createElement('span');
+                statusText.style.cssText = 'font-size:.6rem;color:' + (isTemp ? '#94a3b8' : '#6366f1') + ';';
+                statusText.textContent = isTemp ? 'กำลังส่ง...' : '✓ ส่งแล้ว';
+                statusDiv.appendChild(statusText);
+            }
+            col.appendChild(statusDiv);
+
             row.appendChild(col);
             return row;
         }
@@ -375,13 +398,47 @@
             var form = this;
             var msgInput = document.getElementById('cfMsgInput');
             var text = msgInput.value.trim();
+            var fileInput = document.getElementById('cfFileInput');
+            if (!text && fileInput.files.length === 0) return;
+
             var fd = new FormData(form);
-            
-            // มั่นใจว่ามี message ส่งไปแน่นอน
             if (!fd.has('message')) fd.append('message', text);
 
             var btn = document.getElementById('cfSendBtn');
             btn.disabled = true;
+
+            // Optimistic UI: Append message immediately
+            var win = document.getElementById('cfChatWindow');
+            var tempId = 'tmp-' + Date.now();
+            var optimisticMsg = {
+                id: tempId,
+                user_id: USER_ID,
+                message: text,
+                attachments: [], // We can't easily preview local files here without more code, but we can show the text
+                created_at: new Date().toISOString()
+            };
+            
+            // If there are files, show a placeholder in optimistic UI
+            if (fileInput.files.length > 0) {
+                Array.from(fileInput.files).forEach(function(f) {
+                    optimisticMsg.attachments.push({
+                        original_name: f.name,
+                        url: '#',
+                        mime_type: f.type
+                    });
+                });
+            }
+
+            var bubble = buildBubble(optimisticMsg);
+            bubble.style.opacity = '0.7'; // Sending state
+            win.appendChild(bubble);
+            win.scrollTop = win.scrollHeight;
+
+            // Clear input
+            msgInput.value = '';
+            fileInput.value = '';
+            document.getElementById('cfAttachPreview').innerHTML = '';
+            document.getElementById('cfAttachPreview').style.display = 'none';
 
             fetch('/jobs/' + currentJobId + '/chat', { 
                 method: 'POST', 
@@ -389,18 +446,22 @@
                 body: fd 
             })
                 .then(function(r) {
-                    if (!r.ok) {
-                        return r.json().then(function(err) { throw err; });
-                    }
+                    if (!r.ok) return r.json().then(function(err) { throw err; });
                     return r.json();
                 })
                 .then(function(data) {
-                    msgInput.value = '';
-                    loadMessages(currentJobId);
                     btn.disabled = false;
+                    // Replace optimistic bubble with real one
+                    if (data.message) {
+                        var realBubble = buildBubble(data.message);
+                        bubble.parentNode.replaceChild(realBubble, bubble);
+                    }
+                    recalcBadge();
                 })
                 .catch(function(err) {
                     console.error('Chat Error:', err);
+                    bubble.style.background = '#fee2e2'; // Error state
+                    bubble.style.color = '#991b1b';
                     alert(err.error || (err.errors && err.errors.message ? err.errors.message[0] : null) || 'ไม่สามารถส่งข้อความได้');
                     btn.disabled = false;
                 });
@@ -417,9 +478,20 @@
         if (window.Echo) {
             // ฟังจากช่องส่วนตัวของนักศึกษา (สำหรับแจ้งเตือนรวม)
             window.Echo.private('chat.student.' + USER_ID)
-                .listen('ChatMessageEvent', function(e) {
-                    if (currentJobId == e.job_id) { loadMessages(currentJobId); }
-                    else { loadThreads(); }
+                .listen('.MessageSent', function(e) {
+                    if (currentJobId == e.room_id || (e.room && currentJobId == e.room.job_id)) { 
+                        var win = document.getElementById('cfChatWindow');
+                        if (!document.getElementById('cf-msg-' + e.id)) {
+                            win.appendChild(buildBubble(e));
+                            win.scrollTop = win.scrollHeight;
+                            // Auto mark-read if panel is open and on this room
+                            if (panelOpen) {
+                                fetch('/jobs/' + currentJobId + '/chat/read', { method: 'POST', headers: { 'X-CSRF-TOKEN': CSRF } });
+                            }
+                        }
+                    } else {
+                        loadThreads();
+                    }
                 });
         }
     })();

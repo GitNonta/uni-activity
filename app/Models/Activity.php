@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * โมเดลกิจกรรม
@@ -38,6 +42,7 @@ class Activity extends Model
         'faculty',
         'department',
         'allow_early_checkin',
+        'require_attendance_approval',
         'latitude',
         'longitude',
         'checkin_radius',
@@ -55,6 +60,7 @@ class Activity extends Model
             'qr_expires_at' => 'datetime',
             'is_mandatory' => 'boolean',
             'allow_early_checkin' => 'boolean',
+            'require_attendance_approval' => 'boolean',
             'activity_hours' => 'decimal:1',
             'max_participants' => 'integer',
             'latitude' => 'decimal:7',
@@ -64,31 +70,31 @@ class Activity extends Model
     }
 
     /** ความสัมพันธ์: กิจกรรมมีการลงทะเบียนหลายรายการ */
-    public function registrations()
+    public function registrations(): HasMany
     {
         return $this->hasMany(Registration::class);
     }
 
     /** ความสัมพันธ์: กิจกรรมมีการเข้าร่วม (attendance) หลายรายการ */
-    public function attendances()
+    public function attendances(): HasMany
     {
         return $this->hasMany(Attendance::class);
     }
 
     /** ความสัมพันธ์: กิจกรรมอยู่ในหมวดหมู่ */
-    public function category()
+    public function category(): BelongsTo
     {
         return $this->belongsTo(ActivityCategory::class, 'category_id');
     }
 
     /** ความสัมพันธ์: กิจกรรมถูกสร้างโดยเจ้าหน้าที่ */
-    public function creator()
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
     /** ความสัมพันธ์: กิจกรรมมีการประเมินหลายรายการ */
-    public function feedbacks()
+    public function feedbacks(): HasMany
     {
         return $this->hasMany(ActivityFeedback::class);
     }
@@ -115,10 +121,7 @@ class Activity extends Model
     /** คำนวณจำนวนที่ว่างเหลือสำหรับลงทะเบียน */
     public function getRemainingSlots(): int
     {
-        $registered = $this->registrations()
-            ->whereIn('status', ['pending', 'approved'])
-            ->count();
-        return max(0, $this->max_participants - $registered);
+        return max(0, $this->max_participants - $this->getRegisteredCount());
     }
 
     /** ตรวจสอบว่ากิจกรรมนี้ตั้งค่าพิกัดสถานที่ไว้หรือไม่ */
@@ -136,6 +139,16 @@ class Activity extends Model
     /** นับจำนวนผู้ลงทะเบียนทั้งหมด (pending + approved) */
     public function getRegisteredCount(): int
     {
+        if (array_key_exists('registered_count', $this->attributes)) {
+            return (int) $this->attributes['registered_count'];
+        }
+
+        if ($this->relationLoaded('registrations')) {
+            return $this->registrations
+                ->whereIn('status', ['pending', 'approved'])
+                ->count();
+        }
+
         return $this->registrations()
             ->whereIn('status', ['pending', 'approved'])
             ->count();

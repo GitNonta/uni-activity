@@ -18,14 +18,19 @@ class Attendance extends Model
         'user_id',
         'activity_id',
         'checked_in_at',
+        'checked_out_at',
         'method',
+        'checkout_method',
         'status',
         'verified_by',
         'is_verified',
         'ip_address',
         'checkin_latitude',
         'checkin_longitude',
+        'checkout_latitude',
+        'checkout_longitude',
         'distance_meters',
+        'checkout_distance_meters',
     ];
 
     /** กำหนดประเภทการแปลงค่าฟิลด์ */
@@ -33,10 +38,14 @@ class Attendance extends Model
     {
         return [
             'checked_in_at' => 'datetime',
+            'checked_out_at' => 'datetime',
             'is_verified' => 'boolean',
             'checkin_latitude' => 'decimal:7',
             'checkin_longitude' => 'decimal:7',
+            'checkout_latitude' => 'decimal:7',
+            'checkout_longitude' => 'decimal:7',
             'distance_meters' => 'decimal:2',
+            'checkout_distance_meters' => 'decimal:2',
         ];
     }
 

@@ -26,9 +26,30 @@ class MessageSent implements ShouldBroadcast
      */
     public function broadcastOn(): array
     {
-        return [
+        $channels = [
             new PrivateChannel('chat.room.' . $this->message->room_id),
         ];
+
+        // ถ้าผู้ส่งเป็น Admin/Staff ให้ส่งไปที่ Channel ของนักศึกษาเจ้าของห้องด้วย
+        // เพื่อให้ตัว Floating Widget ที่หน้าอื่นๆ ได้รับการแจ้งเตือน
+        $room = $this->message->room;
+        if ($room && $this->message->user && ($this->message->user->isAdmin() || $this->message->user->isStaff())) {
+            // หา ID นักศึกษาในห้องนี้ (โดยปกติห้องแชทงานจะมีนักศึกษา 1 คน)
+            $student = $room->users()->where('users.role', 'student')->first();
+            if ($student) {
+                $channels[] = new PrivateChannel('chat.student.' . $student->id);
+            }
+        }
+
+        return $channels;
+    }
+
+    /**
+     * The event's broadcast name.
+     */
+    public function broadcastAs(): string
+    {
+        return 'MessageSent';
     }
 
     /**

@@ -95,15 +95,10 @@
                         บันทึกกิจกรรมถูกปฏิเสธ
                     </div>
                 @elseif(!$userAttendance && $userRegistration->status === 'approved' && ($activity->allow_early_checkin || (now() >= $activity->checkin_open_at && now() <= $activity->checkin_close_at)))
-                    <form method="POST" action="{{ route('activities.self-checkin', $activity->id) }}" id="checkinForm">
-                        @csrf
-                        <input type="hidden" name="latitude" id="checkin_lat">
-                        <input type="hidden" name="longitude" id="checkin_lng">
-                        <button type="submit" class="btn btn-success btn-block btn-lg" onclick="return submitWithLocation(event)">
-                            <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            บันทึกกิจกรรม
-                        </button>
-                    </form>
+                    <div class="alert alert-info text-sm">
+                        <svg class="icon-sm" style="display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+                        กรุณาสแกน QR Code หน้างานเพื่อเช็คอิน
+                    </div>
                 @elseif($userRegistration->status === 'approved' && now() < $activity->checkin_open_at)
                     <div class="alert alert-info text-sm">
                         <svg class="icon-sm" style="display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -132,29 +127,6 @@
 
 @section('scripts')
 <script>
-function submitWithLocation(e) {
-    e.preventDefault();
-    var form = document.getElementById('checkinForm');
-    if (!form) return false;
-
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            function(pos) {
-                document.getElementById('checkin_lat').value = pos.coords.latitude;
-                document.getElementById('checkin_lng').value = pos.coords.longitude;
-                if (confirm('ยืนยันบันทึกกิจกรรม?')) form.submit();
-            },
-            function() {
-                if (confirm('ไม่สามารถดึงพิกัดได้ ต้องการบันทึกกิจกรรมต่อหรือไม่? (จะต้องรอผู้จัดอนุมัติ)')) form.submit();
-            },
-            { enableHighAccuracy: true, timeout: 10000 }
-        );
-    } else {
-        if (confirm('เบราว์เซอร์ไม่รองรับ GPS ต้องการบันทึกกิจกรรมต่อหรือไม่? (จะต้องรอผู้จัดอนุมัติ)')) form.submit();
-    }
-    return false;
-}
-
 // Lazy Loading Images
 document.addEventListener('DOMContentLoaded', function() {
     var lazyImages = document.querySelectorAll('img.lazy-img');

@@ -12,8 +12,14 @@ class UpdateLastSeen
     public function handle(Request $request, Closure $next)
     {
         if (Auth::check()) {
-            DB::table('users')->where('id', Auth::id())
-                ->update(['last_seen_at' => now()]);
+            $user = Auth::user();
+            
+            // อัปเดตเฉพาะเมื่อผ่านไปแล้วอย่างน้อย 5 นาที เพื่อลดภาระฐานข้อมูล
+            $lastSeen = $user->last_seen_at;
+            if (!$lastSeen || $lastSeen->diffInMinutes(now()) >= 5) {
+                DB::table('users')->where('id', $user->id)
+                    ->update(['last_seen_at' => now()]);
+            }
         }
 
         return $next($request);

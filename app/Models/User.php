@@ -110,12 +110,13 @@ class User extends Authenticatable
         return $this->role === 'student';
     }
 
-    /** ส่ง notification รีเซ็ตรหัสผ่าน (custom สำหรับ staff) */
+    /** ส่ง notification รีเซ็ตรหัสผ่าน (สำหรับเจ้าหน้าที่และผู้ดูแลระบบ) */
     public function sendPasswordResetNotification($token): void
     {
-        if ($this->role === 'staff') {
+        if (in_array($this->role, ['staff', 'admin'])) {
             $this->notify(new \App\Notifications\StaffResetPasswordNotification($token));
         } else {
+            // กรณีบทบาทอื่น (เช่น นักศึกษา) ให้ใช้ระบบปกติของ Laravel (ถ้ามีการตั้งค่าไว้)
             parent::sendPasswordResetNotification($token);
         }
     }

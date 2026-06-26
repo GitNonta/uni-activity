@@ -1,14 +1,26 @@
 import Echo from 'laravel-echo';
-
 import Pusher from 'pusher-js';
+
 window.Pusher = Pusher;
+
+const host = window.location.hostname;
+const currentPort = window.location.port;
+const protocol = window.location.protocol === 'https:' ? 'https' : 'http';
+
+// กำหนดพอร์ตสำหรับ WebSocket อัตโนมัติ
+// 1. ถ้าเป็น localhost/127.0.0.1 และเข้าผ่านพอร์ต 8000 -> ใช้ 8080 (Reverb Direct)
+// 2. ถ้าเข้าผ่านหน้าเว็บพอร์ตอื่นๆ (เช่น ngrok หรือ public ip) -> ใช้พอร์ตเดียวกับหน้าเว็บ (Nginx Proxy)
+let wsPort = currentPort || (protocol === 'https' ? 443 : 80);
+if ((host === 'localhost' || host === '127.0.0.1') && currentPort === '8000') {
+    wsPort = 8080;
+}
 
 window.Echo = new Echo({
     broadcaster: 'reverb',
     key: import.meta.env.VITE_REVERB_APP_KEY,
-    wsHost: import.meta.env.VITE_REVERB_HOST,
-    wsPort: import.meta.env.VITE_REVERB_PORT,
-    wssPort: import.meta.env.VITE_REVERB_PORT,
-    forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'http') === 'https',
+    wsHost: host,
+    wsPort: wsPort,
+    wssPort: wsPort,
+    forceTLS: protocol === 'https',
     enabledTransports: ['ws', 'wss'],
 });

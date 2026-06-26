@@ -25,23 +25,17 @@ class CheckInService
      * @param  float|null  $longitude ลองจิจูดจากอุปกรณ์ผู้ใช้
      * @return array{success: bool, message?: string, activity?: Activity, status?: string}
      */
+    /**
+     * ดำเนินการเช็คอิน (เข้างาน) หรือ บันทึกกิจกรรม (เลิกงาน)
+     * 1. Check-in: ต้องลงทะเบียนแล้ว + อยู่ในพื้นที่กิจกรรม (ถ้ากำหนด)
+     * 2. Finalize: ต้องเช็คอินแล้ว + จบกิจกรรม (หรือตามเงื่อนไขผู้จัด)
+     */
     public function processCheckIn(string $token, User $user, string $method = 'qr_scan', ?float $latitude = null, ?float $longitude = null): array
     {
-        // ค้นหากิจกรรมจาก QR token
         $activity = Activity::where('qr_token', $token)->firstOrFail();
         $now = now();
 
-        // ตรวจช่วงเวลาเช็คอิน (ข้ามได้ถ้าผู้ดูแลเปิด allow_early_checkin)
-        if (!$activity->allow_early_checkin) {
-            if ($now < $activity->checkin_open_at) {
-                return ['success' => false, 'message' => 'ยังไม่ถึงเวลาเช็คอิน'];
-            }
-            if ($now > $activity->checkin_close_at) {
-                return ['success' => false, 'message' => 'หมดเวลาเช็คอินแล้ว'];
-            }
-        }
-
-        // ตรวจสอบว่าลงทะเบียนและได้รับอนุมัติแล้ว
+        // 1. ตรวจสอบการลงทะเบียน
         $registration = Registration::where('user_id', $user->id)
             ->where('activity_id', $activity->id)
             ->where('status', 'approved')
@@ -51,50 +45,96 @@ class CheckInService
             return ['success' => false, 'message' => 'คุณไม่ได้ลงทะเบียนกิจกรรมนี้ หรือยังไม่ได้รับการอนุมัติ'];
         }
 
-        // ตรวจสอบว่าเช็คอินซ้ำหรือไม่
-        if (Attendance::where('user_id', $user->id)->where('activity_id', $activity->id)->exists()) {
-            return ['success' => false, 'message' => 'คุณเช็คอินไปแล้ว'];
+        // 2. ค้นหารายการ Attendance เดิม
+        $attendance = Attendance::where('user_id', $user->id)
+            ->where('activity_id', $activity->id)
+            ->first();
+
+        // --- กรณีที่ 1: ยังไม่ได้เช็คอิน (Entry) ---
+        if (!$attendance) {
+            // ตรวจช่วงเวลาเปิดเช็คอิน
+            if (!$activity->allow_early_checkin && $now < $activity->checkin_open_at) {
+                return ['success' => false, 'message' => 'ยังไม่ถึงเวลาเช็คอินเข้างาน'];
+            }
+            if ($now > $activity->checkin_close_at) {
+                return ['success' => false, 'message' => 'หมดเวลาเช็คอินเข้างานแล้ว'];
+            }
+
+            // ตรวจสอบพิกัด (บังคับสำหรับ Check-in เข้างาน)
+            $distance = null;
+            if ($activity->hasGeolocation()) {
+                if ($latitude === null || $longitude === null) {
+                    return ['success' => false, 'message' => 'กรุณาเปิด GPS เพื่อตรวจสอบว่าคุณอยู่ในพื้นที่กิจกรรม'];
+                }
+                $distance = $this->calculateDistance($activity->latitude, $activity->longitude, $latitude, $longitude);
+                if ($distance > $activity->checkin_radius) {
+                    return ['success' => false, 'message' => "คุณอยู่นอกพื้นที่กิจกรรม (ห่างประมาณ " . number_format($distance, 0) . " ม.)", 'distance' => $distance];
+                }
+            }
+
+            // บันทึกการเข้างาน (Check-in)
+            Attendance::create([
+                'user_id'           => $user->id,
+                'activity_id'       => $activity->id,
+                'checked_in_at'     => $now,
+                'method'            => $method,
+                'status'            => 'pending', // เข้างานแล้วแต่ยังไม่จบกิจกรรม
+                'is_verified'       => true,
+                'ip_address'        => request()->ip(),
+                'checkin_latitude'  => $latitude,
+                'checkin_longitude' => $longitude,
+                'distance_meters'   => $distance,
+            ]);
+
+            return [
+                'success' => true,
+                'message' => 'เช็คอินเข้างานสำเร็จ! อย่าลืมสแกนอีกครั้งเมื่อจบกิจกรรมเพื่อบันทึกชั่วโมง',
+                'activity' => $activity,
+                'status' => 'checked_in',
+                'distance' => $distance,
+            ];
         }
 
-        // คำนวณระยะทางระหว่างนักศึกษากับสถานที่จัดกิจกรรม
-        $distance = null;
-        $autoApproved = false;
+        // --- กรณีที่ 2: เช็คอินแล้ว จะทำการบันทึกจบกิจกรรม (Exit/Finalize) ---
+        if ($attendance->checked_out_at) {
+            return ['success' => false, 'message' => 'คุณได้บันทึกจบกิจกรรมนี้ไปแล้ว'];
+        }
 
+        // ตรวจสอบว่ากิจกรรมจบหรือยัง (อนุญาตให้ finalize ได้ตั้งแต่เริ่มงาน X นาที หรือตามเวลาปิด)
+        // เพื่อความยืดหยุ่น จะเช็คว่าผ่านเวลาเริ่มงานมาแล้วหรือยัง
+        if ($now < \Carbon\Carbon::parse($activity->activity_date->format('Y-m-d') . ' ' . $activity->start_time)) {
+             return ['success' => false, 'message' => 'ยังไม่สามารถบันทึกจบกิจกรรมได้ จนกว่าจะถึงเวลาเริ่มงาน'];
+        }
+
+        // คำนวณระยะทางขาออก (ถ้ามี)
+        $exitDistance = null;
         if ($activity->hasGeolocation() && $latitude !== null && $longitude !== null) {
-            $distance = $this->calculateDistance(
-                $activity->latitude, $activity->longitude,
-                $latitude, $longitude
-            );
-            // อยู่ในรัศมี → อนุมัติอัตโนมัติ
-            $autoApproved = $distance <= $activity->checkin_radius;
+            $exitDistance = $this->calculateDistance($activity->latitude, $activity->longitude, $latitude, $longitude);
         }
 
-        // กำหนดสถานะ: อนุมัติอัตโนมัติถ้าอยู่ในรัศมี หรือรอผู้จัดอนุมัติ
-        $status = $autoApproved ? 'approved' : 'pending';
-
-        // สร้างรายการเข้าร่วมกิจกรรม
-        Attendance::create([
-            'user_id'           => $user->id,
-            'activity_id'       => $activity->id,
-            'method'            => $method,
-            'status'            => $status,
-            'is_verified'       => $autoApproved,
-            'ip_address'        => request()->ip(),
-            'checkin_latitude'  => $latitude,
-            'checkin_longitude' => $longitude,
-            'distance_meters'   => $distance,
+        // ตัดสินใจเรื่อง Auto Approve ท้ายกิจกรรม
+        $autoApproved = !$activity->require_attendance_approval;
+        
+        // บันทึกการออกงาน (Finalize)
+        $attendance->update([
+            'checked_out_at'           => $now,
+            'checkout_method'          => $method,
+            'checkout_latitude'        => $latitude,
+            'checkout_longitude'       => $longitude,
+            'checkout_distance_meters' => $exitDistance,
+            'status'                   => $autoApproved ? 'approved' : 'pending',
         ]);
 
-        // ถ้าอนุมัติอัตโนมัติ เปลี่ยนสถานะการลงทะเบียนเป็น 'completed'
         if ($autoApproved) {
             $registration->markAsCompleted();
         }
 
         return [
             'success'  => true,
+            'message'  => $autoApproved ? 'บันทึกกิจกรรมสำเร็จ! ได้รับชั่วโมงกิจกรรมแล้ว' : 'บันทึกกิจกรรมแล้ว รอผู้จัดอนุมัติชั่วโมง',
             'activity' => $activity,
-            'status'   => $status,
-            'distance' => $distance,
+            'status'   => $autoApproved ? 'approved' : 'pending',
+            'distance' => $exitDistance,
         ];
     }
 

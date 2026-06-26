@@ -27,6 +27,16 @@ use App\Http\Controllers\Admin\AdminInboxController;
 use App\Http\Controllers\UserStatusController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/debug-ip', function() {
+    return [
+        'ip' => request()->ip(),
+        'all_ips' => request()->ips(),
+        'header_x_forwarded_for' => request()->header('X-Forwarded-For'),
+        'header_x_real_ip' => request()->header('X-Real-IP'),
+        'server_remote_addr' => $_SERVER['REMOTE_ADDR'] ?? 'N/A',
+    ];
+});
+
 // ── เส้นทางนักศึกษา: เข้าสู่ระบบ / ลงทะเบียนบัญชี / ออกจากระบบ ──
 Route::get('/', function () {
     if (auth()->check()) {
@@ -41,6 +51,12 @@ Route::get('/', function () {
 Route::middleware('guest')->group(function () {
     Route::get('/login', [StudentAuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [StudentAuthController::class, 'login'])->middleware('throttle:student-login');
+    
+    // ── Login OTP ──
+    Route::get('/login/verify-otp', [\App\Http\Controllers\Auth\LoginOtpController::class, 'showVerifyForm'])->name('login.otp.show');
+    Route::post('/login/verify-otp', [\App\Http\Controllers\Auth\LoginOtpController::class, 'verify'])->name('login.otp.verify');
+    Route::post('/login/resend-otp', [\App\Http\Controllers\Auth\LoginOtpController::class, 'resend'])->name('login.otp.resend');
+
     Route::get('/register', [StudentAuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [StudentAuthController::class, 'register']);
 });
@@ -58,14 +74,21 @@ Route::post('/admin/logout', [StaffAuthController::class, 'logout'])->name('admi
 Route::middleware('guest')->group(function () {
     Route::get('/admin/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('admin.password.request');
     Route::post('/admin/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->middleware('throttle:password-reset')->name('admin.password.email');
+    
+    // ── OTP Verification ──
+    Route::get('/admin/verify-otp', [\App\Http\Controllers\Auth\OtpVerificationController::class, 'showVerifyForm'])->name('admin.password.otp.show');
+    Route::post('/admin/verify-otp', [\App\Http\Controllers\Auth\OtpVerificationController::class, 'verify'])->name('admin.password.otp.verify');
+
     Route::get('/admin/reset-password/{token}', [NewPasswordController::class, 'create'])->name('admin.password.reset');
     Route::post('/admin/reset-password', [NewPasswordController::class, 'store'])->middleware('throttle:password-reset')->name('admin.password.update');
 });
 
-// ── เส้นทาง Walk-in Check-in (ไม่ต้อง login กรอกรหัสนักศึกษาเอง) ──
-Route::get('/walkin/{token}', [CheckInController::class, 'walkInPage'])->name('checkin.walkin');             // หน้า walk-in check-in
-Route::post('/walkin/{token}', [CheckInController::class, 'walkInStore'])->middleware('throttle:walkin')->name('checkin.walkin.store'); // บันทึก walk-in check-in
-Route::get('/walkin/{token}/attendees', [CheckInController::class, 'walkInAttendees'])->middleware('throttle:status')->name('checkin.walkin.attendees'); // API รายชื่อ real-time
+// ── เส้นทาง Walk-in Check-in (สำหรับ staff/admin หน้างานเท่านั้น) ──
+Route::middleware(['auth', 'role:staff'])->group(function () {
+    Route::get('/walkin/{token}', [CheckInController::class, 'walkInPage'])->name('checkin.walkin');             // หน้า walk-in check-in
+    Route::post('/walkin/{token}', [CheckInController::class, 'walkInStore'])->middleware('throttle:walkin')->name('checkin.walkin.store'); // บันทึก walk-in check-in
+    Route::get('/walkin/{token}/attendees', [CheckInController::class, 'walkInAttendees'])->middleware('throttle:status')->name('checkin.walkin.attendees'); // API รายชื่อ real-time
+});
 
 // ── เส้นทางนักศึกษา (ต้อง login ก่อน) ──────────────────
 Route::middleware('auth')->group(function () {
@@ -75,12 +98,14 @@ Route::middleware('auth')->group(function () {
     Route::delete('/registrations/{id}', [RegistrationController::class, 'destroy'])->name('registrations.destroy'); // ยกเลิกการลงทะเบียน
     Route::get('/check-in/{token}', [CheckInController::class, 'show'])->name('checkin.show');                       // หน้าเช็คอินจาก QR
     Route::post('/check-in/{token}', [CheckInController::class, 'store'])->name('checkin.store');                    // ดำเนินการเช็คอิน QR
-    Route::post('/activities/{id}/self-checkin', [CheckInController::class, 'selfCheckIn'])->name('activities.self-checkin'); // บันทึกกิจกรรมด้วยตัวเอง
+    Route::post('/activities/{id}/self-checkin', [CheckInController::class, 'selfCheckIn'])->name('activities.self-checkin'); // ปิด self check-in: ให้สแกน QR หน้างานเท่านั้น
     Route::get('/my-activities', [StudentController::class, 'myActivities'])->name('student.my');                    // กิจกรรมของฉัน
     Route::get('/history', [StudentController::class, 'history'])->name('student.history');                          // ประวัติการเข้าร่วม
     Route::get('/summary', [StudentController::class, 'summary'])->name('student.summary');                          // สรุปชั่วโมง
     Route::get('/summary/pdf', [StudentController::class, 'downloadPdf'])->name('student.summary.pdf');              // ดาวน์โหลด PDF ใบแสดงผลกิจกรรม
     Route::get('/profile', [StudentController::class, 'profile'])->name('student.profile');                          // หน้าโปรไฟล์นักศึกษา
+    Route::get('/my-qr', [StudentController::class, 'showMyQr'])->name('student.qr');                                // หน้า QR ส่วนตัว
+    Route::get('/my-qr/token', [StudentController::class, 'getDynamicQrToken'])->name('student.qr.token');           // ดึง Token QR
     // ── ปฏิทินกิจกรรม ──
     Route::get('/calendar', [StudentController::class, 'calendar'])->name('student.calendar');                       // หน้าปฏิทิน
     Route::get('/calendar/events', [StudentController::class, 'calendarEvents'])->name('student.calendar.events');   // JSON feed
@@ -140,6 +165,8 @@ Route::middleware(['auth', 'role:staff'])->prefix('admin')->name('admin.')->grou
     
     // ── QR Code ──
     Route::post('activities/{id}/regenerate-qr', [ActivityAdminController::class, 'regenerateQr'])->name('activities.regenerate-qr');
+    Route::get('activities/{id}/scanner', [ActivityAdminController::class, 'scanner'])->name('activities.scanner');
+    Route::post('activities/{id}/scan-student', [ActivityAdminController::class, 'scanStudent'])->name('activities.scan-student');
 
     // ── ประกาศ ──
     Route::resource('announcements', AnnouncementAdminController::class);

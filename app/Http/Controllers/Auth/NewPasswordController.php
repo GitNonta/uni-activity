@@ -23,9 +23,7 @@ class NewPasswordController extends Controller
     }
 
     /**
-     * ดำเนินการรีเซ็ตรหัสผ่านใหม่
-     *
-     * @throws ValidationException
+     * ขั้นตอนที่ 1: ตรวจสอบข้อมูลเบื้องต้นและส่ง OTP ยืนยันการเปลี่ยนรหัส
      */
     public function store(Request $request): RedirectResponse
     {
@@ -35,25 +33,41 @@ class NewPasswordController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        // รีเซ็ตรหัสผ่านของผู้ใช้ ถ้าสำเร็จจะอัปเดตรหัสผ่านในฐานข้อมูล
-        // ถ้าไม่สำเร็จจะส่ง error กลับไป
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function (User $user) use ($request) {
-                $user->forceFill([
-                    'password' => Hash::make($request->password),
-                    'remember_token' => Str::random(60),
-                ])->save();
+        // --- เพิ่มขั้นตอน OTP ก่อนเปลี่ยนรหัสจริง ---
+        $otp = (string) rand(100000, 999999);
+        $expiryMinutes = 10;
 
-                event(new PasswordReset($user));
-            }
+        // บันทึก OTP ลงฐานข้อมูล
+        \Illuminate\Support\Facades\DB::table('password_reset_otps')->updateOrInsert(
+            ['email' => $request->email],
+            [
+                'otp' => $otp,
+                'expires_at' => now()->addMinutes($expiryMinutes),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
         );
 
-        // ถ้ารีเซ็ตรหัสผ่านสำเร็จ จะ redirect ไปหน้า login
-        // ถ้าไม่สำเร็จ จะกลับไปหน้าเดิมพร้อมแสดง error
-        return $status == Password::PASSWORD_RESET
-                    ? redirect()->route('login')->with('status', __($status))
-                    : back()->withInput($request->only('email'))
-                        ->withErrors(['email' => __($status)]);
+        // เก็บข้อมูลรหัสผ่านใหม่ไว้ใน Session ชั่วคราว (Encrypted)
+        session([
+            'pending_password_reset' => [
+                'email' => $request->email,
+                'password' => $request->password,
+                'token' => $request->token,
+            ]
+        ]);
+
+        // ส่งอีเมล OTP
+        try {
+            \Illuminate\Support\Facades\Mail::to($request->email)->send(
+                new \App\Mail\PasswordResetOtpMail($otp, $expiryMinutes)
+            );
+            
+            return redirect()->route('admin.password.otp.show', ['email' => $request->email])
+                ->with('status', 'กรุณากรอกรหัส OTP ที่ส่งไปยังอีเมลของคุณเพื่อยืนยันการเปลี่ยนรหัสผ่าน');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Final OTP Mail Error: ' . $e->getMessage());
+            return back()->withErrors(['email' => 'ไม่สามารถส่งรหัสยืนยันไปยังอีเมลได้ กรุณาลองใหม่']);
+        }
     }
 }

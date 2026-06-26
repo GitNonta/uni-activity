@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Activity;
@@ -8,6 +10,7 @@ use App\Models\Attendance;
 use App\Models\Registration;
 use App\Services\ActivityStatusService;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 /**
  * คอนโทรลเลอร์กิจกรรม (ฝั่งนักศึกษา)
@@ -24,11 +27,17 @@ class ActivityController extends Controller
      * แสดงรายการกิจกรรมทั้งหมด
      * รองรับการกรองตาม: สถานะ, หมวดหมู่, บังคับ, ค้นหาชื่อ/สถานที่
      */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
-        $categories = ActivityCategory::all();
+        $categories = ActivityCategory::query()
+            ->orderBy('name')
+            ->get();
 
-        $activities = Activity::with(['category', 'registrations'])
+        $activities = Activity::query()
+            ->with('category')
+            ->withCount([
+                'registrations as registered_count' => fn($query) => $query->whereIn('status', ['pending', 'approved']),
+            ])
             ->when($request->status, fn($q) => $q->where('status', $request->status))
             ->when($request->category, fn($q) => $q->where('category_id', $request->category))
             ->when($request->mandatory, fn($q) => $q->where('is_mandatory', true))
@@ -55,9 +64,28 @@ class ActivityController extends Controller
                 ->toArray();
         }
 
-        $geoActivities = Activity::whereNotNull('latitude')
+        $geoActivities = Activity::query()
+            ->select([
+                'id',
+                'title',
+                'location',
+                'latitude',
+                'longitude',
+                'activity_date',
+                'start_time',
+                'end_time',
+                'activity_hours',
+                'image_path',
+            ])
+            ->whereNotNull('latitude')
             ->whereNotNull('longitude')
-            ->where('status', '!=', 'cancelled')
+            ->whereIn('status', ['upcoming', 'open', 'ongoing'])
+            ->whereBetween('activity_date', [
+                now()->subMonth()->toDateString(),
+                now()->addMonths(3)->toDateString(),
+            ])
+            ->orderBy('activity_date')
+            ->limit(200)
             ->get()
             ->map(fn($a) => [
                 'id'        => $a->id,
@@ -80,9 +108,13 @@ class ActivityController extends Controller
      * แสดงรายละเอียดกิจกรรม
      * อัปเดตสถานะ + ดึงข้อมูลการลงทะเบียน/เข้าร่วมของผู้ใช้ปัจจุบัน
      */
-    public function show($id)
+    public function show(int $id): View
     {
-        $activity = Activity::with(['category', 'registrations', 'creator'])->findOrFail($id);
+        $activity = Activity::with(['category', 'creator'])
+            ->withCount([
+                'registrations as registered_count' => fn($query) => $query->whereIn('status', ['pending', 'approved']),
+            ])
+            ->findOrFail($id);
         $this->statusService->updateStatus($activity);
 
         // ดึงข้อมูลการลงทะเบียนและการเข้าร่วมของผู้ใช้ปัจจุบัน (ถ้าล็อกอินแล้ว)

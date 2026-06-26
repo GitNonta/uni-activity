@@ -29,17 +29,19 @@ class ForgotPasswordController extends Controller
             'email' => ['required', 'email'],
         ]);
 
-        // ตรวจสอบว่าอีเมลนี้เป็น staff หรือไม่
-        $user = User::where('email', $request->email)->where('role', 'staff')->first();
+        // ตรวจสอบว่าอีเมลนี้เป็นเจ้าหน้าที่หรือผู้ดูแลระบบหรือไม่
+        $user = User::where('email', $request->email)
+            ->whereIn('role', ['staff', 'admin'])
+            ->first();
         
         if (!$user) {
             // ไม่เปิดเผยว่าอีเมลไม่มีในระบบ (security)
             throw ValidationException::withMessages([
-                'email' => 'ไม่พบอีเมลนี้ในระบบ หรืออีเมลนี้ไม่ใช่บัญชีเจ้าหน้าที่',
+                'email' => 'ไม่พบอีเมลนี้ในระบบ หรืออีเมลนี้ไม่ใช่บัญชีเจ้าหน้าที่/ผู้ดูแลระบบ',
             ]);
         }
 
-        // สร้าง reset token และส่งอีเมล
+        // สร้าง reset token และส่งอีเมล (ใช้ broker 'staff')
         $status = Password::broker('staff')->sendResetLink(
             $request->only('email')
         );

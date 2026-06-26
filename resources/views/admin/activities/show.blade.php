@@ -28,7 +28,8 @@
             <div class="flex gap-2">
                 <a href="{{ route('admin.activities.edit', $activity->id) }}" class="btn btn-outline btn-sm">แก้ไข</a>
                 <a href="{{ route('admin.activities.participants', $activity->id) }}" class="btn btn-outline btn-sm">ผู้เข้าร่วม</a>
-                <a href="{{ route('admin.activities.checkin', $activity->id) }}" class="btn btn-success btn-sm">เช็คอิน</a>
+                <a href="{{ route('admin.activities.scanner', $activity->id) }}" class="btn btn-primary btn-sm">สแกนนักศึกษา</a>
+                <a href="{{ route('admin.activities.checkin', $activity->id) }}" class="btn btn-success btn-sm">มอนิเตอร์</a>
             </div>
         </div>
 

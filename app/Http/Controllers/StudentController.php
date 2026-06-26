@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Activity;
@@ -8,8 +10,9 @@ use App\Models\Attendance;
 use App\Models\Registration;
 use App\Services\ActivitySummaryService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * คอนโทรลเลอร์หน้านักศึกษา
@@ -295,71 +298,129 @@ class StudentController extends Controller
      * JSON endpoint: รายการแจ้งเตือนสำหรับ navbar/banner
      * ส่งกลับ array ของ notifications
      */
-    public function notifications()
+    public function notifications(): JsonResponse
     {
         $userId = auth()->id();
-        $alerts = collect();
+        $cacheKey = "user_notifications_{$userId}";
 
-        $registrations = Registration::with('activity')
-            ->where('user_id', $userId)
-            ->where('status', 'approved')
-            ->get();
+        $alerts = Cache::remember($cacheKey, 60, function() use ($userId) {
+            $innerAlerts = collect();
 
-        $attendanceIds = Attendance::where('user_id', $userId)
-            ->where('status', 'approved')
-            ->pluck('activity_id')
-            ->toArray();
+            // 1. ดึงข้อมูลจากฐานข้อมูล (notifications_custom)
+            $dbNotifications = \App\Models\Notification::where('user_id', $userId)
+                ->where('is_read', false)
+                ->orderBy('created_at', 'desc')
+                ->limit(5)
+                ->get();
 
-        $feedbackDoneIds = ActivityFeedback::where('user_id', $userId)
-            ->pluck('activity_id')
-            ->toArray();
+            foreach ($dbNotifications as $dn) {
+                $icon = '🔔';
+                switch ($dn->type) {
+                    case 'registration_approved': $icon = '✅'; break;
+                    case 'registration_rejected': $icon = '❌'; break;
+                    case 'attendance_approved':   $icon = '🎓'; break;
+                    case 'attendance_rejected':   $icon = '⚠️'; break;
+                    case 'registration':          $icon = '📝'; break;
+                }
 
-        foreach ($registrations as $reg) {
-            $act = $reg->activity;
-            if (!$act) continue;
-
-            $att = Attendance::where('user_id', $userId)
-                ->where('activity_id', $act->id)
-                ->first();
-
-            $checkinOpen = $act->allow_early_checkin ||
-                (now() >= $act->checkin_open_at && now() <= $act->checkin_close_at);
-
-            if (!$att && $checkinOpen) {
-                $alerts->push([
-                    'type'    => 'checkin_open',
-                    'title'   => 'เช็คอินได้แล้ว!',
-                    'body'    => $act->title,
-                    'url'     => route('activities.show', $act->id),
-                    'icon'    => '🟢',
-                ]);
-            } elseif (!$att && $act->checkin_open_at &&
-                now()->diffInMinutes($act->checkin_open_at, false) > 0 &&
-                now()->diffInMinutes($act->checkin_open_at, false) <= 60) {
-                $alerts->push([
-                    'type'    => 'checkin_soon',
-                    'title'   => 'เช็คอินเปิดใน ' . now()->diffForHumans($act->checkin_open_at, true),
-                    'body'    => $act->title,
-                    'url'     => route('activities.show', $act->id),
-                    'icon'    => '🔔',
+                $innerAlerts->push([
+                    'id'    => $dn->id,
+                    'type'  => $dn->type,
+                    'title' => $dn->title,
+                    'body'  => $dn->message,
+                    'url'   => '#', 
+                    'icon'  => $icon,
+                    'db'    => true,
                 ]);
             }
 
-            // รอประเมิน
-            if ($att && $att->status === 'approved' &&
-                in_array($act->computed_status, ['done']) &&
-                !in_array($act->id, $feedbackDoneIds)) {
-                $alerts->push([
-                    'type'  => 'feedback',
-                    'title' => 'รอประเมินกิจกรรม',
-                    'body'  => $act->title,
-                    'url'   => route('feedback.create', $act->id),
-                    'icon'  => '⭐',
-                ]);
-            }
-        }
+            // 2. ตรวจสอบสถานะกิจกรรมปัจจุบันเพื่อแจ้งเตือนเช็คอิน
+            $registrations = Registration::with('activity')
+                ->where('user_id', $userId)
+                ->where('status', 'approved')
+                ->orderByDesc('registered_at')
+                ->limit(100)
+                ->get();
 
-        return response()->json(['alerts' => $alerts->values()]);
+            $feedbackDoneIds = ActivityFeedback::where('user_id', $userId)
+                ->pluck('activity_id')
+                ->toArray();
+
+            $attendanceMap = Attendance::where('user_id', $userId)
+                ->whereIn('activity_id', $registrations->pluck('activity_id'))
+                ->get()
+                ->keyBy('activity_id');
+
+            foreach ($registrations as $reg) {
+                $act = $reg->activity;
+                if (!$act) continue;
+
+                $att = $attendanceMap->get($act->id);
+
+                $checkinOpen = $act->allow_early_checkin ||
+                    (now() >= $act->checkin_open_at && now() <= $act->checkin_close_at);
+
+                if (!$att && $checkinOpen) {
+                    $innerAlerts->push([
+                        'type'    => 'checkin_open',
+                        'title'   => 'เช็คอินได้แล้ว!',
+                        'body'    => $act->title,
+                        'url'     => route('activities.show', $act->id),
+                        'icon'    => '🟢',
+                    ]);
+                } elseif (!$att && $act->checkin_open_at &&
+                    now()->diffInMinutes($act->checkin_open_at, false) > 0 &&
+                    now()->diffInMinutes($act->checkin_open_at, false) <= 60) {
+                    $innerAlerts->push([
+                        'type'    => 'checkin_soon',
+                        'title'   => 'เช็คอินเปิดใน ' . now()->diffForHumans($act->checkin_open_at, true),
+                        'body'    => $act->title,
+                        'url'     => route('activities.show', $act->id),
+                        'icon'    => '🔔',
+                    ]);
+                }
+
+                // รอประเมิน
+                if ($att && $att->status === 'approved' &&
+                    in_array($act->computed_status, ['done']) &&
+                    !in_array($act->id, $feedbackDoneIds)) {
+                    $innerAlerts->push([
+                        'type'  => 'feedback',
+                        'title' => 'รอประเมินกิจกรรม',
+                        'body'  => $act->title,
+                        'url'   => route('feedback.create', $act->id),
+                        'icon'  => '⭐',
+                    ]);
+                }
+            }
+            return $innerAlerts->values();
+        });
+
+        return response()->json(['alerts' => $alerts]);
+    }
+
+    /** แสดงหน้า QR Code ส่วนตัวสำหรับให้นักศึกษาแสดงให้เจ้าหน้าที่สแกน */
+    public function showMyQr()
+    {
+        $user = auth()->user();
+        return view('student.my-qr', compact('user'));
+    }
+
+    /** API สำหรับดึง Dynamic Token สำหรับ QR Code ส่วนตัว (เปลี่ยนทุก 30 วินาที) */
+    public function getDynamicQrToken()
+    {
+        $userId = auth()->id();
+        $timeWindow = floor(now()->timestamp / 30);
+        
+        $payload = $userId . '|' . $timeWindow;
+        $signature = hash_hmac('sha256', $payload, config('app.key'));
+        
+        $token = base64_encode($payload . '|' . $signature);
+        
+        return response()->json([
+            'token' => $token,
+            'expires_in' => 30 - (now()->timestamp % 30),
+        ]);
     }
 
     /** ดาวน์โหลด PDF ใบแสดงผลการเข้าร่วมกิจกรรม */

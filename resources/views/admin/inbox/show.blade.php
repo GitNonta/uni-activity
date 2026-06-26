@@ -19,14 +19,14 @@
     <div id="chatWindow" style="height:460px;overflow-y:auto;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:1rem;display:flex;flex-direction:column;gap:.6rem;margin-bottom:.75rem;">
         @forelse($messages as $msg)
             @php
-                $mine     = $msg->sender_role === 'admin';
-                $label    = $mine ? 'คุณ' : ($msg->sender_name ?? $student->full_name);
-                $photoUrl = $msg->sender_photo ?? null;
+                $isMine   = $msg->user_id == auth()->id();
+                $label    = $isMine ? 'คุณ' : ($msg->user?->full_name ?? $student->full_name);
+                $photoUrl = $msg->user?->profile_photo ? asset('storage/' . $msg->user->profile_photo) : null;
                 $initial  = mb_strtoupper(mb_substr($label, 0, 1));
-                $avatarBg = $mine ? '#4f46e5' : '#64748b';
+                $avatarBg = $isMine ? '#4f46e5' : '#64748b';
             @endphp
             <div id="cm-{{ $msg->id }}"
-                 style="display:flex;flex-direction:{{ $mine ? 'row-reverse' : 'row' }};align-items:flex-end;gap:.4rem;">
+                 style="display:flex;flex-direction:{{ $isMine ? 'row-reverse' : 'row' }};align-items:flex-end;gap:.4rem;">
                 {{-- Avatar with online dot --}}
                 <div style="position:relative;flex-shrink:0;">
                     @if($photoUrl)
@@ -35,16 +35,16 @@
                         <div style="width:28px;height:28px;border-radius:50%;background:{{ $avatarBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;">{{ $initial }}</div>
                     @endif
                     {{-- Online dot for student --}}
-                    @if(!$mine)
+                    @if(!$isMine)
                         <span id="avatar-dot-{{ $msg->id }}" class="student-online-dot" style="display:none;position:absolute;bottom:0;right:0;width:10px;height:10px;background:#10b981;border-radius:50%;border:2px solid #f8fafc;"></span>
                     @endif
                 </div>
                 {{-- Bubble column --}}
-                <div style="display:flex;flex-direction:column;align-items:{{ $mine ? 'flex-end' : 'flex-start' }};max-width:72%;">
+                <div style="display:flex;flex-direction:column;align-items:{{ $isMine ? 'flex-end' : 'flex-start' }};max-width:72%;">
                     <span style="font-size:.68rem;color:#94a3b8;margin-bottom:.15rem;">{{ $label }}</span>
-                    <div style="padding:.55rem .85rem;border-radius:{{ $mine ? '16px 4px 16px 16px' : '4px 16px 16px 16px' }};background:{{ $mine ? '#4f46e5' : '#fff' }};color:{{ $mine ? '#fff' : '#1e293b' }};font-size:.875rem;box-shadow:0 1px 3px rgba(0,0,0,.08);word-break:break-word;">
-                        @if($msg->message)
-                            <p style="margin:0;">{{ $msg->message }}</p>
+                    <div style="padding:.55rem .85rem;border-radius:{{ $isMine ? '16px 4px 16px 16px' : '4px 16px 16px 16px' }};background:{{ $isMine ? '#4f46e5' : '#fff' }};color:{{ $isMine ? '#fff' : '#1e293b' }};font-size:.875rem;box-shadow:0 1px 3px rgba(0,0,0,.08);word-break:break-word;">
+                        @if($msg->body)
+                            <p style="margin:0;">{{ $msg->body }}</p>
                         @endif
                         @foreach($msg->attachments ?? [] as $att)
                             @php $isImg = str_starts_with($att['mime_type'] ?? '', 'image/'); @endphp
@@ -121,32 +121,27 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Render bubble helper
-    function renderBubble(msg) {
-        const mine  = msg.sender_role === 'admin';
-        const dir   = mine ? 'row-reverse' : 'row';
-        const align = mine ? 'flex-end' : 'flex-start';
-        const bg    = mine ? '#4f46e5' : '#fff';
-        const color = mine ? '#fff'    : '#1e293b';
-        const br    = mine ? '16px 4px 16px 16px' : '4px 16px 16px 16px';
-        const linkC = mine ? '#c7d2fe' : '#4f46e5';
-        const label = mine ? 'คุณ' : (msg.sender_name || '{{ $student->full_name }}');
-        const photo = msg.sender_photo || null;
-        const avatarBg = mine ? '#4f46e5' : '#64748b';
+    function renderBubble(msg, isMine) {
+        if (isMine === undefined) {
+            isMine = msg.user?.id == myId || (msg.sender_role === 'admin' && !msg.user);
+        }
+
+        const dir   = isMine ? 'row-reverse' : 'row';
+        const align = isMine ? 'flex-end' : 'flex-start';
+        const bg    = isMine ? '#4f46e5' : '#fff';
+        const color = isMine ? '#fff'    : '#1e293b';
+        const br    = isMine ? '16px 4px 16px 16px' : '4px 16px 16px 16px';
+        const linkC = isMine ? '#c7d2fe' : '#4f46e5';
+        const label = isMine ? 'คุณ' : (msg.user?.name || '{{ $student->full_name }}');
+        const photo = msg.user?.photo || msg.sender_photo || null;
+        const avatarBg = isMine ? '#4f46e5' : '#64748b';
         const initial  = label.charAt(0).toUpperCase();
         
         var avatarHtml = '';
-        if (mine) {
-            if (photo) {
-                avatarHtml = '<img src="' + photo + '" alt="' + label + '" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;">';
-            } else {
-                avatarHtml = '<div style="width:28px;height:28px;border-radius:50%;background:' + avatarBg + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;flex-shrink:0;">' + initial + '</div>';
-            }
+        if (photo) {
+            avatarHtml = '<div style="position:relative;flex-shrink:0;"><img src="' + photo + '" alt="' + label + '" style="width:28px;height:28px;border-radius:50%;object-fit:cover;">' + (!isMine ? '<span id="avatar-dot-' + msg.id + '" class="student-online-dot" style="display:none;position:absolute;bottom:0;right:0;width:10px;height:10px;background:#10b981;border-radius:50%;border:2px solid #f8fafc;"></span>' : '') + '</div>';
         } else {
-            if (photo) {
-                avatarHtml = '<div style="position:relative;flex-shrink:0;"><img src="' + photo + '" alt="' + label + '" style="width:28px;height:28px;border-radius:50%;object-fit:cover;"><span id="avatar-dot-' + msg.id + '" class="student-online-dot" style="display:none;position:absolute;bottom:0;right:0;width:10px;height:10px;background:#10b981;border-radius:50%;border:2px solid #f8fafc;"></span></div>';
-            } else {
-                avatarHtml = '<div style="position:relative;flex-shrink:0;"><div style="width:28px;height:28px;border-radius:50%;background:' + avatarBg + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;">' + initial + '</div><span id="avatar-dot-' + msg.id + '" class="student-online-dot" style="display:none;position:absolute;bottom:0;right:0;width:10px;height:10px;background:#10b981;border-radius:50%;border:2px solid #f8fafc;"></span></div>';
-            }
+            avatarHtml = '<div style="position:relative;flex-shrink:0;"><div style="width:28px;height:28px;border-radius:50%;background:' + avatarBg + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;">' + initial + '</div>' + (!isMine ? '<span id="avatar-dot-' + msg.id + '" class="student-online-dot" style="display:none;position:absolute;bottom:0;right:0;width:10px;height:10px;background:#10b981;border-radius:50%;border:2px solid #f8fafc;"></span>' : '') + '</div>';
         }
 
         var attHtml = '';
@@ -160,9 +155,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const time = msg.created_at ? new Date(msg.created_at).toLocaleTimeString('th-TH', {hour:'2-digit',minute:'2-digit'}) : '';
         var status = '';
-        if (mine && msg.read_at) {
+        if (isMine && msg.read_at) {
             status = '<span id="admin-read-' + msg.id + '" style="font-size:.6rem;color:#6366f1;">✓✓ เห็นเมื่อ ' + new Date(msg.read_at).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}) + '</span>';
-        } else if (mine) {
+        } else if (isMine) {
             status = '<span id="admin-read-' + msg.id + '" style="font-size:.6rem;color:#94a3b8;">✓ ส่งแล้ว</span>';
         }
 
@@ -194,8 +189,16 @@ document.addEventListener('DOMContentLoaded', function () {
         const noMsg = document.getElementById('noMsg');
         if (noMsg) noMsg.remove();
         const ADMIN_PHOTO = '{{ Auth::user()->profile_photo ? asset('storage/' . Auth::user()->profile_photo) : '' }}';
-        const optimistic = { id: 'tmp-' + Date.now(), sender_role: 'admin', sender_name: 'คุณ', sender_photo: ADMIN_PHOTO || null, message: text, attachments: [], created_at: new Date().toISOString() };
-        win.insertAdjacentHTML('beforeend', renderBubble(optimistic));
+        const optimistic = { 
+            id: 'tmp-' + Date.now(), 
+            sender_role: 'admin', 
+            sender_name: 'คุณ', 
+            sender_photo: ADMIN_PHOTO || null, 
+            message: text, 
+            attachments: [], 
+            created_at: new Date().toISOString() 
+        };
+        win.insertAdjacentHTML('beforeend', renderBubble(optimistic, true));
         win.scrollTop = win.scrollHeight;
         input.value = '';
         fileInput.value = '';
@@ -207,7 +210,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(data => {
                 const tmp = document.getElementById(optimistic.id);
                 if (tmp && data.message) {
-                    tmp.outerHTML = renderBubble(data.message);
+                    tmp.outerHTML = renderBubble(data.message, true);
                 }
                 btn.disabled = false;
             })
@@ -217,12 +220,12 @@ document.addEventListener('DOMContentLoaded', function () {
     // Laravel Echo — receive messages
     if (window.Echo) {
         window.Echo.private('chat.room.' + '{{ $room->id }}')
-            .listen('MessageSent', function (msg) {
-                if (msg.sender_id == myId) return;
+            .listen('.MessageSent', function (msg) {
+                if (msg.user.id == myId) return;
                 const noMsg = document.getElementById('noMsg');
                 if (noMsg) noMsg.remove();
                 if (!document.getElementById('cm-' + msg.id)) {
-                    win.insertAdjacentHTML('beforeend', renderBubble(msg));
+                    win.insertAdjacentHTML('beforeend', renderBubble(msg, false));
                     win.scrollTop = win.scrollHeight;
                 }
                 // Auto mark-read

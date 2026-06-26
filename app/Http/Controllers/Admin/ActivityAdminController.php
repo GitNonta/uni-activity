@@ -14,11 +14,13 @@ use App\Models\Message;
 use App\Models\Room;
 use App\Models\ActivityFeedback;
 use App\Models\AdminAuditLog;
+use App\Services\ImageOptimizationService;
 use App\Services\QrCodeService;
 use App\Traits\LogsAdminActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * คอนโทรลเลอร์จัดการกิจกรรม (ฝั่งผู้ดูแล/Admin)
@@ -30,27 +32,38 @@ class ActivityAdminController extends Controller
     /** แสดงหน้า Dashboard: สถิติรวม + กิจกรรมล่าสุด + หมวดหมู่สำหรับ modal สร้างด่วน */
     public function dashboard()
     {
-        $stats = [
-            'totalActivities' => Activity::count(),
-            'upcomingActivities' => Activity::whereIn('status', ['upcoming', 'open'])->count(),
-            'totalStudents' => User::where('role', 'student')->count(),
-            'totalRegistrations' => Registration::whereIn('status', ['pending', 'approved'])->count(),
-            'pendingRegistrations' => Registration::where('status', 'pending')->count(),
-            'pendingAttendances' => Attendance::where('status', 'pending')->count(),
-            'upcomingThisWeek' => Activity::whereBetween('activity_date', [now()->startOfWeek(), now()->endOfWeek()])
-                ->whereIn('status', ['upcoming', 'open', 'ongoing'])
-                ->count(),
-            'totalJobs' => JobListing::count(),
-            'unreadMessages' => Message::whereHas('room', function($q) {
-                $q->whereHas('users', function($u) {
-                    $u->where('users.id', Auth::id());
-                });
-            })->where('user_id', '!=', Auth::id())
-              ->whereColumn('created_at', '>', DB::raw('(SELECT last_read_at FROM room_user WHERE room_user.room_id = messages.room_id AND room_user.user_id = ' . Auth::id() . ')'))
-              ->count(),
-            'totalFeedbacks' => ActivityFeedback::count(),
-        ];
+        $userId = Auth::id();
+        $cacheTtl = 300; // 5 minutes
 
+        // 1. ดึงสถิติหลัก (ใช้ Cache เพื่อลด TTFB)
+        $stats = \Illuminate\Support\Facades\Cache::remember('admin_dashboard_stats', $cacheTtl, function() {
+            return [
+                'totalActivities'      => Activity::count(),
+                'upcomingActivities'   => Activity::whereIn('status', ['upcoming', 'open'])->count(),
+                'totalStudents'        => User::where('role', 'student')->count(),
+                'totalRegistrations'   => Registration::whereIn('status', ['pending', 'approved'])->count(),
+                'pendingRegistrations' => Registration::where('status', 'pending')->count(),
+                'pendingAttendances'   => Attendance::where('status', 'pending')->count(),
+                'upcomingThisWeek'     => Activity::whereBetween('activity_date', [now()->startOfWeek(), now()->endOfWeek()])
+                    ->whereIn('status', ['upcoming', 'open', 'ongoing'])
+                    ->count(),
+                'totalJobs'            => JobListing::count(),
+                'totalFeedbacks'       => ActivityFeedback::count(),
+            ];
+        });
+
+        // 2. สถิติเฉพาะบุคคล (เช่น ข้อความที่ยังไม่อ่าน) - แยก Cache ตาม User
+        $stats['unreadMessages'] = \Illuminate\Support\Facades\Cache::remember("user_{$userId}_unread_msgs", 60, function() use ($userId) {
+            return Message::whereHas('room', function($q) use ($userId) {
+                $q->whereHas('users', function($u) use ($userId) {
+                    $u->where('users.id', $userId);
+                });
+            })->where('user_id', '!=', $userId)
+              ->whereColumn('created_at', '>', DB::raw('(SELECT last_read_at FROM room_user WHERE room_user.room_id = messages.room_id AND room_user.user_id = ' . $userId . ')'))
+              ->count();
+        });
+
+        // 3. ข้อมูลรายการล่าสุด (ไม่ Cache เพื่อให้เห็นความเคลื่อนไหวทันที แต่จำกัดจำนวน)
         $recentActivities = Activity::with('category')
             ->orderByDesc('created_at')
             ->take(5)
@@ -144,12 +157,13 @@ class ActivityAdminController extends Controller
     }
 
     /** บันทึกกิจกรรมใหม่ พร้อมสร้าง QR token + อัปโหลดรูป (ถ้ามี) */
-    public function store(StoreActivityRequest $request, QrCodeService $qrService)
+    public function store(StoreActivityRequest $request, QrCodeService $qrService, ImageOptimizationService $imageOptimizer)
     {
         $data = $request->validated();
         $data['created_by'] = auth()->id();
         $data['qr_token'] = $qrService->generateToken();
         $data['is_mandatory'] = $request->boolean('is_mandatory');
+        $data['require_attendance_approval'] = $request->boolean('require_attendance_approval');
         if (($data['scope'] ?? 'university') === 'university') {
             $data['faculty'] = null;
             $data['department'] = null;
@@ -158,7 +172,7 @@ class ActivityAdminController extends Controller
         }
 
         if ($request->hasFile('image')) {
-            $data['image_path'] = $request->file('image')->store('activities', 'public');
+            $data['image_path'] = $imageOptimizer->storeActivityImageAsWebp($request->file('image'));
         }
 
         $activity = Activity::create($data);
@@ -185,7 +199,7 @@ class ActivityAdminController extends Controller
     }
 
     /** อัปเดตข้อมูลกิจกรรม ตรวจสอบ validation + อัปโหลดรูปใหม่ (ถ้ามี) */
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, ImageOptimizationService $imageOptimizer)
     {
         $activity = Activity::findOrFail($id);
 
@@ -210,9 +224,12 @@ class ActivityAdminController extends Controller
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
             'checkin_radius' => 'nullable|integer|min:10|max:5000',
+            'require_attendance_approval' => 'boolean',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         $data['is_mandatory'] = $request->boolean('is_mandatory');
+        $data['require_attendance_approval'] = $request->boolean('require_attendance_approval');
         if ($data['scope'] === 'university') {
             $data['faculty'] = null;
             $data['department'] = null;
@@ -224,7 +241,11 @@ class ActivityAdminController extends Controller
         $data['checkin_radius'] = $request->filled('checkin_radius') ? $request->checkin_radius : 200;
 
         if ($request->hasFile('image')) {
-            $data['image_path'] = $request->file('image')->store('activities', 'public');
+            if ($activity->image_path) {
+                Storage::disk('public')->delete($activity->image_path);
+            }
+
+            $data['image_path'] = $imageOptimizer->storeActivityImageAsWebp($request->file('image'));
         }
 
         $oldValues = $activity->only(['title', 'location', 'activity_date', 'status', 'activity_hours']);
@@ -263,9 +284,16 @@ class ActivityAdminController extends Controller
     /** อนุมัติการลงทะเบียนของนักศึกษา */
     public function approveRegistration($id)
     {
-        $registration = Registration::findOrFail($id);
+        $registration = Registration::with('activity')->findOrFail($id);
         $registration->update(['status' => 'approved']);
         $this->auditApprove($registration, "อนุมัติการลงทะเบียน #{$registration->id}");
+
+        \App\Models\Notification::create([
+            'user_id' => $registration->user_id,
+            'title'   => 'การลงทะเบียนได้รับการอนุมัติ',
+            'message' => "การขอเข้าร่วมกิจกรรม \"{$registration->activity->title}\" ได้รับการอนุมัติแล้ว",
+            'type'    => 'registration_approved',
+        ]);
 
         return back()->with('success', 'อนุมัติการลงทะเบียนสำเร็จ');
     }
@@ -273,9 +301,16 @@ class ActivityAdminController extends Controller
     /** ปฏิเสธการลงทะเบียนของนักศึกษา */
     public function rejectRegistration($id)
     {
-        $registration = Registration::findOrFail($id);
+        $registration = Registration::with('activity')->findOrFail($id);
         $registration->update(['status' => 'rejected']);
         $this->auditReject($registration, "ปฏิเสธการลงทะเบียน #{$registration->id}");
+
+        \App\Models\Notification::create([
+            'user_id' => $registration->user_id,
+            'title'   => 'การลงทะเบียนถูกปฏิเสธ',
+            'message' => "การขอเข้าร่วมกิจกรรม \"{$registration->activity->title}\" ไม่ได้รับการอนุมัติ",
+            'type'    => 'registration_rejected',
+        ]);
 
         return back()->with('success', 'ปฏิเสธการลงทะเบียนสำเร็จ');
     }
@@ -359,13 +394,20 @@ class ActivityAdminController extends Controller
     /** อนุมัติการเข้าร่วมกิจกรรม (attendance) */
     public function approveAttendance($id)
     {
-        $attendance = Attendance::findOrFail($id);
+        $attendance = Attendance::with('activity')->findOrFail($id);
         $attendance->update([
             'status'      => 'approved',
             'is_verified' => true,
             'verified_by' => auth()->id(),
         ]);
         $this->auditApprove($attendance, "อนุมัติการเข้าร่วม #{$attendance->id}");
+
+        \App\Models\Notification::create([
+            'user_id' => $attendance->user_id,
+            'title'   => 'บันทึกกิจกรรมสำเร็จ',
+            'message' => "บันทึกการเข้าร่วมกิจกรรม \"{$attendance->activity->title}\" ได้รับการอนุมัติแล้ว คุณได้รับ {$attendance->activity->activity_hours} ชม.",
+            'type'    => 'attendance_approved',
+        ]);
 
         // เปลี่ยนสถานะการลงทะเบียนเป็น 'completed' เมื่ออนุมัติการเข้าร่วมแล้ว
         $registration = Registration::where('user_id', $attendance->user_id)
@@ -382,12 +424,19 @@ class ActivityAdminController extends Controller
     /** ปฏิเสธการเข้าร่วมกิจกรรม (attendance) */
     public function rejectAttendance($id)
     {
-        $attendance = Attendance::findOrFail($id);
+        $attendance = Attendance::with('activity')->findOrFail($id);
         $attendance->update([
             'status'      => 'rejected',
             'verified_by' => auth()->id(),
         ]);
         $this->auditReject($attendance, "ปฏิเสธการเข้าร่วม #{$attendance->id}");
+
+        \App\Models\Notification::create([
+            'user_id' => $attendance->user_id,
+            'title'   => 'บันทึกกิจกรรมไม่สำเร็จ',
+            'message' => "บันทึกการเข้าร่วมกิจกรรม \"{$attendance->activity->title}\" ถูกปฏิเสธ กรุณาติดต่อผู้จัด",
+            'type'    => 'attendance_rejected',
+        ]);
 
         return back()->with('success', 'ปฏิเสธการเข้าร่วมสำเร็จ');
     }
@@ -478,6 +527,94 @@ class ActivityAdminController extends Controller
             'message'      => "ปฏิเสธ{$label}เรียบร้อยแล้ว",
             'pending_count' => $pendingCount,
         ]);
+    }
+
+    /** แสดงหน้าสแกน QR นักศึกษาสำหรับเจ้าหน้าที่ */
+    public function scanner($id)
+    {
+        $activity = Activity::findOrFail($id);
+        return view('admin.checkin.scanner', compact('activity'));
+    }
+
+    /** ดำเนินการเช็คอินให้นักศึกษาจากการสแกน QR ส่วนตัว (Staff Scan) */
+    public function scanStudent(Request $request, $id, \App\Services\CheckInService $checkInService)
+    {
+        $request->validate([
+            'token' => 'required|string',
+        ]);
+
+        try {
+            $decoded = base64_decode($request->token);
+            $parts = explode('|', $decoded);
+            
+            if (count($parts) !== 3) {
+                return response()->json(['success' => false, 'message' => 'QR Code รูปแบบไม่ถูกต้อง'], 400);
+            }
+
+            [$userId, $timeWindow, $signature] = $parts;
+            
+            // ตรวจสอบ Signature
+            $payload = $userId . '|' . $timeWindow;
+            $expectedSignature = hash_hmac('sha256', $payload, config('app.key'));
+            
+            if (!hash_equals($expectedSignature, $signature)) {
+                return response()->json(['success' => false, 'message' => 'QR Code ไม่ถูกต้องหรือถูกปลอมแปลง'], 403);
+            }
+
+            // ตรวจสอบเวลา (อนุญาตให้เหลื่อมได้ 1 window คือ 30 วินาที)
+            $currentTimeWindow = floor(now()->timestamp / 30);
+            if (abs($currentTimeWindow - $timeWindow) > 1) {
+                return response()->json(['success' => false, 'message' => 'QR Code หมดอายุแล้ว กรุณารีเฟรชหน้าจอ'], 403);
+            }
+
+            $user = User::findOrFail($userId);
+            $activity = Activity::findOrFail($id);
+
+            // จัดการเรื่องการลงทะเบียน (ถ้ายังไม่ลง → ลงให้เลยแบบ walk-in)
+            $registration = Registration::where('user_id', $user->id)
+                ->where('activity_id', $activity->id)
+                ->first();
+
+            if (!$registration) {
+                // ตรวจสอบที่ว่าง
+                if ($activity->getRemainingSlots() <= 0) {
+                    return response()->json(['success' => false, 'message' => 'ไม่สามารถลงทะเบียนได้เนื่องจากกิจกรรมเต็มแล้ว'], 400);
+                }
+
+                $registration = Registration::create([
+                    'user_id'       => $user->id,
+                    'activity_id'   => $activity->id,
+                    'status'        => 'approved',
+                    'registered_at' => now(),
+                    'notes'         => 'ลงทะเบียนหน้างานโดยเจ้าหน้าที่ (Staff Scan)',
+                ]);
+            } elseif ($registration->status !== 'approved') {
+                $registration->update(['status' => 'approved']);
+            }
+
+            // บันทึกการเช็คอิน
+            $result = $checkInService->processCheckIn(
+                $activity->qr_token,
+                $user,
+                'staff_scan'
+            );
+
+            if ($result['success']) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "บันทึกการเข้าร่วมของ {$user->full_name} สำเร็จ",
+                    'student' => [
+                        'name' => $user->full_name,
+                        'student_id' => $user->student_id,
+                    ]
+                ]);
+            }
+
+            return response()->json(['success' => false, 'message' => $result['message']], 400);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'เกิดข้อผิดพลาด: ' . $e->getMessage()], 500);
+        }
     }
 
     /** 

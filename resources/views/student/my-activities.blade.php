@@ -192,15 +192,7 @@
                 @endif
                 {{-- Checkin --}}
                 @if(!$att && $reg->status === 'approved' && $checkinOpen)
-                <form method="POST" action="{{ route('activities.self-checkin', $reg->activity_id) }}" class="checkin-form">
-                    @csrf
-                    <input type="hidden" name="latitude" class="checkin-lat">
-                    <input type="hidden" name="longitude" class="checkin-lng">
-                    <button type="submit" class="btn btn-success btn-sm" onclick="return submitCheckinWithLocation(event, this.form)">
-                        <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        เช็คอิน
-                    </button>
-                </form>
+                <span class="badge badge-blue" style="font-size:.72rem;padding:.3rem .6rem;">สแกน QR หน้างาน</span>
                 @elseif($att && $att->status === 'approved' && !$hasFeedback && $status === 'done')
                 <a href="{{ route('feedback.create', $reg->activity_id) }}" class="btn btn-primary btn-sm" style="font-size:.75rem;">⭐ ประเมิน</a>
                 @elseif($att && $att->status === 'approved' && $hasFeedback)
@@ -261,25 +253,5 @@ function closeQrModal() {
     setTimeout(function() { m.style.display = 'none'; }, 250);
 }
 
-// ── Checkin with GPS ──
-function submitCheckinWithLocation(e, form) {
-    e.preventDefault();
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            function(pos) {
-                form.querySelector('.checkin-lat').value = pos.coords.latitude;
-                form.querySelector('.checkin-lng').value = pos.coords.longitude;
-                if (confirm('ยืนยันเช็คอิน?')) form.submit();
-            },
-            function() {
-                if (confirm('ไม่สามารถดึงพิกัดได้ ต้องการเช็คอินต่อหรือไม่? (รอผู้จัดอนุมัติ)')) form.submit();
-            },
-            { enableHighAccuracy: true, timeout: 10000 }
-        );
-    } else {
-        if (confirm('เบราว์เซอร์ไม่รองรับ GPS เช็คอินต่อหรือไม่?')) form.submit();
-    }
-    return false;
-}
 </script>
 @endsection

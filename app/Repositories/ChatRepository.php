@@ -36,13 +36,14 @@ class ChatRepository
     /**
      * Send a message in a room.
      */
-    public function sendMessage(Room $room, User $user, string $body, string $type = 'text'): Message
+    public function sendMessage(Room $room, User $user, string $body, string $type = 'text', array $attachments = []): Message
     {
-        return DB::transaction(function () use ($room, $user, $body, $type) {
+        return DB::transaction(function () use ($room, $user, $body, $type, $attachments) {
             $message = $room->messages()->create([
                 'user_id' => $user->id,
                 'body' => $body,
                 'type' => $type,
+                'attachments' => $attachments,
             ]);
 
             // Also write to Cassandra for long-term history

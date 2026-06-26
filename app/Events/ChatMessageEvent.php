@@ -34,12 +34,10 @@ class ChatMessageEvent implements ShouldBroadcast
         ];
     }
 
-    /* 
     public function broadcastAs(): string
     {
-        return str_replace(':', '.', $this->event);
+        return 'ChatMessageEvent';
     }
-    */
 
     public function broadcastWith(): array
     {
