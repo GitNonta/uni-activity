@@ -35,7 +35,7 @@ class AnnouncementAdminController extends Controller
     }
 
     /** บันทึกประกาศใหม่ */
-    public function store(Request $request)
+    public function store(Request $request, \App\Services\ImageOptimizationService $imageOptimizer)
     {
         $data = $request->validate([
             'title'          => 'required|string|max:255',
@@ -47,7 +47,7 @@ class AnnouncementAdminController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $data['image_path'] = $request->file('image')->store('announcements', 'public');
+            $data['image_path'] = $imageOptimizer->storeImageAsWebp($request->file('image'), 'announcements');
         }
 
         $data['created_by'] = auth()->id();
@@ -68,7 +68,7 @@ class AnnouncementAdminController extends Controller
     }
 
     /** อัปเดตประกาศ */
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, \App\Services\ImageOptimizationService $imageOptimizer)
     {
         $announcement = Announcement::findOrFail($id);
 
@@ -86,7 +86,7 @@ class AnnouncementAdminController extends Controller
             if ($announcement->image_path) {
                 Storage::disk('public')->delete($announcement->image_path);
             }
-            $data['image_path'] = $request->file('image')->store('announcements', 'public');
+            $data['image_path'] = $imageOptimizer->storeImageAsWebp($request->file('image'), 'announcements');
         }
 
         $oldValues = $announcement->only(['title', 'is_active', 'target_faculty']);

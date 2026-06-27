@@ -42,7 +42,7 @@ class JobAdminController extends Controller
     }
 
     /** บันทึกประกาศงานใหม่ */
-    public function store(Request $request)
+    public function store(Request $request, \App\Services\ImageOptimizationService $imageOptimizer)
     {
         $validated = $request->validate([
             'title'        => 'required|string|max:255',
@@ -66,7 +66,7 @@ class JobAdminController extends Controller
         $validated['created_by'] = auth()->id();
 
         if ($request->hasFile('image')) {
-            $validated['image_path'] = $request->file('image')->store('job-images', 'public');
+            $validated['image_path'] = $imageOptimizer->storeImageAsWebp($request->file('image'), 'job-images');
         }
 
         unset($validated['image']);
@@ -100,7 +100,7 @@ class JobAdminController extends Controller
     }
 
     /** อัปเดตประกาศงาน */
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, \App\Services\ImageOptimizationService $imageOptimizer)
     {
         $job = JobListing::findOrFail($id);
 
@@ -128,7 +128,7 @@ class JobAdminController extends Controller
             if ($job->image_path) {
                 Storage::disk('public')->delete($job->image_path);
             }
-            $validated['image_path'] = $request->file('image')->store('job-images', 'public');
+            $validated['image_path'] = $imageOptimizer->storeImageAsWebp($request->file('image'), 'job-images');
         }
 
         unset($validated['image']);

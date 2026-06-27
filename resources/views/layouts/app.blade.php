@@ -509,5 +509,8 @@
     </script>
     @endif
     @endauth
+
+    @yield('scripts')
+    @stack('scripts')
 </body>
 </html>

@@ -12,8 +12,9 @@ use RuntimeException;
 
 class ImageOptimizationService
 {
-    public function storeActivityImageAsWebp(
+    public function storeImageAsWebp(
         UploadedFile $file,
+        string $directory = 'uploads',
         int $maxWidth = 1600,
         int $quality = 82
     ): string {
@@ -33,7 +34,7 @@ class ImageOptimizationService
 
         imagecopyresampled($canvas, $source, 0, 0, 0, 0, $targetWidth, $targetHeight, $width, $height);
 
-        $relativePath = 'activities/' . Str::uuid()->toString() . '.webp';
+        $relativePath = rtrim($directory, '/') . '/' . Str::uuid()->toString() . '.webp';
         $absolutePath = Storage::disk('public')->path($relativePath);
         $directory = dirname($absolutePath);
 
@@ -53,6 +54,14 @@ class ImageOptimizationService
         imagedestroy($canvas);
 
         return $relativePath;
+    }
+
+    public function storeActivityImageAsWebp(
+        UploadedFile $file,
+        int $maxWidth = 1600,
+        int $quality = 82
+    ): string {
+        return $this->storeImageAsWebp($file, 'activities', $maxWidth, $quality);
     }
 
     /**
