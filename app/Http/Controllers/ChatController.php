@@ -65,7 +65,12 @@ class ChatController extends Controller
             ->whereHas('users', function ($q) use ($userId) {
                 $q->where('users.id', $userId);
             })
-            ->firstOrFail();
+            ->first();
+
+        if (!$room) {
+            $job = JobListing::findOrFail($jobId);
+            $room = $this->chatRepository->createRoom([$userId, $job->created_by], 'direct', $job->title, $jobId);
+        }
 
         $attachments = [];
         if ($request->hasFile('attachments')) {
