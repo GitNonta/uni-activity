@@ -316,7 +316,10 @@
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </a>
             <div>
-                <h2 style="margin:0;font-size:1.1rem;font-weight:700;color:var(--chat-text-main);">💬 แชทกับผู้ดูแล</h2>
+                <h2 style="margin:0;font-size:1.1rem;font-weight:700;color:var(--chat-text-main);display:flex;align-items:center;gap:4px;">
+                    <svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                    แชทกับผู้ดูแล
+                </h2>
                 <p style="margin:0;font-size:0.8rem;color:var(--chat-text-muted);">{{ $job->title }}</p>
             </div>
         </div>
@@ -377,7 +380,9 @@
             </div>
         @empty
             <div id="noMsg" style="margin:auto;text-align:center;color:var(--chat-text-muted);">
-                <div style="font-size:3rem;margin-bottom:1rem;">✉️</div>
+                <div style="margin-bottom:1rem;color:#94a3b8;">
+                    <svg style="width:48px;height:48px;margin:0 auto;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                </div>
                 <p>ยังไม่มีข้อความ เริ่มแชทได้เลย</p>
             </div>
         @endforelse
@@ -401,7 +406,10 @@
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                 </button>
             </div>
-            <div id="typingIndicator" class="typing-indicator">✏️ ผู้ดูแลกำลังพิมพ์...</div>
+            <div id="typingIndicator" class="typing-indicator flex items-center gap-1">
+                <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                ผู้ดูแลกำลังพิมพ์...
+            </div>
         </form>
     </div>
 </div>

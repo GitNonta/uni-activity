@@ -51,6 +51,11 @@ Route::get('/', function () {
 Route::middleware('guest')->group(function () {
     Route::get('/login', [StudentAuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [StudentAuthController::class, 'login'])->middleware('throttle:student-login');
+    // Password reset routes for all users
+    Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->middleware('throttle:password-reset')->name('password.email');
+    Route::get('/reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
+    Route::post('/reset-password', [NewPasswordController::class, 'store'])->middleware('throttle:password-reset')->name('password.update');
     
     // ── Login OTP ──
     Route::get('/login/verify-otp', [\App\Http\Controllers\Auth\LoginOtpController::class, 'showVerifyForm'])->name('login.otp.show');
@@ -207,7 +212,7 @@ Route::middleware(['auth', 'role:staff'])->prefix('admin')->name('admin.')->grou
 });
 
 // ── เส้นทางเฉพาะ admin เท่านั้น ───────────
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:admin,super-admin'])->prefix('admin')->name('admin.')->group(function () {
     // ── จัดการหมวดหมู่กิจกรรม + เกณฑ์ชั่วโมง ──
     Route::get('categories', [CategoryAdminController::class, 'index'])->name('categories.index');
     Route::post('categories', [CategoryAdminController::class, 'store'])->name('categories.store');

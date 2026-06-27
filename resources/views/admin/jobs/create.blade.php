@@ -4,7 +4,10 @@
 
 @section('content')
 <a href="{{ route('admin.jobs.index') }}" class="text-sm text-primary mb-2" style="display:inline-block;">&larr; กลับรายการ</a>
-<h1 class="font-bold mb-4" style="font-size:1.25rem;">➕ สร้างประกาศงานใหม่</h1>
+<h1 class="font-bold mb-4 flex items-center gap-2" style="font-size:1.25rem;">
+    <svg style="width:24px;height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+    สร้างประกาศงานใหม่
+</h1>
 
 @if($errors->any())
 <div class="alert alert-error">
@@ -107,7 +110,10 @@
 
             {{-- แผนที่และการค้นหา --}}
             <div class="form-group">
-                <label class="form-label">📍 ระบุตำแหน่งสถานที่งาน</label>
+                <label class="form-label flex items-center gap-1">
+                    <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    ระบุตำแหน่งสถานที่งาน
+                </label>
                 
                 <div class="flex gap-2" style="margin-bottom:.5rem;">
                     <input type="text" id="mapSearchInput" class="form-control" placeholder="พิมพ์ชื่อสถานที่เพื่อค้นหา... (เช่น มหาวิทยาลัย, ชื่อตึก, ที่อยู่)">
@@ -118,7 +124,7 @@
                 <div id="searchResultFeedback" class="text-xs" style="color:#ef4444;display:none;margin-bottom:.5rem;">ไม่พบข้อมูลสถานที่ กรุณาลองค้นหาด้วยคำอื่น</div>
 
                 <div id="adminJobMap" style="height:350px;border-radius:8px;border:1px solid #e2e8f0;margin:.5rem 0;"></div>
-                <p class="text-xs text-muted mb-2">เคล็ดลับ: คุณสามารถลากหมุดบนแผนที่ 📍 หรือกรอกพิกัดลงในช่องด้านล่างเพื่อความแม่นยำได้</p>
+                <p class="text-xs text-muted mb-2">เคล็ดลับ: คุณสามารถลากหมุดบนแผนที่ <svg style="width:14px;height:14px;display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> หรือกรอกพิกัดลงในช่องด้านล่างเพื่อความแม่นยำได้</p>
                 <div class="form-row">
                     <div class="form-group" style="margin-bottom:0;">
                         <label class="form-label" style="font-size:0.8rem;">Latitude (ละติจูด)</label>
@@ -196,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var q = searchInput.value.trim();
         if(!q) return;
 
-        searchBtn.innerHTML = '🔄...';
+        searchBtn.innerHTML = '<svg style="width:14px;height:14px;display:inline;animation:spin 1s linear infinite;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>...';
         searchBtn.disabled = true;
         searchFeedback.style.display = 'none';
 

@@ -4,7 +4,10 @@
 
 @section('content')
 <div class="flex items-center justify-between mb-4" style="flex-wrap:wrap;gap:.5rem;">
-    <h1 class="font-bold" style="font-size:1.25rem;">📋 จัดการประกาศงาน</h1>
+    <h1 class="font-bold flex items-center gap-2" style="font-size:1.25rem;">
+        <svg style="width:24px;height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        จัดการประกาศงาน
+    </h1>
     <a href="{{ route('admin.jobs.create') }}" class="btn btn-primary">
         <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
         สร้างประกาศใหม่

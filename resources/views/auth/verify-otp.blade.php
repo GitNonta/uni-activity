@@ -12,17 +12,20 @@
         </p>
     </div>
 
-    <form method="POST" action="{{ route('admin.password.otp.verify') }}">
+    <form method="POST" action="{{ route('admin.password.otp.verify') }}" id="otpForm">
         @csrf
         <input type="hidden" name="email" value="{{ $email }}">
 
         <div class="form-group" style="margin-bottom: 1.5rem;">
             <label for="otp" style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: #475569;">รหัส OTP 6 หลัก</label>
-            <input type="text" name="otp" id="otp" 
-                class="form-control @error('otp') is-invalid @enderror" 
-                placeholder="000000" 
-                required maxlength="6" autofocus
-                style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 1.25rem; text-align: center; letter-spacing: 0.5rem;">
+            <div class="otp-container" style="display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1rem;">
+                @for ($i = 0; $i < 6; $i++)
+                    <input type="text" name="otp_part[]" maxlength="1" pattern="[0-9]" required
+                        class="otp-box form-control @error('otp') is-invalid @enderror"
+                        style="width: 2.5rem; height: 2.5rem; text-align: center; font-size: 1.5rem; border: 1px solid #e2e8f0; border-radius: 8px;" />
+                @endfor
+            </div>
+            <input type="hidden" name="otp" id="otp_combined" />
             @error('otp')
                 <span class="invalid-feedback" role="alert" style="color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem; display: block;">
                     <strong>{{ $message }}</strong>

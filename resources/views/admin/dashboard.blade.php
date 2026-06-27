@@ -13,23 +13,23 @@
 
 {{-- การ์ดสถิติ --}}
 <div class="grid-4 mb-6">
-    <div class="card stat-card" style="border-bottom:3px solid #6366f1;">
+    <a href="{{ route('admin.activities.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #6366f1; text-decoration:none;">
         <p class="stat-label">กิจกรรมทั้งหมด</p>
         <p class="stat-value">{{ $stats['totalActivities'] }}</p>
-    </div>
-    <div class="card stat-card" style="border-bottom:3px solid #8b5cf6;">
+    </a>
+    <a href="{{ route('admin.activities.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #8b5cf6; text-decoration:none;">
         <p class="stat-label">เปิดรับสมัคร</p>
         <p class="stat-value primary">{{ $stats['upcomingActivities'] }}</p>
-    </div>
-    <div class="card stat-card" style="border-bottom:3px solid #3b82f6;">
+    </a>
+    <a href="{{ route('admin.students.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #3b82f6; text-decoration:none;">
         <p class="stat-label">นักศึกษา</p>
         <p class="stat-value">{{ $stats['totalStudents'] }}</p>
-    </div>
-    <div class="card stat-card" style="border-bottom:3px solid #f59e0b; position:relative;">
+    </a>
+    <a href="{{ route('admin.activities.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #f59e0b; text-decoration:none; position:relative;">
         <p class="stat-label">รออนุมัติ</p>
         <p class="stat-value" style="color:#d97706;" id="pending-badge-count">{{ $stats['pendingRegistrations'] + $stats['pendingAttendances'] }}</p>
         <p class="text-xs text-muted">ลงทะเบียน {{ $stats['pendingRegistrations'] }} · เช็คอิน {{ $stats['pendingAttendances'] }}</p>
-    </div>
+    </a>
 </div>
 
 {{-- การ์ดสถิติเพิ่มเติม (งาน / แชท / ประเมิน) --}}
@@ -46,10 +46,10 @@
         <p class="stat-label">ผลการประเมิน</p>
         <p class="stat-value" style="color:#0284c7;">{{ $stats['totalFeedbacks'] }}</p>
     </a>
-    <div class="card stat-card" style="border-bottom:3px solid #64748b;">
+    <a href="{{ route('admin.activities.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #64748b; text-decoration:none;">
         <p class="stat-label">กิจกรรมสัปดาห์นี้</p>
         <p class="stat-value" style="color:#475569;">{{ $stats['upcomingThisWeek'] }}</p>
-    </div>
+    </a>
 </div>
 
 {{-- Unified Approval Queue --}}
@@ -115,8 +115,9 @@
                     <span class="text-xs text-muted" style="font-weight:400;"> · {{ $item['sid'] }}</span>
                     @if($item['faculty']) <span class="text-xs text-muted"> · {{ $item['faculty'] }}</span> @endif
                 </div>
-                <div class="text-xs text-muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                    📌 {{ $item['activity'] }} &nbsp;·&nbsp; {{ $item['detail'] }} &nbsp;·&nbsp; {{ $item['time']->diffForHumans() }}
+                <div class="text-xs text-muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:4px;">
+                    <svg style="width:12px;height:12px;color:#94a3b8;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    {{ $item['activity'] }} &nbsp;·&nbsp; {{ $item['detail'] }} &nbsp;·&nbsp; {{ $item['time']->diffForHumans() }}
                 </div>
             </div>
             {{-- Actions --}}
@@ -152,44 +153,101 @@
     <div class="card-body">
         <div class="flex items-center gap-2">
             <svg style="width:20px;height:20px;color:#10b981;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <p class="font-semi" style="color:#15803d;">ไม่มีรายการรออนุมัติ ✅</p>
+            <p class="font-semi" style="color:#15803d;display:flex;align-items:center;gap:4px;">
+                ไม่มีรายการรออนุมัติ 
+                <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </p>
         </div>
     </div>
 </div>
 @endif
 
-{{-- ประวัติการทำงานล่าสุด --}}
+{{-- ═══ ประวัติการทำงานล่าสุด (Audit Logs) — Premium Design ═══ --}}
 @if(auth()->user()->isAdmin())
 <div class="mb-8">
-    <div class="flex items-center justify-between mb-4">
-        <h2 class="font-bold flex items-center gap-2">
-            <svg style="width:20px;height:20px;color:#6366f1;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2-2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01"/></svg>
-            ประวัติการทำงานล่าสุด (Audit Logs)
-        </h2>
-        <a href="{{ route('admin.audit-logs.index') }}" class="text-sm text-indigo-600 hover:underline">ดูประวัติทั้งหมด →</a>
-    </div>
-    <div class="card p-0 overflow-hidden">
-        <div class="space-y-0">
-            @forelse($recentAuditLogs ?? [] as $log)
-                <div class="flex items-center gap-4 p-4 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
-                    <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
-                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex justify-between items-start mb-1">
-                            <span class="text-sm font-bold text-gray-900">{{ $log->user->full_name ?? 'System' }}</span>
-                            <span class="text-xs text-gray-400">{{ $log->created_at->diffForHumans() }}</span>
-                        </div>
-                        <p class="text-sm text-gray-600">{{ $log->description }}</p>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <span class="badge {{ $log->action_color }}" style="font-size:11px;">{{ $log->action_label }}</span>
-                    </div>
-                </div>
-            @empty
-                <div class="p-8 text-center text-gray-400">ไม่มีประวัติการทำงานล่าสุด</div>
-            @endforelse
+    {{-- Section Header --}}
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem;">
+        <div style="display:flex;align-items:center;gap:.625rem;">
+            <div style="width:36px;height:36px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:11px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(99,102,241,.22);">
+                <svg style="width:18px;height:18px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01"/></svg>
+            </div>
+            <div>
+                <h2 class="font-bold" style="font-size:1.05rem;color:#0f172a;letter-spacing:-0.01em;">ประวัติการดำเนินงานล่าสุด</h2>
+                <p class="text-xs text-muted" style="margin-top:1px;">Audit Logs — บันทึกการเปลี่ยนแปลงในระบบ</p>
+            </div>
         </div>
+        <a href="{{ route('admin.audit-logs.index') }}" style="display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:10px;font-size:.78rem;font-weight:600;color:#6366f1;background:#f5f3ff;border:1px solid #e0e7ff;text-decoration:none;transition:all .2s;" onmouseover="this.style.background='#6366f1';this.style.color='#fff';this.style.borderColor='#6366f1';this.style.boxShadow='0 2px 8px rgba(99,102,241,.25)'" onmouseout="this.style.background='#f5f3ff';this.style.color='#6366f1';this.style.borderColor='#e0e7ff';this.style.boxShadow='none'">
+            ดูประวัติทั้งหมด
+            <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+        </a>
+    </div>
+
+    {{-- Log List --}}
+    <div class="card" style="padding:0;overflow:hidden;border-radius:16px;">
+        @forelse($recentAuditLogs ?? [] as $log)
+        @php
+            $actionGradient = match($log->action) {
+                'create'  => 'linear-gradient(135deg,#22c55e,#4ade80)',
+                'update'  => 'linear-gradient(135deg,#eab308,#facc15)',
+                'delete'  => 'linear-gradient(135deg,#ef4444,#f87171)',
+                'approve' => 'linear-gradient(135deg,#22c55e,#4ade80)',
+                'reject'  => 'linear-gradient(135deg,#ef4444,#f87171)',
+                'toggle'  => 'linear-gradient(135deg,#eab308,#facc15)',
+                'login'   => 'linear-gradient(135deg,#3b82f6,#60a5fa)',
+                'logout'  => 'linear-gradient(135deg,#6b7280,#9ca3af)',
+                default   => 'linear-gradient(135deg,#6b7280,#9ca3af)',
+            };
+            $actionSvg = match($log->action) {
+                'create'  => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>',
+                'update'  => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>',
+                'delete'  => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>',
+                'approve' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>',
+                'reject'  => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>',
+                'login'   => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>',
+                'logout'  => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>',
+                default   => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4"/>',
+            };
+            $badgeBg = match($log->action) {
+                'create','approve' => 'background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;',
+                'update','toggle'  => 'background:#fffbeb;color:#a16207;border:1px solid #fde68a;',
+                'delete','reject'  => 'background:#fef2f2;color:#dc2626;border:1px solid #fecaca;',
+                'login'            => 'background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;',
+                default            => 'background:#f8fafc;color:#64748b;border:1px solid #e2e8f0;',
+            };
+        @endphp
+        <a href="{{ route('admin.audit-logs.show', $log->id) }}"
+           style="display:flex;align-items:center;gap:.875rem;padding:.875rem 1.25rem;border-bottom:1px solid #f1f5f9;text-decoration:none;color:inherit;transition:background .15s;"
+           onmouseover="this.style.background='#fafbfe'" onmouseout="this.style.background='transparent'">
+            {{-- Action Icon --}}
+            <div style="width:36px;height:36px;border-radius:10px;background:{{ $actionGradient }};display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+                <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24">{!! $actionSvg !!}</svg>
+            </div>
+            {{-- Content --}}
+            <div style="flex:1;min-width:0;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:3px;">
+                    <span style="font-size:.85rem;font-weight:700;color:#1e293b;">{{ $log->user->full_name ?? 'System' }}</span>
+                    <span style="font-size:.68rem;color:#94a3b8;white-space:nowrap;flex-shrink:0;">{{ $log->created_at->diffForHumans() }}</span>
+                </div>
+                <p style="font-size:.8rem;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0;">{{ $log->description }}</p>
+            </div>
+            {{-- Action Badge --}}
+            <div style="flex-shrink:0;">
+                <span style="display:inline-flex;align-items:center;gap:3px;padding:3px 10px;border-radius:8px;font-size:.68rem;font-weight:700;{{ $badgeBg }}">
+                    {{ $log->action_label }}
+                </span>
+            </div>
+            {{-- Arrow --}}
+            <svg style="width:16px;height:16px;color:#cbd5e1;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+        @empty
+        <div style="padding:2.5rem 1rem;text-align:center;">
+            <div style="width:48px;height:48px;background:#f8fafc;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto .75rem;">
+                <svg style="width:24px;height:24px;color:#cbd5e1;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            </div>
+            <p style="font-size:.85rem;font-weight:700;color:#64748b;margin-bottom:4px;">ไม่มีประวัติการดำเนินงานล่าสุด</p>
+            <p style="font-size:.78rem;color:#94a3b8;">ประวัติจะปรากฏที่นี่เมื่อมีการดำเนินการใดๆ ในระบบ</p>
+        </div>
+        @endforelse
     </div>
 </div>
 @endif
@@ -227,7 +285,7 @@
                         @endphp
                         <span class="text-sm text-muted">{{ $regCount }}/{{ $act->max_participants }}</span>
                         @if($attCount > 0)
-                            <span class="text-xs" style="color:#16a34a;"> (✓{{ $attCount }})</span>
+                            <span class="text-xs" style="color:#16a34a;display:inline-flex;align-items:center;gap:2px;"> (<svg style="width:10px;height:10px;display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>{{ $attCount }})</span>
                         @endif
                     </td>
                     <td data-label="จัดการ" class="text-right">

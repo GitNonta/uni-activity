@@ -57,7 +57,10 @@
             </div>
 
             <div class="mt-8 p-6 bg-yellow-50 border-l-4 border-yellow-400 rounded">
-                <h3 class="font-semibold text-yellow-800 mb-2">⚠️ Development Only</h3>
+                <h3 class="font-semibold text-yellow-800 mb-2 flex items-center gap-1">
+                    <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    Development Only
+                </h3>
                 <p class="text-yellow-700 text-sm">
                     These test routes should be removed or disabled in production!<br>
                     Delete or comment out <code class="bg-yellow-100 px-2 py-1 rounded">routes/test-errors.php</code> before deploying.

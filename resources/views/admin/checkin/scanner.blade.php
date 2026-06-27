@@ -105,13 +105,13 @@
 
         if (data.success) {
             card.className = 'p-4 rounded-xl flex items-center space-x-4 border-2 border-green-500 bg-green-50 text-green-800';
-            icon.innerHTML = '✅';
+            icon.innerHTML = '<svg style="width:32px;height:32px;color:#16a34a;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
             name.innerText = data.student.name;
             sid.innerText = data.student.student_id;
             msg.innerText = data.message;
         } else {
             card.className = 'p-4 rounded-xl flex items-center space-x-4 border-2 border-red-500 bg-red-50 text-red-800';
-            icon.innerHTML = '❌';
+            icon.innerHTML = '<svg style="width:32px;height:32px;color:#dc2626;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
             name.innerText = 'ล้มเหลว';
             sid.innerText = '-';
             msg.innerText = data.message;

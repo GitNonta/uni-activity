@@ -95,7 +95,9 @@
     @if(!in_array(auth()->user()->role ?? 'student', ['admin','staff']))
     <div id="notif-banner" style="display:none;background:linear-gradient(90deg,#4f46e5,#7c3aed);color:#fff;padding:.55rem 1rem;font-size:.82rem;cursor:pointer;position:sticky;top:0;z-index:999;box-shadow:0 2px 8px rgba(79,70,229,.3);">
         <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:.75rem;">
-            <span id="notif-banner-icon" style="font-size:1rem;flex-shrink:0;">🔔</span>
+            <span id="notif-banner-icon" style="flex-shrink:0;display:flex;align-items:center;">
+                <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+            </span>
             <span id="notif-banner-text" style="flex:1;"></span>
             <a id="notif-banner-link" href="#" style="color:#c7d2fe;font-weight:600;font-size:.8rem;flex-shrink:0;text-decoration:none;">ไปเลย →</a>
             <button onclick="document.getElementById('notif-banner').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,.7);font-size:1.1rem;cursor:pointer;flex-shrink:0;line-height:1;">✕</button>
@@ -206,7 +208,7 @@
         <div id="chatFloatPanel" style="display:none;width:330px;height:480px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.2);overflow:hidden;flex-direction:column;">
             <div id="cfHeader" style="background:#4f46e5;padding:.7rem 1rem;display:flex;align-items:center;gap:.5rem;flex-shrink:0;">
                 <button id="cfBackBtn" onclick="cfBackToList()" style="display:none;background:none;border:none;color:#fff;font-size:1rem;cursor:pointer;padding:.1rem .3rem;line-height:1;opacity:.85;">←</button>
-                <span id="cfHeaderTitle" style="color:#fff;font-weight:700;font-size:.88rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">💬 ข้อความของฉัน</span>
+                <span id="cfHeaderTitle" style="color:#fff;font-weight:700;font-size:.88rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><svg style="width:16px;height:16px;display:inline;vertical-align:-3px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg> ข้อความของฉัน</span>
                 <button onclick="closeChatWidget()" style="background:none;border:none;color:#fff;font-size:1.1rem;cursor:pointer;line-height:1;padding:.1rem .3rem;opacity:.85;">✕</button>
             </div>
             <div id="cfViewList" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;">
@@ -216,13 +218,16 @@
             </div>
             <div id="cfViewChat" style="display:none;flex-direction:column;flex:1;min-height:0;">
                 <div id="cfChatWindow" style="flex:1;overflow-y:auto;padding:.75rem;display:flex;flex-direction:column;gap:.45rem;background:#f8fafc;"></div>
-                <div id="cfTypingBar" style="display:none;padding:.4rem .75rem;background:#f8fafc;font-size:.72rem;color:#6366f1;">✏️ ผู้ดูแลกำลังพิมพ์...</div>
+                <div id="cfTypingBar" style="display:none;align-items:center;padding:.4rem .75rem;background:#f8fafc;font-size:.72rem;color:#6366f1;">
+                    <svg style="width:12px;height:12px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                    ผู้ดูแลกำลังพิมพ์...
+                </div>
                 <div style="border-top:1px solid #e2e8f0;padding:.5rem .75rem;background:#fff;flex-shrink:0;">
                     <div id="cfAttachPreview" style="display:none;gap:.3rem;flex-wrap:wrap;margin-bottom:.3rem;"></div>
                     <form id="cfChatForm" enctype="multipart/form-data" style="display:flex;gap:.35rem;align-items:flex-end;">
                         @csrf
                         <label style="cursor:pointer;padding:.4rem .5rem;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;font-size:.9rem;line-height:1;flex-shrink:0;" title="แนบไฟล์">
-                            📎<input type="file" id="cfFileInput" name="attachments[]" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.zip,.txt" style="display:none;">
+                            <svg style="width:16px;height:16px;display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg><input type="file" id="cfFileInput" name="attachments[]" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.zip,.txt" style="display:none;">
                         </label>
                         <textarea id="cfMsgInput" name="message" rows="1" placeholder="พิมพ์ข้อความ..." style="flex:1;resize:none;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .6rem;font-size:.82rem;line-height:1.4;outline:none;font-family:inherit;max-height:80px;overflow-y:auto;"></textarea>
                         <button type="submit" id="cfSendBtn" style="padding:.4rem .85rem;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-size:.82rem;cursor:pointer;font-weight:500;flex-shrink:0;">ส่ง</button>
@@ -267,7 +272,7 @@
             document.getElementById('cfViewList').style.display = 'flex';
             document.getElementById('cfViewChat').style.display = 'none';
             document.getElementById('cfBackBtn').style.display = 'none';
-            document.getElementById('cfHeaderTitle').textContent = '💬 ข้อความของฉัน';
+            document.getElementById('cfHeaderTitle').innerHTML = '<svg style="width:16px;height:16px;display:inline;vertical-align:-3px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg> ข้อความของฉัน';
         }
         window.cfBackToList = function () { showListView(); loadThreads(); };
 
@@ -301,7 +306,7 @@
             }
             el.innerHTML = threads.map(function(t) {
                 var isUnread = (t.unread || 0) > 0;
-                var preview = t.last_message ? (t.last_message.length > 32 ? t.last_message.slice(0,32)+'…' : t.last_message) : '📎 ไฟล์แนบ';
+                var preview = t.last_message ? (t.last_message.length > 32 ? t.last_message.slice(0,32)+'…' : t.last_message) : '<svg style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> ไฟล์แนบ';
                 var safeTitle = (t.job_title || 'งานกิจกรรม').replace(/'/g, "\\'").replace(/"/g, '&quot;');
                 return '<div onclick="showChatView(' + t.job_id + ',\'' + safeTitle + '\')" '
                     + 'style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;border-bottom:1px solid #f1f5f9;cursor:pointer;background:' + (isUnread?'#faf5ff':'#fff') + ';">'
@@ -365,7 +370,7 @@
                         link.href = a.url;
                         link.target = '_blank';
                         link.style.cssText = 'font-size:.75rem;text-decoration:none;display:flex;align-items:center;gap:.2rem;color:' + (mine?'#c7d2fe':'#4f46e5');
-                        link.innerHTML = '📎 ' + a.original_name;
+                        link.innerHTML = '<svg style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> ' + a.original_name;
                         attDiv.appendChild(link);
                     }
                     bubble.appendChild(attDiv);

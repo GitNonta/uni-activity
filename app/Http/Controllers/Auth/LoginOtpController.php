@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use function App\Helpers\log_action;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -74,6 +75,8 @@ class LoginOtpController extends Controller
         $remember = session('login_otp_remember', false);
         
         Auth::login($user, $remember);
+        // Record audit log for login action
+        log_action('login', null, null, 'User logged in');
 
         // ล้าง session ชั่วคราว
         session()->forget(['login_otp_user_id', 'login_otp_email', 'login_otp_remember']);

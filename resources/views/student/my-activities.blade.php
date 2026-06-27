@@ -54,7 +54,7 @@
             <p class="font-semi text-sm" style="margin-bottom:.35rem;color:#1e293b;line-height:1.3;">{{ $todo['activity']->title }}</p>
             <p class="text-xs text-muted" style="margin-bottom:.6rem;">
                 📅 {{ $todo['activity']->activity_date->format('d/m/Y') }}
-                · 📍 {{ $todo['activity']->location }}
+                · <svg style="width:14px;height:14px;display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> {{ $todo['activity']->location }}
             </p>
             <a href="{{ $todo['action_url'] }}" class="btn btn-sm" style="background:{{ $todo['color'] }};color:#fff;width:100%;justify-content:center;font-size:.8rem;padding:.4rem .75rem;border-radius:8px;">
                 {{ $todo['action_label'] }}
@@ -113,11 +113,17 @@
                     @endif
                 </div>
                 <h3 class="font-semi line-clamp-1">{{ $att->activity->title }}</h3>
-                <p class="text-xs text-muted mt-1">📅 {{ $att->activity->activity_date->format('d/m/Y') }} · 📍 {{ $att->activity->location }}</p>
+                <p class="text-xs text-muted mt-1" style="display:flex;align-items:center;gap:4px;">
+                    <svg style="width:14px;height:14px;display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> {{ $att->activity->activity_date->format('d/m/Y') }} ·
+                    <svg style="width:14px;height:14px;display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> {{ $att->activity->location }}
+                </p>
             </div>
             <div class="flex gap-2" style="flex-shrink:0;">
                 @if($att->activity->feedbacks->where('user_id', auth()->id())->count() > 0)
-                    <span class="badge badge-blue" style="padding:.375rem .75rem;font-size:.8rem;">⭐ ประเมินแล้ว</span>
+                    <span class="badge badge-blue flex items-center gap-1" style="padding:.375rem .75rem;font-size:.8rem;">
+                        <svg style="width:14px;height:14px;" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        ประเมินแล้ว
+                    </span>
                 @elseif($att->status === 'approved' && $att->activity->computed_status === 'done')
                     <a href="{{ route('feedback.create', $att->activity_id) }}" class="btn btn-primary btn-sm">ประเมิน</a>
                 @endif
@@ -153,8 +159,8 @@
                 <h3 class="font-semi line-clamp-1" style="font-size:1.05rem; margin-bottom:.2rem;">{{ $reg->activity->title }}</h3>
                 <p class="text-xs text-muted mb-3">
                     📅 {{ $reg->activity->activity_date->format('d/m/Y') }}
-                    · ⏰ {{ $reg->activity->start_time }} – {{ $reg->activity->end_time }}
-                    · 📍 {{ $reg->activity->location }}
+                    · <svg style="width:14px;height:14px;display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> {{ $reg->activity->start_time }} – {{ $reg->activity->end_time }}
+                    · <svg style="width:14px;height:14px;display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> {{ $reg->activity->location }}
                 </p>
                 
                 {{-- Statuses separated --}}
@@ -194,7 +200,10 @@
                 @if(!$att && $reg->status === 'approved' && $checkinOpen)
                 <span class="badge badge-blue" style="font-size:.72rem;padding:.3rem .6rem;">สแกน QR หน้างาน</span>
                 @elseif($att && $att->status === 'approved' && !$hasFeedback && $status === 'done')
-                <a href="{{ route('feedback.create', $reg->activity_id) }}" class="btn btn-primary btn-sm" style="font-size:.75rem;">⭐ ประเมิน</a>
+                <a href="{{ route('feedback.create', $reg->activity_id) }}" class="btn btn-primary btn-sm flex items-center gap-1" style="font-size:.75rem;">
+                    <svg style="width:14px;height:14px;" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    ประเมิน
+                </a>
                 @elseif($att && $att->status === 'approved' && $hasFeedback)
                 <span class="badge badge-blue" style="font-size:.72rem;padding:.3rem .6rem;">ประเมินแล้ว</span>
                 @endif
@@ -228,7 +237,7 @@ var qrInstance = null;
 
 function openQrModal(title, date, location, qrUrl, activityUrl) {
     document.getElementById('qrActivityTitle').textContent = title;
-    document.getElementById('qrActivityMeta').textContent  = '📅 ' + date + '  📍 ' + location;
+    document.getElementById('qrActivityMeta').innerHTML  = '<svg style="width:14px;height:14px;display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> ' + date + '  <svg style="width:14px;height:14px;display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> ' + location;
     document.getElementById('qrViewBtn').href = activityUrl;
 
     var canvas = document.getElementById('qrCanvas');

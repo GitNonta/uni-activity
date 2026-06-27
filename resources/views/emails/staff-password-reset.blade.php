@@ -85,7 +85,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">🎓</div>
+            <div class="logo"><svg style="width:24px;height:24px;display:inline-block;vertical-align:-4px;" fill="currentColor" viewBox="0 0 20 20"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z"/></svg></div>
             <h1>ระบบจัดการกิจกรรมนักศึกษา</h1>
         </div>
         
@@ -105,7 +105,7 @@
             </div>
             
             <div class="security-notice">
-                <p><strong>⚠️ ความปลอดภัย:</strong></p>
+                <p><strong><svg style="width:16px;height:16px;display:inline;vertical-align:-2px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> ความปลอดภัย:</strong></p
                 <p>ลิงก์นี้จะหมดอายุภายใน {{ config('auth.passwords.staffs.expire', 60) }} นาที</p>
                 <p>หากคุณไม่ได้เป็นผู้ร้องขอรีเซ็ตรหัสผ่าน กรุณาละเว้นอีเมลนี้</p>
             </div>

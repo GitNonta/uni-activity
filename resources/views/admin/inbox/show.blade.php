@@ -55,7 +55,7 @@
                             @else
                                 <a href="{{ $att['url'] }}" target="_blank" download="{{ $att['original_name'] }}"
                                    style="display:flex;align-items:center;gap:.4rem;margin-top:.35rem;color:{{ $mine ? '#c7d2fe' : '#4f46e5' }};font-size:.8rem;text-decoration:none;">
-                                    📎 {{ $att['original_name'] }}
+                                    <svg style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> {{ $att['original_name'] }}
                                 </a>
                             @endif
                         @endforeach
@@ -69,13 +69,18 @@
     </div>
 
     {{-- Typing indicator bar --}}
-    <div id="adminTypingBar" style="display:none;padding:.4rem .75rem;background:#f8fafc;font-size:.72rem;color:#6366f1;">✏️ {{ $student->full_name }} กำลังพิมพ์...</div>
+    <div id="adminTypingBar" style="display:none;align-items:center;padding:.4rem .75rem;background:#f8fafc;font-size:.72rem;color:#6366f1;">
+        <svg style="width:12px;height:12px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+        {{ $student->full_name }} กำลังพิมพ์...
+    </div>
     {{-- Input form --}}
     <form id="chatForm" enctype="multipart/form-data">
         @csrf
         <div id="attachPreview" style="display:none;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem;"></div>
         <div style="display:flex;gap:.5rem;align-items:flex-end;">
-            <label for="fileInput" style="cursor:pointer;padding:.5rem .6rem;background:#f1f5f9;border-radius:8px;font-size:1.1rem;line-height:1;flex-shrink:0;" title="แนบไฟล์">📎</label>
+            <label for="fileInput" style="cursor:pointer;padding:.5rem .6rem;background:#f1f5f9;border-radius:8px;font-size:1.1rem;line-height:1;flex-shrink:0;display:flex;align-items:center;" title="แนบไฟล์">
+                <svg style="width:18px;height:18px;color:#64748b;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+            </label>
             <input type="file" id="fileInput" name="attachments[]" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.txt" style="display:none;">
             <textarea id="msgInput" name="message" rows="1"
                 placeholder="พิมพ์ข้อความ..."
@@ -149,7 +154,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if ((a.mime_type || '').startsWith('image/')) {
                 attHtml += '<img src="' + a.url + '" style="max-width:100%;border-radius:8px;margin-top:.35rem;display:block;cursor:pointer;" onclick="window.open(\'' + a.url + '\',\'_blank\')">';
             } else {
-                attHtml += '<a href="' + a.url + '" target="_blank" style="display:flex;align-items:center;gap:.4rem;margin-top:.35rem;color:' + linkC + ';font-size:.8rem;text-decoration:none;">📎 ' + a.original_name + '</a>';
+                attHtml += '<a href="' + a.url + '" target="_blank" style="display:flex;align-items:center;gap:.4rem;margin-top:.35rem;color:' + linkC + ';font-size:.8rem;text-decoration:none;"><svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> ' + a.original_name + '</a>';
             }
         });
 

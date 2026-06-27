@@ -76,11 +76,11 @@
                 {{ $job->job_type === 'parttime' ? 'Part-time' : 'งานทั่วไป' }}
             </span>
             @if($job->status === 'open')
-                <span class="badge badge-green">🟢 เปิดรับสมัคร</span>
+                <span class="badge badge-green flex items-center gap-1"><svg style="width:10px;height:10px;" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg> เปิดรับสมัคร</span>
             @elseif($job->status === 'closed')
-                <span class="badge badge-red">🔴 ปิดรับสมัคร</span>
+                <span class="badge badge-red flex items-center gap-1"><svg style="width:10px;height:10px;" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg> ปิดรับสมัคร</span>
             @else
-                <span class="badge badge-gray">⚫ เสร็จสิ้น</span>
+                <span class="badge badge-gray flex items-center gap-1"><svg style="width:10px;height:10px;" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg> เสร็จสิ้น</span>
             @endif
         </div>
 
@@ -186,7 +186,10 @@
         @if($job->hasGeolocation())
         <div style="margin-bottom:1rem;">
             <div class="flex items-center justify-between mb-2">
-                <p class="font-semi text-sm">📍 แผนที่สถานที่งาน</p>
+                <p class="font-semi text-sm flex items-center gap-1">
+                    <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    แผนที่สถานที่งาน
+                </p>
                 <button type="button" onclick="openDirections({{ $job->latitude }}, {{ $job->longitude }})" class="btn btn-outline btn-sm" style="padding: 2px 10px; font-size: 11px;">
                     เปิดแอปแผนที่
                 </button>
@@ -214,7 +217,10 @@
                 @php $pct = $job->progress_percent; @endphp
                 <div class="progress-bar {{ $pct >= 100 ? 'red' : ($pct >= 70 ? 'yellow' : 'green') }}" style="width:{{ $pct }}%"></div>
             </div>
-            <p class="text-xs text-muted mt-1">👤 ผู้สมัครทั้งหมด: {{ $job->total_applicants }} คน</p>
+            <p class="text-xs text-muted mt-1 flex items-center gap-1">
+                <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                ผู้สมัครทั้งหมด: {{ $job->total_applicants }} คน
+            </p>
         </div>
 
         {{-- ปุ่มสมัคร / สถานะ --}}
@@ -222,11 +228,11 @@
             @if($userApplication)
                 <div class="alert {{ $userApplication->status === 'confirmed' ? 'alert-success' : ($userApplication->status === 'rejected' ? 'alert-error' : 'alert-info') }} text-sm" style="{{ $userApplication->status === 'pending' ? 'background:#fef3c7;color:#92400e;border-color:#fde68a;' : '' }}">
                     @if($userApplication->status === 'pending')
-                        ⏳ คุณได้สมัครงานนี้แล้ว — <strong>รอการพิจารณา</strong>
+                        <svg style="width:16px;height:16px;display:inline;margin-right:4px;vertical-align:-3px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> คุณได้สมัครงานนี้แล้ว — <strong>รอการพิจารณา</strong>
                     @elseif($userApplication->status === 'confirmed')
-                        ✅ <strong>ได้รับการยืนยัน</strong>แล้ว
+                        <svg style="width:16px;height:16px;display:inline;margin-right:4px;color:#16a34a;vertical-align:-3px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> <strong>ได้รับการยืนยัน</strong>แล้ว
                     @else
-                        ❌ <strong>ไม่ผ่านการพิจารณา</strong>
+                        <svg style="width:16px;height:16px;display:inline;margin-right:4px;color:#dc2626;vertical-align:-3px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> <strong>ไม่ผ่านการพิจารณา</strong>
                     @endif
                 </div>
             @elseif($job->isOpen() && $job->hasAvailableSlots())
@@ -247,11 +253,11 @@
 {{-- ปุ่มคอมเมนต์ + สอบถาม --}}
 <div class="flex gap-2 mt-4 mb-2" style="flex-wrap:wrap;">
     <button class="btn btn-outline flex-1" onclick="document.getElementById('commentSection').scrollIntoView({behavior:'smooth'})">
-        💬 คอมเมนต์ ({{ $comments->count() }})
+        <svg style="width:14px;height:14px;display:inline;margin-right:2px;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg> คอมเมนต์ ({{ $comments->count() }})
     </button>
     @auth
     <button class="btn btn-primary flex-1" id="openChatBtn" onclick="openChatPopup()">
-        💬 สอบถามเพิ่มเติม
+        <svg style="width:14px;height:14px;display:inline;margin-right:2px;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg> สอบถามเพิ่มเติม
     </button>
     @endauth
 </div>
@@ -264,7 +270,10 @@
         {{-- Header --}}
         <div style="display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.1rem;background:#4f46e5;color:#fff;">
             <div>
-                <p style="margin:0;font-weight:700;font-size:.95rem;">💬 สอบถามเพิ่มเติม</p>
+                <p style="margin:0;font-weight:700;font-size:.95rem;display:flex;align-items:center;gap:4px;">
+                    <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                    สอบถามเพิ่มเติม
+                </p>
                 <p style="margin:0;font-size:.75rem;opacity:.8;">{{ $job->title }}</p>
             </div>
             <button onclick="closeChatPopup()" style="background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer;line-height:1;padding:.2rem .4rem;">✕</button>
@@ -275,13 +284,16 @@
 
         {{-- Input --}}
         <div style="border-top:1px solid #e2e8f0;padding:.65rem .85rem;background:#fff;">
-            <div id="popupTypingLabel" style="display:none;font-size:.72rem;color:#6366f1;margin-bottom:.3rem;">✏️ ผู้ดูแลกำลังพิมพ์...</div>
+            <div id="popupTypingLabel" style="display:none;align-items:center;font-size:.72rem;color:#6366f1;margin-bottom:.3rem;">
+                <svg style="width:12px;height:12px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                ผู้ดูแลกำลังพิมพ์...
+            </div>
             <form id="popupChatForm" enctype="multipart/form-data">
                 @csrf
                 <div id="popupAttachPreview" style="display:none;gap:.4rem;flex-wrap:wrap;margin-bottom:.4rem;"></div>
                 <div style="display:flex;gap:.4rem;align-items:flex-end;">
                     <label style="cursor:pointer;padding:.48rem .6rem;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;font-size:1rem;line-height:1;flex-shrink:0;" title="แนบไฟล์">
-                        📎
+                        <svg style="width:16px;height:16px;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
                         <input type="file" id="popupFileInput" name="attachments[]" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.zip,.txt" style="display:none;">
                     </label>
                     <textarea id="popupMsgInput" name="message" rows="1" placeholder="พิมพ์คำถามหรือข้อความ..." style="flex:1;resize:none;border:1px solid #e2e8f0;border-radius:8px;padding:.5rem .7rem;font-size:.875rem;line-height:1.4;outline:none;font-family:inherit;max-height:100px;overflow-y:auto;"></textarea>
@@ -295,7 +307,10 @@
 
 {{-- ═══ คอมเมนต์ Section ═══ --}}
 <div id="commentSection" class="card mt-2">
-    <div class="card-header">💬 ความคิดเห็น ({{ $comments->count() }})</div>
+    <div class="card-header flex items-center gap-2">
+        <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+        ความคิดเห็น ({{ $comments->count() }})
+    </div>
     <div class="card-body">
         {{-- ฟอร์มเพิ่มคอมเมนต์ --}}
         @auth
@@ -527,7 +542,7 @@
                     var a = document.createElement('a');
                     a.href = att.url; a.target = '_blank'; a.download = att.original_name;
                     a.style.cssText = 'display:flex;align-items:center;gap:.35rem;margin-top:.3rem;color:' + (isMine ? '#c7d2fe' : '#4f46e5') + ';font-size:.78rem;text-decoration:none;';
-                    a.innerHTML = '📎 ' + att.original_name;
+                    a.innerHTML = '<svg style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> ' + att.original_name;
                     bubble.appendChild(a);
                 }
             });
@@ -595,7 +610,7 @@
                 } else {
                     // Highlight button
                     var btn = document.getElementById('openChatBtn');
-                    if (btn) btn.textContent = '💬 สอบถามเพิ่มเติม 🔴';
+                    if (btn) btn.innerHTML = '<svg style="width:14px;height:14px;display:inline;margin-right:2px;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg> สอบถามเพิ่มเติม <svg style="width:10px;height:10px;display:inline;color:#ef4444;" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>';
                 }
             }
         });

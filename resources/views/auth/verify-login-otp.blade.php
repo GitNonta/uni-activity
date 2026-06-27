@@ -21,14 +21,17 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('login.otp.verify') }}">
+    <form method="POST" action="{{ route('login.otp.verify') }}" id="otp-form">
         @csrf
         <div class="form-group" style="margin-bottom: 1.5rem;">
-            <input type="text" name="otp" id="otp" 
-                class="form-control @error('otp') is-invalid @enderror" 
-                placeholder="0 0 0 0 0 0" 
-                required maxlength="6" autofocus autocomplete="one-time-code"
-                style="width: 100%; padding: 0.85rem; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1.5rem; text-align: center; letter-spacing: 0.6rem; font-weight: 700; outline: none; transition: border-color 0.2s;">
+            <div class="otp-container" style="display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1rem;">
+                @for ($i = 0; $i < 6; $i++)
+                    <input type="text" name="otp_part[]" maxlength="1" pattern="[0-9]" required
+                        class="otp-box form-control @error('otp') is-invalid @enderror"
+                        style="width: 2.5rem; height: 2.5rem; text-align: center; font-size: 1.5rem; border: 1px solid #e2e8f0; border-radius: 8px;" />
+                @endfor
+            </div>
+            <input type="hidden" name="otp" id="otp_combined" />
             @error('otp')
                 <span style="color: #ef4444; font-size: 0.75rem; margin-top: 0.5rem; display: block; text-align: center;">
                     <strong>{{ $message }}</strong>
@@ -55,20 +58,26 @@
 </div>
 
 <script>
-    const otpInput = document.getElementById('otp');
-    otpInput.addEventListener('input', (e) => {
-        e.target.value = e.target.value.replace(/[^0-9]/g, '');
-        if (e.target.value.length === 6) {
-            // Optional: Auto submit
-        }
-    });
-    
-    otpInput.addEventListener('focus', () => {
-        otpInput.style.borderColor = '#4f46e5';
-    });
-    
-    otpInput.addEventListener('blur', () => {
-        otpInput.style.borderColor = '#e2e8f0';
+    const otpParts = document.querySelectorAll('input[name="otp_part[]"]');
+    const hiddenOtp = document.getElementById('otp_combined');
+
+    otpParts.forEach((input, idx) => {
+        input.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+            // Auto‑move to next field when a digit is entered
+            if (e.target.value.length === 1 && idx < otpParts.length - 1) {
+                otpParts[idx + 1].focus();
+            }
+            // Update the hidden combined OTP value
+            const otpValue = Array.from(otpParts).map(i => i.value).join('');
+            hiddenOtp.value = otpValue;
+        });
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && e.target.value === '' && idx > 0) {
+                otpParts[idx - 1].focus();
+            }
+        });
     });
 </script>
 @endsection

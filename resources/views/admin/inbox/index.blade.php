@@ -4,7 +4,10 @@
 
 @section('content')
 <div class="flex items-center justify-between mb-4">
-    <h1 class="font-bold" style="font-size:1.25rem;">💬 กล่องข้อความ</h1>
+    <h1 class="font-bold flex items-center gap-2" style="font-size:1.25rem;">
+        <svg style="width:24px;height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+        กล่องข้อความ
+    </h1>
     <span class="text-sm text-muted">การสนทนาทั้งหมด {{ $threads->count() }} รายการ</span>
 </div>
 
@@ -39,7 +42,7 @@
                 </span>
             </div>
             <p style="margin:0;font-size:.82rem;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                {{ $thread['last_message'] ?: '📎 ไฟล์แนบ' }}
+                {!! $thread['last_message'] ? e($thread['last_message']) : '<svg style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> ไฟล์แนบ' !!}
             </p>
         </div>
 
@@ -57,7 +60,9 @@
     </a>
     @empty
     <div style="padding:3rem;text-align:center;color:#94a3b8;">
-        <div style="font-size:2.5rem;margin-bottom:.5rem;">💬</div>
+        <div style="margin-bottom:.5rem;display:flex;justify-content:center;color:#94a3b8;">
+            <svg style="width:48px;height:48px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+        </div>
         <p style="margin:0;font-size:.95rem;">ยังไม่มีข้อความจากนักศึกษา</p>
     </div>
     @endforelse

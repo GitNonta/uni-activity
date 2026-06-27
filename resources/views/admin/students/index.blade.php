@@ -102,7 +102,7 @@
                 <label class="form-label" style="font-size:.8rem;">ชั่วโมง</label>
                 <select name="completion" class="form-control">
                     <option value="">ทุกสถานะ</option>
-                    <option value="complete"   {{ request('completion') === 'complete'   ? 'selected' : '' }}>ครบเกณฑ์ ✅</option>
+                    <option value="complete"   {{ request('completion') === 'complete'   ? 'selected' : '' }}>ครบเกณฑ์ (✓)</option>
                     <option value="incomplete" {{ request('completion') === 'incomplete' ? 'selected' : '' }}>ยังไม่ครบ ⏳</option>
                 </select>
             </div>
@@ -163,7 +163,7 @@
                             <div style="background:{{ $barColor }};border-radius:999px;height:5px;width:{{ $pct }}%;transition:width .4s;"></div>
                         </div>
                         <div style="font-size:.7rem;color:{{ $hrs >= $totalRequired ? '#16a34a' : '#94a3b8' }};margin-top:1px;">
-                            {{ $hrs >= $totalRequired ? 'ครบเกณฑ์ ✅' : number_format($pct, 0).'%' }}
+                            {!! $hrs >= $totalRequired ? 'ครบเกณฑ์ <svg style="width:14px;height:14px;display:inline;color:#16a34a;margin-left:2px;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>' : number_format($pct, 0).'%' !!}
                         </div>
                     </td>
                     <td style="text-align:center;" class="text-sm">{{ $student->approved_count }}</td>

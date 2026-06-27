@@ -1,71 +1,104 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Admin\AdminAuditLogResource;
+use App\Http\Requests\Admin\AuditLogFilterRequest;
 use App\Models\AdminAuditLog;
 use App\Models\User;
+use App\Repositories\AdminAuditLogRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\View;
 
-/**
- * คอนโทรลเลอร์แสดง Audit Log: ประวัติการกระทำของ Admin ทั้งหมด
- */
 class AuditLogController extends Controller
 {
-    /** แสดงรายการ Audit Log พร้อมตัวกรอง */
-    public function index(Request $request)
+    public function __construct(
+        private readonly AdminAuditLogRepository $auditLogRepo
+    ) {}
+
+    /**
+     * Display the audit log UI with stats, filters, and paginated logs.
+     */
+    public function index(Request $request): \Illuminate\View\View
     {
-        $query = AdminAuditLog::with('user')->latest();
+        $perPage = (int) $request->input('per_page', 20);
 
-        // กรองตาม admin
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->user_id);
-        }
+        // Build query with eager loading
+        $query = AdminAuditLog::with('user');
 
-        // กรองตามประเภทการกระทำ
-        if ($request->filled('action')) {
-            $query->where('action', $request->action);
-        }
-
-        // กรองตามประเภท model
-        if ($request->filled('model_type')) {
-            $query->where('model_type', 'like', '%' . $request->model_type);
-        }
-
-        // ค้นหาจากคำอธิบาย
+        // Apply filters
         if ($request->filled('search')) {
-            $query->where('description', 'like', "%{$request->search}%");
+            $query->where('description', 'ilike', '%' . $request->input('search') . '%');
         }
-
-        // กรองตามวันที่
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->input('user_id'));
+        }
+        if ($request->filled('action')) {
+            $query->where('action', $request->input('action'));
+        }
         if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
+            $query->whereDate('created_at', '>=', $request->input('date_from'));
         }
         if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
+            $query->whereDate('created_at', '<=', $request->input('date_to'));
         }
 
-        $logs = $query->paginate(25)->withQueryString();
+        $logs = $query->orderByDesc('created_at')->paginate($perPage)->withQueryString();
 
-        // รายชื่อ admin สำหรับ dropdown กรอง
-        $admins = User::where('role', 'staff')->orderBy('full_name')->get(['id', 'full_name']);
-
-        // สถิติสรุป
+        // Compute summary statistics
         $stats = [
             'total'   => AdminAuditLog::count(),
             'today'   => AdminAuditLog::whereDate('created_at', today())->count(),
             'creates' => AdminAuditLog::where('action', 'create')->count(),
             'updates' => AdminAuditLog::where('action', 'update')->count(),
             'deletes' => AdminAuditLog::where('action', 'delete')->count(),
+            'logins'  => AdminAuditLog::where('action', 'login')->count(),
         ];
 
-        return view('admin.audit-logs.index', compact('logs', 'admins', 'stats'));
+        // Admin users for the filter dropdown
+        $admins = User::whereIn('role', ['admin', 'super-admin', 'staff'])
+            ->orderBy('full_name')
+            ->get(['id', 'full_name']);
+
+        return View::make('admin.audit-logs.index', compact('logs', 'stats', 'admins'));
     }
 
-    /** แสดงรายละเอียด log */
-    public function show($id)
+    /**
+     * Return filtered audit logs as JSON (API).
+     */
+    public function filter(AuditLogFilterRequest $request): \Illuminate\Http\JsonResponse
+    {
+        $filters = $request->only(['user_id', 'action', 'date_from', 'date_to']);
+        $perPage = $request->input('per_page', 20);
+         $query = $this->auditLogRepo->model()::with('user');
+
+        if (!empty($filters['user_id'])) {
+            $query->where('user_id', $filters['user_id']);
+        }
+        if (!empty($filters['action'])) {
+            $query->where('action', $filters['action']);
+        }
+        if (!empty($filters['date_from'])) {
+            $query->whereDate('created_at', '>=', $filters['date_from']);
+        }
+        if (!empty($filters['date_to'])) {
+            $query->whereDate('created_at', '<=', $filters['date_to']);
+        }
+
+        $paginated = $query->orderByDesc('created_at')->paginate($perPage);
+
+        return AdminAuditLogResource::collection($paginated);
+    }
+
+    /**
+     * Show a single audit log entry detail page.
+     */
+    public function show(int $id): \Illuminate\View\View
     {
         $log = AdminAuditLog::with('user')->findOrFail($id);
-        return view('admin.audit-logs.show', compact('log'));
+
+        return View::make('admin.audit-logs.show', compact('log'));
     }
 }
