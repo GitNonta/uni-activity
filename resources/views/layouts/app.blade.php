@@ -195,7 +195,13 @@
                 .catch(function() {});
         }
         setTimeout(fetchNotifications, 2000);
-        setInterval(fetchNotifications, 5 * 60 * 1000);
+
+        if (window.Echo) {
+            window.Echo.private('App.Models.User.{{ auth()->id() }}')
+                .listen('StudentAlertsUpdated', function(e) {
+                    fetchNotifications();
+                });
+        }
     })();
     </script>
     @endif

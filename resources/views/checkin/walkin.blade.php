@@ -590,7 +590,13 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-setInterval(refreshAttendees, refreshInterval);
+if (window.Echo) {
+    window.Echo.private('activity.{{ $token }}.checkins')
+        .listen('AttendeeCheckedIn', function(e) {
+            // Can append manually, but for safety and ordering we can just refresh the list
+            refreshAttendees();
+        });
+}
 @endif
 
 // หลังส่งฟอร์มสำเร็จ ให้เคลียร์ช่องกรอก และ focus กลับ

@@ -125,6 +125,8 @@ class CheckInController extends Controller
             'ip_address'   => $request->ip(),
         ]);
 
+        broadcast(new \App\Events\AttendeeCheckedIn($token, $user))->toOthers();
+
         return back()
             ->with('success', 'บันทึกการเข้าร่วมของ ' . $user->full_name . ' (' . $user->student_id . ') สำเร็จ')
             ->with('checked_in_student', [

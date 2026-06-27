@@ -258,20 +258,27 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Poll student online status every 30s
-    setInterval(() => {
-        fetch(`/users/${studentId}/status`, {headers:{'Accept':'application/json'}})
-            .then(r => r.json())
-            .then(d => {
-                const headerDot = document.getElementById('adminOnlineDot');
-                if (headerDot) headerDot.style.display = d.is_online ? 'inline-block' : 'none';
-                // Toggle all avatar dots
-                document.querySelectorAll('.student-online-dot').forEach(el => {
-                    el.style.display = d.is_online ? 'inline-block' : 'none';
-                });
+    function toggleStudentOnline(isOnline) {
+        const headerDot = document.getElementById('adminOnlineDot');
+        if (headerDot) headerDot.style.display = isOnline ? 'inline-block' : 'none';
+        document.querySelectorAll('.student-online-dot').forEach(el => {
+            el.style.display = isOnline ? 'inline-block' : 'none';
+        });
+    }
+
+    if (window.Echo) {
+        window.Echo.join('online')
+            .here((users) => {
+                const isOnline = users.some(u => u.id == studentId);
+                toggleStudentOnline(isOnline);
             })
-            .catch(() => {});
-    }, 30000);
+            .joining((user) => {
+                if (user.id == studentId) toggleStudentOnline(true);
+            })
+            .leaving((user) => {
+                if (user.id == studentId) toggleStudentOnline(false);
+            });
+    }
 });
 </script>
 @endsection

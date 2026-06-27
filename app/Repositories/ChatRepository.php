@@ -50,7 +50,7 @@ class ChatRepository
             $this->syncToCassandra($message);
 
             // Broadcast via Laravel Reverb
-            broadcast(new MessageSent($message->load('user')))->toOthers();
+            broadcast(new MessageSent($message->load('user:id,full_name,profile_photo_path')))->toOthers();
 
             return $message;
         });
@@ -81,7 +81,7 @@ class ChatRepository
     public function getRecentMessages(Room $room, int $limit = 50): Collection
     {
         return $room->messages()
-            ->with('user')
+            ->with('user:id,full_name,profile_photo_path')
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get()

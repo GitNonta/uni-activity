@@ -648,20 +648,29 @@
             });
         });
 
-        // Poll admin online status every 30s
-        function updatePopupAdminOnlineDots() {
-            fetch('/jobs/' + JOB_ID + '/admin-online', {headers:{'Accept':'application/json'}})
-                .then(function(r){ return r.json(); })
-                .then(function(d) {
-                    var show = d.is_online ? 'inline-block' : 'none';
-                    document.querySelectorAll('.popup-admin-online-dot').forEach(function(el) {
-                        el.style.display = show;
-                    });
-                })
-                .catch(function(){});
+        function togglePopupAdminOnlineDots(isOnline) {
+            var show = isOnline ? 'inline-block' : 'none';
+            document.querySelectorAll('.popup-admin-online-dot').forEach(function(el) {
+                el.style.display = show;
+            });
         }
-        setInterval(updatePopupAdminOnlineDots, 30000);
-        updatePopupAdminOnlineDots();
+
+        if (window.Echo) {
+            var adminId = {{ $job->creator->id ?? 0 }};
+            window.Echo.join('online')
+                .here(function(users) {
+                    var isOnline = users.some(function(u) { return u.id == adminId || u.role === 'admin' || u.role === 'staff'; });
+                    togglePopupAdminOnlineDots(isOnline);
+                })
+                .joining(function(user) {
+                    if (user.id == adminId || user.role === 'admin' || user.role === 'staff') togglePopupAdminOnlineDots(true);
+                })
+                .leaving(function(user) {
+                    // It's hard to know if they were the LAST admin. We can just leave it or recalculate if needed.
+                    // For simplicity, hide if this specific admin leaves
+                    if (user.id == adminId) togglePopupAdminOnlineDots(false);
+                });
+        }
     }
 })();
 </script>

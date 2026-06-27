@@ -21,62 +21,69 @@ class JobController extends Controller
     /** แสดงรายการประกาศงานทั้งหมด (พร้อม filter/search/map) */
     public function index(Request $request)
     {
-        $query = JobListing::query()->withCount(['applications', 'comments']);
+        $cacheKey = 'jobs_page_' . md5($request->fullUrl());
+        
+        $data = \Illuminate\Support\Facades\Cache::remember($cacheKey, 60, function () use ($request) {
+            $query = JobListing::query()->withCount(['applications', 'comments']);
 
-        // ค้นหาด้วยชื่องาน / สถานที่
-        if ($search = $request->input('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('position', 'like', "%{$search}%")
-                  ->orWhere('location', 'like', "%{$search}%");
-            });
-        }
+            // ค้นหาด้วยชื่องาน / สถานที่
+            if ($search = $request->input('search')) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                      ->orWhere('position', 'like', "%{$search}%")
+                      ->orWhere('location', 'like', "%{$search}%");
+                });
+            }
 
-        // กรองตามประเภทงาน
-        if ($type = $request->input('job_type')) {
-            $query->where('job_type', $type);
-        }
+            // กรองตามประเภทงาน
+            if ($type = $request->input('job_type')) {
+                $query->where('job_type', $type);
+            }
 
-        // กรองตามเพศ
-        if ($gender = $request->input('gender')) {
-            $query->where(function ($q) use ($gender) {
-                $q->where('gender', $gender)->orWhere('gender', 'any');
-            });
-        }
+            // กรองตามเพศ
+            if ($gender = $request->input('gender')) {
+                $query->where(function ($q) use ($gender) {
+                    $q->where('gender', $gender)->orWhere('gender', 'any');
+                });
+            }
 
-        // กรองตามสถานะ
-        if ($status = $request->input('status')) {
-            $query->where('status', $status);
-        }
+            // กรองตามสถานะ
+            if ($status = $request->input('status')) {
+                $query->where('status', $status);
+            }
 
-        // กรองตามค่าตอบแทน (ค้นหาตัวเลขใน compensation string)
-        // เรียงลำดับ
-        $sort = $request->input('sort', 'latest');
-        if ($sort === 'compensation') {
-            $query->orderByRaw("CAST(REGEXP_REPLACE(compensation, '[^0-9]', '') AS UNSIGNED) DESC");
-        } else {
-            $query->orderBy('created_at', 'desc');
-        }
+            // กรองตามค่าตอบแทน
+            $sort = $request->input('sort', 'latest');
+            if ($sort === 'compensation') {
+                $query->orderByRaw("CAST(REGEXP_REPLACE(compensation, '[^0-9]', '') AS UNSIGNED) DESC");
+            } else {
+                $query->orderBy('created_at', 'desc');
+            }
 
-        $jobs = $query->paginate(12)->withQueryString();
+            return $query->paginate(12)->withQueryString();
+        });
+
+        $jobs = $data;
 
         // ข้อมูลสำหรับแผนที่ (เฉพาะงานที่มีพิกัด)
-        $geoJobs = JobListing::whereNotNull('latitude')
-            ->whereNotNull('longitude')
-            ->where('status', 'open')
-            ->get()
-            ->map(fn($j) => [
-                'id'       => $j->id,
-                'title'    => $j->title,
-                'position' => $j->position,
-                'location' => $j->location,
-                'lat'      => (float) $j->latitude,
-                'lng'      => (float) $j->longitude,
-                'type'     => $j->job_type,
-                'compensation' => $j->compensation,
-                'image'    => $j->image_path ? Storage::url($j->image_path) : null,
-                'url'      => route('jobs.show', $j->id),
-            ]);
+        $geoJobs = \Illuminate\Support\Facades\Cache::remember('jobs_geo_all', 300, function () {
+            return JobListing::whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->where('status', 'open')
+                ->get()
+                ->map(fn($j) => [
+                    'id'       => $j->id,
+                    'title'    => $j->title,
+                    'position' => $j->position,
+                    'location' => $j->location,
+                    'lat'      => (float) $j->latitude,
+                    'lng'      => (float) $j->longitude,
+                    'type'     => $j->job_type,
+                    'compensation' => $j->compensation,
+                    'image'    => $j->image_path ? Storage::url($j->image_path) : null,
+                    'url'      => route('jobs.show', $j->id),
+                ]);
+        });
 
         // งานที่นักศึกษาสมัครแล้ว
         $appliedJobIds = [];
@@ -91,8 +98,8 @@ class JobController extends Controller
     /** แสดงรายละเอียดงาน */
     public function show($id)
     {
-        $job = JobListing::with(['creator', 'applications.user'])->findOrFail($id);
-        $comments = JobComment::with(['user', 'replies.user'])
+        $job = JobListing::with(['creator:id,full_name,profile_photo_path'])->findOrFail($id);
+        $comments = JobComment::with(['user:id,full_name,profile_photo_path', 'replies.user:id,full_name,profile_photo_path'])
             ->where('job_listing_id', $id)
             ->whereNull('parent_id')
             ->orderBy('created_at', 'desc')

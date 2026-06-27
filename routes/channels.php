@@ -22,3 +22,17 @@ Broadcast::channel('chat.room.{roomId}', function ($user, $roomId) {
     if (!$room) return false;
     return $room->users()->where('users.id', $user->id)->exists() || $user->isAdmin() || $user->isStaff();
 });
+
+// Channel สำหรับหน้า Walk-in
+Broadcast::channel('activity.{token}.checkins', function ($user, $token) {
+    return $user->isAdmin() || $user->isStaff();
+});
+
+// Presence Channel สำหรับสถานะออนไลน์ทั่วระบบ
+Broadcast::channel('online', function ($user) {
+    return [
+        'id' => $user->id,
+        'name' => $user->full_name,
+        'role' => $user->role,
+    ];
+});
