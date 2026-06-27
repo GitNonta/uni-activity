@@ -225,7 +225,7 @@ class ActivityAdminController extends Controller
             'longitude' => 'nullable|numeric|between:-180,180',
             'checkin_radius' => 'nullable|integer|min:10|max:5000',
             'require_attendance_approval' => 'boolean',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
         ]);
 
         $data['is_mandatory'] = $request->boolean('is_mandatory');

@@ -356,6 +356,28 @@
             <span class="sb-page-title">@yield('title', 'Dashboard')</span>
         </div>
         <div class="sb-main">
+            @if(session('success'))
+                <div style="background-color: #dcfce7; color: #166534; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #bbf7d0;">
+                    {{ session('success') }}
+                </div>
+            @endif
+            
+            @if(session('error'))
+                <div style="background-color: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #fecaca;">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            @if($errors->any())
+                <div style="background-color: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #fecaca;">
+                    <ul style="margin: 0; padding-left: 1.5rem;">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             @yield('content')
         </div>
     </div>

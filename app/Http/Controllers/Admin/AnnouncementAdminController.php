@@ -43,7 +43,7 @@ class AnnouncementAdminController extends Controller
             'target_faculty' => 'nullable|string',
             'type'           => 'required|in:info,warning,danger,success',
             'is_active'      => 'boolean',
-            'image'          => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'image'          => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
         ]);
 
         if ($request->hasFile('image')) {

@@ -40,7 +40,7 @@ class StoreActivityRequest extends FormRequest
             'department' => 'nullable|required_if:scope,department|string|max:100',
             'is_mandatory' => 'boolean',
             'require_attendance_approval' => 'boolean',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
             'checkin_radius' => 'nullable|integer|min:10|max:5000',

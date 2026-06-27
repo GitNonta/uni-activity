@@ -15,7 +15,7 @@ class ProfilePhotoController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'profile_photo' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'profile_photo' => 'required|image|mimes:jpg,jpeg,png,webp|max:10240',
         ]);
 
         $user = auth()->user();
