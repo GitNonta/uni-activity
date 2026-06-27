@@ -98,8 +98,8 @@ class JobController extends Controller
     /** แสดงรายละเอียดงาน */
     public function show($id)
     {
-        $job = JobListing::with(['creator:id,full_name,profile_photo_path'])->findOrFail($id);
-        $comments = JobComment::with(['user:id,full_name,profile_photo_path', 'replies.user:id,full_name,profile_photo_path'])
+        $job = JobListing::with(['creator:id,full_name,profile_photo'])->findOrFail($id);
+        $comments = JobComment::with(['user:id,full_name,profile_photo', 'replies.user:id,full_name,profile_photo'])
             ->where('job_listing_id', $id)
             ->whereNull('parent_id')
             ->orderBy('created_at', 'desc')
