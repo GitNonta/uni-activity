@@ -248,4 +248,11 @@ Route::middleware(['auth', 'role:admin,super-admin'])->prefix('admin')->name('ad
     // ── Audit Log ──
     Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
     Route::get('audit-logs/{id}', [AuditLogController::class, 'show'])->name('audit-logs.show');
+
+    // ── ตั้งค่าระบบ ──
+    Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
+    Route::put('settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
+
+    // ── API Keys ──
+    Route::resource('api-keys', \App\Http\Controllers\Admin\ApiKeyController::class)->only(['index', 'store', 'destroy']);
 });

@@ -88,9 +88,12 @@ class StudentAuthController extends Controller
             'program.required'    => 'กรุณาเลือกภาคเรียน',
         ]);
 
+        $prefix = \App\Models\Setting::get('student_email_prefix', 's');
+        $domain = \App\Models\Setting::get('student_email_domain', '@pkru.ac.th');
+
         $user = User::create([
             'student_id' => $request->student_id,
-            'email'      => 's' . $request->student_id . '@pkru.ac.th',
+            'email'      => $prefix . $request->student_id . $domain,
             'full_name'  => $request->full_name,
             'faculty'    => $request->faculty,
             'department' => $request->department,
