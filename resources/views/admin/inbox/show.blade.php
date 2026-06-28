@@ -54,7 +54,7 @@
                                      onclick="window.open('{{ $att['url'] }}','_blank')">
                             @else
                                 <a href="{{ $att['url'] }}" target="_blank" download="{{ $att['original_name'] }}"
-                                   style="display:flex;align-items:center;gap:.4rem;margin-top:.35rem;color:{{ $mine ? '#c7d2fe' : '#4f46e5' }};font-size:.8rem;text-decoration:none;">
+                                   style="display:flex;align-items:center;gap:.4rem;margin-top:.35rem;color:{{ $isMine ? '#c7d2fe' : '#4f46e5' }};font-size:.8rem;text-decoration:none;">
                                     <svg style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> {{ $att['original_name'] }}
                                 </a>
                             @endif
