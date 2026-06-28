@@ -114,7 +114,7 @@ class AdminInboxController extends Controller
             $room, 
             Auth::user(), 
             $request->message ?? '', 
-            count($attachments) > 0 && empty($request->message) ? 'file' : 'text',
+            'text',
             $attachments
         );
 

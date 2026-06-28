@@ -91,7 +91,7 @@ class ChatController extends Controller
             $room, 
             Auth::user(), 
             $body, 
-            count($attachments) > 0 && empty($body) ? 'file' : 'text',
+            'text',
             $attachments
         );
 
