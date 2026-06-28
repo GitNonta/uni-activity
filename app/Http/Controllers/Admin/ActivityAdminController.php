@@ -16,6 +16,7 @@ use App\Models\ActivityFeedback;
 use App\Models\AdminAuditLog;
 use App\Services\ImageOptimizationService;
 use App\Services\QrCodeService;
+use App\Events\ActivityPublished;
 use App\Traits\LogsAdminActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -177,6 +178,9 @@ class ActivityAdminController extends Controller
 
         $activity = Activity::create($data);
         $this->auditCreate($activity, "สร้างกิจกรรม \"{$activity->title}\"");
+
+        // ยิง event เพื่อส่ง LINE notification แบบ async
+        ActivityPublished::dispatch($activity);
 
         return redirect()->route('admin.activities.index')->with('success', 'สร้างกิจกรรมสำเร็จ!');
     }

@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\JobAdminController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\Admin\AdminInboxController;
 use App\Http\Controllers\UserStatusController;
+use App\Http\Controllers\LineController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/debug-ip', function() {
@@ -145,7 +146,16 @@ Route::middleware('auth')->group(function () {
     // ── User status (online/last seen) ──
     Route::middleware('auth')->post('/user/ping', [UserStatusController::class, 'ping'])->middleware('throttle:status')->name('user.ping');
     Route::get('/users/{id}/status', [UserStatusController::class, 'status'])->middleware('throttle:status')->name('user.status');
+
+    // ── LINE OAuth ──
+    Route::get('/line/redirect', [LineController::class, 'redirect'])->name('line.redirect');
+    Route::get('/line/callback', [LineController::class, 'callback'])->name('line.callback');
+    Route::post('/line/unlink', [LineController::class, 'unlink'])->name('line.unlink');
+    Route::post('/line/toggle-notify', [LineController::class, 'toggleNotify'])->name('line.toggle-notify');
 });
+
+// ── LINE Webhook (ไม่ต้อง auth) ──
+Route::match(['get', 'post'], '/line/webhook', [LineController::class, 'webhook'])->name('line.webhook');
 
 // ── เส้นทางหลังบ้าน (staff + admin เข้าได้) ───────────
 Route::middleware(['auth', 'role:staff'])->prefix('admin')->name('admin.')->group(function () {

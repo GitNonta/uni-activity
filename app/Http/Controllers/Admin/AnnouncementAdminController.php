@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Announcement;
 use App\Models\User;
+use App\Events\AnnouncementPublished;
 use App\Traits\LogsAdminActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -55,6 +56,9 @@ class AnnouncementAdminController extends Controller
 
         $announcement = Announcement::create($data);
         $this->auditCreate($announcement, "สร้างประกาศ \"{$announcement->title}\"");
+
+        // ยิง event เพื่อส่ง LINE notification แบบ async
+        AnnouncementPublished::dispatch($announcement);
 
         return redirect()->route('admin.announcements.index')->with('success', 'สร้างประกาศสำเร็จ!');
     }

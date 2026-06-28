@@ -2,11 +2,18 @@
 
 namespace App\Providers;
 
+use App\Events\ActivityPublished;
+use App\Events\AnnouncementPublished;
+use App\Events\JobPublished;
+use App\Listeners\SendLineActivityNotification;
+use App\Listeners\SendLineAnnouncementNotification;
+use App\Listeners\SendLineJobNotification;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureRateLimiters();
+        $this->registerLineEvents();
 
         // ตรวจสอบและบังคับใช้โปรโตคอลและโดเมนตามที่เรียกเข้ามาจริง (รองรับทั้ง localhost และ ngrok)
         if (!app()->runningInConsole()) {
@@ -36,6 +44,14 @@ class AppServiceProvider extends ServiceProvider
                 URL::forceScheme('https');
             }
         }
+    }
+
+    /** ลงทะเบียน Event → Listener สำหรับ LINE Notifications */
+    private function registerLineEvents(): void
+    {
+        Event::listen(ActivityPublished::class,    SendLineActivityNotification::class);
+        Event::listen(JobPublished::class,         SendLineJobNotification::class);
+        Event::listen(AnnouncementPublished::class, SendLineAnnouncementNotification::class);
     }
 
     private function configureRateLimiters(): void

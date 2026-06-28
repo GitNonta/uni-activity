@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\JobListing;
 use App\Models\JobApplication;
 use App\Models\JobComment;
+use App\Events\JobPublished;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -71,7 +72,10 @@ class JobAdminController extends Controller
 
         unset($validated['image']);
 
-        JobListing::create($validated);
+        $job = JobListing::create($validated);
+
+        // ยิง event เพื่อส่ง LINE notification แบบ async
+        JobPublished::dispatch($job);
 
         return redirect()->route('admin.jobs.index')->with('success', 'สร้างประกาศงานเรียบร้อย');
     }

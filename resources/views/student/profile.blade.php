@@ -184,4 +184,102 @@
         ดาวน์โหลดใบแสดงผลกิจกรรม (PDF)
     </a>
 </div>
+
+{{-- ── LINE Account Linking ── --}}
+<div class="card mt-3">
+    <div class="card-body">
+        <div class="flex items-center gap-3 mb-3">
+            {{-- LINE Logo --}}
+            <div style="width:40px;height:40px;background:#06c755;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                    <path d="M19.365 9.89c.50 0 .907.407.907.907s-.407.907-.907.907h-2.538v1.59h2.538c.5 0 .907.407.907.907s-.407.907-.907.907H15.92a.907.907 0 01-.907-.907V9.89c0-.5.407-.907.907-.907h3.445zm-6.742 0c.5 0 .907.407.907.907v4.311a.907.907 0 01-1.814 0V9.89c0-.5.407-.907.907-.907zm-2.17 0c.282 0 .534.13.7.334l2.808 3.813V9.89c0-.5.407-.907.907-.907s.907.407.907.907v4.311a.907.907 0 01-1.607.573l-2.808-3.813v2.333a.907.907 0 01-1.814 0V9.89c0-.5.407-.907.907-.907zm-3.352 0c.5 0 .907.407.907.907v4.311a.907.907 0 01-1.814 0V9.89c0-.5.407-.907.907-.907zM12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.683-.217.683-.482 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12c0-5.523-4.477-10-10-10z"/>
+                </svg>
+            </div>
+            <div>
+                <h3 class="font-bold" style="font-size:1rem;">การแจ้งเตือนผ่าน LINE</h3>
+                <p class="text-sm text-muted">รับข่าวสารกิจกรรม ประกาศ และงาน ผ่าน LINE OA</p>
+            </div>
+        </div>
+
+        @if(auth()->user()->line_user_id)
+            {{-- ผูกแล้ว --}}
+            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:1rem;margin-bottom:1rem;">
+                <div class="flex items-center gap-2">
+                    <svg width="20" height="20" fill="none" stroke="#16a34a" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span class="font-semi text-sm" style="color:#16a34a;">ผูกบัญชี LINE แล้ว</span>
+                </div>
+                <p class="text-sm" style="margin-top:.4rem;color:#555;">
+                    LINE: <span class="font-semi">{{ auth()->user()->line_display_name ?? 'ไม่ทราบชื่อ' }}</span>
+                </p>
+            </div>
+
+            <div class="flex gap-2" style="flex-wrap:wrap;">
+                {{-- ปุ่มเปิด/ปิด notify --}}
+                <form method="POST" action="{{ route('line.toggle-notify') }}" style="flex:1;">
+                    @csrf
+                    @if(auth()->user()->line_notify_enabled)
+                        <button type="submit" class="btn btn-outline w-full" style="font-size:.875rem;">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                            ปิดการแจ้งเตือน
+                        </button>
+                    @else
+                        <button type="submit" class="btn btn-primary w-full" style="font-size:.875rem;background:#06c755;border-color:#06c755;">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                            เปิดการแจ้งเตือน
+                        </button>
+                    @endif
+                </form>
+
+                {{-- ปุ่มยกเลิกผูก --}}
+                <form method="POST" action="{{ route('line.unlink') }}" onsubmit="return confirm('ต้องการยกเลิกการผูกบัญชี LINE ใช่หรือไม่?')">
+                    @csrf
+                    <button type="submit" class="btn btn-outline" style="font-size:.875rem;color:#ef4444;border-color:#ef4444;">
+                        ยกเลิกผูก LINE
+                    </button>
+                </form>
+            </div>
+
+            @if(!auth()->user()->line_notify_enabled)
+                <p class="text-xs text-muted" style="margin-top:.75rem;">
+                    ⚠️ การแจ้งเตือน LINE ปิดอยู่ คุณจะไม่ได้รับข่าวสารทาง LINE
+                </p>
+            @endif
+
+        @else
+            {{-- ยังไม่ได้ผูก --}}
+            <div style="background:#fafafa;border:1px solid #e2e8f0;border-radius:10px;padding:1rem;margin-bottom:1rem;">
+                <p class="text-sm text-muted" style="margin-bottom:.5rem;">เมื่อผูกบัญชี LINE แล้ว คุณจะได้รับ:</p>
+                <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.4rem;">
+                    <li class="text-sm flex items-center gap-2">
+                        <svg width="14" height="14" fill="#06c755" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        การแจ้งเตือนเมื่อมีกิจกรรมใหม่
+                    </li>
+                    <li class="text-sm flex items-center gap-2">
+                        <svg width="14" height="14" fill="#06c755" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        การแจ้งเตือนประกาศงาน / Part-time ใหม่
+                    </li>
+                    <li class="text-sm flex items-center gap-2">
+                        <svg width="14" height="14" fill="#06c755" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        การแจ้งเตือนประกาศข่าวสาร
+                    </li>
+                    <li class="text-sm flex items-center gap-2">
+                        <svg width="14" height="14" fill="#06c755" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Reminder กิจกรรมที่ลงทะเบียนไว้ (1 วันก่อน)
+                    </li>
+                </ul>
+            </div>
+
+            <a href="{{ route('line.redirect') }}" 
+               class="btn w-full" 
+               style="background:#06c755;color:#fff;border:none;display:flex;align-items:center;justify-content:center;gap:.6rem;font-weight:600;font-size:.95rem;padding:.75rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                    <path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.683-.217.683-.482 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12c0-5.523-4.477-10-10-10z"/>
+                </svg>
+                ผูกบัญชี LINE
+            </a>
+        @endif
+    </div>
+</div>
 @endsection

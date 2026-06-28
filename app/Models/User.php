@@ -36,6 +36,9 @@ class User extends Authenticatable
         'is_active',
         'profile_photo',
         'last_seen_at',
+        'line_user_id',
+        'line_display_name',
+        'line_notify_enabled',
     ];
 
     /** ฟิลด์ที่ซ่อนเมื่อแปลงเป็น JSON */
@@ -48,10 +51,11 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'is_active'     => 'boolean',
-            'year'          => 'integer',
-            'password'      => 'hashed',
-            'last_seen_at'  => 'datetime',
+            'is_active'           => 'boolean',
+            'year'                => 'integer',
+            'password'            => 'hashed',
+            'last_seen_at'        => 'datetime',
+            'line_notify_enabled' => 'boolean',
         ];
     }
 
