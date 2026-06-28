@@ -185,101 +185,112 @@
     </a>
 </div>
 
-{{-- ── LINE Account Linking ── --}}
-<div class="card mt-3">
+{{-- ── การแจ้งเตือนผ่าน LINE ── --}}
+<div class="card" style="margin-top:1rem;">
     <div class="card-body">
-        <div class="flex items-center gap-3 mb-3">
-            {{-- LINE Logo --}}
-            <div style="width:40px;height:40px;background:#06c755;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-                    <path d="M19.365 9.89c.50 0 .907.407.907.907s-.407.907-.907.907h-2.538v1.59h2.538c.5 0 .907.407.907.907s-.407.907-.907.907H15.92a.907.907 0 01-.907-.907V9.89c0-.5.407-.907.907-.907h3.445zm-6.742 0c.5 0 .907.407.907.907v4.311a.907.907 0 01-1.814 0V9.89c0-.5.407-.907.907-.907zm-2.17 0c.282 0 .534.13.7.334l2.808 3.813V9.89c0-.5.407-.907.907-.907s.907.407.907.907v4.311a.907.907 0 01-1.607.573l-2.808-3.813v2.333a.907.907 0 01-1.814 0V9.89c0-.5.407-.907.907-.907zm-3.352 0c.5 0 .907.407.907.907v4.311a.907.907 0 01-1.814 0V9.89c0-.5.407-.907.907-.907zM12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.683-.217.683-.482 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12c0-5.523-4.477-10-10-10z"/>
-                </svg>
-            </div>
-            <div>
-                <h3 class="font-bold" style="font-size:1rem;">การแจ้งเตือนผ่าน LINE</h3>
-                <p class="text-sm text-muted">รับข่าวสารกิจกรรม ประกาศ และงาน ผ่าน LINE OA</p>
-            </div>
-        </div>
+
+        {{-- Header --}}
+        <h2 class="font-bold mb-3" style="font-size:1rem;display:flex;align-items:center;gap:.5rem;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            </svg>
+            การแจ้งเตือนผ่าน LINE
+        </h2>
 
         @if(auth()->user()->line_user_id)
-            {{-- ผูกแล้ว --}}
-            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:1rem;margin-bottom:1rem;">
-                <div class="flex items-center gap-2">
-                    <svg width="20" height="20" fill="none" stroke="#16a34a" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            {{-- ═══ สถานะ: ผูกแล้ว ═══ --}}
+
+            {{-- Status row --}}
+            <div style="display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;margin-bottom:1rem;">
+                <div style="width:36px;height:36px;background:#06c755;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    {{-- LINE chat bubble icon (stroke) --}}
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
                     </svg>
-                    <span class="font-semi text-sm" style="color:#16a34a;">ผูกบัญชี LINE แล้ว</span>
                 </div>
-                <p class="text-sm" style="margin-top:.4rem;color:#555;">
-                    LINE: <span class="font-semi">{{ auth()->user()->line_display_name ?? 'ไม่ทราบชื่อ' }}</span>
-                </p>
+                <div style="flex:1;min-width:0;">
+                    <p class="font-semi text-sm" style="color:#15803d;">เชื่อมต่อ LINE สำเร็จ</p>
+                    <p class="text-xs text-muted" style="margin-top:.1rem;">{{ auth()->user()->line_display_name ?? 'LINE Account' }}</p>
+                </div>
+                <svg width="18" height="18" fill="none" stroke="#16a34a" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
             </div>
 
-            <div class="flex gap-2" style="flex-wrap:wrap;">
-                {{-- ปุ่มเปิด/ปิด notify --}}
-                <form method="POST" action="{{ route('line.toggle-notify') }}" style="flex:1;">
+            {{-- Notification toggle row --}}
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:.65rem .9rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:.75rem;">
+                <div style="display:flex;align-items:center;gap:.5rem;">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:#64748b;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    </svg>
+                    <span class="text-sm font-semi">รับการแจ้งเตือน</span>
+                </div>
+                <form method="POST" action="{{ route('line.toggle-notify') }}" style="margin:0;">
                     @csrf
-                    @if(auth()->user()->line_notify_enabled)
-                        <button type="submit" class="btn btn-outline w-full" style="font-size:.875rem;">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                            ปิดการแจ้งเตือน
-                        </button>
-                    @else
-                        <button type="submit" class="btn btn-primary w-full" style="font-size:.875rem;background:#06c755;border-color:#06c755;">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                            เปิดการแจ้งเตือน
-                        </button>
-                    @endif
-                </form>
-
-                {{-- ปุ่มยกเลิกผูก --}}
-                <form method="POST" action="{{ route('line.unlink') }}" onsubmit="return confirm('ต้องการยกเลิกการผูกบัญชี LINE ใช่หรือไม่?')">
-                    @csrf
-                    <button type="submit" class="btn btn-outline" style="font-size:.875rem;color:#ef4444;border-color:#ef4444;">
-                        ยกเลิกผูก LINE
+                    <button type="submit"
+                        style="position:relative;width:44px;height:24px;border-radius:12px;border:none;cursor:pointer;transition:background .2s;background:{{ auth()->user()->line_notify_enabled ? '#06c755' : '#cbd5e1' }};"
+                        title="{{ auth()->user()->line_notify_enabled ? 'คลิกเพื่อปิด' : 'คลิกเพื่อเปิด' }}">
+                        <span style="position:absolute;top:3px;width:18px;height:18px;background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:left .2s;left:{{ auth()->user()->line_notify_enabled ? '23px' : '3px' }};"></span>
                     </button>
                 </form>
             </div>
 
             @if(!auth()->user()->line_notify_enabled)
-                <p class="text-xs text-muted" style="margin-top:.75rem;">
-                    ⚠️ การแจ้งเตือน LINE ปิดอยู่ คุณจะไม่ได้รับข่าวสารทาง LINE
-                </p>
+            <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.75rem;">
+                <svg width="14" height="14" fill="none" stroke="#f59e0b" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <p class="text-xs" style="color:#b45309;">การแจ้งเตือนปิดอยู่ — คุณจะไม่ได้รับข่าวสารทาง LINE</p>
+            </div>
             @endif
 
+            {{-- Unlink --}}
+            <form method="POST" action="{{ route('line.unlink') }}"
+                onsubmit="return confirm('ต้องการยกเลิกการผูกบัญชี LINE ใช่หรือไม่?')">
+                @csrf
+                <button type="submit"
+                    style="width:100%;display:flex;align-items:center;justify-content:center;gap:.4rem;padding:.55rem;border:1px solid #e2e8f0;border-radius:8px;background:none;color:#94a3b8;font-size:.8rem;cursor:pointer;">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                    </svg>
+                    ยกเลิกการเชื่อมต่อ LINE
+                </button>
+            </form>
+
         @else
-            {{-- ยังไม่ได้ผูก --}}
-            <div style="background:#fafafa;border:1px solid #e2e8f0;border-radius:10px;padding:1rem;margin-bottom:1rem;">
-                <p class="text-sm text-muted" style="margin-bottom:.5rem;">เมื่อผูกบัญชี LINE แล้ว คุณจะได้รับ:</p>
-                <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.4rem;">
-                    <li class="text-sm flex items-center gap-2">
-                        <svg width="14" height="14" fill="#06c755" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        การแจ้งเตือนเมื่อมีกิจกรรมใหม่
-                    </li>
-                    <li class="text-sm flex items-center gap-2">
-                        <svg width="14" height="14" fill="#06c755" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        การแจ้งเตือนประกาศงาน / Part-time ใหม่
-                    </li>
-                    <li class="text-sm flex items-center gap-2">
-                        <svg width="14" height="14" fill="#06c755" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        การแจ้งเตือนประกาศข่าวสาร
-                    </li>
-                    <li class="text-sm flex items-center gap-2">
-                        <svg width="14" height="14" fill="#06c755" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        Reminder กิจกรรมที่ลงทะเบียนไว้ (1 วันก่อน)
-                    </li>
-                </ul>
+            {{-- ═══ สถานะ: ยังไม่ได้ผูก ═══ --}}
+
+            {{-- Benefits list --}}
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1rem;">
+                @foreach([
+                    ['icon'=>'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', 'text'=>'กิจกรรมใหม่'],
+                    ['icon'=>'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', 'text'=>'ประกาศงาน'],
+                    ['icon'=>'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z', 'text'=>'ข่าวประกาศ'],
+                    ['icon'=>'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 'text'=>'Reminder 1 วันก่อน'],
+                ] as $item)
+                <div style="display:flex;align-items:center;gap:.5rem;padding:.55rem .7rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;">
+                    <svg width="15" height="15" fill="none" stroke="#06c755" viewBox="0 0 24 24" style="flex-shrink:0;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/>
+                    </svg>
+                    <span class="text-xs font-semi" style="color:#374151;">{{ $item['text'] }}</span>
+                </div>
+                @endforeach
             </div>
 
-            <a href="{{ route('line.redirect') }}" 
-               class="btn w-full" 
-               style="background:#06c755;color:#fff;border:none;display:flex;align-items:center;justify-content:center;gap:.6rem;font-weight:600;font-size:.95rem;padding:.75rem;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                    <path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.683-.217.683-.482 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12c0-5.523-4.477-10-10-10z"/>
+            {{-- Connect button --}}
+            <a href="{{ route('line.redirect') }}"
+               style="display:flex;align-items:center;justify-content:center;gap:.6rem;width:100%;padding:.7rem;background:#06c755;color:#fff;border-radius:10px;font-weight:600;font-size:.9rem;text-decoration:none;border:none;">
+                {{-- LINE chat icon (stroke) --}}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
                 </svg>
-                ผูกบัญชี LINE
+                เชื่อมต่อบัญชี LINE
             </a>
+            <p class="text-xs text-muted" style="text-align:center;margin-top:.6rem;">เข้าสู่ระบบด้วยบัญชี LINE ของคุณเพื่อรับการแจ้งเตือน</p>
         @endif
+
     </div>
 </div>
 @endsection
+

@@ -25,10 +25,13 @@ class LineController extends Controller
         $state = Str::random(32);
         $request->session()->put('line_oauth_state', $state);
 
+        // ใช้ LINE_CALLBACK_URL จาก .env เสมอ (ต้องตรงกับที่ลงทะเบียนใน LINE Developers Console)
+        $callbackUrl = config('services.line.callback_url') ?: route('line.callback');
+
         $params = http_build_query([
             'response_type' => 'code',
             'client_id'     => config('services.line.login_channel_id'),
-            'redirect_uri'  => route('line.callback'),
+            'redirect_uri'  => $callbackUrl,
             'state'         => $state,
             'scope'         => 'profile openid',
         ]);
@@ -56,8 +59,9 @@ class LineController extends Controller
                 ->with('error', 'ผูก LINE ไม่สำเร็จ: ไม่มี authorization code');
         }
 
-        // แลก code เป็น Access Token
-        $tokenData = $this->lineService->exchangeToken($code, route('line.callback'));
+        // ใช้ callback URL เดียวกันกับที่ส่งไป LINE
+        $callbackUrl = config('services.line.callback_url') ?: route('line.callback');
+        $tokenData = $this->lineService->exchangeToken($code, $callbackUrl);
         if (!$tokenData || empty($tokenData['access_token'])) {
             return redirect()->route('student.profile')
                 ->with('error', 'ผูก LINE ไม่สำเร็จ: ไม่สามารถรับ access token ได้');
