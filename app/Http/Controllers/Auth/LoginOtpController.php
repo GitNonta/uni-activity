@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\DeviceFingerprintService;
+use App\Services\SecurityService;
 use Illuminate\Http\Request;
 use function App\Helpers\log_action;
 use Illuminate\Support\Facades\Auth;
@@ -49,7 +51,7 @@ class LoginOtpController extends Controller
         ]);
 
         $userId = session('login_otp_user_id');
-        $email = session('login_otp_email');
+        $email  = session('login_otp_email');
 
         if (!$userId || !$email) {
             return redirect()->route('login');
@@ -71,12 +73,30 @@ class LoginOtpController extends Controller
         DB::table('password_reset_otps')->where('id', $otpRecord->id)->delete();
 
         // ล็อกอิน
-        $user = User::find($userId);
+        $user     = User::find($userId);
         $remember = session('login_otp_remember', false);
-        
+
         Auth::login($user, $remember);
         // Record audit log for login action
         log_action('login', null, null, 'User logged in');
+
+        // --- บันทึก Device Fingerprint + ตรวจ Multi-Account ---
+        /** @var DeviceFingerprintService $fpService */
+        $fpService = app(DeviceFingerprintService::class);
+        /** @var SecurityService $secService */
+        $secService = app(SecurityService::class);
+
+        $fingerprint = $fpService->generate($request);
+
+        // บันทึก login metadata
+        $user->update([
+            'last_login_ip'          => $request->ip(),
+            'last_login_at'          => now(),
+            'last_device_fingerprint'=> $fingerprint,
+        ]);
+
+        // ตรวจจับ multi-account บนเครื่องเดียวกัน
+        $secService->checkAndLogMultiAccountLogin($request, $user->id);
 
         // ล้าง session ชั่วคราว
         session()->forget(['login_otp_user_id', 'login_otp_email', 'login_otp_remember']);

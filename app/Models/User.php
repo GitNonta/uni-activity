@@ -40,6 +40,10 @@ class User extends Authenticatable
         'line_user_id',
         'line_display_name',
         'line_notify_enabled',
+        // Security tracking
+        'last_login_ip',
+        'last_login_at',
+        'last_device_fingerprint',
     ];
 
     /** ฟิลด์ที่ซ่อนเมื่อแปลงเป็น JSON */
@@ -57,7 +61,14 @@ class User extends Authenticatable
             'password'            => 'hashed',
             'last_seen_at'        => 'datetime',
             'line_notify_enabled' => 'boolean',
+            'last_login_at'       => 'datetime',
         ];
+    }
+
+    /** ความสัมพันธ์: ผู้ใช้มีบันทึกความปลอดภัยหลายรายการ */
+    public function securityLogs()
+    {
+        return $this->hasMany(SecurityLog::class);
     }
 
     /** ความสัมพันธ์: ผู้ใช้มีการลงทะเบียนหลายรายการ */

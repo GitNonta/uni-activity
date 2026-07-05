@@ -13,6 +13,10 @@ use App\Models\User;
  */
 class CheckInService
 {
+    public function __construct(
+        private readonly DeviceFingerprintService $fpService,
+        private readonly SecurityService $secService,
+    ) {}
     /**
      * ดำเนินการเช็คอิน
      * ขั้นตอน: ค้นหากิจกรรมจาก token → ตรวจเวลา (ข้ามได้ถ้าเปิด early)
@@ -73,6 +77,13 @@ class CheckInService
             }
 
             // บันทึกการเข้างาน (Check-in)
+            $fingerprint    = $this->fpService->generate(request());
+            $isSuspicious   = $this->secService->checkAndLogSuspiciousCheckIn(
+                request:  request(),
+                userId:   $user->id,
+                activity: $activity,
+            );
+
             Attendance::create([
                 'user_id'           => $user->id,
                 'activity_id'       => $activity->id,
@@ -81,6 +92,8 @@ class CheckInService
                 'status'            => 'pending', // เข้างานแล้วแต่ยังไม่จบกิจกรรม
                 'is_verified'       => true,
                 'ip_address'        => request()->ip(),
+                'device_fingerprint'=> $fingerprint,
+                'is_suspicious'     => $isSuspicious,
                 'checkin_latitude'  => $latitude,
                 'checkin_longitude' => $longitude,
                 'distance_meters'   => $distance,

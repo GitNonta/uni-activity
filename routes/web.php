@@ -249,6 +249,12 @@ Route::middleware(['auth', 'role:admin,super-admin'])->prefix('admin')->name('ad
     Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
     Route::get('audit-logs/{id}', [AuditLogController::class, 'show'])->name('audit-logs.show');
 
+    // ── Security Logs (ตรวจจับ multi-account / suspicious check-in) ──
+    Route::get('security-logs', [\App\Http\Controllers\Admin\SecurityLogController::class, 'index'])->name('security-logs.index');
+    Route::get('security-logs/{securityLog}', [\App\Http\Controllers\Admin\SecurityLogController::class, 'show'])->name('security-logs.show');
+    Route::post('security-logs/{securityLog}/review', [\App\Http\Controllers\Admin\SecurityLogController::class, 'markReviewed'])->name('security-logs.review');
+    Route::post('security-logs/review-all', [\App\Http\Controllers\Admin\SecurityLogController::class, 'markAllReviewed'])->name('security-logs.review-all');
+
     // ── ตั้งค่าระบบ ──
     Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
     Route::put('settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');

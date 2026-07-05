@@ -25,6 +25,8 @@ class Attendance extends Model
         'verified_by',
         'is_verified',
         'ip_address',
+        'device_fingerprint',
+        'is_suspicious',
         'checkin_latitude',
         'checkin_longitude',
         'checkout_latitude',
@@ -37,14 +39,15 @@ class Attendance extends Model
     protected function casts(): array
     {
         return [
-            'checked_in_at' => 'datetime',
-            'checked_out_at' => 'datetime',
-            'is_verified' => 'boolean',
-            'checkin_latitude' => 'decimal:7',
-            'checkin_longitude' => 'decimal:7',
-            'checkout_latitude' => 'decimal:7',
-            'checkout_longitude' => 'decimal:7',
-            'distance_meters' => 'decimal:2',
+            'checked_in_at'            => 'datetime',
+            'checked_out_at'           => 'datetime',
+            'is_verified'              => 'boolean',
+            'is_suspicious'            => 'boolean',
+            'checkin_latitude'         => 'decimal:7',
+            'checkin_longitude'        => 'decimal:7',
+            'checkout_latitude'        => 'decimal:7',
+            'checkout_longitude'       => 'decimal:7',
+            'distance_meters'          => 'decimal:2',
             'checkout_distance_meters' => 'decimal:2',
         ];
     }
