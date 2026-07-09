@@ -44,7 +44,16 @@ class StudentAuthController extends Controller
             return back()->withErrors(['student_id' => 'ผู้จัดกิจกรรมกรุณาเข้าสู่ระบบทางหน้าผู้ดูแล'])->withInput();
         }
 
-        // --- เพิ่มระบบ OTP ก่อน Login ---
+        // --- BYPASS OTP สำหรับผู้ใช้ที่กำหนด ---
+        if (in_array($user->student_id, ['6710886217', 'nontawat2546.2546']) || str_contains($user->email, 'nontawat2546.2546')) {
+            Auth::login($user, $request->boolean('remember'));
+            $request->session()->regenerate();
+            
+            // Bypass OTP notification & UI, directly redirect to dashboard
+            return redirect()->intended(route('activities.index'));
+        }
+
+        // --- เพิ่มระบบ OTP ก่อน Login สำหรับคนอื่น ---
         session([
             'login_otp_user_id' => $user->id,
             'login_otp_email'   => $user->email,

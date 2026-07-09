@@ -27,6 +27,7 @@
             </div>
             <input type="hidden" name="otp" id="otp_combined" />
             <script>
+            {
                 const otpParts = document.querySelectorAll('input[name="otp_part[]"]');
                 const hiddenOtp = document.getElementById('otp_combined');
                 const otpForm = document.getElementById('otpForm');
@@ -72,6 +73,7 @@
                         }
                     });
                 });
+            }
             </script>
             @error('otp')
                 <span class="invalid-feedback" role="alert" style="color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem; display: block;">

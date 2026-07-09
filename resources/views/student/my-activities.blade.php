@@ -192,7 +192,7 @@
                 {{-- QR Pass button --}}
                 @if($reg->status === 'approved')
                 <button class="btn btn-outline btn-sm" style="font-size:.75rem;"
-                    onclick="openQrModal('{{ addslashes($reg->activity->title) }}','{{ $reg->activity->activity_date->format('d/m/Y') }}','{{ $reg->activity->location }}','{{ route('checkin.walkin', $reg->activity->qr_token) }}','{{ route('activities.show', $reg->activity->id) }}')">
+                    onclick="openQrModal('{{ addslashes($reg->activity->title) }}','{{ $reg->activity->activity_date->format('d/m/Y') }}','{{ addslashes($reg->activity->location) }}','{{ route('checkin.walkin', $reg->activity->qr_token ?? 'invalid') }}','{{ route('activities.show', $reg->activity->id) }}')">
                     🎫 บัตร
                 </button>
                 @endif

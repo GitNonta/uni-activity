@@ -147,30 +147,36 @@
                 * QR Code หมดอายุ: {{ \Carbon\Carbon::parse($activity->qr_expires_at)->format('d/m/Y H:i') }}
             </div>
             @endif
-            
-            <div class="mt-4 p-3 bg-gray-50 rounded" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
-                <p class="font-semi text-sm mb-2" style="color:#334155;">สร้าง QR Code ใหม่ (Regenerate QR)</p>
-                <form method="POST" action="{{ route('admin.activities.regenerate-qr', $activity->id) }}" onsubmit="return confirm('ยืนยันสร้าง QR Code ใหม่? ลิงก์และ QR Code เดิมจะไม่สามารถใช้งานได้อีก')">
-                    @csrf
-                    <div class="flex items-center gap-2" style="flex-wrap:wrap;">
-                        <select name="expires_in_hours" class="form-control form-control-sm" style="width:auto;font-size:0.875rem;padding:0.25rem 0.5rem;">
-                            <option value="">-- ไม่จำกัดเวลา (ไม่หมดอายุ) --</option>
-                            <option value="1">1 ชั่วโมง</option>
-                            <option value="6">6 ชั่วโมง</option>
-                            <option value="24">24 ชั่วโมง (1 วัน)</option>
-                        </select>
-                        <button type="submit" class="btn btn-sm" style="background:#ef4444;color:#fff;">
-                            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 14px; height: 14px; margin-right: 4px;">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                            </svg>
-                            สร้าง QR Code ใหม่
-                        </button>
-                    </div>
-                </form>
-            </div>
+        </div>
+        @else
+        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #e2e8f0;">
+            <p class="text-sm text-muted mb-2">กิจกรรมนี้ยังไม่มี QR Code สำหรับลงทะเบียนหน้างานและเช็คอิน</p>
+        </div>
+        @endif
+        
+        <div class="mt-4 p-3 bg-gray-50 rounded" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
+            <p class="font-semi text-sm mb-2" style="color:#334155;">{{ $activity->qr_token ? 'สร้าง QR Code ใหม่ (Regenerate QR)' : 'สร้างลิงก์และ QR Code' }}</p>
+            <form method="POST" action="{{ route('admin.activities.regenerate-qr', $activity->id) }}" onsubmit="return confirm('ยืนยันสร้าง QR Code ใหม่? {{ $activity->qr_token ? 'ลิงก์และ QR Code เดิมจะไม่สามารถใช้งานได้อีก' : '' }}')">
+                @csrf
+                <div class="flex items-center gap-2" style="flex-wrap:wrap;">
+                    <select name="expires_in_hours" class="form-control form-control-sm" style="width:auto;font-size:0.875rem;padding:0.25rem 0.5rem;">
+                        <option value="">-- ไม่จำกัดเวลา (ไม่หมดอายุ) --</option>
+                        <option value="1">1 ชั่วโมง</option>
+                        <option value="6">6 ชั่วโมง</option>
+                        <option value="24">24 ชั่วโมง (1 วัน)</option>
+                    </select>
+                    <button type="submit" class="btn btn-sm" style="background:#ef4444;color:#fff;">
+                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 14px; height: 14px; margin-right: 4px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        {{ $activity->qr_token ? 'สร้าง QR Code ใหม่' : 'สร้าง QR Code' }}
+                    </button>
+                </div>
+            </form>
         </div>
 
         {{-- QR Code Modal --}}
+        @if($activity->qr_token)
         <div id="qrModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center;">
             <div style="background:white;padding:2rem;border-radius:12px;max-width:400px;width:90%;text-align:center;">
                 <h3 style="margin-bottom:1rem;color:#1f2937;">QR Code สำหรับ Walk-in Check-in</h3>
@@ -224,6 +230,7 @@
                 }
             });
         </script>
+        @endif
 
         <style>
             @keyframes slideIn {
@@ -231,7 +238,6 @@
                 to { transform: translateX(0); opacity: 1; }
             }
         </style>
-        @endif
     </div>
 </div>
 @endsection

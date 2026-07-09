@@ -423,6 +423,12 @@ class StudentController extends Controller
         ]);
     }
 
+    /** หน้าสแกน QR สำหรับนักศึกษา (สแกนเข้าร่วมกิจกรรม/เช็คอิน) */
+    public function scanner()
+    {
+        return view('student.scanner');
+    }
+
     /** ดาวน์โหลด PDF ใบแสดงผลการเข้าร่วมกิจกรรม */
     public function downloadPdf(ActivitySummaryService $summaryService)
     {

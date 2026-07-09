@@ -112,6 +112,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [StudentController::class, 'profile'])->name('student.profile');                          // หน้าโปรไฟล์นักศึกษา
     Route::get('/my-qr', [StudentController::class, 'showMyQr'])->name('student.qr');                                // หน้า QR ส่วนตัว
     Route::get('/my-qr/token', [StudentController::class, 'getDynamicQrToken'])->name('student.qr.token');           // ดึง Token QR
+    Route::get('/scan', [StudentController::class, 'scanner'])->name('student.scanner');                             // หน้าสแกน QR สำหรับนักศึกษา
     // ── ปฏิทินกิจกรรม ──
     Route::get('/calendar', [StudentController::class, 'calendar'])->name('student.calendar');                       // หน้าปฏิทิน
     Route::get('/calendar/events', [StudentController::class, 'calendarEvents'])->name('student.calendar.events');   // JSON feed

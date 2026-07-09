@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # PgBouncer Connection Pooler
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    environment:
+      - DATABASE_URL=postgres://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_DATABASE}
+      - MAX_CLIENT_CONN=10000
+      - DEFAULT_POOL_SIZE=100
+      - POOL_MODE=transaction
+    ports:
+      - "6432:6432"
+    restart: always
+
+  # Redis for Cache, Session, Queue, and Reverb Pub/Sub
+  redis:
+    image: redis:alpine
+    command: redis-server --maxmemory 2gb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    restart: always
+
+  # Laravel Octane (Swoole)
+  octane:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    command: php artisan octane:start --server=swoole --host=0.0.0.0 --port=8000 --workers=16 --task-workers=8
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_CONNECTION=pgsql
+      - DB_HOST=pgbouncer
+      - DB_PORT=6432
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+      - QUEUE_CONNECTION=redis
+      - REDIS_HOST=redis
+    depends_on:
+      - pgbouncer
+      - redis
+    restart: always
+
+  # Laravel Horizon (Queue Workers)
+  horizon:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    command: php artisan horizon
+    environment:
+      - DB_CONNECTION=pgsql
+      - DB_HOST=pgbouncer
+      - DB_PORT=6432
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+      - pgbouncer
+    restart: always
+
+  # Laravel Reverb (WebSockets)
+  reverb:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    command: php artisan reverb:start --host=0.0.0.0 --port=8080
+    ports:
+      - "8080:8080"
+    environment:
+      - REVERB_APP_ID=${REVERB_APP_ID}
+      - REVERB_APP_KEY=${REVERB_APP_KEY}
+      - REVERB_APP_SECRET=${REVERB_APP_SECRET}
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+    restart: always

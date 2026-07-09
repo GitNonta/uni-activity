@@ -20,21 +20,22 @@ class RegistrationController extends Controller
      */
     public function store(Request $request, $id)
     {
-        $activity = Activity::findOrFail($id);
         $user = auth()->user();
-
-        // ตรวจสอบช่วงเวลาลงทะเบียน
-        $now = now();
-        if ($now < $activity->register_open_at || $now > $activity->register_close_at) {
-            return back()->with('error', 'ไม่อยู่ในช่วงเวลาลงทะเบียน');
-        }
 
         // ตรวจสอบจำนวนที่ว่าง (ใช้ transaction ป้องกัน race condition)
         try {
-            DB::transaction(function () use ($activity, $user) {
+            DB::transaction(function () use ($id, $user) {
+                // ล็อค Activity record เพื่อป้องกัน concurrency แทนการล็อคตอน count()
+                $activity = Activity::where('id', $id)->lockForUpdate()->firstOrFail();
+
+                // ตรวจสอบช่วงเวลาลงทะเบียน
+                $now = now();
+                if ($now < $activity->register_open_at || $now > $activity->register_close_at) {
+                    throw new \Exception('ไม่อยู่ในช่วงเวลาลงทะเบียน');
+                }
+
                 $existing = Registration::where('user_id', $user->id)
                     ->where('activity_id', $activity->id)
-                    ->lockForUpdate()
                     ->first();
 
                 if ($existing && in_array($existing->status, ['pending', 'approved', 'completed', 'waitlisted'], true)) {
@@ -63,7 +64,6 @@ class RegistrationController extends Controller
 
                 $count = Registration::where('activity_id', $activity->id)
                     ->whereIn('status', ['pending', 'approved'])
-                    ->lockForUpdate()
                     ->count();
 
                 $statusToSet = 'approved';

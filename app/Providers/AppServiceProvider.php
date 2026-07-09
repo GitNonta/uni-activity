@@ -56,36 +56,73 @@ class AppServiceProvider extends ServiceProvider
 
     private function configureRateLimiters(): void
     {
+        // 1. Student Login: Allow 10 attempts per specific student, and max 100 attempts per IP
         RateLimiter::for('student-login', function (Request $request) {
-            return Limit::perMinute(8)->by($request->ip() . '|student|' . $request->input('student_id'));
+            return [
+                Limit::perMinute(10)->by($request->ip() . '|student|' . $request->input('student_id')),
+                Limit::perMinute(100)->by($request->ip() . '|student-global')
+            ];
         });
 
+        // 2. Staff Login: 5 attempts per email, 50 per IP
         RateLimiter::for('staff-login', function (Request $request) {
-            return Limit::perMinute(5)->by($request->ip() . '|staff|' . strtolower((string) $request->input('email')));
+            return [
+                Limit::perMinute(5)->by($request->ip() . '|staff|' . strtolower((string) $request->input('email'))),
+                Limit::perMinute(50)->by($request->ip() . '|staff-global')
+            ];
         });
 
+        // 3. Password Reset
         RateLimiter::for('password-reset', function (Request $request) {
-            return Limit::perMinute(3)->by($request->ip() . '|password|' . strtolower((string) $request->input('email')));
+            return [
+                Limit::perMinute(3)->by($request->ip() . '|password|' . strtolower((string) $request->input('email'))),
+                Limit::perMinute(20)->by($request->ip() . '|password-global')
+            ];
         });
 
+        // 4. Walk-in Registration
         RateLimiter::for('walkin', function (Request $request) {
-            return Limit::perMinute(20)->by($request->ip() . '|walkin|' . $request->route('token'));
+            $identifier = $request->session()->getId() ?: $request->userAgent();
+            return [
+                Limit::perMinute(30)->by($request->ip() . '|walkin|' . $identifier),
+                Limit::perMinute(200)->by($request->ip() . '|walkin-global')
+            ];
         });
 
+        // 5. Chat Send
         RateLimiter::for('chat-send', function (Request $request) {
-            return Limit::perMinute(30)->by(($request->user()?->id ?? $request->ip()) . '|chat');
+            $user = $request->user()?->id ?: ($request->session()->getId() ?: $request->userAgent());
+            return [
+                Limit::perMinute(60)->by($user . '|chat'),
+                Limit::perMinute(300)->by($request->ip() . '|chat-global')
+            ];
         });
 
+        // 6. Upload
         RateLimiter::for('upload', function (Request $request) {
-            return Limit::perMinute(10)->by(($request->user()?->id ?? $request->ip()) . '|upload');
+            $user = $request->user()?->id ?: ($request->session()->getId() ?: $request->userAgent());
+            return [
+                Limit::perMinute(20)->by($user . '|upload'),
+                Limit::perMinute(100)->by($request->ip() . '|upload-global')
+            ];
         });
 
+        // 7. Status Polling (High limit for device, higher for IP)
         RateLimiter::for('status', function (Request $request) {
-            return Limit::perMinute(120)->by(($request->user()?->id ?? $request->ip()) . '|status');
+            $user = $request->user()?->id ?: ($request->session()->getId() ?: $request->userAgent());
+            return [
+                Limit::perMinute(150)->by($user . '|status'),
+                Limit::perMinute(1000)->by($request->ip() . '|status-global')
+            ];
         });
 
+        // 8. Exports
         RateLimiter::for('exports', function (Request $request) {
-            return Limit::perMinute(12)->by(($request->user()?->id ?? $request->ip()) . '|exports');
+            $user = $request->user()?->id ?: ($request->session()->getId() ?: $request->userAgent());
+            return [
+                Limit::perMinute(15)->by($user . '|exports'),
+                Limit::perMinute(50)->by($request->ip() . '|exports-global')
+            ];
         });
     }
 }

@@ -1,0 +1,67 @@
+import { useState } from 'react'
+import { useWebSocket } from './hooks/useWebSocket'
+import { ConnectionCard } from './components/ConnectionCard'
+import { SystemCard } from './components/SystemCard'
+import { NetworkCard } from './components/NetworkCard'
+import { ServicesCard } from './components/ServicesCard'
+import { TrafficTable } from './components/TrafficTable'
+import { Inspector } from './components/Inspector'
+import { Status } from './components/Status'
+import { Header } from './components/Header'
+import { AlertsBanner } from './components/AlertsBanner'
+import { AlertsHistory } from './components/AlertsHistory'
+import './App.css'
+
+export default function App() {
+  const { data, connected } = useWebSocket()
+  const [activeTab, setActiveTab] = useState('dashboard')
+
+  return (
+    <div className="layout">
+      <Header connected={connected} />
+      
+      <div style={{ padding: '1rem 2rem 0', display: 'flex', gap: '1rem', borderBottom: '1px solid #e5e7eb', background: '#fff' }}>
+        <button 
+          onClick={() => setActiveTab('dashboard')}
+          style={{ padding: '0.75rem 1rem', background: 'none', border: 'none', borderBottom: activeTab === 'dashboard' ? '2px solid #2563eb' : '2px solid transparent', color: activeTab === 'dashboard' ? '#2563eb' : '#6b7280', fontWeight: activeTab === 'dashboard' ? 600 : 400, cursor: 'pointer', fontSize: '1rem' }}
+        >
+          Dashboard
+        </button>
+        <button 
+          onClick={() => setActiveTab('inspector')}
+          style={{ padding: '0.75rem 1rem', background: 'none', border: 'none', borderBottom: activeTab === 'inspector' ? '2px solid #2563eb' : '2px solid transparent', color: activeTab === 'inspector' ? '#2563eb' : '#6b7280', fontWeight: activeTab === 'inspector' ? 600 : 400, cursor: 'pointer', fontSize: '1rem' }}
+        >
+          Inspector
+        </button>
+        <button 
+          onClick={() => setActiveTab('status')}
+          style={{ padding: '0.75rem 1rem', background: 'none', border: 'none', borderBottom: activeTab === 'status' ? '2px solid #2563eb' : '2px solid transparent', color: activeTab === 'status' ? '#2563eb' : '#6b7280', fontWeight: activeTab === 'status' ? 600 : 400, cursor: 'pointer', fontSize: '1rem' }}
+        >
+          Status
+        </button>
+      </div>
+
+      <main className="container">
+        {activeTab === 'dashboard' && (
+          <>
+            <AlertsBanner alerts={data?.alerts} />
+            <ConnectionCard url={data?.cf_url} status={data?.cf_status} />
+            <div className="grid-3">
+              <SystemCard memory={data?.memory} load={data?.load} temp={data?.temp} disk={data?.disk} battery={data?.battery} />
+              <NetworkCard network={data?.network} networkInfo={data?.network_info} />
+              <ServicesCard services={data?.services} />
+            </div>
+            <TrafficTable logs={data?.logs} />
+            <AlertsHistory history={data?.alerts_history} />
+          </>
+        )}
+        {activeTab === 'inspector' && (
+          <Inspector logs={data?.inspector} />
+        )}
+        {activeTab === 'status' && (
+          <Status data={data} />
+        )}
+      </main>
+    </div>
+  )
+}
