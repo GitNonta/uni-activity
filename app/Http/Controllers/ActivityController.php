@@ -117,10 +117,28 @@ class ActivityController extends Controller
             ->findOrFail($id);
         $this->statusService->updateStatus($activity);
 
+        $user = auth()->user();
+
+        // ตรวจสอบสิทธิ์การเข้าถึง (IDOR Protection)
+        // 1. ถ้ากิจกรรมถูกยกเลิก ห้ามดู (ยกเว้นแอดมินหรือคนสร้าง)
+        if ($activity->status === 'cancelled' && !$user->isStaff() && !$user->isAdmin()) {
+            abort(403, 'กิจกรรมนี้ถูกยกเลิกแล้ว');
+        }
+
+        // 2. ตรวจสอบขอบเขต (Scope)
+        if ($user->role === 'student') {
+            if ($activity->scope === 'faculty' && $activity->faculty !== $user->faculty) {
+                abort(403, 'กิจกรรมนี้สงวนสิทธิ์เฉพาะนักศึกษาคณะ ' . $activity->faculty . ' เท่านั้น');
+            }
+            if ($activity->scope === 'department' && $activity->department !== $user->department) {
+                abort(403, 'กิจกรรมนี้สงวนสิทธิ์เฉพาะนักศึกษาสาขา ' . $activity->department . ' เท่านั้น');
+            }
+        }
+
         // ดึงข้อมูลการลงทะเบียนและการเข้าร่วมของผู้ใช้ปัจจุบัน (ถ้าล็อกอินแล้ว)
         $userRegistration = null;
         $userAttendance = null;
-        if (auth()->check()) {
+        if ($user) {
             $userRegistration = $activity->registrations()
                 ->where('user_id', auth()->id())
                 ->first();

@@ -48,7 +48,7 @@ table th { font-weight: 600; color: #475569; background: #f8fafc; }
 /* ── คลาสช่วย: ขนาด, สี, ฟอนต์, ระยะห่าง, flex, grid ──
 * คลาสช่วยเหลือสำหรับการจัดรูปแบบต่างๆ
 */
-.container { max-width: 900px; margin: 0 auto; padding: 0 16px; }
+.container { max-width: 100%; margin: 0 auto; padding: 0 24px; }
 .container-sm { max-width: 480px; margin: 0 auto; padding: 0 16px; }
 .text-center { text-align: center; }
 .text-right { text-align: right; }
@@ -171,7 +171,7 @@ select.form-control { appearance: auto; }
 * แถบนำทางฝั่งนักศึกษาที่มีเมนูและปุ่มออก
 */
 .navbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: .75rem 1rem; position: sticky; top: 0; z-index: 100; }
-.navbar-inner { max-width: 900px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+.navbar-inner { max-width: 100%; margin: 0 auto; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; }
 .navbar-brand { font-weight: 700; font-size: 1.1rem; color: #4f46e5; }
 .navbar-brand:hover { text-decoration: none; }
 .navbar-links { display: flex; gap: 1rem; align-items: center; }

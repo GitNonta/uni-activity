@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin') - ระบบกิจกรรม</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('logo.svg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -261,7 +262,10 @@
         <button onclick="toggleMobileSidebar()" class="btn btn-outline" style="padding:.5rem;border-color:rgba(255,255,255,0.2);color:#fff;">
             <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>
-        <a href="{{ route('admin.dashboard') }}" class="admin-mobile-brand">UniActivity</a>
+        <a href="{{ route('admin.dashboard') }}" class="admin-mobile-brand" style="display:flex; align-items:center; gap:8px;">
+            <img src="{{ asset('logo.svg') }}" alt="Logo" style="height: 28px; width: 28px;">
+            UniActivity
+        </a>
     </div>
 </header>
 
@@ -269,7 +273,10 @@
 
 <div class="sb-shell">
     <aside class="sb-sidebar" id="mainSidebar">
-        <div class="sidebar-brand">Uni-Activity Admin</div>
+        <div class="sidebar-brand" style="display:flex; align-items:center; gap:10px;">
+            <img src="{{ asset('logo.svg') }}" alt="Logo" style="height: 36px; width: 36px;">
+            Uni-Activity
+        </div>
         
         <nav class="sb-nav">
             <div class="sb-section-label">เมนูหลัก</div>

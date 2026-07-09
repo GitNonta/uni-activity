@@ -5,7 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'ระบบกิจกรรม')</title>
+    <title>@yield('title', 'UNI Activity - ระบบศูนย์รวมกิจกรรม')</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('logo.svg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -16,7 +17,10 @@
     {{-- Top Navbar --}}
     <header class="navbar">
         <div class="navbar-inner">
-            <a href="{{ route('activities.index') }}" class="navbar-brand">UNI Activity</a>
+            <a href="{{ route('activities.index') }}" class="navbar-brand" style="display:flex; align-items:center; gap:8px;">
+                <img src="{{ asset('logo.svg') }}" alt="Logo" style="height: 32px; width: 32px;">
+                UNI Activity
+            </a>
             {{-- แนะนำ dropdown (Desktop) --}}
             @auth
             <div class="recommend-dropdown" style="position:relative;margin-left:.5rem;">
@@ -94,7 +98,7 @@
     @auth
     @if(!in_array(auth()->user()->role ?? 'student', ['admin','staff']))
     <div id="notif-banner" style="display:none;background:linear-gradient(90deg,#4f46e5,#7c3aed);color:#fff;padding:.55rem 1rem;font-size:.82rem;cursor:pointer;position:sticky;top:0;z-index:999;box-shadow:0 2px 8px rgba(79,70,229,.3);">
-        <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:.75rem;">
+        <div style="max-width:100%;padding: 0 16px;margin:0 auto;display:flex;align-items:center;gap:.75rem;">
             <span id="notif-banner-icon" style="flex-shrink:0;display:flex;align-items:center;">
                 <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
             </span>
