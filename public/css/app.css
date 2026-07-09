@@ -79,22 +79,29 @@ table th { font-weight: 600; color: #475569; background: #f8fafc; }
 .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
 .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
 .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+.grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.5rem; }
 
+@media (max-width: 1280px) {
+    .grid-5 { grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+}
 @media (max-width: 1024px) {
     .grid-3 { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
     .grid-4 { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    .grid-5 { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
 }
 
 @media (max-width: 640px) {
     .grid-2 { grid-template-columns: 1fr; }
     .grid-3 { grid-template-columns: 1fr; }
     .grid-4 { grid-template-columns: 1fr; }
+    .grid-5 { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 768px) {
     .grid-2 { grid-template-columns: 1fr; }
     .grid-3 { grid-template-columns: 1fr; }
     .grid-4 { grid-template-columns: repeat(2, 1fr); gap: .75rem; }
+    .grid-5 { grid-template-columns: repeat(2, 1fr); gap: .75rem; }
 }
 
 @media (max-width: 480px) {
@@ -174,10 +181,12 @@ select.form-control { appearance: auto; }
 .navbar-inner { max-width: 100%; margin: 0 auto; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; }
 .navbar-brand { font-weight: 700; font-size: 1.1rem; color: #4f46e5; }
 .navbar-brand:hover { text-decoration: none; }
-.navbar-links { display: flex; gap: 1rem; align-items: center; }
-.navbar-links a { color: #475569; font-size: .875rem; font-weight: 500; display: flex; align-items: center; gap: .25rem; }
-.navbar-links a:hover, .navbar-links a.active { color: #4f46e5; text-decoration: none; }
-.navbar-links a .icon { width: 18px; height: 18px; }
+.navbar-left { display: flex; align-items: center; flex: 1; }
+.navbar-center { display: flex; gap: 1rem; align-items: center; justify-content: center; }
+.navbar-center a { color: #475569; font-size: .875rem; font-weight: 500; display: flex; align-items: center; gap: .25rem; }
+.navbar-center a:hover, .navbar-center a.active { color: #4f46e5; text-decoration: none; }
+.navbar-center a .icon { width: 18px; height: 18px; }
+.navbar-right { display: flex; align-items: center; flex: 1; justify-content: flex-end; gap: 0.5rem; }
 .navbar-user { display: inline-flex; align-items: center; padding: .5rem .75rem; font-size: .875rem; font-weight: 500; color: #64748b; border-left: 1px solid #e2e8f0; margin-left: .5rem; }
 .navbar-mobile-right { display: none; align-items: center; gap: .5rem; }
 .navbar-user-mobile { font-size: .8rem; font-weight: 500; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }

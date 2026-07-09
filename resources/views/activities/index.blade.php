@@ -2,7 +2,15 @@
 @section('title', 'รายการกิจกรรม')
 
 @section('content')
-<h1 class="font-bold mb-4" style="font-size:1.5rem;">รายการกิจกรรม</h1>
+<div class="flex items-center gap-3 mb-4">
+    <h1 class="font-bold" style="font-size:1.5rem; margin:0;">รายการกิจกรรม</h1>
+    @auth
+    <a href="{{ route('jobs.index') }}" class="btn btn-outline" style="border-radius:20px; padding: 0.25rem 0.75rem; font-size:0.85rem; display:inline-flex; align-items:center; gap:4px; color:#f59e0b; border-color:#fcd34d; background:#fffbf1;">
+        <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+        แนะนำ หางาน / Part-time
+    </a>
+    @endauth
+</div>
 
 {{-- ฟอร์มค้นหาและกรองหมวดหมู่ --}}
 <form method="GET" action="{{ route('activities.index') }}" class="flex gap-2 mb-4" style="flex-wrap:wrap;">
@@ -29,7 +37,7 @@
 </form>
 
 {{-- แสดงการ์ดกิจกรรม หรือข้อความว่างถ้าไม่พบ --}}
-<div class="grid-3">
+<div class="grid-5">
     @forelse($activities as $activity)
         @include('components.activity-card', [
             'activity' => $activity,
