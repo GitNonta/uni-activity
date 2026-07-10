@@ -143,7 +143,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/jobs/{id}/chat', [ChatController::class, 'send'])->middleware('throttle:chat-send')->name('chat.send');
     Route::post('/jobs/{id}/chat/read', [ChatController::class, 'markRead'])->name('chat.read');
     Route::get('/jobs/{id}/admin-online', [ChatController::class, 'adminOnlineStatus'])->middleware('throttle:status')->name('chat.admin-online');
-
+    Route::delete('/chat/messages/{id}', [ChatController::class, 'deleteMessage'])->name('chat.messages.delete');
+    Route::put('/chat/messages/{id}', [ChatController::class, 'editMessage'])->name('chat.messages.edit');
     // ── User status (online/last seen) ──
     Route::middleware('auth')->post('/user/ping', [UserStatusController::class, 'ping'])->middleware('throttle:status')->name('user.ping');
     Route::get('/users/{id}/status', [UserStatusController::class, 'status'])->middleware('throttle:status')->name('user.status');
@@ -200,7 +201,9 @@ Route::middleware(['auth', 'role:staff'])->prefix('admin')->name('admin.')->grou
     Route::get('inbox/{jobId}/{userId}', [AdminInboxController::class, 'show'])->name('inbox.show');
     Route::post('inbox/{jobId}/{userId}', [AdminInboxController::class, 'send'])->middleware('throttle:chat-send')->name('inbox.send');
     Route::post('inbox/{jobId}/{userId}/read', [AdminInboxController::class, 'markRead'])->name('inbox.read');
-
+    Route::delete('inbox/messages/{id}', [AdminInboxController::class, 'deleteMessage'])->name('inbox.messages.delete');
+    Route::put('inbox/messages/{id}', [AdminInboxController::class, 'editMessage'])->name('inbox.messages.edit');
+    Route::delete('inbox/{jobId}/{userId}', [AdminInboxController::class, 'deleteChat'])->name('inbox.delete');
     // ── นักศึกษา (ดูได้ทั้ง staff + admin) ──
     Route::get('students', [StudentAdminController::class, 'index'])->name('students.index');
     Route::get('students/{id}', [StudentAdminController::class, 'show'])->name('students.show');

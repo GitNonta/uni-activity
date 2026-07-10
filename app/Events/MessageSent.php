@@ -33,11 +33,16 @@ class MessageSent implements ShouldBroadcast
         // ถ้าผู้ส่งเป็น Admin/Staff ให้ส่งไปที่ Channel ของนักศึกษาเจ้าของห้องด้วย
         // เพื่อให้ตัว Floating Widget ที่หน้าอื่นๆ ได้รับการแจ้งเตือน
         $room = $this->message->room;
-        if ($room && $this->message->user && ($this->message->user->isAdmin() || $this->message->user->isStaff())) {
-            // หา ID นักศึกษาในห้องนี้ (โดยปกติห้องแชทงานจะมีนักศึกษา 1 คน)
-            $student = $room->users()->where('users.role', 'student')->first();
-            if ($student) {
-                $channels[] = new PrivateChannel('chat.student.' . $student->id);
+        if ($room && $this->message->user) {
+            if ($this->message->user->isAdmin() || $this->message->user->isStaff()) {
+                // หา ID นักศึกษาในห้องนี้ (โดยปกติห้องแชทงานจะมีนักศึกษา 1 คน)
+                $student = $room->users()->where('users.role', 'student')->first();
+                if ($student) {
+                    $channels[] = new PrivateChannel('chat.student.' . $student->id);
+                }
+            } else if ($this->message->user->role === 'student') {
+                // แจ้งเตือนแอดมิน เพื่ออัปเดตหน้า Inbox List แบบเรียวไทม์
+                $channels[] = new PrivateChannel('admin.inbox');
             }
         }
 
@@ -65,6 +70,10 @@ class MessageSent implements ShouldBroadcast
             'id'      => $this->message->id,
             'room_id' => $this->message->room_id,
             'message' => $this->message->body,
+            'room'    => [
+                'id'     => $this->message->room_id,
+                'job_id' => $this->message->room->job_id ?? null,
+            ],
             'user'    => [
                 'id'    => $this->message->user_id,
                 'name'  => $user?->full_name ?? 'ผู้ใช้',

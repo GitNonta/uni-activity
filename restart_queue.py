@@ -8,6 +8,6 @@ def run_cmd(cmd):
     stdin, stdout, stderr = client.exec_command(cmd)
     return stdout.read().decode() + stderr.read().decode()
 
-print(run_cmd("ps aux | grep 'artisan reverb'"))
+print(run_cmd("pkill -f 'artisan queue:work'"))
 
 client.close()

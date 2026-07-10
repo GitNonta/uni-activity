@@ -30,24 +30,68 @@ alerts_history = collections.deque(maxlen=100)
 active_alert_ids = set()
 
 def ping_url_thread():
-    import subprocess, re, time
+    import urllib.parse, http.client, socket, ssl, time
+
+    def resolve_dns_udp(domain, dns_server="8.8.8.8"):
+        try:
+            packet = bytearray([0x12, 0x34, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+            for part in domain.split('.'):
+                packet.append(len(part))
+                packet.extend(part.encode('ascii'))
+            packet.append(0)
+            packet.extend([0x00, 0x01, 0x00, 0x01])
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.settimeout(2)
+            sock.sendto(packet, (dns_server, 53))
+            data, addr = sock.recvfrom(512)
+            answers = (data[6] << 8) + data[7]
+            if answers == 0:
+                return None
+            idx = 12
+            while data[idx] != 0:
+                idx += data[idx] + 1
+            idx += 5
+            for _ in range(answers):
+                if (data[idx] & 0xC0) == 0xC0:
+                    idx += 2
+                else:
+                    while data[idx] != 0:
+                        idx += data[idx] + 1
+                    idx += 1
+                atype = (data[idx] << 8) + data[idx+1]
+                rdlen = (data[idx+8] << 8) + data[idx+9]
+                idx += 10
+                if atype == 1 and rdlen == 4:
+                    return ".".join(str(b) for b in data[idx:idx+4])
+                idx += rdlen
+        except Exception:
+            pass
+        return None
+
     while True:
         url = get_cf_url()
-        if url and url != "Not Found":
+        if url and url != "Not Found" and not any(loc in url for loc in ["localhost", "127.0.0.1", "192.168."]):
             try:
-                domain = url.split("//")[-1].split("/")[0]
-                res = subprocess.run(["ping", "-c", "1", "-W", "3", domain], capture_output=True, text=True)
-                if res.returncode == 0:
-                    match = re.search(r'time=([\d\.]+)\s*ms', res.stdout)
-                    if match:
-                        url_status["ping_ms"] = int(float(match.group(1)))
-                        url_status["online"] = True
-                    else:
-                        url_status["online"] = False
-                        url_status["ping_ms"] = 0
+                parsed = urllib.parse.urlparse(url)
+                domain = parsed.netloc
+                start_time = time.time()
+                
+                # Resolve DNS directly via UDP to bypass Android system DNS negative cache
+                ip = resolve_dns_udp(domain)
+                if not ip:
+                    ip = domain
+                
+                if parsed.scheme == "https":
+                    ctx = ssl._create_unverified_context()
+                    conn = http.client.HTTPSConnection(ip, timeout=3, context=ctx)
                 else:
-                    url_status["online"] = False
-                    url_status["ping_ms"] = 0
+                    conn = http.client.HTTPConnection(ip, timeout=3)
+                
+                conn.request("HEAD", "/", headers={"Host": domain})
+                conn.getresponse()
+                
+                url_status["ping_ms"] = int((time.time() - start_time) * 1000)
+                url_status["online"] = True
             except Exception:
                 url_status["online"] = False
                 url_status["ping_ms"] = 0
@@ -222,7 +266,8 @@ def get_services():
         "PostgreSQL": "postgres",
         "Redis": "redis-server",
         "Cloudflared": "cloudflared",
-        "Reverb": "reverb:start"
+        "Reverb": "reverb:start",
+        "Queue Worker": "artisan queue:work"
     }
     status = {}
     for name, proc in services.items():
@@ -291,7 +336,7 @@ def get_alerts(stats):
     # 2. Services Crash
     offline_services = []
     for svc, status in stats.get("services", {}).items():
-        if status == "Offline":
+        if status == "Stopped":
             offline_services.append(svc)
     if offline_services:
         alerts.append({"id": "service_crash", "type": "critical", "message": f"Service(s) Offline: {', '.join(offline_services)}"})

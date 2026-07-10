@@ -61,18 +61,9 @@ class ChatRepository
      */
     public function syncToCassandra(Message $message): void
     {
-        try {
-            $this->cassandra->logMessage(
-                $message->room_id,
-                $message->id,
-                $message->user_id,
-                $message->body,
-                $message->type,
-                $message->created_at
-            );
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Cassandra sync failed: " . $e->getMessage());
-        }
+        // Dispatch to background queue to prevent blocking the HTTP response
+        // especially when Cassandra is unreachable or slow
+        \App\Jobs\SyncToCassandra::dispatch($message);
     }
 
     /**

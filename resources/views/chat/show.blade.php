@@ -572,12 +572,10 @@ document.addEventListener('DOMContentLoaded', () => {
         attachPrev.style.display = 'none';
 
         try {
-            const response = await fetch(sendUrl, {
-                method: 'POST',
-                headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
-                body: formData
+            const response = await window.axios.post(sendUrl, formData, {
+                headers: { 'Accept': 'application/json' }
             });
-            const data = await response.json();
+            const data = response.data;
             if (data.success) {
                 if (optimisticBubble) optimisticBubble.remove();
                 renderMessage(data.message, true);
@@ -594,26 +592,31 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Real-time with Echo
-    if (window.Echo) {
-        window.Echo.private('chat.room.' + roomID)
-            .listen('.MessageSent', (data) => {
-                if (data.user.id == USER_ID) return;
-                if (!document.getElementById('cm-' + data.id)) {
-                    renderMessage(data, false);
-                    fetch(readUrl, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken } });
-                }
-            })
-            .listenForWhisper('typing', (e) => {
-                typingIndicator.style.display = 'block';
-                clearTimeout(window.typingTimer);
-                window.typingTimer = setTimeout(() => { typingIndicator.style.display = 'none'; }, 3000);
-            });
-
-        msgInput.addEventListener('input', () => {
+    const initEcho = () => {
+        if (window.Echo) {
             window.Echo.private('chat.room.' + roomID)
-                .whisper('typing', { userId: USER_ID });
-        });
-    }
+                .listen('.MessageSent', (data) => {
+                    if (data.user.id == USER_ID) return;
+                    if (!document.getElementById('cm-' + data.id)) {
+                        renderMessage(data, false);
+                        window.axios.post(readUrl);
+                    }
+                })
+                .listenForWhisper('typing', (e) => {
+                    typingIndicator.style.display = 'block';
+                    clearTimeout(window.typingTimer);
+                    window.typingTimer = setTimeout(() => { typingIndicator.style.display = 'none'; }, 3000);
+                });
+
+            msgInput.addEventListener('input', () => {
+                window.Echo.private('chat.room.' + roomID)
+                    .whisper('typing', { userId: USER_ID });
+            });
+        } else {
+            setTimeout(initEcho, 200);
+        }
+    };
+    initEcho();
 });
 </script>
 @endsection

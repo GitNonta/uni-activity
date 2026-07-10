@@ -6,7 +6,7 @@
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
-        "php": "^8.2",
+        "php": "^8.5",
         "barryvdh/laravel-dompdf": "^3.1",
         "laravel/breeze": "^2.4",
         "laravel/framework": "^12.0",
@@ -16,6 +16,7 @@
         "maatwebsite/excel": "^3.1",
         "mongodb/laravel-mongodb": "^5.7",
         "mroosz/php-cassandra": "^1.2",
+        "predis/predis": "^3.5",
         "simplesoftwareio/simple-qrcode": "^4.2",
         "spatie/laravel-permission": "^6.24"
     },
@@ -91,7 +92,7 @@
             "php-http/discovery": true
         },
         "platform": {
-            "php": "8.2.12"
+            "php": "8.5.0"
         }
     },
     "minimum-stability": "stable",

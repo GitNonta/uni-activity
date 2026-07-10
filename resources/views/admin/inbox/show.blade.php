@@ -3,8 +3,20 @@
 @section('title', $student->full_name . ' — ' . $job->title)
 
 @section('content')
+    @if(request('widget'))
+    <style>
+        .sb-sidebar, .sb-topbar, .admin-mobile-header { display: none !important; }
+        .sb-content { margin-left: 0 !important; padding-top: 0 !important; }
+        .sb-main { padding: 0 !important; height: 100vh; display: flex; flex-direction: column; }
+        .chat-header-container { display: none !important; }
+        #chatWindow { flex: 1; height: 0 !important; border: none !important; border-radius: 0 !important; margin: 0 !important; }
+        body { background: #fff !important; overflow: hidden; }
+        form#chatForm { padding: 0.75rem; background: #fff; border-top: 1px solid #e2e8f0; }
+    </style>
+    @endif
+
     {{-- Header --}}
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;flex-wrap:wrap;gap:.5rem;">
+    <div class="chat-header-container" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;flex-wrap:wrap;gap:.5rem;">
         <a href="{{ route('admin.inbox.index') }}" style="color:#6366f1;font-size:.85rem;">← กล่องข้อความ</a>
         <div>
             <h2 style="margin:0;font-size:1.05rem;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:.4rem;">
@@ -13,6 +25,9 @@
                 <span style="font-size:.85rem;color:#6366f1;font-weight:500;">[{{ $job->title }}]</span>
             </h2>
         </div>
+        <button onclick="deleteChat()" style="background:none;border:none;color:#ef4444;cursor:pointer;padding:0.4rem;border-radius:50%;margin-left:auto;display:flex;align-items:center;justify-content:center;" title="ลบแชท">
+            <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        </button>
     </div>
 
     {{-- Chat window --}}
@@ -26,7 +41,10 @@
                 $avatarBg = $isMine ? '#4f46e5' : '#64748b';
             @endphp
             <div id="cm-{{ $msg->id }}"
-                 style="display:flex;flex-direction:{{ $isMine ? 'row-reverse' : 'row' }};align-items:flex-end;gap:.4rem;">
+                 class="msg-bubble-container"
+                 style="display:flex;flex-direction:{{ $isMine ? 'row-reverse' : 'row' }};align-items:flex-end;gap:.4rem;position:relative;"
+                 onmouseover="const a=this.querySelector('.msg-actions');if(a)a.style.display='flex'"
+                 onmouseout="const a=this.querySelector('.msg-actions');if(a)a.style.display='none'">
                 {{-- Avatar with online dot --}}
                 <div style="position:relative;flex-shrink:0;">
                     @if($photoUrl)
@@ -50,7 +68,7 @@
                             @php $isImg = str_starts_with($att['mime_type'] ?? '', 'image/'); @endphp
                             @if($isImg)
                                 <img src="{{ $att['url'] }}" alt="{{ $att['original_name'] }}"
-                                     style="max-width:100%;border-radius:8px;margin-top:.35rem;display:block;cursor:pointer;"
+                                     style="max-width:240px;max-height:240px;object-fit:cover;border-radius:8px;margin-top:.35rem;display:block;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.1);"
                                      onclick="window.open('{{ $att['url'] }}','_blank')">
                             @else
                                 <a href="{{ $att['url'] }}" target="_blank" download="{{ $att['original_name'] }}"
@@ -61,6 +79,12 @@
                         @endforeach
                     </div>
                     <span style="font-size:.65rem;color:#94a3b8;margin-top:.15rem;">{{ $msg->created_at?->format('H:i') }}</span>
+                </div>
+                
+                {{-- Actions --}}
+                <div class="msg-actions" style="display:none; position:absolute; bottom:20px; {{ $isMine ? 'right:100%; margin-right:5px;' : 'left:100%; margin-left:5px;' }} background:#fff; padding:2px 4px; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.15); gap:2px; flex-direction: row; white-space: nowrap; z-index: 10;">
+                    <button onclick="editMessageBtn('{{$msg->id}}')" style="background:none;border:none;cursor:pointer;padding:2px 4px;color:#64748b;font-size:1rem;" title="แก้ไข">✏️</button>
+                    <button onclick="deleteMessageBtn('{{$msg->id}}')" style="background:none;border:none;cursor:pointer;padding:2px 4px;color:#ef4444;font-size:1rem;" title="ลบ">🗑️</button>
                 </div>
             </div>
         @empty
@@ -152,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var attHtml = '';
         (msg.attachments || []).forEach(function(a) {
             if ((a.mime_type || '').startsWith('image/')) {
-                attHtml += '<img src="' + a.url + '" style="max-width:100%;border-radius:8px;margin-top:.35rem;display:block;cursor:pointer;" onclick="window.open(\'' + a.url + '\',\'_blank\')">';
+                attHtml += '<img src="' + a.url + '" style="max-width:240px;max-height:240px;object-fit:cover;border-radius:8px;margin-top:.35rem;display:block;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.1);" onclick="window.open(\'' + a.url + '\',\'_blank\')">';
             } else {
                 attHtml += '<a href="' + a.url + '" target="_blank" style="display:flex;align-items:center;gap:.4rem;margin-top:.35rem;color:' + linkC + ';font-size:.8rem;text-decoration:none;"><svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> ' + a.original_name + '</a>';
             }
@@ -166,16 +190,26 @@ document.addEventListener('DOMContentLoaded', function () {
             status = '<span id="admin-read-' + msg.id + '" style="font-size:.6rem;color:#94a3b8;">✓ ส่งแล้ว</span>';
         }
 
-        return '<div id="cm-' + msg.id + '" style="display:flex;flex-direction:' + dir + ';align-items:flex-end;gap:.4rem;">' +
+        var actionsHtml = '';
+        if (msg.id && !msg.id.toString().startsWith('tmp-')) {
+            actionsHtml = '<div class="msg-actions" style="display:none; position:absolute; bottom:20px; ' + (isMine ? 'right:100%; margin-right:5px;' : 'left:100%; margin-left:5px;') + ' background:#fff; padding:2px 4px; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.15); gap:2px; flex-direction: row; white-space: nowrap; z-index: 10;">' +
+                (isMine ? '<button onclick="editMessageBtn(\'' + msg.id + '\')" style="background:none;border:none;cursor:pointer;padding:2px 4px;color:#64748b;font-size:1rem;" title="แก้ไข">✏️</button>' : '') +
+                '<button onclick="deleteMessageBtn(\'' + msg.id + '\')" style="background:none;border:none;cursor:pointer;padding:2px 4px;color:#ef4444;font-size:1rem;" title="ลบ">🗑️</button>' +
+            '</div>';
+        }
+
+        return '<div id="cm-' + msg.id + '" class="msg-bubble-container" style="display:flex;flex-direction:' + dir + ';align-items:flex-end;gap:.4rem;position:relative;" onmouseover="const a=this.querySelector(\'.msg-actions\');if(a)a.style.display=\'flex\'" onmouseout="const a=this.querySelector(\'.msg-actions\');if(a)a.style.display=\'none\'">' +
             avatarHtml +
             '<div style="display:flex;flex-direction:column;align-items:' + align + ';max-width:72%;">' +
                 '<span style="font-size:.68rem;color:#94a3b8;margin-bottom:.15rem;">' + label + '</span>' +
-                '<div style="padding:.55rem .85rem;border-radius:' + br + ';background:' + bg + ';color:' + color + ';font-size:.875rem;box-shadow:0 1px 3px rgba(0,0,0,.08);word-break:break-word;">' +
+                '<div style="padding:.55rem .85rem;border-radius:' + br + ';background:' + bg + ';color:' + color + ';font-size:.875rem;box-shadow:0 1px 3px rgba(0,0,0,.08);word-break:break-word;" id="msg-body-' + msg.id + '">' +
                     (msg.message ? '<p style="margin:0;">' + msg.message.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</p>' : '') +
+                    (msg.is_edited ? '<span style="font-size:0.6rem;opacity:0.7;margin-left:5px;">(แก้ไขแล้ว)</span>' : '') +
                     attHtml +
                 '</div>' +
                 (status || '<span style="font-size:.65rem;color:#94a3b8;margin-top:.15rem;">' + time + '</span>') +
             '</div>' +
+            actionsHtml +
         '</div>';
     }
 
@@ -213,9 +247,13 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch(sendUrl, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken }, body: fd })
             .then(r => r.json())
             .then(data => {
-                const tmp = document.getElementById(optimistic.id);
+                const tmp = document.getElementById('cm-' + optimistic.id);
                 if (tmp && data.message) {
                     tmp.outerHTML = renderBubble(data.message, true);
+                } else if (tmp && data.error) {
+                    tmp.style.opacity = '0.5';
+                    tmp.style.border = '1px solid red';
+                    alert(data.error);
                 }
                 btn.disabled = false;
             })
@@ -223,40 +261,81 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Laravel Echo — receive messages
-    if (window.Echo) {
-        window.Echo.private('chat.room.' + '{{ $room->id }}')
-            .listen('.MessageSent', function (msg) {
-                if (msg.user.id == myId) return;
-                const noMsg = document.getElementById('noMsg');
-                if (noMsg) noMsg.remove();
-                if (!document.getElementById('cm-' + msg.id)) {
-                    win.insertAdjacentHTML('beforeend', renderBubble(msg, false));
-                    win.scrollTop = win.scrollHeight;
-                }
-                // Auto mark-read
-                fetch(readUrl, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken } });
-            })
-            .listenForWhisper('typing', function(e) {
-                if (e.userId == myId) return;
-                const bar = document.getElementById('adminTypingBar');
-                if (bar) {
-                    bar.style.display = 'block';
-                    clearTimeout(window.adminTypingTimer);
-                    window.adminTypingTimer = setTimeout(() => bar.style.display='none', 3000);
-                }
-            });
-    }
-
-    // Typing emit
-    input.addEventListener('input', function() {
+    const initEcho = () => {
         if (window.Echo) {
             window.Echo.private('chat.room.' + '{{ $room->id }}')
-                .whisper('typing', {
-                    userId: myId,
-                    name: 'ผู้ดูแล'
+                .listen('.MessageSent', function (msg) {
+
+                    if (msg.user.id == myId) return;
+                    const noMsg = document.getElementById('noMsg');
+                    if (noMsg) noMsg.remove();
+                    if (!document.getElementById('cm-' + msg.id)) {
+                        win.insertAdjacentHTML('beforeend', renderBubble(msg, false));
+                        win.scrollTop = win.scrollHeight;
+                    }
+                    // Auto mark-read
+                    window.axios.post(readUrl);
+                })
+                .listenForWhisper('typing', function(e) {
+                    if (e.userId == myId) return;
+                    const bar = document.getElementById('adminTypingBar');
+                    if (bar) {
+                        bar.style.display = 'block';
+                        clearTimeout(window.adminTypingTimer);
+                        window.adminTypingTimer = setTimeout(() => bar.style.display='none', 3000);
+                    }
                 });
+
+            // Typing emit
+            input.addEventListener('input', function() {
+                window.Echo.private('chat.room.' + '{{ $room->id }}')
+                    .whisper('typing', {
+                        userId: myId,
+                        name: 'ผู้ดูแล'
+                    });
+            });
+            
+            // Presence
+            window.Echo.join('online')
+                .here((users) => {
+                    const isOnline = users.some(u => u.id == studentId);
+                    toggleStudentOnline(isOnline);
+                })
+                .joining((user) => {
+                    if (user.id == studentId) toggleStudentOnline(true);
+                })
+                .leaving((user) => {
+                    if (user.id == studentId) toggleStudentOnline(false);
+                });
+        } else {
+            setTimeout(initEcho, 200);
         }
-    });
+    };
+    initEcho();
+
+            // Delete and Edit Listeners
+            window.Echo.private('chat.room.' + '{{ $room->id }}')
+                .listen('.MessageDeleted', function (e) {
+                    const el = document.getElementById('cm-' + e.id);
+                    if (el) el.remove();
+                })
+                .listen('.MessageEdited', function (e) {
+                    const bodyEl = document.getElementById('msg-body-' + e.id);
+                    if (bodyEl) {
+                        bodyEl.innerHTML = '<p style="margin:0;">' + e.message.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</p><span style="font-size:0.6rem;opacity:0.7;margin-left:5px;">(แก้ไขแล้ว)</span>';
+                    }
+                });
+            
+            window.Echo.private('admin.inbox')
+                .listen('.ChatDeleted', function (e) {
+                    if (e.room_id === '{{ $room->id }}') {
+                        if (window.AdminChatManager) {
+                            window.AdminChatManager.closeChat('{{ $room->job_id }}_{{ $room->users->where("role","student")->first()?->id }}');
+                        } else {
+                            window.location.href = '{{ route("admin.inbox.index") }}';
+                        }
+                    }
+                });
 
     function toggleStudentOnline(isOnline) {
         const headerDot = document.getElementById('adminOnlineDot');
@@ -266,19 +345,59 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    if (window.Echo) {
-        window.Echo.join('online')
-            .here((users) => {
-                const isOnline = users.some(u => u.id == studentId);
-                toggleStudentOnline(isOnline);
-            })
-            .joining((user) => {
-                if (user.id == studentId) toggleStudentOnline(true);
-            })
-            .leaving((user) => {
-                if (user.id == studentId) toggleStudentOnline(false);
-            });
-    }
 });
+
+window.deleteChat = function() {
+    if (!confirm('ยืนยันลบห้องแชทนี้และข้อความทั้งหมด? (นักศึกษาจะมองไม่เห็นแชทนี้อีก)')) return;
+    fetch('{{ route("admin.inbox.delete", [$job->id, $student->id]) }}', {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') }
+    }).then(r => r.json()).then(res => {
+        if (res.success) {
+            if (window.AdminChatManager) {
+                window.AdminChatManager.closeChat('{{ $job->id }}_{{ $student->id }}');
+            } else {
+                window.location.href = '{{ route("admin.inbox.index") }}';
+            }
+        }
+    });
+};
+
+window.deleteMessageBtn = function(id) {
+    if (!confirm('ต้องการลบข้อความนี้ใช่หรือไม่?')) return;
+    fetch('/admin/inbox/messages/' + id, {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') }
+    }).then(r => r.json()).then(res => {
+        if (res.success) {
+            const el = document.getElementById('cm-' + id);
+            if (el) el.remove();
+        }
+    });
+};
+
+window.editMessageBtn = function(id) {
+    const newText = prompt('แก้ไขข้อความ:');
+    if (newText === null || newText.trim() === '') return;
+    
+    fetch('/admin/inbox/messages/' + id, {
+        method: 'PUT',
+        headers: { 
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ message: newText })
+    }).then(r => r.json()).then(res => {
+        if (res.success) {
+            const bodyEl = document.getElementById('msg-body-' + id);
+            if (bodyEl) {
+                bodyEl.innerHTML = '<p style="margin:0;">' + newText.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</p><span style="font-size:0.6rem;opacity:0.7;margin-left:5px;">(แก้ไขแล้ว)</span>';
+            }
+        } else if (res.message) {
+            alert(res.message); // Validation error
+        }
+    });
+};
 </script>
 @endsection

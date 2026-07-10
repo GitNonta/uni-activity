@@ -9,9 +9,11 @@ remote_base = '/data/data/com.termux/files/home/uni-activity'
 local_base = 'd:/projects/uni-activity'
 
 files_to_sync = [
-    'public/css/app.css',
+    'resources/views/chat/show.blade.php',
+    'resources/views/admin/inbox/show.blade.php',
+    'routes/channels.php',
     'resources/views/layouts/app.blade.php',
-    'resources/views/activities/index.blade.php'
+    'app/Events/MessageSent.php'
 ]
 
 client = paramiko.SSHClient()

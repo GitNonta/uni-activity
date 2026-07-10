@@ -206,6 +206,40 @@ class ChatController extends Controller
         return response()->json(['is_online' => $online]);
     }
 
+    public function deleteMessage($id)
+    {
+        $message = Message::findOrFail($id);
+        
+        if ($message->user_id !== Auth::id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $roomId = $message->room_id;
+        $message->delete();
+        
+        $studentId = Auth::id(); // since this is student side
+        broadcast(new \App\Events\MessageDeleted($id, $roomId, $studentId));
+        
+        return response()->json(['success' => true]);
+    }
+
+    public function editMessage(Request $request, $id)
+    {
+        $request->validate(['message' => 'required|string|max:2000']);
+        $message = Message::findOrFail($id);
+        
+        if ($message->user_id !== Auth::id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $message->body = $request->message;
+        $message->save();
+
+        broadcast(new \App\Events\MessageEdited($message));
+
+        return response()->json(['success' => true, 'message' => $this->formatMessage($message)]);
+    }
+
     /** Format สำหรับส่งไป Socket.io */
     private function formatMessage(Message $msg): array
     {

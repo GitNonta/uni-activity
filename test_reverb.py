@@ -8,6 +8,6 @@ def run_cmd(cmd):
     stdin, stdout, stderr = client.exec_command(cmd)
     return stdout.read().decode() + stderr.read().decode()
 
-print(run_cmd("ps aux | grep 'artisan reverb'"))
+print(run_cmd("curl -v -H 'Connection: Upgrade' -H 'Upgrade: websocket' -H 'Sec-WebSocket-Key: SGVsbG8sIHdvcmxkIQ==' -H 'Sec-WebSocket-Version: 13' http://127.0.0.1:8082/app/uni-chat-key"))
 
 client.close()

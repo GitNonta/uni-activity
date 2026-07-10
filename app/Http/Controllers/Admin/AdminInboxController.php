@@ -139,6 +139,47 @@ class AdminInboxController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function deleteMessage($id)
+    {
+        $message = Message::findOrFail($id);
+        $roomId = $message->room_id;
+        $message->delete();
+        
+        $student = $message->room?->users()->where('users.role', 'student')->first();
+        broadcast(new \App\Events\MessageDeleted($id, $roomId, $student?->id));
+        
+        return response()->json(['success' => true]);
+    }
+
+    public function editMessage(Request $request, $id)
+    {
+        $request->validate(['message' => 'required|string|max:2000']);
+        $message = Message::findOrFail($id);
+        $message->body = $request->message;
+        $message->save();
+
+        broadcast(new \App\Events\MessageEdited($message));
+
+        return response()->json(['success' => true, 'message' => $this->formatMessage($message)]);
+    }
+
+    public function deleteChat($jobId, $userId)
+    {
+        $room = Room::where('job_id', $jobId)
+            ->whereHas('users', function ($q) use ($userId) {
+                $q->where('users.id', $userId);
+            })
+            ->firstOrFail();
+
+        $roomId = $room->id;
+        Message::where('room_id', $roomId)->delete();
+        $room->delete();
+
+        broadcast(new \App\Events\ChatDeleted($roomId, $userId));
+
+        return response()->json(['success' => true]);
+    }
+
     private function formatMessage(Message $msg): array
     {
         $user = $msg->user;

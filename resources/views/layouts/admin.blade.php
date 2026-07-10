@@ -297,9 +297,30 @@
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                 <span class="sb-link-text">งาน & พาร์ทไทม์</span>
             </a>
+            @php
+                $adminUnreadCount = 0;
+                if (auth()->check() && auth()->user()->isStaffOrAdmin()) {
+                    $adminId = auth()->id();
+                    $adminUnreadCount = \Illuminate\Support\Facades\DB::table('messages')
+                        ->join('rooms', 'messages.room_id', '=', 'rooms.id')
+                        ->leftJoin('room_user', function($join) use ($adminId) {
+                            $join->on('rooms.id', '=', 'room_user.room_id')
+                                 ->where('room_user.user_id', '=', $adminId);
+                        })
+                        ->where('messages.user_id', '!=', $adminId)
+                        ->where(function($q) {
+                            $q->whereRaw('messages.created_at > room_user.last_read_at')
+                              ->orWhereNull('room_user.last_read_at');
+                        })
+                        ->count();
+                }
+            @endphp
             <a href="{{ route('admin.inbox.index') }}" class="sb-link {{ request()->routeIs('admin.inbox.*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
-                <span class="sb-link-text">กล่องข้อความแชท</span>
+                <span class="sb-link-text">
+                    กล่องข้อความแชท
+                    <span id="adminSidebarBadge" style="background:#ef4444;color:#fff;font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:999px;margin-left:4px;display:{{ $adminUnreadCount > 0 ? 'inline-block' : 'none' }};">{{ $adminUnreadCount }}</span>
+                </span>
             </a>
 
             @if(auth()->check() && (auth()->user()->isStaffOrAdmin() || auth()->user()->role === 'super-admin'))
@@ -431,5 +452,167 @@
     }
 </script>
 @yield('scripts')
+@stack('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    (function initAdminGlobalEcho() {
+        if (!window.Echo) {
+            setTimeout(initAdminGlobalEcho, 200);
+            return;
+        }
+
+        window.Echo.private('admin.inbox')
+            .listen('.MessageSent', function(e) {
+                const badge = document.getElementById('adminSidebarBadge');
+                if (badge) {
+                    let count = parseInt(badge.textContent) || 0;
+                    count++;
+                    badge.textContent = count;
+                    badge.style.display = 'inline-block';
+                }
+            });
+    })();
+});
+</script>
+<style>
+/* Admin Chat Widget Styles */
+#adminChatWidgetContainer {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9000;
+    display: flex;
+    align-items: flex-end;
+    gap: 15px;
+    pointer-events: none;
+}
+
+.admin-chat-widget {
+    width: 340px;
+    height: 480px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    pointer-events: auto;
+    transition: transform 0.2s, height 0.2s;
+    transform-origin: bottom center;
+}
+
+.admin-chat-widget.minimized {
+    height: 50px;
+}
+
+.acw-header {
+    background: #4f46e5;
+    color: #fff;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+.acw-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.acw-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.acw-actions button {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    opacity: 0.8;
+    margin: 0;
+    padding: 0;
+    line-height: 1;
+}
+.acw-actions button:hover { opacity: 1; }
+.acw-iframe {
+    flex: 1;
+    border: none;
+    width: 100%;
+    background: #fff;
+}
+</style>
+
+<div id="adminChatWidgetContainer"></div>
+
+<script>
+window.AdminChatManager = (function() {
+    let openChats = {};
+
+    function openChat(url, title, chatId) {
+        if (openChats[chatId]) {
+            openChats[chatId].classList.remove('minimized');
+            return;
+        }
+
+        const container = document.getElementById('adminChatWidgetContainer');
+        
+        const widget = document.createElement('div');
+        widget.className = 'admin-chat-widget';
+        widget.id = 'acw-' + chatId;
+
+        const header = document.createElement('div');
+        header.className = 'acw-header';
+        header.onclick = function(e) {
+            if (e.target.tagName !== 'BUTTON') {
+                widget.classList.toggle('minimized');
+            }
+        };
+
+        const titleSpan = document.createElement('span');
+        titleSpan.className = 'acw-title';
+        titleSpan.innerHTML = '<svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg> ' + title;
+
+        const actions = document.createElement('div');
+        actions.className = 'acw-actions';
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.innerHTML = '✕';
+        closeBtn.style.fontSize = '1.1rem';
+        closeBtn.onclick = function() {
+            widget.remove();
+            delete openChats[chatId];
+        };
+
+        actions.appendChild(closeBtn);
+        header.appendChild(titleSpan);
+        header.appendChild(actions);
+
+        // Convert url to relative to avoid cross-origin issues with proxies like Cloudflare Tunnels
+        let relativeUrl = url;
+        try {
+            const urlObj = new URL(url, window.location.origin);
+            relativeUrl = urlObj.pathname + urlObj.search;
+        } catch(e) {}
+
+        const iframe = document.createElement('iframe');
+        iframe.className = 'acw-iframe';
+        iframe.src = relativeUrl + (relativeUrl.includes('?') ? '&' : '?') + 'widget=1';
+
+        widget.appendChild(header);
+        widget.appendChild(iframe);
+
+        container.appendChild(widget);
+        openChats[chatId] = widget;
+    }
+
+    return { openChat: openChat };
+})();
+</script>
 </body>
 </html>

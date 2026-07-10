@@ -254,13 +254,13 @@
             document.getElementById('chatFloatPanel').style.display = 'none';
             document.getElementById('chatFloatBtn').style.transform = '';
         };
-        function openChatWidget() {
+        window.openChatWidget = function() {
             panelOpen = true;
             document.getElementById('chatFloatPanel').style.display = 'flex';
             document.getElementById('chatFloatBtn').style.transform = 'scale(1.1)';
             showListView();
             loadThreads();
-        }
+        };
 
         function showListView() {
             currentJobId = null;
@@ -271,7 +271,7 @@
         }
         window.cfBackToList = function () { showListView(); loadThreads(); };
 
-        function showChatView(jobId, jobTitle) {
+        window.showChatView = function(jobId, jobTitle) {
             currentJobId = jobId;
             document.getElementById('cfViewList').style.display = 'none';
             document.getElementById('cfViewChat').style.display = 'flex';
@@ -281,7 +281,7 @@
             fetch('/jobs/' + jobId + '/chat/read', { method: 'POST', headers: { 'X-CSRF-TOKEN': CSRF } });
             var idx = threads.findIndex(function(t){ return t.job_id == jobId; });
             if (idx >= 0) { threads[idx].unread = 0; recalcBadge(); }
-        }
+        };
 
         function loadThreads() {
             fetch(THREADS_URL, { headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' } })
@@ -335,7 +335,9 @@
             var isTemp = String(msg.id).startsWith('tmp-');
             var row = document.createElement('div');
             row.id = 'cf-msg-' + msg.id;
-            row.style.cssText = 'display:flex;flex-direction:' + (mine?'row-reverse':'row') + ';align-items:flex-end;gap:.3rem;margin-bottom:.2rem;';
+            row.style.cssText = 'display:flex;flex-direction:' + (mine?'row-reverse':'row') + ';align-items:flex-end;gap:.3rem;margin-bottom:.2rem;position:relative;';
+            row.onmouseover = function() { var a = this.querySelector('.msg-actions'); if(a) a.style.display='flex'; };
+            row.onmouseout = function() { var a = this.querySelector('.msg-actions'); if(a) a.style.display='none'; };
             
             var col = document.createElement('div');
             col.style.cssText = 'display:flex;flex-direction:column;align-items:' + (mine?'flex-end':'flex-start') + ';max-width:75%;';
@@ -348,6 +350,12 @@
                 p.style.margin = '0';
                 p.textContent = msg.message;
                 bubble.appendChild(p);
+            }
+            if (msg.is_edited) {
+                var editedSpan = document.createElement('span');
+                editedSpan.style.cssText = 'font-size:0.6rem;opacity:0.7;margin-left:5px;';
+                editedSpan.textContent = '(แก้ไขแล้ว)';
+                bubble.appendChild(editedSpan);
             }
             
             if (msg.attachments && msg.attachments.length) {
@@ -374,6 +382,27 @@
             
             col.appendChild(bubble);
 
+            if (!isTemp) {
+                var actions = document.createElement('div');
+                actions.className = 'msg-actions';
+                actions.style.cssText = 'display:none; position:absolute; bottom:15px; ' + (mine ? 'right:100%; margin-right:5px;' : 'left:100%; margin-left:5px;') + ' background:#fff; padding:2px; border-radius:4px; box-shadow:0 1px 4px rgba(0,0,0,0.15); gap:2px; flex-direction: row; white-space: nowrap; z-index: 10;';
+                if (mine) {
+                    var editBtn = document.createElement('button');
+                    editBtn.innerHTML = '✏️';
+                    editBtn.title = 'แก้ไข';
+                    editBtn.style.cssText = 'background:none;border:none;cursor:pointer;padding:2px 4px;font-size:0.9rem;';
+                    editBtn.onclick = function() { window.editStudentMessage(msg.id, this); };
+                    actions.appendChild(editBtn);
+                }
+                var delBtn = document.createElement('button');
+                delBtn.innerHTML = '🗑️';
+                delBtn.title = 'ลบ';
+                delBtn.style.cssText = 'background:none;border:none;cursor:pointer;padding:2px 4px;font-size:0.9rem;';
+                delBtn.onclick = function() { window.deleteStudentMessage(msg.id); };
+                actions.appendChild(delBtn);
+                row.appendChild(actions);
+            }
+
             // Add time and status
             var timeStr = new Date(msg.created_at).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
             var statusDiv = document.createElement('div');
@@ -391,6 +420,24 @@
             row.appendChild(col);
             return row;
         }
+
+        var cfFileInput = document.getElementById('cfFileInput');
+        var cfPreview = document.getElementById('cfAttachPreview');
+        cfFileInput.addEventListener('change', function() {
+            cfPreview.innerHTML = '';
+            if (!cfFileInput.files.length) { cfPreview.style.display = 'none'; return; }
+            cfPreview.style.display = 'flex';
+            Array.from(cfFileInput.files).forEach(function(f) {
+                var chip = document.createElement('span');
+                chip.style.cssText = 'background:#e0e7ff;color:#3730a3;border-radius:6px;padding:.2rem .55rem;font-size:.78rem;display:flex;align-items:center;gap:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;';
+                if (f.type.startsWith('image/')) {
+                    chip.innerHTML = '<svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>' + f.name;
+                } else {
+                    chip.innerHTML = '<svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>' + f.name;
+                }
+                cfPreview.appendChild(chip);
+            });
+        });
 
         document.getElementById('cfChatForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -421,9 +468,10 @@
             // If there are files, show a placeholder in optimistic UI
             if (fileInput.files.length > 0) {
                 Array.from(fileInput.files).forEach(function(f) {
+                    var isImg = f.type.startsWith('image/');
                     optimisticMsg.attachments.push({
                         original_name: f.name,
-                        url: '#',
+                        url: isImg ? URL.createObjectURL(f) : '#',
                         mime_type: f.type
                     });
                 });
@@ -474,11 +522,14 @@
         }
         function recalcBadge() { updateBadge(threads.reduce(function(s,t){ return s+(t.unread||0); }, 0)); }
 
-        // Laravel Echo
-        if (window.Echo) {
+        // Laravel Echo — ใช้ retry เพราะ app.js โหลด async (type=module)
+        (function initStudentEcho() {
+            if (!window.Echo) { setTimeout(initStudentEcho, 200); return; }
             // ฟังจากช่องส่วนตัวของนักศึกษา (สำหรับแจ้งเตือนรวม)
             window.Echo.private('chat.student.' + USER_ID)
                 .listen('.MessageSent', function(e) {
+                    if (e.user && e.user.id == USER_ID) return; // Skip optimistic duplicate
+
                     if (currentJobId == e.room_id || (e.room && currentJobId == e.room.job_id)) { 
                         var win = document.getElementById('cfChatWindow');
                         if (!document.getElementById('cf-msg-' + e.id)) {
@@ -492,8 +543,78 @@
                     } else {
                         loadThreads();
                     }
+                })
+                .listen('.MessageDeleted', function(e) {
+                    var el = document.getElementById('cf-msg-' + e.id);
+                    if (el) el.remove();
+                })
+                .listen('.MessageEdited', function(e) {
+                    var el = document.getElementById('cf-msg-' + e.id);
+                    if (el) {
+                        var p = el.querySelector('p');
+                        if (p) p.textContent = e.message;
+                        if (!el.textContent.includes('(แก้ไขแล้ว)')) {
+                            var editedSpan = document.createElement('span');
+                            editedSpan.style.cssText = 'font-size:0.6rem;opacity:0.7;margin-left:5px;';
+                            editedSpan.textContent = '(แก้ไขแล้ว)';
+                            p.parentNode.appendChild(editedSpan);
+                        }
+                    }
+                })
+                .listen('.ChatDeleted', function(e) {
+                    if (currentJobId == e.room_id) {
+                        closeFloatChat();
+                        loadThreads();
+                    }
                 });
-        }
+        })();
+
+        window.deleteStudentMessage = function(id) {
+            if (!confirm('ต้องการลบข้อความนี้ใช่หรือไม่?')) return;
+            fetch('/chat/messages/' + id, {
+                method: 'DELETE',
+                headers: { 'X-CSRF-TOKEN': CSRF }
+            }).then(function(r) { return r.json(); }).then(function(res) {
+                if (res.success) {
+                    var el = document.getElementById('cf-msg-' + id);
+                    if (el) el.remove();
+                }
+            });
+        };
+
+        window.editStudentMessage = function(id, btn) {
+            var newText = prompt('แก้ไขข้อความ:');
+            if (newText === null || newText.trim() === '') return;
+            
+            fetch('/chat/messages/' + id, {
+                method: 'PUT',
+                headers: { 
+                    'X-CSRF-TOKEN': CSRF,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ message: newText })
+            }).then(function(r) { return r.json(); }).then(function(res) {
+                if (res.success) {
+                    var el = document.getElementById('cf-msg-' + id);
+                    if (el) {
+                        var p = el.querySelector('p');
+                        if (p) p.textContent = newText;
+                        if (!el.textContent.includes('(แก้ไขแล้ว)')) {
+                            var editedSpan = document.createElement('span');
+                            editedSpan.style.cssText = 'font-size:0.6rem;opacity:0.7;margin-left:5px;';
+                            editedSpan.textContent = '(แก้ไขแล้ว)';
+                            p.parentNode.appendChild(editedSpan);
+                        }
+                    }
+                } else if (res.message) {
+                    alert(res.message);
+                }
+            });
+        };
+
+        // โหลดข้อมูลล่าสุดตอนโหลดหน้าเว็บ เพื่ออัปเดตตัวเลขแจ้งเตือนที่ปุ่มแชท
+        loadThreads();
     })();
     </script>
     @endif

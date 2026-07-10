@@ -16,5 +16,6 @@ def run_cmd(cmd):
 
 print(run_cmd("pkg search termux-services"))
 print(run_cmd("sv status nginx || echo 'No sv'"))
+print(run_cmd("pgrep -f queue:work && echo 'Queue worker is running' || echo 'Queue worker is stopped'"))
 
 client.close()

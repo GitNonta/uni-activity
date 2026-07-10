@@ -256,7 +256,7 @@
         <svg style="width:14px;height:14px;display:inline;margin-right:2px;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg> คอมเมนต์ ({{ $comments->count() }})
     </button>
     @auth
-    <button class="btn btn-primary flex-1" id="openChatBtn" onclick="openChatPopup()">
+    <button class="btn btn-primary flex-1" id="openChatBtn" onclick="if(window.openChatWidget){ window.openChatWidget(); window.showChatView({{ $job->id }}, '{{ addslashes($job->title) }}'); }">
         <svg style="width:14px;height:14px;display:inline;margin-right:2px;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg> สอบถามเพิ่มเติม
     </button>
     @endauth
@@ -424,36 +424,22 @@
         popup.style.display = 'flex';
         document.body.style.overflow = 'hidden';
         loadHistory();
-        // Mark admin messages as read immediately when student opens popup
         fetch(readUrl, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrf } });
-        // Refresh admin online status
-        fetch('/jobs/' + JOB_ID + '/admin-online', {headers:{'Accept':'application/json'}})
-            .then(function(r){ return r.json(); })
-            .then(function(d) {
-                var show = d.is_online ? 'inline-block' : 'none';
-                document.querySelectorAll('.popup-admin-online-dot').forEach(function(el) {
-                    el.style.display = show;
-                });
-            })
-            .catch(function(){});
     };
     window.closeChatPopup = function() {
         popup.style.display = 'none';
         document.body.style.overflow = '';
     };
 
-    // Close on backdrop click
     popup.addEventListener('click', function(e) {
         if (e.target === popup) closeChatPopup();
     });
 
-    // Textarea auto-resize
     msgInput.addEventListener('input', function() {
         this.style.height = 'auto';
         this.style.height = Math.min(this.scrollHeight, 100) + 'px';
     });
 
-    // File preview
     fileInput.addEventListener('change', function() {
         attachPrev.innerHTML = '';
         if (!fileInput.files.length) { attachPrev.style.display = 'none'; return; }
@@ -466,10 +452,9 @@
         });
     });
 
-    // Render bubble
     function renderBubble(msg, mine) {
         var existing = document.getElementById('pcm-' + msg.id);
-        if (existing) return; // Prevent duplicate
+        if (existing) return;
 
         var noMsg = document.getElementById('popupNoMsg');
         if (noMsg) noMsg.remove();
@@ -482,7 +467,6 @@
         wrap.id = 'pcm-' + msg.id;
         wrap.style.cssText = 'display:flex;flex-direction:' + (isMine ? 'row-reverse' : 'row') + ';align-items:flex-end;gap:.35rem;';
 
-        // Avatar wrapper with online dot for admin
         var avatarWrap = document.createElement('div');
         avatarWrap.style.cssText = 'position:relative;flex-shrink:0;';
         
@@ -495,19 +479,8 @@
             avatar.style.cssText = 'width:26px;height:26px;border-radius:50%;background:' + (isMine ? '#4f46e5' : '#64748b') + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;';
         }
         avatarWrap.appendChild(avatar);
-        
-        // Online dot for admin messages
-        if (!isMine) {
-            var onlineDot = document.createElement('span');
-            onlineDot.id = 'popup-admin-dot-' + msg.id;
-            onlineDot.className = 'popup-admin-online-dot';
-            onlineDot.style.cssText = 'display:none;position:absolute;bottom:0;right:0;width:10px;height:10px;background:#10b981;border-radius:50%;border:2px solid #f8fafc;';
-            avatarWrap.appendChild(onlineDot);
-        }
-        
         wrap.appendChild(avatarWrap);
 
-        // Column: name + bubble + time
         var col = document.createElement('div');
         col.style.cssText = 'display:flex;flex-direction:column;align-items:' + (isMine ? 'flex-end' : 'flex-start') + ';max-width:78%;';
 
@@ -549,7 +522,6 @@
         }
         col.appendChild(bubble);
 
-        // Read receipt / timestamp
         if (isMine && msg.read_at) {
             var st = document.createElement('span');
             st.style.cssText = 'font-size:.6rem;color:#6366f1;margin-top:.08rem;';
@@ -568,7 +540,6 @@
         chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 
-    // Send
     chatForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         var text = msgInput.value.trim();
@@ -593,51 +564,16 @@
         }
     });
 
-    // Socket.io
     if (typeof io !== 'undefined') {
         var socket = io('{{ config('socket.public_url') }}');
         socket.emit('join', { room: studentRoom, token: studentToken });
         socket.emit('join', { room: threadRoom, token: threadToken });
 
-        var typingTimer;
         socket.on('chat:message', function(msg) {
             if (msg.sender_id == USER_ID) return;
             if (msg.job_id != JOB_ID) return;
             if (!document.getElementById('pcm-' + msg.id)) {
                 renderBubble(msg, false);
-                if (popup.style.display === 'flex') {
-                    fetch(readUrl, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrf } });
-                } else {
-                    // Highlight button
-                    var btn = document.getElementById('openChatBtn');
-                    if (btn) btn.innerHTML = '<svg style="width:14px;height:14px;display:inline;margin-right:2px;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg> สอบถามเพิ่มเติม <svg style="width:10px;height:10px;display:inline;color:#ef4444;" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>';
-                }
-            }
-        });
-
-        socket.on('typing', function(d) {
-            if (d.userId == USER_ID) return;
-            typingLabel.style.display = 'block';
-            clearTimeout(typingTimer);
-            typingTimer = setTimeout(function() { typingLabel.style.display = 'none'; }, 3000);
-        });
-
-        socket.on('chat:read', function(data) {
-            if (data.job_id != JOB_ID) return;
-            // Update read status on own message bubbles immediately
-            chatWindow.querySelectorAll('div[id^="pcm-"]').forEach(function(wrap) {
-                var timeSpan = wrap.querySelector('span[style*="color:#6366f1"]');
-                if (!timeSpan) {
-                    var spans = wrap.querySelectorAll('span');
-                    spans.forEach(function(sp) {
-                        if (sp.textContent.includes('ส่งแล้ว')) {
-                            sp.textContent = '✓✓ เห็นเมื่อ ' + new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
-                            sp.style.color = '#6366f1';
-                        }
-                    });
-                }
-            });
-        });
 
         msgInput.addEventListener('input', function() {
             socket.emit('typing', {

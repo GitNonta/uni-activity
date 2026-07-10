@@ -17,7 +17,7 @@
         $unread = $thread['unread'] ?? 0;
         $time   = $thread['last_time'];
     @endphp
-    <a href="{{ route('admin.inbox.show', [$thread['job_id'], $thread['student_id']]) }}"
+    <a href="javascript:void(0)" onclick="if(window.AdminChatManager) window.AdminChatManager.openChat('{{ route('admin.inbox.show', [$thread['job_id'], $thread['student_id']]) }}', '{{ addslashes($thread['student_name']) }}', '{{ $thread['job_id'] }}_{{ $thread['student_id'] }}'); else window.location.href='{{ route('admin.inbox.show', [$thread['job_id'], $thread['student_id']]) }}';"
        style="display:flex;align-items:center;gap:1rem;padding:.9rem 1.25rem;border-bottom:1px solid #f1f5f9;text-decoration:none;color:inherit;transition:background .15s;{{ $unread > 0 ? 'background:#faf5ff;' : '' }}"
        onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='{{ $unread > 0 ? '#faf5ff' : '' }}'">
 
@@ -67,4 +67,36 @@
     </div>
     @endforelse
 </div>
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    (function initAdminInboxEcho() {
+        if (!window.Echo) {
+            setTimeout(initAdminInboxEcho, 200);
+            return;
+        }
+
+        window.Echo.private('admin.inbox')
+            .listen('.MessageSent', function(e) {
+                // To keep the list real-time without writing complex DOM logic,
+                // we simply fetch the current page HTML and replace the .card content
+                fetch(window.location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(r => r.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        const newCard = doc.querySelector('.card');
+                        const oldCard = document.querySelector('.card');
+                        if (newCard && oldCard) {
+                            oldCard.innerHTML = newCard.innerHTML;
+                        } else {
+                            window.location.reload();
+                        }
+                    });
+            });
+    })();
+});
+</script>
 @endsection
