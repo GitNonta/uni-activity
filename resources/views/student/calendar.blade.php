@@ -71,9 +71,9 @@
 
 @section('scripts')
 {{-- FullCalendar v6 (CDN) --}}
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.11/locales/th.global.min.js"></script>
+<link href="https://unpkg.com/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+<script src="https://unpkg.com/fullcalendar@6.1.11/index.global.min.js"></script>
+<script src="https://unpkg.com/@fullcalendar/core@6.1.11/locales/th.global.min.js"></script>
 
 <script>
 var EVENTS_URL = '{{ route("student.calendar.events") }}';

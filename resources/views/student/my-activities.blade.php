@@ -230,7 +230,7 @@
 
 @section('scripts')
 {{-- qrcode.js CDN --}}
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 // ── QR Pass Modal ──
 var qrInstance = null;
