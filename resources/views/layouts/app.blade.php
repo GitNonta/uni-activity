@@ -425,8 +425,7 @@
 
                 actions.appendChild(menu);
                 actions.appendChild(moreBtn);
-                
-                row.appendChild(actions);
+                // we will append to row later
             }
 
             // Add time and status
@@ -444,6 +443,12 @@
             col.appendChild(statusDiv);
 
             row.appendChild(col);
+            
+            // Insert actions before col if it's my message
+            if (!isTemp && mine) {
+                row.insertBefore(actions, col);
+            }
+            
             return row;
         }
 
