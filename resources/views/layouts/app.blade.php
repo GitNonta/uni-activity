@@ -383,7 +383,7 @@
             if (!isTemp && mine) {
                 var actions = document.createElement('div');
                 actions.className = 'msg-actions';
-                actions.style.cssText = 'display:flex; position:relative; flex-direction:row; z-index: 20; align-items:center; margin-bottom:18px;';
+                actions.style.cssText = 'display:flex; position:relative; flex-direction:row; z-index: 20; align-items:center; margin-bottom:18px; order: -1;';
                 
                 var moreBtn = document.createElement('button');
                 moreBtn.innerHTML = '<svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>';
