@@ -308,7 +308,7 @@
 <div id="idCardModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
     <div id="idCardContainer" style="--theme-primary: #ea580c; --theme-secondary: #27272a; --theme-bg-image: none; position: relative; animation: slideUp 0.3s ease-out; display: flex; flex-direction: column; align-items: center;">
         <!-- Close button -->
-        <button onclick="document.getElementById('idCardModal').style.display='none'" style="position: absolute; top: -15px; right: -15px; width: 32px; height: 32px; background: #fff; border: none; border-radius: 50%; box-shadow: 0 2px 10px rgba(0,0,0,0.2); cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; color: #333; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+        <button onclick="closeCardModal()" style="position: absolute; top: -15px; right: -15px; width: 32px; height: 32px; background: #fff; border: none; border-radius: 50%; box-shadow: 0 2px 10px rgba(0,0,0,0.2); cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; color: #333; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
 
@@ -417,12 +417,46 @@
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
 }
+
+/* Dust Disintegration Effect */
+@keyframes dustDisintegrate {
+    0% {
+        opacity: 1;
+        filter: blur(0px) grayscale(0);
+        transform: scale(1) translateY(0);
+    }
+    30% {
+        opacity: 0.8;
+        filter: blur(3px) sepia(0.3);
+        transform: scale(1.02) translateY(-5px);
+    }
+    100% {
+        opacity: 0;
+        filter: blur(20px) contrast(150%);
+        transform: scale(0.9) translateY(-40px) rotate(5deg);
+    }
+}
+
+.dust-effect {
+    animation: dustDisintegrate 0.75s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards !important;
+    pointer-events: none;
+}
 </style>
 <script>
+    // Close Modal Logic with Dust Effect
+    function closeCardModal() {
+        const container = document.getElementById('idCardContainer');
+        container.classList.add('dust-effect');
+        setTimeout(() => {
+            document.getElementById('idCardModal').style.display = 'none';
+            container.classList.remove('dust-effect');
+        }, 700);
+    }
+
     // Close modal when clicking outside the card
     document.getElementById('idCardModal').addEventListener('click', function(e) {
         if (e.target === this) {
-            this.style.display = 'none';
+            closeCardModal();
         }
     });
 
