@@ -24,6 +24,25 @@ class StudentController extends Controller
     public function profile(ActivitySummaryService $summaryService)
     {
         $user    = auth()->user();
+
+        // 0. Auto translate english_name if empty
+        if (empty($user->english_name) && !empty($user->full_name)) {
+            try {
+                $cleanName = str_replace(['นาย ', 'นางสาว ', 'นาง '], '', $user->full_name);
+                $url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=th&tl=en&dt=t&q=' . urlencode($cleanName);
+                $response = @file_get_contents($url);
+                if ($response) {
+                    $data = json_decode($response, true);
+                    if (isset($data[0][0][0])) {
+                        $user->english_name = ucwords(strtolower(trim($data[0][0][0])));
+                        $user->save();
+                    }
+                }
+            } catch (\Exception $e) {
+                // Fallback / ignore
+            }
+        }
+
         $summary = $summaryService->getSummary($user);
 
         $recentAttendances = Attendance::with('activity.category')
@@ -414,7 +433,19 @@ class StudentController extends Controller
         return response()->json(['alerts' => $alerts]);
     }
 
+    /** อัปเดตชื่อภาษาอังกฤษของนักศึกษา */
+    public function updateEnglishName(Request $request)
+    {
+        $request->validate([
+            'english_name' => 'required|string|max:255'
+        ]);
 
+        $user = auth()->user();
+        $user->english_name = $request->english_name;
+        $user->save();
+
+        return redirect()->back()->with('success', 'อัปเดตชื่อภาษาอังกฤษเรียบร้อยแล้ว');
+    }
 
     /** หน้าสแกน QR สำหรับนักศึกษา (สแกนเข้าร่วมกิจกรรม/เช็คอิน) */
     public function scanner()

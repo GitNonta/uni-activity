@@ -31,7 +31,15 @@
                 </form>
             </div>
             <div style="flex: 1; min-width: 0;">
-                <h1 style="font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 0 0 0.25rem 0; line-height: 1.2;">{{ $user->full_name }}</h1>
+                <div style="display: flex; align-items: center; gap: 8px; margin: 0 0 0.25rem 0;">
+                    <h1 style="font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 0; line-height: 1.2;">{{ $user->full_name }}</h1>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; margin: 0 0 0.4rem 0;">
+                    <p style="color: #64748b; font-size: 0.95rem; font-weight: 600; margin: 0;">{{ $user->english_name ?? '(กำลังประมวลผลชื่อภาษาอังกฤษ...)' }}</p>
+                    <button onclick="editEnglishName('{{ addslashes($user->english_name) }}')" style="background: none; border: none; color: #4f46e5; cursor: pointer; padding: 0; display: flex; align-items: center;" title="แก้ไขชื่อภาษาอังกฤษ">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                    </button>
+                </div>
                 <p style="color: #64748b; font-size: 0.9rem; margin: 0 0 0.4rem 0; font-weight: 500;">{{ $user->student_id }}</p>
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
                     <span style="background: #e0e7ff; color: #4338ca; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600;">
@@ -406,5 +414,42 @@
             this.style.display = 'none';
         }
     });
+
+    // Edit English Name
+    function editEnglishName(currentName) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'แก้ไขชื่อภาษาอังกฤษ',
+                text: 'หากระบบแปลชื่อภาษาอังกฤษของคุณไม่ถูกต้อง สามารถแก้ไขได้ที่นี่',
+                input: 'text',
+                inputValue: currentName || "",
+                showCancelButton: true,
+                confirmButtonText: 'บันทึก',
+                cancelButtonText: 'ยกเลิก',
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'กรุณาระบุชื่อภาษาอังกฤษ!'
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('englishNameInput').value = result.value.trim();
+                    document.getElementById('editEnglishNameForm').submit();
+                }
+            });
+        } else {
+            let newName = prompt("กรุณาระบุชื่อ-นามสกุลภาษาอังกฤษของคุณ:\n(หากระบบแปลผิด สามารถแก้ไขได้)", currentName || "");
+            if (newName !== null && newName.trim() !== "") {
+                document.getElementById('englishNameInput').value = newName.trim();
+                document.getElementById('editEnglishNameForm').submit();
+            }
+        }
+    }
 </script>
+
+<form id="editEnglishNameForm" action="{{ route('student.profile.english_name') }}" method="POST" style="display: none;">
+    @csrf
+    <input type="hidden" name="english_name" id="englishNameInput">
+</form>
+
 @endpush
