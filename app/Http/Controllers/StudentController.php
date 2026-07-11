@@ -414,28 +414,11 @@ class StudentController extends Controller
         return response()->json(['alerts' => $alerts]);
     }
 
-    /** แสดงหน้า QR Code ส่วนตัวสำหรับให้นักศึกษาแสดงให้เจ้าหน้าที่สแกน */
+    /** แสดงหน้าบัตรประจำตัวนักศึกษา (Digital ID) */
     public function showMyQr()
     {
         $user = auth()->user();
         return view('student.my-qr', compact('user'));
-    }
-
-    /** API สำหรับดึง Dynamic Token สำหรับ QR Code ส่วนตัว (เปลี่ยนทุก 30 วินาที) */
-    public function getDynamicQrToken()
-    {
-        $userId = auth()->id();
-        $timeWindow = floor(now()->timestamp / 30);
-        
-        $payload = $userId . '|' . $timeWindow;
-        $signature = hash_hmac('sha256', $payload, config('app.key'));
-        
-        $token = base64_encode($payload . '|' . $signature);
-        
-        return response()->json([
-            'token' => $token,
-            'expires_in' => 30 - (now()->timestamp % 30),
-        ]);
     }
 
     /** หน้าสแกน QR สำหรับนักศึกษา (สแกนเข้าร่วมกิจกรรม/เช็คอิน) */
