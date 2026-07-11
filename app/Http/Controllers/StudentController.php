@@ -414,12 +414,7 @@ class StudentController extends Controller
         return response()->json(['alerts' => $alerts]);
     }
 
-    /** แสดงหน้าบัตรประจำตัวนักศึกษา (Digital ID) */
-    public function showMyQr()
-    {
-        $user = auth()->user();
-        return view('student.my-qr', compact('user'));
-    }
+
 
     /** หน้าสแกน QR สำหรับนักศึกษา (สแกนเข้าร่วมกิจกรรม/เช็คอิน) */
     public function scanner()

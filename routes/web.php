@@ -110,7 +110,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/summary', [StudentController::class, 'summary'])->name('student.summary');                          // สรุปชั่วโมง
     Route::get('/summary/pdf', [StudentController::class, 'downloadPdf'])->name('student.summary.pdf');              // ดาวน์โหลด PDF ใบแสดงผลกิจกรรม
     Route::get('/profile', [StudentController::class, 'profile'])->name('student.profile');                          // หน้าโปรไฟล์นักศึกษา
-    Route::get('/my-qr', [StudentController::class, 'showMyQr'])->name('student.qr');                                // หน้า QR ส่วนตัว
 
     Route::get('/scan', [StudentController::class, 'scanner'])->name('student.scanner');                             // หน้าสแกน QR สำหรับนักศึกษา
     // ── ปฏิทินกิจกรรม ──

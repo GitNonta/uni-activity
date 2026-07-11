@@ -66,12 +66,12 @@
     </div>
 </div>
 
-{{-- QR Code Button --}}
+{{-- QR Code Button (Changed to Modal Popup) --}}
 <div style="margin-bottom: 1.5rem;">
-    <a href="{{ route('student.qr') }}" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 0.875rem; background: #ffffff; color: #4f46e5; border: 1px solid #c7d2fe; border-radius: 10px; font-weight: 600; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: background 0.2s;">
+    <button onclick="document.getElementById('idCardModal').style.display='flex'" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 0.875rem; background: #ffffff; color: #4f46e5; border: 1px solid #c7d2fe; border-radius: 10px; font-weight: 600; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: background 0.2s; cursor: pointer;">
         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
         บัตรประจำตัวนักศึกษา
-    </a>
+    </button>
 </div>
 
 {{-- 2. ข้อมูลส่วนตัว --}}
@@ -293,4 +293,115 @@
     </a>
 </div>
 
+@endsection
+
+@push('scripts')
+<!-- ID Card Modal -->
+<div id="idCardModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
+    <div style="position: relative; animation: slideUp 0.3s ease-out;">
+        <!-- Close button -->
+        <button onclick="document.getElementById('idCardModal').style.display='none'" style="position: absolute; top: -15px; right: -15px; width: 32px; height: 32px; background: #fff; border: none; border-radius: 50%; box-shadow: 0 2px 10px rgba(0,0,0,0.2); cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; color: #333; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+
+        <!-- ID Card Structure -->
+        <div style="width: 320px; height: 500px; background: #fff; border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.2); font-family: 'Kanit', sans-serif;">
+            
+            <!-- Top Orange Diagonal -->
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 130px; background: linear-gradient(105deg, #ea580c 38%, #fff 38.5%); z-index: 1;"></div>
+            
+            <!-- Content Wrapper -->
+            <div style="position: relative; z-index: 2; display: flex; flex-direction: column; height: 100%;">
+                
+                <!-- Header (Logo & Univ Name) -->
+                <div style="display: flex; align-items: center; padding: 15px 15px 0 15px; gap: 8px;">
+                    <!-- Logo placeholder -->
+                    <div style="width: 40px; height: 40px; background: #15803d; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: relative;">
+                        <!-- PKRU generic logo style -->
+                        <div style="width: 24px; height: 24px; border-radius: 50%; border: 2px solid #fff; background: #ea580c;"></div>
+                    </div>
+                    <div style="line-height: 1.1; margin-top: -5px; z-index: 2;">
+                        <div style="font-size: 15px; font-weight: 700; color: #1e293b; letter-spacing: -0.2px;">มหาวิทยาลัยราชภัฏภูเก็ต</div>
+                        <div style="font-size: 9px; font-weight: 500; color: #475569; letter-spacing: 0.5px;">PHUKET RAJABHAT UNIVERSITY</div>
+                    </div>
+                </div>
+
+                <!-- Photo -->
+                <div style="text-align: center; margin-top: 15px; position: relative; z-index: 2;">
+                    @if($user->profile_photo)
+                        <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="profile" style="width: 120px; height: 150px; object-fit: cover; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    @else
+                        <div style="width: 120px; height: 150px; background: #cbd5e1; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); color: #94a3b8; margin: 0 auto;">
+                            <svg width="50" height="50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Details -->
+                <div style="padding: 15px 25px; z-index: 2;">
+                    <div style="font-size: 11px; color: #334155; font-weight: 600; margin-bottom: 2px;">รหัสนักศึกษา :</div>
+                    <div style="font-size: 24px; font-weight: 700; letter-spacing: 1.5px; color: #0f172a; margin-bottom: 6px; line-height: 1;">{{ $user->student_id }}</div>
+                    
+                    <div style="font-size: 20px; font-weight: 700; color: #0f172a; line-height: 1.2;">{{ $user->full_name }}</div>
+                    <div style="font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">{{ strtoupper(str_replace('นาย ', 'Mr. ', str_replace('นางสาว ', 'Ms. ', $user->full_name))) }}</div>
+                    
+                    <div style="width: 100%; height: 1px; background: #cbd5e1; margin: 8px 0;"></div>
+                    
+                    <div style="font-size: 15px; font-weight: 700; color: #1e293b;">สาขา{{ $user->department ?? 'วิทยาการคอมพิวเตอร์' }}</div>
+                </div>
+
+                <div style="flex: 1;"></div>
+            </div>
+
+            <!-- Bottom slanted area -->
+            <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 120px; overflow: hidden; z-index: 1;">
+                <div style="position: absolute; top: 30px; left: -20px; right: -20px; bottom: -20px; background: #27272a; transform: rotate(-8deg); border-top: 6px solid #ea580c; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);"></div>
+                
+                <!-- Bottom content overlay -->
+                <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 15px 20px; display: flex; justify-content: space-between; align-items: flex-end; z-index: 3;">
+                    
+                    <!-- Left: text -->
+                    <div style="font-size: 11px; color: #a1a1aa; font-weight: 500; margin-bottom: 2px;">บัตรประจำตัวนักศึกษา</div>
+                    
+                    <!-- Center: Chip -->
+                    <div style="position: absolute; left: 50%; bottom: 25px; transform: translateX(-50%);">
+                        <div style="width: 38px; height: 32px; background: #d4d4d8; border-radius: 5px; position: relative; overflow: hidden; border: 1px solid #71717a; box-shadow: inset 0 1px 2px rgba(255,255,255,0.5);">
+                            <div style="position:absolute; top:50%; left:0; width:100%; height:1px; background:#a1a1aa;"></div>
+                            <div style="position:absolute; top:0; left:30%; width:1px; height:100%; background:#a1a1aa;"></div>
+                            <div style="position:absolute; top:0; left:70%; width:1px; height:100%; background:#a1a1aa;"></div>
+                            <div style="position:absolute; top:30%; left:30%; right:30%; bottom:30%; border:1px solid #a1a1aa; border-radius:3px;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right: Contactless & VISA -->
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4d4d8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(90deg); margin-right: 8px; margin-bottom: 2px;"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+                        <div style="font-size: 28px; font-weight: 900; font-style: italic; color: #fff; letter-spacing: 1px; line-height: 1;">VISA</div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<style>
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+/* Close modal when clicking outside */
+#idCardModal {
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+</style>
+<script>
+    // Close modal when clicking outside the card
+    document.getElementById('idCardModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.style.display = 'none';
+        }
+    });
+</script>
 @endsection
