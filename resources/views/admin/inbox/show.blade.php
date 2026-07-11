@@ -199,12 +199,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 '<div onclick="deleteMessageBtn(\'' + msg.id + '\')" style="padding:8px 16px; font-size:0.85rem; cursor:pointer; transition:background .15s; font-weight:500;" onmouseover="this.style.background=\'rgba(255,255,255,0.1)\'" onmouseout="this.style.background=\'transparent\'">ยกเลิกการส่ง</div>' +
             '</div>';
 
-            actionsHtml = '<div class="msg-actions" style="display:flex; position:absolute; bottom:10px; ' + (isMine ? 'right:100%; margin-right:5px;' : 'left:100%; margin-left:5px;') + ' flex-direction:' + (isMine?'row':'row-reverse') + '; z-index: 20; align-items:center;" onmouseleave="const m=this.querySelector(\'.msg-dropdown\');if(m)m.style.display=\'none\';">' +
+            actionsHtml = '<div class="msg-actions" style="display:flex; position:relative; flex-direction:' + (isMine?'row':'row-reverse') + '; z-index: 20; align-items:center; margin-bottom:18px;" onmouseleave="const m=this.querySelector(\'.msg-dropdown\');if(m)m.style.display=\'none\';">' +
                 mBtn + mMenu +
             '</div>';
         }
 
-        return '<div id="cm-' + msg.id + '" class="msg-bubble-container" style="display:flex;flex-direction:' + dir + ';align-items:flex-end;gap:.4rem;position:relative;">' +
+        return '<div id="cm-' + msg.id + '" class="msg-bubble-container" style="display:flex;flex-direction:' + dir + ';align-items:flex-end;gap:.4rem;">' +
             avatarHtml +
             '<div style="display:flex;flex-direction:column;align-items:' + align + ';max-width:72%;">' +
                 '<span style="font-size:.68rem;color:#94a3b8;margin-bottom:.15rem;">' + label + '</span>' +
