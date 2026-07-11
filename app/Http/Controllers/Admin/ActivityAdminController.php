@@ -165,6 +165,7 @@ class ActivityAdminController extends Controller
         $data['qr_token'] = $qrService->generateToken();
         $data['qr_checkout_token'] = $qrService->generateToken();
         $data['is_mandatory'] = $request->boolean('is_mandatory');
+        $data['allow_walkin'] = $request->has('allow_walkin') ? $request->boolean('allow_walkin') : true;
         $data['require_attendance_approval'] = $request->boolean('require_attendance_approval');
         if (($data['scope'] ?? 'university') === 'university') {
             $data['faculty'] = null;
@@ -234,6 +235,7 @@ class ActivityAdminController extends Controller
         ]);
 
         $data['is_mandatory'] = $request->boolean('is_mandatory');
+        $data['allow_walkin'] = $request->has('allow_walkin') ? $request->boolean('allow_walkin') : true;
         $data['require_attendance_approval'] = $request->boolean('require_attendance_approval');
         if ($data['scope'] === 'university') {
             $data['faculty'] = null;

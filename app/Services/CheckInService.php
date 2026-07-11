@@ -49,8 +49,11 @@ class CheckInService
             ->where('status', 'approved')
             ->first();
 
-        // หากไม่ได้ลงทะเบียนล่วงหน้า ให้ระบุเป็น walk-in อัตโนมัติ
+        // หากไม่ได้ลงทะเบียนล่วงหน้า
         if (!$registration) {
+            if (!$activity->allow_walkin) {
+                return ['success' => false, 'message' => 'คุณไม่ได้ลงทะเบียนกิจกรรมนี้ หรือยังไม่ได้รับการอนุมัติ (กิจกรรมนี้ไม่เปิดรับ Walk-in)'];
+            }
             $method = 'walk_in';
         }
 

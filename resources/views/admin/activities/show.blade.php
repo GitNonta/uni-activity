@@ -15,6 +15,7 @@
                 <div class="flex gap-2 mt-1" style="flex-wrap:wrap;">
                     @include('components.status-badge', ['status' => $activity->computed_status])
                     @if($activity->is_mandatory)<span class="badge badge-red">บังคับ</span>@endif
+                    @if($activity->allow_walkin)<span class="badge" style="background:#dcfce7;color:#166534;">เปิดรับ Walk-in</span>@else<span class="badge" style="background:#fee2e2;color:#991b1b;">เฉพาะผู้ลงทะเบียน</span>@endif
                     @if($activity->category)<span class="badge badge-blue">{{ $activity->category->name }}</span>@endif
                     @if($activity->scope === 'faculty')
                         <span class="badge" style="background:#fef3c7;color:#92400e;">คณะ: {{ $activity->faculty }}</span>
