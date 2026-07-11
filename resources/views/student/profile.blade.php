@@ -306,14 +306,14 @@
 @push('scripts')
 <!-- ID Card Modal -->
 <div id="idCardModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
-    <div id="idCardContainer" style="--theme-primary: #ea580c; --theme-secondary: #27272a; position: relative; animation: slideUp 0.3s ease-out; display: flex; flex-direction: column; align-items: center;">
+    <div id="idCardContainer" style="--theme-primary: #ea580c; --theme-secondary: #27272a; --theme-bg-image: none; position: relative; animation: slideUp 0.3s ease-out; display: flex; flex-direction: column; align-items: center;">
         <!-- Close button -->
         <button onclick="document.getElementById('idCardModal').style.display='none'" style="position: absolute; top: -15px; right: -15px; width: 32px; height: 32px; background: #fff; border: none; border-radius: 50%; box-shadow: 0 2px 10px rgba(0,0,0,0.2); cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; color: #333; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
 
         <!-- ID Card Structure -->
-        <div style="width: 320px; height: 500px; background: #fff; border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.2); font-family: 'Kanit', sans-serif;">
+        <div style="width: 320px; height: 500px; background-color: #fff; background-image: var(--theme-bg-image); background-size: cover; background-position: center; border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.2); font-family: 'Kanit', sans-serif;">
             
             <!-- Top Diagonal -->
             <div style="position: absolute; top: 0; left: 0; width: 100%; height: 130px; background: linear-gradient(105deg, var(--theme-primary) 38%, #fff 38.5%); z-index: 1;"></div>
@@ -396,12 +396,14 @@
         </div>
 
         <!-- Theme Selector -->
-        <div style="margin-top: 20px; display: flex; gap: 12px; justify-content: center; z-index: 10;">
+        <div style="margin-top: 20px; display: flex; gap: 12px; justify-content: center; z-index: 10; flex-wrap: wrap; max-width: 320px;">
             <button onclick="setCardTheme('#ea580c', '#27272a')" style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #ea580c 50%, #27272a 50%); border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="PKRU Default"></button>
             <button onclick="setCardTheme('#0ea5e9', '#0f172a')" style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #0ea5e9 50%, #0f172a 50%); border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Ocean Blue"></button>
             <button onclick="setCardTheme('#10b981', '#064e3b')" style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #10b981 50%, #064e3b 50%); border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Emerald Green"></button>
             <button onclick="setCardTheme('#a855f7', '#3b0764')" style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #a855f7 50%, #3b0764 50%); border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Amethyst Purple"></button>
             <button onclick="setCardTheme('#e11d48', '#4c0519')" style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #e11d48 50%, #4c0519 50%); border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Crimson Red"></button>
+            <button onclick="setCardTheme('#d97706', '#78350f', 'url({{ asset('images/phuket_oldtown.png') }})')" style="width: 32px; height: 32px; border-radius: 50%; background: url({{ asset('images/phuket_oldtown.png') }}) center/cover; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Phuket Old Town Pattern"></button>
+            <button onclick="setCardTheme('#f43f5e', '#881337', 'url({{ asset('images/cartoon.png') }})')" style="width: 32px; height: 32px; border-radius: 50%; background: url({{ asset('images/cartoon.png') }}) center/cover; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Cute Cartoon Pattern"></button>
         </div>
     </div>
 </div>
@@ -425,19 +427,22 @@
     });
 
     // Theme Management
-    function setCardTheme(primary, secondary) {
+    function setCardTheme(primary, secondary, bgImage = 'none') {
         const container = document.getElementById('idCardContainer');
         container.style.setProperty('--theme-primary', primary);
         container.style.setProperty('--theme-secondary', secondary);
+        container.style.setProperty('--theme-bg-image', bgImage);
         localStorage.setItem('idCardThemePrimary', primary);
         localStorage.setItem('idCardThemeSecondary', secondary);
+        localStorage.setItem('idCardThemeBgImage', bgImage);
     }
 
     document.addEventListener('DOMContentLoaded', () => {
         const p = localStorage.getItem('idCardThemePrimary');
         const s = localStorage.getItem('idCardThemeSecondary');
+        const bg = localStorage.getItem('idCardThemeBgImage');
         if (p && s) {
-            setCardTheme(p, s);
+            setCardTheme(p, s, bg || 'none');
         }
     });
 
