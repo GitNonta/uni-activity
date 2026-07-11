@@ -65,6 +65,7 @@ commands = [
     f'cd {remote_base} && php -d memory_limit=-1 $(which composer) update --no-dev --optimize-autoloader --ignore-platform-reqs',
     f'cd {remote_base} && php artisan migrate --force',
     f'cd {remote_base} && php artisan config:clear',
+    f'cd {remote_base} && php artisan cache:clear',
     f'cd {remote_base} && php artisan config:cache',
     f'cd {remote_base} && php artisan view:clear',
     'killall php-fpm 2>/dev/null',

@@ -65,36 +65,7 @@
 </div>
 @endif
 
-{{-- QR Pass Modal --}}
-<div id="qrPassModal" class="modal-overlay" onclick="if(event.target===this)closeQrModal()" style="display:none;opacity:0;transition:opacity .25s;">
-    <div class="modal" style="max-width:360px;border-radius:20px;overflow:hidden;">
-        <div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:1.25rem 1.25rem .75rem;color:#fff;position:relative;">
-            <div style="font-size:.7rem;opacity:.75;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.25rem;">UNI Activity · บัตรกิจกรรม</div>
-            <h3 id="qrActivityTitle" style="font-size:1.05rem;font-weight:700;margin:0;line-height:1.3;"></h3>
-            <div id="qrActivityMeta" style="font-size:.78rem;opacity:.8;margin-top:.3rem;"></div>
-            <button onclick="closeQrModal()" style="position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,.2);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:1rem;line-height:28px;text-align:center;">✕</button>
-        </div>
-        <div style="background:#fff;padding:1.25rem;text-align:center;">
-            {{-- Student info --}}
-            <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;text-align:left;background:#f8fafc;border-radius:10px;padding:.75rem;">
-                <div style="width:42px;height:42px;border-radius:50%;background:#4f46e5;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;flex-shrink:0;">
-                    {{ mb_substr(auth()->user()->full_name ?? 'N', 0, 1) }}
-                </div>
-                <div>
-                    <div style="font-weight:700;font-size:.9rem;color:#1e293b;">{{ auth()->user()->full_name }}</div>
-                    <div style="font-size:.78rem;color:#64748b;">{{ auth()->user()->student_id }}</div>
-                    <div style="font-size:.72rem;color:#94a3b8;">{{ auth()->user()->faculty }}</div>
-                </div>
-            </div>
-            {{-- QR Canvas --}}
-            <div style="display:flex;justify-content:center;margin-bottom:.75rem;">
-                <div id="qrCanvas" style="padding:12px;background:#fff;border:2px solid #e2e8f0;border-radius:12px;display:inline-block;"></div>
-            </div>
-            <p style="font-size:.72rem;color:#94a3b8;margin-bottom:1rem;">แสดง QR นี้ให้เจ้าหน้าที่สแกน</p>
-            <a id="qrViewBtn" href="#" class="btn btn-primary" style="width:100%;justify-content:center;border-radius:10px;">ดูหน้ากิจกรรม</a>
-        </div>
-    </div>
-</div>
+
 
 {{-- ── กิจกรรมที่เข้าร่วมผ่าน Walk-in ── --}}
 @forelse($walkInAttendances as $att)
@@ -105,7 +76,10 @@
                     @include('components.status-badge', ['status' => $att->activity->computed_status])
                     <span class="badge" style="background:#f59e0b;color:white;font-size:.72rem;padding:.25rem .6rem;border-radius:999px;">Walk-in</span>
                     @if($att->status === 'approved')
-                        <span class="badge badge-green">✓ สำเร็จ</span>
+                        <span class="badge badge-green flex items-center gap-1">
+                            <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                            สำเร็จ
+                        </span>
                     @elseif($att->status === 'pending')
                         <span class="badge badge-yellow">รออนุมัติ</span>
                     @elseif($att->status === 'rejected')
@@ -162,26 +136,22 @@
                     <span class="badge {{ $sc[$reg->status] ?? 'badge-gray' }}" style="font-size:.72rem; padding:.25rem .6rem; border-radius:999px;">{{ $sl[$reg->status] ?? $reg->status }}</span>
                     
                     @if($att && $att->status === 'approved')
-                        <span class="badge badge-blue" style="font-size:.72rem; padding:.25rem .6rem; border-radius:999px;">✓ เช็คอินแล้ว</span>
+                        <span class="badge badge-blue flex items-center gap-1" style="font-size:.72rem; padding:.25rem .6rem; border-radius:999px;">
+                            <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                            เช็คอินแล้ว
+                        </span>
                     @elseif($att && $att->status === 'pending')
                         <span class="badge badge-yellow" style="font-size:.72rem; padding:.25rem .6rem; border-radius:999px;">รออนุมัติเช็คอิน</span>
                     @endif
                 </div>
                 <h3 class="font-semi line-clamp-1" style="font-size:1.05rem; margin-bottom:.2rem;">{{ $reg->activity->title }}</h3>
                 <p class="text-xs text-muted mb-1">
-                    📅 {{ $reg->activity->activity_date->format('d/m/Y') }}
+                    <svg style="width:14px;height:14px;display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> {{ $reg->activity->activity_date->format('d/m/Y') }}
                     · <svg style="width:14px;height:14px;display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> {{ $reg->activity->start_time }} – {{ $reg->activity->end_time }}
                     · <svg style="width:14px;height:14px;display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> {{ $reg->activity->location }}
                 </p>
             </div>
             <div class="flex gap-1" style="flex-shrink:0;flex-direction:column;align-items:flex-end;">
-                {{-- QR Pass button --}}
-                @if($reg->status === 'approved')
-                <button class="btn btn-outline btn-sm" style="font-size:.75rem;"
-                    onclick="openQrModal('{{ addslashes($reg->activity->title) }}','{{ $reg->activity->activity_date->format('d/m/Y') }}','{{ addslashes($reg->activity->location) }}','{{ route('checkin.walkin', $reg->activity->qr_token ?? 'invalid') }}','{{ route('activities.show', $reg->activity->id) }}')">
-                    🎫 บัตร
-                </button>
-                @endif
                 {{-- Checkin --}}
                 @if(!$att && $reg->status === 'approved' && $checkinOpen)
                 <span class="badge badge-blue" style="font-size:.72rem;padding:.3rem .6rem;">สแกน QR หน้างาน</span>
@@ -218,35 +188,6 @@
 {{-- qrcode.js CDN --}}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-// ── QR Pass Modal ──
-var qrInstance = null;
-
-function openQrModal(title, date, location, qrUrl, activityUrl) {
-    document.getElementById('qrActivityTitle').textContent = title;
-    document.getElementById('qrActivityMeta').innerHTML  = '<svg style="width:14px;height:14px;display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> ' + date + '  <svg style="width:14px;height:14px;display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> ' + location;
-    document.getElementById('qrViewBtn').href = activityUrl;
-
-    var canvas = document.getElementById('qrCanvas');
-    canvas.innerHTML = '';
-    qrInstance = new QRCode(canvas, {
-        text: qrUrl,
-        width: 180,
-        height: 180,
-        colorDark: '#1e293b',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.M
-    });
-
-    var m = document.getElementById('qrPassModal');
-    m.style.display = 'flex';
-    requestAnimationFrame(function() { m.style.opacity = '1'; });
-}
-
-function closeQrModal() {
-    var m = document.getElementById('qrPassModal');
-    m.style.opacity = '0';
-    setTimeout(function() { m.style.display = 'none'; }, 250);
-}
-
+// No QR Modal needed anymore
 </script>
 @endsection

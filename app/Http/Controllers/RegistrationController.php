@@ -95,6 +95,9 @@ class RegistrationController extends Controller
                     'message' => $messageToSet,
                     'type'    => 'registration',
                 ]);
+
+                // Clear notification cache
+                \Illuminate\Support\Facades\Cache::forget("user_notifications_{$user->id}");
             });
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
@@ -131,6 +134,9 @@ class RegistrationController extends Controller
             'message' => "คุณยกเลิกการลงทะเบียนกิจกรรม \"{$activity->title}\"",
             'type'    => 'registration',
         ]);
+
+        // Clear notification cache
+        \Illuminate\Support\Facades\Cache::forget("user_notifications_" . auth()->id());
 
         // Auto-promote first waitlisted user
         if (in_array($registration->getOriginal('status'), ['approved', 'pending'])) {
