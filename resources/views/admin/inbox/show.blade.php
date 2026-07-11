@@ -230,6 +230,37 @@ document.addEventListener('DOMContentLoaded', function () {
         const btn = document.getElementById('sendBtn');
         btn.disabled = true;
 
+        if (window.currentAdminEditId) {
+            fetch('/admin/inbox/messages/' + window.currentAdminEditId, {
+                method: 'PUT',
+                headers: { 
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ message: text })
+            }).then(r => r.json()).then(res => {
+                btn.disabled = false;
+                if (res.success) {
+                    const bodyEl = document.getElementById('msg-body-' + window.currentAdminEditId);
+                    if (bodyEl) {
+                        bodyEl.innerHTML = '<p style="margin:0;">' + text.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</p><span style="font-size:0.6rem;opacity:0.7;margin-left:5px;">(แก้ไขแล้ว)</span>';
+                    }
+                    
+                    window.currentAdminEditId = null;
+                    input.value = '';
+                    btn.innerHTML = 'ส่ง';
+                    btn.style.background = '#4f46e5';
+                    var cancelBtn = document.getElementById('adminCancelEditBtn');
+                    if (cancelBtn) cancelBtn.remove();
+                    
+                } else if (res.message) {
+                    alert(res.message);
+                }
+            }).catch(() => { btn.disabled = false; });
+            return;
+        }
+
         // Optimistic bubble
         const noMsg = document.getElementById('noMsg');
         if (noMsg) noMsg.remove();
@@ -382,28 +413,41 @@ window.deleteMessageBtn = function(id) {
     });
 };
 
+window.currentAdminEditId = null;
+
 window.editMessageBtn = function(id) {
-    const newText = prompt('แก้ไขข้อความ:');
-    if (newText === null || newText.trim() === '') return;
+    const bodyEl = document.getElementById('msg-body-' + id);
+    if (!bodyEl) return;
+    const p = bodyEl.querySelector('p');
+    if (!p) return;
     
-    fetch('/admin/inbox/messages/' + id, {
-        method: 'PUT',
-        headers: { 
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify({ message: newText })
-    }).then(r => r.json()).then(res => {
-        if (res.success) {
-            const bodyEl = document.getElementById('msg-body-' + id);
-            if (bodyEl) {
-                bodyEl.innerHTML = '<p style="margin:0;">' + newText.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</p><span style="font-size:0.6rem;opacity:0.7;margin-left:5px;">(แก้ไขแล้ว)</span>';
-            }
-        } else if (res.message) {
-            alert(res.message); // Validation error
-        }
-    });
+    let currentText = p.textContent.replace('(แก้ไขแล้ว)', '').trim();
+    
+    const input = document.getElementById('msgInput');
+    input.value = currentText;
+    input.focus();
+    
+    window.currentAdminEditId = id;
+    
+    const btn = document.getElementById('sendBtn');
+    btn.innerHTML = '<svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> บันทึก';
+    btn.style.background = '#10b981';
+    
+    if (!document.getElementById('adminCancelEditBtn')) {
+        const cancelBtn = document.createElement('button');
+        cancelBtn.id = 'adminCancelEditBtn';
+        cancelBtn.type = 'button';
+        cancelBtn.innerHTML = 'ยกเลิก';
+        cancelBtn.style.cssText = 'background:#ef4444; color:#fff; border:none; border-radius:12px; padding:0 1rem; font-weight:500; font-size:.95rem; cursor:pointer; height:42px; margin-right:4px; margin-left:4px;';
+        cancelBtn.onclick = function() {
+            window.currentAdminEditId = null;
+            input.value = '';
+            btn.innerHTML = 'ส่ง';
+            btn.style.background = '#4f46e5';
+            this.remove();
+        };
+        btn.parentNode.insertBefore(cancelBtn, btn);
+    }
 };
 </script>
 @endsection
