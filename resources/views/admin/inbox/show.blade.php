@@ -82,10 +82,18 @@
                 </div>
                 
                 {{-- Actions --}}
-                <div class="msg-actions" style="display:none; position:absolute; bottom:20px; {{ $isMine ? 'right:100%; margin-right:5px;' : 'left:100%; margin-left:5px;' }} background:#fff; padding:2px 4px; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.15); gap:2px; flex-direction: row; white-space: nowrap; z-index: 10;">
-                    <button onclick="editMessageBtn('{{$msg->id}}')" style="background:none;border:none;cursor:pointer;padding:2px 4px;color:#64748b;font-size:1rem;" title="แก้ไข">✏️</button>
-                    <button onclick="deleteMessageBtn('{{$msg->id}}')" style="background:none;border:none;cursor:pointer;padding:2px 4px;color:#ef4444;font-size:1rem;" title="ลบ">🗑️</button>
+                @if($isMine)
+                <div class="msg-actions" style="display:flex; position:relative; flex-direction:row; z-index: 20; align-items:center; margin-bottom:18px;" onmouseleave="const m=this.querySelector('.msg-dropdown');if(m)m.style.display='none';">
+                    <button onclick="var m=this.nextElementSibling; document.querySelectorAll('.msg-dropdown').forEach(function(el){if(el!==m)el.style.display='none';}); m.style.display=m.style.display==='flex'?'none' : 'flex';" style="background:transparent; border:none; cursor:pointer; padding:4px; color:#94a3b8; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:all .2s; margin:0 4px;">
+                        <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>
+                    </button>
+                    <div class="msg-dropdown" style="display:none; position:absolute; right:34px; bottom:-4px; background:#2d2d2d; color:#f8fafc; border-radius:12px; padding:6px 0; min-width:130px; box-shadow:0 4px 12px rgba(0,0,0,0.25); flex-direction:column; z-index:30;">
+                        <div style="position:absolute; right:-4px; bottom:12px; width:10px; height:10px; background:#2d2d2d; transform:rotate(45deg); z-index:-1; border-radius:1px;"></div>
+                        <div onclick="editMessageBtn('{{$msg->id}}')" style="padding:8px 16px; font-size:0.85rem; cursor:pointer; transition:background .15s; font-weight:500;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">แก้ไข</div>
+                        <div onclick="deleteMessageBtn('{{$msg->id}}')" style="padding:8px 16px; font-size:0.85rem; cursor:pointer; transition:background .15s; font-weight:500;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">ยกเลิกการส่ง</div>
+                    </div>
                 </div>
+                @endif
             </div>
         @empty
             <p id="noMsg" style="margin:auto;font-size:.875rem;color:#94a3b8;">ยังไม่มีข้อความ</p>
