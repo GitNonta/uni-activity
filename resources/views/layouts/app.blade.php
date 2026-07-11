@@ -386,17 +386,15 @@
                 actions.style.cssText = 'display:flex; position:relative; flex-direction:row; z-index: 20; align-items:center; margin-bottom:18px;';
                 
                 var moreBtn = document.createElement('button');
-                moreBtn.innerHTML = '<svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>';
-                moreBtn.style.cssText = 'background:rgba(0,0,0,0.5);border:none;cursor:pointer;padding:0;color:#fff;display:flex;align-items:center;justify-content:center;border-radius:50%; width:26px; height:26px; transition:background .15s;';
-                moreBtn.onmouseover = function() { this.style.background = 'rgba(0,0,0,0.7)'; };
-                moreBtn.onmouseout = function() { this.style.background = 'rgba(0,0,0,0.5)'; };
+                moreBtn.innerHTML = '<svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>';
+                moreBtn.style.cssText = 'background:transparent; border:none; cursor:pointer; padding:4px; color:#94a3b8; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:all .2s; margin:0 4px;';
                 
                 var menu = document.createElement('div');
                 menu.className = 'msg-dropdown';
-                menu.style.cssText = 'display:none; position:absolute; right:34px; bottom:-4px; background:#2d2d2d; color:#f8fafc; border-radius:12px; padding:6px 0; min-width:130px; box-shadow:0 4px 12px rgba(0,0,0,0.25); flex-direction:column; z-index:30;';
+                menu.style.cssText = 'display:none; position:absolute; left:34px; bottom:-4px; background:#2d2d2d; color:#f8fafc; border-radius:12px; padding:6px 0; min-width:130px; box-shadow:0 4px 12px rgba(0,0,0,0.25); flex-direction:column; z-index:30;';
                 
                 var tail = document.createElement('div');
-                tail.style.cssText = 'position:absolute; right:-4px; bottom:12px; width:10px; height:10px; background:#2d2d2d; transform:rotate(45deg); z-index:-1; border-radius:1px;';
+                tail.style.cssText = 'position:absolute; left:-4px; bottom:12px; width:10px; height:10px; background:#2d2d2d; transform:rotate(45deg); z-index:-1; border-radius:1px;';
                 menu.appendChild(tail);
 
                 var createItem = function(text, onClick) {
