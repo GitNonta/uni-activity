@@ -182,6 +182,7 @@ Route::middleware(['auth', 'role:staff'])->prefix('admin')->name('admin.')->grou
     
     // ── QR Code ──
     Route::post('activities/{id}/regenerate-qr', [ActivityAdminController::class, 'regenerateQr'])->name('activities.regenerate-qr');
+    Route::post('activities/{id}/regenerate-checkout-qr', [ActivityAdminController::class, 'regenerateCheckoutQr'])->name('activities.regenerate-checkout-qr');
     Route::get('activities/{id}/scanner', [ActivityAdminController::class, 'scanner'])->name('activities.scanner');
     Route::post('activities/{id}/scan-student', [ActivityAdminController::class, 'scanStudent'])->name('activities.scan-student');
 

@@ -7,7 +7,11 @@
     <div class="card">
         <div class="card-body text-center">
             <svg class="icon-xl" style="margin:0 auto 1rem;color:#4f46e5;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <h1 class="font-bold" style="font-size:1.25rem;">ยืนยันเช็คอิน</h1>
+            @if(isset($isCheckoutToken) && $isCheckoutToken)
+                <h1 class="font-bold" style="font-size:1.25rem;">บันทึกเวลาออกงาน</h1>
+            @else
+                <h1 class="font-bold" style="font-size:1.25rem;">ยืนยันเช็คอินเข้างาน</h1>
+            @endif
             <p class="text-muted text-sm mt-1">{{ $activity->title }}</p>
             <p class="text-xs text-muted mt-1">
                 {{ $activity->activity_date->format('d/m/Y') }} &middot; {{ $activity->location }}
@@ -17,7 +21,11 @@
                 @csrf
                 <input type="hidden" name="latitude" id="qr_lat">
                 <input type="hidden" name="longitude" id="qr_lng">
-                <button type="submit" class="btn btn-success btn-lg btn-block" onclick="return submitQrWithLocation(event)">เช็คอิน</button>
+                @if(isset($isCheckoutToken) && $isCheckoutToken)
+                    <button type="submit" class="btn btn-primary btn-lg btn-block" onclick="return submitQrWithLocation(event)">บันทึกออกงาน (รับชั่วโมง)</button>
+                @else
+                    <button type="submit" class="btn btn-success btn-lg btn-block" onclick="return submitQrWithLocation(event)">เช็คอินเข้างาน</button>
+                @endif
             </form>
         </div>
     </div>

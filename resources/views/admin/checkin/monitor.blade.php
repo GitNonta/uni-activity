@@ -11,10 +11,27 @@
     <div>
         {{-- QR Check-in URL สำหรับให้นักศึกษาสแกน --}}
         <div class="card mb-4">
-            <div class="card-header">QR Check-in URL</div>
+            <div class="card-header" style="background:#dcfce7;color:#166534;">QR สำหรับ "เข้างาน"</div>
             <div class="card-body text-center">
                 <code class="text-sm" style="word-break:break-all;">{{ url('/check-in/' . $activity->qr_token) }}</code>
-                <p class="text-xs text-muted mt-2">แสดง QR Code จาก URL นี้ให้นักศึกษาสแกน</p>
+                <p class="text-xs text-muted mt-2">แสดง QR Code เพื่อเช็คอินเข้างาน (QR ที่ 1)</p>
+                <form method="POST" action="{{ route('activities.regenerate-qr', $activity->id) }}" class="mt-3">
+                    @csrf
+                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('ยืนยันสร้าง QR เข้างานใหม่? QR เดิมจะใช้งานไม่ได้ทันที')">สร้าง QR เข้างานใหม่</button>
+                </form>
+            </div>
+        </div>
+
+        {{-- QR Check-out URL สำหรับให้นักศึกษาสแกน --}}
+        <div class="card mb-4">
+            <div class="card-header" style="background:#e0e7ff;color:#3730a3;">QR สำหรับ "ออกงาน (รับชั่วโมง)"</div>
+            <div class="card-body text-center">
+                <code class="text-sm" style="word-break:break-all;">{{ url('/check-in/' . $activity->qr_checkout_token) }}</code>
+                <p class="text-xs text-muted mt-2">แสดง QR Code เพื่อบันทึกออกงานและรับชั่วโมง (QR ที่ 2)</p>
+                <form method="POST" action="{{ route('activities.regenerate-checkout-qr', $activity->id) }}" class="mt-3">
+                    @csrf
+                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('ยืนยันสร้าง QR ออกงานใหม่? QR เดิมจะใช้งานไม่ได้ทันที')">สร้าง QR ออกงานใหม่</button>
+                </form>
             </div>
         </div>
         {{-- ฟอร์มเช็คอิน manual: กรอกรหัสนักศึกษาเพื่อเช็คอินให้ --}}

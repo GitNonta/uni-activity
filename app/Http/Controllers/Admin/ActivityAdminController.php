@@ -163,6 +163,7 @@ class ActivityAdminController extends Controller
         $data = $request->validated();
         $data['created_by'] = auth()->id();
         $data['qr_token'] = $qrService->generateToken();
+        $data['qr_checkout_token'] = $qrService->generateToken();
         $data['is_mandatory'] = $request->boolean('is_mandatory');
         $data['require_attendance_approval'] = $request->boolean('require_attendance_approval');
         if (($data['scope'] ?? 'university') === 'university') {
@@ -389,6 +390,7 @@ class ActivityAdminController extends Controller
             'status'            => 'open',
             'created_by'        => auth()->id(),
             'qr_token'          => $qrService->generateToken(),
+            'qr_checkout_token' => $qrService->generateToken(),
         ]));
         $this->auditCreate($activity, "สร้างกิจกรรมด่วน \"{$activity->title}\"");
 
@@ -648,5 +650,35 @@ class ActivityAdminController extends Controller
         $this->auditUpdate($activity, ['qr_token' => $oldToken], "สร้าง QR Code ใหม่สำหรับกิจกรรม \"{$activity->title}\"");
 
         return back()->with('success', 'สร้าง QR Code ใหม่สำเร็จแล้ว' . ($expiresAt ? ' (หมดอายุใน ' . $request->expires_in_hours . ' ชั่วโมง)' : ''));
+    }
+
+    /** 
+     * สร้าง QR Code ออกงานใหม่ (Regenerate Checkout QR Token)
+     */
+    public function regenerateCheckoutQr(Request $request, $id, QrCodeService $qrService)
+    {
+        $activity = Activity::findOrFail($id);
+        
+        $request->validate([
+            'expires_in_hours' => 'nullable|integer|min:1|max:720'
+        ]);
+
+        $oldToken = $activity->qr_checkout_token;
+        $newToken = $qrService->generateToken();
+        
+        $expiresAt = null;
+        if ($request->filled('expires_in_hours')) {
+            $expiresAt = now()->addHours($request->expires_in_hours);
+        }
+
+        $activity->update([
+            'qr_checkout_token' => $newToken,
+            // You could store a separate qr_checkout_expires_at if you want, 
+            // but for now we reuse qr_expires_at or leave it unchanged
+        ]);
+
+        $this->auditUpdate($activity, ['qr_checkout_token' => $oldToken], "สร้าง QR Code ออกงานใหม่สำหรับกิจกรรม \"{$activity->title}\"");
+
+        return back()->with('success', 'สร้าง QR Code ออกงานใหม่สำเร็จแล้ว');
     }
 }

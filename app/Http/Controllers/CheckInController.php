@@ -19,22 +19,29 @@ class CheckInController extends Controller
     {
     }
 
-    /** แสดงหน้าเช็คอินจาก QR Code (ใช้ token จาก URL) */
+    /** แสดงหน้าเช็คอิน/ออกงานจาก QR Code (ใช้ token จาก URL) */
     public function show(string $token)
     {
-        $activity = Activity::where('qr_token', $token)->firstOrFail();
+        $activity = Activity::where('qr_token', $token)
+            ->orWhere('qr_checkout_token', $token)
+            ->firstOrFail();
 
         if ($activity->qr_expires_at && now()->gt($activity->qr_expires_at)) {
             abort(403, 'QR Code หมดอายุแล้ว');
         }
 
-        return view('checkin.scan', compact('activity', 'token'));
+        $isCheckoutToken = ($activity->qr_checkout_token === $token);
+        
+        return view('checkin.scan', compact('activity', 'token', 'isCheckoutToken'));
     }
 
-    /** ดำเนินการเช็คอินผ่าน QR Code → เรียก CheckInService พร้อมพิกัด GPS */
+    /** ดำเนินการเช็คอิน/ออกงานผ่าน QR Code → เรียก CheckInService พร้อมพิกัด GPS */
     public function store(Request $request, string $token)
     {
-        $activity = Activity::where('qr_token', $token)->firstOrFail();
+        $activity = Activity::where('qr_token', $token)
+            ->orWhere('qr_checkout_token', $token)
+            ->firstOrFail();
+            
         if ($activity->qr_expires_at && now()->gt($activity->qr_expires_at)) {
             return back()->with('error', 'QR Code หมดอายุแล้ว');
         }

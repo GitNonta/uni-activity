@@ -34,7 +34,8 @@ print(f"Connecting to {host}...")
 client.connect(host, port, user, password, timeout=10)
 sftp = client.open_sftp()
 
-files_to_sync = [
+# Allow deploying any file that has been modified
+files_to_sync.extend([
     'app/Events/MessageSent.php',
     'app/Events/MessageDeleted.php',
     'app/Events/MessageEdited.php',
@@ -44,7 +45,9 @@ files_to_sync = [
     'app/Repositories/ChatRepository.php',
     'app/Jobs/SyncToCassandra.php',
     'routes/channels.php'
-]
+])
+# Remove duplicates
+files_to_sync = list(set(files_to_sync))
 
 for file_path in files_to_sync:
     local_path = file_path

@@ -35,6 +35,7 @@ class Activity extends Model
         'category_id',
         'created_by',
         'qr_token',
+        'qr_checkout_token',
         'qr_expires_at',
         'image_path',
         'status',

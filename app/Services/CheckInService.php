@@ -36,7 +36,11 @@ class CheckInService
      */
     public function processCheckIn(string $token, User $user, string $method = 'qr_scan', ?float $latitude = null, ?float $longitude = null): array
     {
-        $activity = Activity::where('qr_token', $token)->firstOrFail();
+        $activity = Activity::where('qr_token', $token)
+            ->orWhere('qr_checkout_token', $token)
+            ->firstOrFail();
+            
+        $isCheckoutToken = ($activity->qr_checkout_token === $token);
         $now = now();
 
         // 1. ตรวจสอบการลงทะเบียน
@@ -54,8 +58,15 @@ class CheckInService
             ->where('activity_id', $activity->id)
             ->first();
 
-        // --- กรณีที่ 1: ยังไม่ได้เช็คอิน (Entry) ---
-        if (!$attendance) {
+        // --- กรณีที่ 1: การเช็คอินเข้างาน (Entry) ---
+        if (!$isCheckoutToken) {
+            if ($attendance) {
+                if ($attendance->checked_out_at) {
+                    return ['success' => false, 'message' => 'คุณได้บันทึกจบกิจกรรมนี้ไปแล้ว'];
+                }
+                return ['success' => false, 'message' => 'คุณเช็คอินไปแล้ว กรุณาสแกน QR สำหรับออกงานเพื่อรับชั่วโมง'];
+            }
+
             // ตรวจช่วงเวลาเปิดเช็คอิน
             if (!$activity->allow_early_checkin && $now < $activity->checkin_open_at) {
                 return ['success' => false, 'message' => 'ยังไม่ถึงเวลาเช็คอินเข้างาน'];
@@ -101,14 +112,18 @@ class CheckInService
 
             return [
                 'success' => true,
-                'message' => 'เช็คอินเข้างานสำเร็จ! อย่าลืมสแกนอีกครั้งเมื่อจบกิจกรรมเพื่อบันทึกชั่วโมง',
+                'message' => 'เช็คอินเข้างานสำเร็จ! อย่าลืมสแกน QR ออกงานเมื่อจบกิจกรรมเพื่อบันทึกชั่วโมง',
                 'activity' => $activity,
                 'status' => 'checked_in',
                 'distance' => $distance,
             ];
         }
 
-        // --- กรณีที่ 2: เช็คอินแล้ว จะทำการบันทึกจบกิจกรรม (Exit/Finalize) ---
+        // --- กรณีที่ 2: เช็คอินออกงาน (Exit/Finalize) ---
+        if (!$attendance) {
+            return ['success' => false, 'message' => 'กรุณาสแกน QR เข้างานก่อนที่จะบันทึกออกงาน'];
+        }
+
         if ($attendance->checked_out_at) {
             return ['success' => false, 'message' => 'คุณได้บันทึกจบกิจกรรมนี้ไปแล้ว'];
         }

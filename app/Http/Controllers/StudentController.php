@@ -151,7 +151,7 @@ class StudentController extends Controller
             if ($reg->status === 'pending') {
                 $todos->push([
                     'type'       => 'pending',
-                    'priority'   => 4,
+                    'priority'   => 5,
                     'activity'   => $act,
                     'label'      => 'รออนุมัติการลงทะเบียน',
                     'color'      => '#0369a1',
@@ -159,6 +159,21 @@ class StudentController extends Controller
                     'icon'       => 'pending',
                     'action_url' => route('activities.show', $act->id),
                     'action_label' => 'ดูกิจกรรม',
+                ]);
+            }
+            
+            // 5. กำลังเข้าร่วมกิจกรรม (รอสแกนออกงาน)
+            if ($att && $att->status === 'pending' && !$att->checked_out_at) {
+                $todos->push([
+                    'type'       => 'checkout_needed',
+                    'priority'   => 1, // High priority
+                    'activity'   => $act,
+                    'label'      => 'กำลังเข้าร่วมกิจกรรม',
+                    'color'      => '#b45309',
+                    'bg'         => '#fef3c7',
+                    'icon'       => 'clock',
+                    'action_url' => route('activities.show', $act->id),
+                    'action_label' => 'ดูกิจกรรม (อย่าลืมสแกนออกงาน)',
                 ]);
             }
         }
