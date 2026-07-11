@@ -213,13 +213,38 @@
         <script>
             function copyToClipboard(elementId) {
                 const url = document.getElementById(elementId).textContent;
+                
+                if (!navigator.clipboard) {
+                    // Fallback สำหรับ HTTP (ไม่มี HTTPS)
+                    const textArea = document.createElement("textarea");
+                    textArea.value = url;
+                    textArea.style.position = "fixed";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        showCopyToast();
+                    } catch (err) {
+                        alert("ไม่สามารถคัดลอกได้: " + err);
+                    }
+                    document.body.removeChild(textArea);
+                    return;
+                }
+                
                 navigator.clipboard.writeText(url).then(() => {
-                    const toast = document.createElement('div');
-                    toast.textContent = 'คัดลอกลิงก์สำเร็จแล้ว!';
-                    toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#10b981;color:white;padding:12px 20px;border-radius:8px;z-index:2000;animation:slideIn 0.3s ease;';
-                    document.body.appendChild(toast);
-                    setTimeout(() => toast.remove(), 3000);
+                    showCopyToast();
+                }).catch(err => {
+                    alert("ไม่สามารถคัดลอกได้: " + err);
                 });
+            }
+
+            function showCopyToast() {
+                const toast = document.createElement('div');
+                toast.textContent = 'คัดลอกลิงก์สำเร็จแล้ว!';
+                toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#10b981;color:white;padding:12px 20px;border-radius:8px;z-index:2000;animation:slideIn 0.3s ease;box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);';
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
             }
 
             function showQRModal(url, titleText = 'QR Code') {

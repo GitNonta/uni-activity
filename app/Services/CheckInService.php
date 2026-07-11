@@ -49,8 +49,9 @@ class CheckInService
             ->where('status', 'approved')
             ->first();
 
+        // หากไม่ได้ลงทะเบียนล่วงหน้า ให้ระบุเป็น walk-in อัตโนมัติ
         if (!$registration) {
-            return ['success' => false, 'message' => 'คุณไม่ได้ลงทะเบียนกิจกรรมนี้ หรือยังไม่ได้รับการอนุมัติ'];
+            $method = 'walk_in';
         }
 
         // 2. ค้นหารายการ Attendance เดิม
@@ -154,7 +155,7 @@ class CheckInService
         ]);
 
         if ($autoApproved) {
-            $registration->markAsCompleted();
+            $registration?->markAsCompleted();
         }
 
         return [

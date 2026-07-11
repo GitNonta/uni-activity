@@ -94,8 +94,29 @@
 <script>
     function copyToken() {
         const tokenText = document.getElementById('newTokenText').innerText;
+        
+        if (!navigator.clipboard) {
+            const textArea = document.createElement("textarea");
+            textArea.value = tokenText;
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                alert('คัดลอก API Key สำเร็จ!');
+            } catch (err) {
+                alert('ไม่สามารถคัดลอกได้: ' + err);
+            }
+            document.body.removeChild(textArea);
+            return;
+        }
+        
         navigator.clipboard.writeText(tokenText).then(() => {
             alert('คัดลอก API Key สำเร็จ!');
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+            alert('ไม่สามารถคัดลอกได้: ' + err);
         });
     }
 </script>
