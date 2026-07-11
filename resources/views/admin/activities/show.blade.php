@@ -194,15 +194,17 @@
 
         {{-- QR Code Modal --}}
         @if($activity->qr_token)
-        <div id="qrModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center;">
-            <div style="background:white;padding:2rem;border-radius:12px;max-width:400px;width:90%;text-align:center;">
-                <h3 style="margin-bottom:1rem;color:#1f2937;">QR Code</h3>
-                <div id="qr-code" style="margin:1rem 0;"></div>
-                <p style="font-size:0.9rem;color:#6b7280;margin-bottom:1.5rem;">สแกน QR Code เพื่อเข้าสู่หน้า Check-in</p>
-                <div style="display:flex;gap:0.5rem;justify-content:center;">
-                    <button onclick="closeQRModal()" class="btn btn-outline">ปิด</button>
-                    <button onclick="closeQRModal()" class="btn btn-outline" style="width:100%;">ปิด</button>
+        <div id="qrModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.75);backdrop-filter:blur(4px);z-index:1000;justify-content:center;align-items:center;opacity:0;transition:opacity 0.2s ease;">
+            <div style="background:white;padding:2.5rem 2rem;border-radius:16px;max-width:420px;width:90%;text-align:center;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);transform:scale(0.95);transition:transform 0.2s ease;" id="qrModalContent">
+                <h3 style="margin-bottom:1.5rem;color:#1e293b;font-size:1.25rem;font-weight:700;">QR Code</h3>
+                
+                <div style="background:#f8fafc;padding:1.5rem;border-radius:12px;display:inline-block;margin-bottom:1.5rem;border:1px solid #e2e8f0;">
+                    <div id="qr-code" style="display:flex;justify-content:center;"></div>
                 </div>
+                
+                <p style="font-size:0.95rem;color:#64748b;margin-bottom:2rem;line-height:1.5;">ให้นักศึกษาสแกน QR Code นี้<br>เพื่อดำเนินการผ่านระบบ</p>
+                
+                <button onclick="closeQRModal()" class="btn btn-outline" style="width:100%;padding:0.6rem;font-size:1rem;border-radius:8px;font-weight:600;">ปิดหน้าต่าง</button>
             </div>
         </div>
 
@@ -221,7 +223,15 @@
             }
 
             function showQRModal(url, titleText = 'QR Code') {
-                document.getElementById('qrModal').style.display = 'flex';
+                const modal = document.getElementById('qrModal');
+                const modalContent = document.getElementById('qrModalContent');
+                
+                modal.style.display = 'flex';
+                // Trigger reflow for animation
+                void modal.offsetWidth;
+                modal.style.opacity = '1';
+                modalContent.style.transform = 'scale(1)';
+                
                 document.querySelector('#qrModal h3').textContent = titleText;
                 const qrContainer = document.getElementById('qr-code');
                 qrContainer.innerHTML = '';
@@ -236,7 +246,15 @@
             }
 
             function closeQRModal() {
-                document.getElementById('qrModal').style.display = 'none';
+                const modal = document.getElementById('qrModal');
+                const modalContent = document.getElementById('qrModalContent');
+                
+                modal.style.opacity = '0';
+                modalContent.style.transform = 'scale(0.95)';
+                
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 200);
             }
 
             // ปิด modal เมื่อคลิกพื้นหลัง
