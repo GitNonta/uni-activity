@@ -315,12 +315,8 @@
                 
                 <!-- Header (Logo & Univ Name) -->
                 <div style="display: flex; align-items: center; padding: 15px 15px 0 15px; gap: 8px;">
-                    <!-- Logo placeholder -->
-                    <div style="width: 45px; height: 45px; background: #0f766e; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.15); position: relative;">
-                        <!-- PKRU generic logo style -->
-                        <div style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid #fff; background: #ea580c; position: relative;">
-                             <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 6px; height: 12px; background: #fff; border-radius: 4px;"></div>
-                        </div>
+                    <div style="width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.15); background: #fff;">
+                        <img src="{{ asset('images/pkru-logo.png') }}" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;" alt="PKRU Logo">
                     </div>
                     <div style="line-height: 1.2; margin-top: -5px; z-index: 2;">
                         <div style="font-size: 16px; font-weight: 700; color: #1e293b; letter-spacing: -0.2px;">มหาวิทยาลัยราชภัฏภูเก็ต</div>
@@ -329,7 +325,7 @@
                 </div>
 
                 <!-- Photo -->
-                <div style="text-align: center; margin-top: 15px; position: relative; z-index: 2;">
+                <div style="width: 100%; display: flex; justify-content: center; margin-top: 15px; position: relative; z-index: 2;">
                     @if($user->profile_photo)
                         <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="profile" style="width: 125px; height: 160px; object-fit: cover; border-radius: 2px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                     @else
@@ -345,7 +341,11 @@
                     <div style="font-size: 24px; font-weight: 700; letter-spacing: 1px; color: #0f172a; margin-bottom: 8px; line-height: 1;">{{ $user->student_id }}</div>
                     
                     <div style="font-size: 20px; font-weight: 700; color: #0f172a; line-height: 1.1; letter-spacing: -0.3px;">{{ $user->full_name }}</div>
-                    <div style="font-size: 14px; font-weight: 700; color: #334155; margin-bottom: 6px;">{{ strtoupper(str_replace('นาย ', 'Mr. ', str_replace('นางสาว ', 'Ms. ', $user->full_name))) }}</div>
+                    @if($user->english_name)
+                        <div style="font-size: 14px; font-weight: 700; color: #334155; margin-bottom: 6px;">{{ strtoupper($user->english_name) }}</div>
+                    @else
+                        <div style="font-size: 12px; font-weight: 600; color: #94a3b8; margin-bottom: 6px; font-style: italic;">(No English Name)</div>
+                    @endif
                     
                     <!-- Thin black divider -->
                     <div style="width: 100%; height: 1px; background: #64748b; margin: 8px 0; opacity: 0.5;"></div>
