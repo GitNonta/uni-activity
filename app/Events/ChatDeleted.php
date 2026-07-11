@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 namespace App\Events;
 
@@ -13,20 +13,20 @@ class ChatDeleted implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public string \, public ?int \ = null) {}
+    public function __construct(public string $roomId, public ?int $studentId = null) {}
 
     public function broadcastOn(): array
     {
-        \ = [
-            new PrivateChannel('chat.room.' . \->roomId),
+        $channels = [
+            new PrivateChannel('chat.room.' . $this->roomId),
             new PrivateChannel('admin.inbox')
         ];
 
-        if (\->studentId) {
-            \[] = new PrivateChannel('chat.student.' . \->studentId);
+        if ($this->studentId) {
+            $channels[] = new PrivateChannel('chat.student.' . $this->studentId);
         }
 
-        return \;
+        return $channels;
     }
 
     public function broadcastAs(): string
@@ -37,7 +37,7 @@ class ChatDeleted implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'room_id' => \->roomId,
+            'room_id' => $this->roomId,
         ];
     }
 }

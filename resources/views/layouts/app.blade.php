@@ -474,6 +474,50 @@
             var fileInput = document.getElementById('cfFileInput');
             if (!text && fileInput.files.length === 0) return;
 
+            var btn = document.getElementById('cfSendBtn');
+            btn.disabled = true;
+
+            if (currentEditId) {
+                fetch('/chat/messages/' + currentEditId, {
+                    method: 'PUT',
+                    headers: { 
+                        'X-CSRF-TOKEN': CSRF,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ message: text })
+                }).then(function(r) { return r.json(); }).then(function(res) {
+                    btn.disabled = false;
+                    if (res.success) {
+                        var el = document.getElementById('cf-msg-' + currentEditId);
+                        if (el) {
+                            var p = el.querySelector('p');
+                            if (p) p.textContent = text;
+                            if (!el.textContent.includes('(แก้ไขแล้ว)')) {
+                                var editedSpan = document.createElement('span');
+                                editedSpan.style.cssText = 'font-size:0.6rem;opacity:0.7;margin-left:5px;';
+                                editedSpan.textContent = '(แก้ไขแล้ว)';
+                                p.parentNode.appendChild(editedSpan);
+                            }
+                        }
+                        
+                        currentEditId = null;
+                        msgInput.value = '';
+                        btn.innerHTML = 'ส่ง';
+                        btn.style.background = '#4f46e5';
+                        var cancelBtn = document.getElementById('cfCancelEditBtn');
+                        if (cancelBtn) cancelBtn.remove();
+                        
+                    } else if (res.message) {
+                        alert(res.message);
+                    }
+                }).catch(function(err) {
+                    btn.disabled = false;
+                    console.error(err);
+                });
+                return;
+            }
+
             var fd = new FormData(form);
             if (!fd.has('message')) fd.append('message', text);
 
@@ -608,35 +652,40 @@
             });
         };
 
-        window.editStudentMessage = function(id, btn) {
-            var newText = prompt('แก้ไขข้อความ:');
-            if (newText === null || newText.trim() === '') return;
+        var currentEditId = null;
+
+        window.editStudentMessage = function(id) {
+            var el = document.getElementById('cf-msg-' + id);
+            if (!el) return;
+            var p = el.querySelector('p');
+            if (!p) return;
             
-            fetch('/chat/messages/' + id, {
-                method: 'PUT',
-                headers: { 
-                    'X-CSRF-TOKEN': CSRF,
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({ message: newText })
-            }).then(function(r) { return r.json(); }).then(function(res) {
-                if (res.success) {
-                    var el = document.getElementById('cf-msg-' + id);
-                    if (el) {
-                        var p = el.querySelector('p');
-                        if (p) p.textContent = newText;
-                        if (!el.textContent.includes('(แก้ไขแล้ว)')) {
-                            var editedSpan = document.createElement('span');
-                            editedSpan.style.cssText = 'font-size:0.6rem;opacity:0.7;margin-left:5px;';
-                            editedSpan.textContent = '(แก้ไขแล้ว)';
-                            p.parentNode.appendChild(editedSpan);
-                        }
-                    }
-                } else if (res.message) {
-                    alert(res.message);
-                }
-            });
+            var currentText = p.textContent.replace('(แก้ไขแล้ว)', '').trim();
+            var msgInput = document.getElementById('cfMsgInput');
+            msgInput.value = currentText;
+            msgInput.focus();
+            
+            currentEditId = id;
+            
+            var btn = document.getElementById('cfSendBtn');
+            btn.innerHTML = '<svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> บันทึก';
+            btn.style.background = '#10b981';
+            
+            if (!document.getElementById('cfCancelEditBtn')) {
+                var cancelBtn = document.createElement('button');
+                cancelBtn.id = 'cfCancelEditBtn';
+                cancelBtn.type = 'button';
+                cancelBtn.innerHTML = 'ยกเลิก';
+                cancelBtn.style.cssText = 'background:#ef4444; color:#fff; border:none; border-radius:12px; padding:0 1rem; font-weight:500; font-size:.95rem; cursor:pointer; height:42px; margin-right:4px;';
+                cancelBtn.onclick = function() {
+                    currentEditId = null;
+                    msgInput.value = '';
+                    btn.innerHTML = 'ส่ง';
+                    btn.style.background = '#4f46e5';
+                    this.remove();
+                };
+                btn.parentNode.insertBefore(cancelBtn, btn);
+            }
         };
 
         // โหลดข้อมูลล่าสุดตอนโหลดหน้าเว็บ เพื่ออัปเดตตัวเลขแจ้งเตือนที่ปุ่มแชท

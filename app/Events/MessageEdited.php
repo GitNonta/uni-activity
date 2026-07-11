@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 namespace App\Events;
 
@@ -14,27 +14,27 @@ class MessageEdited implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public Message \) {}
+    public function __construct(public Message $message) {}
 
     public function broadcastOn(): array
     {
-        \ = [
-            new PrivateChannel('chat.room.' . \->message->room_id),
+        $channels = [
+            new PrivateChannel('chat.room.' . $this->message->room_id),
         ];
 
-        \ = \->message->room;
-        if (\ && \->message->user) {
-            if (\->message->user->isAdmin() || \->message->user->isStaff()) {
-                \ = \->users()->where('users.role', 'student')->first();
-                if (\) {
-                    \[] = new PrivateChannel('chat.student.' . \->id);
+        $room = $this->message->room;
+        if ($room && $this->message->user) {
+            if ($this->message->user->isAdmin() || $this->message->user->isStaff()) {
+                $student = $room->users()->where('users.role', 'student')->first();
+                if ($student) {
+                    $channels[] = new PrivateChannel('chat.student.' . $student->id);
                 }
-            } else if (\->message->user->role === 'student') {
-                \[] = new PrivateChannel('admin.inbox');
+            } else if ($this->message->user->role === 'student') {
+                $channels[] = new PrivateChannel('admin.inbox');
             }
         }
 
-        return \;
+        return $channels;
     }
 
     public function broadcastAs(): string
@@ -45,9 +45,9 @@ class MessageEdited implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'id'      => \->message->id,
-            'room_id' => \->message->room_id,
-            'message' => \->message->body,
+            'id'      => $this->message->id,
+            'room_id' => $this->message->room_id,
+            'message' => $this->message->body,
             'is_edited' => true,
         ];
     }

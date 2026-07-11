@@ -1,9 +1,7 @@
-﻿<?php
+<?php
 
 namespace App\Events;
 
-use App\Models\Message;
-use App\Models\Room;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
@@ -15,21 +13,21 @@ class MessageDeleted implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public string \, public string \, public ?int \ = null) {}
+    public function __construct(public string $messageId, public string $roomId, public ?int $studentId = null) {}
 
     public function broadcastOn(): array
     {
-        \ = [
-            new PrivateChannel('chat.room.' . \->roomId),
+        $channels = [
+            new PrivateChannel('chat.room.' . $this->roomId),
         ];
 
-        if (\->studentId) {
-            \[] = new PrivateChannel('chat.student.' . \->studentId);
+        if ($this->studentId) {
+            $channels[] = new PrivateChannel('chat.student.' . $this->studentId);
         }
         
-        \[] = new PrivateChannel('admin.inbox');
+        $channels[] = new PrivateChannel('admin.inbox');
 
-        return \;
+        return $channels;
     }
 
     public function broadcastAs(): string
@@ -40,8 +38,8 @@ class MessageDeleted implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'id' => \->messageId,
-            'room_id' => \->roomId,
+            'id' => $this->messageId,
+            'room_id' => $this->roomId,
         ];
     }
 }
