@@ -316,46 +316,49 @@
                 <!-- Header (Logo & Univ Name) -->
                 <div style="display: flex; align-items: center; padding: 15px 15px 0 15px; gap: 8px;">
                     <!-- Logo placeholder -->
-                    <div style="width: 40px; height: 40px; background: #15803d; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: relative;">
+                    <div style="width: 45px; height: 45px; background: #0f766e; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.15); position: relative;">
                         <!-- PKRU generic logo style -->
-                        <div style="width: 24px; height: 24px; border-radius: 50%; border: 2px solid #fff; background: #ea580c;"></div>
+                        <div style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid #fff; background: #ea580c; position: relative;">
+                             <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 6px; height: 12px; background: #fff; border-radius: 4px;"></div>
+                        </div>
                     </div>
-                    <div style="line-height: 1.1; margin-top: -5px; z-index: 2;">
-                        <div style="font-size: 15px; font-weight: 700; color: #1e293b; letter-spacing: -0.2px;">มหาวิทยาลัยราชภัฏภูเก็ต</div>
-                        <div style="font-size: 9px; font-weight: 500; color: #475569; letter-spacing: 0.5px;">PHUKET RAJABHAT UNIVERSITY</div>
+                    <div style="line-height: 1.2; margin-top: -5px; z-index: 2;">
+                        <div style="font-size: 16px; font-weight: 700; color: #1e293b; letter-spacing: -0.2px;">มหาวิทยาลัยราชภัฏภูเก็ต</div>
+                        <div style="font-size: 8.5px; font-weight: 600; color: #334155; letter-spacing: 0.3px;">PHUKET RAJABHAT UNIVERSITY</div>
                     </div>
                 </div>
 
                 <!-- Photo -->
                 <div style="text-align: center; margin-top: 15px; position: relative; z-index: 2;">
                     @if($user->profile_photo)
-                        <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="profile" style="width: 120px; height: 150px; object-fit: cover; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="profile" style="width: 125px; height: 160px; object-fit: cover; border-radius: 2px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                     @else
-                        <div style="width: 120px; height: 150px; background: #cbd5e1; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); color: #94a3b8; margin: 0 auto;">
+                        <div style="width: 125px; height: 160px; background: #3b82f6; display: inline-flex; align-items: center; justify-content: center; border-radius: 2px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); color: #fff; margin: 0 auto;">
                             <svg width="50" height="50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                         </div>
                     @endif
                 </div>
 
                 <!-- Details -->
-                <div style="padding: 15px 25px; z-index: 2;">
-                    <div style="font-size: 11px; color: #334155; font-weight: 600; margin-bottom: 2px;">รหัสนักศึกษา :</div>
-                    <div style="font-size: 24px; font-weight: 700; letter-spacing: 1.5px; color: #0f172a; margin-bottom: 6px; line-height: 1;">{{ $user->student_id }}</div>
+                <div style="padding: 15px 25px; z-index: 2; position: relative;">
+                    <div style="font-size: 11px; color: #1e293b; font-weight: 700; margin-bottom: 0px;">รหัสนักศึกษา :</div>
+                    <div style="font-size: 24px; font-weight: 700; letter-spacing: 1px; color: #0f172a; margin-bottom: 8px; line-height: 1;">{{ $user->student_id }}</div>
                     
-                    <div style="font-size: 20px; font-weight: 700; color: #0f172a; line-height: 1.2;">{{ $user->full_name }}</div>
-                    <div style="font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">{{ strtoupper(str_replace('นาย ', 'Mr. ', str_replace('นางสาว ', 'Ms. ', $user->full_name))) }}</div>
+                    <div style="font-size: 20px; font-weight: 700; color: #0f172a; line-height: 1.1; letter-spacing: -0.3px;">{{ $user->full_name }}</div>
+                    <div style="font-size: 14px; font-weight: 700; color: #334155; margin-bottom: 6px;">{{ strtoupper(str_replace('นาย ', 'Mr. ', str_replace('นางสาว ', 'Ms. ', $user->full_name))) }}</div>
                     
-                    <div style="width: 100%; height: 1px; background: #cbd5e1; margin: 8px 0;"></div>
+                    <!-- Thin black divider -->
+                    <div style="width: 100%; height: 1px; background: #64748b; margin: 8px 0; opacity: 0.5;"></div>
                     
-                    <div style="font-size: 15px; font-weight: 700; color: #1e293b;">สาขา{{ $user->department ?? 'วิทยาการคอมพิวเตอร์' }}</div>
+                    <div style="font-size: 14px; font-weight: 700; color: #1e293b;">สาขา{{ $user->department ?? 'วิทยาการคอมพิวเตอร์' }}</div>
                 </div>
 
                 <div style="flex: 1;"></div>
             </div>
 
             <!-- Bottom slanted area -->
-            <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 120px; overflow: hidden; z-index: 1;">
-                <div style="position: absolute; top: 30px; left: -20px; right: -20px; bottom: -20px; background: #27272a; transform: rotate(-8deg); border-top: 6px solid #ea580c; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);"></div>
+            <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 120px; overflow: visible; z-index: 1;">
+                <div style="position: absolute; top: 35px; left: -20px; right: -20px; bottom: -20px; background: #27272a; transform: rotate(-7deg); border-top: 14px solid #ea580c; box-shadow: 0 -2px 5px rgba(0,0,0,0.05);"></div>
                 
                 <!-- Bottom content overlay -->
                 <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 15px 20px; display: flex; justify-content: space-between; align-items: flex-end; z-index: 3;">
@@ -363,19 +366,19 @@
                     <!-- Left: text -->
                     <div style="font-size: 11px; color: #a1a1aa; font-weight: 500; margin-bottom: 2px;">บัตรประจำตัวนักศึกษา</div>
                     
-                    <!-- Center: Chip -->
-                    <div style="position: absolute; left: 50%; bottom: 25px; transform: translateX(-50%);">
-                        <div style="width: 38px; height: 32px; background: #d4d4d8; border-radius: 5px; position: relative; overflow: hidden; border: 1px solid #71717a; box-shadow: inset 0 1px 2px rgba(255,255,255,0.5);">
+                    <!-- Center: Chip (Overlapping the slanted line) -->
+                    <div style="position: absolute; left: 50%; bottom: 60px; transform: translateX(-50%) rotate(0deg); z-index: 10;">
+                        <div style="width: 36px; height: 42px; background: #d4d4d8; border-radius: 6px; position: relative; overflow: hidden; border: 1px solid #71717a; box-shadow: inset 0 1px 3px rgba(255,255,255,0.6), 0 2px 4px rgba(0,0,0,0.2);">
                             <div style="position:absolute; top:50%; left:0; width:100%; height:1px; background:#a1a1aa;"></div>
                             <div style="position:absolute; top:0; left:30%; width:1px; height:100%; background:#a1a1aa;"></div>
                             <div style="position:absolute; top:0; left:70%; width:1px; height:100%; background:#a1a1aa;"></div>
-                            <div style="position:absolute; top:30%; left:30%; right:30%; bottom:30%; border:1px solid #a1a1aa; border-radius:3px;"></div>
+                            <div style="position:absolute; top:25%; left:25%; right:25%; bottom:25%; border:1px solid #a1a1aa; border-radius:4px;"></div>
                         </div>
                     </div>
                     
                     <!-- Right: Contactless & VISA -->
                     <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0px;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4d4d8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(90deg); margin-right: 8px; margin-bottom: 2px;"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4d4d8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(90deg); margin-right: 8px; margin-bottom: 4px;"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
                         <div style="font-size: 28px; font-weight: 900; font-style: italic; color: #fff; letter-spacing: 1px; line-height: 1;">VISA</div>
                     </div>
 
