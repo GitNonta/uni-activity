@@ -79,7 +79,7 @@ class ChatController extends Controller
                 $attachments[] = [
                     'original_name' => $file->getClientOriginalName(),
                     'path'          => $path,
-                    'url'           => asset('storage/' . $path),
+                    'url'           => '/storage/' . $path,
                     'mime_type'     => $file->getMimeType(),
                     'size'          => $file->getSize(),
                 ];
