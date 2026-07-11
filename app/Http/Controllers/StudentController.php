@@ -76,6 +76,9 @@ class StudentController extends Controller
         $registrations = Registration::with('activity.category')
             ->where('user_id', $userId)
             ->whereIn('status', ['pending', 'approved', 'waitlisted'])
+            ->whereHas('activity', function($q) {
+                $q->where('status', '!=', 'cancelled');
+            })
             ->orderByDesc('registered_at')
             ->get();
 
@@ -372,6 +375,9 @@ class StudentController extends Controller
             $registrations = Registration::with('activity')
                 ->where('user_id', $userId)
                 ->where('status', 'approved')
+                ->whereHas('activity', function($q) {
+                    $q->where('status', '!=', 'cancelled');
+                })
                 ->orderByDesc('registered_at')
                 ->limit(100)
                 ->get();

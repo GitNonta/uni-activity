@@ -74,7 +74,7 @@
 
         {{-- ส่วนแสดงสถานะ: ลงทะเบียนแล้ว / ปุ่มเช็คอิน / ปุ่มลงทะเบียน / ปุ่มยกเลิก --}}
         @auth
-            @if($userRegistration)
+            @if($userRegistration && $userRegistration->status !== 'cancelled')
                 <div class="alert alert-success text-sm">
                     <svg class="icon-sm" style="display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                     คุณลงทะเบียนแล้ว (สถานะ: {{ $userRegistration->status }})
