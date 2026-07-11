@@ -382,24 +382,29 @@
             
             col.appendChild(bubble);
 
-            if (!isTemp) {
+            if (!isTemp && mine) {
                 var actions = document.createElement('div');
                 actions.className = 'msg-actions';
-                actions.style.cssText = 'display:none; position:absolute; bottom:15px; ' + (mine ? 'right:100%; margin-right:5px;' : 'left:100%; margin-left:5px;') + ' background:#fff; padding:2px; border-radius:4px; box-shadow:0 1px 4px rgba(0,0,0,0.15); gap:2px; flex-direction: row; white-space: nowrap; z-index: 10;';
-                if (mine) {
-                    var editBtn = document.createElement('button');
-                    editBtn.innerHTML = '✏️';
-                    editBtn.title = 'แก้ไข';
-                    editBtn.style.cssText = 'background:none;border:none;cursor:pointer;padding:2px 4px;font-size:0.9rem;';
-                    editBtn.onclick = function() { window.editStudentMessage(msg.id, this); };
-                    actions.appendChild(editBtn);
-                }
+                actions.style.cssText = 'display:none; position:absolute; bottom:15px; right:100%; margin-right:5px; background:#fff; padding:4px; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.15); gap:4px; flex-direction: row; white-space: nowrap; z-index: 10; border:1px solid #e2e8f0;';
+                
+                var editBtn = document.createElement('button');
+                editBtn.innerHTML = '<svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>';
+                editBtn.title = 'แก้ไข';
+                editBtn.style.cssText = 'background:none;border:none;cursor:pointer;padding:4px;color:#64748b;display:flex;align-items:center;justify-content:center;border-radius:4px; transition:background .15s;';
+                editBtn.onmouseover = function() { this.style.background = '#f1f5f9'; };
+                editBtn.onmouseout = function() { this.style.background = 'transparent'; };
+                editBtn.onclick = function() { window.editStudentMessage(msg.id, this); };
+                actions.appendChild(editBtn);
+                
                 var delBtn = document.createElement('button');
-                delBtn.innerHTML = '🗑️';
+                delBtn.innerHTML = '<svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>';
                 delBtn.title = 'ลบ';
-                delBtn.style.cssText = 'background:none;border:none;cursor:pointer;padding:2px 4px;font-size:0.9rem;';
+                delBtn.style.cssText = 'background:none;border:none;cursor:pointer;padding:4px;color:#ef4444;display:flex;align-items:center;justify-content:center;border-radius:4px; transition:background .15s;';
+                delBtn.onmouseover = function() { this.style.background = '#fee2e2'; };
+                delBtn.onmouseout = function() { this.style.background = 'transparent'; };
                 delBtn.onclick = function() { window.deleteStudentMessage(msg.id); };
                 actions.appendChild(delBtn);
+                
                 row.appendChild(actions);
             }
 
