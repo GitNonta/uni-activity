@@ -9,16 +9,11 @@ password = '2345678A'
 remote_base = '/data/data/com.termux/files/home/uni-activity'
 
 def get_changed_files():
-    result = subprocess.run(['git', 'status', '--porcelain'], capture_output=True, text=True)
+    result = subprocess.run(['git', 'diff', 'HEAD~1', '--name-only'], capture_output=True, text=True)
     files = []
     for line in result.stdout.split('\n'):
         if line.strip():
-            # Status can be ' M', '??', 'D ', 'A ', etc.
-            status = line[:2]
-            filepath = line[3:].strip()
-            # Ignore deleted files for simplicity in upload
-            if not status.startswith('D') and not 'D ' in status:
-                files.append(filepath)
+            files.append(line.strip())
     return files
 
 files_to_sync = get_changed_files()
