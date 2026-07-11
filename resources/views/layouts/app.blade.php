@@ -385,25 +385,48 @@
             if (!isTemp && mine) {
                 var actions = document.createElement('div');
                 actions.className = 'msg-actions';
-                actions.style.cssText = 'display:none; position:absolute; bottom:15px; right:100%; margin-right:5px; background:#fff; padding:4px; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.15); gap:4px; flex-direction: row; white-space: nowrap; z-index: 10; border:1px solid #e2e8f0;';
+                actions.style.cssText = 'display:none; position:absolute; bottom:10px; right:100%; margin-right:5px; flex-direction:row; z-index: 20; align-items:center;';
                 
-                var editBtn = document.createElement('button');
-                editBtn.innerHTML = '<svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>';
-                editBtn.title = 'แก้ไข';
-                editBtn.style.cssText = 'background:none;border:none;cursor:pointer;padding:4px;color:#64748b;display:flex;align-items:center;justify-content:center;border-radius:4px; transition:background .15s;';
-                editBtn.onmouseover = function() { this.style.background = '#f1f5f9'; };
-                editBtn.onmouseout = function() { this.style.background = 'transparent'; };
-                editBtn.onclick = function() { window.editStudentMessage(msg.id, this); };
-                actions.appendChild(editBtn);
+                var moreBtn = document.createElement('button');
+                moreBtn.innerHTML = '<svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>';
+                moreBtn.style.cssText = 'background:rgba(0,0,0,0.5);border:none;cursor:pointer;padding:0;color:#fff;display:flex;align-items:center;justify-content:center;border-radius:50%; width:26px; height:26px; transition:background .15s;';
+                moreBtn.onmouseover = function() { this.style.background = 'rgba(0,0,0,0.7)'; };
+                moreBtn.onmouseout = function() { this.style.background = 'rgba(0,0,0,0.5)'; };
                 
-                var delBtn = document.createElement('button');
-                delBtn.innerHTML = '<svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>';
-                delBtn.title = 'ลบ';
-                delBtn.style.cssText = 'background:none;border:none;cursor:pointer;padding:4px;color:#ef4444;display:flex;align-items:center;justify-content:center;border-radius:4px; transition:background .15s;';
-                delBtn.onmouseover = function() { this.style.background = '#fee2e2'; };
-                delBtn.onmouseout = function() { this.style.background = 'transparent'; };
-                delBtn.onclick = function() { window.deleteStudentMessage(msg.id); };
-                actions.appendChild(delBtn);
+                var menu = document.createElement('div');
+                menu.className = 'msg-dropdown';
+                menu.style.cssText = 'display:none; position:absolute; right:34px; bottom:-4px; background:#2d2d2d; color:#f8fafc; border-radius:12px; padding:6px 0; min-width:130px; box-shadow:0 4px 12px rgba(0,0,0,0.25); flex-direction:column; z-index:30;';
+                
+                var tail = document.createElement('div');
+                tail.style.cssText = 'position:absolute; right:-4px; bottom:12px; width:10px; height:10px; background:#2d2d2d; transform:rotate(45deg); z-index:-1; border-radius:1px;';
+                menu.appendChild(tail);
+
+                var createItem = function(text, onClick) {
+                    var item = document.createElement('div');
+                    item.textContent = text;
+                    item.style.cssText = 'padding:8px 16px; font-size:0.85rem; cursor:pointer; transition:background .15s; user-select:none; font-weight:500;';
+                    item.onmouseover = function() { this.style.background = 'rgba(255,255,255,0.1)'; };
+                    item.onmouseout = function() { this.style.background = 'transparent'; };
+                    item.onclick = function(e) { e.stopPropagation(); onClick(); menu.style.display = 'none'; };
+                    return item;
+                };
+
+                menu.appendChild(createItem('แก้ไข', function() { window.editStudentMessage(msg.id); }));
+                menu.appendChild(createItem('ยกเลิกการส่ง', function() { window.deleteStudentMessage(msg.id); }));
+                
+                moreBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    var isVis = menu.style.display === 'flex';
+                    document.querySelectorAll('.msg-dropdown').forEach(function(el){ el.style.display='none'; });
+                    if (!isVis) menu.style.display = 'flex';
+                };
+                
+                row.addEventListener('mouseleave', function() {
+                    menu.style.display = 'none';
+                });
+
+                actions.appendChild(menu);
+                actions.appendChild(moreBtn);
                 
                 row.appendChild(actions);
             }
