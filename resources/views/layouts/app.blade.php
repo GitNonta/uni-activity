@@ -336,8 +336,6 @@
             var row = document.createElement('div');
             row.id = 'cf-msg-' + msg.id;
             row.style.cssText = 'display:flex;flex-direction:' + (mine?'row-reverse':'row') + ';align-items:flex-end;gap:.3rem;margin-bottom:.2rem;position:relative;';
-            row.onmouseover = function() { var a = this.querySelector('.msg-actions'); if(a) a.style.display='flex'; };
-            row.onmouseout = function() { var a = this.querySelector('.msg-actions'); if(a) a.style.display='none'; };
             
             var col = document.createElement('div');
             col.style.cssText = 'display:flex;flex-direction:column;align-items:' + (mine?'flex-end':'flex-start') + ';max-width:75%;';
@@ -385,7 +383,7 @@
             if (!isTemp && mine) {
                 var actions = document.createElement('div');
                 actions.className = 'msg-actions';
-                actions.style.cssText = 'display:none; position:absolute; bottom:10px; right:100%; margin-right:5px; flex-direction:row; z-index: 20; align-items:center;';
+                actions.style.cssText = 'display:flex; position:absolute; bottom:10px; right:100%; margin-right:5px; flex-direction:row; z-index: 20; align-items:center;';
                 
                 var moreBtn = document.createElement('button');
                 moreBtn.innerHTML = '<svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>';
