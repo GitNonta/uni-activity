@@ -15,7 +15,7 @@
             <div class="card-body text-center">
                 <code class="text-sm" style="word-break:break-all;">{{ url('/check-in/' . $activity->qr_token) }}</code>
                 <p class="text-xs text-muted mt-2">แสดง QR Code เพื่อเช็คอินเข้างาน (QR ที่ 1)</p>
-                <form method="POST" action="{{ route('activities.regenerate-qr', $activity->id) }}" class="mt-3">
+                <form method="POST" action="{{ route('admin.activities.regenerate-qr', $activity->id) }}" class="mt-3">
                     @csrf
                     <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('ยืนยันสร้าง QR เข้างานใหม่? QR เดิมจะใช้งานไม่ได้ทันที')">สร้าง QR เข้างานใหม่</button>
                 </form>
@@ -28,7 +28,7 @@
             <div class="card-body text-center">
                 <code class="text-sm" style="word-break:break-all;">{{ url('/check-in/' . $activity->qr_checkout_token) }}</code>
                 <p class="text-xs text-muted mt-2">แสดง QR Code เพื่อบันทึกออกงานและรับชั่วโมง (QR ที่ 2)</p>
-                <form method="POST" action="{{ route('activities.regenerate-checkout-qr', $activity->id) }}" class="mt-3">
+                <form method="POST" action="{{ route('admin.activities.regenerate-checkout-qr', $activity->id) }}" class="mt-3">
                     @csrf
                     <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('ยืนยันสร้าง QR ออกงานใหม่? QR เดิมจะใช้งานไม่ได้ทันที')">สร้าง QR ออกงานใหม่</button>
                 </form>
