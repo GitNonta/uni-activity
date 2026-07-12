@@ -33,6 +33,14 @@ class CheckInController extends Controller
 
         $isCheckoutToken = ($activity->qr_checkout_token === $token);
         
+        if ($activity->require_selfie_verification && !$isCheckoutToken) {
+            $user = auth()->user();
+            $profilePhotoUrl = $user->profile_photo
+                ? asset('storage/' . $user->profile_photo)
+                : null;
+            return view('checkin.selfie', compact('activity', 'token', 'isCheckoutToken', 'profilePhotoUrl'));
+        }
+
         return view('checkin.scan', compact('activity', 'token', 'isCheckoutToken'));
     }
 
@@ -55,12 +63,27 @@ class CheckInController extends Controller
         );
 
         if ($result['success']) {
-            // ถ้ากิจกรรมต้องการ selfie verification → redirect ไปหน้าถ่าย selfie
-            if (!empty($result['selfie_required']) && !empty($result['attendance_id'])) {
-                return redirect()->route('checkin.selfie', [
-                    'token' => $token,
-                    'attendance' => $result['attendance_id'],
-                ]);
+            // หากมีการส่งข้อมูล selfie มาด้วย (จากหน้า selfie.blade.php) ให้บันทึกรูปเลย
+            if ($request->filled('selfie') && !empty($result['attendance_id'])) {
+                $att = Attendance::find($result['attendance_id']);
+                if ($att) {
+                    $imageData = $request->selfie;
+                    $imageData = str_replace('data:image/jpeg;base64,', '', $imageData);
+                    $imageData = str_replace(' ', '+', $imageData);
+                    $imageDecoded = base64_decode($imageData);
+
+                    $filename = 'selfies/' . $att->id . '_' . time() . '.jpg';
+                    Storage::disk('public')->put($filename, $imageDecoded);
+
+                    $score = $request->filled('face_match_score') ? (float) $request->face_match_score : null;
+                    $passed = ($score !== null && $score >= 60);
+
+                    $att->update([
+                        'selfie_photo_path' => $filename,
+                        'face_match_score'  => $score,
+                        'face_match_passed' => $passed,
+                    ]);
+                }
             }
 
             return view('checkin.success', [

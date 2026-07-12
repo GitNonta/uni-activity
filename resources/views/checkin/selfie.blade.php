@@ -74,8 +74,10 @@
             @endif
 
             {{-- Hidden form --}}
-            <form id="selfieForm" method="POST" action="{{ route('checkin.selfie.store', ['token' => $token, 'attendance' => $att->id]) }}">
+            <form id="selfieForm" method="POST" action="{{ route('checkin.store', $token) }}">
                 @csrf
+                <input type="hidden" name="latitude" id="qr_lat">
+                <input type="hidden" name="longitude" id="qr_lng">
                 <input type="hidden" name="selfie" id="selfieData">
                 <input type="hidden" name="face_match_score" id="faceMatchScore">
             </form>
@@ -291,9 +293,38 @@ function submitSelfie() {
         showStatus('กรุณาถ่ายรูปก่อน', 'error');
         return;
     }
-    document.getElementById('submitBtn').disabled = true;
-    document.getElementById('submitBtn').textContent = 'กำลังส่ง...';
-    document.getElementById('selfieForm').submit();
+    
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<div style="width:20px;height:20px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;display:inline-block;vertical-align:middle;margin-right:8px;"></div> กำลังบันทึก...';
+    
+    // ตั้งค่าข้อมูลรูปภาพและคะแนน
+    document.getElementById('selfieData').value = capturedImageData;
+    const scoreText = document.getElementById('matchScoreText').textContent;
+    let scoreMatch = scoreText.match(/(\d+\.\d+|\d+)/);
+    if (scoreMatch) {
+        document.getElementById('faceMatchScore').value = scoreMatch[0];
+    }
+
+    const form = document.getElementById('selfieForm');
+    
+    // ขอพิกัด GPS ก่อน Submit
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(pos) {
+                document.getElementById('qr_lat').value = pos.coords.latitude;
+                document.getElementById('qr_lng').value = pos.coords.longitude;
+                form.submit();
+            },
+            function(error) { 
+                console.warn("GPS Error:", error);
+                form.submit(); 
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
+    } else {
+        form.submit();
+    }
 }
 
 // ===== Utility =====
