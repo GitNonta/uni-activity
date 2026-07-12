@@ -392,10 +392,10 @@
                 
                 var menu = document.createElement('div');
                 menu.className = 'msg-dropdown';
-                menu.style.cssText = 'display:none; position:absolute; left:34px; bottom:-4px; background:#2d2d2d; color:#f8fafc; border-radius:12px; padding:6px 0; min-width:130px; box-shadow:0 4px 12px rgba(0,0,0,0.25); flex-direction:column; z-index:30;';
+                menu.style.cssText = 'display:none; position:absolute; right:34px; bottom:-4px; background:#2d2d2d; color:#f8fafc; border-radius:12px; padding:6px 0; min-width:130px; box-shadow:0 4px 12px rgba(0,0,0,0.25); flex-direction:column; z-index:30;';
                 
                 var tail = document.createElement('div');
-                tail.style.cssText = 'position:absolute; left:-4px; bottom:12px; width:10px; height:10px; background:#2d2d2d; transform:rotate(45deg); z-index:-1; border-radius:1px;';
+                tail.style.cssText = 'position:absolute; right:-4px; bottom:12px; width:10px; height:10px; background:#2d2d2d; transform:rotate(45deg); z-index:-1; border-radius:1px;';
                 menu.appendChild(tail);
 
                 var createItem = function(text, onClick) {
