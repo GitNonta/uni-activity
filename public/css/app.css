@@ -313,13 +313,13 @@ select.form-control { appearance: auto; }
     .scanner-icon { width: 24px; height: 24px; }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1366px) {
     .navbar-desktop { display: none !important; }
     .navbar-mobile-right { display: flex; }
     .bottom-nav { display: flex; }
 }
 
-@media (min-width: 641px) and (max-width: 1024px) {
+@media (min-width: 641px) and (max-width: 1366px) {
     .bottom-nav { gap: 1rem; padding: 10px 24px; bottom: 32px; }
 }
 
