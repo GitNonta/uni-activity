@@ -187,7 +187,7 @@
 .sidebar-overlay.open { display: block; }
 
 /* ── Content ── */
-.sb-content { flex: 1; margin-left: 260px; min-height: 100vh; transition: margin-left .3s ease; }
+.sb-content { flex: 1; min-width: 0; margin-left: 260px; min-height: 100vh; transition: margin-left .3s ease; }
 .sb-content.collapsed { margin-left: 80px; }
 .sb-topbar { 
     height: 70px; 
