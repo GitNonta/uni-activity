@@ -1,6 +1,18 @@
 import os
 import paramiko
 import subprocess
+import builtins
+import io
+
+log_buffer = []
+
+def print(*args, **kwargs):
+    f = io.StringIO()
+    builtins.print(*args, file=f, **kwargs)
+    text = f.getvalue()
+    log_buffer.append(text)
+    builtins.print(text, end='')
+
 
 host = '192.168.1.222'
 port = 8022
@@ -89,5 +101,21 @@ for cmd in commands:
     if err:
         print(err)
         
+try:
+    sftp_log = client.open_sftp()
+    try:
+        sftp_log.mkdir(f"{remote_base}/storage")
+    except:
+        pass
+    try:
+        sftp_log.mkdir(f"{remote_base}/storage/logs")
+    except:
+        pass
+    with sftp_log.file(f"{remote_base}/storage/logs/deploy.log", "w") as f:
+        f.write("".join(log_buffer))
+    sftp_log.close()
+except Exception as e:
+    builtins.print(f"Failed to write deployment log: {e}")
+
 client.close()
 print("Deployment and upgrade complete!")

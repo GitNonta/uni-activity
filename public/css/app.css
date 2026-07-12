@@ -48,7 +48,7 @@ table th { font-weight: 600; color: #475569; background: #f8fafc; }
 /* ── คลาสช่วย: ขนาด, สี, ฟอนต์, ระยะห่าง, flex, grid ──
 * คลาสช่วยเหลือสำหรับการจัดรูปแบบต่างๆ
 */
-.container { max-width: 100%; margin: 0 auto; padding: 0 24px; }
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 .container-sm { max-width: 480px; margin: 0 auto; padding: 0 16px; }
 .text-center { text-align: center; }
 .text-right { text-align: right; }
@@ -93,19 +93,18 @@ table th { font-weight: 600; color: #475569; background: #f8fafc; }
 @media (max-width: 640px) {
     .grid-2 { grid-template-columns: 1fr; }
     .grid-3 { grid-template-columns: 1fr; }
-    .grid-4 { grid-template-columns: 1fr; }
-    .grid-5 { grid-template-columns: 1fr; }
+    .grid-4 { grid-template-columns: 1fr; gap: .75rem; }
+    .grid-5 { grid-template-columns: 1fr; gap: .75rem; }
 }
 
 @media (max-width: 768px) {
-    .grid-2 { grid-template-columns: 1fr; }
-    .grid-3 { grid-template-columns: 1fr; }
+    /* Tablet Portrait: Keep 2 columns for most elements to utilize space */
+    .grid-3 { grid-template-columns: repeat(2, 1fr); gap: .75rem; }
     .grid-4 { grid-template-columns: repeat(2, 1fr); gap: .75rem; }
     .grid-5 { grid-template-columns: repeat(2, 1fr); gap: .75rem; }
 }
 
 @media (max-width: 480px) {
-    .grid-4 { grid-template-columns: 1fr; gap: .75rem; }
 }
 .line-clamp-1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -125,6 +124,13 @@ table th { font-weight: 600; color: #475569; background: #f8fafc; }
 }
 .card-body { padding: 1.5rem; }
 .card-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9; font-weight: 700; color: #1e293b; }
+
+.activity-hero-image {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    object-fit: cover;
+}
 
 /* ── ปุ่มกด: primary, success, danger, outline + ขนาด sm/lg/block ──────
 * ปุ่มกดที่มีสีต่างๆ และขนาดต่างๆ
@@ -242,10 +248,16 @@ select.form-control { appearance: auto; }
 }
 .bottom-nav-item.active .bottom-nav-icon { stroke-width: 2.5; }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .navbar-desktop { display: none !important; }
     .navbar-mobile-right { display: flex; }
     .bottom-nav { display: flex; }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+    /* Tablet Portrait enhancements for Bottom Nav */
+    .bottom-nav { justify-content: center; gap: 3rem; padding-top: 0.5rem; }
+    .bottom-nav-item { flex: none; width: 80px; }
 }
 
 /* ── แถบด้านข้างฝั่งผู้ดูแล: เมนูซ้าย + เนื้อหาขวา + responsive ──────

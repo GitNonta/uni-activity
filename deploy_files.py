@@ -1,5 +1,17 @@
 import paramiko
 import os
+import builtins
+import io
+
+log_buffer = []
+
+def print(*args, **kwargs):
+    f = io.StringIO()
+    builtins.print(*args, file=f, **kwargs)
+    text = f.getvalue()
+    log_buffer.append(text)
+    builtins.print(text, end='')
+
 
 HOST = "192.168.1.222"
 PORT = 8022
@@ -48,6 +60,20 @@ upload_dir(r"d:\projects\uni-activity\public\build", f"{APP_DIR}/public/build")
 
 print("--- Clearing Cache on Server ---")
 print(run_cmd(f"cd {APP_DIR} && php artisan view:clear && php artisan config:clear"))
+
+try:
+    try:
+        sftp.mkdir(f"{APP_DIR}/storage")
+    except:
+        pass
+    try:
+        sftp.mkdir(f"{APP_DIR}/storage/logs")
+    except:
+        pass
+    with sftp.file(f"{APP_DIR}/storage/logs/deploy.log", "w") as f:
+        f.write("".join(log_buffer))
+except Exception as e:
+    builtins.print(f"Failed to write deployment log: {e}")
 
 sftp.close()
 client.close()

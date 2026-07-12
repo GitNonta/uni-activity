@@ -241,6 +241,18 @@ def get_logs():
         pass
     return logs
 
+def get_deploy_logs():
+    deploy_log_path = "/data/data/com.termux/files/home/uni-activity/storage/logs/deploy.log"
+    if os.path.exists(deploy_log_path):
+        try:
+            with open(deploy_log_path, "r", encoding="utf-8", errors="replace") as f:
+                lines = f.readlines()
+                return "".join(lines[-200:])
+        except Exception as e:
+            return f"Error reading deploy log: {str(e)}"
+    return "No deployment log found."
+
+
 def get_battery():
     try:
         import subprocess, json
@@ -267,7 +279,9 @@ def get_services():
         "Redis": "redis-server",
         "Cloudflared": "cloudflared",
         "Reverb": "reverb:start",
-        "Queue Worker": "artisan queue:work"
+        "Queue Worker": "artisan queue:work",
+        "SSH": "sshd",
+        "SFTP": "sshd"
     }
     status = {}
     for name, proc in services.items():
@@ -408,6 +422,7 @@ def collect_stats():
         "network_info": get_network_info(),
         "logs": get_logs(),
         "inspector": list(inspector_logs),
+        "deploy_log": get_deploy_logs(),
     }
     stats["alerts"] = get_alerts(stats)
     stats["alerts_history"] = list(alerts_history)

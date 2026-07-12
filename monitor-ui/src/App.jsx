@@ -10,6 +10,7 @@ import { Status } from './components/Status'
 import { Header } from './components/Header'
 import { AlertsBanner } from './components/AlertsBanner'
 import { AlertsHistory } from './components/AlertsHistory'
+import { DeployCard } from './components/DeployCard'
 import './App.css'
 
 export default function App() {
@@ -39,6 +40,12 @@ export default function App() {
         >
           Status
         </button>
+        <button 
+          onClick={() => setActiveTab('deploy')}
+          style={{ padding: '0.75rem 1rem', background: 'none', border: 'none', borderBottom: activeTab === 'deploy' ? '2px solid #2563eb' : '2px solid transparent', color: activeTab === 'deploy' ? '#2563eb' : '#6b7280', fontWeight: activeTab === 'deploy' ? 600 : 400, cursor: 'pointer', fontSize: '1rem' }}
+        >
+          Deploy Logs
+        </button>
       </div>
 
       <main className="container">
@@ -60,6 +67,9 @@ export default function App() {
         )}
         {activeTab === 'status' && (
           <Status data={data} />
+        )}
+        {activeTab === 'deploy' && (
+          <DeployCard deployLog={data?.deploy_log} />
         )}
       </main>
     </div>
