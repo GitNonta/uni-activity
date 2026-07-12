@@ -73,6 +73,12 @@ class StudentController extends Controller
     {
         $userId = auth()->id();
 
+        // Mark all unread DB notifications as read when visiting this page
+        \App\Models\Notification::where('user_id', $userId)
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+        \Illuminate\Support\Facades\Cache::forget("user_notifications_{$userId}");
+
         $registrations = Registration::with('activity.category')
             ->where('user_id', $userId)
             ->whereIn('status', ['pending', 'approved', 'waitlisted'])
