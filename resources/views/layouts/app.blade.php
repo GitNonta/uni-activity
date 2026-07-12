@@ -341,7 +341,12 @@
             col.style.cssText = 'display:flex;flex-direction:column;align-items:' + (mine?'flex-end':'flex-start') + ';max-width:75%;';
             
             var bubble = document.createElement('div');
-            bubble.style.cssText = 'padding:.45rem .75rem;border-radius:' + (mine?'14px 4px 14px 14px':'4px 14px 14px 14px') + ';background:' + (mine?'#4f46e5':'#fff') + ';color:' + (mine?'#fff':'#1e293b') + ';font-size:.82rem;box-shadow:0 1px 2px rgba(0,0,0,.08);word-break:break-word;white-space:pre-wrap;';
+            var hasOnlyImages = !msg.message && msg.attachments && msg.attachments.length > 0 && msg.attachments.every(a => (a.mime_type || '').indexOf('image/') === 0);
+            if (hasOnlyImages) {
+                bubble.style.cssText = 'border-radius:' + (mine?'14px 4px 14px 14px':'4px 14px 14px 14px') + ';background:transparent;padding:0;box-shadow:none;display:flex;flex-direction:column;gap:4px;';
+            } else {
+                bubble.style.cssText = 'padding:.45rem .75rem;border-radius:' + (mine?'14px 4px 14px 14px':'4px 14px 14px 14px') + ';background:' + (mine?'#4f46e5':'#fff') + ';color:' + (mine?'#fff':'#1e293b') + ';font-size:.82rem;box-shadow:0 1px 2px rgba(0,0,0,.08);word-break:break-word;white-space:pre-wrap;';
+            }
             
             if (msg.message) {
                 var p = document.createElement('p');
@@ -359,7 +364,7 @@
             if (msg.attachments && msg.attachments.length) {
                 msg.attachments.forEach(function(a) {
                     var attDiv = document.createElement('div');
-                    attDiv.style.marginTop = '.3rem';
+                    attDiv.style.marginTop = hasOnlyImages ? '0' : '.3rem';
                     if ((a.mime_type || '').indexOf('image/') === 0) {
                         var img = document.createElement('img');
                         img.src = a.url;

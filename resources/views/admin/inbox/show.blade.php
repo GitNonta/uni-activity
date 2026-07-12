@@ -60,7 +60,14 @@
                 {{-- Bubble column --}}
                 <div style="display:flex;flex-direction:column;align-items:{{ $isMine ? 'flex-end' : 'flex-start' }};max-width:72%;">
                     <span style="font-size:.68rem;color:#94a3b8;margin-bottom:.15rem;">{{ $label }}</span>
-                    <div style="padding:.55rem .85rem;border-radius:{{ $isMine ? '16px 4px 16px 16px' : '4px 16px 16px 16px' }};background:{{ $isMine ? '#4f46e5' : '#fff' }};color:{{ $isMine ? '#fff' : '#1e293b' }};font-size:.875rem;box-shadow:0 1px 3px rgba(0,0,0,.08);word-break:break-word;">
+                    @php
+                        $hasText = !empty($msg->body);
+                        $hasOnlyImages = !$hasText && count($msg->attachments ?? []) > 0 && collect($msg->attachments)->every(fn($a) => str_starts_with($a['mime_type'] ?? '', 'image/'));
+                        $bg = $hasOnlyImages ? 'transparent' : ($isMine ? '#4f46e5' : '#fff');
+                        $pad = $hasOnlyImages ? '0' : '.55rem .85rem';
+                        $shadow = $hasOnlyImages ? 'none' : '0 1px 3px rgba(0,0,0,.08)';
+                    @endphp
+                    <div style="padding:{{$pad}};border-radius:{{ $isMine ? '16px 4px 16px 16px' : '4px 16px 16px 16px' }};background:{{$bg}};color:{{ $isMine ? '#fff' : '#1e293b' }};font-size:.875rem;box-shadow:{{$shadow}};word-break:break-word;">
                         @if($msg->body)
                             <p style="margin:0;">{{ $msg->body }}</p>
                         @endif
@@ -68,7 +75,7 @@
                             @php $isImg = str_starts_with($att['mime_type'] ?? '', 'image/'); @endphp
                             @if($isImg)
                                 <img src="{{ $att['url'] }}" alt="{{ $att['original_name'] }}"
-                                     style="max-width:110px;max-height:110px;object-fit:cover;border-radius:8px;margin-top:.35rem;display:block;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.1);"
+                                     style="max-width:110px;max-height:110px;object-fit:cover;border-radius:8px;margin-top:{{ $hasOnlyImages ? '0' : '.35rem' }};display:block;cursor:pointer;box-shadow:{{ $hasOnlyImages ? 'none' : '0 1px 3px rgba(0,0,0,0.1)' }};"
                                      onclick="window.openLightbox('{{ $att['url'] }}')">
                             @else
                                 <a href="{{ $att['url'] }}" target="_blank" download="{{ $att['original_name'] }}"
@@ -200,10 +207,11 @@ document.addEventListener('DOMContentLoaded', function () {
             avatarHtml = '<div style="position:relative;flex-shrink:0;"><div style="width:28px;height:28px;border-radius:50%;background:' + avatarBg + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;">' + initial + '</div>' + (!isMine ? '<span id="avatar-dot-' + msg.id + '" class="student-online-dot" style="display:none;position:absolute;bottom:0;right:0;width:10px;height:10px;background:#10b981;border-radius:50%;border:2px solid #f8fafc;"></span>' : '') + '</div>';
         }
 
+        var hasOnlyImages = !msg.message && msg.attachments && msg.attachments.length > 0 && msg.attachments.every(a => (a.mime_type || '').startsWith('image/'));
         var attHtml = '';
         (msg.attachments || []).forEach(function(a) {
             if ((a.mime_type || '').startsWith('image/')) {
-                attHtml += '<img src="' + a.url + '" style="max-width:110px;max-height:110px;object-fit:cover;border-radius:8px;margin-top:.35rem;display:block;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.1);" onclick="window.openLightbox(\'' + a.url + '\')">';
+                attHtml += '<img src="' + a.url + '" style="max-width:110px;max-height:110px;object-fit:cover;border-radius:8px;margin-top:' + (hasOnlyImages ? '0' : '.35rem') + ';display:block;cursor:pointer;box-shadow:' + (hasOnlyImages ? 'none' : '0 1px 3px rgba(0,0,0,0.1)') + ';" onclick="window.openLightbox(\'' + a.url + '\')">';
             } else {
                 attHtml += '<a href="' + a.url + '" target="_blank" style="display:flex;align-items:center;gap:.4rem;margin-top:.35rem;color:' + linkC + ';font-size:.8rem;text-decoration:none;"><svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> ' + a.original_name + '</a>';
             }
@@ -235,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function () {
             avatarHtml +
             '<div style="display:flex;flex-direction:column;align-items:' + align + ';max-width:72%;">' +
                 '<span style="font-size:.68rem;color:#94a3b8;margin-bottom:.15rem;">' + label + '</span>' +
-                '<div style="padding:.55rem .85rem;border-radius:' + br + ';background:' + bg + ';color:' + color + ';font-size:.875rem;box-shadow:0 1px 3px rgba(0,0,0,.08);word-break:break-word;" id="msg-body-' + msg.id + '">' +
+                '<div style="padding:' + (hasOnlyImages ? '0' : '.55rem .85rem') + ';border-radius:' + br + ';background:' + (hasOnlyImages ? 'transparent' : bg) + ';color:' + color + ';font-size:.875rem;box-shadow:' + (hasOnlyImages ? 'none' : '0 1px 3px rgba(0,0,0,.08)') + ';word-break:break-word;" id="msg-body-' + msg.id + '">' +
                     (msg.message ? '<p style="margin:0;">' + msg.message.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</p>' : '') +
                     (msg.is_edited ? '<span style="font-size:0.6rem;opacity:0.7;margin-left:5px;">(แก้ไขแล้ว)</span>' : '') +
                     attHtml +
