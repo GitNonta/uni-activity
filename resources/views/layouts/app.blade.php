@@ -363,7 +363,7 @@
                     if ((a.mime_type || '').indexOf('image/') === 0) {
                         var img = document.createElement('img');
                         img.src = a.url;
-                        img.style.cssText = 'max-width:100%;border-radius:8px;display:block;cursor:pointer;';
+                        img.style.cssText = 'max-width:200px;max-height:200px;object-fit:cover;border-radius:8px;display:block;cursor:pointer;';
                         img.onclick = function() { window.open(a.url, '_blank'); };
                         attDiv.appendChild(img);
                     } else {

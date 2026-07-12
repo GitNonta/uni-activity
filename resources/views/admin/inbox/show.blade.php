@@ -68,7 +68,7 @@
                             @php $isImg = str_starts_with($att['mime_type'] ?? '', 'image/'); @endphp
                             @if($isImg)
                                 <img src="{{ $att['url'] }}" alt="{{ $att['original_name'] }}"
-                                     style="max-width:240px;max-height:240px;object-fit:cover;border-radius:8px;margin-top:.35rem;display:block;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.1);"
+                                     style="max-width:200px;max-height:200px;object-fit:cover;border-radius:8px;margin-top:.35rem;display:block;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.1);"
                                      onclick="window.open('{{ $att['url'] }}','_blank')">
                             @else
                                 <a href="{{ $att['url'] }}" target="_blank" download="{{ $att['original_name'] }}"
@@ -184,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var attHtml = '';
         (msg.attachments || []).forEach(function(a) {
             if ((a.mime_type || '').startsWith('image/')) {
-                attHtml += '<img src="' + a.url + '" style="max-width:240px;max-height:240px;object-fit:cover;border-radius:8px;margin-top:.35rem;display:block;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.1);" onclick="window.open(\'' + a.url + '\',\'_blank\')">';
+                attHtml += '<img src="' + a.url + '" style="max-width:200px;max-height:200px;object-fit:cover;border-radius:8px;margin-top:.35rem;display:block;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.1);" onclick="window.open(\'' + a.url + '\',\'_blank\')">';
             } else {
                 attHtml += '<a href="' + a.url + '" target="_blank" style="display:flex;align-items:center;gap:.4rem;margin-top:.35rem;color:' + linkC + ';font-size:.8rem;text-decoration:none;"><svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> ' + a.original_name + '</a>';
             }
