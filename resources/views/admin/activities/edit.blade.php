@@ -17,7 +17,7 @@
             </div>
             <div class="form-group">
                 <label class="form-label">รายละเอียด</label>
-                <textarea name="description" rows="3" class="form-control">{{ old('description', $activity->description) }}</textarea>
+                <textarea name="description" rows="6" class="form-control">{{ old('description', $activity->description) }}</textarea>
             </div>
             <div class="form-row">
                 <div class="form-group">
