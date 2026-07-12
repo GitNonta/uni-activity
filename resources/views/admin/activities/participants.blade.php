@@ -114,11 +114,11 @@
                     </td>
                     <td class="text-right">
                         @if($att->status === 'pending')
-                        <form method="POST" action="{{ route('attendances.approve', $att->id) }}" style="display:inline;">
+                        <form method="POST" action="{{ route('admin.attendances.approve', $att->id) }}" style="display:inline;">
                             @csrf
                             <button type="submit" class="btn btn-success btn-sm">อนุมัติ</button>
                         </form>
-                        <form method="POST" action="{{ route('attendances.reject', $att->id) }}" style="display:inline;">
+                        <form method="POST" action="{{ route('admin.attendances.reject', $att->id) }}" style="display:inline;">
                             @csrf
                             <button type="submit" class="btn btn-danger btn-sm">ปฏิเสธ</button>
                         </form>
