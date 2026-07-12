@@ -150,12 +150,13 @@ table th { font-weight: 600; color: #475569; background: #f8fafc; }
 /* ── ฟอร์ม: input, select, label, ข้อความผิดพลาด, checkbox ──────
 * ฟอร์มที่มี input, select, label, ข้อความผิดพลาด และ checkbox
 */
-.form-group { margin-bottom: 1rem; }
-.form-label { display: block; font-size: .875rem; font-weight: 500; color: #334155; margin-bottom: .25rem; }
-.form-control { width: 100%; padding: .625rem .875rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: .875rem; transition: border-color .15s; background: #fff; }
+.form-group { margin-bottom: .85rem; }
+.form-label { display: block; font-size: .85rem; font-weight: 500; color: #334155; margin-bottom: .25rem; }
+.form-control { width: 100%; padding: .5rem .75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: .85rem; transition: border-color .15s; background: #fff; }
 .form-control:focus { outline: none; border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,.15); }
 .form-error { color: #dc2626; font-size: .75rem; margin-top: .25rem; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+.form-row > div { min-width: 0; }
 @media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
 select.form-control { appearance: auto; }
 .checkbox-label { display: flex; align-items: center; gap: .5rem; font-size: .875rem; }
