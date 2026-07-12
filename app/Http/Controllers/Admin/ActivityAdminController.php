@@ -167,6 +167,7 @@ class ActivityAdminController extends Controller
         $data['is_mandatory'] = $request->boolean('is_mandatory');
         $data['allow_walkin'] = $request->has('allow_walkin') ? $request->boolean('allow_walkin') : true;
         $data['require_attendance_approval'] = $request->boolean('require_attendance_approval');
+        $data['require_selfie_verification'] = $request->boolean('require_selfie_verification');
         if (($data['scope'] ?? 'university') === 'university') {
             $data['faculty'] = null;
             $data['department'] = null;
@@ -237,6 +238,7 @@ class ActivityAdminController extends Controller
         $data['is_mandatory'] = $request->boolean('is_mandatory');
         $data['allow_walkin'] = $request->has('allow_walkin') ? $request->boolean('allow_walkin') : true;
         $data['require_attendance_approval'] = $request->boolean('require_attendance_approval');
+        $data['require_selfie_verification'] = $request->boolean('require_selfie_verification');
         if ($data['scope'] === 'university') {
             $data['faculty'] = null;
             $data['department'] = null;
@@ -595,5 +597,30 @@ class ActivityAdminController extends Controller
         $this->auditUpdate($activity, ['qr_checkout_token' => $oldToken], "สร้าง QR Code ออกงานใหม่สำหรับกิจกรรม \"{$activity->title}\"");
 
         return back()->with('success', 'สร้าง QR Code ออกงานใหม่สำเร็จแล้ว');
+    }
+
+    /** ตรวจสอบและอนุมัติ/ปฏิเสธ Selfie */
+    public function reviewSelfie(Request $request, $id)
+    {
+        $attendance = Attendance::findOrFail($id);
+        
+        $request->validate([
+            'action' => 'required|in:approve,reject',
+        ]);
+
+        $action = $request->input('action');
+        
+        $attendance->update([
+            'selfie_reviewed' => true,
+            'selfie_review_result' => $action,
+            'selfie_reviewed_by' => auth()->id(),
+            // หาก approve selfie ให้ status=approved ด้วย
+            'status' => $action === 'approve' ? 'approved' : 'rejected',
+            'is_verified' => $action === 'approve',
+        ]);
+
+        $this->auditApprove($attendance, ($action === 'approve' ? 'อนุมัติ' : 'ปฏิเสธ') . " ภาพ Selfie รหัสเข้าร่วม #{$attendance->id}");
+
+        return back()->with('success', 'ตรวจสอบภาพ Selfie เรียบร้อยแล้ว');
     }
 }

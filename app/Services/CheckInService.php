@@ -114,12 +114,19 @@ class CheckInService
                 'distance_meters'   => $distance,
             ]);
 
+            $attendance = Attendance::where('user_id', $user->id)
+                ->where('activity_id', $activity->id)
+                ->latest()
+                ->first();
+
             return [
                 'success' => true,
                 'message' => 'เช็คอินเข้างานสำเร็จ! อย่าลืมสแกน QR ออกงานเมื่อจบกิจกรรมเพื่อบันทึกชั่วโมง',
                 'activity' => $activity,
                 'status' => 'checked_in',
                 'distance' => $distance,
+                'selfie_required' => (bool) $activity->require_selfie_verification,
+                'attendance_id' => $attendance?->id,
             ];
         }
 

@@ -48,6 +48,7 @@ class Activity extends Model
         'latitude',
         'longitude',
         'checkin_radius',
+        'require_selfie_verification',
     ];
 
     /** กำหนดประเภทการแปลงค่าฟิลด์ */
@@ -69,6 +70,7 @@ class Activity extends Model
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
             'checkin_radius' => 'integer',
+            'require_selfie_verification' => 'boolean',
         ];
     }
 

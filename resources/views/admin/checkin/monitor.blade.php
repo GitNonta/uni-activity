@@ -86,6 +86,60 @@
     </div>
     @endif
 
+    {{-- รายการ Selfie ผิดปกติ รอตรวจสอบ --}}
+    @php 
+        $selfieReviewAtts = $activity->attendances->where('selfie_photo_path', '!=', null)
+                                                  ->where('face_match_passed', false)
+                                                  ->where('selfie_reviewed', false);
+    @endphp
+    @if($selfieReviewAtts->count() > 0)
+    <div class="card mb-4" style="border-color:#fca5a5;">
+        <div class="card-header" style="background:#fee2e2;color:#991b1b;">
+            ⚠️ Selfie ผิดปกติ รอการตรวจสอบ ({{ $selfieReviewAtts->count() }} คน)
+        </div>
+        <div style="max-height:400px;overflow-y:auto;">
+            @foreach($selfieReviewAtts->sortByDesc('checked_in_at') as $att)
+            <div class="card-body" style="padding:1rem 1.25rem;border-bottom:1px solid #f1f5f9;">
+                <div class="flex items-start justify-between" style="flex-wrap:wrap;gap:1rem;">
+                    <div style="flex:1;">
+                        <p class="font-semi text-sm">{{ $att->user->full_name }} ({{ $att->user->student_id }})</p>
+                        <p class="text-xs text-muted mb-2">ความคล้าย: {{ $att->face_match_score }}% | {{ $att->checked_in_at ? $att->checked_in_at->format('H:i:s') : '-' }}</p>
+                        
+                        <div style="display:flex;gap:1rem;align-items:center;margin-top:.5rem;">
+                            <div style="text-align:center;">
+                                <img src="{{ $att->user->profile_photo ? asset('storage/' . $att->user->profile_photo) : '' }}" 
+                                     style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #cbd5e1;" 
+                                     alt="Profile">
+                                <p class="text-xs text-muted mt-1">รูปโปรไฟล์</p>
+                            </div>
+                            <div style="font-size:1.5rem;color:#94a3b8;">&larr;&rarr;</div>
+                            <div style="text-align:center;">
+                                <img src="{{ asset('storage/' . $att->selfie_photo_path) }}" 
+                                     style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #ef4444;" 
+                                     alt="Selfie">
+                                <p class="text-xs text-muted mt-1" style="color:#ef4444;">Selfie ที่ถ่าย</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 mt-2">
+                        <form method="POST" action="{{ route('admin.attendances.review-selfie', $att->id) }}">
+                            @csrf
+                            <input type="hidden" name="action" value="approve">
+                            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('ยืนยันว่ารูปตรงกัน (อนุมัติ)?')">ใช่, คนเดียวกัน</button>
+                        </form>
+                        <form method="POST" action="{{ route('admin.attendances.review-selfie', $att->id) }}">
+                            @csrf
+                            <input type="hidden" name="action" value="reject">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('ยืนยันว่ารูปไม่ตรงกัน (ปฏิเสธการเช็คอิน)?')">ไม่ใช่, ปฏิเสธ</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
     {{-- รายชื่อผู้เช็คอินที่อนุมัติแล้ว --}}
     @php $approvedAtts = $activity->attendances->where('status', 'approved'); @endphp
     <div class="card">

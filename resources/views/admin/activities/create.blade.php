@@ -163,6 +163,11 @@
                     <input type="checkbox" name="require_attendance_approval" value="1" {{ old('require_attendance_approval') ? 'checked' : '' }}> ต้องตรวจสอบการเช็คอิน (Manual Approval)
                 </label>
                 <p class="text-xs text-muted" style="margin-left: 1.5rem; margin-top: 0.15rem;">หากติ๊กเลือก นักศึกษาที่สแกน QR จะมีสถานะ "รอตรวจสอบ" จนกว่าผู้จัดจะกดอนุมัติ</p>
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="require_selfie_verification" value="1" {{ old('require_selfie_verification') ? 'checked' : '' }}> เปิดยืนยันตัวตนด้วย Selfie (AI Face Compare)
+                </label>
+                <p class="text-xs text-muted" style="margin-left: 1.5rem; margin-top: 0.15rem;">เมื่อเช็คอินเข้างาน นักศึกษาจะต้องถ่ายรูปหน้าเพื่อยืนยันตัวตนกับรูปในระบบ หากไม่ตรงจะส่งให้ผู้จัดตรวจสอบ</p>
             </div>
             <button type="submit" class="btn btn-primary btn-lg">สร้างกิจกรรม</button>
         </form>

@@ -33,6 +33,12 @@ class Attendance extends Model
         'checkout_longitude',
         'distance_meters',
         'checkout_distance_meters',
+        'selfie_photo_path',
+        'face_match_score',
+        'face_match_passed',
+        'selfie_reviewed',
+        'selfie_review_result',
+        'selfie_reviewed_by',
     ];
 
     /** กำหนดประเภทการแปลงค่าฟิลด์ */
@@ -49,6 +55,9 @@ class Attendance extends Model
             'checkout_longitude'       => 'decimal:7',
             'distance_meters'          => 'decimal:2',
             'checkout_distance_meters' => 'decimal:2',
+            'face_match_score'         => 'decimal:2',
+            'face_match_passed'        => 'boolean',
+            'selfie_reviewed'          => 'boolean',
         ];
     }
 
@@ -68,5 +77,11 @@ class Attendance extends Model
     public function verifier()
     {
         return $this->belongsTo(User::class, 'verified_by');
+    }
+
+    /** ความสัมพันธ์: ผู้ตรวจสอบ selfie */
+    public function selfieReviewer()
+    {
+        return $this->belongsTo(User::class, 'selfie_reviewed_by');
     }
 }

@@ -104,6 +104,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/registrations/{id}', [RegistrationController::class, 'destroy'])->name('registrations.destroy'); // ยกเลิกการลงทะเบียน
     Route::get('/check-in/{token}', [CheckInController::class, 'show'])->name('checkin.show');                       // หน้าเช็คอินจาก QR
     Route::post('/check-in/{token}', [CheckInController::class, 'store'])->name('checkin.store');                    // ดำเนินการเช็คอิน QR
+    Route::get('/check-in/{token}/selfie/{attendance}', [CheckInController::class, 'selfiePage'])->name('checkin.selfie');   // หน้าถ่าย selfie
+    Route::post('/check-in/{token}/selfie/{attendance}', [CheckInController::class, 'storeSelfie'])->name('checkin.selfie.store'); // บันทึก selfie
     Route::post('/activities/{id}/self-checkin', [CheckInController::class, 'selfCheckIn'])->name('activities.self-checkin'); // ปิด self check-in: ให้สแกน QR หน้างานเท่านั้น
     Route::get('/my-activities', [StudentController::class, 'myActivities'])->name('student.my');                    // กิจกรรมของฉัน
     Route::get('/history', [StudentController::class, 'history'])->name('student.history');                          // ประวัติการเข้าร่วม
@@ -176,6 +178,7 @@ Route::middleware(['auth', 'role:staff'])->prefix('admin')->name('admin.')->grou
     Route::post('attendances/{id}/reject', [ActivityAdminController::class, 'rejectAttendance'])->name('attendances.reject');
     Route::post('activities/quick-store', [ActivityAdminController::class, 'quickStore'])->name('activities.quick-store');
     Route::post('activities/{id}/toggle-early-checkin', [ActivityAdminController::class, 'toggleEarlyCheckin'])->name('activities.toggle-early-checkin');
+    Route::post('attendances/{id}/review-selfie', [ActivityAdminController::class, 'reviewSelfie'])->name('attendances.review-selfie');
     // ── AJAX: approve/reject จาก Dashboard unified queue ──
     Route::post('quick-approve', [ActivityAdminController::class, 'quickApprove'])->name('quick.approve');
     Route::post('quick-reject', [ActivityAdminController::class, 'quickReject'])->name('quick.reject');

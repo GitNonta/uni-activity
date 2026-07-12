@@ -7,6 +7,7 @@ use App\Models\Attendance;
 use App\Models\User;
 use App\Services\CheckInService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * คอนโทรลเลอร์เช็คอิน / บันทึกกิจกรรม
@@ -54,6 +55,14 @@ class CheckInController extends Controller
         );
 
         if ($result['success']) {
+            // ถ้ากิจกรรมต้องการ selfie verification → redirect ไปหน้าถ่าย selfie
+            if (!empty($result['selfie_required']) && !empty($result['attendance_id'])) {
+                return redirect()->route('checkin.selfie', [
+                    'token' => $token,
+                    'attendance' => $result['attendance_id'],
+                ]);
+            }
+
             return view('checkin.success', [
                 'activity' => $result['activity'],
                 'status'   => $result['status'],
@@ -62,6 +71,68 @@ class CheckInController extends Controller
         }
 
         return back()->with('error', $result['message']);
+    }
+
+    /** แสดงหน้าถ่าย selfie เพื่อยืนยันตัวตน */
+    public function selfiePage(string $token, int $attendance)
+    {
+        $activity = Activity::where('qr_token', $token)
+            ->orWhere('qr_checkout_token', $token)
+            ->firstOrFail();
+
+        $att = Attendance::where('id', $attendance)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+
+        $user = auth()->user();
+        $profilePhotoUrl = $user->profile_photo
+            ? asset('storage/' . $user->profile_photo)
+            : null;
+
+        return view('checkin.selfie', compact('activity', 'token', 'att', 'profilePhotoUrl'));
+    }
+
+    /** บันทึก selfie + คะแนนเปรียบเทียบใบหน้า */
+    public function storeSelfie(Request $request, string $token, int $attendance)
+    {
+        $request->validate([
+            'selfie' => 'required|string', // base64 image
+            'face_match_score' => 'nullable|numeric|min:0|max:100',
+        ]);
+
+        $att = Attendance::where('id', $attendance)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+
+        // Decode base64 selfie and save to storage
+        $base64 = $request->input('selfie');
+        $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $base64);
+        $imageData = base64_decode($imageData);
+
+        $filename = 'selfies/' . auth()->id() . '_' . time() . '.jpg';
+        Storage::disk('public')->put($filename, $imageData);
+
+        $score = $request->input('face_match_score', null);
+        $threshold = 60; // ค่า threshold 60%
+        $passed = $score !== null ? ((float) $score >= $threshold) : null;
+
+        $att->update([
+            'selfie_photo_path' => $filename,
+            'face_match_score'  => $score,
+            'face_match_passed' => $passed,
+        ]);
+
+        $activity = Activity::where('qr_token', $token)
+            ->orWhere('qr_checkout_token', $token)
+            ->firstOrFail();
+
+        return view('checkin.success', [
+            'activity' => $activity,
+            'status'   => 'checked_in',
+            'distance' => $att->distance_meters,
+            'selfie_result' => $passed,
+            'face_match_score' => $score,
+        ]);
     }
 
     /** บันทึกกิจกรรมด้วยตัวเอง (ไม่ต้องสแกน QR) → ส่งพิกัด GPS เพื่อตรวจสอบอัตโนมัติ */
@@ -172,3 +243,4 @@ class CheckInController extends Controller
         ]);
     }
 }
+
