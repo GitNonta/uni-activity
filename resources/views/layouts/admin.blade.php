@@ -13,6 +13,15 @@
     @vite(['resources/js/app.js'])
     @yield('styles')
 <style>
+/* ════════════════════════════
+   TABLET FORM LAYOUT OVERRIDE
+   ════════════════════════════ */
+@media (max-width: 1024px) {
+    .form-row { display: flex !important; flex-direction: column !important; gap: 0 !important; margin-bottom: 0 !important; }
+    .form-group { margin-bottom: 1.25rem !important; width: 100% !important; }
+    .form-control { padding: 0.5rem 0.75rem !important; font-size: 0.85rem !important; min-height: 40px !important; }
+}
+
 *, *::before, *::after { box-sizing: border-box; }
 
 /* ════════════════════════════
