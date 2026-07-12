@@ -1,248 +1,10 @@
-{{-- เลย์เอาต์หลักฝั่งนักศึกษา: navbar + bottom nav (mobile) + เนื้อหา --}}
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'UNI Activity - ระบบศูนย์รวมกิจกรรม')</title>
-    <link rel="icon" type="image/svg+xml" href="{{ asset('logo.svg') }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ filemtime(public_path('css/app.css')) }}">
-    @vite(['resources/js/app.js'])
-</head>
-<body>
-    {{-- Top Navbar --}}
-    <header class="navbar">
-        <div class="navbar-inner">
-            <div class="navbar-left">
-                <a href="{{ route('activities.index') }}" class="navbar-brand" style="display:flex; align-items:center; gap:8px;">
-                    <img src="{{ asset('logo.svg') }}" alt="Logo" style="height: 32px; width: 32px;">
-                    UNI Activity
-                </a>
-            </div>
-            @auth
-            {{-- Desktop nav links (ซ่อนบนมือถือ) --}}
-            <nav class="navbar-center navbar-desktop">
-                <a href="{{ route('activities.index') }}" class="{{ request()->routeIs('activities.*') ? 'active' : '' }}">
-                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                    กิจกรรม
-                </a>
-                <a href="{{ route('student.calendar') }}" class="{{ request()->routeIs('student.calendar') ? 'active' : '' }}" title="ปฏิทิน">
-                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/><rect x="3" y="9" width="18" height="12" rx="2" stroke-width="0" fill="currentColor" opacity=".12"/></svg>
-                    ปฏิทิน
-                </a>
-                <a href="{{ route('announcements.index') }}" class="{{ request()->routeIs('announcements.*') ? 'active' : '' }}">
-                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
-                    ประกาศ
-                </a>
-                <a href="{{ route('student.my') }}" class="{{ request()->routeIs('student.my') ? 'active' : '' }}" style="position:relative;">
-                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                    ของฉัน
-                    <span id="nav-todo-badge" style="display:none;position:absolute;top:-4px;right:-6px;min-width:16px;height:16px;border-radius:8px;background:#ef4444;color:#fff;font-size:.6rem;font-weight:700;line-height:16px;text-align:center;padding:0 3px;"></span>
-                </a>
-                <a href="{{ route('student.history') }}" class="{{ request()->routeIs('student.history') ? 'active' : '' }}">
-                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    ประวัติ
-                </a>
-                <a href="{{ route('student.summary') }}" class="{{ request()->routeIs('student.summary') ? 'active' : '' }}">
-                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    สรุป
-                </a>
-                <a href="{{ route('student.profile') }}" class="{{ request()->routeIs('student.profile') ? 'active' : '' }}">
-                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                    โปรไฟล์
-                </a>
-            </nav>
-            <div class="navbar-right navbar-desktop">
-                <span class="navbar-user">
-                    <svg class="icon-sm" style="display:inline;margin-right:.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                    {{ auth()->user()->full_name }}
-                </span>
-                <form method="POST" action="{{ route('logout') }}" style="margin:0">
-                    @csrf
-                    <button type="submit" class="btn btn-outline btn-sm">ออก</button>
-                </form>
-            </div>
-            {{-- Mobile: แสดงชื่อ + ปุ่มออก --}}
-            <div class="navbar-mobile-right">
-                <a href="{{ route('jobs.index') }}" class="btn btn-sm btn-outline" style="border:none;padding:.25rem .5rem;" title="หางาน">
-                    <svg class="icon" style="margin:0;color:{{ request()->routeIs('jobs.*') ? '#4f46e5' : '#f97316' }};" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                </a>
-                <a href="{{ route('announcements.index') }}" class="btn btn-sm btn-outline" style="border:none;padding:.25rem .5rem;" title="ประกาศ">
-                    <svg class="icon" style="margin:0;color:#6366f1;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
-                </a>
-                <form method="POST" action="{{ route('logout') }}" style="margin:0">
-                    @csrf
-                    <button type="submit" class="btn btn-outline btn-sm">ออก</button>
-                </form>
-            </div>
-            @endauth
-        </div>
-    </header>
 
-    {{-- Notification Banner (กิจกรรมเร่งด่วน) --}}
-    @auth
-    @if(!in_array(auth()->user()->role ?? 'student', ['admin','staff']))
-    <div id="notif-banner" style="display:none;background:linear-gradient(90deg,#4f46e5,#7c3aed);color:#fff;padding:.55rem 1rem;font-size:.82rem;cursor:pointer;position:sticky;top:0;z-index:999;box-shadow:0 2px 8px rgba(79,70,229,.3);">
-        <div style="max-width:100%;padding: 0 16px;margin:0 auto;display:flex;align-items:center;gap:.75rem;">
-            <span id="notif-banner-icon" style="flex-shrink:0;display:flex;align-items:center;">
-                <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-            </span>
-            <span id="notif-banner-text" style="flex:1;"></span>
-            <a id="notif-banner-link" href="#" style="color:#c7d2fe;font-weight:600;font-size:.8rem;flex-shrink:0;text-decoration:none;">ไปเลย →</a>
-            <button onclick="document.getElementById('notif-banner').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,.7);font-size:1.1rem;cursor:pointer;flex-shrink:0;line-height:1;">✕</button>
-        </div>
-    </div>
-    @endif
-    @endauth
-    {{-- เนื้อหาหลัก --}}
-    <div class="container" style="padding-top:1rem; padding-bottom:5rem;">
-        @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
-        @if(session('error'))<div class="alert alert-error">{{ session('error') }}</div>@endif
-        @yield('content')
-    </div>
-
-    {{-- Bottom Navigation Bar (Mobile App Style) --}}
-    @auth
-    <nav class="bottom-nav">
-        <a href="{{ route('activities.index') }}" class="bottom-nav-item {{ request()->routeIs('activities.*') ? 'active' : '' }}">
-            <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-            <span>หน้าหลัก</span>
-        </a>
-        <a href="{{ route('student.my') }}" class="bottom-nav-item {{ request()->routeIs('student.my') ? 'active' : '' }}" style="position:relative;">
-            <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-            <span>กิจกรรม</span>
-            <span id="bottom-todo-badge" style="display:none;position:absolute;top:4px;right:calc(50% - 20px);min-width:16px;height:16px;border-radius:8px;background:#ef4444;color:#fff;font-size:.6rem;font-weight:700;line-height:16px;text-align:center;padding:0 3px;"></span>
-        </a>
-        <a href="{{ route('student.scanner') }}" class="bottom-nav-item {{ request()->routeIs('student.scanner') ? 'active' : '' }}">
-            <div class="bg-indigo-600 text-white rounded-full p-3 -mt-6 shadow-lg border-4 border-white flex items-center justify-center" style="width:54px;height:54px;">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            </div>
-            <span class="mt-1" style="font-size:0.65rem;">สแกน</span>
-        </a>
-        <a href="{{ route('student.summary') }}" class="bottom-nav-item {{ request()->routeIs('student.summary') ? 'active' : '' }}">
-            <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <span>สรุป</span>
-        </a>
-        <a href="{{ route('student.profile') }}" class="bottom-nav-item {{ request()->routeIs('student.profile') ? 'active' : '' }}">
-            <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-            <span>โปรไฟล์</span>
-        </a>
-    </nav>
-    @endauth
-
-    @yield('scripts')
-    <script>
-    // ปิด dropdown "แนะนำ" เมื่อคลิกข้างนอก
-    document.addEventListener('click', function(e) {
-        document.querySelectorAll('.recommend-dropdown.open').forEach(function(d) {
-            if (!d.contains(e.target)) d.classList.remove('open');
-        });
-    });
-    </script>
-
-    @auth
-    @if(!in_array(auth()->user()->role ?? 'student', ['admin','staff']))
-    {{-- ── Notification Polling Script ── --}}
-    <script>
-    (function() {
-        var NOTIF_URL = '{{ route("student.notifications") }}';
-        var CSRF = document.querySelector('meta[name="csrf-token"]').content;
-
-        function fetchNotifications() {
-            fetch(NOTIF_URL, { headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' } })
-                .then(function(r) { return r.json(); })
-                .then(function(data) {
-                    var alerts = data.alerts || [];
-                    var banner = document.getElementById('notif-banner');
-                    var navBadge = document.getElementById('nav-todo-badge');
-                    var botBadge = document.getElementById('bottom-todo-badge');
-
-                    if (!alerts.length) {
-                        if (banner) banner.style.display = 'none';
-                        if (navBadge) navBadge.style.display = 'none';
-                        if (botBadge) botBadge.style.display = 'none';
-                        return;
-                    }
-
-                    var count = alerts.length;
-                    if (navBadge) { navBadge.textContent = count; navBadge.style.display = 'inline-block'; }
-                    if (botBadge) { botBadge.textContent = count; botBadge.style.display = 'inline-block'; }
-
-                    var urgent = alerts.filter(function(a) { return a.type === 'checkin_open' || a.type === 'checkin_soon'; });
-                    if (urgent.length && banner) {
-                        var first = urgent[0];
-                        document.getElementById('notif-banner-icon').textContent = first.icon;
-                        document.getElementById('notif-banner-text').textContent = first.title + ' — ' + first.body;
-                        document.getElementById('notif-banner-link').href = first.url;
-                        banner.style.display = 'block';
-                    }
-                })
-                .catch(function() {});
-        }
-        setTimeout(fetchNotifications, 2000);
-
-        if (window.Echo) {
-            window.Echo.private('App.Models.User.{{ auth()->id() }}')
-                .listen('StudentAlertsUpdated', function(e) {
-                    fetchNotifications();
-                });
-        }
-    })();
-    </script>
-    @endif
-    @endauth
-
-    @auth
-    @if(!in_array(auth()->user()->role ?? 'student', ['admin','staff']))
-    {{-- ── Floating Chat Widget ── --}}
-    <div id="chatFloatWidget" style="position:fixed;bottom:5.5rem;right:1.1rem;z-index:8500;display:flex;flex-direction:column;align-items:flex-end;gap:.5rem;">
-        <div id="chatFloatPanel" style="display:none;width:330px;height:480px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.2);overflow:hidden;flex-direction:column;">
-            <div id="cfHeader" style="background:#4f46e5;padding:.7rem 1rem;display:flex;align-items:center;gap:.5rem;flex-shrink:0;">
-                <button id="cfBackBtn" onclick="cfBackToList()" style="display:none;background:none;border:none;color:#fff;font-size:1rem;cursor:pointer;padding:.1rem .3rem;line-height:1;opacity:.85;">←</button>
-                <span id="cfHeaderTitle" style="color:#fff;font-weight:700;font-size:.88rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><svg style="width:16px;height:16px;display:inline;vertical-align:-3px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg> ข้อความของฉัน</span>
-                <button onclick="closeChatWidget()" style="background:none;border:none;color:#fff;font-size:1.1rem;cursor:pointer;line-height:1;padding:.1rem .3rem;opacity:.85;">✕</button>
-            </div>
-            <div id="cfViewList" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;">
-                <div id="cfListContent" style="flex:1;">
-                    <div style="padding:1.5rem;text-align:center;font-size:.85rem;color:#94a3b8;">กำลังโหลด...</div>
-                </div>
-            </div>
-            <div id="cfViewChat" style="display:none;flex-direction:column;flex:1;min-height:0;">
-                <div id="cfChatWindow" style="flex:1;overflow-y:auto;padding:.75rem;display:flex;flex-direction:column;gap:.45rem;background:#f8fafc;"></div>
-                <div id="cfTypingBar" style="display:none;align-items:center;padding:.4rem .75rem;background:#f8fafc;font-size:.72rem;color:#6366f1;">
-                    <svg style="width:12px;height:12px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                    ผู้ดูแลกำลังพิมพ์...
-                </div>
-                <div style="border-top:1px solid #e2e8f0;padding:.5rem .75rem;background:#fff;flex-shrink:0;">
-                    <div id="cfAttachPreview" style="display:none;gap:.3rem;flex-wrap:wrap;margin-bottom:.3rem;"></div>
-                    <form id="cfChatForm" enctype="multipart/form-data" style="display:flex;gap:.35rem;align-items:flex-end;">
-                        @csrf
-                        <label style="cursor:pointer;padding:.4rem .5rem;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;font-size:.9rem;line-height:1;flex-shrink:0;" title="แนบไฟล์">
-                            <svg style="width:16px;height:16px;display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg><input type="file" id="cfFileInput" name="attachments[]" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.zip,.txt" style="display:none;">
-                        </label>
-                        <textarea id="cfMsgInput" name="message" rows="1" placeholder="พิมพ์ข้อความ..." style="flex:1;resize:none;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .6rem;font-size:.82rem;line-height:1.4;outline:none;font-family:inherit;max-height:80px;overflow-y:auto;"></textarea>
-                        <button type="submit" id="cfSendBtn" style="padding:.4rem .85rem;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-size:.82rem;cursor:pointer;font-weight:500;flex-shrink:0;">ส่ง</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-        <button id="chatFloatBtn" onclick="toggleChatWidget()" style="width:52px;height:52px;border-radius:50%;background:#4f46e5;color:#fff;border:none;cursor:pointer;box-shadow:0 4px 18px rgba(79,70,229,.45);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .15s;">
-            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-            <span id="chatFloatBadge" style="display:none;position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;border-radius:9px;background:#ef4444;color:#fff;font-size:.65rem;font-weight:700;line-height:18px;text-align:center;padding:0 4px;border:2px solid #fff;"></span>
-        </button>
-    </div>
-
-    <script>
     (function () {
-        var THREADS_URL = '{{ route("chat.threads") }}';
+        var THREADS_URL = '"BLADE"';
         var CSRF = document.querySelector('meta[name="csrf-token"]').content;
-        var USER_ID = '{{ auth()->id() }}';
-        var MY_PHOTO = '{{ auth()->user()->profile_photo ? asset("storage/".auth()->user()->profile_photo) : "" }}';
-        var MY_NAME = '{{ auth()->user()->full_name ?? auth()->user()->name ?? "คุณ" }}';
+        var USER_ID = '"BLADE"';
+        var MY_PHOTO = '"BLADE"';
+        var MY_NAME = '"BLADE"';
 
         var panelOpen = false;
         var threads = [];
@@ -381,10 +143,9 @@
             col.appendChild(bubble);
 
             if (!isTemp && mine) {
-                col.style.position = 'relative';
                 var actions = document.createElement('div');
                 actions.className = 'msg-actions';
-                actions.style.cssText = 'display:flex; position:absolute; left:-34px; bottom:18px; flex-direction:row; z-index: 20; align-items:center;';
+                actions.style.cssText = 'display:flex; position:relative; flex-direction:row; z-index: 20; align-items:center; margin-bottom:18px; order: -1;';
                 
                 var moreBtn = document.createElement('button');
                 moreBtn.innerHTML = '<svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>';
@@ -441,12 +202,12 @@
             }
             col.appendChild(statusDiv);
 
-            // Append actions inside col as absolute positioned element
-            if (!isTemp && mine) {
-                col.appendChild(actions);
-            }
-
             row.appendChild(col);
+            
+            // Insert actions before col if it's my message
+            if (!isTemp && mine) {
+                row.insertBefore(actions, col);
+            }
             
             return row;
         }
@@ -695,11 +456,4 @@
         // โหลดข้อมูลล่าสุดตอนโหลดหน้าเว็บ เพื่ออัปเดตตัวเลขแจ้งเตือนที่ปุ่มแชท
         loadThreads();
     })();
-    </script>
-    @endif
-    @endauth
-
-    @yield('scripts')
-    @stack('scripts')
-</body>
-</html>
+    
