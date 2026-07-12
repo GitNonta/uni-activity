@@ -363,8 +363,25 @@
                     if ((a.mime_type || '').indexOf('image/') === 0) {
                         var img = document.createElement('img');
                         img.src = a.url;
-                        img.style.cssText = 'max-width:200px;max-height:200px;object-fit:cover;border-radius:8px;display:block;cursor:pointer;';
-                        img.onclick = function() { window.open(a.url, '_blank'); };
+                        img.style.cssText = 'max-width:110px;max-height:110px;object-fit:cover;border-radius:8px;display:block;cursor:pointer;';
+                        img.onclick = function() { 
+                            var lb = document.getElementById('imageLightbox');
+                            if(!lb) {
+                                lb = document.createElement('div');
+                                lb.id = 'imageLightbox';
+                                lb.style.cssText = 'display:flex; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; align-items:center; justify-content:center; cursor:pointer; opacity:0; transition:opacity 0.2s;';
+                                lb.onclick = function() { lb.style.opacity = '0'; setTimeout(function(){lb.style.display='none';}, 200); };
+                                var lbImg = document.createElement('img');
+                                lbImg.id = 'lightboxImg';
+                                lbImg.style.cssText = 'max-width:90%; max-height:90%; object-fit:contain; border-radius:8px; box-shadow:0 4px 24px rgba(0,0,0,0.5); transform:scale(0.95); transition:transform 0.2s;';
+                                lb.appendChild(lbImg);
+                                document.body.appendChild(lb);
+                            }
+                            var lImg = document.getElementById('lightboxImg');
+                            lImg.src = a.url;
+                            lb.style.display = 'flex';
+                            setTimeout(function(){ lb.style.opacity = '1'; lImg.style.transform = 'scale(1)'; }, 10);
+                        };
                         attDiv.appendChild(img);
                     } else {
                         var link = document.createElement('a');

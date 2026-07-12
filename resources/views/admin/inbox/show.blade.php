@@ -68,8 +68,8 @@
                             @php $isImg = str_starts_with($att['mime_type'] ?? '', 'image/'); @endphp
                             @if($isImg)
                                 <img src="{{ $att['url'] }}" alt="{{ $att['original_name'] }}"
-                                     style="max-width:200px;max-height:200px;object-fit:cover;border-radius:8px;margin-top:.35rem;display:block;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.1);"
-                                     onclick="window.open('{{ $att['url'] }}','_blank')">
+                                     style="max-width:110px;max-height:110px;object-fit:cover;border-radius:8px;margin-top:.35rem;display:block;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.1);"
+                                     onclick="window.openLightbox('{{ $att['url'] }}')">
                             @else
                                 <a href="{{ $att['url'] }}" target="_blank" download="{{ $att['original_name'] }}"
                                    style="display:flex;align-items:center;gap:.4rem;margin-top:.35rem;color:{{ $isMine ? '#c7d2fe' : '#4f46e5' }};font-size:.8rem;text-decoration:none;">
@@ -126,6 +126,25 @@
 
 @section('scripts')
 <script>
+window.openLightbox = function(url) {
+    var lb = document.getElementById('imageLightbox');
+    if(!lb) {
+        lb = document.createElement('div');
+        lb.id = 'imageLightbox';
+        lb.style.cssText = 'display:flex; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; align-items:center; justify-content:center; cursor:pointer; opacity:0; transition:opacity 0.2s;';
+        lb.onclick = function() { lb.style.opacity = '0'; setTimeout(function(){lb.style.display='none';}, 200); };
+        var lbImg = document.createElement('img');
+        lbImg.id = 'lightboxImg';
+        lbImg.style.cssText = 'max-width:90%; max-height:90%; object-fit:contain; border-radius:8px; box-shadow:0 4px 24px rgba(0,0,0,0.5); transform:scale(0.95); transition:transform 0.2s;';
+        lb.appendChild(lbImg);
+        document.body.appendChild(lb);
+    }
+    var lImg = document.getElementById('lightboxImg');
+    lImg.src = url;
+    lb.style.display = 'flex';
+    setTimeout(function(){ lb.style.opacity = '1'; lImg.style.transform = 'scale(1)'; }, 10);
+};
+
 document.addEventListener('DOMContentLoaded', function () {
     const win        = document.getElementById('chatWindow');
     const form       = document.getElementById('chatForm');
@@ -184,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var attHtml = '';
         (msg.attachments || []).forEach(function(a) {
             if ((a.mime_type || '').startsWith('image/')) {
-                attHtml += '<img src="' + a.url + '" style="max-width:200px;max-height:200px;object-fit:cover;border-radius:8px;margin-top:.35rem;display:block;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.1);" onclick="window.open(\'' + a.url + '\',\'_blank\')">';
+                attHtml += '<img src="' + a.url + '" style="max-width:110px;max-height:110px;object-fit:cover;border-radius:8px;margin-top:.35rem;display:block;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.1);" onclick="window.openLightbox(\'' + a.url + '\')">';
             } else {
                 attHtml += '<a href="' + a.url + '" target="_blank" style="display:flex;align-items:center;gap:.4rem;margin-top:.35rem;color:' + linkC + ';font-size:.8rem;text-decoration:none;"><svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> ' + a.original_name + '</a>';
             }
