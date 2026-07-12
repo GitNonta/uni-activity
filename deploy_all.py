@@ -5,6 +5,7 @@ import builtins
 import io
 
 log_buffer = []
+remote_log = None
 
 def print(*args, **kwargs):
     f = io.StringIO()
@@ -12,6 +13,13 @@ def print(*args, **kwargs):
     text = f.getvalue()
     log_buffer.append(text)
     builtins.print(text, end='')
+    global remote_log
+    if remote_log is not None:
+        try:
+            remote_log.write(text)
+            remote_log.flush()
+        except:
+            pass
 
 
 host = '192.168.1.222'
@@ -40,6 +48,22 @@ client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 print(f"Connecting to {host}...")
 client.connect(host, port, user, password, timeout=10)
 sftp = client.open_sftp()
+
+try:
+    try:
+        sftp.mkdir(f"{remote_base}/storage")
+    except:
+        pass
+    try:
+        sftp.mkdir(f"{remote_base}/storage/logs")
+    except:
+        pass
+    remote_log = sftp.file(f"{remote_base}/storage/logs/deploy.log", "w")
+    if remote_log is not None:
+        remote_log.write("".join(log_buffer))
+        remote_log.flush()
+except Exception as e:
+    builtins.print(f"Failed to open remote log file: {e}")
 
 # Allow deploying any file that has been modified
 files_to_sync.extend([
@@ -71,7 +95,7 @@ for file_path in files_to_sync:
     print(f"Uploading {local_path} to {remote_path}")
     sftp.put(local_path, remote_path)
 
-sftp.close()
+# sftp is kept open for real-time logging
 
 commands = [
     f'cd {remote_base} && php -d memory_limit=-1 $(which composer) update --no-dev --optimize-autoloader --ignore-platform-reqs',
@@ -91,31 +115,24 @@ for cmd in commands:
     print(f'Running: {cmd}')
     stdin, stdout, stderr = client.exec_command(cmd)
     
-    # Wait for the command to finish
-    exit_status = stdout.channel.recv_exit_status()
-    
-    out = stdout.read().decode()
+    # Stream stdout line-by-line as it's printed
+    while True:
+        line = stdout.readline()
+        if not line:
+            break
+        print(line, end='')
+        
+    # Read stderr if any
     err = stderr.read().decode()
-    if out:
-        print(out)
     if err:
         print(err)
         
 try:
-    sftp_log = client.open_sftp()
-    try:
-        sftp_log.mkdir(f"{remote_base}/storage")
-    except:
-        pass
-    try:
-        sftp_log.mkdir(f"{remote_base}/storage/logs")
-    except:
-        pass
-    with sftp_log.file(f"{remote_base}/storage/logs/deploy.log", "w") as f:
-        f.write("".join(log_buffer))
-    sftp_log.close()
+    if remote_log is not None:
+        remote_log.close()
+    sftp.close()
 except Exception as e:
-    builtins.print(f"Failed to write deployment log: {e}")
+    builtins.print(f"Failed to clean up: {e}")
 
 client.close()
 print("Deployment and upgrade complete!")

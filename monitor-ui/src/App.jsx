@@ -69,7 +69,11 @@ export default function App() {
           <Status data={data} />
         )}
         {activeTab === 'deploy' && (
-          <DeployCard deployLog={data?.deploy_log} />
+          <DeployCard 
+            deployLog={data?.deploy_log} 
+            sshSessions={data?.ssh_sessions} 
+            sftpSessions={data?.sftp_sessions} 
+          />
         )}
       </main>
     </div>

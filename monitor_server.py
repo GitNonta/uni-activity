@@ -252,6 +252,41 @@ def get_deploy_logs():
             return f"Error reading deploy log: {str(e)}"
     return "No deployment log found."
 
+def get_active_sessions():
+    sessions = []
+    try:
+        if os.path.exists("/proc/net/tcp"):
+            with open("/proc/net/tcp", "r") as f:
+                lines = f.readlines()
+            
+            # Port 8022 in hex is 1F56
+            ssh_port_hex = "1F56"
+            for line in lines[1:]:
+                parts = line.split()
+                if len(parts) >= 4:
+                    local_addr = parts[1]
+                    remote_addr = parts[2]
+                    state = parts[3]
+                    
+                    # State "01" is ESTABLISHED
+                    if state == "01" and local_addr.endswith(":" + ssh_port_hex):
+                        r_ip_hex, r_port_hex = remote_addr.split(":")
+                        r_ip = ".".join(str(int(r_ip_hex[i:i+2], 16)) for i in (6, 4, 2, 0))
+                        r_port = int(r_port_hex, 16)
+                        sessions.append(f"{r_ip}:{r_port}")
+    except Exception as e:
+        pass
+    return sessions
+
+def get_sftp_active():
+    import subprocess
+    try:
+        res = subprocess.run(["pgrep", "-f", "sftp"], capture_output=True, text=True)
+        return len(res.stdout.strip().split('\n')) if res.stdout.strip() else 0
+    except:
+        return 0
+
+
 
 def get_battery():
     try:
@@ -423,6 +458,8 @@ def collect_stats():
         "logs": get_logs(),
         "inspector": list(inspector_logs),
         "deploy_log": get_deploy_logs(),
+        "ssh_sessions": get_active_sessions(),
+        "sftp_sessions": get_sftp_active(),
     }
     stats["alerts"] = get_alerts(stats)
     stats["alerts_history"] = list(alerts_history)

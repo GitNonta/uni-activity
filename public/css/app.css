@@ -197,56 +197,62 @@ select.form-control { appearance: auto; }
 .navbar-mobile-right { display: none; align-items: center; gap: .5rem; }
 .navbar-user-mobile { font-size: .8rem; font-weight: 500; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
 
-/* ── Bottom Navigation Bar: Mobile App Style (Figma) ──────── */
+/* ── Bottom Navigation Bar: Floating Capsule (Mental Health App Style) ──────── */
 .bottom-nav {
     display: none;
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 200;
-    background: #fff;
-    border-top: 1px solid #e2e8f0;
-    padding: .375rem 0;
-    padding-bottom: calc(.375rem + env(safe-area-inset-bottom, 0px));
-    justify-content: space-around;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 999px;
+    padding: 8px 12px;
+    justify-content: space-between;
     align-items: center;
-    box-shadow: 0 -2px 10px rgba(0,0,0,.06);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08), 0 2px 10px rgba(0,0,0,0.04);
+    width: 90%;
+    max-width: 500px;
 }
+
 .bottom-nav-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: .125rem;
-    padding: .25rem .5rem;
-    color: #94a3b8;
-    font-size: .625rem;
-    font-weight: 500;
+    justify-content: center;
+    gap: 4px;
+    padding: 10px 12px;
+    color: #64748b;
+    font-size: 0.65rem;
+    font-weight: 600;
     text-decoration: none;
-    transition: color .2s;
+    border-radius: 999px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    min-width: 0;
     flex: 1;
+    min-width: 0;
 }
-.bottom-nav-item:hover { text-decoration: none; color: #64748b; }
-.bottom-nav-item.active { color: #4f46e5; }
-.bottom-nav-item.active::before {
-    content: '';
-    position: absolute;
-    top: -0.375rem;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 20px;
-    height: 3px;
-    border-radius: 0 0 4px 4px;
-    background: #4f46e5;
+
+.bottom-nav-item:hover { text-decoration: none; color: #475569; }
+
+/* Active item pill style */
+.bottom-nav-item.active {
+    color: #78350f; /* Dark brown for active text/icon */
+    background: #fef3c7; /* Light warm tint background */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
 }
+
 .bottom-nav-icon {
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 24px;
     flex-shrink: 0;
+    transition: transform 0.3s;
 }
-.bottom-nav-item.active .bottom-nav-icon { stroke-width: 2.5; }
+
+.bottom-nav-item.active .bottom-nav-icon { stroke-width: 2.5; transform: scale(1.05); }
 
 @media (max-width: 1024px) {
     .navbar-desktop { display: none !important; }
@@ -256,8 +262,7 @@ select.form-control { appearance: auto; }
 
 @media (min-width: 641px) and (max-width: 1024px) {
     /* Tablet Portrait enhancements for Bottom Nav */
-    .bottom-nav { justify-content: center; gap: 3rem; padding-top: 0.5rem; }
-    .bottom-nav-item { flex: none; width: 80px; }
+    .bottom-nav { gap: 1rem; padding: 10px 24px; max-width: 600px; bottom: 32px; }
 }
 
 /* ── แถบด้านข้างฝั่งผู้ดูแล: เมนูซ้าย + เนื้อหาขวา + responsive ──────

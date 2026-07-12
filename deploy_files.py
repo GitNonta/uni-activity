@@ -4,6 +4,7 @@ import builtins
 import io
 
 log_buffer = []
+remote_log = None
 
 def print(*args, **kwargs):
     f = io.StringIO()
@@ -11,6 +12,13 @@ def print(*args, **kwargs):
     text = f.getvalue()
     log_buffer.append(text)
     builtins.print(text, end='')
+    global remote_log
+    if remote_log is not None:
+        try:
+            remote_log.write(text)
+            remote_log.flush()
+        except:
+            pass
 
 
 HOST = "192.168.1.222"
@@ -25,10 +33,36 @@ client.connect(hostname=HOST, port=PORT, username=USER, password=PASSWORD, timeo
 
 sftp = client.open_sftp()
 
+try:
+    try:
+        sftp.mkdir(f"{APP_DIR}/storage")
+    except:
+        pass
+    try:
+        sftp.mkdir(f"{APP_DIR}/storage/logs")
+    except:
+        pass
+    remote_log = sftp.file(f"{APP_DIR}/storage/logs/deploy.log", "w")
+    if remote_log is not None:
+        remote_log.write("".join(log_buffer))
+        remote_log.flush()
+except Exception as e:
+    builtins.print(f"Failed to open remote log file: {e}")
+
 def run_cmd(cmd):
     stdin, stdout, stderr = client.exec_command(cmd)
-    stdout.channel.recv_exit_status() # WAIT for command to finish!
-    return stdout.read().decode()
+    output = []
+    while True:
+        line = stdout.readline()
+        if not line:
+            break
+        print(line, end='')
+        output.append(line)
+    err = stderr.read().decode()
+    if err:
+        print(err)
+        output.append(err)
+    return "".join(output)
 
 def upload_file(local_path, remote_path):
     print(f"Uploading {local_path} to {remote_path}...")
@@ -62,18 +96,10 @@ print("--- Clearing Cache on Server ---")
 print(run_cmd(f"cd {APP_DIR} && php artisan view:clear && php artisan config:clear"))
 
 try:
-    try:
-        sftp.mkdir(f"{APP_DIR}/storage")
-    except:
-        pass
-    try:
-        sftp.mkdir(f"{APP_DIR}/storage/logs")
-    except:
-        pass
-    with sftp.file(f"{APP_DIR}/storage/logs/deploy.log", "w") as f:
-        f.write("".join(log_buffer))
+    if remote_log is not None:
+        remote_log.close()
 except Exception as e:
-    builtins.print(f"Failed to write deployment log: {e}")
+    builtins.print(f"Failed to close remote log: {e}")
 
 sftp.close()
 client.close()

@@ -99,7 +99,7 @@
     @endif
     @endauth
     {{-- เนื้อหาหลัก --}}
-    <div class="container" style="padding-top:1rem; padding-bottom:5rem;">
+    <div class="container" style="padding-top:1rem; padding-bottom:6rem;">
         @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
         @if(session('error'))<div class="alert alert-error">{{ session('error') }}</div>@endif
         @yield('content')
@@ -118,10 +118,8 @@
             <span id="bottom-todo-badge" style="display:none;position:absolute;top:4px;right:calc(50% - 20px);min-width:16px;height:16px;border-radius:8px;background:#ef4444;color:#fff;font-size:.6rem;font-weight:700;line-height:16px;text-align:center;padding:0 3px;"></span>
         </a>
         <a href="{{ route('student.scanner') }}" class="bottom-nav-item {{ request()->routeIs('student.scanner') ? 'active' : '' }}">
-            <div class="bg-indigo-600 text-white rounded-full p-3 -mt-6 shadow-lg border-4 border-white flex items-center justify-center" style="width:54px;height:54px;">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            </div>
-            <span class="mt-1" style="font-size:0.65rem;">สแกน</span>
+            <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span>สแกน</span>
         </a>
         <a href="{{ route('student.summary') }}" class="bottom-nav-item {{ request()->routeIs('student.summary') ? 'active' : '' }}">
             <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
