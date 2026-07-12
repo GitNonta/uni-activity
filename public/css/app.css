@@ -157,7 +157,7 @@ table th { font-weight: 600; color: #475569; background: #f8fafc; }
 .form-error { color: #dc2626; font-size: .75rem; margin-top: .25rem; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem; }
 .form-row > div { min-width: 0; margin-bottom: 0; }
-@media (max-width: 640px) { .form-row { grid-template-columns: 1fr; gap: 1.25rem; } }
+@media (max-width: 1200px) { .form-row { grid-template-columns: 1fr; gap: 1.25rem; } }
 select.form-control { appearance: auto; }
 .checkbox-label { display: flex; align-items: center; gap: .5rem; font-size: .875rem; }
 .checkbox-label input[type="checkbox"] { width: 16px; height: 16px; accent-color: #4f46e5; }

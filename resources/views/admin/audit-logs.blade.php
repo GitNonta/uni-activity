@@ -37,42 +37,44 @@
         <input type="date" name="date_to" value="{{ request('date_to') }}" />
         <button type="submit">Filter</button>
     </form>
-    <table>
-        <thead>
-        <tr>
-            <th>#</th>
-            <th>User ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Status</th>
-            <th>Action</th>
-            <th>Description</th>
-            <th>IP Address</th>
-            <th>Device</th>
-            <th>Created At</th>
-        </tr>
-        </thead>
-        <tbody>
-        @forelse ($auditLogs as $log)
+    <div style="overflow-x: auto; width: 100%; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 1rem; background: #fff;">
+        <table style="margin-top: 0;">
+            <thead>
             <tr>
-                <td>{{ $log->id }}</td>
-                <td>{{ $log->user_id }}</td>
-                <td>{{ $log->user->full_name ?? '-' }}</td>
-                <td>{{ $log->user->email ?? '-' }}</td>
-                <td>{{ $log->user->role ?? '-' }}</td>
-                <td>{{ $log->user->is_active ? 'Active' : 'Inactive' }}</td>
-                <td>{{ $log->action }}</td>
-                <td>{{ $log->description ?? '-' }}</td>
-                <td>{{ $log->ip_address }}</td>
-                <td>{{ $log->user_agent }}</td>
-                <td>{{ $log->created_at->format('Y-m-d H:i:s') }}</td>
+                <th style="white-space:nowrap;">#</th>
+                <th style="white-space:nowrap;">User ID</th>
+                <th style="white-space:nowrap;min-width:150px;">Name</th>
+                <th style="white-space:nowrap;min-width:150px;">Email</th>
+                <th style="white-space:nowrap;">Role</th>
+                <th style="white-space:nowrap;">Status</th>
+                <th style="white-space:nowrap;min-width:120px;">Action</th>
+                <th style="min-width:200px;">Description</th>
+                <th style="white-space:nowrap;">IP Address</th>
+                <th style="min-width:150px;">Device</th>
+                <th style="white-space:nowrap;min-width:140px;">Created At</th>
             </tr>
-        @empty
-            <tr><td colspan="11" style="text-align:center;">No audit logs found.</td></tr>
-        @endforelse
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+            @forelse ($auditLogs as $log)
+                <tr>
+                    <td>{{ $log->id }}</td>
+                    <td>{{ $log->user_id }}</td>
+                    <td>{{ $log->user->full_name ?? '-' }}</td>
+                    <td>{{ $log->user->email ?? '-' }}</td>
+                    <td>{{ $log->user->role ?? '-' }}</td>
+                    <td>{{ $log->user->is_active ? 'Active' : 'Inactive' }}</td>
+                    <td>{{ $log->action }}</td>
+                    <td>{{ $log->description ?? '-' }}</td>
+                    <td>{{ $log->ip_address }}</td>
+                    <td style="font-size:0.85rem;color:#475569;">{{ $log->user_agent }}</td>
+                    <td style="white-space:nowrap;">{{ $log->created_at->format('Y-m-d H:i:s') }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="11" style="text-align:center;">No audit logs found.</td></tr>
+            @endforelse
+            </tbody>
+        </table>
+    </div>
     <div class="pagination">
         {{ $auditLogs->withQueryString()->links() }}
     </div>
