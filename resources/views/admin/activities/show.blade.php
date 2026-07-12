@@ -125,11 +125,17 @@
                 <div class="card" style="border:1px solid #dcfce7;box-shadow:none;">
                     <div class="card-header" style="background:#dcfce7;color:#166534;padding:0.75rem 1rem;">QR ที่ 1: เข้างาน (Check-in)</div>
                     <div class="card-body" style="padding:1rem;">
-                        <div class="flex items-center gap-2 mb-3" style="flex-wrap:wrap;">
-                            <code id="entry-url" class="text-xs" style="background:#f1f5f9;padding:.375rem;border-radius:4px;flex:1;word-break:break-all;">{{ url('/check-in/' . $activity->qr_token) }}</code>
-                            <button onclick="copyToClipboard('entry-url')" class="btn btn-sm btn-outline" style="white-space:nowrap;" title="คัดลอก">คัดลอก</button>
-                            <button onclick="showQRModal('{{ url('/check-in/' . $activity->qr_token) }}', 'QR สำหรับเข้างาน')" class="btn btn-sm btn-outline" style="white-space:nowrap;">แสดง QR</button>
-                        </div>
+                        @if($activity->qr_token)
+                            <div class="flex items-center gap-2 mb-3" style="flex-wrap:wrap;">
+                                <code id="entry-url" class="text-xs" style="background:#f1f5f9;padding:.375rem;border-radius:4px;flex:1;word-break:break-all;">{{ url('/check-in/' . $activity->qr_token) }}</code>
+                                <button onclick="copyToClipboard('entry-url')" class="btn btn-sm btn-outline" style="white-space:nowrap;" title="คัดลอก">คัดลอก</button>
+                                <button onclick="showQRModal('{{ url('/check-in/' . $activity->qr_token) }}', 'QR สำหรับเข้างาน')" class="btn btn-sm btn-outline" style="white-space:nowrap;">แสดง QR</button>
+                            </div>
+                        @else
+                            <div class="alert mb-3" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem;border-radius:4px;">
+                                ยังไม่มี QR Code สำหรับเข้างาน
+                            </div>
+                        @endif
                         
                         <form method="POST" action="{{ route('admin.activities.regenerate-qr', $activity->id) }}" onsubmit="return confirm('ยืนยันสร้าง QR เข้างานใหม่? ลิงก์และ QR เดิมจะไม่สามารถใช้งานได้อีก')">
                             @csrf
@@ -150,11 +156,17 @@
                 <div class="card" style="border:1px solid #e0e7ff;box-shadow:none;">
                     <div class="card-header" style="background:#e0e7ff;color:#3730a3;padding:0.75rem 1rem;">QR ที่ 2: ออกงาน (Check-out)</div>
                     <div class="card-body" style="padding:1rem;">
-                        <div class="flex items-center gap-2 mb-3" style="flex-wrap:wrap;">
-                            <code id="exit-url" class="text-xs" style="background:#f1f5f9;padding:.375rem;border-radius:4px;flex:1;word-break:break-all;">{{ url('/check-in/' . $activity->qr_checkout_token) }}</code>
-                            <button onclick="copyToClipboard('exit-url')" class="btn btn-sm btn-outline" style="white-space:nowrap;" title="คัดลอก">คัดลอก</button>
-                            <button onclick="showQRModal('{{ url('/check-in/' . $activity->qr_checkout_token) }}', 'QR สำหรับออกงาน (รับชั่วโมง)')" class="btn btn-sm btn-outline" style="white-space:nowrap;">แสดง QR</button>
-                        </div>
+                        @if($activity->qr_checkout_token)
+                            <div class="flex items-center gap-2 mb-3" style="flex-wrap:wrap;">
+                                <code id="exit-url" class="text-xs" style="background:#f1f5f9;padding:.375rem;border-radius:4px;flex:1;word-break:break-all;">{{ url('/check-in/' . $activity->qr_checkout_token) }}</code>
+                                <button onclick="copyToClipboard('exit-url')" class="btn btn-sm btn-outline" style="white-space:nowrap;" title="คัดลอก">คัดลอก</button>
+                                <button onclick="showQRModal('{{ url('/check-in/' . $activity->qr_checkout_token) }}', 'QR สำหรับออกงาน (รับชั่วโมง)')" class="btn btn-sm btn-outline" style="white-space:nowrap;">แสดง QR</button>
+                            </div>
+                        @else
+                            <div class="alert mb-3" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem;border-radius:4px;">
+                                ยังไม่มี QR Code สำหรับออกงาน
+                            </div>
+                        @endif
                         
                         <form method="POST" action="{{ route('admin.activities.regenerate-checkout-qr', $activity->id) }}" onsubmit="return confirm('ยืนยันสร้าง QR ออกงานใหม่? ลิงก์และ QR เดิมจะไม่สามารถใช้งานได้อีก')">
                             @csrf
@@ -176,12 +188,18 @@
             <div class="mt-3 card" style="border:1px solid #fef3c7;box-shadow:none;">
                 <div class="card-header" style="background:#fef3c7;color:#92400e;padding:0.75rem 1rem;">สแกนสำหรับ Walk-in (แอดมินเท่านั้น)</div>
                 <div class="card-body" style="padding:1rem;">
-                    <div class="flex items-center gap-2" style="flex-wrap:wrap;">
-                        <code id="walkin-url" class="text-xs" style="background:#f1f5f9;padding:.375rem;border-radius:4px;flex:1;word-break:break-all;">{{ url('/walkin/' . $activity->qr_token) }}</code>
-                        <button onclick="copyToClipboard('walkin-url')" class="btn btn-sm btn-outline" style="white-space:nowrap;" title="คัดลอก">คัดลอก</button>
-                        <button onclick="showQRModal('{{ url('/walkin/' . $activity->qr_token) }}', 'QR สำหรับ Walk-in')" class="btn btn-sm btn-outline" style="white-space:nowrap;">แสดง QR</button>
-                        <a href="{{ route('checkin.walkin', $activity->qr_token) }}" target="_blank" class="btn btn-sm" style="background:#f59e0b;color:#fff;white-space:nowrap;">เปิดหน้า Walk-in</a>
-                    </div>
+                    @if($activity->qr_token)
+                        <div class="flex items-center gap-2" style="flex-wrap:wrap;">
+                            <code id="walkin-url" class="text-xs" style="background:#f1f5f9;padding:.375rem;border-radius:4px;flex:1;word-break:break-all;">{{ url('/walkin/' . $activity->qr_token) }}</code>
+                            <button onclick="copyToClipboard('walkin-url')" class="btn btn-sm btn-outline" style="white-space:nowrap;" title="คัดลอก">คัดลอก</button>
+                            <button onclick="showQRModal('{{ url('/walkin/' . $activity->qr_token) }}', 'QR สำหรับ Walk-in')" class="btn btn-sm btn-outline" style="white-space:nowrap;">แสดง QR</button>
+                            <a href="{{ route('checkin.walkin', $activity->qr_token) }}" target="_blank" class="btn btn-sm" style="background:#f59e0b;color:#fff;white-space:nowrap;">เปิดหน้า Walk-in</a>
+                        </div>
+                    @else
+                        <div class="alert" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem;border-radius:4px;">
+                            กรุณาสร้าง QR Code เข้างานก่อน
+                        </div>
+                    @endif
                 </div>
             </div>
             
