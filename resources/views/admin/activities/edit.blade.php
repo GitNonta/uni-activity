@@ -63,6 +63,7 @@
                 <div class="form-group">
                     <label class="form-label">วันที่จัดกิจกรรม</label>
                     <input type="date" name="activity_date" value="{{ old('activity_date', $activity->activity_date->format('Y-m-d')) }}" class="form-control" required>
+                    <small class="text-muted" style="display:block; margin-top:4px;">(กรณีจัดหลายวัน ให้ระบุวันเริ่มต้นกิจกรรม)</small>
                 </div>
                 <div class="form-group">
                     <label class="form-label">ชั่วโมงกิจกรรม</label>
@@ -85,6 +86,7 @@
                 <div class="form-group">
                     <label class="form-label">เวลาสิ้นสุด</label>
                     <input type="time" name="end_time" id="endTime" value="{{ old('end_time', \Carbon\Carbon::parse($activity->end_time)->format('H:i')) }}" class="form-control" required onchange="autoCalcHours()">
+                    <small class="text-muted" style="display:block; margin-top:4px;">(ข้ามวันได้)</small>
                 </div>
             </div>
             <div class="form-group">

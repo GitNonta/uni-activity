@@ -64,6 +64,7 @@
                 <div class="form-group">
                     <label class="form-label">วันที่จัดกิจกรรม</label>
                     <input type="date" name="activity_date" value="{{ old('activity_date') }}" class="form-control" required>
+                    <small class="text-muted" style="display:block; margin-top:4px;">(กรณีจัดหลายวัน ให้ระบุวันเริ่มต้นกิจกรรม)</small>
                 </div>
                 <div class="form-group">
                     <label class="form-label">ชั่วโมงกิจกรรม</label>
@@ -90,6 +91,7 @@
                 <div class="form-group">
                     <label class="form-label">เวลาสิ้นสุด</label>
                     <input type="time" name="end_time" id="endTime" value="{{ old('end_time', '12:00') }}" class="form-control" required onchange="autoCalcHours()">
+                    <small class="text-muted" style="display:block; margin-top:4px;">(ข้ามวันได้)</small>
                 </div>
             </div>
             <div class="form-group">

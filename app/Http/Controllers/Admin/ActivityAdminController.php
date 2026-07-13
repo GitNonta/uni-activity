@@ -217,7 +217,7 @@ class ActivityAdminController extends Controller
             'activity_date' => 'required|date',
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i',
-            'activity_hours' => 'required|numeric|min:0.5',
+            'activity_hours' => 'required|numeric|min:0.5|max:999',
             'max_participants' => 'required|integer|min:1',
             'register_open_at' => 'required|date',
             'register_close_at' => 'required|date',
