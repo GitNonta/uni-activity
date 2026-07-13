@@ -113,9 +113,19 @@
             </div>
             <div class="form-group">
                 <label class="form-label">สถานะ</label>
+                @php
+                    $statusOptions = [
+                        'upcoming' => 'กำลังจะเปิด',
+                        'open' => 'เปิดรับสมัคร',
+                        'full' => 'เต็มแล้ว',
+                        'ongoing' => 'กำลังจัดกิจกรรม',
+                        'done' => 'เสร็จสิ้น',
+                        'cancelled' => 'ยกเลิก'
+                    ];
+                @endphp
                 <select name="status" class="form-control">
-                    @foreach(['upcoming','open','full','ongoing','done','cancelled'] as $s)
-                        <option value="{{ $s }}" {{ $activity->status == $s ? 'selected' : '' }}>{{ $s }}</option>
+                    @foreach($statusOptions as $val => $label)
+                        <option value="{{ $val }}" {{ $activity->status == $val ? 'selected' : '' }}>{{ $label }}</option>
                     @endforeach
                 </select>
             </div>
