@@ -126,14 +126,19 @@
                     <input type="datetime-local" name="checkin_close_at" value="{{ old('checkin_close_at') }}" class="form-control" required>
                 </div>
             </div>
-            <div class="form-row">
+            <div class="form-group" id="noCheckoutGroup" style="display:none; margin-bottom: 0.5rem;">
+                <label class="checkbox-label" style="margin:0; font-size:.8rem; color:#475569; font-weight:500;">
+                    <input type="checkbox" name="is_no_checkout" id="isNoCheckoutCheck" value="1" onchange="toggleNoCheckout()" {{ old('is_no_checkout') ? 'checked' : '' }}> ไม่ระบุเวลาสแกนออกงาน (บันทึกกิจกรรมได้ตลอดเวลา)
+                </label>
+            </div>
+            <div class="form-row" id="checkoutTimeRow">
                 <div class="form-group">
                     <label class="form-label">เปิดบันทึกกิจกรรม (ออกงาน)</label>
-                    <input type="datetime-local" name="checkout_open_at" value="{{ old('checkout_open_at') }}" class="form-control" required>
+                    <input type="datetime-local" name="checkout_open_at" id="checkoutOpenInput" value="{{ old('checkout_open_at') }}" class="form-control" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">ปิดบันทึกกิจกรรม (ออกงาน)</label>
-                    <input type="datetime-local" name="checkout_close_at" value="{{ old('checkout_close_at') }}" class="form-control" required>
+                    <input type="datetime-local" name="checkout_close_at" id="checkoutCloseInput" value="{{ old('checkout_close_at') }}" class="form-control" required>
                 </div>
             </div>
             <div class="form-group" id="minHoursGroup" style="display:none;">
@@ -428,6 +433,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('facultyInput').value) updateDepartmentsScope();
     autoCalcHours();
     toggleMultiday();
+    toggleNoCheckout();
 });
 
 function toggleMultiday() {
@@ -437,6 +443,8 @@ function toggleMultiday() {
     var crossDayHint = document.getElementById('crossDayHint');
     var minHoursGroup = document.getElementById('minHoursGroup');
     var minHoursInput = document.getElementById('minHoursInput');
+    var noCheckoutGroup = document.getElementById('noCheckoutGroup');
+    var isNoCheckoutCheck = document.getElementById('isNoCheckoutCheck');
     
     if (isMulti) {
         endDateInput.style.display = '';
@@ -444,6 +452,7 @@ function toggleMultiday() {
         endDateInput.setAttribute('required', 'required');
         if (crossDayHint) crossDayHint.style.display = 'block';
         if (minHoursGroup) minHoursGroup.style.display = 'block';
+        if (noCheckoutGroup) noCheckoutGroup.style.display = 'block';
     } else {
         endDateInput.style.display = 'none';
         separator.style.display = 'none';
@@ -454,6 +463,30 @@ function toggleMultiday() {
             minHoursGroup.style.display = 'none';
             minHoursInput.value = '0';
         }
+        if (noCheckoutGroup) {
+            noCheckoutGroup.style.display = 'none';
+            if (isNoCheckoutCheck) {
+                isNoCheckoutCheck.checked = false;
+                toggleNoCheckout();
+            }
+        }
+    }
+}
+
+function toggleNoCheckout() {
+    var isNoCheckout = document.getElementById('isNoCheckoutCheck').checked;
+    var row = document.getElementById('checkoutTimeRow');
+    var openInput = document.getElementById('checkoutOpenInput');
+    var closeInput = document.getElementById('checkoutCloseInput');
+    
+    if (isNoCheckout) {
+        row.style.display = 'none';
+        openInput.removeAttribute('required');
+        closeInput.removeAttribute('required');
+    } else {
+        row.style.display = '';
+        openInput.setAttribute('required', 'required');
+        closeInput.setAttribute('required', 'required');
     }
 }
 
