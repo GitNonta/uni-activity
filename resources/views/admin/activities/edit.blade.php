@@ -94,7 +94,7 @@
                 <div class="form-group">
                     <label class="form-label">เวลาสิ้นสุด</label>
                     <input type="time" name="end_time" id="endTime" value="{{ old('end_time', \Carbon\Carbon::parse($activity->end_time)->format('H:i')) }}" class="form-control" required onchange="autoCalcHours()">
-                    <small class="text-muted" style="display:block; margin-top:4px;">(ข้ามวันได้)</small>
+                    <small id="crossDayHint" class="text-muted" style="display:{{ old('is_multiday', $activity->is_multiday) ? 'block' : 'none' }}; margin-top:4px;">(ข้ามวันได้)</small>
                 </div>
             </div>
             <div class="form-group">
@@ -131,10 +131,10 @@
                     <input type="datetime-local" name="checkout_close_at" value="{{ old('checkout_close_at', $activity->checkout_close_at ? $activity->checkout_close_at->format('Y-m-d\TH:i') : '') }}" class="form-control" required>
                 </div>
             </div>
-            <div class="form-group">
+            <div class="form-group" id="minHoursGroup" style="display:{{ old('is_multiday', $activity->is_multiday) ? 'block' : 'none' }};">
                 <label class="form-label">ชั่วโมงขั้นต่ำที่ต้องเข้าร่วมก่อนเช็คเอาต์</label>
                 <div style="display:flex; align-items:center; gap:0.5rem;">
-                    <input type="number" name="min_hours_before_checkout" value="{{ old('min_hours_before_checkout', $activity->min_hours_before_checkout ?? 0) }}" min="0" step="0.5" class="form-control" style="max-width: 150px;">
+                    <input type="number" name="min_hours_before_checkout" id="minHoursInput" value="{{ old('min_hours_before_checkout', $activity->min_hours_before_checkout ?? 0) }}" min="0" step="0.5" class="form-control" style="max-width: 150px;">
                     <span class="text-muted text-sm">ชั่วโมง (0 = ไม่มีขั้นต่ำ, สามารถบันทึกออกงานได้ทันที)</span>
                 </div>
             </div>
@@ -450,16 +450,26 @@ function toggleMultiday() {
     var isMulti = document.getElementById('isMultidayCheck').checked;
     var endDateInput = document.getElementById('endDate');
     var separator = document.getElementById('endDateSeparator');
+    var crossDayHint = document.getElementById('crossDayHint');
+    var minHoursGroup = document.getElementById('minHoursGroup');
+    var minHoursInput = document.getElementById('minHoursInput');
     
     if (isMulti) {
         endDateInput.style.display = '';
         separator.style.display = 'inline';
         endDateInput.setAttribute('required', 'required');
+        if (crossDayHint) crossDayHint.style.display = 'block';
+        if (minHoursGroup) minHoursGroup.style.display = 'block';
     } else {
         endDateInput.style.display = 'none';
         separator.style.display = 'none';
         endDateInput.removeAttribute('required');
         endDateInput.value = '';
+        if (crossDayHint) crossDayHint.style.display = 'none';
+        if (minHoursGroup) {
+            minHoursGroup.style.display = 'none';
+            minHoursInput.value = '0';
+        }
     }
 }
 
