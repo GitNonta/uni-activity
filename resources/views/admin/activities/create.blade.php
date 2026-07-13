@@ -116,6 +116,16 @@
                     <input type="datetime-local" name="checkin_close_at" value="{{ old('checkin_close_at') }}" class="form-control" required>
                 </div>
             </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">เปิดบันทึกกิจกรรม (ออกงาน)</label>
+                    <input type="datetime-local" name="checkout_open_at" value="{{ old('checkout_open_at') }}" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">ปิดบันทึกกิจกรรม (ออกงาน)</label>
+                    <input type="datetime-local" name="checkout_close_at" value="{{ old('checkout_close_at') }}" class="form-control" required>
+                </div>
+            </div>
             <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #e2e8f0;">
                 <p class="font-semi text-sm mb-2">ปักพิกัดสถานที่จัดกิจกรรม (สำหรับเช็คอินอัตโนมัติ)</p>
                 <p class="text-xs text-muted mb-3">คลิกบนแผนที่เพื่อปักหมุด หรือกดปุ่มตำแหน่งปัจจุบัน — นักศึกษาที่อยู่ในรัศมีจะได้รับอนุมัติอัตโนมัติ</p>

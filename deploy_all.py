@@ -29,7 +29,7 @@ password = '2345678A'
 remote_base = '/data/data/com.termux/files/home/uni-activity'
 
 def get_changed_files():
-    result = subprocess.run(['git', 'diff', 'HEAD~1', '--name-only'], capture_output=True, text=True)
+    result = subprocess.run(['git', 'diff', 'HEAD~3', '--name-only'], capture_output=True, text=True)
     files = []
     for line in result.stdout.split('\n'):
         if line.strip():

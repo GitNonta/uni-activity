@@ -58,17 +58,27 @@
             </div>
         </div>
 
-        <div class="grid-2 mt-3" style="font-size:.875rem; background:#f8fafc; padding:10px; border-radius:8px;">
+        <div class="grid-3 mt-3" style="font-size:.875rem; background:#f8fafc; padding:10px; border-radius:8px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
             <div>
-                <span class="text-muted" style="font-size: 0.8rem;">เปิด-ปิดลงทะเบียนล่วงหน้า</span>
+                <span class="text-muted" style="font-size: 0.8rem;">เปิด-ปิดลงทะเบียน</span>
                 <p class="font-semi" style="font-size: 0.85rem; color:#475569;">
                     {{ $activity->register_open_at->format('d/m/Y H:i') }}<br>ถึง {{ $activity->register_close_at->format('d/m/Y H:i') }}
                 </p>
             </div>
             <div>
-                <span class="text-muted" style="font-size: 0.8rem;">เปิด-ปิดเช็คอินเข้างาน</span>
+                <span class="text-muted" style="font-size: 0.8rem;">เปิด-ปิดเช็คอินหน้างาน</span>
                 <p class="font-semi" style="font-size: 0.85rem; color:#475569;">
                     {{ $activity->checkin_open_at->format('d/m/Y H:i') }}<br>ถึง {{ $activity->checkin_close_at->format('d/m/Y H:i') }}
+                </p>
+            </div>
+            <div>
+                <span class="text-muted" style="font-size: 0.8rem;">เปิด-ปิดสแกนออกงาน</span>
+                <p class="font-semi" style="font-size: 0.85rem; color:#475569;">
+                    @if($activity->checkout_open_at)
+                        {{ $activity->checkout_open_at->format('d/m/Y H:i') }}<br>ถึง {{ $activity->checkout_close_at->format('d/m/Y H:i') }}
+                    @else
+                        -
+                    @endif
                 </p>
             </div>
         </div>

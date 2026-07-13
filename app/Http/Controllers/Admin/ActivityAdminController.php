@@ -223,6 +223,8 @@ class ActivityAdminController extends Controller
             'register_close_at' => 'required|date',
             'checkin_open_at' => 'required|date',
             'checkin_close_at' => 'required|date',
+            'checkout_open_at' => 'required|date|after_or_equal:checkin_open_at',
+            'checkout_close_at' => 'required|date|after:checkout_open_at',
             'category_id' => 'required|exists:activity_categories,id',
             'scope' => 'required|in:university,faculty,department',
             'faculty' => 'nullable|required_if:scope,faculty,department|string|max:100',

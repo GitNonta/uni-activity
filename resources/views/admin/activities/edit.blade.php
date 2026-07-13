@@ -111,6 +111,16 @@
                     <input type="datetime-local" name="checkin_close_at" value="{{ old('checkin_close_at', $activity->checkin_close_at->format('Y-m-d\TH:i')) }}" class="form-control" required>
                 </div>
             </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">เปิดบันทึกกิจกรรม (ออกงาน)</label>
+                    <input type="datetime-local" name="checkout_open_at" value="{{ old('checkout_open_at', $activity->checkout_open_at ? $activity->checkout_open_at->format('Y-m-d\TH:i') : '') }}" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">ปิดบันทึกกิจกรรม (ออกงาน)</label>
+                    <input type="datetime-local" name="checkout_close_at" value="{{ old('checkout_close_at', $activity->checkout_close_at ? $activity->checkout_close_at->format('Y-m-d\TH:i') : '') }}" class="form-control" required>
+                </div>
+            </div>
             <div class="form-group">
                 <label class="form-label">สถานะ</label>
                 @php

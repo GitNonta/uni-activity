@@ -139,10 +139,12 @@ class CheckInService
             return ['success' => false, 'message' => 'คุณได้บันทึกจบกิจกรรมนี้ไปแล้ว'];
         }
 
-        // ตรวจสอบว่ากิจกรรมจบหรือยัง (อนุญาตให้ finalize ได้ตั้งแต่เริ่มงาน X นาที หรือตามเวลาปิด)
-        // เพื่อความยืดหยุ่น จะเช็คว่าผ่านเวลาเริ่มงานมาแล้วหรือยัง
-        if ($now < \Carbon\Carbon::parse($activity->activity_date->format('Y-m-d') . ' ' . $activity->start_time)) {
-             return ['success' => false, 'message' => 'ยังไม่สามารถบันทึกจบกิจกรรมได้ จนกว่าจะถึงเวลาเริ่มงาน'];
+        // ตรวจสอบว่ากิจกรรมเปิดให้บันทึกออกงานหรือยัง
+        if ($activity->checkout_open_at && $now < $activity->checkout_open_at) {
+             return ['success' => false, 'message' => 'ยังไม่ถึงเวลาเปิดบันทึกกิจกรรม (ออกงาน)'];
+        }
+        if ($activity->checkout_close_at && $now > $activity->checkout_close_at) {
+             return ['success' => false, 'message' => 'หมดเวลาบันทึกกิจกรรม (ออกงาน) แล้ว'];
         }
 
         // คำนวณระยะทางขาออก (ถ้ามี)
