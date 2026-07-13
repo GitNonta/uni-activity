@@ -147,6 +147,14 @@ class CheckInService
              return ['success' => false, 'message' => 'หมดเวลาบันทึกกิจกรรม (ออกงาน) แล้ว'];
         }
 
+        // ตรวจสอบชั่วโมงขั้นต่ำ
+        if ($activity->min_hours_before_checkout > 0) {
+            $hoursDiff = $attendance->checked_in_at->diffInMinutes($now) / 60;
+            if ($hoursDiff < $activity->min_hours_before_checkout) {
+                return ['success' => false, 'message' => 'คุณเพิ่งเช็คอินเข้างาน ต้องเข้าร่วมกิจกรรมอย่างน้อย ' . (float)$activity->min_hours_before_checkout . ' ชั่วโมง จึงจะสามารถบันทึกออกงานได้'];
+            }
+        }
+
         // คำนวณระยะทางขาออก (ถ้ามี)
         $exitDistance = null;
         if ($activity->hasGeolocation() && $latitude !== null && $longitude !== null) {

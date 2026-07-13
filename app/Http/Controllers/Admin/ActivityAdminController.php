@@ -165,6 +165,7 @@ class ActivityAdminController extends Controller
         $data['qr_token'] = $qrService->generateToken();
         $data['qr_checkout_token'] = $qrService->generateToken();
         $data['is_mandatory'] = $request->boolean('is_mandatory');
+        $data['is_multiday'] = $request->boolean('is_multiday');
         $data['allow_walkin'] = $request->has('allow_walkin') ? $request->boolean('allow_walkin') : true;
         $data['require_attendance_approval'] = $request->boolean('require_attendance_approval');
         $data['require_selfie_verification'] = $request->boolean('require_selfie_verification');
@@ -214,7 +215,10 @@ class ActivityAdminController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'location' => 'required|string|max:255',
+            'is_multiday' => 'boolean',
             'activity_date' => 'required|date',
+            'end_date' => 'nullable|required_if:is_multiday,true|date|after_or_equal:activity_date',
+            'min_hours_before_checkout' => 'nullable|numeric|min:0',
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i',
             'activity_hours' => 'required|numeric|min:0.5|max:999',
@@ -238,6 +242,7 @@ class ActivityAdminController extends Controller
         ]);
 
         $data['is_mandatory'] = $request->boolean('is_mandatory');
+        $data['is_multiday'] = $request->boolean('is_multiday');
         $data['allow_walkin'] = $request->has('allow_walkin') ? $request->boolean('allow_walkin') : true;
         $data['require_attendance_approval'] = $request->boolean('require_attendance_approval');
         $data['require_selfie_verification'] = $request->boolean('require_selfie_verification');

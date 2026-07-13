@@ -61,9 +61,17 @@
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">วันที่จัดกิจกรรม</label>
-                    <input type="date" name="activity_date" value="{{ old('activity_date', $activity->activity_date->format('Y-m-d')) }}" class="form-control" required>
-                    <small class="text-muted" style="display:block; margin-top:4px;">(กรณีจัดหลายวัน ให้ระบุวันเริ่มต้นกิจกรรม)</small>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem;">
+                        <label class="form-label" style="margin-bottom:0;">วันที่จัดกิจกรรม</label>
+                        <label class="checkbox-label" style="margin:0; font-size:.8rem; color:#475569; font-weight:500;">
+                            <input type="checkbox" name="is_multiday" id="isMultidayCheck" value="1" onchange="toggleMultiday()" {{ old('is_multiday', $activity->is_multiday) ? 'checked' : '' }}> จัดหลายวัน
+                        </label>
+                    </div>
+                    <div style="display:flex; gap:0.5rem; align-items:center;">
+                        <input type="date" name="activity_date" id="activityDate" value="{{ old('activity_date', $activity->activity_date->format('Y-m-d')) }}" class="form-control" required style="flex:1;">
+                        <span id="endDateSeparator" style="display:{{ old('is_multiday', $activity->is_multiday) ? 'inline' : 'none' }};">ถึง</span>
+                        <input type="date" name="end_date" id="endDate" value="{{ old('end_date', $activity->end_date ? $activity->end_date->format('Y-m-d') : '') }}" class="form-control" style="flex:1; display:{{ old('is_multiday', $activity->is_multiday) ? 'block' : 'none' }};">
+                    </div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">ชั่วโมงกิจกรรม</label>
@@ -121,6 +129,13 @@
                 <div class="form-group">
                     <label class="form-label">ปิดบันทึกกิจกรรม (ออกงาน)</label>
                     <input type="datetime-local" name="checkout_close_at" value="{{ old('checkout_close_at', $activity->checkout_close_at ? $activity->checkout_close_at->format('Y-m-d\TH:i') : '') }}" class="form-control" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">ชั่วโมงขั้นต่ำที่ต้องเข้าร่วมก่อนเช็คเอาต์</label>
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <input type="number" name="min_hours_before_checkout" value="{{ old('min_hours_before_checkout', $activity->min_hours_before_checkout ?? 0) }}" min="0" step="0.5" class="form-control" style="max-width: 150px;">
+                    <span class="text-muted text-sm">ชั่วโมง (0 = ไม่มีขั้นต่ำ, สามารถบันทึกออกงานได้ทันที)</span>
                 </div>
             </div>
             <div class="form-group">
@@ -427,7 +442,26 @@ function updateDepartmentsScope() {
 document.addEventListener('DOMContentLoaded', function() {
     toggleScopeFields();
     if (document.getElementById('facultyInput').value) updateDepartmentsScope();
+    autoCalcHours();
+    toggleMultiday();
 });
+
+function toggleMultiday() {
+    var isMulti = document.getElementById('isMultidayCheck').checked;
+    var endDateInput = document.getElementById('endDate');
+    var separator = document.getElementById('endDateSeparator');
+    
+    if (isMulti) {
+        endDateInput.style.display = '';
+        separator.style.display = 'inline';
+        endDateInput.setAttribute('required', 'required');
+    } else {
+        endDateInput.style.display = 'none';
+        separator.style.display = 'none';
+        endDateInput.removeAttribute('required');
+        endDateInput.value = '';
+    }
+}
 
 function autoCalcHours() {
     var isCustom = document.getElementById('customHoursCheck').checked;

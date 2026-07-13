@@ -36,7 +36,12 @@
                     <svg class="icon-sm" style="display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                     วันที่
                 </span>
-                <p class="font-semi">{{ $activity->activity_date->format('d/m/Y') }}</p>
+                <p class="font-semi">
+                    {{ $activity->activity_date->format('d/m/Y') }}
+                    @if($activity->is_multiday && $activity->end_date)
+                        - {{ $activity->end_date->format('d/m/Y') }}
+                    @endif
+                </p>
             </div>
             <div>
                 <span class="text-muted">
@@ -76,6 +81,9 @@
                 <p class="font-semi" style="font-size: 0.85rem; color:#475569;">
                     @if($activity->checkout_open_at)
                         {{ $activity->checkout_open_at->format('d/m/Y H:i') }}<br>ถึง {{ $activity->checkout_close_at->format('d/m/Y H:i') }}
+                        @if($activity->min_hours_before_checkout > 0)
+                            <br><span style="color:#ef4444; font-size: 0.75rem;">(ต้องเข้าร่วมอย่างน้อย {{ (float)$activity->min_hours_before_checkout }} ชม.)</span>
+                        @endif
                     @else
                         -
                     @endif
