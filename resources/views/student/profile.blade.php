@@ -26,9 +26,14 @@
                 </label>
                 <form id="photoForm" method="POST" action="{{ route('profile.photo.upload') }}" enctype="multipart/form-data" style="display:none;">
                     @csrf
+                    <input type="hidden" name="face_descriptor" id="faceDescriptorInput">
                     <input type="file" id="photoInput" name="profile_photo" accept="image/jpeg,image/png,image/webp"
-                        onchange="document.getElementById('photoForm').submit();">
+                        onchange="handleProfilePhotoSelect(event)">
                 </form>
+                {{-- Loading overlay for profile picture --}}
+                <div id="photoLoadingOverlay" style="position: absolute; inset: 0; background: rgba(255,255,255,0.8); border-radius: 50%; display: none; align-items: center; justify-content: center; z-index: 10;">
+                    <div style="width:24px;height:24px;border:3px solid #e2e8f0;border-top-color:#4f46e5;border-radius:50%;animation:spin 1s linear infinite;"></div>
+                </div>
             </div>
             <div style="flex: 1; min-width: 0;">
                 <div style="display: flex; align-items: center; gap: 8px; margin: 0 0 0.25rem 0;">
@@ -517,4 +522,85 @@
     <input type="hidden" name="english_name" id="englishNameInput">
 </form>
 
+@endpush
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script>
+    let faceapiLoaded = false;
+    
+    async function initFaceApi() {
+        if (faceapiLoaded) return true;
+        try {
+            const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
+            await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+            await faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL);
+            await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+            faceapiLoaded = true;
+            return true;
+        } catch (e) {
+            console.error("Failed to load face-api models", e);
+            return false;
+        }
+    }
+
+    async function handleProfilePhotoSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const overlay = document.getElementById('photoLoadingOverlay');
+        overlay.style.display = 'flex';
+
+        // Load models if not loaded yet
+        const loaded = await initFaceApi();
+        if (!loaded) {
+            // If failed to load AI, just fallback to normal submit without descriptor
+            document.getElementById('photoForm').submit();
+            return;
+        }
+
+        try {
+            // Create an image element to read the file
+            const img = document.createElement('img');
+            const objectUrl = URL.createObjectURL(file);
+            
+            img.onload = async () => {
+                try {
+                    // Extract face descriptor
+                    const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
+                        .withFaceLandmarks(true)
+                        .withFaceDescriptor();
+                    
+                    if (!detection) {
+                        alert('ข้อผิดพลาด: ไม่พบใบหน้าคนในรูปภาพ กรุณาใช้รูปถ่ายหน้าตรงที่เห็นใบหน้าชัดเจน');
+                        event.target.value = ''; // clear file
+                        overlay.style.display = 'none';
+                        return;
+                    }
+                    
+                    // Convert descriptor array to JSON string and store in hidden input
+                    const descriptorArray = Array.from(detection.descriptor);
+                    document.getElementById('faceDescriptorInput').value = JSON.stringify(descriptorArray);
+                    
+                    // Submit form
+                    document.getElementById('photoForm').submit();
+                } catch (err) {
+                    console.error("Face detection error:", err);
+                    document.getElementById('photoForm').submit(); // Fallback
+                }
+                URL.revokeObjectURL(objectUrl);
+            };
+            
+            img.onerror = () => {
+                document.getElementById('photoForm').submit(); // Fallback on image error
+            };
+            
+            img.src = objectUrl;
+            
+        } catch (e) {
+            console.error(e);
+            document.getElementById('photoForm').submit();
+        }
+    }
+</script>
 @endpush

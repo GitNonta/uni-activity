@@ -100,9 +100,10 @@
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
 <script>
-const PROFILE_PHOTO_URL = @json($profilePhotoUrl);
 const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
-const THRESHOLD = 60; // ค่า threshold 60%
+const PROFILE_PHOTO_URL = '{{ $profilePhotoUrl }}';
+const THRESHOLD = 60; // คะแนนความเหมือนขั้นต่ำ (%)
+const PRECOMPUTED_DESCRIPTOR = @json(auth()->user()->face_descriptor);
 
 let stream = null;
 let capturedImageData = null;
@@ -146,7 +147,15 @@ async function loadModels() {
         modelsLoaded = true;
 
         // โหลด descriptor ของรูปโปรไฟล์ล่วงหน้า
-        if (PROFILE_PHOTO_URL) {
+        if (PRECOMPUTED_DESCRIPTOR && Array.isArray(PRECOMPUTED_DESCRIPTOR) && PRECOMPUTED_DESCRIPTOR.length === 128) {
+            profileDescriptor = new Float32Array(PRECOMPUTED_DESCRIPTOR);
+            document.getElementById('loadingText').textContent = 'พบข้อมูลใบหน้าจากระบบ...';
+            if (PROFILE_PHOTO_URL) {
+                document.getElementById('profileThumb').src = PROFILE_PHOTO_URL;
+            }
+            await new Promise(resolve => setTimeout(resolve, 300));
+        } else if (PROFILE_PHOTO_URL) {
+            // Fallback: คำนวณใหม่จากรูป
             document.getElementById('loadingText').textContent = 'กำลังวิเคราะห์รูปโปรไฟล์...';
             try {
                 const img = await faceapi.fetchImage(PROFILE_PHOTO_URL);

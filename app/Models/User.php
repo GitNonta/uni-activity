@@ -41,10 +41,10 @@ class User extends Authenticatable
         'line_user_id',
         'line_display_name',
         'line_notify_enabled',
-        // Security tracking
         'last_login_ip',
         'last_login_at',
         'last_device_fingerprint',
+        'face_descriptor',
     ];
 
     /** ฟิลด์ที่ซ่อนเมื่อแปลงเป็น JSON */
@@ -63,6 +63,7 @@ class User extends Authenticatable
             'last_seen_at'        => 'datetime',
             'line_notify_enabled' => 'boolean',
             'last_login_at'       => 'datetime',
+            'face_descriptor'     => 'array',
         ];
     }
 

@@ -16,6 +16,7 @@ class ProfilePhotoController extends Controller
     {
         $validated = $request->validate([
             'profile_photo' => 'required|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'face_descriptor' => 'nullable|string',
         ]);
 
         $user = auth()->user();
@@ -71,7 +72,16 @@ class ProfilePhotoController extends Controller
                 Storage::disk('public')->delete($user->profile_photo);
             }
 
-            $user->update(['profile_photo' => $directory . '/' . $filename]);
+            $updateData = ['profile_photo' => $directory . '/' . $filename];
+            
+            if ($request->filled('face_descriptor')) {
+                $descriptorArray = json_decode($request->input('face_descriptor'), true);
+                if (is_array($descriptorArray) && count($descriptorArray) === 128) {
+                    $updateData['face_descriptor'] = $descriptorArray;
+                }
+            }
+
+            $user->update($updateData);
 
             return back()->with('success', 'อัปโหลดและปรับปรุงรูปโปรไฟล์สำเร็จ (WebP)');
         } catch (\Exception $e) {
