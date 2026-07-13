@@ -58,6 +58,21 @@
             </div>
         </div>
 
+        <div class="grid-2 mt-3" style="font-size:.875rem; background:#f8fafc; padding:10px; border-radius:8px;">
+            <div>
+                <span class="text-muted" style="font-size: 0.8rem;">เปิด-ปิดลงทะเบียนล่วงหน้า</span>
+                <p class="font-semi" style="font-size: 0.85rem; color:#475569;">
+                    {{ $activity->register_open_at->format('d/m/Y H:i') }}<br>ถึง {{ $activity->register_close_at->format('d/m/Y H:i') }}
+                </p>
+            </div>
+            <div>
+                <span class="text-muted" style="font-size: 0.8rem;">เปิด-ปิดเช็คอินเข้างาน</span>
+                <p class="font-semi" style="font-size: 0.85rem; color:#475569;">
+                    {{ $activity->checkin_open_at->format('d/m/Y H:i') }}<br>ถึง {{ $activity->checkin_close_at->format('d/m/Y H:i') }}
+                </p>
+            </div>
+        </div>
+
         <hr class="divider">
 
         {{-- แถบแสดงจำนวนผู้ลงทะเบียน --}}
