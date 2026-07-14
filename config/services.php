@@ -43,5 +43,9 @@ return [
         'login_channel_secret'  => env('LINE_LOGIN_CHANNEL_SECRET', ''),
         'callback_url'          => env('LINE_CALLBACK_URL', ''),
     ],
+    
+    'ai_server' => [
+        'url' => env('AI_SERVER_URL', 'http://192.168.1.45:8000'),
+    ],
 
 ];

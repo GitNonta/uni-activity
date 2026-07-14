@@ -11,6 +11,8 @@ import { Header } from './components/Header'
 import { AlertsBanner } from './components/AlertsBanner'
 import { AlertsHistory } from './components/AlertsHistory'
 import { DeployCard } from './components/DeployCard'
+import { Documentation } from './components/Documentation'
+import { AdvancedStatus } from './components/AdvancedStatus'
 import './App.css'
 
 export default function App() {
@@ -46,6 +48,18 @@ export default function App() {
         >
           Deploy Logs
         </button>
+        <button 
+          onClick={() => setActiveTab('documentation')}
+          style={{ padding: '0.75rem 1rem', background: 'none', border: 'none', borderBottom: activeTab === 'documentation' ? '2px solid #2563eb' : '2px solid transparent', color: activeTab === 'documentation' ? '#2563eb' : '#6b7280', fontWeight: activeTab === 'documentation' ? 600 : 400, cursor: 'pointer', fontSize: '1rem' }}
+        >
+          Documentation
+        </button>
+        <button 
+          onClick={() => setActiveTab('advanced')}
+          style={{ padding: '0.75rem 1rem', background: 'none', border: 'none', borderBottom: activeTab === 'advanced' ? '2px solid #2563eb' : '2px solid transparent', color: activeTab === 'advanced' ? '#2563eb' : '#6b7280', fontWeight: activeTab === 'advanced' ? 600 : 400, cursor: 'pointer', fontSize: '1rem' }}
+        >
+          Advanced Status
+        </button>
       </div>
 
       <main className="container">
@@ -56,7 +70,7 @@ export default function App() {
             <div className="grid-3">
               <SystemCard memory={data?.memory} load={data?.load} temp={data?.temp} disk={data?.disk} battery={data?.battery} />
               <NetworkCard network={data?.network} networkInfo={data?.network_info} />
-              <ServicesCard services={data?.services} />
+              <ServicesCard services={data?.services} listeningPorts={data?.listening_ports} />
             </div>
             <TrafficTable logs={data?.logs} />
             <AlertsHistory history={data?.alerts_history} />
@@ -74,6 +88,12 @@ export default function App() {
             sshSessions={data?.ssh_sessions} 
             sftpSessions={data?.sftp_sessions} 
           />
+        )}
+        {activeTab === 'documentation' && (
+          <Documentation />
+        )}
+        {activeTab === 'advanced' && (
+          <AdvancedStatus data={data} />
         )}
       </main>
     </div>

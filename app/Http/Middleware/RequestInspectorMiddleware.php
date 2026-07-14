@@ -17,6 +17,9 @@ class RequestInspectorMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
+        if ($request->isMethod('HEAD') || $request->is('up')) {
+            return $next($request);
+        }
         $request->attributes->set('inspector_start_time', microtime(true));
         return $next($request);
     }
@@ -26,6 +29,9 @@ class RequestInspectorMiddleware
      */
     public function terminate(Request $request, Response $response): void
     {
+        if ($request->isMethod('HEAD') || $request->is('up')) {
+            return;
+        }
         try {
             $startTime = $request->attributes->get('inspector_start_time');
             $duration = $startTime ? round((microtime(true) - $startTime) * 1000, 2) : 0;

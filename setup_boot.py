@@ -8,6 +8,8 @@ PASSWORD = "2345678A"
 boot_script = """#!/data/data/com.termux/files/usr/bin/bash
 termux-wake-lock
 
+APP_DIR="/data/data/com.termux/files/home/uni-activity"
+
 # 1. Start PostgreSQL
 pg_ctl -D /data/data/com.termux/files/usr/var/lib/postgresql start
 
@@ -23,8 +25,6 @@ nginx
 pkill redis-server
 redis-server --daemonize yes
 
-APP_DIR="/data/data/com.termux/files/home/uni-activity"
-
 # 5. Start Laravel Queue Worker
 pkill -f 'artisan queue'
 nohup php ${APP_DIR}/artisan queue:work > ${APP_DIR}/storage/logs/queue.log 2>&1 &
@@ -33,19 +33,16 @@ nohup php ${APP_DIR}/artisan queue:work > ${APP_DIR}/storage/logs/queue.log 2>&1
 pkill -f 'artisan reverb'
 nohup php ${APP_DIR}/artisan reverb:start --host=0.0.0.0 --port=8082 > ${APP_DIR}/storage/logs/reverb.log 2>&1 &
 
-# 7. Start Ngrok in Ubuntu
-TOKEN=$(grep NGROK_AUTHTOKEN ${APP_DIR}/.env | cut -d '=' -f2 | tr -d '\r')
-pkill ngrok
-nohup proot-distro login ubuntu -- ngrok http 8080 --authtoken ${TOKEN} --config=/root/ngrok.yml > ${APP_DIR}/ngrok_ubuntu.log 2>&1 &
+# 7. Start Cloudflared in Ubuntu
+pkill -f 'cloudflared'
+nohup proot-distro login ubuntu -- bash -c "cloudflared tunnel --url http://127.0.0.1:8080 > ${APP_DIR}/cloudflared.log 2>&1" &
 
-# 8. Wait for Ngrok and update URL
-sleep 10
-URL=$(proot-distro login ubuntu -- curl -s http://127.0.0.1:4040/api/tunnels | grep -o '\"public_url\":\"[^\"]*\"' | head -1 | cut -d '\"' -f 4)
+# 8. Wait for Cloudflared and update URL
+python ${APP_DIR}/start_cf_ubuntu.py
 
-if [ -n "$URL" ]; then
-    sed -i "s|^APP_URL=.*|APP_URL=${URL}|g" ${APP_DIR}/.env
-    cd ${APP_DIR} && php artisan config:clear
-fi
+# 9. Start Monitor Server (Port 9999)
+pkill -f 'monitor_server.py'
+nohup python ${APP_DIR}/monitor_server.py </dev/null > ${APP_DIR}/monitor.log 2>&1 &
 """
 
 client = paramiko.SSHClient()

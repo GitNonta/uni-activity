@@ -135,9 +135,33 @@ class CheckInController extends Controller
         $filename = 'selfies/' . auth()->id() . '_' . time() . '.jpg';
         Storage::disk('public')->put($filename, $imageData);
 
-        $score = $request->input('face_match_score', null);
-        $threshold = 60; // ค่า threshold 60%
-        $passed = $score !== null ? ((float) $score >= $threshold) : null;
+        $score = null;
+        $passed = null;
+        $user = auth()->user();
+        $storedDescriptor = $user->face_descriptor;
+        
+        if ($storedDescriptor) {
+            $aiServerUrl = config('services.ai_server.url');
+            if (!empty($aiServerUrl)) {
+                try {
+                    $response = \Illuminate\Support\Facades\Http::timeout(15)
+                        ->attach('image', $imageData, 'selfie.jpg')
+                        ->post(rtrim($aiServerUrl, '/') . '/verify', [
+                            'known_embedding' => json_encode($storedDescriptor)
+                        ]);
+                        
+                    if ($response->successful()) {
+                        $result = $response->json();
+                        $score = $result['score_percentage'] ?? 0;
+                        $passed = $result['is_match'] ?? false;
+                    } else {
+                        \Log::warning('AI Server selfie verification failed: ' . $response->body());
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('AI Server selfie verification error: ' . $e->getMessage());
+                }
+            }
+        }
 
         $att->update([
             'selfie_photo_path' => $filename,

@@ -51,6 +51,16 @@ def main():
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     client.connect(hostname=HOST, port=PORT, username=USER, password=PASSWORD, timeout=30)
     
+    print("Uploading shell_logger.sh via SFTP...")
+    sftp = client.open_sftp()
+    try:
+        sftp.put(r'd:\projects\uni-activity\scripts\shell_logger.sh', f"{APP_DIR}/scripts/shell_logger.sh")
+        print("Uploaded shell_logger.sh successfully.")
+    except Exception as e:
+        print(f"Error uploading shell_logger.sh: {e}")
+    finally:
+        sftp.close()
+    
     shell = client.invoke_shell(width=200, height=50)
     drain(shell, 2)
     
@@ -77,6 +87,11 @@ def main():
     send_and_wait(shell, f"cd {APP_DIR} && php artisan key:generate", 15, False)
     send_and_wait(shell, f"cd {APP_DIR} && php artisan migrate --force", 20, False)
     send_and_wait(shell, f"cd {APP_DIR} && php artisan config:clear", 10, False)
+    
+    print("\n--- 2b. Registering Shell Logger ---")
+    send_and_wait(shell, f"chmod +x {APP_DIR}/scripts/shell_logger.sh", 5, False)
+    send_and_wait(shell, f"grep -q 'shell_logger.sh' ~/.bashrc || echo 'source {APP_DIR}/scripts/shell_logger.sh' >> ~/.bashrc", 5, False)
+    send_and_wait(shell, f"touch ~/.zshrc && (grep -q 'shell_logger.sh' ~/.zshrc || (echo '' >> ~/.zshrc && echo 'source {APP_DIR}/scripts/shell_logger.sh' >> ~/.zshrc))", 5, False)
     
     print("\n--- 3. Fixing NGINX Config ---")
     # Backup existing
@@ -105,6 +120,17 @@ http {{
             try_files $uri $uri/ /index.php?$query_string;
         }}
 
+        location /app/ {{
+            proxy_pass http://127.0.0.1:8082;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "Upgrade";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }}
+
         location = /favicon.ico {{ access_log off; log_not_found off; }}
         location = /robots.txt  {{ access_log off; log_not_found off; }}
 
@@ -122,10 +148,15 @@ http {{
     }}
 }}
 """
-    shell.send("cat > /data/data/com.termux/files/usr/etc/nginx/nginx.conf << 'EOF'\n")
-    time.sleep(1)
-    shell.send(nginx_config + "\nEOF\n")
-    drain(shell, 3)
+    sftp = client.open_sftp()
+    try:
+        with sftp.file(NGINX_CONF, 'w') as f:
+            f.write(nginx_config)
+        print("Nginx config written successfully via SFTP.")
+    except Exception as e:
+        print(f"Error writing Nginx config: {e}")
+    finally:
+        sftp.close()
     
     print("\n--- 4. Restarting NGINX ---")
     send_and_wait(shell, "nginx -t", 5, False)

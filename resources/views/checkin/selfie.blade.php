@@ -78,7 +78,7 @@
                 <input type="hidden" name="latitude" id="qr_lat">
                 <input type="hidden" name="longitude" id="qr_lng">
                 <input type="hidden" name="selfie" id="selfieData">
-                <input type="hidden" name="face_match_score" id="faceMatchScore">
+                <input type="hidden" name="attendance_id" value="{{ $att->id }}">
             </form>
 
             <a href="{{ route('activities.index') }}" class="text-sm text-muted" style="display:inline-block;margin-top:.5rem;">ข้ามขั้นตอนนี้ →</a>
@@ -96,27 +96,26 @@
 @endsection
 
 @section('scripts')
-{{-- face-api.js CDN --}}
-<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-
 <script>
-const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
-const PROFILE_PHOTO_URL = '{{ $profilePhotoUrl }}';
-const THRESHOLD = 60; // คะแนนความเหมือนขั้นต่ำ (%)
-const PRECOMPUTED_DESCRIPTOR = @json(auth()->user()->face_descriptor);
-
 let stream = null;
-let capturedImageData = null;
-let profileDescriptor = null;
-let modelsLoaded = false;
-let scanningInterval = null;
-let scanAttempts = 0;
-const MAX_ATTEMPTS_BEFORE_MANUAL = 10; // After 10 failed auto-scans, show manual button
 
 // ===== 1. เริ่มระบบ =====
 document.addEventListener('DOMContentLoaded', async () => {
     await startCamera();
-    await loadModels();
+    
+    // ตั้งเวลาให้เตรียมตัว 3 วินาที แล้วจับภาพอัตโนมัติ (หรือจะให้กดปุ่มเองก็ได้)
+    let countdown = 3;
+    const instructionEl = document.getElementById('scanInstructions');
+    
+    const timer = setInterval(() => {
+        if(countdown > 0) {
+            instructionEl.textContent = `กำลังถ่ายรูปอัตโนมัติใน... ${countdown}`;
+            countdown--;
+        } else {
+            clearInterval(timer);
+            capturePhoto();
+        }
+    }, 1000);
 });
 
 // ===== 2. เปิดกล้องหน้า =====
@@ -133,172 +132,42 @@ async function startCamera() {
     }
 }
 
-// ===== 3. โหลดโมเดล face-api.js =====
-async function loadModels() {
-    const overlay = document.getElementById('loadingOverlay');
-    overlay.style.display = 'flex';
-
-    try {
-        await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-        document.getElementById('loadingText').textContent = 'กำลังโหลดโมเดลจดจำใบหน้า...';
-        await faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL);
-        await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
-
-        modelsLoaded = true;
-
-        // โหลด descriptor ของรูปโปรไฟล์ล่วงหน้า
-        if (PRECOMPUTED_DESCRIPTOR && Array.isArray(PRECOMPUTED_DESCRIPTOR) && PRECOMPUTED_DESCRIPTOR.length === 128) {
-            profileDescriptor = new Float32Array(PRECOMPUTED_DESCRIPTOR);
-            document.getElementById('loadingText').textContent = 'พบข้อมูลใบหน้าจากระบบ...';
-            if (PROFILE_PHOTO_URL) {
-                document.getElementById('profileThumb').src = PROFILE_PHOTO_URL;
-            }
-            await new Promise(resolve => setTimeout(resolve, 300));
-        } else if (PROFILE_PHOTO_URL) {
-            // Fallback: คำนวณใหม่จากรูป
-            document.getElementById('loadingText').textContent = 'กำลังวิเคราะห์รูปโปรไฟล์...';
-            try {
-                const img = await faceapi.fetchImage(PROFILE_PHOTO_URL);
-                const det = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
-                    .withFaceLandmarks(true)
-                    .withFaceDescriptor();
-                if (det) {
-                    profileDescriptor = det.descriptor;
-                    document.getElementById('profileThumb').src = PROFILE_PHOTO_URL;
-                }
-            } catch (e) {
-                console.warn('Cannot analyze profile photo:', e);
-            }
-        }
-
-        overlay.style.display = 'none';
-        
-        // เริ่มสแกนเรียวไทม์ทันทีที่โมเดลพร้อม
-        startRealTimeScan();
-    } catch (e) {
-        document.getElementById('loadingText').textContent = 'โหลดโมเดลไม่สำเร็จ — กรุณารีเฟรชหน้า';
-        console.error('Model loading error:', e);
-    }
-}
-
-// ===== 4. สแกนใบหน้าเรียวไทม์ =====
-function startRealTimeScan() {
-    const video = document.getElementById('cameraPreview');
-    const guide = document.getElementById('faceGuide');
-    
-    showStatus('กำลังสแกนใบหน้า...', 'info');
-    guide.classList.add('scanning-ring');
-    
-    scanningInterval = setInterval(async () => {
-        if (!modelsLoaded || video.paused || video.ended) return;
-        
-        try {
-            const selfieDet = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
-                .withFaceLandmarks(true)
-                .withFaceDescriptor();
-                
-            if (selfieDet) {
-                scanAttempts++;
-                // 4.1 ถ้าไม่มีรูปโปรไฟล์ ให้ถือว่าผ่านเลย (เก็บข้อมูลให้แอดมินดู)
-                if (!profileDescriptor) {
-                    clearInterval(scanningInterval);
-                    guide.classList.replace('scanning-ring', 'success-ring');
-                    await capturePhoto(true); // capture and force submit
-                    return;
-                }
-                
-                // 4.2 เปรียบเทียบกับรูปโปรไฟล์
-                const distance = faceapi.euclideanDistance(profileDescriptor, selfieDet.descriptor);
-                const similarity = Math.max(0, Math.min(100, (1 - distance) * 100));
-                const score = Math.round(similarity * 100) / 100;
-                
-                if (score >= THRESHOLD) {
-                    // ผ่านการสแกน!
-                    clearInterval(scanningInterval);
-                    guide.classList.replace('scanning-ring', 'success-ring');
-                    document.getElementById('faceMatchScore').value = score;
-                    await capturePhoto(false, score);
-                } else {
-                    // ไม่ผ่าน
-                    guide.classList.replace('scanning-ring', 'error-ring');
-                    setTimeout(() => { guide.classList.replace('error-ring', 'scanning-ring'); }, 500);
-                    
-                    if (scanAttempts >= MAX_ATTEMPTS_BEFORE_MANUAL) {
-                        document.getElementById('manualCaptureBtn').style.display = 'inline-block';
-                        document.getElementById('scanInstructions').textContent = 'ใบหน้าไม่ตรงกับระบบ หรือแสงไม่พอ หากต้องการยืนยันให้กดปุ่มด้านล่าง';
-                    }
-                }
-            }
-        } catch (e) {
-            console.error("Realtime scan error:", e);
-        }
-    }, 800); // เช็คทุกๆ 800ms
-}
-
-// ===== 5. ถ่ายรูปและส่งข้อมูล =====
-async function capturePhoto(forceSubmit = false, matchScore = null) {
-    if (scanningInterval) clearInterval(scanningInterval);
-    
+// ===== 3. ถ่ายรูปและส่งข้อมูล =====
+async function capturePhoto() {
     const video = document.getElementById('cameraPreview');
     const canvas = document.getElementById('captureCanvas');
     const ctx = canvas.getContext('2d');
 
+    if (video.videoWidth === 0) return; // กล้องยังไม่พร้อม
+
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
-    // Mirror the image (front camera)
+    // Mirror the image
     ctx.translate(canvas.width, 0);
     ctx.scale(-1, 1);
     ctx.drawImage(video, 0, 0);
     ctx.setTransform(1, 0, 0, 1, 0, 0); // reset
 
     canvas.style.display = 'block';
-    capturedImageData = canvas.toDataURL('image/jpeg', 0.85);
+    
+    // ลดคุณภาพเล็กน้อยเพื่อให้ส่งเร็วขึ้น
+    const capturedImageData = canvas.toDataURL('image/jpeg', 0.85);
     document.getElementById('selfieData').value = capturedImageData;
 
     // Switch UI
     document.getElementById('captureControls').style.display = 'none';
     document.getElementById('retakeControls').style.display = 'flex';
+    document.getElementById('faceGuide').style.display = 'none';
 
-    // Draw selfie thumbnail
-    const thumbCanvas = document.getElementById('selfieThumb');
-    const thumbCtx = thumbCanvas.getContext('2d');
-    thumbCanvas.width = 128;
-    thumbCanvas.height = 128;
-    const size = Math.min(canvas.width, canvas.height);
-    const sx = (canvas.width - size) / 2;
-    const sy = (canvas.height - size) / 2;
-    thumbCtx.drawImage(canvas, sx, sy, size, size, 0, 0, 128, 128);
-
-    // Show result UI
-    const resultDiv = document.getElementById('comparisonResult');
-    if (matchScore !== null) {
-        document.getElementById('faceMatchScore').value = matchScore;
-        resultDiv.style.background = '#dcfce7';
-        resultDiv.style.border = '1px solid #86efac';
-        document.getElementById('matchIcon').textContent = '✅';
-        document.getElementById('matchScoreText').style.color = '#15803d';
-        document.getElementById('matchScoreText').textContent = 'ความคล้าย: ' + matchScore.toFixed(1) + '%';
-        document.getElementById('matchStatusText').textContent = 'ผ่านการยืนยันตัวตน';
-        document.getElementById('matchStatusText').style.color = '#15803d';
-        resultDiv.style.display = 'block';
-        showStatus('✅ ยืนยันตัวตนสำเร็จ! กำลังบันทึกข้อมูล...', 'success');
-    } else {
-        if (!profileDescriptor) {
-            showStatus('บันทึกรูปภาพแล้ว (ไม่มีรูปโปรไฟล์) กำลังส่งข้อมูล...', 'warning');
-        } else {
-            showStatus('⚠️ บันทึกรูปภาพแล้ว รอผู้จัดตรวจสอบ กำลังส่งข้อมูล...', 'warning');
-        }
-    }
+    showStatus('กำลังส่งรูปภาพไปยัง AI Server เพื่อตรวจสอบ...', 'info');
 
     // Auto submit form with GPS
     submitSelfie();
 }
 
-// ===== 6. ส่ง Selfie (เรียกอัตโนมัติ) =====
+// ===== 4. ส่ง Selfie =====
 function submitSelfie() {
-    if (!capturedImageData) return;
-    
     const form = document.getElementById('selfieForm');
     
     // ขอพิกัด GPS ก่อน Submit
@@ -313,7 +182,7 @@ function submitSelfie() {
                 console.warn("GPS Error:", error);
                 form.submit(); 
             },
-            { enableHighAccuracy: true, timeout: 10000 }
+            { enableHighAccuracy: true, timeout: 5000 }
         );
     } else {
         form.submit();
@@ -331,9 +200,8 @@ function showStatus(msg, type) {
     else { el.style.background = '#dbeafe'; el.style.color = '#1d4ed8'; el.style.border = '1px solid #93c5fd'; }
 }
 
-// Cleanup camera on page leave
+// Cleanup camera
 window.addEventListener('beforeunload', () => {
-    if (scanningInterval) clearInterval(scanningInterval);
     if (stream) stream.getTracks().forEach(t => t.stop());
 });
 </script>

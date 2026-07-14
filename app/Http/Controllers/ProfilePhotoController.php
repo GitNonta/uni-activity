@@ -71,13 +71,30 @@ class ProfilePhotoController extends Controller
             if ($user->profile_photo && Storage::disk('public')->exists($user->profile_photo)) {
                 Storage::disk('public')->delete($user->profile_photo);
             }
-
             $updateData = ['profile_photo' => $directory . '/' . $filename];
             
-            if ($request->filled('face_descriptor')) {
-                $descriptorArray = json_decode($request->input('face_descriptor'), true);
-                if (is_array($descriptorArray) && count($descriptorArray) === 128) {
-                    $updateData['face_descriptor'] = $descriptorArray;
+            // Send request to AI server to extract face embedding
+            $aiServerUrl = config('services.ai_server.url');
+            if (!empty($aiServerUrl)) {
+                try {
+                    $response = \Illuminate\Support\Facades\Http::timeout(15)
+                        ->attach('image', file_get_contents($fullPath), $filename)
+                        ->post(rtrim($aiServerUrl, '/') . '/extract');
+                        
+                    if ($response->successful()) {
+                        $result = $response->json();
+                        if (isset($result['embedding']) && is_array($result['embedding'])) {
+                            $updateData['face_descriptor'] = $result['embedding'];
+                        }
+                    } else {
+                        \Log::warning('AI Server failed to extract face: ' . $response->body());
+                        if (file_exists($fullPath)) unlink($fullPath);
+                        return back()->withErrors(['error' => 'AI ไม่พบใบหน้า (กรุณาใช้รูปหน้าตรง มีคนเดียว และเห็นชัดเจน)']);
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('AI Server communication error: ' . $e->getMessage());
+                    if (file_exists($fullPath)) unlink($fullPath);
+                    return back()->withErrors(['error' => 'ไม่สามารถเชื่อมต่อ AI Server ได้ (' . $e->getMessage() . ')']);
                 }
             }
 

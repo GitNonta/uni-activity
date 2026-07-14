@@ -305,27 +305,272 @@ def get_battery():
         pass
     return None
 
+def get_listening_ports():
+    import subprocess, re
+    ports = set()
+    
+    # Method 1: ss -ltn
+    try:
+        res = subprocess.run(["ss", "-ltn"], capture_output=True, text=True, timeout=1)
+        if res.returncode == 0:
+            for line in res.stdout.split('\n'):
+                parts = line.split()
+                if len(parts) >= 4 and "LISTEN" in parts[0]:
+                    match = re.search(r':(\d+)$', parts[3])
+                    if match:
+                        ports.add(int(match.group(1)))
+    except:
+        pass
+        
+    # Method 2: netstat -ltn
+    if not ports:
+        try:
+            res = subprocess.run(["netstat", "-ltn"], capture_output=True, text=True, timeout=1)
+            if res.returncode == 0:
+                for line in res.stdout.split('\n'):
+                    parts = line.split()
+                    if len(parts) >= 4 and "LISTEN" in line:
+                        match = re.search(r':(\d+)$', parts[3])
+                        if match:
+                            ports.add(int(match.group(1)))
+        except:
+            pass
+            
+    # Method 3: /proc/net/tcp
+    if not ports:
+        try:
+            for path in ["/proc/net/tcp", "/proc/net/tcp6"]:
+                if os.path.exists(path):
+                    with open(path, "r") as f:
+                        lines = f.readlines()
+                    for line in lines[1:]:
+                        parts = line.split()
+                        if len(parts) >= 4:
+                            state = parts[3]
+                            if state == "0A":
+                                local_address = parts[1]
+                                port_hex = local_address.split(":")[1]
+                                ports.add(int(port_hex, 16))
+        except:
+            pass
+            
+    return sorted(list(ports))
+
 def get_services():
     import subprocess
     services = {
-        "Nginx": "nginx",
-        "PHP-FPM": "php-fpm",
-        "PostgreSQL": "postgres",
-        "Redis": "redis-server",
-        "Cloudflared": "cloudflared",
-        "Reverb": "reverb:start",
-        "Queue Worker": "artisan queue:work",
-        "SSH": "sshd",
-        "SFTP": "sshd"
+        "Nginx": ("nginx", 8080),
+        "PHP-FPM": ("php-fpm", None),
+        "PostgreSQL": ("postgres", 5432),
+        "Redis": ("redis-server", 6379),
+        "Cloudflared": ("cloudflared", None),
+        "Reverb": ("reverb:start", 8082),
+        "Queue Worker": ("artisan queue:work", None),
+        "SSH": ("sshd", 8022),
+        "SFTP": ("sshd", 8022)
     }
+    
+    listening = get_listening_ports()
+    
     status = {}
-    for name, proc in services.items():
+    for name, (proc, default_port) in services.items():
         try:
             res = subprocess.run(["pgrep", "-f", proc], capture_output=True, text=True)
-            status[name] = "Running" if res.stdout.strip() else "Stopped"
+            is_running = bool(res.stdout.strip())
+            
+            if is_running:
+                if default_port and default_port in listening:
+                    status[name] = f"Running (Port {default_port})"
+                else:
+                    status[name] = "Running"
+            else:
+                status[name] = "Stopped"
         except Exception:
             status[name] = "Unknown"
     return status
+
+# --- Advanced Metrics Helpers ---
+prev_net_bytes = {"rx": 0, "tx": 0, "time": 0}
+
+def get_cpu_freqs():
+    freqs = []
+    try:
+        import glob
+        files = sorted(glob.glob("/sys/devices/system/cpu/cpu[0-9]/cpufreq/scaling_cur_freq"))
+        for f in files:
+            with open(f, "r") as file:
+                freqs.append(int(file.read().strip()) // 1000) # Convert to MHz
+    except:
+        pass
+    return freqs
+
+def get_wifi_rssi():
+    try:
+        if os.path.exists("/proc/net/wireless"):
+            with open("/proc/net/wireless", "r") as f:
+                lines = f.readlines()
+            for line in lines[2:]:
+                parts = line.split()
+                if len(parts) >= 4:
+                    level = parts[3].replace(".", "")
+                    return int(level)
+    except:
+        pass
+    return None
+
+def get_net_speeds():
+    global prev_net_bytes
+    import time
+    rx = 0
+    tx = 0
+    try:
+        with open("/proc/net/dev", "r") as f:
+            lines = f.readlines()
+        for line in lines[2:]:
+            if "wlan0" in line or "rmnet" in line or "dummy" in line or "eth0" in line:
+                parts = line.split()
+                if len(parts) >= 10:
+                    rx += int(parts[1])
+                    tx += int(parts[9])
+    except:
+        pass
+    
+    now = time.time()
+    dt = now - prev_net_bytes["time"]
+    rx_speed = 0
+    tx_speed = 0
+    if prev_net_bytes["time"] > 0 and dt > 0:
+        rx_speed = max(0.0, (rx - prev_net_bytes["rx"]) / dt)
+        tx_speed = max(0.0, (tx - prev_net_bytes["tx"]) / dt)
+        
+    prev_net_bytes = {"rx": rx, "tx": tx, "time": now}
+    return {
+        "rx_kbps": round(rx_speed / 1024.0, 1),
+        "tx_kbps": round(tx_speed / 1024.0, 1)
+    }
+
+def get_top_processes():
+    import subprocess
+    procs = []
+    try:
+        res = subprocess.run(["ps", "-A", "-o", "pid,comm,pcpu,pmem"], capture_output=True, text=True, timeout=1)
+        lines = res.stdout.strip().split('\n')
+        for line in lines[1:]:
+            parts = line.split()
+            if len(parts) >= 4:
+                try:
+                    pid = parts[0]
+                    comm = parts[1]
+                    cpu = float(parts[2])
+                    mem = float(parts[3])
+                    if comm in ["ps", "top", "grep", "ss", "netstat"]:
+                        continue
+                    procs.append({"pid": pid, "name": comm, "cpu": cpu, "mem": mem})
+                except:
+                    pass
+        procs = sorted(procs, key=lambda x: x["cpu"], reverse=True)[:5]
+    except:
+        pass
+    return procs
+
+def get_postgres_stats():
+    import subprocess
+    stats = {"db_size": "—", "connections": 0}
+    try:
+        res1 = subprocess.run(["psql", "-d", "uni_activity", "-t", "-c", "SELECT count(*) FROM pg_stat_activity;"], capture_output=True, text=True, timeout=1)
+        if res1.returncode == 0 and res1.stdout.strip():
+            stats["connections"] = int(res1.stdout.strip())
+        res2 = subprocess.run(["psql", "-d", "uni_activity", "-t", "-c", "SELECT pg_size_pretty(pg_database_size('uni_activity'));"], capture_output=True, text=True, timeout=1)
+        if res2.returncode == 0 and res2.stdout.strip():
+            stats["db_size"] = res2.stdout.strip()
+    except:
+        pass
+    return stats
+
+def get_redis_stats():
+    import subprocess
+    stats = {"used_memory": "—", "clients": 0}
+    try:
+        res = subprocess.run(["redis-cli", "info", "memory"], capture_output=True, text=True, timeout=1)
+        for line in res.stdout.split('\n'):
+            if "used_memory_human:" in line:
+                stats["used_memory"] = line.split(":")[1].strip()
+        res2 = subprocess.run(["redis-cli", "info", "clients"], capture_output=True, text=True, timeout=1)
+        for line in res2.stdout.split('\n'):
+            if "connected_clients:" in line:
+                stats["clients"] = int(line.split(":")[1].strip())
+    except:
+        pass
+    return stats
+
+def get_queue_stats():
+    import subprocess
+    stats = {"pending": 0, "failed": 0}
+    try:
+        res1 = subprocess.run(["redis-cli", "llen", "queues:default"], capture_output=True, text=True, timeout=1)
+        if res1.returncode == 0 and res1.stdout.strip():
+            stats["pending"] = int(res1.stdout.strip())
+            
+        res2 = subprocess.run(["psql", "-d", "uni_activity", "-t", "-c", "SELECT count(*) FROM failed_jobs;"], capture_output=True, text=True, timeout=1)
+        if res2.returncode == 0 and res2.stdout.strip():
+            stats["failed"] = int(res2.stdout.strip())
+    except:
+        pass
+    return stats
+
+def get_cloudflared_stats():
+    import urllib.request, re, subprocess
+    stats = {"latency_ms": 0}
+    try:
+        # Try direct urllib with proxy bypass first
+        proxy_support = urllib.request.ProxyHandler({})
+        opener = urllib.request.build_opener(proxy_support)
+        opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+        with opener.open("http://127.0.0.1:20241/metrics", timeout=1) as response:
+            content = response.read().decode('utf-8')
+        match = re.search(r'quic_client_smoothed_rtt\{[^}]*\}\s+([0-9.]+)', content)
+        if match:
+            stats["latency_ms"] = round(float(match.group(1)), 1)
+    except Exception:
+        # Fallback to local curl binary which is highly reliable on Termux
+        try:
+            res = subprocess.run(["curl", "-s", "-m", "1", "http://127.0.0.1:20241/metrics"], capture_output=True, text=True, timeout=1)
+            if res.returncode == 0:
+                match = re.search(r'quic_client_smoothed_rtt\{[^}]*\}\s+([0-9.]+)', res.stdout)
+                if match:
+                    stats["latency_ms"] = round(float(match.group(1)), 1)
+        except:
+            pass
+    return stats
+
+def get_gpu_stats():
+    import os
+    stats = {"freq_mhz": 0, "load_percent": 0, "status": "Not Supported"}
+    try:
+        freq_path = "/sys/class/kgsl/kgsl-3d0/gpuclk"
+        if os.path.exists(freq_path):
+            try:
+                with open(freq_path, "r") as f:
+                    stats["freq_mhz"] = int(f.read().strip()) // 1000000
+                stats["status"] = "Active"
+            except PermissionError:
+                stats["status"] = "SELinux Protected"
+                stats["freq_mhz"] = "Permission Denied"
+                stats["load_percent"] = "Permission Denied"
+                return stats
+        
+        busy_path = "/sys/class/kgsl/kgsl-3d0/gpubusy"
+        if os.path.exists(busy_path):
+            with open(busy_path, "r") as f:
+                parts = f.read().strip().split()
+                if len(parts) == 2:
+                    active = int(parts[0])
+                    total = int(parts[1])
+                    if total > 0:
+                        stats["load_percent"] = round((active / total) * 100, 1)
+    except:
+        pass
+    return stats
 
 server_info_cache = None
 
@@ -460,6 +705,18 @@ def collect_stats():
         "deploy_log": get_deploy_logs(),
         "ssh_sessions": get_active_sessions(),
         "sftp_sessions": get_sftp_active(),
+        "listening_ports": get_listening_ports(),
+        "advanced_metrics": {
+            "cpu_freqs": get_cpu_freqs(),
+            "wifi_rssi": get_wifi_rssi(),
+            "net_speeds": get_net_speeds(),
+            "top_procs": get_top_processes(),
+            "postgres": get_postgres_stats(),
+            "redis": get_redis_stats(),
+            "queue": get_queue_stats(),
+            "cloudflared": get_cloudflared_stats(),
+            "gpu": get_gpu_stats()
+        }
     }
     stats["alerts"] = get_alerts(stats)
     stats["alerts_history"] = list(alerts_history)
