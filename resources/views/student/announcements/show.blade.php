@@ -24,7 +24,7 @@
 
         @if($announcement->image_path)
             <div class="mb-5 rounded-lg overflow-hidden" style="border:1px solid #f1f5f9;background:#f8fafc;">
-                <img src="{{ Storage::url($announcement->image_path) }}" alt="{{ $announcement->title }}" class="w-full h-auto" style="max-height:500px;object-fit:contain;display:block;margin:0 auto;">
+                <img src="{{ Storage::url($announcement->image_path) }}" alt="{{ $announcement->title }}" class="w-full h-auto" style="max-height:500px;object-fit:contain;display:block;margin:0 auto; cursor:zoom-in;" onclick="openImageModal(this.src || this.dataset.src)">
             </div>
         @endif
         
@@ -40,4 +40,22 @@
         </div>
     </div>
 </div>
+{{-- Image Modal --}}
+<div id="imageModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.85); justify-content:center; align-items:center; flex-direction:column;" onclick="closeImageModal()">
+    <span style="position:absolute; top:15px; right:25px; color:#fff; font-size:35px; font-weight:bold; cursor:pointer;">&times;</span>
+    <img id="modalImg" style="max-width:95%; max-height:90%; object-fit:contain; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.5); cursor:zoom-out;" onclick="event.stopPropagation(); closeImageModal()">
+</div>
+<script>
+    function openImageModal(src) {
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImg');
+        modal.style.display = 'flex';
+        modalImg.src = src;
+        document.body.style.overflow = 'hidden';
+    }
+    function closeImageModal() {
+        document.getElementById('imageModal').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+</script>
 @endsection

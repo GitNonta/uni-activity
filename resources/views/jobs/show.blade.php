@@ -62,7 +62,7 @@
 <div class="card mt-2">
     {{-- รูปภาพ --}}
     @if($job->image_path)
-        <img src="{{ Storage::url($job->image_path) }}" alt="{{ $job->title }}" class="activity-hero-image">
+        <img src="{{ Storage::url($job->image_path) }}" alt="{{ $job->title }}" class="activity-hero-image" style="background:#f1f5f9; cursor:zoom-in;" onclick="openImageModal(this.src || this.dataset.src)">
     @else
         <div class="act-card-img" style="background:linear-gradient(135deg,{{ $job->job_type === 'parttime' ? '#f97316,#fb923c' : '#3b82f6,#60a5fa' }});height:120px;">
             <svg class="icon-xl" style="color:rgba(255,255,255,.3);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
@@ -371,6 +371,24 @@
 </div>
 
 
+{{-- Image Modal --}}
+<div id="imageModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.85); justify-content:center; align-items:center; flex-direction:column;" onclick="closeImageModal()">
+    <span style="position:absolute; top:15px; right:25px; color:#fff; font-size:35px; font-weight:bold; cursor:pointer;">&times;</span>
+    <img id="modalImg" style="max-width:95%; max-height:90%; object-fit:contain; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.5); cursor:zoom-out;" onclick="event.stopPropagation(); closeImageModal()">
+</div>
+<script>
+    function openImageModal(src) {
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImg');
+        modal.style.display = 'flex';
+        modalImg.src = src;
+        document.body.style.overflow = 'hidden';
+    }
+    function closeImageModal() {
+        document.getElementById('imageModal').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+</script>
 @endsection
 
 @section('scripts')
