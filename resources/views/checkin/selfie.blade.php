@@ -332,6 +332,7 @@
                 console.error('JS Face API detection error', e);
             }
             scanAttempts++;
+            isVerifying = false;
             scanTimeout = setTimeout(scanFrame, 1000);
             return;
         }
