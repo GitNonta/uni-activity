@@ -61,14 +61,18 @@ class AdminInboxController extends Controller
 
     public function show(int $jobId, int $studentId)
     {
-        $job     = JobListing::findOrFail($jobId);
+        $job     = $jobId == 0 ? (object) ['id' => 0, 'title' => 'ติดต่อสอบถามเจ้าหน้าที่'] : JobListing::findOrFail($jobId);
         $student = User::findOrFail($studentId);
 
-        $room = Room::where('job_id', $jobId)
-            ->whereHas('users', function ($q) use ($studentId) {
+        $roomQuery = Room::whereHas('users', function ($q) use ($studentId) {
                 $q->where('users.id', $studentId);
-            })
-            ->firstOrFail();
+            });
+        if ($jobId == 0) {
+            $roomQuery->whereNull('job_id');
+        } else {
+            $roomQuery->where('job_id', $jobId);
+        }
+        $room = $roomQuery->firstOrFail();
 
         $messages = $this->chatRepository->getRecentMessages($room);
 
@@ -90,11 +94,15 @@ class AdminInboxController extends Controller
             return response()->json(['error' => 'กรุณาพิมพ์ข้อความหรือแนบไฟล์'], 422);
         }
 
-        $room = Room::where('job_id', $jobId)
-            ->whereHas('users', function ($q) use ($studentId) {
+        $roomQuery = Room::whereHas('users', function ($q) use ($studentId) {
                 $q->where('users.id', $studentId);
-            })
-            ->firstOrFail();
+            });
+        if ($jobId == 0) {
+            $roomQuery->whereNull('job_id');
+        } else {
+            $roomQuery->where('job_id', $jobId);
+        }
+        $room = $roomQuery->firstOrFail();
 
         $attachments = [];
         if ($request->hasFile('attachments')) {
@@ -126,11 +134,15 @@ class AdminInboxController extends Controller
     /** Mark ข้อความจาก student ว่าอ่านแล้ว */
     public function markRead(int $jobId, int $studentId)
     {
-        $room = Room::where('job_id', $jobId)
-            ->whereHas('users', function ($q) use ($studentId) {
+        $roomQuery = Room::whereHas('users', function ($q) use ($studentId) {
                 $q->where('users.id', $studentId);
-            })
-            ->first();
+            });
+        if ($jobId == 0) {
+            $roomQuery->whereNull('job_id');
+        } else {
+            $roomQuery->where('job_id', $jobId);
+        }
+        $room = $roomQuery->first();
 
         if ($room) {
             $room->users()->updateExistingPivot(Auth::id(), ['last_read_at' => now()]);
@@ -165,11 +177,15 @@ class AdminInboxController extends Controller
 
     public function deleteChat($jobId, $userId)
     {
-        $room = Room::where('job_id', $jobId)
-            ->whereHas('users', function ($q) use ($userId) {
+        $roomQuery = Room::whereHas('users', function ($q) use ($userId) {
                 $q->where('users.id', $userId);
-            })
-            ->firstOrFail();
+            });
+        if ($jobId == 0) {
+            $roomQuery->whereNull('job_id');
+        } else {
+            $roomQuery->where('job_id', $jobId);
+        }
+        $room = $roomQuery->firstOrFail();
 
         $roomId = $room->id;
         Message::where('room_id', $roomId)->delete();
