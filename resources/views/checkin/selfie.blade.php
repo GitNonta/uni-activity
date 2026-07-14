@@ -108,8 +108,8 @@
             if (statusText) statusText.innerHTML = '<span class="spinner"></span> กำลังโหลดโมเดล AI บนเครื่อง...';
             
             try {
-                // Models need to be loaded from a CDN or public path, we'll use jsdelivr raw github for models
-                const MODEL_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights';
+                // โหลดโมเดลจากเซิร์ฟเวอร์ตัวเองโดยตรง (ไม่ดึงจากเว็บนอก) เพื่อให้โหลดเร็วและเสถียรที่สุด
+                const MODEL_URL = '/models';
                 await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
                 await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
                 await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
