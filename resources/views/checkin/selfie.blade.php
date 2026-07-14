@@ -191,6 +191,16 @@
 
     // ===== 1. เริ่มระบบ =====
     document.addEventListener('DOMContentLoaded', async () => {
+        @if(session('error'))
+        // หากมี Popup แจ้งเตือนข้อผิดพลาด ให้หยุดการสแกนและไม่ต้องเปิดกล้องเลย
+        stopScanning = true;
+        const guide = document.getElementById('faceGuide');
+        if (guide) guide.style.display = 'none';
+        const instructionEl = document.getElementById('scanInstructions');
+        if (instructionEl) instructionEl.style.display = 'none';
+        return;
+        @endif
+
         await startCamera();
         
         const guide = document.getElementById('faceGuide');
