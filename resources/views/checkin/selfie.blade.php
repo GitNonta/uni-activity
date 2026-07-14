@@ -108,9 +108,9 @@
             if (statusText) statusText.innerHTML = '<span class="spinner"></span> กำลังโหลดโมเดล AI บนเครื่อง...';
             
             try {
-                // Models need to be loaded from a CDN or public path, we'll use jsdelivr raw github for models
+                // ใช้ TinyFaceDetector แทน SsdMobilenetv1 เพื่อให้โหลดเร็วขึ้น 30 เท่า (จาก 5MB เหลือ 190KB) และสแกนไวขึ้น
                 const MODEL_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights';
-                await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
+                await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
                 await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
                 await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
                 
@@ -122,9 +122,9 @@
                 } else {
                     const profileUrl = '{{ $profilePhotoUrl }}';
                     if (profileUrl) {
-                        console.log('Extracting JS descriptor from image...');
+                        // Process base profile image with TinyFaceDetector
                         const img = await faceapi.fetchImage(profileUrl);
-                        const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+                        const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
                         if (detection) {
                             profileDescriptor = detection.descriptor;
                             
@@ -269,8 +269,8 @@
         if (isJsModeActive && isFaceApiLoaded && profileDescriptor) {
             // --- JS FACE API MODE ---
             try {
-                // Use face-api to detect face on canvas
-                const detection = await faceapi.detectSingleFace(canvas).withFaceLandmarks().withFaceDescriptor();
+                // ใช้ TinyFaceDetector เพื่อความเร็วสูงสุดในการรันบนเบราว์เซอร์
+                const detection = await faceapi.detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
                 let score = 0;
                 let passed = false;
                 
