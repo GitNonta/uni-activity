@@ -33,12 +33,13 @@ class CheckInController extends Controller
 
         $isCheckoutToken = ($activity->qr_checkout_token === $token);
         
-        if ($activity->require_selfie_verification && !$isCheckoutToken) {
+        if ($activity->require_face_scan) {
             $user = auth()->user();
             $profilePhotoUrl = $user->profile_photo
                 ? asset('storage/' . $user->profile_photo)
                 : null;
-            return view('checkin.selfie', compact('activity', 'token', 'isCheckoutToken', 'profilePhotoUrl'));
+            $faceScanMethod = $activity->face_scan_method ?? 'python';
+            return view('checkin.selfie', compact('activity', 'token', 'isCheckoutToken', 'profilePhotoUrl', 'faceScanMethod'));
         }
 
         return view('checkin.scan', compact('activity', 'token', 'isCheckoutToken'));
@@ -72,17 +73,78 @@ class CheckInController extends Controller
                     $imageData = str_replace(' ', '+', $imageData);
                     $imageDecoded = base64_decode($imageData);
 
-                    $filename = 'selfies/' . $att->id . '_' . time() . '.jpg';
+                    $isCheckout = in_array($result['status'], ['approved', 'pending']) && $result['status'] !== 'checked_in';
+                    
+                    if ($isCheckout) {
+                        $filename = 'selfies/checkout_' . $att->id . '_' . time() . '.jpg';
+                    } else {
+                        $filename = 'selfies/' . $att->id . '_' . time() . '.jpg';
+                    }
                     Storage::disk('public')->put($filename, $imageDecoded);
 
-                    $score = $request->filled('face_match_score') ? (float) $request->face_match_score : null;
-                    $passed = ($score !== null && $score >= 60);
+                    $score = null;
+                    $passed = null;
+                    
+                    if ($request->filled('js_face_match_score')) {
+                        // Trust client-side JS evaluation (Auto-Failover or JS primary)
+                        $score = $request->input('js_face_match_score');
+                        $passed = $request->boolean('js_face_match_passed');
+                    } else {
+                        // Use Python AI Server
+                        $user = auth()->user();
+                        $storedDescriptor = $user->face_descriptor;
+                        
+                        if ($storedDescriptor) {
+                            $aiServerUrl = config('services.ai_server.url');
+                            if (!empty($aiServerUrl)) {
+                                try {
+                                    $response = \Illuminate\Support\Facades\Http::timeout(15)
+                                        ->attach('image', $imageDecoded, 'selfie.jpg')
+                                        ->post(rtrim($aiServerUrl, '/') . '/verify', [
+                                            'known_embedding' => json_encode($storedDescriptor)
+                                        ]);
+                                        
+                                    if ($response->successful()) {
+                                        $aiResult = $response->json();
+                                        $score = $aiResult['score_percentage'] ?? 0;
+                                        $passed = $aiResult['is_match'] ?? false;
+                                    } else {
+                                        \Log::warning('AI Server selfie verification failed: ' . $response->body());
+                                    }
+                                } catch (\Exception $e) {
+                                    \Log::error('AI Server selfie verification error: ' . $e->getMessage());
+                                }
+                            }
+                        }
+                    }
 
-                    $att->update([
-                        'selfie_photo_path' => $filename,
-                        'face_match_score'  => $score,
-                        'face_match_passed' => $passed,
-                    ]);
+                    if ($isCheckout) {
+                        $att->update([
+                            'checkout_selfie_photo_path' => $filename,
+                            'checkout_face_match_score'  => $score,
+                            'checkout_face_match_passed' => $passed,
+                        ]);
+
+                        // ลบรูปเซลฟี่ทั้งเข้าและออกทิ้งเมื่อจบกิจกรรมและ AI ตรวจผ่าน
+                        if ($passed) {
+                            if ($att->selfie_photo_path && Storage::disk('public')->exists($att->selfie_photo_path)) {
+                                Storage::disk('public')->delete($att->selfie_photo_path);
+                            }
+                            if ($att->checkout_selfie_photo_path && Storage::disk('public')->exists($att->checkout_selfie_photo_path)) {
+                                Storage::disk('public')->delete($att->checkout_selfie_photo_path);
+                            }
+                            $att->update([
+                                'selfie_photo_path' => null,
+                                'checkout_selfie_photo_path' => null,
+                            ]);
+                        }
+                    } else {
+                        $att->update([
+                            'selfie_photo_path' => $filename,
+                            'face_match_score'  => $score,
+                            'face_match_passed' => $passed,
+                        ]);
+                    }
                 }
             }
 
@@ -94,6 +156,43 @@ class CheckInController extends Controller
         }
 
         return back()->with('error', $result['message']);
+    }
+
+    /** ตรวจสอบภาพเรียวไทม์จากหน้าจอเซลฟี่ */
+    public function verifyFrame(Request $request, string $token)
+    {
+        $request->validate(['image' => 'required|string']);
+        
+        $user = auth()->user();
+        $storedDescriptor = $user->face_descriptor;
+        if (!$storedDescriptor) {
+            return response()->json(['success' => false, 'message' => 'No profile descriptor']);
+        }
+        
+        $base64 = $request->input('image');
+        $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $base64);
+        $imageDecoded = base64_decode(str_replace(' ', '+', $imageData));
+        
+        $aiServerUrl = config('services.ai_server.url');
+        if (empty($aiServerUrl)) {
+            return response()->json(['success' => false, 'message' => 'AI Server not configured']);
+        }
+        
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(3) // Timeout สั้นๆ เพื่อไม่ให้ค้าง
+                ->attach('image', $imageDecoded, 'frame.jpg')
+                ->post(rtrim($aiServerUrl, '/') . '/verify', [
+                    'known_embedding' => json_encode($storedDescriptor)
+                ]);
+                
+            if ($response->successful()) {
+                return response()->json($response->json());
+            }
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'AI Server timeout or error']);
+        }
+        
+        return response()->json(['success' => false, 'message' => 'Verification failed']);
     }
 
     /** แสดงหน้าถ่าย selfie เพื่อยืนยันตัวตน */

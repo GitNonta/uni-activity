@@ -104,6 +104,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/registrations/{id}', [RegistrationController::class, 'destroy'])->name('registrations.destroy'); // ยกเลิกการลงทะเบียน
     Route::get('/check-in/{token}', [CheckInController::class, 'show'])->name('checkin.show');                       // หน้าเช็คอินจาก QR
     Route::post('/check-in/{token}', [CheckInController::class, 'store'])->name('checkin.store');                    // ดำเนินการเช็คอิน QR
+    Route::post('/check-in/{token}/verify-frame', [CheckInController::class, 'verifyFrame'])->name('checkin.verify_frame'); // สแกนหน้าแบบเรียวไทม์
 
     Route::post('/activities/{id}/self-checkin', [CheckInController::class, 'selfCheckIn'])->name('activities.self-checkin'); // ปิด self check-in: ให้สแกน QR หน้างานเท่านั้น
     Route::get('/my-activities', [StudentController::class, 'myActivities'])->name('student.my');                    // กิจกรรมของฉัน

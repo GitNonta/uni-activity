@@ -169,6 +169,10 @@ class ActivityAdminController extends Controller
         $data['allow_walkin'] = $request->has('allow_walkin') ? $request->boolean('allow_walkin') : true;
         $data['require_attendance_approval'] = $request->boolean('require_attendance_approval');
         $data['require_selfie_verification'] = $request->boolean('require_selfie_verification');
+        $data['require_face_scan'] = $request->has('require_face_scan') ? $request->boolean('require_face_scan') : true;
+        if ($request->has('face_scan_method')) {
+            $data['face_scan_method'] = $request->face_scan_method;
+        }
         if (($data['scope'] ?? 'university') === 'university') {
             $data['faculty'] = null;
             $data['department'] = null;
@@ -243,11 +247,17 @@ class ActivityAdminController extends Controller
             'longitude' => 'nullable|numeric|between:-180,180',
             'checkin_radius' => 'nullable|integer|min:10|max:5000',
             'require_attendance_approval' => 'boolean',
+            'require_face_scan' => 'boolean',
+            'face_scan_method' => 'nullable|string|in:python,js',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
         ]);
 
         $data['is_mandatory'] = $request->boolean('is_mandatory');
         $data['is_multiday'] = $request->boolean('is_multiday');
+        $data['require_face_scan'] = $request->boolean('require_face_scan');
+        if ($request->has('face_scan_method')) {
+            $data['face_scan_method'] = $request->face_scan_method;
+        }
         $data['allow_walkin'] = $request->has('allow_walkin') ? $request->boolean('allow_walkin') : true;
         $data['require_attendance_approval'] = $request->boolean('require_attendance_approval');
         $data['require_selfie_verification'] = $request->boolean('require_selfie_verification');

@@ -209,11 +209,21 @@
                 </label>
                 <p class="text-xs text-muted" style="margin-left: 1.5rem; margin-top: 0.15rem;">หากติ๊กเลือก นักศึกษาที่สแกน QR จะมีสถานะ "รอตรวจสอบ" จนกว่าผู้จัดจะกดอนุมัติ</p>
             </div>
-            <div class="form-group">
-                <label class="checkbox-label">
-                    <input type="checkbox" name="require_selfie_verification" value="1" {{ old('require_selfie_verification', $activity->require_selfie_verification) ? 'checked' : '' }}> เปิดยืนยันตัวตนด้วย Selfie (AI Face Compare)
+            <div class="form-group" style="padding: 1rem; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc;">
+                <label class="checkbox-label" style="font-weight: bold; margin-bottom: 0.5rem;">
+                    <input type="checkbox" name="require_face_scan" id="requireFaceScan" value="1" onchange="toggleFaceScanMethod()" {{ old('require_face_scan', $activity->require_face_scan) ? 'checked' : '' }}> 
+                    บังคับสแกนใบหน้า (Face Scan Verification)
                 </label>
-                <p class="text-xs text-muted" style="margin-left: 1.5rem; margin-top: 0.15rem;">เมื่อเช็คอินเข้างาน นักศึกษาจะต้องถ่ายรูปหน้าเพื่อยืนยันตัวตนกับรูปในระบบ หากไม่ตรงจะส่งให้ผู้จัดตรวจสอบ</p>
+                <p class="text-xs text-muted" style="margin-left: 1.5rem; margin-top: 0.15rem; margin-bottom: 1rem;">เมื่อเช็คอิน/เช็คเอาท์ นักศึกษาจะต้องถ่ายรูปหน้าเพื่อยืนยันตัวตนกับรูปในระบบ หากนำติ๊กออก ระบบจะบันทึกเวลาให้ทันทีเมื่อตำแหน่ง GPS ถูกต้อง</p>
+                
+                <div id="faceScanMethodDiv" style="margin-left: 1.5rem;">
+                    <label class="form-label" style="font-size: 0.9rem;">ระบบประมวลผลใบหน้า (Face Scan Method)</label>
+                    <select name="face_scan_method" class="form-control" style="max-width: 400px; font-size: 0.9rem;">
+                        <option value="python" {{ old('face_scan_method', $activity->face_scan_method) == 'python' ? 'selected' : '' }}>Python AI Server (ความแม่นยำสูง, 512-d, แนะนำ)</option>
+                        <option value="js" {{ old('face_scan_method', $activity->face_scan_method) == 'js' ? 'selected' : '' }}>Client-side FaceAPI.js (ประมวลผลบนมือถือนักศึกษา, 128-d)</option>
+                    </select>
+                    <small class="text-muted" style="display: block; margin-top: 0.25rem;">* หากเลือก Python AI แต่เซิร์ฟเวอร์ตอบสนองช้า ระบบจะสลับไปใช้ Client-side JS ให้โดยอัตโนมัติ (Auto-Failover)</small>
+                </div>
             </div>
             <button type="submit" class="btn btn-primary btn-lg">บันทึก</button>
         </form>
@@ -274,6 +284,15 @@ function updateRadius() {
     var r = parseInt(document.getElementById('checkin_radius').value) || 200;
     circle.setRadius(r);
 }
+
+function toggleFaceScanMethod() {
+    var isChecked = document.getElementById('requireFaceScan').checked;
+    document.getElementById('faceScanMethodDiv').style.display = isChecked ? 'block' : 'none';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    toggleFaceScanMethod();
+});
 
 function goToMyLocation() {
     if (!navigator.geolocation) { alert('เบราว์เซอร์ไม่รองรับ GPS'); return; }

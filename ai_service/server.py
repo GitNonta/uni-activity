@@ -1,7 +1,14 @@
 import io
+import os
 import json
 import numpy as np
 import cv2
+
+# ปรับจูนประสิทธิภาพของ CPU เพื่อความเร็วในสภาพแวดล้อม Termux / Android TV Box
+os.environ["OMP_NUM_THREADS"] = "4"
+os.environ["OPENBLAS_NUM_THREADS"] = "4"
+os.environ["MKL_NUM_THREADS"] = "4"
+
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from insightface.app import FaceAnalysis
@@ -20,10 +27,10 @@ app.add_middleware(
 
 # Initialize InsightFace model globally
 print("Loading InsightFace model (buffalo_l)...")
-# ctx_id=0 for GPU, -1 for CPU. Since it's PC, CPU is fine, but if NVIDIA GPU is present, 0 is faster.
-# To be safe for all Windows PCs, we use CPU (ctx_id=-1) by default or let ONNX decide.
+# ใช้ buffalo_l เพื่อความแม่นยำสูงสุด (512-d)
 face_app = FaceAnalysis(name='buffalo_l')
-face_app.prepare(ctx_id=-1, det_size=(640, 640))
+# ปรับ det_size ให้เล็กลงเป็น (320, 320) เพื่อเพิ่ม "ความเร็ว" อย่างมาก (เนื่องจากรูป Selfie หน้าจะใหญ่และชัดอยู่แล้ว)
+face_app.prepare(ctx_id=-1, det_size=(320, 320), det_thresh=0.5)
 print("Model loaded successfully!")
 
 def process_image(file_bytes):
@@ -90,7 +97,11 @@ async def verify_face(
         
         faces = face_app.get(img)
         if len(faces) == 0:
-            raise HTTPException(status_code=400, detail="No face detected in the selfie")
+            return {
+                "status": "error",
+                "is_match": False,
+                "message": "No face detected in the selfie"
+            }
             
         # Use the most prominent face if multiple are detected
         selfie_emb = faces[0].normed_embedding
@@ -98,8 +109,10 @@ async def verify_face(
         # Calculate Cosine Similarity
         similarity = np.dot(stored_emb, selfie_emb)
         
-        # Threshold for InsightFace buffalo_l is typically around 0.4 - 0.5
-        THRESHOLD = 0.45
+        # ปรับความแม่นยำ (Threshold) 
+        # buffalo_l แนะนำ 0.40 สำหรับความแม่นยำทั่วไป, 0.45 - 0.50 สำหรับความปลอดภัยสูงสุด (Strict)
+        # ตั้งค่าที่ 0.42 เป็นจุดสมดุลที่ดีที่สุดระหว่างความแม่นยำและการใช้งานจริง
+        THRESHOLD = 0.42
         is_match = bool(similarity >= THRESHOLD)
         
         return {

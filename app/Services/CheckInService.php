@@ -184,6 +184,7 @@ class CheckInService
             'activity' => $activity,
             'status'   => $autoApproved ? 'approved' : 'pending',
             'distance' => $exitDistance,
+            'attendance_id' => $attendance->id,
         ];
     }
 

@@ -16,7 +16,6 @@ class ProfilePhotoController extends Controller
     {
         $validated = $request->validate([
             'profile_photo' => 'required|image|mimes:jpg,jpeg,png,webp|max:10240',
-            'face_descriptor' => 'nullable|string',
         ]);
 
         $user = auth()->user();
@@ -73,7 +72,7 @@ class ProfilePhotoController extends Controller
             }
             $updateData = ['profile_photo' => $directory . '/' . $filename];
             
-            // Send request to AI server to extract face embedding
+            // ส่งรูปให้ AI Server สกัด Vector (512-d) ทันที
             $aiServerUrl = config('services.ai_server.url');
             if (!empty($aiServerUrl)) {
                 try {
@@ -82,24 +81,20 @@ class ProfilePhotoController extends Controller
                         ->post(rtrim($aiServerUrl, '/') . '/extract');
                         
                     if ($response->successful()) {
-                        $result = $response->json();
-                        if (isset($result['embedding']) && is_array($result['embedding'])) {
-                            $updateData['face_descriptor'] = $result['embedding'];
+                        $aiResult = $response->json();
+                        if (!empty($aiResult['embedding'])) {
+                            $updateData['face_descriptor'] = $aiResult['embedding'];
                         }
                     } else {
-                        \Log::warning('AI Server failed to extract face: ' . $response->body());
-                        if (file_exists($fullPath)) unlink($fullPath);
-                        return back()->withErrors(['error' => 'AI ไม่พบใบหน้า (กรุณาใช้รูปหน้าตรง มีคนเดียว และเห็นชัดเจน)']);
+                        \Log::warning('AI Server extraction failed: ' . $response->body());
                     }
                 } catch (\Exception $e) {
-                    \Log::error('AI Server communication error: ' . $e->getMessage());
-                    if (file_exists($fullPath)) unlink($fullPath);
-                    return back()->withErrors(['error' => 'ไม่สามารถเชื่อมต่อ AI Server ได้ (' . $e->getMessage() . ')']);
+                    \Log::error('AI Server extraction error: ' . $e->getMessage());
                 }
             }
 
-            $user->update($updateData);
-
+            $user->update($updateData); 
+            
             return back()->with('success', 'อัปโหลดและปรับปรุงรูปโปรไฟล์สำเร็จ (WebP)');
         } catch (\Exception $e) {
             \Log::error('Profile photo upload error: ' . $e->getMessage());
@@ -121,7 +116,10 @@ class ProfilePhotoController extends Controller
                 Storage::disk('public')->delete($user->profile_photo);
             }
 
-            $user->update(['profile_photo' => null]);
+            $user->update([
+                'profile_photo' => null,
+                'face_descriptor' => null
+            ]);
 
             return back()->with('success', 'ลบรูปโปรไฟล์เรียบร้อยแล้ว');
         } catch (\Exception $e) {

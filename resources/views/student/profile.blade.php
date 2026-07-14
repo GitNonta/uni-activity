@@ -407,8 +407,6 @@
             <button onclick="setCardTheme('#10b981', '#064e3b')" style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #10b981 50%, #064e3b 50%); border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Emerald Green"></button>
             <button onclick="setCardTheme('#a855f7', '#3b0764')" style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #a855f7 50%, #3b0764 50%); border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Amethyst Purple"></button>
             <button onclick="setCardTheme('#e11d48', '#4c0519')" style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #e11d48 50%, #4c0519 50%); border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Crimson Red"></button>
-            <button onclick="setCardTheme('#d97706', '#78350f', 'url({{ asset('images/phuket_oldtown.png') }})')" style="width: 32px; height: 32px; border-radius: 50%; background: url({{ asset('images/phuket_oldtown.png') }}) center/cover; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Phuket Old Town Pattern"></button>
-            <button onclick="setCardTheme('#f43f5e', '#881337', 'url({{ asset('images/cartoon.png') }})')" style="width: 32px; height: 32px; border-radius: 50%; background: url({{ asset('images/cartoon.png') }}) center/cover; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Cute Cartoon Pattern"></button>
         </div>
     </div>
 </div>
@@ -525,82 +523,16 @@
 @endpush
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script>
-    let faceapiLoaded = false;
-    
-    async function initFaceApi() {
-        if (faceapiLoaded) return true;
-        try {
-            const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
-            await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-            await faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL);
-            await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
-            faceapiLoaded = true;
-            return true;
-        } catch (e) {
-            console.error("Failed to load face-api models", e);
-            return false;
-        }
-    }
-
-    async function handleProfilePhotoSelect(event) {
+    function handleProfilePhotoSelect(event) {
         const file = event.target.files[0];
         if (!file) return;
 
         const overlay = document.getElementById('photoLoadingOverlay');
         overlay.style.display = 'flex';
 
-        // Load models if not loaded yet
-        const loaded = await initFaceApi();
-        if (!loaded) {
-            // If failed to load AI, just fallback to normal submit without descriptor
-            document.getElementById('photoForm').submit();
-            return;
-        }
-
-        try {
-            // Create an image element to read the file
-            const img = document.createElement('img');
-            const objectUrl = URL.createObjectURL(file);
-            
-            img.onload = async () => {
-                try {
-                    // Extract face descriptor
-                    const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
-                        .withFaceLandmarks(true)
-                        .withFaceDescriptor();
-                    
-                    if (!detection) {
-                        alert('ข้อผิดพลาด: ไม่พบใบหน้าคนในรูปภาพ กรุณาใช้รูปถ่ายหน้าตรงที่เห็นใบหน้าชัดเจน');
-                        event.target.value = ''; // clear file
-                        overlay.style.display = 'none';
-                        return;
-                    }
-                    
-                    // Convert descriptor array to JSON string and store in hidden input
-                    const descriptorArray = Array.from(detection.descriptor);
-                    document.getElementById('faceDescriptorInput').value = JSON.stringify(descriptorArray);
-                    
-                    // Submit form
-                    document.getElementById('photoForm').submit();
-                } catch (err) {
-                    console.error("Face detection error:", err);
-                    document.getElementById('photoForm').submit(); // Fallback
-                }
-                URL.revokeObjectURL(objectUrl);
-            };
-            
-            img.onerror = () => {
-                document.getElementById('photoForm').submit(); // Fallback on image error
-            };
-            
-            img.src = objectUrl;
-            
-        } catch (e) {
-            console.error(e);
-            document.getElementById('photoForm').submit();
-        }
+        // ส่งฟอร์มให้ Server จัดการเรื่องการสกัด Vector 512-d ทันที
+        document.getElementById('photoForm').submit();
     }
 </script>
 @endpush

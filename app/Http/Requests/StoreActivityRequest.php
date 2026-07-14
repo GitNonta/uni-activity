@@ -49,6 +49,8 @@ class StoreActivityRequest extends FormRequest
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
             'checkin_radius' => 'nullable|integer|min:10|max:5000',
+            'require_face_scan' => 'nullable|boolean',
+            'face_scan_method' => 'nullable|string|in:python,js',
         ];
     }
 

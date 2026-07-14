@@ -103,6 +103,7 @@ commands = [
     f'cd {remote_base} && php artisan config:clear',
     f'cd {remote_base} && php artisan cache:clear',
     f'cd {remote_base} && php artisan config:cache',
+    f'cd {remote_base} && php artisan route:clear',
     f'cd {remote_base} && php artisan view:clear',
     'killall php-fpm 2>/dev/null',
     'php-fpm',

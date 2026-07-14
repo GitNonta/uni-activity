@@ -54,6 +54,8 @@ class Activity extends Model
         'longitude',
         'checkin_radius',
         'require_selfie_verification',
+        'require_face_scan',
+        'face_scan_method',
     ];
 
     /** กำหนดประเภทการแปลงค่าฟิลด์ */
@@ -81,6 +83,7 @@ class Activity extends Model
             'longitude' => 'decimal:7',
             'checkin_radius' => 'integer',
             'require_selfie_verification' => 'boolean',
+            'require_face_scan' => 'boolean',
         ];
     }
 
