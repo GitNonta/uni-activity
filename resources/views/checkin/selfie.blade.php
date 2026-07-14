@@ -114,13 +114,30 @@
                 await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
                 await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
                 
-                // Fetch profile photo and compute descriptor
-                const profileUrl = '{{ $profilePhotoUrl }}';
-                if (profileUrl) {
-                    const img = await faceapi.fetchImage(profileUrl);
-                    const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
-                    if (detection) {
-                        profileDescriptor = detection.descriptor;
+                // Setup pre-computed descriptor or compute it
+                const preComputed = {!! $profileJsDescriptor ?? 'null' !!};
+                if (preComputed) {
+                    profileDescriptor = new Float32Array(Object.values(preComputed));
+                    console.log('Loaded JS descriptor from DB');
+                } else {
+                    const profileUrl = '{{ $profilePhotoUrl }}';
+                    if (profileUrl) {
+                        console.log('Extracting JS descriptor from image...');
+                        const img = await faceapi.fetchImage(profileUrl);
+                        const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+                        if (detection) {
+                            profileDescriptor = detection.descriptor;
+                            
+                            // Auto-save to backend
+                            fetch('{{ route("profile.save_js_descriptor") }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                },
+                                body: JSON.stringify({ descriptor: Array.from(profileDescriptor) })
+                            }).then(r => r.json()).then(d => console.log('Saved JS descriptor', d)).catch(e => console.error(e));
+                        }
                     }
                 }
                 isFaceApiLoaded = true;

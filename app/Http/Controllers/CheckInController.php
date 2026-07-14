@@ -35,11 +35,32 @@ class CheckInController extends Controller
         
         if ($activity->require_face_scan) {
             $user = auth()->user();
+            
+            // Auto-Extract Python (512-d) if missing but has profile photo
+            if (!$user->face_descriptor && $user->profile_photo) {
+                $photoPath = storage_path('app/public/' . $user->profile_photo);
+                $aiServerUrl = config('services.ai_server.url');
+                if (file_exists($photoPath) && !empty($aiServerUrl)) {
+                    try {
+                        $response = \Illuminate\Support\Facades\Http::timeout(15)
+                            ->attach('image', file_get_contents($photoPath), 'profile.jpg')
+                            ->post(rtrim($aiServerUrl, '/') . '/extract');
+                        if ($response->successful()) {
+                            $user->update(['face_descriptor' => $response->json('embedding')]);
+                        }
+                    } catch (\Exception $e) {
+                        \Log::error("Auto-extract Python error: " . $e->getMessage());
+                    }
+                }
+            }
+
             $profilePhotoUrl = $user->profile_photo
                 ? asset('storage/' . $user->profile_photo)
                 : null;
             $faceScanMethod = $activity->face_scan_method ?? 'python';
-            return view('checkin.selfie', compact('activity', 'token', 'isCheckoutToken', 'profilePhotoUrl', 'faceScanMethod'));
+            $profileJsDescriptor = $user->face_descriptor_js ? json_encode($user->face_descriptor_js) : 'null';
+            
+            return view('checkin.selfie', compact('activity', 'token', 'isCheckoutToken', 'profilePhotoUrl', 'faceScanMethod', 'profileJsDescriptor'));
         }
 
         return view('checkin.scan', compact('activity', 'token', 'isCheckoutToken'));

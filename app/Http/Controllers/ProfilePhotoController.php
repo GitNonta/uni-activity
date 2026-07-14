@@ -70,7 +70,10 @@ class ProfilePhotoController extends Controller
             if ($user->profile_photo && Storage::disk('public')->exists($user->profile_photo)) {
                 Storage::disk('public')->delete($user->profile_photo);
             }
-            $updateData = ['profile_photo' => $directory . '/' . $filename];
+            $updateData = [
+                'profile_photo' => $directory . '/' . $filename,
+                'face_descriptor_js' => null // Clear JS descriptor so it can be regenerated on next scan
+            ];
             
             // ส่งรูปให้ AI Server สกัด Vector (512-d) ทันที
             $aiServerUrl = config('services.ai_server.url');
@@ -118,7 +121,8 @@ class ProfilePhotoController extends Controller
 
             $user->update([
                 'profile_photo' => null,
-                'face_descriptor' => null
+                'face_descriptor' => null,
+                'face_descriptor_js' => null
             ]);
 
             return back()->with('success', 'ลบรูปโปรไฟล์เรียบร้อยแล้ว');
@@ -126,5 +130,22 @@ class ProfilePhotoController extends Controller
             \Log::error('Profile photo delete error: ' . $e->getMessage());
             return back()->withErrors(['error' => 'เกิดข้อผิดพลาดในการลบรูป: ' . $e->getMessage()]);
         }
+    }
+
+    /** บันทึก Face Descriptor ของ JS (128-d) ที่สร้างจากเบราว์เซอร์ */
+    public function saveJsDescriptor(Request $request)
+    {
+        $request->validate([
+            'descriptor' => 'required|array',
+            'descriptor.*' => 'numeric'
+        ]);
+
+        $user = auth()->user();
+        if ($user) {
+            $user->update(['face_descriptor_js' => $request->descriptor]);
+            return response()->json(['success' => true]);
+        }
+        
+        return response()->json(['success' => false], 401);
     }
 }

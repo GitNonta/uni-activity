@@ -45,6 +45,7 @@ class User extends Authenticatable
         'last_login_at',
         'last_device_fingerprint',
         'face_descriptor',
+        'face_descriptor_js',
     ];
 
     /** ฟิลด์ที่ซ่อนเมื่อแปลงเป็น JSON */
@@ -64,6 +65,7 @@ class User extends Authenticatable
             'line_notify_enabled' => 'boolean',
             'last_login_at'       => 'datetime',
             'face_descriptor'     => 'array',
+            'face_descriptor_js'  => 'array',
         ];
     }
 
