@@ -88,18 +88,29 @@
     @endif
 
     @if(session('error'))
-    <div id="errorPopup" style="position:absolute; top:15%; left:5%; right:5%; background:rgba(239,68,68,0.95); color:white; padding:20px; border-radius:20px; border:1px solid #fca5a5; z-index: 9999; text-align: center; box-shadow: 0 10px 25px rgba(239,68,68,0.4); animation: slideDown 0.4s ease-out;">
-        <div style="font-size:3rem; margin-bottom:10px;">❌</div>
-        <strong style="display:block;margin-bottom:10px;font-size:1.4rem;">ไม่สามารถทำรายการได้</strong>
-        <span style="font-size:1.1rem; display:block; margin-bottom: 20px;">{{ session('error') }}</span>
-        <button type="button" onclick="document.getElementById('errorPopup').style.display='none'" style="background:white; color:#ef4444; border:none; padding:10px 30px; border-radius:30px; font-weight:bold; font-size:1.1rem; cursor:pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">รับทราบ</button>
+    <div id="errorPopup" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index: 9999; display:flex; justify-content:center; align-items:center;">
+        <div style="background:white; padding:30px; border-radius:20px; text-align: center; max-width: 85%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: popIn 0.3s ease-out;">
+            <!-- SVG Icon: Outline Exclamation Circle -->
+            <svg style="width:80px; height:80px; margin:0 auto 15px auto; color:#ef4444;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <strong style="display:block;margin-bottom:10px;font-size:1.4rem;color:#ef4444;">ไม่สามารถทำรายการได้</strong>
+            <span style="font-size:1.1rem; display:block; margin-bottom: 25px; color:#374151;">{{ session('error') }}</span>
+            <button type="button" onclick="window.location.href='{{ route('activities.show', $activity->id) }}'" style="background:#ef4444; color:white; border:none; padding:12px 30px; border-radius:30px; font-weight:bold; font-size:1.1rem; cursor:pointer; width:100%; box-shadow: 0 4px 10px rgba(239,68,68,0.3);">กลับไปหน้ากิจกรรม</button>
+        </div>
     </div>
     <style>
-        @keyframes slideDown {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
     </style>
+    <script>
+        // Auto-redirect back to activity page after 5 seconds
+        setTimeout(() => {
+            window.location.href = "{{ route('activities.show', $activity->id) }}";
+        }, 5000);
+    </script>
     @endif
 
     <!-- Hidden form -->
