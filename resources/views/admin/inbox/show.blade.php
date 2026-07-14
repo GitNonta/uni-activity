@@ -126,7 +126,9 @@
                 style="flex:1;resize:none;border:1px solid #e2e8f0;border-radius:10px;padding:.55rem .8rem;font-size:.875rem;line-height:1.5;outline:none;font-family:inherit;max-height:100px;overflow-y:auto;"
                 onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();document.getElementById('sendBtn').click();}"></textarea>
             <button id="sendBtn" type="submit"
-                style="background:#4f46e5;color:#fff;border:none;border-radius:10px;padding:.55rem 1.1rem;font-size:.875rem;cursor:pointer;flex-shrink:0;">ส่ง</button>
+                style="background:#4f46e5;color:#fff;border:none;border-radius:10px;padding:.55rem 1.1rem;font-size:.875rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+                <svg style="width:16px;height:16px;transform:rotate(45deg);margin-left:-2px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
         </div>
     </form>
 @endsection
@@ -284,7 +286,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     
                     window.currentAdminEditId = null;
                     input.value = '';
-                    btn.innerHTML = 'ส่ง';
+                    btn.innerHTML = '<svg style="width:16px;height:16px;transform:rotate(45deg);margin-left:-2px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';
                     btn.style.background = '#4f46e5';
                     var cancelBtn = document.getElementById('adminCancelEditBtn');
                     if (cancelBtn) cancelBtn.remove();
@@ -477,7 +479,7 @@ window.editMessageBtn = function(id) {
         cancelBtn.onclick = function() {
             window.currentAdminEditId = null;
             input.value = '';
-            btn.innerHTML = 'ส่ง';
+            btn.innerHTML = '<svg style="width:16px;height:16px;transform:rotate(45deg);margin-left:-2px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';
             btn.style.background = '#4f46e5';
             this.remove();
         };

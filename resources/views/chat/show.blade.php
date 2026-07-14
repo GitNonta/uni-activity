@@ -403,7 +403,7 @@
                 <textarea id="msgInput" name="message" rows="1" class="chat-textarea" placeholder="พิมพ์ข้อความที่นี่..."></textarea>
 
                 <button type="submit" id="sendBtn" class="send-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    <svg style="width:18px;height:18px;transform:rotate(45deg);margin-left:-2px;" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                 </button>
             </div>
             <div id="typingIndicator" class="typing-indicator flex items-center gap-1">
@@ -587,7 +587,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             alert('ไม่สามารถส่งข้อความได้ กรุณาลองใหม่');
         } finally {
-            sendBtn.disabled = false;
+            sendBtn.disabled = false; sendBtn.innerHTML = '<svg style="width:18px;height:18px;transform:rotate(45deg);margin-left:-2px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';
         }
     });
 
