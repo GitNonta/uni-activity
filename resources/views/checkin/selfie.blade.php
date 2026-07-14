@@ -108,9 +108,9 @@
             if (statusText) statusText.innerHTML = '<span class="spinner"></span> กำลังโหลดโมเดล AI บนเครื่อง...';
             
             try {
-                // ใช้ TinyFaceDetector แทน SsdMobilenetv1 เพื่อให้โหลดเร็วขึ้น 30 เท่า (จาก 5MB เหลือ 190KB) และสแกนไวขึ้น
+                // Models need to be loaded from a CDN or public path, we'll use jsdelivr raw github for models
                 const MODEL_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights';
-                await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+                await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
                 await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
                 await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
                 
@@ -122,9 +122,9 @@
                 } else {
                     const profileUrl = '{{ $profilePhotoUrl }}';
                     if (profileUrl) {
-                        // Process base profile image with TinyFaceDetector
+                        // Process base profile image
                         const img = await faceapi.fetchImage(profileUrl);
-                        const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+                        const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
                         if (detection) {
                             profileDescriptor = detection.descriptor;
                             
@@ -203,8 +203,7 @@
         isVerifying = true;
         scanAttempts++;
         
-        // ลดความละเอียดภาพตอนสแกน JS ให้เล็กลง เพื่อไม่ให้เบราว์เซอร์ค้าง (UI Freezing)
-        const MAX_DIM = 240;
+        const MAX_DIM = 480;
         let targetWidth = video.videoWidth;
         let targetHeight = video.videoHeight;
         
@@ -270,8 +269,8 @@
         if (isJsModeActive && isFaceApiLoaded && profileDescriptor) {
             // --- JS FACE API MODE ---
             try {
-                // ใช้ TinyFaceDetector พร้อมลด inputSize ให้เล็กลงเพื่อความเร็วสูงสุด และกันเบราว์เซอร์ค้าง
-                const detection = await faceapi.detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 160 })).withFaceLandmarks().withFaceDescriptor();
+                // Use face-api to detect face on canvas
+                const detection = await faceapi.detectSingleFace(canvas).withFaceLandmarks().withFaceDescriptor();
                 let score = 0;
                 let passed = false;
                 
