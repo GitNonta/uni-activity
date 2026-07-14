@@ -203,8 +203,8 @@
         isVerifying = true;
         scanAttempts++;
         
-        // ปรับลดความละเอียดลงมาที่ 320 เพื่อให้ SsdMobilenetv1 ทำงานได้ลื่นไหลขึ้น ไม่กินสเปคเครื่องหนักเกินไป
-        const MAX_DIM = 320;
+        // ใช้ความละเอียด 480px เพื่อให้รองรับ "ภาพมุมกว้าง" และใบหน้าที่อยู่ไกลได้ดีขึ้น
+        const MAX_DIM = 480;
         let targetWidth = video.videoWidth;
         let targetHeight = video.videoHeight;
         
@@ -333,7 +333,8 @@
             }
             scanAttempts++;
             isVerifying = false;
-            scanTimeout = setTimeout(scanFrame, 1000);
+            // เพิ่ม delay เป็น 1.5 วินาที เพื่อไม่ให้ภาพจากกล้องค้างเวลาใช้ภาพความละเอียด 480px
+            scanTimeout = setTimeout(scanFrame, 1500);
             return;
         }
         
