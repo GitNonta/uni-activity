@@ -19,7 +19,7 @@ class ChatController extends Controller
     /** แสดงหน้าแชทของนักศึกษาสำหรับประกาศงานนั้น */
     public function show(int $jobId)
     {
-        $job = JobListing::findOrFail($jobId);
+        $job = $jobId == 0 ? (object)['id' => 0, 'title' => 'ติดต่อสอบถามเจ้าหน้าที่'] : JobListing::findOrFail($jobId);
         $userId = Auth::id();
 
         // Get or create room for this student and job
@@ -34,7 +34,7 @@ class ChatController extends Controller
             $room = $this->chatRepository->createRoom(
                 array_merge([$userId], $adminIds),
                 'direct',
-                "Chat for Job #$jobId",
+                $jobId == 0 ? "ติดต่อสอบถามเจ้าหน้าที่" : "Chat for Job #$jobId",
                 $jobId
             );
         }
@@ -68,8 +68,13 @@ class ChatController extends Controller
             ->first();
 
         if (!$room) {
-            $job = JobListing::findOrFail($jobId);
-            $room = $this->chatRepository->createRoom([$userId, $job->created_by], 'direct', $job->title, $jobId);
+            if ($jobId == 0) {
+                $adminIds = User::where('role', 'admin')->pluck('id')->toArray();
+                $room = $this->chatRepository->createRoom(array_merge([$userId], $adminIds), 'direct', 'ติดต่อสอบถามเจ้าหน้าที่', 0);
+            } else {
+                $job = JobListing::findOrFail($jobId);
+                $room = $this->chatRepository->createRoom([$userId, $job->created_by], 'direct', $job->title, $jobId);
+            }
         }
 
         $attachments = [];
@@ -149,7 +154,7 @@ class ChatController extends Controller
 
             return [
                 'job_id'           => $room->job_id,
-                'job_title'        => $job?->title ?? "งาน #{$room->job_id}",
+                'job_title'        => $room->job_id == 0 ? 'ติดต่อสอบถามเจ้าหน้าที่' : ($job?->title ?? "งาน #{$room->job_id}"),
                 'last_message'     => $lastMsg?->body ?? '',
                 'last_sender_role' => $lastMsg?->user_id === $userId ? 'self' : 'other',
                 'last_time'        => $lastMsg?->created_at?->toISOString(),

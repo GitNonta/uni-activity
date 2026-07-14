@@ -293,11 +293,30 @@
 
         function renderThreads() {
             var el = document.getElementById('cfListContent');
-            if (!threads.length) {
-                el.innerHTML = '<div style="padding:2rem 1rem;text-align:center;font-size:.83rem;color:#94a3b8;">ยังไม่มีข้อความ</div>';
+            
+            // Filter out job_id=0 if it came from the server to avoid duplicates
+            var activeThreads = threads.filter(function(t) { return t.job_id != 0; });
+            var supportThread = threads.find(function(t) { return t.job_id == 0; });
+            
+            var isSupportUnread = supportThread && (supportThread.unread || 0) > 0;
+            var supportPreview = supportThread && supportThread.last_message ? (supportThread.last_message.length > 32 ? supportThread.last_message.slice(0,32)+'…' : supportThread.last_message) : 'สอบถามปัญหาการใช้งาน';
+            
+            var supportChatHtml = '<div onclick="showChatView(0, \'ติดต่อสอบถามเจ้าหน้าที่\')" style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;border-bottom:1px solid #f1f5f9;cursor:pointer;background:' + (isSupportUnread?'#faf5ff':'#fff') + ';">'
+                + '<div style="width:34px;height:34px;border-radius:50%;background:#e0e7ff;color:#4f46e5;display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+                + '<svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.05 2a9 9 0 0 1 8 7.94"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.05 6A5 5 0 0 1 18 10"/></svg>'
+                + '</div>'
+                + '<div style="flex:1;min-width:0;">'
+                + '<div style="font-size:.82rem;font-weight:' + (isSupportUnread?'700':'500') + ';color:#1e293b;">ติดต่อสอบถามเจ้าหน้าที่</div>'
+                + '<div style="font-size:.7rem;color:' + (isSupportUnread?'#1e293b':'#64748b') + ';">' + supportPreview + '</div>'
+                + '</div>'
+                + (isSupportUnread ? '<div style="min-width:18px;height:18px;border-radius:9px;background:#ef4444;color:#fff;font-size:.6rem;font-weight:700;line-height:18px;text-align:center;padding:0 4px;">' + supportThread.unread + '</div>' : '')
+                + '</div>';
+
+            if (!activeThreads.length) {
+                el.innerHTML = supportChatHtml + '<div style="padding:2rem 1rem;text-align:center;font-size:.83rem;color:#94a3b8;">ยังไม่มีข้อความเกี่ยวกับงาน</div>';
                 return;
             }
-            el.innerHTML = threads.map(function(t) {
+            el.innerHTML = supportChatHtml + activeThreads.map(function(t) {
                 var isUnread = (t.unread || 0) > 0;
                 var preview = t.last_message ? (t.last_message.length > 32 ? t.last_message.slice(0,32)+'…' : t.last_message) : '<svg style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> ไฟล์แนบ';
                 var safeTitle = (t.job_title || 'งานกิจกรรม').replace(/'/g, "\\'").replace(/"/g, '&quot;');
