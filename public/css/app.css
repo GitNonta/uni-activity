@@ -420,7 +420,7 @@ table tbody tr:hover { background: #f8fafc; }
 .act-card { display: block; color: inherit; transition: box-shadow .2s; }
 .act-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.08); text-decoration: none; }
 .act-card-img { position: relative; width: 100%; height: 140px; overflow: hidden; background: linear-gradient(135deg, #4f46e5, #7c3aed); display: flex; align-items: center; justify-content: center; }
-.act-card-img img { width: 100%; height: 100%; object-fit: contain; object-position: center; transition: transform .3s ease, opacity .4s ease; background: #ffffff; }
+.act-card-img img { width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform .3s ease, opacity .4s ease; background: transparent; }
 .act-card:hover .act-card-img img { transform: scale(1.05); }
 /* Lazy loading states */
 .lazy-img { opacity: 1; transition: opacity .4s ease; }
