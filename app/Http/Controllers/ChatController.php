@@ -61,16 +61,21 @@ class ChatController extends Controller
         }
 
         $userId = Auth::id();
-        $room = Room::where('job_id', $jobId)
-            ->whereHas('users', function ($q) use ($userId) {
+        $roomQuery = Room::whereHas('users', function ($q) use ($userId) {
                 $q->where('users.id', $userId);
-            })
-            ->first();
+            });
+        
+        if ($jobId == 0) {
+            $roomQuery->whereNull('job_id');
+        } else {
+            $roomQuery->where('job_id', $jobId);
+        }
+        $room = $roomQuery->first();
 
         if (!$room) {
             if ($jobId == 0) {
                 $adminIds = User::where('role', 'admin')->pluck('id')->toArray();
-                $room = $this->chatRepository->createRoom(array_merge([$userId], $adminIds), 'direct', 'ติดต่อสอบถามเจ้าหน้าที่', 0);
+                $room = $this->chatRepository->createRoom(array_merge([$userId], $adminIds), 'direct', 'ติดต่อสอบถามเจ้าหน้าที่', null);
             } else {
                 $job = JobListing::findOrFail($jobId);
                 $room = $this->chatRepository->createRoom([$userId, $job->created_by], 'direct', $job->title, $jobId);
@@ -110,11 +115,16 @@ class ChatController extends Controller
     {
         $userId = Auth::id();
 
-        $room = Room::where('job_id', $jobId)
-            ->whereHas('users', function ($q) use ($userId) {
+        $roomQuery = Room::whereHas('users', function ($q) use ($userId) {
                 $q->where('users.id', $userId);
-            })
-            ->first();
+            });
+            
+        if ($jobId == 0) {
+            $roomQuery->whereNull('job_id');
+        } else {
+            $roomQuery->where('job_id', $jobId);
+        }
+        $room = $roomQuery->first();
 
         if (!$room) {
             return response()->json(['messages' => []]);
@@ -153,8 +163,8 @@ class ChatController extends Controller
                 ->count();
 
             return [
-                'job_id'           => $room->job_id,
-                'job_title'        => $room->job_id == 0 ? 'ติดต่อสอบถามเจ้าหน้าที่' : ($job?->title ?? "งาน #{$room->job_id}"),
+                'job_id'           => $room->job_id ?? 0,
+                'job_title'        => $room->job_id ? ($job?->title ?? "งาน #{$room->job_id}") : 'ติดต่อสอบถามเจ้าหน้าที่',
                 'last_message'     => $lastMsg?->body ?? '',
                 'last_sender_role' => $lastMsg?->user_id === $userId ? 'self' : 'other',
                 'last_time'        => $lastMsg?->created_at?->toISOString(),
@@ -174,11 +184,16 @@ class ChatController extends Controller
     public function markRead(int $jobId)
     {
         $userId = Auth::id();
-        $room = Room::where('job_id', $jobId)
-            ->whereHas('users', function ($q) use ($userId) {
+        $roomQuery = Room::whereHas('users', function ($q) use ($userId) {
                 $q->where('users.id', $userId);
-            })
-            ->first();
+            });
+            
+        if ($jobId == 0) {
+            $roomQuery->whereNull('job_id');
+        } else {
+            $roomQuery->where('job_id', $jobId);
+        }
+        $room = $roomQuery->first();
 
         if ($room) {
             $room->users()->updateExistingPivot($userId, ['last_read_at' => now()]);
@@ -190,7 +205,13 @@ class ChatController extends Controller
     /** Check if any admin who replied to this job is currently online */
     public function adminOnlineStatus(int $jobId)
     {
-        $room = Room::where('job_id', $jobId)->first();
+        $roomQuery = Room::query();
+        if ($jobId == 0) {
+            $roomQuery->whereNull('job_id');
+        } else {
+            $roomQuery->where('job_id', $jobId);
+        }
+        $room = $roomQuery->first();
         if (!$room) return response()->json(['is_online' => false]);
 
         $adminIds = $room->users()

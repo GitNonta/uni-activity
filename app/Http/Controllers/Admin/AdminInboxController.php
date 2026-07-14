@@ -41,10 +41,10 @@ class AdminInboxController extends Controller
             $me = $room->users->where('id', $currentUserId)->first();
             
             return [
-                'job_id'       => $room->job_id,
+                'job_id'       => $room->job_id ?? 0,
                 'room_id'      => $room->id,
                 'student_id'   => $student?->id,
-                'job_title'    => $room->job?->title ?? "งาน #{$room->job_id}",
+                'job_title'    => $room->job_id ? ($room->job?->title ?? "งาน #{$room->job_id}") : 'ติดต่อสอบถามเจ้าหน้าที่',
                 'student_name'  => $student?->full_name ?? 'นักศึกษา',
                 'student_photo' => $student?->profile_photo ? asset('storage/' . $student->profile_photo) : null,
                 'last_message' => $lastMsg?->body ?? '',
