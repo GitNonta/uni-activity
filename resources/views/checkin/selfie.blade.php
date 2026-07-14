@@ -87,6 +87,21 @@
     </div>
     @endif
 
+    @if(session('error'))
+    <div id="errorPopup" style="position:absolute; top:15%; left:5%; right:5%; background:rgba(239,68,68,0.95); color:white; padding:20px; border-radius:20px; border:1px solid #fca5a5; z-index: 9999; text-align: center; box-shadow: 0 10px 25px rgba(239,68,68,0.4); animation: slideDown 0.4s ease-out;">
+        <div style="font-size:3rem; margin-bottom:10px;">❌</div>
+        <strong style="display:block;margin-bottom:10px;font-size:1.4rem;">ไม่สามารถทำรายการได้</strong>
+        <span style="font-size:1.1rem; display:block; margin-bottom: 20px;">{{ session('error') }}</span>
+        <button type="button" onclick="document.getElementById('errorPopup').style.display='none'" style="background:white; color:#ef4444; border:none; padding:10px 30px; border-radius:30px; font-weight:bold; font-size:1.1rem; cursor:pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">รับทราบ</button>
+    </div>
+    <style>
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+    @endif
+
     <!-- Hidden form -->
     <form id="selfieForm" method="POST" action="{{ route('checkin.store', $token) }}" style="display:none;">
         @csrf
