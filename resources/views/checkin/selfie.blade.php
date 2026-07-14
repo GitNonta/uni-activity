@@ -203,7 +203,8 @@
         isVerifying = true;
         scanAttempts++;
         
-        const MAX_DIM = 480;
+        // ปรับลดความละเอียดลงมาที่ 320 เพื่อให้ SsdMobilenetv1 ทำงานได้ลื่นไหลขึ้น ไม่กินสเปคเครื่องหนักเกินไป
+        const MAX_DIM = 320;
         let targetWidth = video.videoWidth;
         let targetHeight = video.videoHeight;
         
