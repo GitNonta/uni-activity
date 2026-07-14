@@ -300,13 +300,13 @@
                     jsScoreInput.type = 'hidden';
                     jsScoreInput.name = 'js_face_match_score';
                     jsScoreInput.value = score;
-                    document.getElementById('checkinForm').appendChild(jsScoreInput);
+                    document.getElementById('selfieForm').appendChild(jsScoreInput);
                     
                     let jsPassedInput = document.createElement('input');
                     jsPassedInput.type = 'hidden';
                     jsPassedInput.name = 'js_face_match_passed';
                     jsPassedInput.value = '1';
-                    document.getElementById('checkinForm').appendChild(jsPassedInput);
+                    document.getElementById('selfieForm').appendChild(jsPassedInput);
                     
                     capturePhoto(true); // submit
                     showComparisonResult(score, true);
