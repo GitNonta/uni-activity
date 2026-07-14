@@ -203,7 +203,8 @@
         isVerifying = true;
         scanAttempts++;
         
-        const MAX_DIM = 480;
+        // ลดความละเอียดภาพตอนสแกน JS ให้เล็กลง เพื่อไม่ให้เบราว์เซอร์ค้าง (UI Freezing)
+        const MAX_DIM = 240;
         let targetWidth = video.videoWidth;
         let targetHeight = video.videoHeight;
         
@@ -269,8 +270,8 @@
         if (isJsModeActive && isFaceApiLoaded && profileDescriptor) {
             // --- JS FACE API MODE ---
             try {
-                // ใช้ TinyFaceDetector เพื่อความเร็วสูงสุดในการรันบนเบราว์เซอร์
-                const detection = await faceapi.detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+                // ใช้ TinyFaceDetector พร้อมลด inputSize ให้เล็กลงเพื่อความเร็วสูงสุด และกันเบราว์เซอร์ค้าง
+                const detection = await faceapi.detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 160 })).withFaceLandmarks().withFaceDescriptor();
                 let score = 0;
                 let passed = false;
                 
