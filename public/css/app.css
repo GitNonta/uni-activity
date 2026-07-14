@@ -420,14 +420,14 @@ table tbody tr:hover { background: #f8fafc; }
 .act-card { display: block; color: inherit; transition: box-shadow .2s; }
 .act-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.08); text-decoration: none; }
 .act-card-img { position: relative; width: 100%; height: 140px; overflow: hidden; background: linear-gradient(135deg, #4f46e5, #7c3aed); display: flex; align-items: center; justify-content: center; }
-.act-card-img img { width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform .3s ease, opacity .4s ease; }
+.act-card-img img { width: 100%; height: 100%; object-fit: contain; object-position: center; transition: transform .3s ease, opacity .4s ease; background: #ffffff; }
 .act-card:hover .act-card-img img { transform: scale(1.05); }
 /* Lazy loading states */
 .lazy-img { opacity: 1; transition: opacity .4s ease; }
 .lazy-img:not([src]), .lazy-img[src=""] { opacity: 0; }
 .lazy-img:not([src]) { background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s ease-in-out infinite; }
 @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-.activity-hero-image { width: 100%; height: auto; max-height: 400px; object-fit: cover; object-position: center; }
+.activity-hero-image { width: 100%; height: auto; max-height: 500px; object-fit: contain; object-position: center; background: #ffffff; }
 .act-card-img .icon { width: 40px; height: 40px; color: rgba(255,255,255,.4); }
 /* Badge สถานะผู้ใช้บนโปสเตอร์กิจกรรม */
 .act-card-user-badge {
