@@ -512,7 +512,7 @@
 
         document.getElementById('cfChatForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            if (!currentJobId) return;
+            if (currentJobId === null || currentJobId === undefined) return;
             var form = this;
             var msgInput = document.getElementById('cfMsgInput');
             var text = msgInput.value.trim();
