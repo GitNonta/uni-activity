@@ -13,9 +13,9 @@ for i in range(30):
     if os.path.exists(LOG_FILE):
         with open(LOG_FILE, "r") as f:
             content = f.read()
-            match = re.search(r'(https://[a-zA-Z0-9-]+\.trycloudflare\.com)', content)
-            if match:
-                url = match.group(1)
+            matches = re.findall(r'(https://[a-zA-Z0-9-]+\.trycloudflare\.com)', content)
+            if matches:
+                url = matches[-1]
                 break
     time.sleep(1)
 
