@@ -13,6 +13,7 @@ import { AlertsHistory } from './components/AlertsHistory'
 import { DeployCard } from './components/DeployCard'
 import { Documentation } from './components/Documentation'
 import { AdvancedStatus } from './components/AdvancedStatus'
+import { AiScanner } from './components/AiScanner'
 import './App.css'
 
 export default function App() {
@@ -60,6 +61,12 @@ export default function App() {
         >
           Advanced Status
         </button>
+        <button 
+          onClick={() => setActiveTab('aiscanner')}
+          style={{ padding: '0.75rem 1rem', background: 'none', border: 'none', borderBottom: activeTab === 'aiscanner' ? '2px solid #2563eb' : '2px solid transparent', color: activeTab === 'aiscanner' ? '#2563eb' : '#6b7280', fontWeight: activeTab === 'aiscanner' ? 600 : 400, cursor: 'pointer', fontSize: '1rem' }}
+        >
+          AI Scanner
+        </button>
       </div>
 
       <main className="container">
@@ -94,6 +101,12 @@ export default function App() {
         )}
         {activeTab === 'advanced' && (
           <AdvancedStatus data={data} />
+        )}
+        {activeTab === 'aiscanner' && (
+          <AiScanner 
+            aiLog={data?.ai_log} 
+            serviceStatus={data?.services?.["AI Scan Service"]} 
+          />
         )}
       </main>
     </div>

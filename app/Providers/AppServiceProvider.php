@@ -39,7 +39,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureRateLimiters();
         $this->registerLineEvents();
         $this->registerConsoleCommandLogger();
-
+        
         // ตรวจสอบและบังคับใช้โปรโตคอลและโดเมนตามที่เรียกเข้ามาจริง (รองรับทั้ง localhost และ ngrok)
         if (!app()->runningInConsole()) {
             $currentHost = request()->getSchemeAndHttpHost();
@@ -51,14 +51,6 @@ class AppServiceProvider extends ServiceProvider
                 URL::forceScheme('https');
             }
         }
-    }
-
-    /** ลงทะเบียน Event → Listener สำหรับ LINE Notifications */
-    private function registerLineEvents(): void
-    {
-        Event::listen(ActivityPublished::class,    SendLineActivityNotification::class);
-        Event::listen(JobPublished::class,         SendLineJobNotification::class);
-        Event::listen(AnnouncementPublished::class, SendLineAnnouncementNotification::class);
     }
 
     private function configureRateLimiters(): void
@@ -131,6 +123,14 @@ class AppServiceProvider extends ServiceProvider
                 Limit::perMinute(50)->by($request->ip() . '|exports-global')
             ];
         });
+    }
+
+    /** ลงทะเบียน Event → Listener สำหรับ LINE Notifications */
+    private function registerLineEvents(): void
+    {
+        Event::listen(ActivityPublished::class,    SendLineActivityNotification::class);
+        Event::listen(JobPublished::class,         SendLineJobNotification::class);
+        Event::listen(AnnouncementPublished::class, SendLineAnnouncementNotification::class);
     }
 
     /**

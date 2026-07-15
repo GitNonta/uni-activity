@@ -47,5 +47,5 @@ elif [ -n "$BASH_VERSION" ]; then
 fi
 
 # Auto-start monitor server on port 9999 if not running
-pgrep -f "monitor_server.py" >/dev/null || nohup python /data/data/com.termux/files/home/uni-activity/monitor_server.py </dev/null >/data/data/com.termux/files/home/uni-activity/monitor.log 2>&1 &
+pgrep -f "monitor_server.py" >/dev/null || nohup python /data/data/com.termux/files/home/uni-activity/py/monitor_server.py </dev/null >/data/data/com.termux/files/home/uni-activity/monitor.log 2>&1 &
 

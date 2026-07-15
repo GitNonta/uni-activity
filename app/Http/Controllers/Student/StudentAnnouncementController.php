@@ -13,8 +13,9 @@ class StudentAnnouncementController extends Controller
     {
         $user = auth()->user();
         $page = $request->get('page', 1);
+        $userIdStr = $user ? (string) $user->id : 'guest';
         
-        $announcements = \Illuminate\Support\Facades\Cache::remember("announcements_user_{$user->id}_page_{$page}", 300, function () use ($user) {
+        $announcements = \Illuminate\Support\Facades\Cache::remember("announcements_user_{$userIdStr}_page_{$page}", 300, function () use ($user) {
             return Announcement::with('creator')
                 ->forAudience($user)
                 ->orderByDesc('created_at')

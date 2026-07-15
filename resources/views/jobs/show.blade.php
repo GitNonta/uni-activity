@@ -247,6 +247,15 @@
                 <button disabled class="btn btn-outline btn-block">ไม่สามารถสมัครได้ในขณะนี้</button>
             @endif
         @endauth
+        @guest
+            @if($job->isOpen() && $job->hasAvailableSlots())
+                <a href="{{ route('login') }}" class="btn btn-primary btn-block btn-lg" style="text-align: center; display: block; text-decoration: none; line-height: 1.5;">
+                    เข้าสู่ระบบเพื่อสมัครงาน
+                </a>
+            @else
+                <button disabled class="btn btn-outline btn-block">ไม่สามารถสมัครได้ในขณะนี้</button>
+            @endif
+        @endguest
     </div>
 </div>
 

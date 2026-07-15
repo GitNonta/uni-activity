@@ -121,12 +121,12 @@ class ActivityController extends Controller
 
         // ตรวจสอบสิทธิ์การเข้าถึง (IDOR Protection)
         // 1. ถ้ากิจกรรมถูกยกเลิก ห้ามดู (ยกเว้นแอดมินหรือคนสร้าง)
-        if ($activity->status === 'cancelled' && !$user->isStaff() && !$user->isAdmin()) {
+        if ($activity->status === 'cancelled' && (!$user || (!$user->isStaff() && !$user->isAdmin()))) {
             abort(403, 'กิจกรรมนี้ถูกยกเลิกแล้ว');
         }
 
         // 2. ตรวจสอบขอบเขต (Scope)
-        if ($user->role === 'student') {
+        if ($user && $user->role === 'student') {
             if ($activity->scope === 'faculty' && $activity->faculty !== $user->faculty) {
                 abort(403, 'กิจกรรมนี้สงวนสิทธิ์เฉพาะนักศึกษาคณะ ' . $activity->faculty . ' เท่านั้น');
             }

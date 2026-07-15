@@ -96,10 +96,16 @@ Route::middleware(['auth', 'role:staff'])->group(function () {
     Route::get('/walkin/{token}/attendees', [CheckInController::class, 'walkInAttendees'])->middleware('throttle:status')->name('checkin.walkin.attendees'); // API รายชื่อ real-time
 });
 
+// ── เส้นทางนักศึกษาที่เข้าดูได้โดยไม่ต้องเข้าสู่ระบบ ──
+Route::get('/activities', [ActivityController::class, 'index'])->name('activities.index');
+Route::get('/activities/{id}', [ActivityController::class, 'show'])->name('activities.show');
+Route::get('/announcements', [StudentAnnouncementController::class, 'index'])->name('announcements.index');
+Route::get('/announcements/{id}', [StudentAnnouncementController::class, 'show'])->name('announcements.show');
+Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
+Route::get('/jobs/{id}', [JobController::class, 'show'])->name('jobs.show');
+
 // ── เส้นทางนักศึกษา (ต้อง login ก่อน) ──────────────────
 Route::middleware('auth')->group(function () {
-    Route::get('/activities', [ActivityController::class, 'index'])->name('activities.index');                       // รายการกิจกรรมทั้งหมด
-    Route::get('/activities/{id}', [ActivityController::class, 'show'])->name('activities.show');                    // รายละเอียดกิจกรรม
     Route::post('/activities/{id}/register', [RegistrationController::class, 'store'])->name('activities.register'); // ลงทะเบียนกิจกรรม
     Route::delete('/registrations/{id}', [RegistrationController::class, 'destroy'])->name('registrations.destroy'); // ยกเลิกการลงทะเบียน
     Route::get('/check-in/{token}', [CheckInController::class, 'show'])->name('checkin.show');                       // หน้าเช็คอินจาก QR
@@ -127,15 +133,9 @@ Route::middleware('auth')->group(function () {
     Route::get('activities/{id}/feedback', [FeedbackController::class, 'create'])->name('feedback.create');
     Route::post('activities/{id}/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
     
-    // ── ประกาศข่าวสารสำหรับนักศึกษา ──
-    Route::get('/announcements', [StudentAnnouncementController::class, 'index'])->name('announcements.index');
-    Route::get('/announcements/{id}', [StudentAnnouncementController::class, 'show'])->name('announcements.show');
-    
     Route::delete('/profile/photo', [ProfilePhotoController::class, 'destroy'])->name('profile.photo.destroy');        // ลบรูปโปรไฟล์
 
     // ── ประกาศรับสมัครงาน (นักศึกษา) ──
-    Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');                                             // รายการงานทั้งหมด
-    Route::get('/jobs/{id}', [JobController::class, 'show'])->name('jobs.show');                                          // รายละเอียดงาน
     Route::post('/jobs/{id}/apply', [JobController::class, 'apply'])->name('jobs.apply');                                 // สมัครงาน
     Route::post('/jobs/{id}/comment', [JobController::class, 'comment'])->name('jobs.comment');                           // เพิ่มคอมเมนต์
     Route::delete('/jobs/comments/{id}', [JobController::class, 'deleteComment'])->name('jobs.comment.delete');           // ลบคอมเมนต์
