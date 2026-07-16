@@ -31,7 +31,7 @@
             </div>
         </div>
         <div>
-            <button type="button" onclick="openChatModal()" class="btn" style="display:flex;align-items:center;gap:.35rem;padding:.45rem 1rem;border-radius:8px;font-weight:600;font-size:.8rem;background:#fff;color:#1e40af;border:none;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -1px rgba(0,0,0,0.06);cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='none'">
+            <button type="button" onclick="handleSendMessageClick()" class="btn" style="display:flex;align-items:center;gap:.35rem;padding:.45rem 1rem;border-radius:8px;font-weight:600;font-size:.8rem;background:#fff;color:#1e40af;border:none;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -1px rgba(0,0,0,0.06);cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='none'">
                 <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
                 ส่งข้อความ
             </button>
@@ -240,51 +240,78 @@
     </div>
 </div>
 
-{{-- Modal ส่งข้อความ --}}
-<div id="chatModal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.4);align-items:center;justify-content:center;">
+{{-- Modal เลือกเรื่องที่ต้องการสนทนา (เมื่อมีหลายหัวข้อ) --}}
+<div id="chatSelectionModal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.4);align-items:center;justify-content:center;">
     <div style="background:#fff;border-radius:12px;padding:1.5rem;width:100%;max-width:450px;margin:1rem;box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="font-bold text-slate-800" style="font-size:1rem;margin:0;color:#1e293b;">ส่งข้อความถึง {{ $student->full_name }}</h3>
-            <button type="button" onclick="closeChatModal()" style="background:none;border:none;color:#94a3b8;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+            <h3 class="font-bold text-slate-800" style="font-size:1rem;margin:0;color:#1e293b;">เลือกเรื่องที่จะติดต่อกับ {{ $student->full_name }}</h3>
+            <button type="button" onclick="closeChatSelectionModal()" style="background:none;border:none;color:#94a3b8;cursor:pointer;display:flex;align-items:center;justify-content:center;">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
-        <form action="{{ route('admin.students.send-message', $student->id) }}" method="POST">
-            @csrf
-            @php
-                $chatJobsQuery = \App\Models\JobListing::orderBy('title');
-                if (auth()->user()->isStaff()) {
-                    $chatJobsQuery->where('created_by', auth()->id());
-                }
-                $chatJobs = $chatJobsQuery->get(['id', 'title', 'position']);
-            @endphp
-            <div class="form-group mb-3">
-                <label class="form-label" style="font-weight:600;font-size:.8rem;color:#475569;margin-bottom:.35rem;display:block;">เลือกเรื่องที่ต้องการติดต่อ</label>
-                <select name="job_id" class="form-control" style="width:100%;" required>
-                    @if(!auth()->user()->isStaff())
-                        <option value="0">ติดต่อสอบถามทั่วไป (General Inquiry)</option>
-                    @endif
-                    @foreach($chatJobs as $cj)
-                        <option value="{{ $cj->id }}">งาน: {{ $cj->title }} ({{ $cj->position }})</option>
-                    @endforeach
-                </select>
+        @php
+            $chatJobsQuery = \App\Models\JobListing::orderBy('title');
+            if (auth()->user()->isStaff()) {
+                $chatJobsQuery->where('created_by', auth()->id());
+            }
+            $chatJobs = $chatJobsQuery->get(['id', 'title', 'position']);
+        @endphp
+        <div class="form-group mb-3">
+            <label class="form-label" style="font-weight:600;font-size:.8rem;color:#475569;margin-bottom:.35rem;display:block;">เลือกเรื่องที่ต้องการติดต่อ</label>
+            <select id="chatJobSelect" class="form-control" style="width:100%;">
+                @if(!auth()->user()->isStaff())
+                    <option value="0">ติดต่อสอบถามทั่วไป (General Inquiry)</option>
+                @endif
+                @foreach($chatJobs as $cj)
+                    <option value="{{ $cj->id }}">งาน: {{ $cj->title }} ({{ $cj->position }})</option>
+                @endforeach
+            </select>
+        </div>
+        
+        @if(auth()->user()->isStaff() && $chatJobs->isEmpty())
+            <div style="background:#fee2e2;color:#991b1b;padding:.5rem;border-radius:6px;font-size:.75rem;margin-bottom:1rem;border:1px solid #fecaca;line-height:1.4;">
+                ⚠️ คุณไม่มีประกาศงานที่สร้างขึ้น ไม่สามารถส่งข้อความหาผู้ใช้รายนี้ได้เนื่องจากระบบจำกัดให้ส่งข้อความเฉพาะในหัวข้องานที่สร้างโดยเจ้าหน้าที่เท่านั้น
             </div>
-            
-            @if(auth()->user()->isStaff() && $chatJobs->isEmpty())
-                <div style="background:#fee2e2;color:#991b1b;padding:.5rem;border-radius:6px;font-size:.75rem;margin-bottom:1rem;border:1px solid #fecaca;line-height:1.4;">
-                    ⚠️ คุณไม่มีประกาศงานที่สร้างขึ้น ไม่สามารถส่งข้อความหาผู้ใช้รายนี้ได้เนื่องจากระบบจำกัดให้ส่งข้อความเฉพาะในหัวข้องานที่สร้างโดยเจ้าหน้าที่เท่านั้น
-                </div>
-            @endif
+        @endif
 
-            <div class="form-group mb-4">
-                <label class="form-label" style="font-weight:600;font-size:.8rem;color:#475569;margin-bottom:.35rem;display:block;">ข้อความแรก</label>
-                <textarea name="message" class="form-control" rows="4" placeholder="พิมพ์ข้อความของคุณที่นี่..." style="width:100%;resize:none;padding:.5rem;border-radius:6px;" required></textarea>
-            </div>
-            <div class="flex gap-2 justify-end">
-                <button type="button" onclick="closeChatModal()" class="btn btn-outline" style="font-size:.8rem;padding:.4rem 1rem;">ยกเลิก</button>
-                <button type="submit" class="btn btn-primary" style="font-size:.8rem;padding:.4rem 1rem;background:#1e40af;color:#fff;border:none;" {{ (auth()->user()->isStaff() && $chatJobs->isEmpty()) ? 'disabled' : '' }}>ส่งข้อความ</button>
-            </div>
-        </form>
+        <div class="flex gap-2 justify-end">
+            <button type="button" onclick="closeChatSelectionModal()" class="btn btn-outline" style="font-size:.8rem;padding:.4rem 1rem;">ยกเลิก</button>
+            <button type="button" onclick="openChatWidget(document.getElementById('chatJobSelect').value)" class="btn btn-primary" style="font-size:.8rem;padding:.4rem 1rem;background:#1e40af;color:#fff;border:none;" {{ (auth()->user()->isStaff() && $chatJobs->isEmpty()) ? 'disabled' : '' }}>เริ่มต้นแชท</button>
+        </div>
+    </div>
+</div>
+
+{{-- Widget แชทแบบลอยตัว (Floating Chat Widget) --}}
+<style>
+@keyframes widget-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+.widget-animate-spin {
+    animation: widget-spin 1s linear infinite;
+}
+</style>
+<div id="chatWidgetContainer" style="display:none;position:fixed;bottom:20px;right:20px;width:400px;height:600px;background:#fff;border-radius:16px;box-shadow:0 12px 28px rgba(0,0,0,0.15),0 8px 10px rgba(0,0,0,0.1);z-index:9999;flex-direction:column;overflow:hidden;border:1px solid #e2e8f0;">
+    <!-- Widget Header -->
+    <div style="background:linear-gradient(135deg,#4f46e5,#6366f1);padding:.75rem 1rem;color:#fff;display:flex;align-items:center;justify-content:space-between;cursor:pointer;flex-shrink:0;">
+        <div style="display:flex;align-items:center;gap:.5rem;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-top:2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+            <span style="font-weight:700;font-size:.95rem;">{{ $student->full_name }}</span>
+        </div>
+        <button onclick="closeChatWidget()" style="background:none;border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:4px;border-radius:50%;opacity:0.8;transition:opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+    </div>
+    <!-- Widget Body (IFrame) -->
+    <div style="flex:1;position:relative;background:#f8fafc;">
+        <div id="widgetLoader" style="position:absolute;inset:0;background:#fff;display:flex;align-items:center;justify-content:center;font-size:.85rem;color:#64748b;gap:.5rem;flex-direction:column;">
+            <svg class="widget-animate-spin" style="width:28px;height:28px;color:#4f46e5;" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" style="opacity:0.25;"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" style="opacity:0.75;"></path>
+            </svg>
+            <span>กำลังโหลดแชท...</span>
+        </div>
+        <iframe id="chatWidgetIframe" src="" style="width:100%;height:100%;border:none;display:none;" onload="document.getElementById('widgetLoader').style.display='none';this.style.display='block';"></iframe>
     </div>
 </div>
 @endsection
@@ -306,14 +333,47 @@ document.getElementById('editModal').addEventListener('click', function(e) {
     if (e.target === this) closeEditModal();
 });
 
-function openChatModal() {
-    document.getElementById('chatModal').style.display = 'flex';
+function handleSendMessageClick() {
+    var optionsCount = {{ (!auth()->user()->isStaff() ? 1 : 0) + $chatJobs->count() }};
+    if (optionsCount === 1) {
+        // Only one option exists, open it immediately
+        @if(!auth()->user()->isStaff())
+            openChatWidget(0);
+        @else
+            openChatWidget({{ $chatJobs->first()?->id ?? 0 }});
+        @endif
+    } else {
+        // Multiple options exist, show selection modal
+        openChatSelectionModal();
+    }
 }
-function closeChatModal() {
-    document.getElementById('chatModal').style.display = 'none';
+
+function openChatSelectionModal() {
+    document.getElementById('chatSelectionModal').style.display = 'flex';
 }
-document.getElementById('chatModal').addEventListener('click', function(e) {
-    if (e.target === this) closeChatModal();
+function closeChatSelectionModal() {
+    document.getElementById('chatSelectionModal').style.display = 'none';
+}
+document.getElementById('chatSelectionModal').addEventListener('click', function(e) {
+    if (e.target === this) closeChatSelectionModal();
 });
+
+function openChatWidget(jobId) {
+    closeChatSelectionModal();
+
+    var studentId = '{{ $student->id }}';
+    var iframeUrl = '{{ route('admin.inbox.index') }}/' + jobId + '/' + studentId + '?widget=1';
+    
+    document.getElementById('chatWidgetIframe').src = iframeUrl;
+    document.getElementById('widgetLoader').style.display = 'flex';
+    document.getElementById('chatWidgetIframe').style.display = 'none';
+
+    var widget = document.getElementById('chatWidgetContainer');
+    widget.style.display = 'flex';
+}
+function closeChatWidget() {
+    document.getElementById('chatWidgetContainer').style.display = 'none';
+    document.getElementById('chatWidgetIframe').src = '';
+}
 </script>
 @endsection
