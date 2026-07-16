@@ -73,7 +73,7 @@ export default function App() {
         {activeTab === 'dashboard' && (
           <>
             <AlertsBanner alerts={data?.alerts} />
-            <ConnectionCard url={data?.cf_url} status={data?.cf_status} />
+            <ConnectionCard url={data?.cf_url} status={data?.cf_status} lineStatus={data?.line_status} />
             <div className="grid-3">
               <SystemCard memory={data?.memory} load={data?.load} temp={data?.temp} disk={data?.disk} battery={data?.battery} />
               <NetworkCard network={data?.network} networkInfo={data?.network_info} />

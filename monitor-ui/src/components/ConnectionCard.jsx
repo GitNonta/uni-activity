@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 
-export function ConnectionCard({ url, status }) {
+export function ConnectionCard({ url, status, lineStatus }) {
   const isValid = url && url !== 'Not Found' && url !== 'Loading...'
   const isOnline = status?.online ?? false
   const pingMs = status?.ping_ms ?? 0
@@ -96,6 +96,40 @@ export function ConnectionCard({ url, status }) {
                 </a>
               </>
             )}
+          </div>
+        </div>
+
+        <div style={{ flex: 1, minWidth: 220 }}>
+          <p className="section-label">LINE Official Account</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: '#f9fafb', border: '1px solid #e5e7eb', padding: '0.75rem', borderRadius: '8px' }}>
+            <div style={{ 
+              width: 36, 
+              height: 36, 
+              borderRadius: '50%', 
+              background: '#06C755', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              color: '#fff',
+              fontWeight: 'bold',
+              fontSize: '1rem',
+              flexShrink: 0
+            }}>
+              LN
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <span style={{ fontWeight: 600, fontSize: '0.875rem', color: '#111827', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                  {lineStatus?.bot_name || 'LINE OA'}
+                </span>
+                <span className={`badge ${lineStatus?.status === 'Online' ? 'badge-success' : (lineStatus?.status === 'Offline' ? 'badge-error' : 'badge-gray')}`} style={{ fontSize: '0.7rem', padding: '0.1rem 0.4rem' }}>
+                  {lineStatus?.status || 'Checking...'}
+                </span>
+              </div>
+              <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: 0, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }} title={lineStatus?.error}>
+                {lineStatus?.status === 'Online' ? (lineStatus?.basic_id || 'ID Active') : (lineStatus?.error || 'Checking configuration...')}
+              </p>
+            </div>
           </div>
         </div>
 

@@ -113,6 +113,59 @@ def get_cf_url():
                     return line.split("=", 1)[1].strip()
     return "Not Found"
 
+line_status_cache = {"status": "Checking...", "error": None, "last_check": 0}
+
+def get_line_status():
+    global line_status_cache
+    now = time.time()
+    if now - line_status_cache.get("last_check", 0) < 60:
+        return line_status_cache
+
+    token = None
+    try:
+        if os.path.exists(ENV_PATH):
+            with open(ENV_PATH, "r") as f:
+                for line in f:
+                    if line.startswith("LINE_CHANNEL_ACCESS_TOKEN="):
+                        token = line.split("=", 1)[1].strip()
+                        if (token.startswith('"') and token.endswith('"')) or (token.startswith("'") and token.endswith("'")):
+                            token = token[1:-1]
+                        break
+    except Exception as e:
+        line_status_cache = {"status": "Error", "error": f"Failed to read .env: {str(e)}", "last_check": now}
+        return line_status_cache
+
+    if not token:
+        line_status_cache = {"status": "Not Configured", "error": "LINE_CHANNEL_ACCESS_TOKEN missing from .env", "last_check": now}
+        return line_status_cache
+
+    import urllib.request, json
+    try:
+        req = urllib.request.Request("https://api.line.me/v2/bot/info")
+        req.add_header("Authorization", f"Bearer {token}")
+        proxy_support = urllib.request.ProxyHandler({})
+        opener = urllib.request.build_opener(proxy_support)
+        with opener.open(req, timeout=3) as response:
+            res_data = json.loads(response.read().decode("utf-8"))
+            line_status_cache = {
+                "status": "Online",
+                "error": None,
+                "bot_name": res_data.get("displayName", "LINE OA"),
+                "basic_id": res_data.get("basicId", ""),
+                "last_check": now
+            }
+    except Exception as e:
+        err_msg = str(e)
+        if hasattr(e, 'code'):
+            if e.code == 401:
+                err_msg = "401 Unauthorized (Invalid Access Token)"
+            else:
+                err_msg = f"HTTP Error {e.code}"
+        line_status_cache = {"status": "Offline", "error": err_msg, "last_check": now}
+
+    return line_status_cache
+
+
 def get_memory():
     try:
         info = {}
@@ -709,6 +762,7 @@ def collect_stats():
         "server_info": get_server_info(),
         "cf_url": get_cf_url(),
         "cf_status": url_status,
+        "line_status": get_line_status(),
         "memory": get_memory(),
         "load": get_load(),
         "temp": get_temp(),
