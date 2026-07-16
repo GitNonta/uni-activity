@@ -8,6 +8,8 @@ use App\Models\ActivityCategory;
 use App\Models\Attendance;
 use App\Models\Setting;
 use App\Models\User;
+use App\Models\JobListing;
+use App\Models\Room;
 use App\Services\ActivitySummaryService;
 use App\Traits\LogsAdminActivity;
 use Illuminate\Http\Request;
@@ -177,5 +179,68 @@ class StudentAdminController extends Controller
         $attendance->delete();
 
         return back()->with('success', 'ลบบันทึกกิจกรรมเรียบร้อยแล้ว');
+    }
+
+    /** ส่งข้อความแรกเริ่มแชทกับนักศึกษา */
+    public function sendMessage(Request $request, \App\Repositories\ChatRepository $chatRepository, int $id)
+    {
+        $student = User::where('role', 'student')->findOrFail($id);
+
+        $request->validate([
+            'job_id'  => 'required|integer',
+            'message' => 'required|string|max:2000',
+        ]);
+
+        $jobId = (int) $request->job_id;
+
+        // Security check for staff
+        if (auth()->user()->isStaff()) {
+            if ($jobId == 0) {
+                abort(403, 'คุณไม่มีสิทธิ์เริ่มต้นแชทในเรื่องทั่วไป');
+            }
+            $job = JobListing::findOrFail($jobId);
+            if ($job->created_by !== auth()->id()) {
+                abort(403, 'คุณไม่มีสิทธิ์แชทสำหรับงานนี้');
+            }
+        } else {
+            $job = $jobId == 0 ? null : JobListing::findOrFail($jobId);
+        }
+
+        // 1. Get or create room
+        $roomQuery = Room::whereHas('users', function ($q) use ($student) {
+            $q->where('users.id', $student->id);
+        });
+        if ($jobId == 0) {
+            $roomQuery->whereNull('job_id');
+        } else {
+            $roomQuery->where('job_id', $jobId);
+        }
+        $room = $roomQuery->first();
+
+        if (!$room) {
+            if ($jobId == 0) {
+                $adminIds = User::where('role', 'admin')->pluck('id')->toArray();
+                $room = $chatRepository->createRoom(
+                    array_merge([$student->id], $adminIds),
+                    'direct',
+                    'ติดต่อสอบถามเจ้าหน้าที่',
+                    null
+                );
+            } else {
+                $room = $chatRepository->createRoom(
+                    [$student->id, auth()->id()],
+                    'direct',
+                    $job->title,
+                    $jobId
+                );
+            }
+        }
+
+        // 2. Send the message
+        $chatRepository->sendMessage($room, auth()->user(), $request->message);
+
+        // 3. Redirect to the inbox thread
+        return redirect()->route('admin.inbox.show', [$jobId, $student->id])
+            ->with('success', 'ส่งข้อความถึงนักศึกษาเรียบร้อยแล้ว');
     }
 }

@@ -14,19 +14,27 @@
 
 {{-- Hero: ข้อมูลนักศึกษา + สรุปชั่วโมง --}}
 <div style="background:linear-gradient(135deg,#1e40af,#4f46e5);border-radius:12px;padding:1.25rem 1.5rem;color:#fff;margin-bottom:1.25rem;">
-    <div class="flex items-center gap-4" style="margin-bottom:1rem;">
-        @if($student->profile_photo)
-            <img src="{{ asset('storage/' . $student->profile_photo) }}" alt="profile"
-                style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.4);flex-shrink:0;">
-        @else
-            <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                <svg width="30" height="30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+    <div class="flex items-center justify-between" style="margin-bottom:1rem;flex-wrap:wrap;gap:1rem;">
+        <div class="flex items-center gap-4">
+            @if($student->profile_photo)
+                <img src="{{ asset('storage/' . $student->profile_photo) }}" alt="profile"
+                    style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.4);flex-shrink:0;">
+            @else
+                <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="30" height="30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                </div>
+            @endif
+            <div>
+                <p style="font-size:.8rem;color:rgba(255,255,255,.7);margin-bottom:.1rem;">โปรไฟล์นักศึกษา</p>
+                <h1 style="font-size:1.2rem;font-weight:700;margin:0;">{{ $student->full_name }}</h1>
+                <p style="font-size:.85rem;color:rgba(255,255,255,.75);margin:.15rem 0 0;">{{ $student->student_id }}</p>
             </div>
-        @endif
+        </div>
         <div>
-            <p style="font-size:.8rem;color:rgba(255,255,255,.7);margin-bottom:.1rem;">โปรไฟล์นักศึกษา</p>
-            <h1 style="font-size:1.2rem;font-weight:700;margin:0;">{{ $student->full_name }}</h1>
-            <p style="font-size:.85rem;color:rgba(255,255,255,.75);margin:.15rem 0 0;">{{ $student->student_id }}</p>
+            <button type="button" onclick="openChatModal()" class="btn" style="display:flex;align-items:center;gap:.35rem;padding:.45rem 1rem;border-radius:8px;font-weight:600;font-size:.8rem;background:#fff;color:#1e40af;border:none;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -1px rgba(0,0,0,0.06);cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='none'">
+                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                ส่งข้อความ
+            </button>
         </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;">
@@ -231,6 +239,54 @@
         </form>
     </div>
 </div>
+
+{{-- Modal ส่งข้อความ --}}
+<div id="chatModal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.4);align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;padding:1.5rem;width:100%;max-width:450px;margin:1rem;box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-slate-800" style="font-size:1rem;margin:0;color:#1e293b;">ส่งข้อความถึง {{ $student->full_name }}</h3>
+            <button type="button" onclick="closeChatModal()" style="background:none;border:none;color:#94a3b8;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <form action="{{ route('admin.students.send-message', $student->id) }}" method="POST">
+            @csrf
+            @php
+                $chatJobsQuery = \App\Models\JobListing::orderBy('title');
+                if (auth()->user()->isStaff()) {
+                    $chatJobsQuery->where('created_by', auth()->id());
+                }
+                $chatJobs = $chatJobsQuery->get(['id', 'title', 'position']);
+            @endphp
+            <div class="form-group mb-3">
+                <label class="form-label" style="font-weight:600;font-size:.8rem;color:#475569;margin-bottom:.35rem;display:block;">เลือกเรื่องที่ต้องการติดต่อ</label>
+                <select name="job_id" class="form-control" style="width:100%;" required>
+                    @if(!auth()->user()->isStaff())
+                        <option value="0">ติดต่อสอบถามทั่วไป (General Inquiry)</option>
+                    @endif
+                    @foreach($chatJobs as $cj)
+                        <option value="{{ $cj->id }}">งาน: {{ $cj->title }} ({{ $cj->position }})</option>
+                    @endforeach
+                </select>
+            </div>
+            
+            @if(auth()->user()->isStaff() && $chatJobs->isEmpty())
+                <div style="background:#fee2e2;color:#991b1b;padding:.5rem;border-radius:6px;font-size:.75rem;margin-bottom:1rem;border:1px solid #fecaca;line-height:1.4;">
+                    ⚠️ คุณไม่มีประกาศงานที่สร้างขึ้น ไม่สามารถส่งข้อความหาผู้ใช้รายนี้ได้เนื่องจากระบบจำกัดให้ส่งข้อความเฉพาะในหัวข้องานที่สร้างโดยเจ้าหน้าที่เท่านั้น
+                </div>
+            @endif
+
+            <div class="form-group mb-4">
+                <label class="form-label" style="font-weight:600;font-size:.8rem;color:#475569;margin-bottom:.35rem;display:block;">ข้อความแรก</label>
+                <textarea name="message" class="form-control" rows="4" placeholder="พิมพ์ข้อความของคุณที่นี่..." style="width:100%;resize:none;padding:.5rem;border-radius:6px;" required></textarea>
+            </div>
+            <div class="flex gap-2 justify-end">
+                <button type="button" onclick="closeChatModal()" class="btn btn-outline" style="font-size:.8rem;padding:.4rem 1rem;">ยกเลิก</button>
+                <button type="submit" class="btn btn-primary" style="font-size:.8rem;padding:.4rem 1rem;background:#1e40af;color:#fff;border:none;" {{ (auth()->user()->isStaff() && $chatJobs->isEmpty()) ? 'disabled' : '' }}>ส่งข้อความ</button>
+            </div>
+        </form>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
@@ -248,6 +304,16 @@ function closeEditModal() {
 }
 document.getElementById('editModal').addEventListener('click', function(e) {
     if (e.target === this) closeEditModal();
+});
+
+function openChatModal() {
+    document.getElementById('chatModal').style.display = 'flex';
+}
+function closeChatModal() {
+    document.getElementById('chatModal').style.display = 'none';
+}
+document.getElementById('chatModal').addEventListener('click', function(e) {
+    if (e.target === this) closeChatModal();
 });
 </script>
 @endsection

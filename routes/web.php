@@ -208,9 +208,9 @@ Route::middleware(['auth', 'role:staff'])->prefix('admin')->name('admin.')->grou
     Route::delete('inbox/messages/{id}', [AdminInboxController::class, 'deleteMessage'])->name('inbox.messages.delete');
     Route::put('inbox/messages/{id}', [AdminInboxController::class, 'editMessage'])->name('inbox.messages.edit');
     Route::delete('inbox/{jobId}/{userId}', [AdminInboxController::class, 'deleteChat'])->name('inbox.delete');
-    // ── นักศึกษา (ดูได้ทั้ง staff + admin) ──
     Route::get('students', [StudentAdminController::class, 'index'])->name('students.index');
     Route::get('students/{id}', [StudentAdminController::class, 'show'])->name('students.show');
+    Route::post('students/{id}/send-message', [StudentAdminController::class, 'sendMessage'])->name('students.send-message');
 
     // ── ส่งออกรายงาน Excel ──
     Route::get('exports', [ExcelExportController::class, 'index'])->name('exports.index');
