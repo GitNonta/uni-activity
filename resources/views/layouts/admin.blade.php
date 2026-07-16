@@ -380,9 +380,14 @@
         <div class="sb-footer">
             <div class="sb-user">
                 <a href="{{ route('admin.profile.edit') }}" class="sb-user" style="padding:0; background:none; flex:1;">
-                    <div class="sb-avatar">
-                        {{ strtoupper(substr(auth()->user()->full_name ?? 'A', 0, 1)) }}
-                    </div>
+                    @if(auth()->user()->profile_photo)
+                        <img src="{{ asset('storage/' . auth()->user()->profile_photo) }}" alt="profile"
+                            style="width: 36px; height: 36px; border-radius: 10px; object-fit: cover;">
+                    @else
+                        <div class="sb-avatar">
+                            {{ strtoupper(substr(auth()->user()->full_name ?? 'A', 0, 1)) }}
+                        </div>
+                    @endif
                     <div class="sb-user-info sb-link-text">
                         <div class="sb-user-name">{{ auth()->user()->full_name ?? 'User' }}</div>
                         <div class="sb-user-role">{{ auth()->user()->isAdmin() ? 'Administrator' : 'Staff' }}</div>

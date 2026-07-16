@@ -16,9 +16,37 @@
         {{-- การ์ด Avatar และข้อมูลเบื้องต้น --}}
         <div class="card" style="border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); text-align:center;">
             <div class="card-body" style="padding-top:2rem; padding-bottom:1.5rem;">
-                <div style="display:inline-flex; align-items:center; justify-content:center; width:90px; height:90px; border-radius:50%; background:#e0e7ff; color:#4f46e5; font-size:2rem; font-weight:700; border:4px solid #fff; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-bottom:1rem;">
-                    {{ strtoupper(substr($user->full_name ?? 'A', 0, 1)) }}
+                <div style="position: relative; display: inline-block; margin-bottom:1rem;">
+                    <label for="photoInput" style="cursor: pointer; display: block;" title="คลิกเพื่อเปลี่ยนรูปโปรไฟล์">
+                        @if($user->profile_photo)
+                            <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="profile"
+                                style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 4px solid #fff; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                        @else
+                            <div style="display:inline-flex; align-items:center; justify-content:center; width:90px; height:90px; border-radius:50%; background:#e0e7ff; color:#4f46e5; font-size:2rem; font-weight:700; border:4px solid #fff; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                                {{ strtoupper(substr($user->full_name ?? 'A', 0, 1)) }}
+                            </div>
+                        @endif
+                        <div style="position: absolute; bottom: 0; right: 0; width: 26px; height: 26px; background: #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.15); border: 1px solid #e2e8f0;">
+                            <svg width="14" height="14" fill="none" stroke="#4f46e5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>
+                        </div>
+                    </label>
+                    <form id="photoForm" method="POST" action="{{ route('profile.photo.upload') }}" enctype="multipart/form-data" style="display:none;">
+                        @csrf
+                        <input type="file" id="photoInput" name="profile_photo" accept="image/jpeg,image/png,image/webp"
+                            onchange="document.getElementById('photoForm').submit()">
+                    </form>
                 </div>
+                
+                @if($user->profile_photo)
+                    <div style="margin-top:-0.5rem; margin-bottom:1rem;">
+                        <form method="POST" action="{{ route('profile.photo.destroy') }}" style="display:inline;">
+                            @csrf @method('DELETE')
+                            <button type="submit" style="background: none; border: none; color: #ef4444; font-size: 0.75rem; cursor: pointer; text-decoration: underline; padding: 0;"
+                                onclick="return confirm('ต้องการลบรูปโปรไฟล์?')">ลบรูปโปรไฟล์</button>
+                        </form>
+                    </div>
+                @endif
+
                 <h2 class="font-bold mb-1" style="font-size:1.25rem; color:#1e293b;">{{ $user->full_name }}</h2>
                 <p class="text-sm text-muted mb-4">{{ $user->position ?? 'ไม่ได้ระบุตำแหน่ง' }}</p>
                 
