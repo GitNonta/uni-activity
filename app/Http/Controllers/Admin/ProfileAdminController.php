@@ -21,6 +21,24 @@ class ProfileAdminController extends Controller
     {
         $user = auth()->user();
 
+        // Auto translate english_name if empty
+        if (empty($user->english_name) && !empty($user->full_name)) {
+            try {
+                $cleanName = str_replace(['นาย ', 'นางสาว ', 'นาง '], '', $user->full_name);
+                $url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=th&tl=en&dt=t&q=' . urlencode($cleanName);
+                $response = @file_get_contents($url);
+                if ($response) {
+                    $data = json_decode($response, true);
+                    if (isset($data[0][0][0])) {
+                        $user->english_name = ucwords(strtolower(trim($data[0][0][0])));
+                        $user->save();
+                    }
+                }
+            } catch (\Exception $e) {
+                // Fallback / ignore
+            }
+        }
+
         // สถิติการใช้งาน
         $stats = [
             'activities_count'     => Activity::where('created_by', $user->id)->count(),
@@ -41,6 +59,7 @@ class ProfileAdminController extends Controller
         // ตรวจสอบความถูกต้องของข้อมูล
         $rules = [
             'full_name'    => 'required|string|max:255',
+            'english_name' => 'required|string|max:255',
             'email'        => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
             'phone'        => 'nullable|string|max:20',
             'position'     => 'nullable|string|max:100',
@@ -62,10 +81,11 @@ class ProfileAdminController extends Controller
         ]);
 
         // บันทึกค่าเก่าเพื่อ Audit Log
-        $oldValues = $user->only(['full_name', 'email', 'phone', 'position', 'organization']);
+        $oldValues = $user->only(['full_name', 'english_name', 'email', 'phone', 'position', 'organization']);
 
         // อัปเดตข้อมูลส่วนตัว
         $user->full_name    = $data['full_name'];
+        $user->english_name = $data['english_name'];
         $user->email        = $data['email'];
         $user->phone        = $data['phone'] ?? null;
         $user->position     = $data['position'] ?? null;

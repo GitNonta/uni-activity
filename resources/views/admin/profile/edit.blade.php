@@ -132,34 +132,41 @@
                 <div class="card-body" style="padding:1.5rem;">
                     <div class="grid-2 mb-4">
                         <div>
-                            <label class="form-label">ชื่อ-นามสกุล <span class="text-danger">*</span></label>
+                            <label class="form-label">ชื่อ-นามสกุล (ภาษาไทย) <span class="text-danger">*</span></label>
                             <input type="text" name="full_name" value="{{ old('full_name', $user->full_name) }}" class="form-control" required>
                             @error('full_name') <div class="form-error">{{ $message }}</div> @enderror
                         </div>
                         <div>
-                            <label class="form-label">อีเมลติดต่อ <span class="text-danger">*</span></label>
-                            <input type="email" name="email" value="{{ old('email', $user->email) }}" class="form-control" required>
-                            @error('email') <div class="form-error">{{ $message }}</div> @enderror
+                            <label class="form-label">ชื่อ-นามสกุล (ภาษาอังกฤษ) <span class="text-danger">*</span></label>
+                            <input type="text" name="english_name" value="{{ old('english_name', $user->english_name) }}" class="form-control" placeholder="เช่น John Doe" required>
+                            @error('english_name') <div class="form-error">{{ $message }}</div> @enderror
                         </div>
                     </div>
 
                     <div class="grid-2 mb-4">
                         <div>
+                            <label class="form-label">อีเมลติดต่อ <span class="text-danger">*</span></label>
+                            <input type="email" name="email" value="{{ old('email', $user->email) }}" class="form-control" required>
+                            @error('email') <div class="form-error">{{ $message }}</div> @enderror
+                        </div>
+                        <div>
                             <label class="form-label">เบอร์โทรศัพท์</label>
                             <input type="text" name="phone" value="{{ old('phone', $user->phone) }}" class="form-control" placeholder="เช่น 081-xxx-xxxx">
                             @error('phone') <div class="form-error">{{ $message }}</div> @enderror
                         </div>
+                    </div>
+
+                    <div class="grid-2 mb-4">
                         <div>
                             <label class="form-label">ตำแหน่ง</label>
                             <input type="text" name="position" value="{{ old('position', $user->position) }}" class="form-control" placeholder="เช่น นักวิชาการศึกษา">
                             @error('position') <div class="form-error">{{ $message }}</div> @enderror
                         </div>
-                    </div>
-
-                    <div>
-                        <label class="form-label">สังกัด / หน่วยงาน</label>
-                        <input type="text" name="organization" value="{{ old('organization', $user->organization) }}" class="form-control" placeholder="เช่น สำนักวิทยบริการและเทคโนโลยีสารสนเทศ">
-                        @error('organization') <div class="form-error">{{ $message }}</div> @enderror
+                        <div>
+                            <label class="form-label">สังกัด / หน่วยงาน</label>
+                            <input type="text" name="organization" value="{{ old('organization', $user->organization) }}" class="form-control" placeholder="เช่น สำนักวิทยบริการและเทคโนโลยีสารสนเทศ">
+                            @error('organization') <div class="form-error">{{ $message }}</div> @enderror
+                        </div>
                     </div>
                 </div>
             </div>
