@@ -70,6 +70,44 @@ def update_github_active_url(new_url):
     except Exception as e:
         print(f"Failed to update active_url.json on GitHub: {e}")
 
+def update_line_webhook(new_url):
+    token = None
+    if os.path.exists(ENV_FILE):
+        with open(ENV_FILE, "r") as f:
+            for line in f:
+                if line.startswith("LINE_CHANNEL_ACCESS_TOKEN="):
+                    token = line.split("=", 1)[1].strip()
+                    if (token.startswith('"') and token.endswith('"')) or (token.startswith("'") and token.endswith("'")):
+                        token = token[1:-1]
+                    break
+                    
+    if not token:
+        print("LINE_CHANNEL_ACCESS_TOKEN not found in .env, skipping LINE Webhook update.")
+        return
+        
+    endpoint_url = "https://api.line.me/v2/bot/channel/webhook/endpoint"
+    webhook_uri = f"{new_url}/line/callback"
+    
+    try:
+        payload = {"endpoint": webhook_uri}
+        data_bytes = json.dumps(payload).encode("utf-8")
+        
+        req = urllib.request.Request(endpoint_url, method="PUT")
+        req.add_header("Authorization", f"Bearer {token}")
+        req.add_header("Content-Type", "application/json")
+        req.add_header("User-Agent", "Termux-Monitor-Server")
+        
+        proxy_support = urllib.request.ProxyHandler({})
+        opener = urllib.request.build_opener(proxy_support)
+        
+        with opener.open(req, data=data_bytes, timeout=5) as response:
+            if response.status == 200:
+                print(f"Successfully updated LINE Webhook to: {webhook_uri}")
+            else:
+                print(f"Failed to update LINE Webhook: HTTP {response.status}")
+    except Exception as e:
+        print(f"Failed to update LINE Webhook: {e}")
+
 # Wait for URL in log
 url = None
 print("Waiting for Cloudflare Tunnel URL...")
@@ -111,6 +149,9 @@ if url:
 
     # Update GitHub Pages active_url.json
     update_github_active_url(url)
+
+    # Update LINE Webhook URL
+    update_line_webhook(url)
     
     # Restart Reverb and Vite (if any background scripts depend on APP_URL)
     # usually start_server.sh handles queue and reverb, but let's clear config cache
