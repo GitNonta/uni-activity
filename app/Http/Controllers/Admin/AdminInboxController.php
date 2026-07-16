@@ -27,6 +27,11 @@ class AdminInboxController extends Controller
                     $sub->where('users.role', 'student')->orWhere('users.id', $currentUserId);
                 });
             }, 'job'])
+            ->when(auth()->user()->isStaff(), function($q) use ($currentUserId) {
+                $q->whereHas('job', function($jq) use ($currentUserId) {
+                    $jq->where('created_by', $currentUserId);
+                });
+            })
             ->orderByDesc(
                 Message::select('created_at')
                     ->whereColumn('room_id', 'rooms.id')
@@ -62,6 +67,11 @@ class AdminInboxController extends Controller
     public function show(int $jobId, int $studentId)
     {
         $job     = $jobId == 0 ? (object) ['id' => 0, 'title' => 'ติดต่อสอบถามเจ้าหน้าที่'] : JobListing::findOrFail($jobId);
+        if (auth()->user()->isStaff()) {
+            if ($jobId == 0 || $job->created_by !== auth()->id()) {
+                abort(403, 'คุณไม่มีสิทธิ์เข้าถึงแชทนี้');
+            }
+        }
         $student = User::findOrFail($studentId);
 
         $roomQuery = Room::whereHas('users', function ($q) use ($studentId) {
@@ -89,6 +99,16 @@ class AdminInboxController extends Controller
             'attachments'   => 'nullable|array|max:5',
             'attachments.*' => 'file|max:10240|mimes:jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,zip,txt',
         ]);
+
+        if (auth()->user()->isStaff()) {
+            if ($jobId == 0) {
+                return response()->json(['error' => 'คุณไม่มีสิทธิ์ส่งข้อความในแชทนี้'], 403);
+            }
+            $job = JobListing::findOrFail($jobId);
+            if ($job->created_by !== auth()->id()) {
+                return response()->json(['error' => 'คุณไม่มีสิทธิ์ส่งข้อความในแชทนี้'], 403);
+            }
+        }
 
         if (empty($request->message) && empty($request->file('attachments'))) {
             return response()->json(['error' => 'กรุณาพิมพ์ข้อความหรือแนบไฟล์'], 422);
@@ -134,6 +154,16 @@ class AdminInboxController extends Controller
     /** Mark ข้อความจาก student ว่าอ่านแล้ว */
     public function markRead(int $jobId, int $studentId)
     {
+        if (auth()->user()->isStaff()) {
+            if ($jobId == 0) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+            $job = JobListing::findOrFail($jobId);
+            if ($job->created_by !== auth()->id()) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+        }
+
         $roomQuery = Room::whereHas('users', function ($q) use ($studentId) {
                 $q->where('users.id', $studentId);
             });
@@ -153,7 +183,13 @@ class AdminInboxController extends Controller
 
     public function deleteMessage($id)
     {
-        $message = Message::findOrFail($id);
+        $message = Message::with('room.job')->findOrFail($id);
+        if (auth()->user()->isStaff()) {
+            if (!$message->room || !$message->room->job_id || $message->room->job->created_by !== auth()->id()) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+        }
+
         $roomId = $message->room_id;
         $message->delete();
         
@@ -166,7 +202,13 @@ class AdminInboxController extends Controller
     public function editMessage(Request $request, $id)
     {
         $request->validate(['message' => 'required|string|max:2000']);
-        $message = Message::findOrFail($id);
+        $message = Message::with('room.job')->findOrFail($id);
+        if (auth()->user()->isStaff()) {
+            if (!$message->room || !$message->room->job_id || $message->room->job->created_by !== auth()->id()) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+        }
+
         $message->body = $request->message;
         $message->save();
 
@@ -177,6 +219,16 @@ class AdminInboxController extends Controller
 
     public function deleteChat($jobId, $userId)
     {
+        if (auth()->user()->isStaff()) {
+            if ($jobId == 0) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+            $job = JobListing::findOrFail($jobId);
+            if ($job->created_by !== auth()->id()) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+        }
+
         $roomQuery = Room::whereHas('users', function ($q) use ($userId) {
                 $q->where('users.id', $userId);
             });

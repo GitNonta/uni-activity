@@ -18,7 +18,8 @@ class JobAdminController extends Controller
     /** แสดงรายการประกาศงานทั้งหมด */
     public function index(Request $request)
     {
-        $query = JobListing::withCount(['applications', 'comments']);
+        $query = JobListing::withCount(['applications', 'comments'])
+            ->when(auth()->user()->isStaff(), fn($q) => $q->where('created_by', auth()->id()));
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
@@ -89,6 +90,10 @@ class JobAdminController extends Controller
             'comments.user',
         ])->findOrFail($id);
 
+        if (auth()->user()->isStaff() && $job->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงประกาศงานนี้');
+        }
+
         $pendingCount = $job->applications->where('status', 'pending')->count();
         $confirmedCount = $job->applications->where('status', 'confirmed')->count();
         $rejectedCount = $job->applications->where('status', 'rejected')->count();
@@ -100,6 +105,9 @@ class JobAdminController extends Controller
     public function edit($id)
     {
         $job = JobListing::findOrFail($id);
+        if (auth()->user()->isStaff() && $job->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงประกาศงานนี้');
+        }
         return view('admin.jobs.edit', compact('job'));
     }
 
@@ -107,6 +115,9 @@ class JobAdminController extends Controller
     public function update(Request $request, $id, \App\Services\ImageOptimizationService $imageOptimizer)
     {
         $job = JobListing::findOrFail($id);
+        if (auth()->user()->isStaff() && $job->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์จัดการข้อมูลนี้');
+        }
 
         $validated = $request->validate([
             'title'        => 'required|string|max:255',
@@ -146,6 +157,9 @@ class JobAdminController extends Controller
     public function destroy($id)
     {
         $job = JobListing::findOrFail($id);
+        if (auth()->user()->isStaff() && $job->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์จัดการข้อมูลนี้');
+        }
 
         if ($job->image_path) {
             Storage::disk('public')->delete($job->image_path);
@@ -161,6 +175,9 @@ class JobAdminController extends Controller
     {
         $request->validate(['status' => 'required|in:open,closed,completed']);
         $job = JobListing::findOrFail($id);
+        if (auth()->user()->isStaff() && $job->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์จัดการข้อมูลนี้');
+        }
         $job->update(['status' => $request->status]);
 
         $labels = ['open' => 'เปิดรับสมัคร', 'closed' => 'ปิดรับสมัคร', 'completed' => 'เสร็จสิ้น'];
@@ -171,11 +188,15 @@ class JobAdminController extends Controller
     public function updateApplicant(Request $request, $id, $applicationId)
     {
         $request->validate(['status' => 'required|in:confirmed,rejected']);
+        $job = JobListing::findOrFail($id);
+        if (auth()->user()->isStaff() && $job->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์จัดการข้อมูลนี้');
+        }
+        
         $application = JobApplication::where('job_listing_id', $id)->findOrFail($applicationId);
 
         // ตรวจสอบ quota ถ้า confirm
         if ($request->status === 'confirmed') {
-            $job = JobListing::findOrFail($id);
             if (!$job->hasAvailableSlots()) {
                 return back()->with('error', 'จำนวนผู้ได้รับการยืนยันครบตามโควต้าแล้ว');
             }
@@ -190,8 +211,10 @@ class JobAdminController extends Controller
     /** ลบคอมเมนต์ (Admin) */
     public function deleteComment($id)
     {
-        $comment = JobComment::findOrFail($id);
-        $jobId = $comment->job_listing_id;
+        $comment = JobComment::with('jobListing')->findOrFail($id);
+        if (auth()->user()->isStaff() && $comment->jobListing->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์ลบคอมเมนต์นี้');
+        }
         $comment->delete();
 
         return back()->with('success', 'ลบคอมเมนต์เรียบร้อย');
@@ -201,6 +224,9 @@ class JobAdminController extends Controller
     public function exportApplicants(Request $request, $id)
     {
         $job = JobListing::findOrFail($id);
+        if (auth()->user()->isStaff() && $job->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์จัดการข้อมูลนี้');
+        }
         $format = $request->input('format', 'csv'); // csv or xlsx
 
         $applications = JobApplication::with('user')

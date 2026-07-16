@@ -34,10 +34,30 @@ class ActivityAdminController extends Controller
     public function dashboard()
     {
         $userId = Auth::id();
+        $isStaff = Auth::user()->isStaff();
         $cacheTtl = 300; // 5 minutes
+        
+        $cacheKey = $isStaff ? "admin_dashboard_stats_user_{$userId}" : "admin_dashboard_stats_global";
 
         // 1. ดึงสถิติหลัก (ใช้ Cache เพื่อลด TTFB)
-        $stats = \Illuminate\Support\Facades\Cache::remember('admin_dashboard_stats', $cacheTtl, function() {
+        $stats = \Illuminate\Support\Facades\Cache::remember($cacheKey, $cacheTtl, function() use ($isStaff, $userId) {
+            if ($isStaff) {
+                return [
+                    'totalActivities'      => Activity::where('created_by', $userId)->count(),
+                    'upcomingActivities'   => Activity::where('created_by', $userId)->whereIn('status', ['upcoming', 'open'])->count(),
+                    'totalStudents'        => User::where('role', 'student')->whereHas('registrations.activity', fn($q) => $q->where('created_by', $userId))->distinct()->count(),
+                    'totalRegistrations'   => Registration::whereHas('activity', fn($q) => $q->where('created_by', $userId))->whereIn('status', ['pending', 'approved'])->count(),
+                    'pendingRegistrations' => Registration::whereHas('activity', fn($q) => $q->where('created_by', $userId))->where('status', 'pending')->count(),
+                    'pendingAttendances'   => Attendance::whereHas('activity', fn($q) => $q->where('created_by', $userId))->where('status', 'pending')->count(),
+                    'upcomingThisWeek'     => Activity::where('created_by', $userId)
+                        ->whereBetween('activity_date', [now()->startOfWeek(), now()->endOfWeek()])
+                        ->whereIn('status', ['upcoming', 'open', 'ongoing'])
+                        ->count(),
+                    'totalJobs'            => JobListing::where('created_by', $userId)->count(),
+                    'totalFeedbacks'       => ActivityFeedback::whereHas('activity', fn($q) => $q->where('created_by', $userId))->count(),
+                ];
+            }
+
             return [
                 'totalActivities'      => Activity::count(),
                 'upcomingActivities'   => Activity::whereIn('status', ['upcoming', 'open'])->count(),
@@ -65,29 +85,31 @@ class ActivityAdminController extends Controller
         });
 
         // 3. ข้อมูลรายการล่าสุด (ไม่ Cache เพื่อให้เห็นความเคลื่อนไหวทันที แต่จำกัดจำนวน)
-        $recentActivities = Activity::with('category')
-            ->orderByDesc('created_at')
-            ->take(5)
-            ->get();
+        $recentActivitiesQuery = Activity::with('category')->orderByDesc('created_at');
+        if ($isStaff) {
+            $recentActivitiesQuery->where('created_by', $userId);
+        }
+        $recentActivities = $recentActivitiesQuery->take(5)->get();
 
-        $pendingRegistrations = Registration::with(['user', 'activity'])
-            ->where('status', 'pending')
-            ->latest()
-            ->take(8)
-            ->get();
+        $pendingRegistrationsQuery = Registration::with(['user', 'activity'])->where('status', 'pending')->latest();
+        if ($isStaff) {
+            $pendingRegistrationsQuery->whereHas('activity', fn($q) => $q->where('created_by', $userId));
+        }
+        $pendingRegistrations = $pendingRegistrationsQuery->take(8)->get();
 
-        $pendingAttendances = Attendance::with(['user', 'activity'])
-            ->where('status', 'pending')
-            ->latest()
-            ->take(8)
-            ->get();
+        $pendingAttendancesQuery = Attendance::with(['user', 'activity'])->where('status', 'pending')->latest();
+        if ($isStaff) {
+            $pendingAttendancesQuery->whereHas('activity', fn($q) => $q->where('created_by', $userId));
+        }
+        $pendingAttendances = $pendingAttendancesQuery->take(8)->get();
 
         $categories = ActivityCategory::all();
         
-        $recentAuditLogs = AdminAuditLog::with('user')
-            ->orderByDesc('created_at')
-            ->take(6)
-            ->get();
+        $recentAuditLogsQuery = AdminAuditLog::with('user')->orderByDesc('created_at');
+        if ($isStaff) {
+            $recentAuditLogsQuery->where('user_id', $userId);
+        }
+        $recentAuditLogs = $recentAuditLogsQuery->take(6)->get();
         
         return view('admin.dashboard', compact('stats', 'recentActivities', 'pendingRegistrations', 'pendingAttendances', 'categories', 'recentAuditLogs'));
     }
@@ -100,6 +122,7 @@ class ActivityAdminController extends Controller
                 'registrations as pending_registrations_count' => fn($q) => $q->where('status', 'pending'),
                 'attendances as pending_attendances_count' => fn($q) => $q->where('status', 'pending')
             ])
+            ->when(auth()->user()->isStaff(), fn($q) => $q->where('created_by', auth()->id()))
             ->when($request->status, fn($q) => $q->where('status', $request->status))
             ->when($request->search, fn($q) => $q->where('title', 'like', "%{$request->search}%"))
             ->orderByDesc('created_at')
@@ -113,6 +136,9 @@ class ActivityAdminController extends Controller
     public function pendingRequests($id)
     {
         $activity = Activity::findOrFail($id);
+        if (auth()->user()->isStaff() && $activity->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงกิจกรรมนี้');
+        }
         
         $pendingRegs = \App\Models\Registration::with('user')
             ->where('activity_id', $id)
@@ -202,6 +228,9 @@ class ActivityAdminController extends Controller
     public function show($id)
     {
         $activity = Activity::with(['category', 'registrations.user', 'attendances.user'])->findOrFail($id);
+        if (auth()->user()->isStaff() && $activity->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงกิจกรรมนี้');
+        }
         return view('admin.activities.show', compact('activity'));
     }
 
@@ -209,6 +238,9 @@ class ActivityAdminController extends Controller
     public function edit($id)
     {
         $activity = Activity::findOrFail($id);
+        if (auth()->user()->isStaff() && $activity->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงกิจกรรมนี้');
+        }
         $categories = ActivityCategory::all();
         $faculties = Activity::whereNotNull('faculty')->distinct()->pluck('faculty')->sort()->values();
         $departments = Activity::whereNotNull('department')->distinct()->pluck('department')->sort()->values();
@@ -219,6 +251,9 @@ class ActivityAdminController extends Controller
     public function update(Request $request, $id, ImageOptimizationService $imageOptimizer)
     {
         $activity = Activity::findOrFail($id);
+        if (auth()->user()->isStaff() && $activity->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงกิจกรรมนี้');
+        }
 
         $data = $request->validate([
             'title' => 'required|string|max:255',
@@ -295,6 +330,9 @@ class ActivityAdminController extends Controller
     public function destroy($id)
     {
         $activity = Activity::findOrFail($id);
+        if (auth()->user()->isStaff() && $activity->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงกิจกรรมนี้');
+        }
         $this->auditDelete($activity, "ลบกิจกรรม \"{$activity->title}\"");
         $activity->delete();
 
@@ -305,6 +343,9 @@ class ActivityAdminController extends Controller
     public function participants($id)
     {
         $activity = Activity::with(['registrations.user'])->findOrFail($id);
+        if (auth()->user()->isStaff() && $activity->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงกิจกรรมนี้');
+        }
 
         return view('admin.activities.participants', compact('activity'));
     }
@@ -313,6 +354,9 @@ class ActivityAdminController extends Controller
     public function checkinMonitor($id)
     {
         $activity = Activity::with(['attendances.user', 'registrations.user'])->findOrFail($id);
+        if (auth()->user()->isStaff() && $activity->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงกิจกรรมนี้');
+        }
 
         return view('admin.checkin.monitor', compact('activity'));
     }
@@ -321,6 +365,9 @@ class ActivityAdminController extends Controller
     public function approveRegistration($id)
     {
         $registration = Registration::with('activity')->findOrFail($id);
+        if (auth()->user()->isStaff() && $registration->activity->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์จัดการรายการนี้');
+        }
         $registration->update(['status' => 'approved']);
         $this->auditApprove($registration, "อนุมัติการลงทะเบียน #{$registration->id}");
 
@@ -338,6 +385,9 @@ class ActivityAdminController extends Controller
     public function rejectRegistration($id)
     {
         $registration = Registration::with('activity')->findOrFail($id);
+        if (auth()->user()->isStaff() && $registration->activity->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์จัดการรายการนี้');
+        }
         $registration->update(['status' => 'rejected']);
         $this->auditReject($registration, "ปฏิเสธการลงทะเบียน #{$registration->id}");
 
@@ -365,6 +415,9 @@ class ActivityAdminController extends Controller
         }
 
         $activity = Activity::findOrFail($activityId);
+        if (auth()->user()->isStaff() && $activity->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์จัดการกิจกรรมนี้');
+        }
 
         $registration = Registration::where('user_id', $user->id)
             ->where('activity_id', $activity->id)
@@ -432,6 +485,9 @@ class ActivityAdminController extends Controller
     public function approveAttendance($id)
     {
         $attendance = Attendance::with('activity')->findOrFail($id);
+        if (auth()->user()->isStaff() && $attendance->activity->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์จัดการรายการนี้');
+        }
         $attendance->update([
             'status'      => 'approved',
             'is_verified' => true,
@@ -462,6 +518,9 @@ class ActivityAdminController extends Controller
     public function rejectAttendance($id)
     {
         $attendance = Attendance::with('activity')->findOrFail($id);
+        if (auth()->user()->isStaff() && $attendance->activity->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์จัดการรายการนี้');
+        }
         $attendance->update([
             'status'      => 'rejected',
             'verified_by' => auth()->id(),
@@ -482,6 +541,9 @@ class ActivityAdminController extends Controller
     public function toggleEarlyCheckin($id)
     {
         $activity = Activity::findOrFail($id);
+        if (auth()->user()->isStaff() && $activity->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์จัดการกิจกรรมนี้');
+        }
         $activity->update(['allow_early_checkin' => !$activity->allow_early_checkin]);
         $this->auditToggle($activity, ($activity->allow_early_checkin ? 'เปิด' : 'ปิด') . "เช็คอินก่อนเวลา: \"{$activity->title}\"");
 
@@ -505,11 +567,17 @@ class ActivityAdminController extends Controller
 
         if ($request->type === 'registration') {
             $item = Registration::with(['user', 'activity'])->findOrFail($request->id);
+            if (auth()->user()->isStaff() && $item->activity->created_by !== auth()->id()) {
+                return response()->json(['ok' => false, 'message' => 'คุณไม่มีสิทธิ์อนุมัติรายการนี้'], 403);
+            }
             $item->update(['status' => 'approved']);
             $this->auditApprove($item, "อนุมัติการลงทะเบียน #{$item->id} (Dashboard)");
             $label = 'ลงทะเบียน';
         } else {
             $item = Attendance::with(['user', 'activity'])->findOrFail($request->id);
+            if (auth()->user()->isStaff() && $item->activity->created_by !== auth()->id()) {
+                return response()->json(['ok' => false, 'message' => 'คุณไม่มีสิทธิ์อนุมัติรายการนี้'], 403);
+            }
             $item->update(['status' => 'approved', 'is_verified' => true, 'verified_by' => auth()->id()]);
             $this->auditApprove($item, "อนุมัติการเข้าร่วม #{$item->id} (Dashboard)");
             // อัปเดต registration เป็น completed ถ้ามี
@@ -521,9 +589,14 @@ class ActivityAdminController extends Controller
             $label = 'เช็คอิน';
         }
 
-        // นับ pending ใหม่หลัง approve
-        $pendingCount = Registration::where('status', 'pending')->count()
-                      + Attendance::where('status', 'pending')->count();
+        // นับ pending ใหม่หลัง approve (เช็ค role)
+        if (auth()->user()->isStaff()) {
+            $pendingCount = Registration::whereHas('activity', fn($q) => $q->where('created_by', auth()->id()))->where('status', 'pending')->count()
+                          + Attendance::whereHas('activity', fn($q) => $q->where('created_by', auth()->id()))->where('status', 'pending')->count();
+        } else {
+            $pendingCount = Registration::where('status', 'pending')->count()
+                          + Attendance::where('status', 'pending')->count();
+        }
 
         return response()->json([
             'ok'           => true,
@@ -546,18 +619,30 @@ class ActivityAdminController extends Controller
 
         if ($request->type === 'registration') {
             $item = Registration::with(['user', 'activity'])->findOrFail($request->id);
+            if (auth()->user()->isStaff() && $item->activity->created_by !== auth()->id()) {
+                return response()->json(['ok' => false, 'message' => 'คุณไม่มีสิทธิ์ปฏิเสธรายการนี้'], 403);
+            }
             $item->update(['status' => 'rejected']);
             $this->auditReject($item, "ปฏิเสธการลงทะเบียน #{$item->id} (Dashboard)");
             $label = 'ลงทะเบียน';
         } else {
             $item = Attendance::with(['user', 'activity'])->findOrFail($request->id);
+            if (auth()->user()->isStaff() && $item->activity->created_by !== auth()->id()) {
+                return response()->json(['ok' => false, 'message' => 'คุณไม่มีสิทธิ์ปฏิเสธรายการนี้'], 403);
+            }
             $item->update(['status' => 'rejected', 'verified_by' => auth()->id()]);
             $this->auditReject($item, "ปฏิเสธการเข้าร่วม #{$item->id} (Dashboard)");
             $label = 'เช็คอิน';
         }
 
-        $pendingCount = Registration::where('status', 'pending')->count()
-                      + Attendance::where('status', 'pending')->count();
+        // นับ pending ใหม่หลัง reject
+        if (auth()->user()->isStaff()) {
+            $pendingCount = Registration::whereHas('activity', fn($q) => $q->where('created_by', auth()->id()))->where('status', 'pending')->count()
+                          + Attendance::whereHas('activity', fn($q) => $q->where('created_by', auth()->id()))->where('status', 'pending')->count();
+        } else {
+            $pendingCount = Registration::where('status', 'pending')->count()
+                          + Attendance::where('status', 'pending')->count();
+        }
 
         return response()->json([
             'ok'           => true,
@@ -573,6 +658,9 @@ class ActivityAdminController extends Controller
     public function regenerateQr(Request $request, $id, QrCodeService $qrService)
     {
         $activity = Activity::findOrFail($id);
+        if (auth()->user()->isStaff() && $activity->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์จัดการกิจกรรมนี้');
+        }
         
         $request->validate([
             'expires_in_hours' => 'nullable|integer|min:1|max:720'
@@ -602,6 +690,9 @@ class ActivityAdminController extends Controller
     public function regenerateCheckoutQr(Request $request, $id, QrCodeService $qrService)
     {
         $activity = Activity::findOrFail($id);
+        if (auth()->user()->isStaff() && $activity->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์จัดการกิจกรรมนี้');
+        }
         
         $request->validate([
             'expires_in_hours' => 'nullable|integer|min:1|max:720'
@@ -617,8 +708,6 @@ class ActivityAdminController extends Controller
 
         $activity->update([
             'qr_checkout_token' => $newToken,
-            // You could store a separate qr_checkout_expires_at if you want, 
-            // but for now we reuse qr_expires_at or leave it unchanged
         ]);
 
         $this->auditUpdate($activity, ['qr_checkout_token' => $oldToken], "สร้าง QR Code ออกงานใหม่สำหรับกิจกรรม \"{$activity->title}\"");
@@ -629,7 +718,10 @@ class ActivityAdminController extends Controller
     /** ตรวจสอบและอนุมัติ/ปฏิเสธ Selfie */
     public function reviewSelfie(Request $request, $id)
     {
-        $attendance = Attendance::findOrFail($id);
+        $attendance = Attendance::with('activity')->findOrFail($id);
+        if (auth()->user()->isStaff() && $attendance->activity->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์จัดการรายการนี้');
+        }
         
         $request->validate([
             'action' => 'required|in:approve,reject',

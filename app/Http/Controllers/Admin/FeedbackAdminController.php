@@ -15,7 +15,12 @@ class FeedbackAdminController extends Controller
     /** แสดงรายการ feedback ทั้งหมด */
     public function index(Request $request)
     {
-        $query = ActivityFeedback::with(['activity', 'user']);
+        $query = ActivityFeedback::with(['activity', 'user'])
+            ->when(auth()->user()->isStaff(), function ($q) {
+                $q->whereHas('activity', function ($aq) {
+                    $aq->where('created_by', auth()->id());
+                });
+            });
 
         // กรองตามกิจกรรม
         if ($request->filled('activity_id')) {
@@ -35,18 +40,35 @@ class FeedbackAdminController extends Controller
         $feedbacks = $query->latest()->paginate(20)->withQueryString();
 
         // รายการกิจกรรมสำหรับ dropdown
-        $activities = Activity::orderByDesc('activity_date')->take(50)->get(['id', 'title', 'activity_date']);
+        $activitiesQuery = Activity::orderByDesc('activity_date');
+        if (auth()->user()->isStaff()) {
+            $activitiesQuery->where('created_by', auth()->id());
+        }
+        $activities = $activitiesQuery->take(50)->get(['id', 'title', 'activity_date']);
 
         // สถิติสรุป
-        $stats = [
-            'total' => ActivityFeedback::count(),
-            'average' => round(ActivityFeedback::avg('rating'), 1),
-            'rating_5' => ActivityFeedback::where('rating', 5)->count(),
-            'rating_4' => ActivityFeedback::where('rating', 4)->count(),
-            'rating_3' => ActivityFeedback::where('rating', 3)->count(),
-            'rating_2' => ActivityFeedback::where('rating', 2)->count(),
-            'rating_1' => ActivityFeedback::where('rating', 1)->count(),
-        ];
+        if (auth()->user()->isStaff()) {
+            $baseStatsQuery = ActivityFeedback::whereHas('activity', fn($q) => $q->where('created_by', auth()->id()));
+            $stats = [
+                'total' => (clone $baseStatsQuery)->count(),
+                'average' => round((float)(clone $baseStatsQuery)->avg('rating'), 1),
+                'rating_5' => (clone $baseStatsQuery)->where('rating', 5)->count(),
+                'rating_4' => (clone $baseStatsQuery)->where('rating', 4)->count(),
+                'rating_3' => (clone $baseStatsQuery)->where('rating', 3)->count(),
+                'rating_2' => (clone $baseStatsQuery)->where('rating', 2)->count(),
+                'rating_1' => (clone $baseStatsQuery)->where('rating', 1)->count(),
+            ];
+        } else {
+            $stats = [
+                'total' => ActivityFeedback::count(),
+                'average' => round((float)ActivityFeedback::avg('rating'), 1),
+                'rating_5' => ActivityFeedback::where('rating', 5)->count(),
+                'rating_4' => ActivityFeedback::where('rating', 4)->count(),
+                'rating_3' => ActivityFeedback::where('rating', 3)->count(),
+                'rating_2' => ActivityFeedback::where('rating', 2)->count(),
+                'rating_1' => ActivityFeedback::where('rating', 1)->count(),
+            ];
+        }
 
         return view('admin.feedbacks.index', compact('feedbacks', 'activities', 'stats'));
     }
@@ -55,6 +77,9 @@ class FeedbackAdminController extends Controller
     public function show($activityId)
     {
         $activity = Activity::with(['feedbacks.user', 'category'])->findOrFail($activityId);
+        if (auth()->user()->isStaff() && $activity->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงผลประเมินนี้');
+        }
 
         // สถิติของกิจกรรมนี้
         $stats = [

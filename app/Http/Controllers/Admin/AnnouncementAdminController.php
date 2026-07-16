@@ -18,9 +18,12 @@ class AnnouncementAdminController extends Controller
     public function index(Request $request)
     {
         $announcements = Announcement::with('creator')
+            ->when(auth()->user()->isStaff(), fn($q) => $q->where('created_by', auth()->id()))
             ->when($request->search, function ($q) use ($request) {
-                $q->where('title', 'like', "%{$request->search}%")
-                  ->orWhere('content', 'like', "%{$request->search}%");
+                $q->where(function ($inner) use ($request) {
+                    $inner->where('title', 'like', "%{$request->search}%")
+                          ->orWhere('content', 'like', "%{$request->search}%");
+                });
             })
             ->orderByDesc('created_at')
             ->paginate(15);
@@ -67,6 +70,9 @@ class AnnouncementAdminController extends Controller
     public function edit($id)
     {
         $announcement = Announcement::findOrFail($id);
+        if (auth()->user()->isStaff() && $announcement->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงประกาศนี้');
+        }
         $faculties = User::whereNotNull('faculty')->distinct()->pluck('faculty')->sort();
         return view('admin.announcements.edit', compact('announcement', 'faculties'));
     }
@@ -75,6 +81,9 @@ class AnnouncementAdminController extends Controller
     public function update(Request $request, $id, \App\Services\ImageOptimizationService $imageOptimizer)
     {
         $announcement = Announcement::findOrFail($id);
+        if (auth()->user()->isStaff() && $announcement->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงประกาศนี้');
+        }
 
         $data = $request->validate([
             'title'          => 'required|string|max:255',
@@ -104,6 +113,9 @@ class AnnouncementAdminController extends Controller
     public function destroy($id)
     {
         $announcement = Announcement::findOrFail($id);
+        if (auth()->user()->isStaff() && $announcement->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงประกาศนี้');
+        }
         $this->auditDelete($announcement, "ลบประกาศ \"{$announcement->title}\"");
         $announcement->delete();
 
@@ -114,6 +126,9 @@ class AnnouncementAdminController extends Controller
     public function toggleActive($id)
     {
         $announcement = Announcement::findOrFail($id);
+        if (auth()->user()->isStaff() && $announcement->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์จัดการประกาศนี้');
+        }
         $announcement->update(['is_active' => !$announcement->is_active]);
         $status = $announcement->is_active ? 'เปิด' : 'ปิด';
         $this->auditToggle($announcement, "{$status}การใช้งานประกาศ \"{$announcement->title}\"");
