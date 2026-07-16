@@ -3,138 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>403 - ไม่มีสิทธิ์เข้าถึง</title>
+    <title>403 - ไม่มีสิทธิ์เข้าถึงระบบ</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Outfit', sans-serif;
-            background: radial-gradient(circle at center, #2d0a0a 0%, #020617 100%);
+            font-family: 'Sarabun', 'Outfit', sans-serif;
+            background: #f8fafc;
             margin: 0;
-            overflow: hidden;
         }
-        .orbitron { font-family: 'Orbitron', sans-serif; }
-        
-        .stars-container {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1;
-            background: transparent;
-        }
-
-        .star {
-            position: absolute;
-            background: white;
-            border-radius: 50%;
-            animation: twinkle var(--duration) infinite ease-in-out;
-            opacity: 0;
-        }
-
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.2; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.2); }
-        }
-
-        .pulse-animation {
-            animation: pulse 4s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.4)); transform: scale(1); }
-            50% { filter: drop-shadow(0 0 30px rgba(239, 68, 68, 0.8)); transform: scale(1.02); }
-        }
-
-        .nebula {
-            position: fixed;
-            width: 600px; height: 600px;
-            background: radial-gradient(circle, rgba(239, 68, 68, 0.1) 0%, transparent 70%);
-            border-radius: 50%;
-            filter: blur(80px);
-            z-index: -1;
-        }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(239, 68, 68, 0.1);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
-        }
-
-        .glow-text-red {
-            text-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+        .glow-shield {
+            filter: drop-shadow(0 10px 15px rgba(79, 70, 229, 0.15));
         }
     </style>
 </head>
-<body class="min-h-screen items-center justify-center p-4 flex">
-    <div class="stars-container" id="stars-container"></div>
-    <div class="nebula top-[-100px] left-[-100px]"></div>
-    <div class="nebula bottom-[-100px] right-[-100px] bg-red-900/10"></div>
-
-    <div class="max-w-4xl w-full z-10">
-        <div class="glass-card rounded-[2.5rem] p-10 md:p-16 text-center">
-            <!-- Illustration -->
-            <div class="mb-12 relative">
-                <div class="absolute inset-x-0 bottom-0 h-4 w-48 mx-auto bg-red-500/20 blur-xl rounded-full"></div>
-                <img src="/images/errors/403.png" alt="Restricted Access" class="w-80 md:w-96 mx-auto pulse-animation relative z-10">
-            </div>
-
-            <h1 class="orbitron text-8xl md:text-9xl font-bold bg-gradient-to-r from-red-500 via-rose-500 to-red-600 bg-clip-text text-transparent mb-6 glow-text-red tracking-tighter">
-                403
-            </h1>
-            
-            <h2 class="text-3xl md:text-4xl font-bold text-white mb-6 tracking-tight">ไม่มีสิทธิ์เข้าถึง</h2>
-            
-            <p class="text-rose-100/80 text-xl mb-12 max-w-2xl mx-auto leading-relaxed">
-                ขออภัย พิกัดนี้ถูกจำกัดสิทธิ์การเข้าถึง<br>
-                ระบบรักษาความปลอดภัยข้ามดวงดาวไม่อนุญาตให้ยานของคุณลงจอดที่นี่
-            </p>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-xl mx-auto">
-                <a href="/" class="flex items-center justify-center px-8 py-4 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-semibold rounded-2xl transition-all duration-300 shadow-lg shadow-red-500/25 transform hover:-translate-y-1">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                    </svg>
-                    กลับสู่แดชบอร์ด
-                </a>
-                <button onclick="history.back()" class="group flex items-center justify-center px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-white font-semibold transition-all duration-300">
-                    <svg class="w-5 h-5 mr-3 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                    </svg>
-                    ย้อนกลับ
-                </button>
-            </div>
-
-            <div class="mt-16 flex items-center justify-center space-x-6 text-rose-300/40 text-sm font-medium">
-                <span class="orbitron tracking-widest uppercase text-red-500/60">Security: Restricted</span>
-                <span class="w-1.5 h-1.5 bg-red-800 rounded-full"></span>
-                <span class="orbitron tracking-widest uppercase">Error Code: 403</span>
+<body class="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+    <div class="max-w-md w-full text-center">
+        <!-- Shield SVG Illustration -->
+        <div class="mb-8 flex justify-center">
+            <div class="glow-shield bg-indigo-50 text-indigo-600 rounded-full p-6 inline-flex items-center justify-center border border-indigo-100/50">
+                <svg class="w-20 h-20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"></path>
+                </svg>
             </div>
         </div>
+
+        <!-- Error Code -->
+        <div class="text-xs uppercase tracking-widest font-bold text-indigo-600 mb-2 font-mono">
+            Error Code: 403 Forbidden
+        </div>
+        
+        <!-- Title -->
+        <h1 class="text-2xl font-bold text-slate-800 mb-3">ไม่มีสิทธิ์เข้าถึงส่วนนี้</h1>
+        
+        <!-- Description -->
+        <p class="text-slate-600 text-sm mb-8 leading-relaxed max-w-sm mx-auto">
+            ขออภัย บัญชีผู้ใช้งานของคุณไม่ได้รับอนุญาตให้เข้าถึงเนื้อหาในส่วนนี้ เนื่องจากข้อจำกัดด้านสิทธิ์การใช้งาน (Role Restrictions) กรุณาตรวจสอบสิทธิ์การเชื่อมต่อหรือติดต่อผู้ดูแลระบบเพื่อแจ้งปัญหา
+        </p>
+
+        <!-- Actions Buttons -->
+        <div class="flex flex-col sm:flex-row gap-3 justify-center mb-8">
+            <a href="/" class="inline-flex items-center justify-center px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-lg transition-colors shadow-sm gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"></path>
+                </svg>
+                กลับสู่หน้าหลัก
+            </a>
+            <button onclick="history.back()" class="inline-flex items-center justify-center px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-medium text-sm rounded-lg border border-slate-200 transition-colors gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"></path>
+                </svg>
+                ย้อนกลับ
+            </button>
+        </div>
+
+        <!-- Footer divider -->
+        <hr class="border-slate-200 my-6">
+
+        <!-- Additional security details -->
+        <div class="text-[11px] text-slate-400 font-medium flex items-center justify-center gap-4">
+            <span>สิทธิ์ปัจจุบัน: {{ auth()->check() ? (auth()->user()->role === 'admin' ? 'Administrator' : (auth()->user()->role === 'staff' ? 'Staff' : 'Student')) : 'Guest' }}</span>
+            <span class="w-1.5 h-1.5 bg-slate-300 rounded-full"></span>
+            <span>ที่อยู่ IP: {{ request()->ip() }}</span>
+        </div>
     </div>
-
-    <script>
-        const container = document.getElementById('stars-container');
-        const starCount = 150;
-
-        for (let i = 0; i < starCount; i++) {
-            const star = document.createElement('div');
-            star.className = 'star';
-            
-            const size = Math.random() * 2 + 1;
-            const x = Math.random() * 100;
-            const y = Math.random() * 100;
-            const duration = Math.random() * 3 + 2;
-            const delay = Math.random() * 5;
-
-            star.style.width = `${size}px`;
-            star.style.height = `${size}px`;
-            star.style.left = `${x}%`;
-            star.style.top = `${y}%`;
-            star.style.setProperty('--duration', `${duration}s`);
-            star.style.animationDelay = `${delay}s`;
-
-            container.appendChild(star);
-        }
-    </script>
 </body>
 </html>
