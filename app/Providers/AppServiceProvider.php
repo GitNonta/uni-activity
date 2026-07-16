@@ -37,7 +37,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureRateLimiters();
-        $this->registerLineEvents();
+        // $this->registerLineEvents();
         $this->registerConsoleCommandLogger();
         
         // ตรวจสอบและบังคับใช้โปรโตคอลและโดเมนตามที่เรียกเข้ามาจริง (รองรับทั้ง localhost และ ngrok)
