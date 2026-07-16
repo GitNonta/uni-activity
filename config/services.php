@@ -35,13 +35,13 @@ return [
         ],
     ],
 
-    // LINE Messaging API + LINE Login
     'line' => [
         'channel_access_token'  => env('LINE_CHANNEL_ACCESS_TOKEN', ''),
         'channel_secret'        => env('LINE_CHANNEL_SECRET', ''),
         'login_channel_id'      => env('LINE_LOGIN_CHANNEL_ID', ''),
         'login_channel_secret'  => env('LINE_LOGIN_CHANNEL_SECRET', ''),
         'callback_url'          => env('LINE_CALLBACK_URL', ''),
+        'redirect_base_url'     => env('LINE_REDIRECT_BASE_URL', ''),
     ],
     
     'ai_server' => [

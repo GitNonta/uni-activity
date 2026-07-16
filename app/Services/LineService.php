@@ -32,7 +32,7 @@ class LineService
     /** Get redirect-friendly URL for notifications */
     private function getRedirectUrl(string $path): string
     {
-        $redirectBase = env('LINE_REDIRECT_BASE_URL');
+        $redirectBase = config('services.line.redirect_base_url');
         if ($redirectBase) {
             $cleanPath = ltrim($path, '/');
             return "{$redirectBase}?path={$cleanPath}";
