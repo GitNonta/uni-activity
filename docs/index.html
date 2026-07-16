@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting to University Activity System...</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            color: #374151;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            max-width: 400px;
+            width: 90%;
+        }
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #2563eb;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        p {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="spinner"></div>
+        <h1>กำลังนำทางไปยังระบบกิจกรรม</h1>
+        <p>กรุณารอสักครู่ ระบบกำลังเชื่อมต่อกับเซิร์ฟเวอร์หลัก...</p>
+    </div>
+
+    <script>
+        // Fetch the active tunnel URL and redirect
+        fetch('active_url.json?t=' + Date.now()) // Append timestamp to bypass CDN caching
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load active URL');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.url) {
+                    throw new Error('Invalid URL in JSON');
+                }
+                // Get redirect path from query string (e.g. ?path=activities/5)
+                const params = new URLSearchParams(window.location.search);
+                const path = params.get('path') || '';
+                
+                // Clean path (strip leading slash)
+                const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+                
+                // Redirect
+                window.location.replace(data.url + '/' + cleanPath);
+            })
+            .catch(error => {
+                console.error(error);
+                document.querySelector('h1').innerText = 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้';
+                document.querySelector('p').innerText = 'โปรดตรวจสอบลิงก์ หรือติดต่อผู้ดูแลระบบเพื่อเปิดบริการเซิร์ฟเวอร์';
+                document.querySelector('.spinner').style.display = 'none';
+            });
+    </script>
+</body>
+</html>

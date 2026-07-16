@@ -29,6 +29,17 @@ class LineService
         $this->channelSecret = (string) config('services.line.channel_secret', '');
     }
 
+    /** Get redirect-friendly URL for notifications */
+    private function getRedirectUrl(string $path): string
+    {
+        $redirectBase = env('LINE_REDIRECT_BASE_URL');
+        if ($redirectBase) {
+            $cleanPath = ltrim($path, '/');
+            return "{$redirectBase}?path={$cleanPath}";
+        }
+        return url($path);
+    }
+
     /** ส่งข้อความหาผู้ใช้ 1 คน (Push Message) */
     public function pushMessage(string $lineUserId, array $messages): bool
     {
@@ -187,7 +198,7 @@ class LineService
                     'action' => [
                         'type'  => 'uri',
                         'label' => 'ดูรายละเอียด',
-                        'uri'   => url("/activities/{$activity->id}"),
+                        'uri'   => $this->getRedirectUrl("/activities/{$activity->id}"),
                     ],
                 ],
             ],
@@ -271,7 +282,7 @@ class LineService
                     'action' => [
                         'type'  => 'uri',
                         'label' => 'ดูรายละเอียดงาน',
-                        'uri'   => url("/jobs/{$job->id}"),
+                        'uri'   => $this->getRedirectUrl("/jobs/{$job->id}"),
                     ],
                 ],
             ],
@@ -346,7 +357,7 @@ class LineService
                     'action' => [
                         'type'  => 'uri',
                         'label' => 'อ่านประกาศ',
-                        'uri'   => url("/announcements/{$announcement->id}"),
+                        'uri'   => $this->getRedirectUrl("/announcements/{$announcement->id}"),
                     ],
                 ],
             ],
@@ -472,7 +483,7 @@ class LineService
                             'action' => [
                                 'type'  => 'uri',
                                 'label' => 'ดูรายละเอียด',
-                                'uri'   => url("/activities/{$activity->id}"),
+                                'uri'   => $this->getRedirectUrl("/activities/{$activity->id}"),
                             ],
                         ],
                     ],
