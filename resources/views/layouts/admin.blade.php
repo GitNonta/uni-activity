@@ -305,7 +305,8 @@
                 $adminUnreadCount = 0;
                 if (auth()->check() && auth()->user()->isStaffOrAdmin()) {
                     $adminId = auth()->id();
-                    $adminUnreadCount = \Illuminate\Support\Facades\DB::table('messages')
+                    $isStaff = auth()->user()->isStaff();
+                    $query = \Illuminate\Support\Facades\DB::table('messages')
                         ->join('rooms', 'messages.room_id', '=', 'rooms.id')
                         ->leftJoin('room_user', function($join) use ($adminId) {
                             $join->on('rooms.id', '=', 'room_user.room_id')
@@ -315,8 +316,14 @@
                         ->where(function($q) {
                             $q->whereRaw('messages.created_at > room_user.last_read_at')
                               ->orWhereNull('room_user.last_read_at');
-                        })
-                        ->count();
+                        });
+
+                    if ($isStaff) {
+                        $query->join('job_listings', 'rooms.job_id', '=', 'job_listings.id')
+                              ->where('job_listings.created_by', '=', $adminId);
+                    }
+
+                    $adminUnreadCount = $query->count();
                 }
             @endphp
             <a href="{{ route('admin.inbox.index') }}" class="sb-link {{ request()->routeIs('admin.inbox.*') ? 'active' : '' }}">
