@@ -121,7 +121,7 @@ class Activity extends Model
     public function getAverageRatingAttribute(): ?float
     {
         $avg = $this->feedbacks()->avg('rating');
-        return $avg ? round($avg, 1) : null;
+        return $avg ? round((float) $avg, 1) : null;
     }
 
     /** นับจำนวนการประเมินทั้งหมด */
