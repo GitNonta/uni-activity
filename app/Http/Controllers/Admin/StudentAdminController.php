@@ -82,7 +82,11 @@ class StudentAdminController extends Controller
             ->orderByDesc('checked_in_at')
             ->get();
 
-        $activities = Activity::orderByDesc('activity_date')->get(['id', 'title', 'activity_hours', 'activity_date']);
+        $activitiesQuery = Activity::orderByDesc('activity_date');
+        if (auth()->user()->isStaff()) {
+            $activitiesQuery->where('created_by', auth()->id());
+        }
+        $activities = $activitiesQuery->get(['id', 'title', 'activity_hours', 'activity_date']);
 
         return view('admin.students.show', [
             'student'       => $student,
@@ -104,6 +108,11 @@ class StudentAdminController extends Controller
             'status'      => 'required|in:approved,pending',
             'checked_in_at' => 'required|date',
         ]);
+
+        $activity = Activity::findOrFail($request->activity_id);
+        if (auth()->user()->isStaff() && $activity->created_by !== auth()->id()) {
+            abort(403, 'คุณไม่มีสิทธิ์จัดบันทึกในกิจกรรมนี้');
+        }
 
         $exists = Attendance::where('user_id', $student->id)
             ->where('activity_id', $request->activity_id)
@@ -131,7 +140,11 @@ class StudentAdminController extends Controller
     public function updateAttendance(Request $request, int $id, int $aid)
     {
         $student    = User::where('role', 'student')->findOrFail($id);
-        $attendance = Attendance::where('user_id', $student->id)->findOrFail($aid);
+        $attendance = Attendance::with('activity')->where('user_id', $student->id)->findOrFail($aid);
+
+        if (auth()->user()->isStaff() && (!$attendance->activity || $attendance->activity->created_by !== auth()->id())) {
+            abort(403, 'คุณไม่มีสิทธิ์แก้ไขบันทึกกิจกรรมนี้');
+        }
 
         $request->validate([
             'status'        => 'required|in:approved,pending,rejected',
@@ -154,7 +167,12 @@ class StudentAdminController extends Controller
     public function deleteAttendance(int $id, int $aid)
     {
         $student    = User::where('role', 'student')->findOrFail($id);
-        $attendance = Attendance::where('user_id', $student->id)->findOrFail($aid);
+        $attendance = Attendance::with('activity')->where('user_id', $student->id)->findOrFail($aid);
+
+        if (auth()->user()->isStaff() && (!$attendance->activity || $attendance->activity->created_by !== auth()->id())) {
+            abort(403, 'คุณไม่มีสิทธิ์ลบบันทึกกิจกรรมนี้');
+        }
+
         $this->auditDelete($attendance, "ลบบันทึกกิจกรรมของ \"{$student->full_name}\"");
         $attendance->delete();
 
