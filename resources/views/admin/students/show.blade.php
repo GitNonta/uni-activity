@@ -15,9 +15,14 @@
 {{-- Hero: ข้อมูลนักศึกษา + สรุปชั่วโมง --}}
 <div style="background:linear-gradient(135deg,#1e40af,#4f46e5);border-radius:12px;padding:1.25rem 1.5rem;color:#fff;margin-bottom:1.25rem;">
     <div class="flex items-center gap-4" style="margin-bottom:1rem;">
-        <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <svg width="30" height="30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-        </div>
+        @if($student->profile_photo)
+            <img src="{{ asset('storage/' . $student->profile_photo) }}" alt="profile"
+                style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.4);flex-shrink:0;">
+        @else
+            <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="30" height="30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            </div>
+        @endif
         <div>
             <p style="font-size:.8rem;color:rgba(255,255,255,.7);margin-bottom:.1rem;">โปรไฟล์นักศึกษา</p>
             <h1 style="font-size:1.2rem;font-weight:700;margin:0;">{{ $student->full_name }}</h1>
