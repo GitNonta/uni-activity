@@ -211,9 +211,7 @@ class ChatController extends Controller
             })
             ->with(['messages' => function ($q) {
                 $q->latest()->limit(1);
-            }, 'users' => function($q) use ($userId) {
-                $q->where('users.id', $userId);
-            }, 'job'])
+            }, 'users', 'job'])
             ->get();
 
         $threads = $rooms->map(function ($room) use ($userId, $defaultAdminId) {
