@@ -259,24 +259,16 @@
         <div class="form-group mb-3">
             <label class="form-label" style="font-weight:600;font-size:.8rem;color:#475569;margin-bottom:.35rem;display:block;">เลือกเรื่องที่ต้องการติดต่อ</label>
             <select id="chatJobSelect" class="form-control" style="width:100%;">
-                @if(!auth()->user()->isStaff())
-                    <option value="0">ติดต่อสอบถามทั่วไป (General Inquiry)</option>
-                @endif
+                <option value="0">ติดต่อสอบถามทั่วไป (General Inquiry)</option>
                 @foreach($chatJobs as $cj)
                     <option value="{{ $cj->id }}">งาน: {{ $cj->title }} ({{ $cj->position }})</option>
                 @endforeach
             </select>
         </div>
-        
-        @if(auth()->user()->isStaff() && $chatJobs->isEmpty())
-            <div style="background:#fee2e2;color:#991b1b;padding:.5rem;border-radius:6px;font-size:.75rem;margin-bottom:1rem;border:1px solid #fecaca;line-height:1.4;">
-                ⚠️ คุณไม่มีประกาศงานที่สร้างขึ้น ไม่สามารถส่งข้อความหาผู้ใช้รายนี้ได้เนื่องจากระบบจำกัดให้ส่งข้อความเฉพาะในหัวข้องานที่สร้างโดยเจ้าหน้าที่เท่านั้น
-            </div>
-        @endif
 
         <div class="flex gap-2 justify-end">
             <button type="button" onclick="closeChatSelectionModal()" class="btn btn-outline" style="font-size:.8rem;padding:.4rem 1rem;">ยกเลิก</button>
-            <button type="button" onclick="openChatWidget(document.getElementById('chatJobSelect').value)" class="btn btn-primary" style="font-size:.8rem;padding:.4rem 1rem;background:#1e40af;color:#fff;border:none;" {{ (auth()->user()->isStaff() && $chatJobs->isEmpty()) ? 'disabled' : '' }}>เริ่มต้นแชท</button>
+            <button type="button" onclick="openChatWidget(document.getElementById('chatJobSelect').value)" class="btn btn-primary" style="font-size:.8rem;padding:.4rem 1rem;background:#1e40af;color:#fff;border:none;">เริ่มต้นแชท</button>
         </div>
     </div>
 </div>

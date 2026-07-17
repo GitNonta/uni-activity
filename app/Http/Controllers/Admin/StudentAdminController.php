@@ -195,12 +195,13 @@ class StudentAdminController extends Controller
 
         // Security check for staff
         if (auth()->user()->isStaff()) {
-            if ($jobId == 0) {
-                abort(403, 'คุณไม่มีสิทธิ์เริ่มต้นแชทในเรื่องทั่วไป');
-            }
-            $job = JobListing::findOrFail($jobId);
-            if ($job->created_by !== auth()->id()) {
-                abort(403, 'คุณไม่มีสิทธิ์แชทสำหรับงานนี้');
+            if ($jobId !== 0) {
+                $job = JobListing::findOrFail($jobId);
+                if ($job->created_by !== auth()->id()) {
+                    abort(403, 'คุณไม่มีสิทธิ์แชทสำหรับงานนี้');
+                }
+            } else {
+                $job = null;
             }
         } else {
             $job = $jobId == 0 ? null : JobListing::findOrFail($jobId);
@@ -221,7 +222,7 @@ class StudentAdminController extends Controller
             if ($jobId == 0) {
                 $adminIds = User::where('role', 'admin')->pluck('id')->toArray();
                 $room = $chatRepository->createRoom(
-                    array_merge([$student->id], $adminIds),
+                    array_merge([$student->id, auth()->id()], $adminIds),
                     'direct',
                     'ติดต่อสอบถามเจ้าหน้าที่',
                     null

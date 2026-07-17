@@ -28,8 +28,15 @@ class AdminInboxController extends Controller
                 });
             }, 'job'])
             ->when(auth()->user()->isStaff(), function($q) use ($currentUserId) {
-                $q->whereHas('job', function($jq) use ($currentUserId) {
-                    $jq->where('created_by', $currentUserId);
+                $q->where(function($inner) use ($currentUserId) {
+                    $inner->whereHas('job', function($jq) use ($currentUserId) {
+                        $jq->where('created_by', $currentUserId);
+                    })->orWhere(function($sub) use ($currentUserId) {
+                        $sub->whereNull('job_id')
+                            ->whereHas('users', function($uq) use ($currentUserId) {
+                                $uq->where('users.id', $currentUserId);
+                            });
+                    });
                 });
             })
             ->orderByDesc(
@@ -67,11 +74,6 @@ class AdminInboxController extends Controller
     public function show(int $jobId, int $studentId)
     {
         $job     = $jobId == 0 ? (object) ['id' => 0, 'title' => 'ติดต่อสอบถามเจ้าหน้าที่'] : JobListing::findOrFail($jobId);
-        if (auth()->user()->isStaff()) {
-            if ($jobId == 0 || $job->created_by !== auth()->id()) {
-                abort(403, 'คุณไม่มีสิทธิ์เข้าถึงแชทนี้');
-            }
-        }
         $student = User::findOrFail($studentId);
 
         $roomQuery = Room::whereHas('users', function ($q) use ($studentId) {
@@ -83,6 +85,15 @@ class AdminInboxController extends Controller
             $roomQuery->where('job_id', $jobId);
         }
         $room = $roomQuery->firstOrFail();
+
+        if (auth()->user()->isStaff()) {
+            $room->loadMissing(['users', 'job']);
+            $isOwnJob = $room->job_id && $room->job->created_by === auth()->id();
+            $isParticipant = !$room->job_id && $room->users->contains(auth()->id());
+            if (!$isOwnJob && !$isParticipant) {
+                abort(403, 'คุณไม่มีสิทธิ์เข้าถึงแชทนี้');
+            }
+        }
 
         $messages = $this->chatRepository->getRecentMessages($room);
 
@@ -100,16 +111,6 @@ class AdminInboxController extends Controller
             'attachments.*' => 'file|max:10240|mimes:jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,zip,txt',
         ]);
 
-        if (auth()->user()->isStaff()) {
-            if ($jobId == 0) {
-                return response()->json(['error' => 'คุณไม่มีสิทธิ์ส่งข้อความในแชทนี้'], 403);
-            }
-            $job = JobListing::findOrFail($jobId);
-            if ($job->created_by !== auth()->id()) {
-                return response()->json(['error' => 'คุณไม่มีสิทธิ์ส่งข้อความในแชทนี้'], 403);
-            }
-        }
-
         if (empty($request->message) && empty($request->file('attachments'))) {
             return response()->json(['error' => 'กรุณาพิมพ์ข้อความหรือแนบไฟล์'], 422);
         }
@@ -123,6 +124,15 @@ class AdminInboxController extends Controller
             $roomQuery->where('job_id', $jobId);
         }
         $room = $roomQuery->firstOrFail();
+
+        if (auth()->user()->isStaff()) {
+            $room->loadMissing(['users', 'job']);
+            $isOwnJob = $room->job_id && $room->job->created_by === auth()->id();
+            $isParticipant = !$room->job_id && $room->users->contains(auth()->id());
+            if (!$isOwnJob && !$isParticipant) {
+                return response()->json(['error' => 'คุณไม่มีสิทธิ์ส่งข้อความในแชทนี้'], 403);
+            }
+        }
 
         $attachments = [];
         if ($request->hasFile('attachments')) {
@@ -154,16 +164,6 @@ class AdminInboxController extends Controller
     /** Mark ข้อความจาก student ว่าอ่านแล้ว */
     public function markRead(int $jobId, int $studentId)
     {
-        if (auth()->user()->isStaff()) {
-            if ($jobId == 0) {
-                return response()->json(['error' => 'Unauthorized'], 403);
-            }
-            $job = JobListing::findOrFail($jobId);
-            if ($job->created_by !== auth()->id()) {
-                return response()->json(['error' => 'Unauthorized'], 403);
-            }
-        }
-
         $roomQuery = Room::whereHas('users', function ($q) use ($studentId) {
                 $q->where('users.id', $studentId);
             });
@@ -175,6 +175,14 @@ class AdminInboxController extends Controller
         $room = $roomQuery->first();
 
         if ($room) {
+            if (auth()->user()->isStaff()) {
+                $room->loadMissing(['users', 'job']);
+                $isOwnJob = $room->job_id && $room->job->created_by === auth()->id();
+                $isParticipant = !$room->job_id && $room->users->contains(auth()->id());
+                if (!$isOwnJob && !$isParticipant) {
+                    return response()->json(['error' => 'Unauthorized'], 403);
+                }
+            }
             $room->users()->updateExistingPivot(Auth::id(), ['last_read_at' => now()]);
         }
 
@@ -183,9 +191,15 @@ class AdminInboxController extends Controller
 
     public function deleteMessage($id)
     {
-        $message = Message::with('room.job')->findOrFail($id);
+        $message = Message::with(['room.job', 'room.users'])->findOrFail($id);
         if (auth()->user()->isStaff()) {
-            if (!$message->room || !$message->room->job_id || $message->room->job->created_by !== auth()->id()) {
+            $room = $message->room;
+            if (!$room) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+            $isOwnJob = $room->job_id && $room->job->created_by === auth()->id();
+            $isParticipant = !$room->job_id && $room->users->contains(auth()->id());
+            if (!$isOwnJob && !$isParticipant) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
         }
@@ -202,9 +216,15 @@ class AdminInboxController extends Controller
     public function editMessage(Request $request, $id)
     {
         $request->validate(['message' => 'required|string|max:2000']);
-        $message = Message::with('room.job')->findOrFail($id);
+        $message = Message::with(['room.job', 'room.users'])->findOrFail($id);
         if (auth()->user()->isStaff()) {
-            if (!$message->room || !$message->room->job_id || $message->room->job->created_by !== auth()->id()) {
+            $room = $message->room;
+            if (!$room) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+            $isOwnJob = $room->job_id && $room->job->created_by === auth()->id();
+            $isParticipant = !$room->job_id && $room->users->contains(auth()->id());
+            if (!$isOwnJob && !$isParticipant) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
         }
@@ -219,16 +239,6 @@ class AdminInboxController extends Controller
 
     public function deleteChat($jobId, $userId)
     {
-        if (auth()->user()->isStaff()) {
-            if ($jobId == 0) {
-                return response()->json(['error' => 'Unauthorized'], 403);
-            }
-            $job = JobListing::findOrFail($jobId);
-            if ($job->created_by !== auth()->id()) {
-                return response()->json(['error' => 'Unauthorized'], 403);
-            }
-        }
-
         $roomQuery = Room::whereHas('users', function ($q) use ($userId) {
                 $q->where('users.id', $userId);
             });
@@ -238,6 +248,15 @@ class AdminInboxController extends Controller
             $roomQuery->where('job_id', $jobId);
         }
         $room = $roomQuery->firstOrFail();
+
+        if (auth()->user()->isStaff()) {
+            $room->loadMissing(['users', 'job']);
+            $isOwnJob = $room->job_id && $room->job->created_by === auth()->id();
+            $isParticipant = !$room->job_id && $room->users->contains(auth()->id());
+            if (!$isOwnJob && !$isParticipant) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+        }
 
         $roomId = $room->id;
         Message::where('room_id', $roomId)->delete();
