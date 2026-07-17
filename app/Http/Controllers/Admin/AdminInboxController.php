@@ -84,14 +84,38 @@ class AdminInboxController extends Controller
         } else {
             $roomQuery->where('job_id', $jobId);
         }
-        $room = $roomQuery->firstOrFail();
+        $room = $roomQuery->first();
+
+        if (!$room) {
+            if ($jobId == 0) {
+                $adminIds = User::where('role', 'admin')->pluck('id')->toArray();
+                $room = $this->chatRepository->createRoom(
+                    array_merge([$studentId, auth()->id()], $adminIds),
+                    'direct',
+                    'ติดต่อสอบถามเจ้าหน้าที่',
+                    null
+                );
+            } else {
+                $room = $this->chatRepository->createRoom(
+                    [$studentId, auth()->id()],
+                    'direct',
+                    $job->title,
+                    $jobId
+                );
+            }
+        }
 
         if (auth()->user()->isStaff()) {
             $room->loadMissing(['users', 'job']);
             $isOwnJob = $room->job_id && $room->job->created_by === auth()->id();
             $isParticipant = !$room->job_id && $room->users->contains(auth()->id());
             if (!$isOwnJob && !$isParticipant) {
-                abort(403, 'คุณไม่มีสิทธิ์เข้าถึงแชทนี้');
+                if (!$room->job_id) {
+                    $room->users()->attach(auth()->id());
+                    $room->load('users');
+                } else {
+                    abort(403, 'คุณไม่มีสิทธิ์เข้าถึงแชทนี้');
+                }
             }
         }
 
