@@ -21,21 +21,26 @@ class ChatController extends Controller
     {
         $job = $jobId == 0 ? (object)['id' => 0, 'title' => 'ติดต่อสอบถามเจ้าหน้าที่'] : JobListing::findOrFail($jobId);
         $userId = Auth::id();
+        $defaultAdminId = User::where('role', 'admin')->orderBy('id')->value('id') ?? 1;
 
         // Get or create room for this student and job
         $room = Room::where('job_id', $jobId)
             ->whereHas('users', function ($q) use ($userId) {
                 $q->where('users.id', $userId);
             })
+            ->when($jobId == 0, function ($q) use ($defaultAdminId) {
+                $q->whereHas('users', function ($inner) use ($defaultAdminId) {
+                    $inner->where('users.id', $defaultAdminId);
+                });
+            })
             ->first();
 
         if (!$room) {
-            $adminIds = User::where('role', 'admin')->pluck('id')->toArray();
             $room = $this->chatRepository->createRoom(
-                array_merge([$userId], $adminIds),
+                $jobId == 0 ? [$userId, $defaultAdminId] : [$userId, $job->created_by],
                 'direct',
-                $jobId == 0 ? "ติดต่อสอบถามเจ้าหน้าที่" : "Chat for Job #$jobId",
-                $jobId
+                $jobId == 0 ? "ติดต่อสอบถามเจ้าหน้าที่" : $job->title,
+                $jobId == 0 ? null : $jobId
             );
         }
 
@@ -61,12 +66,16 @@ class ChatController extends Controller
         }
 
         $userId = Auth::id();
+        $defaultAdminId = User::where('role', 'admin')->orderBy('id')->value('id') ?? 1;
         $roomQuery = Room::whereHas('users', function ($q) use ($userId) {
                 $q->where('users.id', $userId);
             });
         
         if ($jobId == 0) {
-            $roomQuery->whereNull('job_id');
+            $roomQuery->whereNull('job_id')
+                ->whereHas('users', function ($q) use ($defaultAdminId) {
+                    $q->where('users.id', $defaultAdminId);
+                });
         } else {
             $roomQuery->where('job_id', $jobId);
         }
@@ -74,8 +83,7 @@ class ChatController extends Controller
 
         if (!$room) {
             if ($jobId == 0) {
-                $adminIds = User::where('role', 'admin')->pluck('id')->toArray();
-                $room = $this->chatRepository->createRoom(array_merge([$userId], $adminIds), 'direct', 'ติดต่อสอบถามเจ้าหน้าที่', null);
+                $room = $this->chatRepository->createRoom([$userId, $defaultAdminId], 'direct', 'ติดต่อสอบถามเจ้าหน้าที่', null);
             } else {
                 $job = JobListing::findOrFail($jobId);
                 $room = $this->chatRepository->createRoom([$userId, $job->created_by], 'direct', $job->title, $jobId);
@@ -114,13 +122,17 @@ class ChatController extends Controller
     public function messages(int $jobId)
     {
         $userId = Auth::id();
+        $defaultAdminId = User::where('role', 'admin')->orderBy('id')->value('id') ?? 1;
 
         $roomQuery = Room::whereHas('users', function ($q) use ($userId) {
                 $q->where('users.id', $userId);
             });
             
         if ($jobId == 0) {
-            $roomQuery->whereNull('job_id');
+            $roomQuery->whereNull('job_id')
+                ->whereHas('users', function ($q) use ($defaultAdminId) {
+                    $q->where('users.id', $defaultAdminId);
+                });
         } else {
             $roomQuery->where('job_id', $jobId);
         }
@@ -184,12 +196,16 @@ class ChatController extends Controller
     public function markRead(int $jobId)
     {
         $userId = Auth::id();
+        $defaultAdminId = User::where('role', 'admin')->orderBy('id')->value('id') ?? 1;
         $roomQuery = Room::whereHas('users', function ($q) use ($userId) {
                 $q->where('users.id', $userId);
             });
             
         if ($jobId == 0) {
-            $roomQuery->whereNull('job_id');
+            $roomQuery->whereNull('job_id')
+                ->whereHas('users', function ($q) use ($defaultAdminId) {
+                    $q->where('users.id', $defaultAdminId);
+                });
         } else {
             $roomQuery->where('job_id', $jobId);
         }

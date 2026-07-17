@@ -212,7 +212,10 @@ class StudentAdminController extends Controller
             $q->where('users.id', $student->id);
         });
         if ($jobId == 0) {
-            $roomQuery->whereNull('job_id');
+            $roomQuery->whereNull('job_id')
+                ->whereHas('users', function ($q) {
+                    $q->where('users.id', auth()->id());
+                });
         } else {
             $roomQuery->where('job_id', $jobId);
         }
@@ -220,9 +223,8 @@ class StudentAdminController extends Controller
 
         if (!$room) {
             if ($jobId == 0) {
-                $adminIds = User::where('role', 'admin')->pluck('id')->toArray();
                 $room = $chatRepository->createRoom(
-                    array_merge([$student->id, auth()->id()], $adminIds),
+                    [$student->id, auth()->id()],
                     'direct',
                     'ติดต่อสอบถามเจ้าหน้าที่',
                     null
