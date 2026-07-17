@@ -33,9 +33,9 @@ class SecurityHeaders
             // 4. Content Security Policy (CSP)
             // Adjust the allowed sources based on your application's actual CDN and external resource needs.
             // Allowed: self, fonts.googleapis.com, Tailwind CDN (if used), WebSockets (ws/wss)
-            $csp = "default-src 'self'; "
-                 . "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; "
-                 . "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; "
+             $csp = "default-src 'self'; "
+                  . "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; "
+                  . "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com https://cdnjs.cloudflare.com; "
                  . "font-src 'self' https://fonts.gstatic.com data:; "
                  . "img-src 'self' data: https: blob:; "
                  . "connect-src 'self' ws: wss: https:;";
