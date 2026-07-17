@@ -19,29 +19,63 @@ class ChatController extends Controller
     /** แสดงหน้าแชทของนักศึกษาสำหรับประกาศงานนั้น */
     public function show(int $jobId)
     {
-        $job = $jobId == 0 ? (object)['id' => 0, 'title' => 'ติดต่อสอบถามเจ้าหน้าที่'] : JobListing::findOrFail($jobId);
         $userId = Auth::id();
         $defaultAdminId = User::where('role', 'admin')->orderBy('id')->value('id') ?? 1;
 
-        // Get or create room for this student and job
-        $room = Room::where('job_id', $jobId)
-            ->whereHas('users', function ($q) use ($userId) {
+        if ($jobId < 0) {
+            $otherUserId = abs($jobId);
+            $otherUser = User::findOrFail($otherUserId);
+            $job = (object)['id' => $jobId, 'title' => $otherUser->full_name];
+        } else {
+            $job = $jobId == 0 ? (object)['id' => 0, 'title' => 'ติดต่อสอบถามเจ้าหน้าที่'] : JobListing::findOrFail($jobId);
+        }
+
+        // Get or create room for this student and job/otherUser
+        $roomQuery = Room::whereHas('users', function ($q) use ($userId) {
                 $q->where('users.id', $userId);
-            })
-            ->when($jobId == 0, function ($q) use ($defaultAdminId) {
-                $q->whereHas('users', function ($inner) use ($defaultAdminId) {
-                    $inner->where('users.id', $defaultAdminId);
+            });
+
+        if ($jobId < 0) {
+            $otherUserId = abs($jobId);
+            $roomQuery->whereNull('job_id')
+                ->whereHas('users', function ($q) use ($otherUserId) {
+                    $q->where('users.id', $otherUserId);
                 });
-            })
-            ->first();
+        } elseif ($jobId == 0) {
+            $roomQuery->whereNull('job_id')
+                ->whereHas('users', function ($q) use ($defaultAdminId) {
+                    $q->where('users.id', $defaultAdminId);
+                });
+        } else {
+            $roomQuery->where('job_id', $jobId);
+        }
+        
+        $room = $roomQuery->first();
 
         if (!$room) {
-            $room = $this->chatRepository->createRoom(
-                $jobId == 0 ? [$userId, $defaultAdminId] : [$userId, $job->created_by],
-                'direct',
-                $jobId == 0 ? "ติดต่อสอบถามเจ้าหน้าที่" : $job->title,
-                $jobId == 0 ? null : $jobId
-            );
+            if ($jobId < 0) {
+                $otherUserId = abs($jobId);
+                $room = $this->chatRepository->createRoom(
+                    [$userId, $otherUserId],
+                    'direct',
+                    'ติดต่อสอบถามเจ้าหน้าที่',
+                    null
+                );
+            } elseif ($jobId == 0) {
+                $room = $this->chatRepository->createRoom(
+                    [$userId, $defaultAdminId],
+                    'direct',
+                    'ติดต่อสอบถามเจ้าหน้าที่',
+                    null
+                );
+            } else {
+                $room = $this->chatRepository->createRoom(
+                    [$userId, $job->created_by],
+                    'direct',
+                    $job->title,
+                    $jobId
+                );
+            }
         }
 
         $messages = $this->chatRepository->getRecentMessages($room);
@@ -71,7 +105,13 @@ class ChatController extends Controller
                 $q->where('users.id', $userId);
             });
         
-        if ($jobId == 0) {
+        if ($jobId < 0) {
+            $otherUserId = abs($jobId);
+            $roomQuery->whereNull('job_id')
+                ->whereHas('users', function ($q) use ($otherUserId) {
+                    $q->where('users.id', $otherUserId);
+                });
+        } elseif ($jobId == 0) {
             $roomQuery->whereNull('job_id')
                 ->whereHas('users', function ($q) use ($defaultAdminId) {
                     $q->where('users.id', $defaultAdminId);
@@ -82,7 +122,10 @@ class ChatController extends Controller
         $room = $roomQuery->first();
 
         if (!$room) {
-            if ($jobId == 0) {
+            if ($jobId < 0) {
+                $otherUserId = abs($jobId);
+                $room = $this->chatRepository->createRoom([$userId, $otherUserId], 'direct', 'ติดต่อสอบถามเจ้าหน้าที่', null);
+            } elseif ($jobId == 0) {
                 $room = $this->chatRepository->createRoom([$userId, $defaultAdminId], 'direct', 'ติดต่อสอบถามเจ้าหน้าที่', null);
             } else {
                 $job = JobListing::findOrFail($jobId);
@@ -128,7 +171,13 @@ class ChatController extends Controller
                 $q->where('users.id', $userId);
             });
             
-        if ($jobId == 0) {
+        if ($jobId < 0) {
+            $otherUserId = abs($jobId);
+            $roomQuery->whereNull('job_id')
+                ->whereHas('users', function ($q) use ($otherUserId) {
+                    $q->where('users.id', $otherUserId);
+                });
+        } elseif ($jobId == 0) {
             $roomQuery->whereNull('job_id')
                 ->whereHas('users', function ($q) use ($defaultAdminId) {
                     $q->where('users.id', $defaultAdminId);
@@ -145,13 +194,17 @@ class ChatController extends Controller
         $messages = $this->chatRepository->getRecentMessages($room)
             ->map(fn($m) => $this->formatMessage($m));
 
-        return response()->json(['messages' => $messages]);
+        return response()->json([
+            'messages' => $messages,
+            'room_id'  => $room->id
+        ]);
     }
 
     /** รายการ threads ของนักศึกษา (สำหรับ floating widget) */
     public function myThreads()
     {
         $userId = Auth::id();
+        $defaultAdminId = User::where('role', 'admin')->orderBy('id')->value('id') ?? 1;
 
         $rooms = Room::whereHas('users', function ($q) use ($userId) {
                 $q->where('users.id', $userId);
@@ -163,7 +216,7 @@ class ChatController extends Controller
             }, 'job'])
             ->get();
 
-        $threads = $rooms->map(function ($room) use ($userId) {
+        $threads = $rooms->map(function ($room) use ($userId, $defaultAdminId) {
             $lastMsg = $room->messages->first();
             $job = $room->job;
             $me = $room->users->where('id', $userId)->first();
@@ -174,9 +227,23 @@ class ChatController extends Controller
                 ->where('created_at', '>', $me->pivot->last_read_at ?? '1970-01-01')
                 ->count();
 
+            if ($room->job_id) {
+                $jobId = $room->job_id;
+                $jobTitle = $job?->title ?? "งาน #{$room->job_id}";
+            } else {
+                $otherUser = $room->users->where('id', '!=', $userId)->first();
+                if ($otherUser && $otherUser->id != $defaultAdminId) {
+                    $jobId = -$otherUser->id;
+                    $jobTitle = $otherUser->full_name;
+                } else {
+                    $jobId = 0;
+                    $jobTitle = 'ติดต่อสอบถามเจ้าหน้าที่';
+                }
+            }
+
             return [
-                'job_id'           => $room->job_id ?? 0,
-                'job_title'        => $room->job_id ? ($job?->title ?? "งาน #{$room->job_id}") : 'ติดต่อสอบถามเจ้าหน้าที่',
+                'job_id'           => $jobId,
+                'job_title'        => $jobTitle,
                 'last_message'     => $lastMsg?->body ?? '',
                 'last_sender_role' => $lastMsg?->user_id === $userId ? 'self' : 'other',
                 'last_time'        => $lastMsg?->created_at?->toISOString(),
@@ -201,7 +268,13 @@ class ChatController extends Controller
                 $q->where('users.id', $userId);
             });
             
-        if ($jobId == 0) {
+        if ($jobId < 0) {
+            $otherUserId = abs($jobId);
+            $roomQuery->whereNull('job_id')
+                ->whereHas('users', function ($q) use ($otherUserId) {
+                    $q->where('users.id', $otherUserId);
+                });
+        } elseif ($jobId == 0) {
             $roomQuery->whereNull('job_id')
                 ->whereHas('users', function ($q) use ($defaultAdminId) {
                     $q->where('users.id', $defaultAdminId);
@@ -221,9 +294,24 @@ class ChatController extends Controller
     /** Check if any admin who replied to this job is currently online */
     public function adminOnlineStatus(int $jobId)
     {
-        $roomQuery = Room::query();
-        if ($jobId == 0) {
-            $roomQuery->whereNull('job_id');
+        $userId = Auth::id();
+        $defaultAdminId = User::where('role', 'admin')->orderBy('id')->value('id') ?? 1;
+
+        $roomQuery = Room::whereHas('users', function ($q) use ($userId) {
+                $q->where('users.id', $userId);
+            });
+            
+        if ($jobId < 0) {
+            $otherUserId = abs($jobId);
+            $roomQuery->whereNull('job_id')
+                ->whereHas('users', function ($q) use ($otherUserId) {
+                    $q->where('users.id', $otherUserId);
+                });
+        } elseif ($jobId == 0) {
+            $roomQuery->whereNull('job_id')
+                ->whereHas('users', function ($q) use ($defaultAdminId) {
+                    $q->where('users.id', $defaultAdminId);
+                });
         } else {
             $roomQuery->where('job_id', $jobId);
         }

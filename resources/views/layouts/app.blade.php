@@ -247,6 +247,7 @@
         var panelOpen = false;
         var threads = [];
         var currentJobId = null;
+        var currentRoomId = null;
 
         window.toggleChatWidget = function () { panelOpen ? closeChatWidget() : openChatWidget(); };
         window.closeChatWidget = function () {
@@ -273,6 +274,7 @@
 
         window.showChatView = function(jobId, jobTitle) {
             currentJobId = jobId;
+            currentRoomId = null;
             document.getElementById('cfViewList').style.display = 'none';
             document.getElementById('cfViewChat').style.display = 'flex';
             document.getElementById('cfBackBtn').style.display = 'inline-block';
@@ -342,6 +344,7 @@
                 .then(function(r){ return r.json(); })
                 .then(function(data) {
                     win.innerHTML = '';
+                    currentRoomId = data.room_id;
                     var msgs = data.messages || [];
                     if (!Array.isArray(msgs)) msgs = Object.values(msgs);
                     msgs.forEach(function(m) { win.appendChild(buildBubble(m)); });
@@ -645,7 +648,7 @@
                 .listen('.MessageSent', function(e) {
                     if (e.user && e.user.id == USER_ID) return; // Skip optimistic duplicate
 
-                    if (currentJobId == e.room_id || (e.room && currentJobId == e.room.job_id)) { 
+                    if (currentRoomId == e.room_id || currentJobId == e.room_id || (e.room && currentJobId == e.room.job_id)) { 
                         var win = document.getElementById('cfChatWindow');
                         if (!document.getElementById('cf-msg-' + e.id)) {
                             win.appendChild(buildBubble(e));
