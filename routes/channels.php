@@ -6,17 +6,23 @@ use Illuminate\Support\Facades\Log;
 Log::info("Loading routes/channels.php");
 
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
-    return (string) $user->id === (string) $id;
+    $matched = (string) $user->id === (string) $id;
+    Log::info("Broadcast Auth App.Models.User", ['user_id' => $user->id, 'id_param' => $id, 'matched' => $matched]);
+    return $matched;
 });
 
 // Channel แจ้งเตือนทั่วไป (Notification)
 Broadcast::channel('notifications.{userId}', function ($user, $userId) {
-    return (string) $user->id === (string) $userId;
+    $matched = (string) $user->id === (string) $userId;
+    Log::info("Broadcast Auth notifications", ['user_id' => $user->id, 'userId_param' => $userId, 'matched' => $matched]);
+    return $matched;
 });
 
 // Channel แชทส่วนตัวของนักศึกษา
 Broadcast::channel('chat.student.{userId}', function ($user, $userId) {
-    return (string) $user->id === (string) $userId;
+    $matched = (string) $user->id === (string) $userId;
+    Log::info("Broadcast Auth chat.student", ['user_id' => $user->id, 'userId_param' => $userId, 'matched' => $matched]);
+    return $matched;
 });
 
 // Channel แจ้งเตือนแอดมินเวลามีข้อความใหม่ (สำหรับหน้า Inbox List)
