@@ -72,29 +72,32 @@
 @section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // รีเฟรช thread list โดย fetch HTML ใหม่และ replace เนื้อหาใน card
+    window.refreshInboxList = function() {
+        fetch(window.location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(r => r.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newCard = doc.querySelector('.card');
+                const oldCard = document.querySelector('.card');
+                if (newCard && oldCard) {
+                    oldCard.innerHTML = newCard.innerHTML;
+                }
+            })
+            .catch(() => {});
+    };
+
     (function initAdminInboxEcho() {
         if (!window.Echo) {
             setTimeout(initAdminInboxEcho, 200);
             return;
         }
 
+        // admin.inbox จะ fire ทั้งเมื่อนักศึกษาส่ง และเมื่อ admin ส่ง (ดู MessageSent.broadcastOn())
         window.Echo.private('admin.inbox')
             .listen('.MessageSent', function(e) {
-                // To keep the list real-time without writing complex DOM logic,
-                // we simply fetch the current page HTML and replace the .card content
-                fetch(window.location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                    .then(r => r.text())
-                    .then(html => {
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(html, 'text/html');
-                        const newCard = doc.querySelector('.card');
-                        const oldCard = document.querySelector('.card');
-                        if (newCard && oldCard) {
-                            oldCard.innerHTML = newCard.innerHTML;
-                        } else {
-                            window.location.reload();
-                        }
-                    });
+                window.refreshInboxList();
             });
     })();
 });

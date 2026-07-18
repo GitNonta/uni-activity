@@ -202,6 +202,7 @@ Route::middleware(['auth', 'role:staff'])->prefix('admin')->name('admin.')->grou
 
     // ── กล่องข้อความ (Inbox) ──
     Route::get('inbox', [AdminInboxController::class, 'index'])->name('inbox.index');
+    Route::get('inbox/unread-count', [AdminInboxController::class, 'unreadCount'])->name('inbox.unread-count');
     Route::get('inbox/{jobId}/{userId}', [AdminInboxController::class, 'show'])->name('inbox.show');
     Route::post('inbox/{jobId}/{userId}', [AdminInboxController::class, 'send'])->middleware('throttle:chat-send')->name('inbox.send');
     Route::post('inbox/{jobId}/{userId}/read', [AdminInboxController::class, 'markRead'])->name('inbox.read');

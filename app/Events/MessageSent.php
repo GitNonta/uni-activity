@@ -32,20 +32,20 @@ class MessageSent implements ShouldBroadcastNow
             new PrivateChannel('chat.room.' . $this->message->room_id),
         ];
 
-        // ถ้าผู้ส่งเป็น Admin/Staff ให้ส่งไปที่ Channel ของนักศึกษาเจ้าของห้องด้วย
-        // เพื่อให้ตัว Floating Widget ที่หน้าอื่นๆ ได้รับการแจ้งเตือน
         $room = $this->message->room;
-        if ($room && $this->message->user) {
-            if ($this->message->user->isAdmin() || $this->message->user->isStaff()) {
-                // หา ID นักศึกษาในห้องนี้ (โดยปกติห้องแชทงานจะมีนักศึกษา 1 คน)
+        $sender = $this->message->user;
+
+        if ($room && $sender) {
+            if ($sender->isAdmin() || $sender->isStaff()) {
+                // Admin/Staff ส่ง → แจ้งเตือนนักศึกษาผ่าน personal channel
                 $student = $room->users()->where('users.role', 'student')->first();
                 if ($student) {
                     $channels[] = new PrivateChannel('chat.student.' . $student->id);
                 }
-            } else if ($this->message->user->role === 'student') {
-                // แจ้งเตือนแอดมิน เพื่ออัปเดตหน้า Inbox List แบบเรียวไทม์
-                $channels[] = new PrivateChannel('admin.inbox');
             }
+            // ทุก message ใน direct room → แจ้งเตือน admin inbox list ด้วย
+            // เพื่อให้หน้า inbox index และ sidebar badge อัพเดต real-time
+            $channels[] = new PrivateChannel('admin.inbox');
         }
 
         return $channels;

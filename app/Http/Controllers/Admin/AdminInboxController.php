@@ -74,6 +74,35 @@ class AdminInboxController extends Controller
         return view('admin.inbox.index', ['threads' => $result]);
     }
 
+    /** JSON endpoint — จำนวนข้อความที่ยังไม่ได้อ่านของ admin/staff */
+    public function unreadCount(): \Illuminate\Http\JsonResponse
+    {
+        $currentUserId = Auth::id();
+        $rooms = Room::with(['messages' => fn($q) => $q->latest()->limit(1), 'users'])
+            ->where(function($q) use ($currentUserId) {
+                $q->where(function($sub) use ($currentUserId) {
+                    $sub->whereNotNull('job_id')
+                        ->when(auth()->user()->isStaff(), function($inner) use ($currentUserId) {
+                            $inner->whereHas('job', fn($jq) => $jq->where('created_by', $currentUserId));
+                        });
+                })->orWhere(function($sub) use ($currentUserId) {
+                    $sub->whereNull('job_id')
+                        ->whereHas('users', fn($uq) => $uq->where('users.id', $currentUserId));
+                });
+            })
+            ->get();
+
+        $total = $rooms->sum(function ($room) use ($currentUserId) {
+            $me = $room->users->where('id', $currentUserId)->first();
+            return $room->messages()
+                ->where('user_id', '!=', $currentUserId)
+                ->where('created_at', '>', $me?->pivot?->last_read_at ?? '1970-01-01')
+                ->count();
+        });
+
+        return response()->json(['unread' => $total]);
+    }
+
     public function show(int $jobId, int $studentId)
     {
         $job     = $jobId == 0 ? (object) ['id' => 0, 'title' => 'ติดต่อสอบถามเจ้าหน้าที่'] : JobListing::findOrFail($jobId);

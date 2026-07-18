@@ -471,6 +471,25 @@
 @stack('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const ADMIN_UNREAD_URL = '{{ route("admin.inbox.unread-count") }}';
+    const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+    function refreshAdminBadge() {
+        fetch(ADMIN_UNREAD_URL, { headers: { 'X-CSRF-TOKEN': CSRF_TOKEN, 'Accept': 'application/json' } })
+            .then(r => r.json())
+            .then(data => {
+                const badge = document.getElementById('adminSidebarBadge');
+                if (!badge) return;
+                if (data.unread > 0) {
+                    badge.textContent = data.unread;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            })
+            .catch(() => {});
+    }
+
     (function initAdminGlobalEcho() {
         if (!window.Echo) {
             setTimeout(initAdminGlobalEcho, 200);
@@ -479,12 +498,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         window.Echo.private('admin.inbox')
             .listen('.MessageSent', function(e) {
-                const badge = document.getElementById('adminSidebarBadge');
-                if (badge) {
-                    let count = parseInt(badge.textContent) || 0;
-                    count++;
-                    badge.textContent = count;
-                    badge.style.display = 'inline-block';
+                // Fetch real count from server (accurate, handles mark-read state)
+                refreshAdminBadge();
+
+                // If currently on inbox index page, refresh the thread list
+                if (window.refreshInboxList) {
+                    window.refreshInboxList();
                 }
             });
     })();

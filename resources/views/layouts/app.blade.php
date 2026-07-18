@@ -706,19 +706,15 @@
         // (Real-time ในห้องที่เปิดอยู่ใช้ chat.room.{room_id} แทน)
         (function initStudentEcho() {
             if (!window.Echo) { setTimeout(initStudentEcho, 200); return; }
-            console.log('initStudentEcho: Subscribing to chat.student.' + USER_ID);
             window.Echo.private('chat.student.' + USER_ID)
                 .listen('.MessageSent', function(e) {
-                    console.log('chat.student MessageSent received', e, 'currentRoomId:', currentRoomId, 'e.room_id:', e.room_id);
-                    // ถ้ากำลังอยู่ใน room นั้น → chat.room channel จะจัดการแล้ว ข้ามได้
-                    if (currentRoomId && String(currentRoomId) === String(e.room_id)) return;
-                    // ถ้าไม่ได้อยู่ในห้องนั้น → อัปเดต badge/thread list
+                    console.log('chat.student MessageSent received', e);
+                    // ถ้ากำลังอยู่ใน room นั้น → chat.room channel จัดการ real-time แล้ว
+                    // แต่ยังต้อง loadThreads() เพื่ออัพเดต last message preview และ badge
                     loadThreads();
                 })
                 .listen('.ChatDeleted', function(e) {
-                    if (currentJobId == e.room_id) {
-                        loadThreads();
-                    }
+                    loadThreads();
                 });
         })();
 
