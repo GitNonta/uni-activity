@@ -7,10 +7,11 @@
 Services ที่ดูแล (ตามลำดับ dependency):
   1. Redis        — ต้องขึ้นก่อน Queue/Reverb
   2. Nginx        — web server
-  3. Queue Worker — ต้องการ Redis
-  4. Reverb       — WebSocket server
-  5. Monitor      — dashboard port 9999
-  6. Cloudflared  — Cloudflare Tunnel
+  3. PHP-FPM      — Laravel backend (502 ถ้าไม่มี)
+  4. Queue Worker — ต้องการ Redis
+  5. Reverb       — WebSocket server
+  6. Monitor      — dashboard port 9999
+  7. Cloudflared  — Cloudflare Tunnel
 """
 
 import paramiko
@@ -108,6 +109,11 @@ def is_reverb_running(c):
     # Reverb WebSocket ฟัง port 8082
     return _port_listening(c, 8082)
 
+def is_phpfpm_running(c):
+    # PHP-FPM ต้อง master process ทำงาน
+    out, _ = run(c, "pgrep -f 'php-fpm: master' | head -1")
+    return bool(out.strip())
+
 def is_monitor_running(c):
     # Monitor dashboard ต้องฟัง port 9999 จริงๆ
     return _port_listening(c, 9999)
@@ -158,6 +164,15 @@ def restart_reverb(c):
     time.sleep(RESTART_WAIT)
     ok = is_reverb_running(c)
     log.info(f"  Reverb restart {'OK' if ok else 'FAILED'}")
+    return ok
+
+def restart_phpfpm(c):
+    log.warning("RESTART: PHP-FPM (502 prevention)...")
+    run(c, "pkill -9 -f 'php-fpm' 2>/dev/null; sleep 2")
+    run(c, "nohup php-fpm </dev/null >/dev/null 2>&1 &", timeout=5)
+    time.sleep(RESTART_WAIT)
+    ok = is_phpfpm_running(c)
+    log.info(f"  PHP-FPM restart {'OK ✅' if ok else 'FAILED ❌'}")
     return ok
 
 def restart_monitor(c):
@@ -234,6 +249,7 @@ def restart_cloudflared(c):
 SERVICES = [
     {"name": "Redis",          "check": is_redis_running,       "restart": restart_redis,       "cascade": ["Queue Worker", "Reverb"]},
     {"name": "Nginx",          "check": is_nginx_running,       "restart": restart_nginx,       "cascade": []},
+    {"name": "PHP-FPM",        "check": is_phpfpm_running,      "restart": restart_phpfpm,      "cascade": []},
     {"name": "Queue Worker",   "check": is_queue_running,       "restart": restart_queue,       "cascade": []},
     {"name": "Reverb",         "check": is_reverb_running,      "restart": restart_reverb,      "cascade": []},
     {"name": "Monitor Server", "check": is_monitor_running,     "restart": restart_monitor,     "cascade": []},
