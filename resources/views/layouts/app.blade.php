@@ -248,6 +248,7 @@
         var threads = [];
         var currentJobId = null;
         var currentRoomId = null;
+        var currentRoomEcho = null; // Echo subscription for current open room
 
         window.toggleChatWidget = function () { panelOpen ? closeChatWidget() : openChatWidget(); };
         window.closeChatWidget = function () {
@@ -264,11 +265,17 @@
         };
 
         function showListView() {
+            // Unsubscribe from the room channel when leaving chat view
+            if (currentRoomEcho && currentRoomId) {
+                try { window.Echo.leave('chat.room.' + currentRoomId); } catch(e) {}
+                currentRoomEcho = null;
+            }
             currentJobId = null;
+            currentRoomId = null;
             document.getElementById('cfViewList').style.display = 'flex';
             document.getElementById('cfViewChat').style.display = 'none';
             document.getElementById('cfBackBtn').style.display = 'none';
-            document.getElementById('cfHeaderTitle').innerHTML = '<svg style="width:16px;height:16px;display:inline;vertical-align:-3px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg> ข้อความของฉัน';
+            document.getElementById('cfHeaderTitle').innerHTML = '<svg style="width:16px;height:16px;display:inline;vertical-align:-3px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 01-2 2h-5l-5 5v-5z"/></svg> ข้อความของฉัน';
         }
         window.cfBackToList = function () { showListView(); loadThreads(); };
 
@@ -337,6 +344,58 @@
         }
         window.showChatView = showChatView;
 
+        function appendMessageToChat(e) {
+            // Prevent duplicate if already rendered
+            if (document.getElementById('cf-msg-' + e.id)) return;
+            var win = document.getElementById('cfChatWindow');
+            // Build a msg-compatible object from broadcast payload
+            var msg = {
+                id: e.id,
+                user_id: e.user ? e.user.id : null,
+                message: e.message,
+                is_edited: false,
+                attachments: e.attachments || [],
+                created_at: e.created_at
+            };
+            win.appendChild(buildBubble(msg));
+            win.scrollTop = win.scrollHeight;
+            if (panelOpen) {
+                fetch('/jobs/' + currentJobId + '/chat/read', { method: 'POST', headers: { 'X-CSRF-TOKEN': CSRF } });
+            }
+        }
+
+        function subscribeRoomChannel(roomId) {
+            // Unsubscribe previous room if any
+            if (currentRoomEcho && currentRoomId && currentRoomId !== roomId) {
+                try { window.Echo.leave('chat.room.' + currentRoomId); } catch(e) {}
+            }
+            if (!window.Echo) return;
+            currentRoomEcho = window.Echo.private('chat.room.' + roomId)
+                .listen('.MessageSent', function(e) {
+                    console.log('chat.room MessageSent received', e);
+                    if (e.user && String(e.user.id) === String(USER_ID)) return; // Skip own (optimistic)
+                    appendMessageToChat(e);
+                })
+                .listen('.MessageDeleted', function(e) {
+                    var el = document.getElementById('cf-msg-' + e.id);
+                    if (el) el.remove();
+                })
+                .listen('.MessageEdited', function(e) {
+                    var el = document.getElementById('cf-msg-' + e.id);
+                    if (el) {
+                        var p = el.querySelector('p');
+                        if (p) p.textContent = e.message;
+                        if (!el.textContent.includes('(แก้ไขแล้ว)')) {
+                            var editedSpan = document.createElement('span');
+                            editedSpan.style.cssText = 'font-size:0.6rem;opacity:0.7;margin-left:5px;';
+                            editedSpan.textContent = '(แก้ไขแล้ว)';
+                            p.parentNode.appendChild(editedSpan);
+                        }
+                    }
+                });
+            console.log('Subscribed to chat.room.' + roomId);
+        }
+
         function loadMessages(jobId) {
             var win = document.getElementById('cfChatWindow');
             win.innerHTML = '<div style="padding:1.5rem;text-align:center;font-size:.82rem;color:#94a3b8;">กำลังโหลด...</div>';
@@ -345,6 +404,8 @@
                 .then(function(data) {
                     win.innerHTML = '';
                     currentRoomId = data.room_id;
+                    // Subscribe to this specific room channel for real-time updates
+                    if (currentRoomId) { subscribeRoomChannel(currentRoomId); }
                     var msgs = data.messages || [];
                     if (!Array.isArray(msgs)) msgs = Object.values(msgs);
                     msgs.forEach(function(m) { win.appendChild(buildBubble(m)); });
@@ -641,50 +702,21 @@
         function recalcBadge() { updateBadge(threads.reduce(function(s,t){ return s+(t.unread||0); }, 0)); }
 
         // Laravel Echo — ใช้ retry เพราะ app.js โหลด async (type=module)
+        // chat.student.{ID} = fallback channel สำหรับรับแจ้งเตือนเมื่อไม่ได้อยู่ในห้องนั้น
+        // (Real-time ในห้องที่เปิดอยู่ใช้ chat.room.{room_id} แทน)
         (function initStudentEcho() {
             if (!window.Echo) { setTimeout(initStudentEcho, 200); return; }
             console.log('initStudentEcho: Subscribing to chat.student.' + USER_ID);
-            // ฟังจากช่องส่วนตัวของนักศึกษา (สำหรับแจ้งเตือนรวม)
             window.Echo.private('chat.student.' + USER_ID)
                 .listen('.MessageSent', function(e) {
-                    console.log('initStudentEcho: MessageSent received', e);
-                    console.log('currentRoomId:', currentRoomId, 'e.room_id:', e.room_id, 'currentJobId:', currentJobId);
-                    if (e.user && e.user.id == USER_ID) return; // Skip optimistic duplicate
-
-                    if (currentRoomId == e.room_id || currentJobId == e.room_id || (e.room && currentJobId == e.room.job_id)) { 
-                        var win = document.getElementById('cfChatWindow');
-                        if (!document.getElementById('cf-msg-' + e.id)) {
-                            win.appendChild(buildBubble(e));
-                            win.scrollTop = win.scrollHeight;
-                            // Auto mark-read if panel is open and on this room
-                            if (panelOpen) {
-                                fetch('/jobs/' + currentJobId + '/chat/read', { method: 'POST', headers: { 'X-CSRF-TOKEN': CSRF } });
-                            }
-                        }
-                    } else {
-                        loadThreads();
-                    }
-                })
-                .listen('.MessageDeleted', function(e) {
-                    var el = document.getElementById('cf-msg-' + e.id);
-                    if (el) el.remove();
-                })
-                .listen('.MessageEdited', function(e) {
-                    var el = document.getElementById('cf-msg-' + e.id);
-                    if (el) {
-                        var p = el.querySelector('p');
-                        if (p) p.textContent = e.message;
-                        if (!el.textContent.includes('(แก้ไขแล้ว)')) {
-                            var editedSpan = document.createElement('span');
-                            editedSpan.style.cssText = 'font-size:0.6rem;opacity:0.7;margin-left:5px;';
-                            editedSpan.textContent = '(แก้ไขแล้ว)';
-                            p.parentNode.appendChild(editedSpan);
-                        }
-                    }
+                    console.log('chat.student MessageSent received', e, 'currentRoomId:', currentRoomId, 'e.room_id:', e.room_id);
+                    // ถ้ากำลังอยู่ใน room นั้น → chat.room channel จะจัดการแล้ว ข้ามได้
+                    if (currentRoomId && String(currentRoomId) === String(e.room_id)) return;
+                    // ถ้าไม่ได้อยู่ในห้องนั้น → อัปเดต badge/thread list
+                    loadThreads();
                 })
                 .listen('.ChatDeleted', function(e) {
                     if (currentJobId == e.room_id) {
-                        closeFloatChat();
                         loadThreads();
                     }
                 });
