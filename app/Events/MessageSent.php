@@ -17,7 +17,9 @@ class MessageSent implements ShouldBroadcastNow
     /**
      * Create a new event instance.
      */
-    public function __construct(public Message $message) {}
+    public function __construct(public Message $message) {
+        $this->message->loadMissing(['room', 'user']);
+    }
 
     /**
      * Get the channels the event should broadcast on.
