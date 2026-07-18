@@ -15,6 +15,10 @@ if ((host === 'localhost' || host === '127.0.0.1') && currentPort === '8000') {
     wsPort = 8080;
 }
 
+import axios from 'axios';
+window.axios = axios;
+window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+
 window.Echo = new Echo({
     broadcaster: 'reverb',
     key: import.meta.env.VITE_REVERB_APP_KEY,
