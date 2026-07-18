@@ -293,7 +293,8 @@
         };
 
         function loadThreads() {
-            fetch(THREADS_URL, { headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' } })
+            var url = THREADS_URL + '?_t=' + new Date().getTime();
+            fetch(url, { headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' }, cache: 'no-store' })
                 .then(function(r){ return r.json(); })
                 .then(function(data) {
                     threads = data.threads || [];
@@ -684,6 +685,7 @@
                         bubble.parentNode.replaceChild(realBubble, bubble);
                     }
                     recalcBadge();
+                    loadThreads(); // อัพเดต list (latest message) เมื่อนักศึกษาส่งข้อความเอง
                 })
                 .catch(function(err) {
                     console.error('Chat Error:', err);

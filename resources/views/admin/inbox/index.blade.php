@@ -74,7 +74,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     // รีเฟรช thread list โดย fetch HTML ใหม่และ replace เนื้อหาใน card
     window.refreshInboxList = function() {
-        fetch(window.location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        var url = window.location.href.split('?')[0] + '?_t=' + new Date().getTime();
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' }, cache: 'no-store' })
             .then(r => r.text())
             .then(html => {
                 const parser = new DOMParser();

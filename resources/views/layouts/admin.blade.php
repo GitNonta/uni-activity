@@ -475,7 +475,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
     function refreshAdminBadge() {
-        fetch(ADMIN_UNREAD_URL, { headers: { 'X-CSRF-TOKEN': CSRF_TOKEN, 'Accept': 'application/json' } })
+        var url = ADMIN_UNREAD_URL + '?_t=' + new Date().getTime();
+        fetch(url, { headers: { 'X-CSRF-TOKEN': CSRF_TOKEN, 'Accept': 'application/json' }, cache: 'no-store' })
             .then(r => r.json())
             .then(data => {
                 const badge = document.getElementById('adminSidebarBadge');
