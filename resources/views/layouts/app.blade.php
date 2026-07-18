@@ -643,9 +643,12 @@
         // Laravel Echo — ใช้ retry เพราะ app.js โหลด async (type=module)
         (function initStudentEcho() {
             if (!window.Echo) { setTimeout(initStudentEcho, 200); return; }
+            console.log('initStudentEcho: Subscribing to chat.student.' + USER_ID);
             // ฟังจากช่องส่วนตัวของนักศึกษา (สำหรับแจ้งเตือนรวม)
             window.Echo.private('chat.student.' + USER_ID)
                 .listen('.MessageSent', function(e) {
+                    console.log('initStudentEcho: MessageSent received', e);
+                    console.log('currentRoomId:', currentRoomId, 'e.room_id:', e.room_id, 'currentJobId:', currentJobId);
                     if (e.user && e.user.id == USER_ID) return; // Skip optimistic duplicate
 
                     if (currentRoomId == e.room_id || currentJobId == e.room_id || (e.room && currentJobId == e.room.job_id)) { 
