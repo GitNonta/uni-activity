@@ -183,36 +183,37 @@ class CheckInController extends Controller
     public function verifyFrame(Request $request, string $token)
     {
         $request->validate(['image' => 'required|string']);
-        
+
         $user = auth()->user();
         $storedDescriptor = $user->face_descriptor;
         if (!$storedDescriptor) {
             return response()->json(['success' => false, 'message' => 'No profile descriptor']);
         }
-        
+
         $base64 = $request->input('image');
         $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $base64);
         $imageDecoded = base64_decode(str_replace(' ', '+', $imageData));
-        
+
         $aiServerUrl = config('services.ai_server.url');
         if (empty($aiServerUrl)) {
             return response()->json(['success' => false, 'message' => 'AI Server not configured']);
         }
-        
+
         try {
-            $response = \Illuminate\Support\Facades\Http::timeout(3) // Timeout สั้นๆ เพื่อไม่ให้ค้าง
+            $response = \Illuminate\Support\Facades\Http::timeout(5)
                 ->attach('image', $imageDecoded, 'frame.jpg')
                 ->post(rtrim($aiServerUrl, '/') . '/verify', [
-                    'known_embedding' => json_encode($storedDescriptor)
+                    'known_embedding' => json_encode($storedDescriptor),
+                    'check_liveness'  => 'true',
                 ]);
-                
+
             if ($response->successful()) {
                 return response()->json($response->json());
             }
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'AI Server timeout or error']);
         }
-        
+
         return response()->json(['success' => false, 'message' => 'Verification failed']);
     }
 
@@ -235,11 +236,11 @@ class CheckInController extends Controller
         return view('checkin.selfie', compact('activity', 'token', 'att', 'profilePhotoUrl'));
     }
 
-    /** บันทึก selfie + คะแนนเปรียบเทียบใบหน้า */
+    /** บันทึก selfie + คะแนนเปรียบเทียบใบหน้า + liveness */
     public function storeSelfie(Request $request, string $token, int $attendance)
     {
         $request->validate([
-            'selfie' => 'required|string', // base64 image
+            'selfie'           => 'required|string',
             'face_match_score' => 'nullable|numeric|min:0|max:100',
         ]);
 
@@ -247,19 +248,21 @@ class CheckInController extends Controller
             ->where('user_id', auth()->id())
             ->firstOrFail();
 
-        // Decode base64 selfie and save to storage
-        $base64 = $request->input('selfie');
-        $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $base64);
-        $imageData = base64_decode($imageData);
+        $base64    = $request->input('selfie');
+        $imageData = base64_decode(preg_replace('/^data:image\/\w+;base64,/', '', $base64));
 
         $filename = 'selfies/' . auth()->id() . '_' . time() . '.jpg';
         Storage::disk('public')->put($filename, $imageData);
 
-        $score = null;
-        $passed = null;
-        $user = auth()->user();
+        $score            = null;
+        $passed           = null;
+        $livenessScore    = null;
+        $livenessPassed   = null;
+        $detectorPipeline = null;
+
+        $user             = auth()->user();
         $storedDescriptor = $user->face_descriptor;
-        
+
         if ($storedDescriptor) {
             $aiServerUrl = config('services.ai_server.url');
             if (!empty($aiServerUrl)) {
@@ -267,13 +270,17 @@ class CheckInController extends Controller
                     $response = \Illuminate\Support\Facades\Http::timeout(15)
                         ->attach('image', $imageData, 'selfie.jpg')
                         ->post(rtrim($aiServerUrl, '/') . '/verify', [
-                            'known_embedding' => json_encode($storedDescriptor)
+                            'known_embedding' => json_encode($storedDescriptor),
+                            'check_liveness'  => 'true',
                         ]);
-                        
+
                     if ($response->successful()) {
-                        $result = $response->json();
-                        $score = $result['score_percentage'] ?? 0;
-                        $passed = $result['is_match'] ?? false;
+                        $result           = $response->json();
+                        $score            = $result['score_percentage']   ?? 0;
+                        $passed           = $result['is_match']           ?? false;
+                        $livenessScore    = $result['liveness_score']     ?? null;
+                        $livenessPassed   = $result['liveness_passed']    ?? null;
+                        $detectorPipeline = $result['detector_used']      ?? null;
                     } else {
                         \Log::warning('AI Server selfie verification failed: ' . $response->body());
                     }
@@ -287,6 +294,9 @@ class CheckInController extends Controller
             'selfie_photo_path' => $filename,
             'face_match_score'  => $score,
             'face_match_passed' => $passed,
+            'liveness_score'    => $livenessScore,
+            'liveness_passed'   => $livenessPassed,
+            'detector_pipeline' => $detectorPipeline,
         ]);
 
         $activity = Activity::where('qr_token', $token)
@@ -294,11 +304,12 @@ class CheckInController extends Controller
             ->firstOrFail();
 
         return view('checkin.success', [
-            'activity' => $activity,
-            'status'   => 'checked_in',
-            'distance' => $att->distance_meters,
-            'selfie_result' => $passed,
+            'activity'         => $activity,
+            'status'           => 'checked_in',
+            'distance'         => $att->distance_meters,
+            'selfie_result'    => $passed,
             'face_match_score' => $score,
+            'liveness_passed'  => $livenessPassed,
         ]);
     }
 

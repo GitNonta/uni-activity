@@ -113,7 +113,10 @@
         
         <div class="status-text" id="scanInstructions">กำลังเชื่อมต่อกล้อง...</div>
         
-        <div id="realtimeScore" style="display:none; font-weight:bold; font-size:1.2rem; margin-bottom: 15px; background:rgba(0,0,0,0.6); padding:8px 20px; border-radius:20px; backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.15);"></div>
+        <div id="realtimeScore" style="display:none; font-weight:bold; font-size:1.2rem; margin-bottom: 15px; background:rgba(0,0,0,0.6); padding:8px 20px; border-radius:20px; backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.15); text-align:center;"></div>
+
+        <!-- Liveness Badge -->
+        <div id="livenessBadge" style="display:none; font-size:0.85rem; margin-bottom: 10px; padding:5px 14px; border-radius:20px; backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.15); background:rgba(0,0,0,0.5); text-align:center;"></div>
 
         <button type="button" id="manualCaptureBtn" class="btn-outline-white" style="display:none;" onclick="capturePhoto(true)">
             ถ่ายภาพและส่งด้วยตัวเอง
@@ -690,11 +693,28 @@
             clearTimeout(timeoutId);
             const result = await response.json();
             
+            // Update realtime score + liveness badge
             const rtScore = document.getElementById('realtimeScore');
+            const livenessBadge = document.getElementById('livenessBadge');
+
             if (rtScore && result.score_percentage !== undefined) {
                 rtScore.style.display = 'block';
                 rtScore.textContent = 'InsightFace (512D): ' + result.score_percentage.toFixed(1) + '%';
                 rtScore.style.color = result.score_percentage >= THRESHOLD ? '#10b981' : '#f59e0b';
+            }
+
+            // Liveness indicator
+            if (livenessBadge && result.liveness_passed !== undefined) {
+                livenessBadge.style.display = 'block';
+                if (result.liveness_passed) {
+                    livenessBadge.textContent = '✓ Liveness: ยืนยันตัวจริง (' + (result.liveness_score * 100).toFixed(0) + '%)';
+                    livenessBadge.style.color = '#10b981';
+                    livenessBadge.style.borderColor = 'rgba(16,185,129,0.4)';
+                } else {
+                    livenessBadge.textContent = '✗ Liveness: อาจเป็นภาพถ่าย (' + (result.liveness_score * 100).toFixed(0) + '%)';
+                    livenessBadge.style.color = '#ef4444';
+                    livenessBadge.style.borderColor = 'rgba(239,68,68,0.4)';
+                }
             }
 
             if (result.is_match && result.score_percentage >= THRESHOLD) {
@@ -703,12 +723,12 @@
                 clearTimeout(scanTimeout);
                 const guide = document.getElementById('faceGuide');
                 if (guide) guide.classList.replace('scanning-ring', 'success-ring');
-                
+
                 // Play success sound
                 playSuccessSound();
-                
+
                 capturePhoto(true);
-                showComparisonResult(result.score_percentage, true);
+                showComparisonResult(result.score_percentage, true, result.liveness_passed);
                 return;
             } else {
                 const guide = document.getElementById('faceGuide');
@@ -719,7 +739,7 @@
                         guide.classList.replace('error-ring', 'scanning-ring'); 
                     }, 300);
                 }
-                
+
                 if (scanAttempts >= MAX_ATTEMPTS) {
                     stopScanning = true;
                     clearTimeout(scanTimeout);
