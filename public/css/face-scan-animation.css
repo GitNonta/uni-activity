@@ -1,0 +1,298 @@
+/* ========================================
+   FACE SCAN ANIMATION STYLES
+   UNI ACTIVITY - Advanced Face Detection UI
+   ======================================== */
+
+#faceGuide {
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 280px;
+    height: 380px;
+    border: 3px solid rgba(255, 255, 255, 0.6);
+    border-radius: 120px;
+    box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.6);
+    transition: border-color 0.3s, box-shadow 0.8s ease, background 0.3s, left 0.3s ease-out, top 0.3s ease-out;
+    overflow: hidden;
+}
+
+/* Face Landmarks Canvas */
+#faceLandmarksCanvas {
+    transform: scaleX(-1);
+    opacity: 0.9;
+}
+
+/* ===== Animated Grid Overlay ===== */
+.grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image: 
+        linear-gradient(rgba(0, 255, 136, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 136, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+    animation: gridPulse 3s ease-in-out infinite;
+    z-index: 10;
+}
+
+@keyframes gridPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.6; }
+}
+
+/* ===== Scanning Line Animation ===== */
+.scan-line {
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #00ff88, transparent);
+    box-shadow: 0 0 10px #00ff88, 0 0 20px #00ff88;
+    animation: scanMove 2s linear infinite;
+    z-index: 20;
+}
+
+@keyframes scanMove {
+    0% { top: 0%; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+}
+
+/* ===== Corner Brackets ===== */
+.corner {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border-color: #00ff88;
+    border-style: solid;
+    border-width: 0;
+    transition: all 0.3s;
+}
+
+.corner-tl {
+    top: 0;
+    left: 0;
+    border-top-width: 3px;
+    border-left-width: 3px;
+    border-top-left-radius: 120px;
+}
+
+.corner-tr {
+    top: 0;
+    right: 0;
+    border-top-width: 3px;
+    border-right-width: 3px;
+    border-top-right-radius: 120px;
+}
+
+.corner-bl {
+    bottom: 0;
+    left: 0;
+    border-bottom-width: 3px;
+    border-left-width: 3px;
+    border-bottom-left-radius: 120px;
+}
+
+.corner-br {
+    bottom: 0;
+    right: 0;
+    border-bottom-width: 3px;
+    border-right-width: 3px;
+    border-bottom-right-radius: 120px;
+}
+
+/* ===== Face Detection Points ===== */
+.face-detection-points {
+    position: absolute;
+    inset: 0;
+    z-index: 15;
+}
+
+.detection-point {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #00ff88;
+    border-radius: 50%;
+    animation: pointPulse 1.5s ease-in-out infinite;
+    box-shadow: 0 0 5px #00ff88;
+}
+
+@keyframes pointPulse {
+    0%, 100% { 
+        opacity: 0.3; 
+        transform: scale(1); 
+    }
+    50% { 
+        opacity: 1; 
+        transform: scale(1.5); 
+    }
+}
+
+/* ===== Scanning State ===== */
+.scanning-ring {
+    border-color: #00e5ff !important;
+    box-shadow: 0 0 0 4000px rgba(0,0,0,0.6), 0 0 30px rgba(0,229,255,0.3) !important;
+}
+
+.scanning-ring .corner {
+    border-color: #00ff88 !important;
+    animation: cornerPulse 1s ease-in-out infinite;
+}
+
+@keyframes cornerPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* ===== Success State ===== */
+.success-ring {
+    border-color: #10b981 !important;
+    background: rgba(16, 185, 129, 0.15);
+    animation: successPulse 0.6s ease-out;
+}
+
+.success-ring .scan-line,
+.success-ring .grid-overlay,
+.success-ring .detection-point {
+    display: none;
+}
+
+.success-ring .corner {
+    border-color: #10b981 !important;
+    animation: successCorner 0.5s ease-out;
+}
+
+@keyframes successPulse {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7), 0 0 0 4000px rgba(0, 0, 0, 0.6); }
+    70% { box-shadow: 0 0 0 20px rgba(16, 185, 129, 0), 0 0 0 4000px rgba(0, 0, 0, 0.6); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0), 0 0 0 4000px rgba(0, 0, 0, 0.6); }
+}
+
+@keyframes successCorner {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+
+/* ===== Error State ===== */
+.error-ring {
+    border-color: #ef4444 !important;
+    background: rgba(239, 68, 68, 0.15);
+    animation: errorShake 0.3s ease-out;
+}
+
+.error-ring .scan-line {
+    background: linear-gradient(90deg, transparent, #ef4444, transparent);
+    box-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444;
+}
+
+.error-ring .corner {
+    border-color: #ef4444 !important;
+}
+
+.error-ring .grid-overlay {
+    background-image: 
+        linear-gradient(rgba(239, 68, 68, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(239, 68, 68, 0.1) 1px, transparent 1px);
+}
+
+.error-ring .detection-point {
+    background: #ef4444;
+    box-shadow: 0 0 5px #ef4444;
+}
+
+@keyframes errorShake {
+    0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
+    25% { transform: translate(-52%, -50%) rotate(-2deg); }
+    75% { transform: translate(-48%, -50%) rotate(2deg); }
+}
+
+/* ===== Loading Spinner ===== */
+.spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #ffffff;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ===== Responsive Adjustments ===== */
+@media (max-width: 480px) {
+    #faceGuide {
+        width: 240px;
+        height: 320px;
+    }
+    
+    .corner {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .detection-point {
+        width: 3px;
+        height: 3px;
+    }
+}
+
+@media (max-height: 700px) {
+    #faceGuide {
+        width: 220px;
+        height: 300px;
+        top: 40%;
+    }
+}
+
+/* ===== 3D Face Mesh Canvas (Premium) ===== */
+#faceMesh3DCanvas {
+    /* Screen blending makes mesh glow on top of video */
+    mix-blend-mode: screen;
+    animation: meshFadeIn 0.8s ease-out forwards;
+    opacity: 0;
+}
+
+@keyframes meshFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* Glow behind the face guide during scanning */
+.scanning-ring::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 126px;
+    background: transparent;
+    border: 1px solid rgba(0, 229, 255, 0.25);
+    animation: outerGlow 2s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes outerGlow {
+    0%, 100% { box-shadow: 0 0 12px rgba(0, 229, 255, 0.2), 0 0 30px rgba(0, 229, 255, 0.1); }
+    50%       { box-shadow: 0 0 22px rgba(0, 229, 255, 0.5), 0 0 50px rgba(0, 229, 255, 0.2); }
+}
+
+/* Success ring updated for emerald glow */
+.success-ring::after {
+    border-color: rgba(16, 185, 129, 0.4) !important;
+    animation: successOuterGlow 0.6s ease-out;
+}
+
+@keyframes successOuterGlow {
+    0%   { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8); }
+    100% { box-shadow: 0 0 30px 20px rgba(16, 185, 129, 0); }
+}
+
+/* Error ring red glow */
+.error-ring::after {
+    border-color: rgba(239, 68, 68, 0.4) !important;
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.4) !important;
+    animation: none;
+}
