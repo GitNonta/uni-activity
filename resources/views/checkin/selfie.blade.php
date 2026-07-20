@@ -677,8 +677,8 @@
         try {
             // Setup timeout abort controller
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
-            
+            const timeoutId = setTimeout(() => controller.abort(), 12000); // 12s timeout
+
             const response = await fetch("{{ route('checkin.verify_frame', $token) }}", {
                 signal: controller.signal,
                 method: 'POST',
@@ -689,35 +689,51 @@
                 },
                 body: JSON.stringify({ image: base64Image })
             });
-            
+
             clearTimeout(timeoutId);
             const result = await response.json();
-            
-            // Update realtime score + liveness badge
+
+            // Debug log
+            console.log('[FaceScan] result:', {
+                is_match: result.is_match,
+                face_match: result.face_match,
+                score: result.score_percentage?.toFixed(1) + '%',
+                liveness: result.liveness_passed,
+                liveness_score: result.liveness_score,
+                ms: result.processing_ms
+            });
+
+            // Update realtime score display
             const rtScore = document.getElementById('realtimeScore');
             const livenessBadge = document.getElementById('livenessBadge');
 
             if (rtScore && result.score_percentage !== undefined) {
                 rtScore.style.display = 'block';
                 rtScore.textContent = 'InsightFace (512D): ' + result.score_percentage.toFixed(1) + '%';
-                rtScore.style.color = result.score_percentage >= THRESHOLD ? '#10b981' : '#f59e0b';
+                rtScore.style.color = result.score_percentage >= 42 ? '#10b981' : '#f59e0b';
             }
 
-            // Liveness indicator
+            // Liveness badge (display-only, non-blocking)
             if (livenessBadge && result.liveness_passed !== undefined) {
                 livenessBadge.style.display = 'block';
                 if (result.liveness_passed) {
-                    livenessBadge.textContent = '✓ Liveness: ยืนยันตัวจริง (' + (result.liveness_score * 100).toFixed(0) + '%)';
+                    livenessBadge.textContent = '\u2713 Liveness: \u0e22\u0e37\u0e19\u0e22\u0e31\u0e19\u0e15\u0e31\u0e27\u0e08\u0e23\u0e34\u0e07 (' + (result.liveness_score * 100).toFixed(0) + '%)';
                     livenessBadge.style.color = '#10b981';
                     livenessBadge.style.borderColor = 'rgba(16,185,129,0.4)';
                 } else {
-                    livenessBadge.textContent = '✗ Liveness: อาจเป็นภาพถ่าย (' + (result.liveness_score * 100).toFixed(0) + '%)';
-                    livenessBadge.style.color = '#ef4444';
-                    livenessBadge.style.borderColor = 'rgba(239,68,68,0.4)';
+                    livenessBadge.textContent = '\u26a0 Liveness: (' + (result.liveness_score * 100).toFixed(0) + '%)';
+                    livenessBadge.style.color = '#f59e0b';
+                    livenessBadge.style.borderColor = 'rgba(245,158,11,0.4)';
                 }
             }
 
-            if (result.is_match && result.score_percentage >= THRESHOLD) {
+            // ── ตัดสินใจผล ──────────────────────────────────────────────
+            // ใช้ face_match (ใบหน้าตรงกัน) เป็นเงื่อนไขหลัก
+            // is_match = face_match AND liveness (server v2)
+            // face_match = face similarity only
+            const faceOk = result.face_match !== undefined ? result.face_match : result.is_match;
+
+            if (faceOk) {
                 stopScanning = true;
                 isScanningActive = false;
                 clearTimeout(scanTimeout);

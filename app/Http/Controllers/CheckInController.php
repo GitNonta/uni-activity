@@ -200,7 +200,7 @@ class CheckInController extends Controller
         }
 
         try {
-            $response = \Illuminate\Support\Facades\Http::timeout(5)
+            $response = \Illuminate\Support\Facades\Http::timeout(10)
                 ->attach('image', $imageDecoded, 'frame.jpg')
                 ->post(rtrim($aiServerUrl, '/') . '/verify', [
                     'known_embedding' => json_encode($storedDescriptor),
