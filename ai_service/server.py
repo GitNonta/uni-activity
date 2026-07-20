@@ -78,7 +78,7 @@ liveness_detector: Optional[LivenessDetector] = None
 yolo_model = None  # ultralytics YOLO (optional, lazy-loaded)
 
 LIVENESS_THRESHOLD = float(os.environ.get("LIVENESS_THRESHOLD", "0.58"))
-FACE_MATCH_THRESHOLD = float(os.environ.get("FACE_MATCH_THRESHOLD", "0.42"))
+FACE_MATCH_THRESHOLD = float(os.environ.get("FACE_MATCH_THRESHOLD", "0.65"))
 USE_YOLO = os.environ.get("USE_YOLO", "1") == "1"
 USE_LIVENESS = os.environ.get("USE_LIVENESS", "1") == "1"
 

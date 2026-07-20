@@ -710,7 +710,7 @@
             if (rtScore && result.score_percentage !== undefined) {
                 rtScore.style.display = 'block';
                 rtScore.textContent = 'InsightFace (512D): ' + result.score_percentage.toFixed(1) + '%';
-                rtScore.style.color = result.score_percentage >= 42 ? '#10b981' : '#f59e0b';
+                rtScore.style.color = result.score_percentage >= 65 ? '#10b981' : '#f59e0b';
             }
 
             // Liveness badge (display-only, non-blocking)
