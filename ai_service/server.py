@@ -81,7 +81,11 @@ LIVENESS_THRESHOLD = float(os.environ.get("LIVENESS_THRESHOLD", "0.58"))
 FACE_MATCH_THRESHOLD = float(os.environ.get("FACE_MATCH_THRESHOLD", "0.42"))
 USE_YOLO = os.environ.get("USE_YOLO", "1") == "1"
 USE_LIVENESS = os.environ.get("USE_LIVENESS", "1") == "1"
-YOLO_MODEL_PATH = os.environ.get("YOLO_MODEL_PATH", "yolov8n-face.pt")
+
+# ── Resolve model path relative to this file's directory ──────────────────────
+_HERE = os.path.dirname(os.path.abspath(__file__))
+_DEFAULT_YOLO = os.path.join(_HERE, "yolov8n-face.pt")
+YOLO_MODEL_PATH = os.environ.get("YOLO_MODEL_PATH", _DEFAULT_YOLO)
 
 
 @asynccontextmanager
