@@ -195,6 +195,7 @@ def reduce_to_128d(embedding_512d: np.ndarray) -> np.ndarray:
     return reduced.astype(np.float32)
 
 
+app = FastAPI(
     title="Uni-Activity AI Server",
     version="2.0.0",
     description="Face Verification: YOLOv8 + SCRFD + ArcFace + Passive Liveness",
