@@ -66,6 +66,8 @@ from pydantic import BaseModel
 # ── InsightFace ───────────────────────────────────────────────────────────────
 from insightface.app import FaceAnalysis
 import onnxruntime as ort
+from sklearn.decomposition import PCA
+import pickle
 
 # ── Local modules ─────────────────────────────────────────────────────────────
 from liveness import LivenessDetector, LivenessResult
@@ -75,7 +77,8 @@ from liveness import LivenessDetector, LivenessResult
 # ─────────────────────────────────────────────────────────────────────────────
 face_app: Optional[FaceAnalysis] = None
 liveness_detector: Optional[LivenessDetector] = None
-yolo_model = None  # ultralytics YOLO (optional, lazy-loaded)
+yolo_model = None        # ultralytics YOLO (optional, lazy-loaded)
+pca_reducer: Optional[PCA] = None  # sklearn PCA 512D → 128D
 
 LIVENESS_THRESHOLD = float(os.environ.get("LIVENESS_THRESHOLD", "0.58"))
 FACE_MATCH_THRESHOLD = float(os.environ.get("FACE_MATCH_THRESHOLD", "0.65"))
@@ -91,7 +94,7 @@ YOLO_MODEL_PATH = os.environ.get("YOLO_MODEL_PATH", _DEFAULT_YOLO)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Load all models at startup, release at shutdown"""
-    global face_app, liveness_detector, yolo_model
+    global face_app, liveness_detector, yolo_model, pca_reducer
 
     logger.info("=" * 60)
     logger.info("Starting Uni-Activity AI Server v2.0")
@@ -149,6 +152,14 @@ async def lifespan(app: FastAPI):
     else:
         logger.info("YOLOv8 DISABLED (USE_YOLO=0)")
 
+    # ── 4. PCA Reducer for 512D → 128D ────────────────────────────────
+    logger.info("Setting up PCA reducer for 512D \u2192 128D conversion...")
+    pca_reducer = PCA(n_components=128, random_state=42)
+    # Initialize with sufficient dummy data (PCA needs n_samples >= n_components)
+    dummy_data = np.random.randn(200, 512).astype(np.float32)  # 200 samples > 128 components
+    pca_reducer.fit(dummy_data)
+    logger.info("PCA reducer initialized \u2713")
+
     logger.info("All models ready. Server is UP.")
     yield
 
@@ -156,7 +167,34 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down AI Server...")
 
 
-app = FastAPI(
+# ─────────────────────────────────────────────────────────────────────────────
+# Helper: 512D ArcFace → 128D for JavaScript real-time processing
+# ─────────────────────────────────────────────────────────────────────────────
+def reduce_to_128d(embedding_512d: np.ndarray) -> np.ndarray:
+    """
+    Reduce a 512D ArcFace embedding to 128D.
+    Uses the globally fitted PCA reducer. Falls back to random
+    orthogonal projection (seed=42) if PCA is not yet initialized.
+    """
+    global pca_reducer
+    emb = np.array(embedding_512d, dtype=np.float32).reshape(1, -1)  # (1, 512)
+
+    if pca_reducer is not None:
+        reduced = pca_reducer.transform(emb)[0]          # (128,)
+    else:
+        # Fallback: fixed random orthogonal projection
+        rng = np.random.RandomState(42)
+        proj = rng.randn(512, 128).astype(np.float32)
+        proj, _ = np.linalg.qr(proj)                     # orthonormalize
+        reduced = emb[0] @ proj[:, :128]                 # (128,)
+
+    # L2-normalize so cosine similarity still works
+    norm = np.linalg.norm(reduced)
+    if norm > 0:
+        reduced = reduced / norm
+    return reduced.astype(np.float32)
+
+
     title="Uni-Activity AI Server",
     version="2.0.0",
     description="Face Verification: YOLOv8 + SCRFD + ArcFace + Passive Liveness",
@@ -255,6 +293,35 @@ def get_detector_pipeline() -> str:
     return "+".join(parts)
 
 
+def reduce_to_128d(embedding_512d: np.ndarray) -> np.ndarray:
+    """
+    ลด embedding จาก 512D เป็น 128D โดยใช้ PCA
+    สำหรับใช้ใน JavaScript real-time processing
+    """
+    global pca_reducer
+    
+    if pca_reducer is None:
+        # Fallback: simple truncation if PCA not available
+        logger.warning("PCA reducer not available, using simple truncation")
+        return embedding_512d[:128].astype(np.float32)
+    
+    try:
+        # Reshape to 2D for PCA (single sample)
+        embedding_2d = embedding_512d.reshape(1, -1)
+        reduced = pca_reducer.transform(embedding_2d)
+        result = reduced.flatten().astype(np.float32)
+        
+        # Ensure exactly 128 dimensions
+        if len(result) != 128:
+            logger.warning(f"PCA returned {len(result)} dims, truncating to 128")
+            result = result[:128]
+            
+        return result
+    except Exception as e:
+        logger.warning(f"PCA reduction failed: {e}, using simple truncation")
+        return embedding_512d[:128].astype(np.float32)
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Endpoints
 # ─────────────────────────────────────────────────────────────────────────────
@@ -280,11 +347,13 @@ async def health():
 @app.post("/extract")
 async def extract_face(image: UploadFile = File(...)):
     """
-    สร้าง 512D face embedding จากรูปโปรไฟล์
+    สร้าง face embedding จากรูปโปรไฟล์ในสองรูปแบบ:
+    - 512D ArcFace (สำหรับ verification ความแม่นยำสูง)
+    - 128D reduced (สำหรับ JavaScript real-time processing)
     ใช้ตอน upload รูปโปรไฟล์ใหม่เท่านั้น
     """
     t0 = time.time()
-    logger.info(f"[extract] file={image.filename}")
+    logger.info(f"[extract] file={image.filename} - extracting both 512D and 128D embeddings")
 
     contents = await image.read()
     try:
@@ -297,26 +366,33 @@ async def extract_face(image: UploadFile = File(...)):
     if roi is None:
         raise HTTPException(400, "No face detected in image")
 
-    # InsightFace detect + embed
-    face, embedding = insightface_detect(roi if roi is not img else img)
-    if embedding is None:
+    # InsightFace detect + embed (512D)
+    face, embedding_512d = insightface_detect(roi if roi is not img else img)
+    if embedding_512d is None:
         # Retry with full image if YOLOv8 crop failed
-        face, embedding = insightface_detect(img)
-    if embedding is None:
+        face, embedding_512d = insightface_detect(img)
+    if embedding_512d is None:
         raise HTTPException(400, "No face detected in image. Please ensure the image contains a clear, front-facing face.")
 
     faces_in_img = face_app.get(img)
     if len(faces_in_img) > 1:
         raise HTTPException(400, "Multiple faces detected. Please upload a photo with only one person.")
 
+    # สร้าง 128D embedding โดยใช้ PCA dimensionality reduction
+    embedding_128d = reduce_to_128d(embedding_512d)
+
     elapsed_ms = int((time.time() - t0) * 1000)
-    logger.info(f"[extract] OK in {elapsed_ms}ms")
+    logger.info(f"[extract] OK in {elapsed_ms}ms - 512D + 128D extracted")
 
     return {
         "status": "success",
-        "message": "Face embedding extracted successfully",
-        "embedding": embedding.tolist(),
-        "embedding_dims": len(embedding),
+        "message": "Face embeddings extracted successfully (512D + 128D)",
+        "embedding_512d": embedding_512d.tolist(),
+        "embedding_128d": embedding_128d.tolist(),
+        "embedding_dims": {
+            "full": len(embedding_512d),
+            "reduced": len(embedding_128d)
+        },
         "processing_ms": elapsed_ms,
         "detector_used": get_detector_pipeline(),
     }

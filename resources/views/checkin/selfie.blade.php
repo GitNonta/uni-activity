@@ -11,7 +11,67 @@
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'Sarabun', sans-serif; }
         #cameraContainer { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
-        #cameraPreview { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        #cameraPreview { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: contain; /* เปลี่ยนจาก cover เป็น contain เพื่อแสดงภาพเต็ม */
+            transform: scaleX(-1);
+            /* ป้องกันการซูมมากเกินไปบนจอใหญ่ */
+            max-width: none;
+            max-height: none;
+        }
+        
+        /* ปรับสำหรับมือถือให้แสดงมุมมองกว้างขึ้น */
+        @media (max-width: 1023px) {
+            #cameraPreview {
+                /* เปลี่ยนเป็น contain เพื่อแสดงภาพเต็มไม่โดนตัด */
+                object-fit: contain !important;
+                object-position: center;
+                /* ลดการซูมด้วยการปรับ scale */
+                transform: scaleX(-1) scale(0.7) !important;
+                transform-origin: center;
+            }
+            
+            #cameraContainer {
+                background: #000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            /* ปรับ face guide ให้เล็กลงเล็กน้อยเพื่อให้เห็นมุมมองกว้างขึ้น */
+            #faceGuide {
+                width: 260px !important;
+                height: 350px !important;
+                border-width: 2.5px !important;
+                top: 50% !important; /* จัดให้อยู่กึ่งกลางจอ */
+            }
+            
+            /* ปรับ corner brackets */
+            .corner {
+                width: 35px !important;
+                height: 35px !important;
+            }
+        }
+        
+        /* ปรับสำหรับมือถือขนาดเล็กมาก */
+        @media (max-width: 480px) {
+            #cameraPreview {
+                object-fit: contain !important;
+                transform: scaleX(-1) scale(0.6) !important;
+            }
+            
+            #faceGuide {
+                width: 240px !important;
+                height: 320px !important;
+                top: 50% !important;
+            }
+            
+            .status-text {
+                font-size: 1rem !important;
+                padding: 10px 20px !important;
+            }
+        }
         .overlay-ui { position: absolute; z-index: 10; pointer-events: none; }
         
         .top-bar { top: 0; left: 0; right: 0; padding: 1.5rem; display: flex; justify-content: space-between; align-items: flex-start; background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent); pointer-events: auto; }
@@ -21,7 +81,38 @@
         .status-container { position: absolute; bottom: 10%; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 1.5rem; pointer-events: auto; }
         .status-text { color: white; background: rgba(0,0,0,0.6); padding: 12px 24px; border-radius: 30px; text-align: center; font-size: 1.1rem; backdrop-filter: blur(8px); transition: all 0.3s; border: 1px solid rgba(255,255,255,0.15); margin-bottom: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.3); max-width: 100%; width: 100%; }
         
-        #faceGuide { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); width: 280px; height: 380px; border: 3px solid rgba(255,255,255,0.6); border-radius: 120px; box-shadow: 0 0 0 4000px rgba(0,0,0,0.6); transition: border-color 0.3s, box-shadow 0.8s ease; overflow: hidden; }
+        #faceGuide { 
+            position: absolute; 
+            top: 45%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            width: 280px; 
+            height: 380px; 
+            border: 3px solid rgba(255,255,255,0.6); 
+            border-radius: 120px; 
+            box-shadow: 0 0 0 4000px rgba(0,0,0,0.6); 
+            transition: border-color 0.3s, box-shadow 0.8s ease, width 0.3s ease, height 0.3s ease; 
+            overflow: hidden; 
+        }
+        
+        /* ปรับขนาด face guide สำหรับจอใหญ่ */
+        @media (min-width: 1024px) and (min-height: 768px) {
+            #faceGuide {
+                width: 320px;
+                height: 420px;
+                border-width: 4px;
+            }
+            
+            .status-text {
+                font-size: 1.2rem;
+                padding: 14px 28px;
+            }
+            
+            .corner {
+                width: 50px;
+                height: 50px;
+            }
+        }
         
         /* Scanning animation elements */
         .scan-line { position: absolute; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, #00ff88, transparent); box-shadow: 0 0 10px #00ff88, 0 0 20px #00ff88; animation: scanMove 2s linear infinite; z-index: 20; }
@@ -85,11 +176,16 @@
             <!-- Face Detection Points (will be dynamically positioned) -->
             <div class="face-detection-points" id="faceDetectionPoints"></div>
             
-            <!-- 3D Face Mesh Canvas -->
-            <canvas id="faceMesh3DCanvas" style="position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 25; transform: scaleX(-1);"></canvas>
+            <!-- Face Detection Canvas -->
+            <canvas id="faceLandmarksCanvas" style="position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 24;"></canvas>
             
-            <!-- Face Bounding Box (fallback) -->
-            <canvas id="faceLandmarksCanvas" style="position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 24; display: none;"></canvas>
+            <!-- Performance Status Indicators -->
+            <div id="realtimeScore" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 8px 12px; border-radius: 15px; font-size: 12px; display: none; backdrop-filter: blur(4px);">
+                준비 중...
+            </div>
+            <div id="scanStatus" style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: white; padding: 6px 10px; border-radius: 12px; font-size: 10px; backdrop-filter: blur(4px);">
+                <span style="color: #60a5fa;">Initializing</span>
+            </div>
             
             <!-- Corner Brackets -->
             <div class="corner corner-tl"></div>
@@ -183,12 +279,26 @@
         <input type="hidden" name="selfie" id="selfieData">
     </form>
 
+    <script src="{{ asset('js/smartFaceScanner.js') }}" defer></script>
     <script>
-        const faceScanMethod = '{{ $faceScanMethod ?? "python" }}';
+        const faceScanMethod = '{{ $faceScanMethod ?? "hybrid" }}'; // Changed default to hybrid
         let isJsModeActive = (faceScanMethod === 'js');
         let profileDescriptor = null;
         let pythonFailCount = 0;
         let isFaceApiLoaded = false;
+        
+        // ========================================
+        // SMART FACE SCANNER - Balanced Processing
+        // ========================================
+        let smartScanner = null;
+        let profileDescriptor = null;
+        let pythonFailCount = 0;
+        let performanceMonitor = {
+            requests: 0,
+            successRate: 0,
+            avgResponseTime: 0,
+            lastUpdate: Date.now()
+        };
         
         // ===== Audio Effects for Face Detection =====
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -235,6 +345,79 @@
             gain.gain.value = 0.1;
             osc.start();
             setTimeout(() => osc.stop(), 200);
+        }
+
+        // ===== Smart Face Scanner Integration =====
+        async function initSmartScanner() {
+            if (!window.SmartFaceScanner) {
+                console.warn('SmartFaceScanner not loaded, falling back to legacy mode');
+                return false;
+            }
+
+            const scannerOptions = {
+                maxConcurrentRequests: 1,
+                adaptiveThrottling: true,
+                fallbackThreshold: 2,
+                minInterval: 800,
+                maxInterval: 3000,
+                baseInterval: 1500,
+                preferAccuracy: faceScanMethod === 'python',
+                hybridMode: faceScanMethod === 'hybrid' || faceScanMethod === 'python'
+            };
+
+            smartScanner = new SmartFaceScanner(scannerOptions);
+            console.log('🧠 Smart Face Scanner initialized');
+
+            // Setup performance monitoring
+            setInterval(updatePerformanceMonitor, 5000);
+            
+            return true;
+        }
+
+        function updatePerformanceMonitor() {
+            if (!smartScanner) return;
+
+            const status = smartScanner.getStatus();
+            performanceMonitor = {
+                requests: performanceMonitor.requests + 1,
+                mode: status.mode,
+                fallbackActive: status.fallbackActive,
+                avgResponseTime: status.performance.avgPythonTime || status.performance.avgJsTime || 0,
+                currentInterval: status.currentInterval,
+                lastUpdate: Date.now()
+            };
+
+            // Update UI indicators
+            updateScanStatusUI(status);
+        }
+
+        function updateScanStatusUI(status) {
+            const statusElement = document.getElementById('scanStatus');
+            if (statusElement) {
+                let modeText = '';
+                let colorClass = '';
+
+                switch(status.mode) {
+                    case 'python':
+                        modeText = 'AI Server';
+                        colorClass = 'text-green-500';
+                        break;
+                    case 'js':
+                        modeText = 'JavaScript';
+                        colorClass = status.fallbackActive ? 'text-yellow-500' : 'text-blue-500';
+                        break;
+                    case 'hybrid':
+                        modeText = 'Hybrid';
+                        colorClass = 'text-purple-500';
+                        break;
+                }
+
+                statusElement.innerHTML = `
+                    <span class="${colorClass}">${modeText}</span>
+                    ${status.fallbackActive ? ' (Fallback)' : ''}
+                    <br><small>${status.performance.avgPythonTime}ms avg</small>
+                `;
+            }
         }
         
         // ===== Face Detection Canvas Setup =====
@@ -369,6 +552,39 @@
             guide.style.top = `${centerY}%`;
         }
         
+        // แสดงคำแนะนำสำหรับจอใหญ่
+        function showLargeScreenTips() {
+            const isLargeScreen = window.innerWidth >= 1024 || window.innerHeight >= 768;
+            const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            if (isLargeScreen && !isMobile) {
+                const instructionEl = document.getElementById('scanInstructions');
+                setTimeout(() => {
+                    if (instructionEl && scanAttempts <= 2) {
+                        instructionEl.innerHTML = '💡 จอใหญ่: นั่งให้ห่างจากกล้องประมาณ 60-80 ซม. เพื่อผลลัพธ์ที่ดีที่สุด';
+                        setTimeout(() => {
+                            if (instructionEl && !stopScanning) {
+                                instructionEl.textContent = 'กำลังสแกนใบหน้าแบบเรียลไทม์... กรุณามองกล้อง';
+                            }
+                        }, 4000);
+                    }
+                }, 2000);
+            } else {
+                // มือถือ: แสดงคำแนะนำสำหรับมุมมองแบบใหม่
+                const instructionEl = document.getElementById('scanInstructions');
+                setTimeout(() => {
+                    if (instructionEl && scanAttempts <= 2) {
+                        instructionEl.innerHTML = '📱 มุมมองใหม่: แสดงภาพกว้างขึ้น ไม่โดนตัด ถือมือถือให้มั่นคง';
+                        setTimeout(() => {
+                            if (instructionEl && !stopScanning) {
+                                instructionEl.textContent = 'กำลังสแกนใบหน้าแบบเรียลไทม์... กรุณามองกล้อง';
+                            }
+                        }, 3500);
+                    }
+                }, 1500);
+            }
+        }
+        
         // Start real-time detection
         function startRealtimeDetection() {
             if (detectionInterval) clearInterval(detectionInterval);
@@ -469,49 +685,154 @@
     let isFlashOn = false;
 
     // ===== 1. เริ่มระบบ =====
-    document.addEventListener('DOMContentLoaded', async () => {
-        @if(session('error'))
-        // หากมี Popup แจ้งเตือนข้อผิดพลาด ให้หยุดการสแกนและไม่ต้องเปิดกล้องเลย
-        stopScanning = true;
-        const guide = document.getElementById('faceGuide');
-        if (guide) guide.style.display = 'none';
-        const instructionEl = document.getElementById('scanInstructions');
-        if (instructionEl) instructionEl.style.display = 'none';
-        return;
-        @endif
+        document.addEventListener('DOMContentLoaded', async () => {
+            @if(session('error'))
+            // หากมี Popup แจ้งเตือนข้อผิดพลาด ให้หยุดการสแกนและไม่ต้องเปิดกล้องเลย
+            stopScanning = true;
+            const guide = document.getElementById('faceGuide');
+            if (guide) guide.style.display = 'none';
+            const instructionEl = document.getElementById('scanInstructions');
+            if (instructionEl) instructionEl.style.display = 'none';
+            return;
+            @endif
 
-        await startCamera();
-        
-        const guide = document.getElementById('faceGuide');
-        if (guide) guide.classList.add('scanning-ring');
-        
-        const instructionEl = document.getElementById('scanInstructions');
-        if (instructionEl) instructionEl.textContent = 'กำลังสแกนใบหน้าแบบเรียวไทม์... กรุณามองกล้อง';
-        
-        scanTimeout = setTimeout(scanFrame, 1000);
-    });
+            // Initialize Smart Scanner
+            const smartScannerReady = await initSmartScanner();
+            
+            // Prepare profile descriptor for smart scanning
+            const preComputed = {!! $profileJsDescriptor ?? 'null' !!};
+            if (preComputed) {
+                profileDescriptor = {
+                    embedding_128d: new Float32Array(Object.values(preComputed)),
+                    embedding_512d: null // Will be loaded if needed
+                };
+                console.log('✅ Profile descriptor loaded for smart scanning');
+            } else if (smartScannerReady) {
+                // Try to load from API if not pre-computed
+                await loadJsDescriptorFromApi();
+            }
+
+            await startCamera();
+            
+            const guide = document.getElementById('faceGuide');
+            if (guide) guide.classList.add('scanning-ring');
+            
+            const instructionEl = document.getElementById('scanInstructions');
+            if (instructionEl) instructionEl.textContent = 'กำลังสแกนใบหน้าแบบเรียลไทม์... กรุณามองกล้อง';
+            
+            // แสดงคำแนะนำสำหรับจอใหญ่
+            showLargeScreenTips();
+            
+            scanTimeout = setTimeout(scanFrame, 1000);
+        });
 
     // ===== 2. เปิดกล้องหน้า =====
     async function startCamera() {
         try {
-            stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'user' },
-                audio: false
-            });
-            document.getElementById('cameraPreview').srcObject = stream;
+            // ตรวจจับขนาดจอเพื่อปรับ resolution และ zoom ให้เหมาะสม
+            const isLargeScreen = window.innerWidth >= 1024 || window.innerHeight >= 768;
+            const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            let videoConstraints;
+            
+            if (isLargeScreen && !isMobile) {
+                // จอใหญ่: ใช้ resolution ต่ำกว่าเพื่อลด zoom และเพิ่มมุมมอง
+                videoConstraints = {
+                    video: {
+                        facingMode: 'user',
+                        width: { ideal: 640, max: 1280 },
+                        height: { ideal: 480, max: 720 },
+                        frameRate: { ideal: 30, max: 30 }
+                    },
+                    audio: false
+                };
+                console.log('🖥️ Large screen detected: Using wider view settings');
+            } else {
+                // มือถือ: ใช้กล้องค่าเริ่มต้น ไม่ระบุ resolution
+                videoConstraints = {
+                    video: { facingMode: 'user' },
+                    audio: false
+                };
+                console.log('📱 Mobile detected: Using default camera settings');
+            }
+            
+            // พยายามเปิดกล้องด้วยการตั้งค่าที่เหมาะสม
+            try {
+                stream = await navigator.mediaDevices.getUserMedia(videoConstraints);
+            } catch (specificError) {
+                console.warn('Specific constraints failed, trying fallback:', specificError);
+                // Fallback ไปใช้การตั้งค่าพื้นฐาน
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user' },
+                    audio: false
+                });
+            }
+            
+            const video = document.getElementById('cameraPreview');
+            video.srcObject = stream;
+            
+            // รอให้วิดีโอโหลดแล้วปรับขนาด UI ให้เหมาะสม
+            video.onloadedmetadata = () => {
+                console.log(`📹 Camera resolution: ${video.videoWidth}x${video.videoHeight}`);
+                adjustUIForScreenSize(isLargeScreen, isMobile);
+            };
+            
         } catch (e) {
             showStatus('ไม่สามารถเปิดกล้องได้ กรุณาอนุญาตให้ใช้กล้องในเบราว์เซอร์', 'error');
             console.error('Camera error:', e);
         }
     }
+    
+    // ปรับ UI ให้เหมาะสมกับขนาดหน้าจอ
+    function adjustUIForScreenSize(isLargeScreen, isMobile) {
+        const faceGuide = document.getElementById('faceGuide');
+        const video = document.getElementById('cameraPreview');
+        
+        if (isLargeScreen && !isMobile) {
+            // จอใหญ่: ปรับขนาด face guide ให้เหมาะสม
+            faceGuide.style.width = '320px';
+            faceGuide.style.height = '420px';
+            faceGuide.style.borderWidth = '4px';
+            
+            // ปรับ object-fit เพื่อให้เห็นภาพกว้างขึ้น
+            video.style.objectFit = 'cover';
+            video.style.objectPosition = 'center';
+            video.style.transform = 'scaleX(-1)';
+            
+            console.log('🖥️ UI adjusted for large screen');
+        } else {
+            // มือถือ: ใช้ contain และ scale เล็กลงเพื่อแสดงมุมมองกว้างขึ้น
+            faceGuide.style.width = '260px';
+            faceGuide.style.height = '350px';
+            faceGuide.style.borderWidth = '2.5px';
+            faceGuide.style.top = '50%';
+            
+            // บังคับใช้ object-fit: contain และ scale ที่เล็กลง
+            video.style.objectFit = 'contain';
+            video.style.objectPosition = 'center';
+            video.style.transform = 'scaleX(-1) scale(0.7)';
+            video.style.transformOrigin = 'center';
+            
+            // ปรับ container ให้จัดกึ่งกลาง
+            const container = document.getElementById('cameraContainer');
+            if (container) {
+                container.style.display = 'flex';
+                container.style.alignItems = 'center';
+                container.style.justifyContent = 'center';
+                container.style.background = '#000';
+            }
+            
+            console.log('📱 UI adjusted for mobile with contain + scale(0.7) for wider view');
+        }
+    }
 
-    // ===== 3. ส่งภาพสแกนชั่วคราวให้ Backend (Python AI Server - InsightFace 512D) =====
+    // ===== 3. ส่งภาพสแกนชั่วคราวให้ Backend (Smart Balanced Processing) =====
     async function scanFrame() {
         if (isVerifying || !stream || stopScanning) return;
         
         const video = document.getElementById('cameraPreview');
         if (video.videoWidth === 0) {
-            scanTimeout = setTimeout(scanFrame, 500);
+            scanTimeout = setTimeout(scanFrame, 1000);
             return;
         }
         
@@ -522,8 +843,75 @@
         if (scanAttempts % 3 === 0) {
             playScanSound();
         }
+
+        try {
+            // Use Smart Scanner if available, fallback to legacy
+            if (smartScanner && profileDescriptor) {
+                const result = await smartScanner.scanFrame(video, profileDescriptor);
+                
+                if (result) {
+                    await processScanResult(result);
+                    return;
+                }
+            } else {
+                // Legacy fallback
+                await legacyScanFrame(video);
+            }
+        } catch (error) {
+            console.error('Smart scan error, falling back:', error);
+            await legacyScanFrame(video);
+        } finally {
+            isVerifying = false;
+            
+            // Schedule next scan with adaptive timing
+            const nextInterval = smartScanner ? smartScanner.currentInterval : 1000;
+            if (!stopScanning) {
+                scanTimeout = setTimeout(scanFrame, nextInterval);
+            }
+        }
+    }
+
+    async function processScanResult(result) {
+        const rtScore = document.getElementById('realtimeScore');
         
-        // ใช้ความละเอียด 480px เพื่อให้รองรับ "ภาพมุมกว้าง" และใบหน้าที่อยู่ไกลได้ดีขึ้น
+        if (rtScore) {
+            rtScore.style.display = 'block';
+            rtScore.textContent = `${result.source}: ${result.score.toFixed(1)}% (${result.processingTime}ms)`;
+            rtScore.style.color = result.passed ? '#10b981' : '#f59e0b';
+        }
+
+        // Success handling
+        if (result.passed && result.confidence > 0.7) {
+            stopScanning = true;
+            isScanningActive = false;
+            clearTimeout(scanTimeout);
+            
+            const guide = document.getElementById('faceGuide');
+            if (guide) guide.classList.replace('scanning-ring', 'success-ring');
+            
+            playSuccessSound();
+            
+            // Prepare form data
+            if (result.source.includes('js')) {
+                let jsScoreInput = document.createElement('input');
+                jsScoreInput.type = 'hidden';
+                jsScoreInput.name = 'js_face_match_score';
+                jsScoreInput.value = result.score;
+                document.getElementById('selfieForm').appendChild(jsScoreInput);
+                
+                let jsPassedInput = document.createElement('input');
+                jsPassedInput.type = 'hidden';
+                jsPassedInput.name = 'js_face_match_passed';
+                jsPassedInput.value = '1';
+                document.getElementById('selfieForm').appendChild(jsPassedInput);
+            }
+            
+            capturePhoto(true);
+        }
+    }
+
+    async function legacyScanFrame(video) {
+        // Original legacy scanning logic for fallback
         const MAX_DIM = 480;
         let targetWidth = video.videoWidth;
         let targetHeight = video.videoHeight;
@@ -550,60 +938,90 @@
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         
-        // Low light detection
+        // Low light detection and flash handling
+        handleLowLightDetection(ctx, canvas);
+
+        const base64Image = canvas.toDataURL('image/jpeg', 0.6);
+        
+        // JS Mode or Python verification
+        if (isJsModeActive && isFaceApiLoaded && profileDescriptor.embedding_128d) {
+            await performJsVerification(canvas);
+        } else {
+            await performPythonVerification(base64Image);
+        }
+    }
+
+    function handleLowLightDetection(ctx, canvas) {
         try {
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const data = imageData.data;
             let colorSum = 0;
             let samples = 0;
-            // Sample every 10th pixel to save CPU
+
             for (let i = 0; i < data.length; i += 40) {
-                const r = data[i];
-                const g = data[i+1];
-                const b = data[i+2];
-                // Perceived brightness formula
-                const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-                colorSum += brightness;
+                const r = data[i], g = data[i+1], b = data[i+2];
+                colorSum += (r * 299 + g * 587 + b * 114) / 1000;
                 samples++;
             }
+
             const avgBrightness = colorSum / samples;
-            const guide = document.getElementById('faceGuide');
-            if (guide) {
-                // If it's too dark, turn flash on. Once it's on, keep it on until scanning is done.
-                if (avgBrightness < 75) {
-                    isFlashOn = true;
+            const video   = document.getElementById('cameraPreview');
+            const guide   = document.getElementById('faceGuide');
+            const infoEl  = document.getElementById('scanInstructions');
+
+            // Toggle flash on/off with hysteresis
+            if (avgBrightness < 75)  isFlashOn = true;
+            if (avgBrightness > 110) isFlashOn = false;
+
+            if (isFlashOn) {
+                // ★ KEY FIX: boost the VIDEO itself so the face is actually lit ★
+                const boost = Math.min(3.5, 90 / Math.max(avgBrightness, 10));
+                if (video) video.style.filter = `brightness(${boost.toFixed(2)}) contrast(1.15)`;
+
+                // Also re-draw canvas with the same filter so AI gets a brighter image
+                if (ctx && video) {
+                    ctx.filter = `brightness(${boost.toFixed(2)}) contrast(1.15)`;
+                    ctx.translate(canvas.width, 0);
+                    ctx.scale(-1, 1);
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    ctx.setTransform(1, 0, 0, 1, 0, 0);
+                    ctx.filter = 'none';
                 }
-                if (isFlashOn) {
-                    // Too dark -> soft white screen flash
-                    guide.style.boxShadow = '0 0 0 4000px rgba(255,255,255,0.85)';
-                } else {
-                    // Normal -> dark overlay
-                    guide.style.boxShadow = '0 0 0 4000px rgba(0,0,0,0.6)';
+
+                // Keep dark vignette (not white) — white blinds the user
+                if (guide) guide.style.boxShadow = '0 0 0 4000px rgba(0,0,0,0.55)';
+
+                // Show hint
+                if (infoEl && !stopScanning) {
+                    infoEl.textContent = '🔆 แสงน้อยเกินไป — กำลังเพิ่มความสว่าง...';
+                }
+            } else {
+                if (video) video.style.filter = '';   // reset video filter
+                if (guide) guide.style.boxShadow = '0 0 0 4000px rgba(0,0,0,0.6)';
+                // restore scan instruction if it was overridden by brightness message
+                if (infoEl && infoEl.textContent.includes('แสงน้อย')) {
+                    infoEl.textContent = 'กำลังสแกนใบหน้าแบบเรียลไทม์... กรุณามองกล้อง';
                 }
             }
-        } catch (e) {
-            console.warn("Brightness check error", e);
-        }
 
-        const base64Image = canvas.toDataURL('image/jpeg', 0.6);
+            console.debug(`[Brightness] avg=${avgBrightness.toFixed(1)} flash=${isFlashOn}`);
+        } catch (e) {
+            console.warn('Brightness check error', e);
+        }
+    }
         
         // ========================================
-        // JS MODE (Face-api.js 128D) - เฉพาะเมื่อเลือกใช้
+        // JS MODE (Face-api.js 128D) - Enhanced with Smart Processing
         // ========================================
-        if (isJsModeActive && isFaceApiLoaded && profileDescriptor) {
-            // --- JS FACE API MODE (128D descriptor) ---
-            // ใช้เมื่อ: Python AI Server ไม่พร้อมหรือเลือกใช้ Client-side
+        async function performJsVerification(canvas) {
             try {
-                // Use face-api to detect face on canvas
                 const detection = await faceapi.detectSingleFace(canvas).withFaceLandmarks().withFaceDescriptor();
                 let score = 0;
                 let passed = false;
                 
                 if (detection) {
-                    const distance = faceapi.euclideanDistance(profileDescriptor, detection.descriptor);
+                    const distance = faceapi.euclideanDistance(profileDescriptor.embedding_128d, detection.descriptor);
                     score = Math.max(0, (1 - distance) * 100);
-                    // threshold typically 0.5-0.6 for euclidian. 0.5 -> score 50%.
-                    // let's just use distance < 0.5 as passed.
                     passed = distance < 0.5;
                 }
                 
@@ -615,29 +1033,121 @@
                 }
 
                 if (passed) {
-                    stopScanning = true;
-                    isScanningActive = false;
-                    clearTimeout(scanTimeout);
-                    const guide = document.getElementById('faceGuide');
-                    if (guide) guide.classList.replace('scanning-ring', 'success-ring');
-                    
-                    // Play success sound
-                    playSuccessSound();
-                    
-                    // We need to inject these to the form before submitting
-                    let jsScoreInput = document.createElement('input');
-                    jsScoreInput.type = 'hidden';
-                    jsScoreInput.name = 'js_face_match_score';
-                    jsScoreInput.value = score;
-                    document.getElementById('selfieForm').appendChild(jsScoreInput);
-                    
-                    let jsPassedInput = document.createElement('input');
-                    jsPassedInput.type = 'hidden';
-                    jsPassedInput.name = 'js_face_match_passed';
-                    jsPassedInput.value = '1';
-                    document.getElementById('selfieForm').appendChild(jsPassedInput);
-                    
-                    capturePhoto(true); // submit
+                    await processScanResult({
+                        confidence: score / 100,
+                        passed: true,
+                        score: score,
+                        source: 'js_primary',
+                        processingTime: Date.now() % 1000
+                    });
+                }
+                
+            } catch (error) {
+                console.warn('JS verification error:', error);
+            }
+        }
+
+        async function performPythonVerification(base64Image) {
+            try {
+                const startTime = Date.now();
+                const response = await fetch('/api/face/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                        'Authorization': 'Bearer ' + document.querySelector('meta[name="api-token"]')?.getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        image: base64Image,
+                        mode: 'python',
+                        priority: 'accuracy'
+                    })
+                });
+
+                const processingTime = Date.now() - startTime;
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.success !== false) {
+                    const score = result.score_percentage || 0;
+                    const passed = result.is_match || false;
+
+                    const rtScore = document.getElementById('realtimeScore');
+                    if (rtScore) {
+                        rtScore.style.display = 'block';
+                        rtScore.textContent = `Python (512D): ${score.toFixed(1)}% (${result.processing_ms || processingTime}ms)`;
+                        rtScore.style.color = passed ? '#10b981' : '#f59e0b';
+                    }
+
+                    if (passed) {
+                        await processScanResult({
+                            confidence: score / 100,
+                            passed: true,
+                            score: score,
+                            source: 'python_primary',
+                            processingTime: result.processing_ms || processingTime
+                        });
+                    }
+                } else if (result.fallback_recommended) {
+                    // Switch to JS mode automatically
+                    console.log('🔄 Python failed, switching to JS mode');
+                    isJsModeActive = true;
+                    pythonFailCount++;
+                }
+                
+            } catch (error) {
+                console.warn('Python verification failed:', error);
+                pythonFailCount++;
+                
+                if (pythonFailCount >= 2 && isFaceApiLoaded && profileDescriptor.embedding_128d) {
+                    console.log('🔄 Switching to JS mode due to Python failures');
+                    isJsModeActive = true;
+                }
+            }
+        }
+
+        // Enhanced JS verification with API support
+        async function loadJsDescriptorFromApi() {
+            if (profileDescriptor && profileDescriptor.embedding_128d) {
+                return true; // Already loaded
+            }
+
+            try {
+                const response = await fetch('/api/face/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        image: 'placeholder', // Not used for JS mode
+                        mode: 'js'
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.descriptor_128d) {
+                        if (!profileDescriptor) {
+                            profileDescriptor = {};
+                        }
+                        profileDescriptor.embedding_128d = new Float32Array(result.descriptor_128d);
+                        console.log('✅ 128D descriptor loaded from API');
+                        return true;
+                    }
+                }
+            } catch (error) {
+                console.warn('Failed to load JS descriptor from API:', error);
+            }
+
+            return false;
+        }
                     showComparisonResult(score, true);
                     return;
                 } else {
@@ -861,325 +1371,6 @@
         }
     }
     </script>
-<!-- MediaPipe Face Mesh for 3D mask effect -->
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
 
-<script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-
-<script>
-    // ===== 3D Face Mesh Integration (Premium) =====
-    let faceMesh3D = null;
-    let use3DMesh = true;
-
-    // ── Mesh animation state ──
-    const meshState = {
-        hue: 170,          // cyan start
-        opacity: 0,        // fade in
-        scanState: 'scanning', // 'scanning' | 'success' | 'error'
-        frameCount: 0,
-        lastFaceTime: 0,
-    };
-
-    // ── Color palettes per state ──
-    const meshColors = {
-        scanning: { h: 170, s: 100, l: 55 },  // cyan
-        success:  { h: 150, s: 90,  l: 45 },  // emerald
-        error:    { h:   0, s: 90,  l: 55 },  // red
-    };
-
-    // ── Key landmark indices for node dots ──
-    const KEY_LANDMARKS = [
-        // Eyes outline
-        33, 133, 159, 145, 362, 263, 386, 374,
-        // Nose
-        1, 4, 94,
-        // Lips
-        61, 291, 0, 17,
-        // Face oval
-        10, 152, 234, 454, 127, 356,
-        // Eyebrows
-        46, 276, 55, 285,
-        // Cheeks
-        116, 345
-    ];
-
-    async function init3DFaceMesh() {
-        const video = document.getElementById('cameraPreview');
-        const canvas = document.getElementById('faceMesh3DCanvas');
-        if (!canvas || !video) return false;
-
-        // Use additive blending via composite operation
-        const ctx = canvas.getContext('2d');
-
-        try {
-            const faceMesh = new FaceMesh({
-                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
-            });
-
-            faceMesh.setOptions({
-                maxNumFaces: 1,
-                refineLandmarks: true,
-                minDetectionConfidence: 0.5,
-                minTrackingConfidence: 0.5
-            });
-
-            faceMesh.onResults(onFaceMesh3DResults);
-
-            // Poll video frames manually to avoid conflicts with existing camera
-            function pollFrame() {
-                if (!use3DMesh) return;
-                if (isScanningActive && video.videoWidth > 0) {
-                    faceMesh.send({ image: video }).catch(() => {});
-                }
-                requestAnimationFrame(pollFrame);
-            }
-            pollFrame();
-
-            faceMesh3D = { faceMesh, canvas, ctx };
-            console.log('✓ 3D Face Mesh (Premium) initialized');
-            return true;
-
-        } catch (error) {
-            console.error('3D Face Mesh error:', error);
-            use3DMesh = false;
-            return false;
-        }
-    }
-
-    function onFaceMesh3DResults(results) {
-        if (!faceMesh3D) return;
-
-        const { canvas, ctx } = faceMesh3D;
-
-        // Sync canvas size to video
-        const video = document.getElementById('cameraPreview');
-        if (canvas.width !== (results.image.width || video.videoWidth)) {
-            canvas.width  = results.image.width  || video.videoWidth  || 640;
-            canvas.height = results.image.height || video.videoHeight || 480;
-        }
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        if (!isScanningActive) {
-            // Fade out
-            meshState.opacity = Math.max(0, meshState.opacity - 0.05);
-            return;
-        }
-
-        const hasFace = results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0;
-
-        // Smooth fade in/out
-        if (hasFace) {
-            meshState.opacity = Math.min(1, meshState.opacity + 0.08);
-            meshState.lastFaceTime = Date.now();
-        } else {
-            const elapsed = Date.now() - meshState.lastFaceTime;
-            if (elapsed > 500) {
-                meshState.opacity = Math.max(0, meshState.opacity - 0.04);
-            }
-        }
-
-        if (hasFace && meshState.opacity > 0.05) {
-            const landmarks = results.multiFaceLandmarks[0];
-            draw3DFaceMesh(ctx, landmarks, canvas.width, canvas.height);
-        }
-
-        meshState.frameCount++;
-    }
-
-    function draw3DFaceMesh(ctx, landmarks, width, height) {
-        const t = Date.now() / 1000;
-        const op = meshState.opacity;
-        const state = meshState.scanState;
-
-        // ── Compute current color ──
-        const target = meshColors[state];
-        // Animate hue slowly when scanning
-        if (state === 'scanning') {
-            meshState.hue = target.h + Math.sin(t * 0.5) * 15; // ±15° shift
-        } else {
-            meshState.hue = target.h;
-        }
-        const hue = meshState.hue;
-        const sat = target.s;
-        const lit = target.l;
-
-        // Pulse opacity for glow elements
-        const pulse = 0.5 + Math.sin(t * 2) * 0.3;
-
-        // Convert landmarks to pixel coords
-        const pts = landmarks.map(lm => ({
-            x: lm.x * width,
-            y: lm.y * height,
-            z: lm.z  // normalized depth (-1..0..1)
-        }));
-
-        // ── 1. Draw tessellation lines ──
-        if (window.FACEMESH_TESSELATION) {
-            ctx.save();
-            ctx.globalCompositeOperation = 'screen';
-            ctx.lineWidth = 0.6;
-
-            for (const [a, b] of FACEMESH_TESSELATION) {
-                const p1 = pts[a], p2 = pts[b];
-                if (!p1 || !p2) continue;
-
-                // Depth-based brightness: closer = brighter
-                const avgZ = (p1.z + p2.z) / 2;
-                const depthFactor = Math.max(0.3, Math.min(1, 1 + avgZ * 2));
-                const lineOpacity = op * depthFactor * 0.55;
-
-                ctx.strokeStyle = `hsla(${hue}, ${sat}%, ${lit}%, ${lineOpacity})`;
-                ctx.beginPath();
-                ctx.moveTo(p1.x, p1.y);
-                ctx.lineTo(p2.x, p2.y);
-                ctx.stroke();
-            }
-            ctx.restore();
-        }
-
-        // ── 2. Draw face oval with stronger glow ──
-        if (window.FACEMESH_FACE_OVAL) {
-            ctx.save();
-            ctx.globalCompositeOperation = 'screen';
-            ctx.lineWidth = 2;
-            ctx.shadowBlur = 18;
-            ctx.shadowColor = `hsla(${hue}, ${sat}%, ${lit}%, ${op * 0.9})`;
-            ctx.strokeStyle = `hsla(${hue}, ${sat}%, ${lit + 10}%, ${op * (0.6 + pulse * 0.3)})`;
-
-            ctx.beginPath();
-            let first = true;
-            for (const [a] of FACEMESH_FACE_OVAL) {
-                const p = pts[a];
-                if (!p) continue;
-                if (first) { ctx.moveTo(p.x, p.y); first = false; }
-                else ctx.lineTo(p.x, p.y);
-            }
-            ctx.closePath();
-            ctx.stroke();
-            ctx.restore();
-        }
-
-        // ── 3. Draw eyes / lips contours ──
-        const contourGroups = [
-            window.FACEMESH_LEFT_EYE,
-            window.FACEMESH_RIGHT_EYE,
-            window.FACEMESH_LIPS,
-        ].filter(Boolean);
-
-        for (const contour of contourGroups) {
-            ctx.save();
-            ctx.globalCompositeOperation = 'screen';
-            ctx.lineWidth = 1.2;
-            ctx.shadowBlur = 12;
-            ctx.shadowColor = `hsla(${hue}, ${sat}%, 80%, ${op * 0.7})`;
-            ctx.strokeStyle = `hsla(${hue}, ${sat}%, ${lit + 15}%, ${op * 0.8})`;
-
-            ctx.beginPath();
-            let first = true;
-            for (const [a] of contour) {
-                const p = pts[a];
-                if (!p) continue;
-                if (first) { ctx.moveTo(p.x, p.y); first = false; }
-                else ctx.lineTo(p.x, p.y);
-            }
-            ctx.closePath();
-            ctx.stroke();
-            ctx.restore();
-        }
-
-        // ── 4. Draw glowing node dots at key landmarks ──
-        ctx.save();
-        ctx.globalCompositeOperation = 'screen';
-
-        for (let i = 0; i < KEY_LANDMARKS.length; i++) {
-            const idx = KEY_LANDMARKS[i];
-            const p = pts[idx];
-            if (!p) continue;
-
-            const depthFactor = Math.max(0.4, Math.min(1, 1 + p.z * 2));
-            const animOffset = (i / KEY_LANDMARKS.length) * Math.PI * 2;
-            const nodePulse = 0.6 + Math.sin(t * 3 + animOffset) * 0.4;
-            const nodeOp = op * depthFactor * nodePulse;
-
-            // Outer glow
-            const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 8);
-            grad.addColorStop(0, `hsla(${hue}, ${sat}%, 90%, ${nodeOp * 0.9})`);
-            grad.addColorStop(0.4, `hsla(${hue}, ${sat}%, ${lit}%, ${nodeOp * 0.4})`);
-            grad.addColorStop(1, `hsla(${hue}, ${sat}%, ${lit}%, 0)`);
-
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
-            ctx.fillStyle = grad;
-            ctx.fill();
-
-            // Solid core dot
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
-            ctx.fillStyle = `hsla(${hue}, 100%, 95%, ${nodeOp})`;
-            ctx.fill();
-        }
-        ctx.restore();
-
-        // ── 5. Scan line that sweeps across face ──
-        if (state === 'scanning') {
-            const scanY = pts[0] ? pts[0].y : height / 2;
-            const faceTop    = Math.min(...KEY_LANDMARKS.map(i => pts[i]?.y ?? height).filter(v => v !== undefined));
-            const faceBottom = Math.max(...KEY_LANDMARKS.map(i => pts[i]?.y ?? 0).filter(v => v !== undefined));
-            const faceHeight = faceBottom - faceTop;
-
-            const sweepT = (t % 2) / 2; // 0→1 every 2s
-            const sweepY = faceTop + sweepT * faceHeight;
-
-            ctx.save();
-            ctx.globalCompositeOperation = 'screen';
-            const lineGrad = ctx.createLinearGradient(0, sweepY - 4, 0, sweepY + 4);
-            lineGrad.addColorStop(0,   `hsla(${hue}, ${sat}%, ${lit}%, 0)`);
-            lineGrad.addColorStop(0.5, `hsla(${hue}, ${sat}%, 90%, ${op * (0.5 + pulse * 0.4)})`);
-            lineGrad.addColorStop(1,   `hsla(${hue}, ${sat}%, ${lit}%, 0)`);
-            ctx.fillStyle = lineGrad;
-            ctx.fillRect(0, sweepY - 4, width, 8);
-            ctx.restore();
-        }
-    }
-
-    // ── Sync mesh state with scan ring state changes ──
-    const origClassReplace = DOMTokenList.prototype.replace;
-    const faceGuide = document.getElementById('faceGuide');
-    if (faceGuide) {
-        const observer = new MutationObserver(() => {
-            if (faceGuide.classList.contains('success-ring')) {
-                meshState.scanState = 'success';
-            } else if (faceGuide.classList.contains('error-ring')) {
-                meshState.scanState = 'error';
-                setTimeout(() => { meshState.scanState = 'scanning'; }, 500);
-            } else {
-                meshState.scanState = 'scanning';
-            }
-        });
-        observer.observe(faceGuide, { attributes: true, attributeFilter: ['class'] });
-    }
-
-    // Initialize 3D mesh after a short delay
-    function tryInit3DMesh() {
-        if (typeof FaceMesh === 'undefined') {
-            setTimeout(tryInit3DMesh, 500);
-            return;
-        }
-        init3DFaceMesh().catch(err => {
-            console.warn('3D Face Mesh not available, using 2D fallback', err);
-            use3DMesh = false;
-            const fb = document.getElementById('faceLandmarksCanvas');
-            if (fb) fb.style.display = 'block';
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(tryInit3DMesh, 1500);
-    });
-</script>
 </body>
 </html>
