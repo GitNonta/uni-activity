@@ -20,6 +20,7 @@ numpy>=1.24.0,<2.0.0
 
 # ── Liveness Detection ─────────────────────────────────────
 scipy>=1.12.0                 # FFT analysis
+scikit-learn>=1.3.0           # PCA for 512D → 128D reduction
 
 # ── Utilities ──────────────────────────────────────────────
 Pillow>=10.0.0

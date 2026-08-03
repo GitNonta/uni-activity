@@ -111,6 +111,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/check-in/{token}', [CheckInController::class, 'show'])->name('checkin.show');                       // หน้าเช็คอินจาก QR
     Route::post('/check-in/{token}', [CheckInController::class, 'store'])->name('checkin.store');                    // ดำเนินการเช็คอิน QR
     Route::post('/check-in/{token}/verify-frame', [CheckInController::class, 'verifyFrame'])->name('checkin.verify_frame'); // สแกนหน้าแบบเรียวไทม์
+    
+    // Optimized face verification API endpoints
+    Route::prefix('api/face')->middleware('throttle:face-verify')->group(function () {
+        Route::post('/verify', [App\Http\Controllers\Api\FaceVerificationController::class, 'verify'])->name('api.face.verify');
+        Route::get('/metrics', [App\Http\Controllers\Api\FaceVerificationController::class, 'metrics'])->name('api.face.metrics');
+    });
 
     Route::post('/activities/{id}/self-checkin', [CheckInController::class, 'selfCheckIn'])->name('activities.self-checkin'); // ปิด self check-in: ให้สแกน QR หน้างานเท่านั้น
     Route::get('/my-activities', [StudentController::class, 'myActivities'])->name('student.my');                    // กิจกรรมของฉัน
@@ -269,5 +275,14 @@ Route::middleware(['auth', 'role:admin,super-admin'])->prefix('admin')->name('ad
     Route::put('settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
 
     // ── API Keys ──
-    Route::resource('api-keys', \App\Http\Controllers\Admin\ApiKeyController::class)->only(['index', 'store', 'destroy']);
+    // API routes for optimized face verification
+    Route::prefix('api')->middleware('auth:sanctum')->group(function () {
+        Route::post('/face/verify', [App\Http\Controllers\Api\FaceVerificationController::class, 'verify'])->name('api.face.verify');
+        Route::get('/face/metrics', [App\Http\Controllers\Api\FaceVerificationController::class, 'metrics'])->name('api.face.metrics');
+    });
+
+    // Existing API routes
+    Route::prefix('api')->group(function () {
+        Route::get('/activities', [App\Http\Controllers\Api\ActivityController::class, 'index']);
+    });
 });

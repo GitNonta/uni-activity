@@ -36,20 +36,46 @@ class CheckInController extends Controller
         if ($activity->require_face_scan) {
             $user = auth()->user();
             
-            // Auto-Extract Python (512-d) if missing but has profile photo
-            if (!$user->face_descriptor && $user->profile_photo) {
+            // Auto-Extract face encodings (512D + 128D) if missing but has profile photo
+            if ((!$user->face_descriptor || !$user->face_descriptor_js) && $user->profile_photo) {
                 $photoPath = storage_path('app/public/' . $user->profile_photo);
                 $aiServerUrl = config('services.ai_server.url');
                 if (file_exists($photoPath) && !empty($aiServerUrl)) {
                     try {
-                        $response = \Illuminate\Support\Facades\Http::timeout(15)
-                            ->attach('image', file_get_contents($photoPath), 'profile.jpg')
+                        \Log::info("Auto-extracting missing face encodings for user {$user->id} on check-in page visit");
+                        
+                        $response = \Illuminate\Support\Facades\Http::timeout(10)
+                            ->attach('image', file_get_contents($photoPath), basename($photoPath))
                             ->post(rtrim($aiServerUrl, '/') . '/extract');
+                        
                         if ($response->successful()) {
-                            $user->update(['face_descriptor' => $response->json('embedding')]);
+                            $aiResult = $response->json();
+                            $updateData = [];
+                            $extracted = [];
+                            
+                            // Update only missing encodings - รองรับ API ใหม่
+                            if (!$user->face_descriptor && !empty($aiResult['embedding_512d'])) {
+                                $updateData['face_descriptor'] = $aiResult['embedding_512d'];
+                                $extracted[] = '512D';
+                            }
+                            if (!$user->face_descriptor_js && !empty($aiResult['embedding_128d'])) {
+                                $updateData['face_descriptor_js'] = $aiResult['embedding_128d'];
+                                $extracted[] = '128D';
+                            }
+                            
+                            // รองรับ API เก่าที่ยังส่ง 'embedding' มา
+                            if (!$user->face_descriptor && empty($updateData['face_descriptor']) && !empty($aiResult['embedding'])) {
+                                $updateData['face_descriptor'] = $aiResult['embedding'];
+                                $extracted[] = '512D (legacy)';
+                            }
+                            
+                            if (!empty($updateData)) {
+                                $user->update($updateData);
+                                \Log::info("Auto-extracted " . implode(' + ', $extracted) . " for user {$user->id}");
+                            }
                         }
                     } catch (\Exception $e) {
-                        \Log::error("Auto-extract Python error: " . $e->getMessage());
+                        \Log::warning("Auto-extraction failed for user {$user->id}: " . $e->getMessage());
                     }
                 }
             }
@@ -179,42 +205,102 @@ class CheckInController extends Controller
         return back()->with('error', $result['message']);
     }
 
-    /** ตรวจสอบภาพเรียวไทม์จากหน้าจอเซลฟี่ */
+    /** ตรวจสอบภาพเรียวไทม์จากหน้าจอเซลฟี่ (Optimized) */
     public function verifyFrame(Request $request, string $token)
     {
         $request->validate(['image' => 'required|string']);
-
+        
+        $startTime = microtime(true);
         $user = auth()->user();
         $storedDescriptor = $user->face_descriptor;
+        
         if (!$storedDescriptor) {
-            return response()->json(['success' => false, 'message' => 'No profile descriptor']);
+            return response()->json([
+                'success' => false, 
+                'message' => 'No profile descriptor',
+                'processing_ms' => round((microtime(true) - $startTime) * 1000)
+            ]);
         }
 
+        // Optimize image processing
         $base64 = $request->input('image');
         $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $base64);
         $imageDecoded = base64_decode(str_replace(' ', '+', $imageData));
 
-        $aiServerUrl = config('services.ai_server.url');
-        if (empty($aiServerUrl)) {
-            return response()->json(['success' => false, 'message' => 'AI Server not configured']);
+        // Quick validation
+        if (strlen($imageDecoded) > 2000000) { // 2MB limit
+            return response()->json([
+                'success' => false, 
+                'message' => 'Image too large',
+                'processing_ms' => round((microtime(true) - $startTime) * 1000)
+            ]);
         }
 
+        $aiServerUrl = config('services.ai_server.url');
+        if (empty($aiServerUrl)) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'AI Server not configured',
+                'processing_ms' => round((microtime(true) - $startTime) * 1000)
+            ]);
+        }
+
+        // Rate limiting per user
+        $cacheKey = 'face_verify_' . $user->id;
+        if (Cache::has($cacheKey)) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Too many requests',
+                'processing_ms' => round((microtime(true) - $startTime) * 1000)
+            ]);
+        }
+        Cache::put($cacheKey, true, 1); // 1 second cooldown
+
         try {
-            $response = \Illuminate\Support\Facades\Http::timeout(10)
+            $response = \Illuminate\Support\Facades\Http::timeout(8) // Reduced timeout
                 ->attach('image', $imageDecoded, 'frame.jpg')
                 ->post(rtrim($aiServerUrl, '/') . '/verify', [
                     'known_embedding' => json_encode($storedDescriptor),
                     'check_liveness'  => 'true',
                 ]);
 
-            if ($response->successful()) {
-                return response()->json($response->json());
-            }
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'AI Server timeout or error']);
-        }
+            $processingTime = round((microtime(true) - $startTime) * 1000);
 
-        return response()->json(['success' => false, 'message' => 'Verification failed']);
+            if ($response->successful()) {
+                $result = $response->json();
+                
+                // Add performance metrics
+                $result['processing_ms'] = $processingTime;
+                $result['server_ms'] = $result['processing_ms'] ?? 0;
+                $result['network_ms'] = $processingTime - ($result['server_ms'] ?? 0);
+                $result['timestamp'] = time();
+                
+                // Log slow requests
+                if ($processingTime > 3000) {
+                    \Log::warning("Slow face verification: {$processingTime}ms for user {$user->id}");
+                }
+                
+                return response()->json($result);
+            }
+            
+            return response()->json([
+                'success' => false, 
+                'message' => 'AI Server error: ' . $response->status(),
+                'processing_ms' => $processingTime
+            ]);
+            
+        } catch (\Exception $e) {
+            $processingTime = round((microtime(true) - $startTime) * 1000);
+            
+            \Log::error("Face verification error for user {$user->id}: " . $e->getMessage());
+            
+            return response()->json([
+                'success' => false, 
+                'message' => 'Verification timeout or error',
+                'processing_ms' => $processingTime,
+                'error_type' => get_class($e)
+            ]);
+        }
     }
 
     /** แสดงหน้าถ่าย selfie เพื่อยืนยันตัวตน */

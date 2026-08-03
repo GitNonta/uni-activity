@@ -27,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: '*');
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
+            'face-verify' => \App\Http\Middleware\FaceVerificationThrottle::class,
             \App\Http\Middleware\AuditLogMiddleware::class,
         ]);
         $middleware->appendToGroup('web', \App\Http\Middleware\UpdateLastSeen::class);

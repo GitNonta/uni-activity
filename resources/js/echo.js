@@ -3,17 +3,12 @@ import Pusher from 'pusher-js';
 
 window.Pusher = Pusher;
 
-const host = window.location.hostname;
-const currentPort = window.location.port;
-const protocol = window.location.protocol === 'https:' ? 'https' : 'http';
+// Use configured values from .env (via Vite)
+const host = import.meta.env.VITE_REVERB_HOST || window.location.hostname;
+const wsPort = import.meta.env.VITE_REVERB_PORT || 8080;
+const protocol = import.meta.env.VITE_REVERB_SCHEME || 'http';
 
-// กำหนดพอร์ตสำหรับ WebSocket อัตโนมัติ
-// 1. ถ้าเป็น localhost/127.0.0.1 และเข้าผ่านพอร์ต 8000 -> ใช้ 8080 (Reverb Direct)
-// 2. ถ้าเข้าผ่านหน้าเว็บพอร์ตอื่นๆ (เช่น ngrok หรือ public ip) -> ใช้พอร์ตเดียวกับหน้าเว็บ (Nginx Proxy)
-let wsPort = currentPort || (protocol === 'https' ? 443 : 80);
-if ((host === 'localhost' || host === '127.0.0.1') && currentPort === '8000') {
-    wsPort = 8080;
-}
+console.log('🔌 Reverb config:', { host, wsPort, protocol });
 
 import axios from 'axios';
 window.axios = axios;

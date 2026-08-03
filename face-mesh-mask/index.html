@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D Face Mesh Mask</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #020510;
+      font-family: 'Outfit', sans-serif;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    #canvas-container { width: 100vw; height: 100vh; position: relative; }
+    canvas { display: block; }
+
+    .glow-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      background: radial-gradient(ellipse at 50% 40%, rgba(0, 200, 255, 0.06) 0%, transparent 70%);
+      z-index: 1;
+    }
+
+    .ui-panel {
+      position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+      z-index: 10; display: flex; gap: 12px; align-items: center;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(20px); padding: 14px 24px; border-radius: 60px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    }
+
+    .ui-label { color: rgba(255,255,255,0.5); font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; margin-right: 4px; }
+
+    .color-btn {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.2); cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .color-btn:hover, .color-btn.active { border-color: white; transform: scale(1.2); }
+    .color-btn.c-cyan   { background: #00e5ff; }
+    .color-btn.c-purple { background: #b44fff; }
+    .color-btn.c-gold   { background: #ffd54f; }
+    .color-btn.c-green  { background: #00e676; }
+    .color-btn.c-pink   { background: #ff4d8c; }
+
+    .divider { width: 1px; height: 28px; background: rgba(255,255,255,0.15); margin: 0 4px; }
+
+    .toggle-btn {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.7); font-family: 'Outfit', sans-serif; font-size: 12px;
+      letter-spacing: 0.5px; padding: 6px 16px; border-radius: 20px; cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .toggle-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+    .toggle-btn.active { background: rgba(0,220,255,0.18); border-color: rgba(0,220,255,0.5); color: #00e5ff; }
+
+    .title-area {
+      position: fixed; top: 32px; left: 50%; transform: translateX(-50%);
+      z-index: 10; text-align: center; pointer-events: none;
+    }
+    .title-area h1 { font-size: 15px; font-weight: 300; letter-spacing: 6px; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+    .title-area span { color: #00e5ff; font-weight: 600; }
+
+    .hint { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); z-index: 10; font-size: 11px; color: rgba(255,255,255,0.22); letter-spacing: 2px; text-transform: uppercase; pointer-events: none; }
+
+    #loading {
+      position: fixed; inset: 0; background: #020510; display: flex;
+      flex-direction: column; align-items: center; justify-content: center;
+      z-index: 100; gap: 20px; transition: opacity 0.8s ease;
+    }
+    #loading.hide { opacity: 0; pointer-events: none; }
+    .load-ring { width: 50px; height: 50px; border: 2px solid rgba(0,229,255,0.2); border-top-color: #00e5ff; border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .load-text { font-size: 12px; letter-spacing: 3px; color: rgba(255,255,255,0.3); text-transform: uppercase; }
+  </style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="load-ring"></div>
+  <div class="load-text">กำลังโหลด...</div>
+</div>
+
+<div class="glow-overlay"></div>
+
+<div class="title-area">
+  <h1>3D Face <span>Mesh</span> Mask</h1>
+</div>
+<div class="hint">ลากเพื่อหมุน • เลื่อนเพื่อซูม</div>
+
+<div id="canvas-container"></div>
+
+<div class="ui-panel">
+  <span class="ui-label">สี</span>
+  <button class="color-btn c-cyan active"   onclick="setColor(0x00e5ff, this)"></button>
+  <button class="color-btn c-purple"         onclick="setColor(0xb44fff, this)"></button>
+  <button class="color-btn c-gold"           onclick="setColor(0xffd54f, this)"></button>
+  <button class="color-btn c-green"          onclick="setColor(0x00e676, this)"></button>
+  <button class="color-btn c-pink"           onclick="setColor(0xff4d8c, this)"></button>
+  <div class="divider"></div>
+  <button id="btn-auto"  class="toggle-btn active" onclick="toggleAuto()">หมุนอัตโนมัติ</button>
+  <button id="btn-face"  class="toggle-btn active" onclick="toggleFace()">แสดงหน้า</button>
+  <button id="btn-pulse" class="toggle-btn active" onclick="togglePulse()">แสง Pulse</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.162.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const container = document.getElementById('canvas-container');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x020510);
+scene.fog = new THREE.FogExp2(0x020510, 0.055);
+
+const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 100);
+camera.position.set(0, 0.4, 5);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+container.appendChild(renderer.domElement);
+
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+controls.minDistance = 2; controls.maxDistance = 10;
+controls.autoRotate = true; controls.autoRotateSpeed = 0.8;
+
+// ── Lighting ──
+scene.add(new THREE.AmbientLight(0x223344, 1.5));
+const keyLight = new THREE.DirectionalLight(0xffffff, 2.5);
+keyLight.position.set(2, 3, 4); scene.add(keyLight);
+const rimLight = new THREE.DirectionalLight(0x00e5ff, 1.4);
+rimLight.position.set(-3, 1, -2); scene.add(rimLight);
+const fillLight = new THREE.PointLight(0x6644ff, 1.5, 8);
+fillLight.position.set(0, -2, 2); scene.add(fillLight);
+
+// ── State ──
+let meshColor = 0x00e5ff;
+let autoRotate = true;
+let showFace = true;
+let pulseOn = true;
+
+// ── Build face-like sphere ──
+function buildFaceGeo(offsetScale) {
+  const geo = new THREE.SphereGeometry(1, 64, 64);
+  const pos = geo.attributes.position;
+  const v = new THREE.Vector3();
+
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i);
+    let dx = v.x, dy = v.y, dz = v.z;
+    let disp = 0;
+
+    // Flatten back
+    if (dz < -0.2) disp -= 0.12 * Math.abs(dz + 0.2);
+    // Forehead
+    if (dy > 0.4 && dz > 0) disp += 0.05 * dy * dz;
+    // Chin
+    if (dy < -0.55) {
+      const c = (dy + 0.55) * 2;
+      disp -= Math.abs(c) * 0.22;
+      pos.setX(i, dx * (1 - Math.max(0, -c) * 0.6));
+    }
+    // Cheekbones
+    const ckR = Math.sqrt((dx-0.55)**2 + (dy+0.05)**2);
+    const ckL = Math.sqrt((dx+0.55)**2 + (dy+0.05)**2);
+    if (ckR < 0.35 && dz > 0.2) disp += (0.35 - ckR) * 0.25 * dz;
+    if (ckL < 0.35 && dz > 0.2) disp += (0.35 - ckL) * 0.25 * dz;
+    // Nose
+    const nr = Math.sqrt(dx**2 + (dy - 0.02)**2);
+    if (nr < 0.18 && dz > 0.7) disp += (0.18 - nr) * 0.8 * Math.pow(dz - 0.7, 0.5);
+    // Eye sockets
+    const eR = Math.sqrt((dx-0.33)**2 + (dy-0.22)**2);
+    const eL = Math.sqrt((dx+0.33)**2 + (dy-0.22)**2);
+    if (eR < 0.22 && dz > 0.5) disp -= (0.22 - eR) * 0.3;
+    if (eL < 0.22 && dz > 0.5) disp -= (0.22 - eL) * 0.3;
+    // Lips
+    const lr = Math.sqrt(dx**2 + (dy+0.32)**2);
+    if (lr < 0.26 && dz > 0.6) disp += (0.26 - lr) * 0.4 * Math.pow(dz - 0.6, 0.4);
+
+    if (disp !== 0) {
+      pos.setXYZ(i,
+        v.x * (1 + disp * v.x / (Math.abs(v.x) + 0.001) * 0.3),
+        v.y + disp * 0.1,
+        v.z + disp
+      );
+    }
+  }
+
+  // Apply outer offset
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i);
+    pos.setXYZ(i, v.x * offsetScale, v.y * offsetScale, v.z * offsetScale);
+  }
+
+  geo.computeVertexNormals();
+  return geo;
+}
+
+// ── Skin face ──
+const faceMat = new THREE.MeshStandardMaterial({ color: 0xc8956c, roughness: 0.65, metalness: 0.05 });
+const faceMesh = new THREE.Mesh(buildFaceGeo(1.0), faceMat);
+faceMesh.castShadow = true;
+scene.add(faceMesh);
+
+// ── Wireframe mask ──
+const wireMat = new THREE.MeshBasicMaterial({ color: 0x00e5ff, wireframe: true, transparent: true, opacity: 0.55 });
+const wireMesh = new THREE.Mesh(buildFaceGeo(1.015), wireMat);
+scene.add(wireMesh);
+
+// ── Glow layer ──
+const glowMat = new THREE.MeshBasicMaterial({ color: 0x00e5ff, wireframe: true, transparent: true, opacity: 0.1, blending: THREE.AdditiveBlending, depthWrite: false });
+const glowMesh = new THREE.Mesh(buildFaceGeo(1.03), glowMat);
+scene.add(glowMesh);
+
+// ── Node dots on vertices ──
+function buildNodePoints() {
+  const geo = buildFaceGeo(1.016);
+  const pos = geo.attributes.position;
+  const verts = [];
+  for (let i = 0; i < pos.count; i += 4) {
+    verts.push(pos.getX(i), pos.getY(i), pos.getZ(i));
+  }
+  const ng = new THREE.BufferGeometry();
+  ng.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+  return new THREE.Points(ng, new THREE.PointsMaterial({
+    color: 0x00e5ff, size: 0.018, transparent: true, opacity: 0.85,
+    sizeAttenuation: true, blending: THREE.AdditiveBlending, depthWrite: false
+  }));
+}
+const nodePoints = buildNodePoints();
+scene.add(nodePoints);
+
+// ── Background particles ──
+const bgGeo = new THREE.BufferGeometry();
+const bgPos = new Float32Array(1200 * 3);
+for (let i = 0; i < 1200 * 3; i++) bgPos[i] = (Math.random() - 0.5) * 20;
+bgGeo.setAttribute('position', new THREE.BufferAttribute(bgPos, 3));
+const bgPts = new THREE.Points(bgGeo, new THREE.PointsMaterial({ color: 0x334455, size: 0.04, transparent: true, opacity: 0.6 }));
+scene.add(bgPts);
+
+// ── Grid ──
+const grid = new THREE.GridHelper(20, 30, 0x112233, 0x0a1520);
+grid.position.y = -2.2;
+scene.add(grid);
+
+// ── Color control ──
+function setColor(hex, btn) {
+  meshColor = hex;
+  wireMat.color.setHex(hex);
+  glowMat.color.setHex(hex);
+  nodePoints.material.color.setHex(hex);
+  rimLight.color.setHex(hex);
+  document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function toggleAuto() {
+  autoRotate = !autoRotate;
+  controls.autoRotate = autoRotate;
+  document.getElementById('btn-auto').classList.toggle('active', autoRotate);
+}
+function toggleFace() {
+  showFace = !showFace;
+  faceMesh.visible = showFace;
+  document.getElementById('btn-face').classList.toggle('active', showFace);
+}
+function togglePulse() {
+  pulseOn = !pulseOn;
+  document.getElementById('btn-pulse').classList.toggle('active', pulseOn);
+}
+
+// ── Animate ──
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  controls.update();
+
+  if (pulseOn) {
+    wireMat.opacity = 0.42 + Math.sin(t * 1.8) * 0.18;
+    glowMat.opacity = 0.07 + Math.sin(t * 1.8) * 0.05;
+    nodePoints.material.opacity = 0.7 + Math.sin(t * 2.2) * 0.25;
+  }
+
+  const bx = 1 + Math.sin(t * 0.7) * 0.004;
+  const by = 1 + Math.sin(t * 0.7) * 0.006;
+  faceMesh.scale.set(bx, by, bx);
+  wireMesh.scale.copy(faceMesh.scale);
+  glowMesh.scale.copy(faceMesh.scale);
+  nodePoints.scale.copy(faceMesh.scale);
+
+  fillLight.intensity = 1.2 + Math.sin(t * 3.1) * 0.3;
+  bgPts.rotation.y = t * 0.01;
+
+  renderer.render(scene, camera);
+}
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+window.addEventListener('load', () => {
+  setTimeout(() => document.getElementById('loading').classList.add('hide'), 600);
+});
+
+animate();
+</script>
+</body>
+</html>
