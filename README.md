@@ -1,4 +1,4 @@
-# 🎓 University Activity Management & Verification System
+# University Activity Management & Verification System
 ### ระบบบริหารจัดการกิจกรรมนักศึกษาและเช็คชื่อเข้าร่วมด้วย AI สแกนใบหน้าและ Real-Time WebSockets
 
 [![Laravel](https://img.shields.io/badge/Laravel-11.x%20%2F%2012.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
@@ -11,13 +11,13 @@
 
 ---
 
-## 🏛️ ภาพรวมระบบ (System Overview)
+## ภาพรวมระบบ (System Overview)
 
 **University Activity System** คือแพลตฟอร์มระดับองค์กรสำหรับการบริหารจัดการกิจกรรมนักศึกษา การลงทะเบียน การสแกนเช็คชื่อเข้างาน และการประมวลผลข้อมูลกิจกรรมแบบ Real-time โดยได้รับการออกแบบด้วยสถาปัตยกรรม High Performance รองรับผู้ใช้งานจำนวนมาก พร้อมระบบยืนยันตัวตนด้วยใบหน้า (AI Face Verification & Liveness Detection) และการเชื่อมต่อการแจ้งเตือนผ่าน LINE Official Account อัตโนมัติ
 
 ---
 
-## 📐 สถาปัตยกรรมระบบ (System Architecture)
+## สถาปัตยกรรมระบบ (System Architecture)
 
 ### 1. โครงสร้างและแผนผังระบบรวม (Main System Architecture)
 ![University Activity System Plan](svg/university_activity_system_plan.svg)
@@ -34,35 +34,35 @@
 
 ---
 
-## ✨ คุณสมบัติหลักของระบบ (Core Features)
+## คุณสมบัติหลักของระบบ (Core Features)
 
-### 🤖 1. ระบบยืนยันตัวตนด้วยใบหน้า (AI Face Verification & Liveness Detection)
+### 1. ระบบยืนยันตัวตนด้วยใบหน้า (AI Face Verification & Liveness Detection)
 - **Face Landmark & 3D Mesh Detection:** ตรวจจับโครงหน้าและจุดสำคัญบนใบหน้าแบบ 3D ผ่านเบราว์เซอร์
 - **Anti-Spoofing & Liveness Verification:** ระบบป้องกันการปลอมแปลงใบหน้า (รูปถ่าย/วิดีโอ) เพื่อความถูกต้อง 100%
 - **InsightFace AI Service:** ประมวลผลและเปรียบเทียบ Face Encodings ความแม่นยำสูงกับฐานข้อมูล
 
-### ⚡ 2. ระบบสื่อสารและแจ้งเตือน Real-Time (Real-Time Engine)
+### 2. ระบบสื่อสารและแจ้งเตือน Real-Time (Real-Time Engine)
 - **Laravel Reverb WebSockets:** อัปเดตสถานะการเช็คชื่อ จำนวนผู้เข้าร่วม และการแชตสดทันทีโดยไม่ต้อง Refresh หน้าจอ
 - **LINE Official Account Integration:** ส่งข้อความแจ้งเตือนผลการลงทะเบียนและการเข้างานไปยัง LINE ของนักศึกษาโดยตรง
 - **Redis Queue Worker:** ประมวลผล Background Jobs สำหรับการส่งข้อความและการออกเอกสารแบบ Asynchronous
 
-### 🎟️ 3. ระบบเช็คชื่อเข้าร่วมกิจกรรมอัจฉริยะ (Smart Attendance System)
+### 3. ระบบเช็คชื่อเข้าร่วมกิจกรรมอัจฉริยะ (Smart Attendance System)
 - **Dynamic QR Code Scanning:** เช็คชื่อเข้างานด้วยการสแกน QR Code แบบปรับเปลี่ยนตามเวลาเพื่อป้องกันการทุจริต
 - **Walk-in Registration:** รองรับการลงทะเบียนและเช็คชื่อหน้างานสำหรับผู้ไม่ได้ลงทะเบียนล่วงหน้า
 - **Selfie Verification:** ถ่ายภาพยืนยันตัวตนขณะเช็คชื่อเข้างานพร้อมระบบบันทึกพิกัดสถานที่ (Geolocation)
 
-### 🔐 4. ระบบการควบคุมสิทธิ์และบันทึกความปลอดภัย (Security & Governance)
+### 4. ระบบการควบคุมสิทธิ์และบันทึกความปลอดภัย (Security & Governance)
 - **Role-Based Access Control (RBAC):** กำหนดสิทธิ์ผู้ใช้งานอย่างเป็นสัดส่วน (System Admin, Staff / Organizer, Student)
 - **Audit Logging Engine:** บันทึกประวัติการเข้าถึงและการเปลี่ยนแปลงข้อมูลสำคัญในระบบทั้งหมดเพื่อความโปร่งใส
 - **Sanctum & OTP Authentication:** ระบบยืนยันตัวตนสองชั้นผ่าน OTP สำหรับการเข้าถึงข้อมูลระดับสูง
 
-### 📊 5. ระบบรายงานและออกเอกสารทางการ (Official Reporting & Transcripts)
+### 5. ระบบรายงานและออกเอกสารทางการ (Official Reporting & Transcripts)
 - **Activity Transcript Generation:** สร้างเอกสารรับรองการเข้าร่วมกิจกรรม (PDF) พร้อมฟอนต์ภาษาไทยสารบัญ (Sarabun)
 - **Excel Data Export/Import:** นำเข้าและส่งออกข้อมูลนักศึกษาและผลการเข้าร่วมกิจกรรมรูปแบบไฟล์ Excel
 
 ---
 
-## 🛠️ เทคโนโลยีและส่วนประกอบ (Tech Stack)
+## เทคโนโลยีและส่วนประกอบ (Tech Stack)
 
 | ส่วนประกอบ (Component) | เทคโนโลยีที่ใช้ (Technology) | หน้าที่การทำงาน (Description) |
 |:---|:---|:---|
@@ -77,20 +77,20 @@
 
 ---
 
-## 📚 เอกสารสถาปัตยกรรมและคู่มือระบบ (Documentation Index)
+## เอกสารสถาปัตยกรรมและคู่มือระบบ (Documentation Index)
 
 เอกสารทางเทคนิคและคู่มือการพัฒนาระบบถูกจัดเก็บไว้อย่างเป็นหมวดหมู่ในโฟลเดอร์ [`docs/`](./docs/):
 
-* 📘 **[คู่มืออ้างอิง API (API Quick Reference)](./docs/API_QUICK_REFERENCE.md)** — รายละเอียดและโครงสร้าง API Endpoints
-* 📗 **[คู่มือการทดสอบ API (API Testing Guide)](./docs/API_TESTING_GUIDE.md)** — วิธีการทดสอบระบบ API
-* 📙 **[ระบบสแกนใบหน้า AI (Face System Summary)](./docs/FACE_SYSTEM_SUMMARY.md)** — สถาปัตยกรรมและการทำงานของระบบสแกนใบหน้า
-* 📕 **[คู่มือสถาปัตยกรรม InsightFace (InsightFace Architecture)](./docs/INSIGHTFACE_ARCHITECTURE.md)** — โครงสร้างแบบจำลอง AI
-* 📘 **[ระบบ Real-Time Chat & Reverb (Laravel Reverb Setup)](./docs/laravel-reverb-chat-agent.md)** — สถาปัตยกรรม WebSockets
-* 📗 **[คู่มือตั้งค่าระบบเครือข่าย (Network Setup Guide)](./docs/NETWORK_SETUP_GUIDE.md)** — การเชื่อมต่อ Network และ Cloudflare Tunnel
+* **[คู่มืออ้างอิง API (API Quick Reference)](./docs/API_QUICK_REFERENCE.md)** — รายละเอียดและโครงสร้าง API Endpoints
+* **[คู่มือการทดสอบ API (API Testing Guide)](./docs/API_TESTING_GUIDE.md)** — วิธีการทดสอบระบบ API
+* **[ระบบสแกนใบหน้า AI (Face System Summary)](./docs/FACE_SYSTEM_SUMMARY.md)** — สถาปัตยกรรมและการทำงานของระบบสแกนใบหน้า
+* **[คู่มือสถาปัตยกรรม InsightFace (InsightFace Architecture)](./docs/INSIGHTFACE_ARCHITECTURE.md)** — โครงสร้างแบบจำลอง AI
+* **[ระบบ Real-Time Chat & Reverb (Laravel Reverb Setup)](./docs/laravel-reverb-chat-agent.md)** — สถาปัตยกรรม WebSockets
+* **[คู่มือตั้งค่าระบบเครือข่าย (Network Setup Guide)](./docs/NETWORK_SETUP_GUIDE.md)** — การเชื่อมต่อ Network และ Cloudflare Tunnel
 
 ---
 
-## 🚀 ขั้นตอนการติดตั้งและเริ่มใช้งาน (Deployment & Installation)
+## ขั้นตอนการติดตั้งและเริ่มใช้งาน (Deployment & Installation)
 
 ### 1. คัดลอก Repository และติดตั้ง Dependencies
 ```bash
