@@ -3,7 +3,7 @@
 **Date:** 2026-07-18  
 **Target Server:** 192.168.1.222 (Termux on Android)  
 **SSH:** u0_a175@192.168.1.222:8022  
-**Password:** 2345678A
+**Password:** <YOUR_SSH_PASSWORD>
 
 ---
 
@@ -27,7 +27,7 @@
 
 ```bash
 ssh -p 8022 u0_a175@192.168.1.222
-# Password: 2345678A
+# Password: <YOUR_SSH_PASSWORD>
 ```
 
 ### 2. Optimize PostgreSQL

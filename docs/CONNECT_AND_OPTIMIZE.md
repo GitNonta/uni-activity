@@ -6,7 +6,7 @@
 ```bash
 ssh -p 8022 u0_a175@192.168.1.222
 ```
-**Password:** `2345678A`
+**Password:** `<YOUR_SSH_PASSWORD>`
 
 ---
 
@@ -121,7 +121,7 @@ free -h
 
 ```bash
 ssh -p 8022 u0_a175@192.168.1.222
-# Enter password: 2345678A
+# Enter password: <YOUR_SSH_PASSWORD>
 
 # จากนั้นวาง command นี้:
 cp $PREFIX/var/lib/postgresql/postgresql.conf $PREFIX/var/lib/postgresql/postgresql.conf.backup && cat > $PREFIX/var/lib/postgresql/postgresql.conf << 'EOF'
@@ -164,7 +164,7 @@ winget install PuTTY.PuTTY
 4. Connection type: SSH
 5. Click "Open"
 6. Login as: `u0_a175`
-7. Password: `2345678A`
+7. Password: `<YOUR_SSH_PASSWORD>`
 
 จากนั้นรันคำสั่งใน **วิธีที่ 1** ข้างบน
 
