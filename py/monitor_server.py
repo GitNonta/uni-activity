@@ -1162,6 +1162,48 @@ class MonitorHandler(BaseHTTPRequestHandler):
             self._handle_websocket()
             return
 
+        # LAN Ping endpoint — ICMP ping from server to target IP (server-side)
+        if self.path.startswith("/api/st/lan-ping"):
+            from urllib.parse import urlparse, parse_qs
+            import subprocess, re as _re
+            qs = parse_qs(urlparse(self.path).query)
+            target = qs.get("target", ["192.168.1.45"])[0]
+            count  = min(int(qs.get("count", ["10"])[0]), 20)
+            try:
+                result = subprocess.run(
+                    ["ping", "-c", str(count), "-W", "1", target],
+                    capture_output=True, text=True, timeout=20
+                )
+                rtt_values = [float(m.group(1)) for m in
+                    _re.finditer(r"time[=<]([\d.]+)\s*ms", result.stdout)]
+                if rtt_values:
+                    ping_avg = round(sum(rtt_values) / len(rtt_values), 1)
+                    jitter = 0.0
+                    for i in range(1, len(rtt_values)):
+                        jitter += (abs(rtt_values[i] - rtt_values[i-1]) - jitter) / 16
+                    resp = {
+                        "ok": True, "target": target,
+                        "ping_ms": ping_avg,
+                        "jitter_ms": round(jitter, 1),
+                        "min_ms": round(min(rtt_values), 1),
+                        "max_ms": round(max(rtt_values), 1),
+                        "samples": len(rtt_values),
+                        "rtt_values": rtt_values
+                    }
+                else:
+                    resp = {"ok": False, "target": target, "ping_ms": 0, "jitter_ms": 0,
+                            "error": "No ICMP reply from target"}
+            except Exception as exc:
+                resp = {"ok": False, "target": target, "error": str(exc)}
+            data = json.dumps(resp).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(data)))
+            self._cors_headers()
+            self.end_headers()
+            self.wfile.write(data)
+            return
+
         # Download endpoint — generate random binary in-memory, no disk write
         if self.path.startswith("/api/st/download"):
             from urllib.parse import urlparse, parse_qs
