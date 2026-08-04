@@ -2,7 +2,7 @@
 """
 auto_update_tunnel_url.py
 =========================
-Monitors the Cloudflare Tunnel log for URL changes and automatically:
+Monitors Cloudflare Tunnel log files for URL changes and automatically:
   1. Updates docs/active_url.json on GitHub Pages via GitHub API
   2. Updates APP_URL and LINE_CALLBACK_URL in .env
   3. Clears Laravel config cache
@@ -14,7 +14,6 @@ Usage (on Termux server):
 Requirements:
   - GITHUB_PAT=<your_personal_access_token> in .env
     (Token needs 'Contents: Read & Write' permission on the repo)
-  - cloudflared running and logging to LOG_FILE path below
 """
 import os
 import re
@@ -28,9 +27,14 @@ import urllib.error
 # ─── Configuration ────────────────────────────────────────────────────────────
 HOME            = "/data/data/com.termux/files/home"
 PROJECT_DIR     = f"{HOME}/uni-activity"
-LOG_FILE        = f"{PROJECT_DIR}/cloudflared.log"
 ENV_FILE        = f"{PROJECT_DIR}/.env"
 LOCAL_JSON      = f"{PROJECT_DIR}/docs/active_url.json"
+
+LOG_FILES       = [
+    f"{HOME}/cloudflared.log",
+    f"{PROJECT_DIR}/cloudflared.log",
+    f"{HOME}/test_cf.log",
+]
 
 GITHUB_OWNER    = "GitNonta"
 GITHUB_REPO     = "uni-activity"
@@ -93,31 +97,35 @@ def is_url_alive(url: str) -> bool:
 
 
 def get_tunnel_url_from_log() -> str | None:
-    """Parse trycloudflare URLs from log, returning the newest LIVE URL."""
-    try:
-        if not os.path.exists(LOG_FILE):
-            return None
-        with open(LOG_FILE, "r") as f:
-            content = f.read()
-        matches = re.findall(r'https://[a-zA-Z0-9-]+\.trycloudflare\.com', content)
-        if not matches:
-            return None
+    """Parse trycloudflare URLs from all log files, returning the newest LIVE URL."""
+    all_matches = []
+    
+    for log_path in LOG_FILES:
+        if os.path.exists(log_path):
+            try:
+                with open(log_path, "r") as f:
+                    content = f.read()
+                matches = re.findall(r'https://[a-zA-Z0-9-]+\.trycloudflare\.com', content)
+                all_matches.extend(matches)
+            except OSError:
+                pass
 
-        # Filter unique candidate URLs in reverse order (newest first)
-        seen = set()
-        candidates = []
-        for url in reversed(matches):
-            if url not in seen:
-                seen.add(url)
-                candidates.append(url)
+    if not all_matches:
+        return None
 
-        # Return first candidate that is actually alive
-        for candidate in candidates:
-            if is_url_alive(candidate):
-                return candidate
-        return None
-    except OSError:
-        return None
+    # Filter unique candidate URLs in reverse order (newest first)
+    seen = set()
+    candidates = []
+    for url in reversed(all_matches):
+        if url not in seen:
+            seen.add(url)
+            candidates.append(url)
+
+    # Return first candidate that is actually alive
+    for candidate in candidates:
+        if is_url_alive(candidate):
+            return candidate
+    return None
 
 
 def update_local_json(url: str) -> None:
@@ -243,7 +251,7 @@ def apply_new_url(url: str) -> None:
 def main() -> None:
     print("=" * 60, flush=True)
     print("  Cloudflare Tunnel Auto-Updater  (auto_update_tunnel_url.py)", flush=True)
-    print(f"  Watching: {LOG_FILE}", flush=True)
+    print(f"  Watching logs: {LOG_FILES}", flush=True)
     print(f"  Interval: {CHECK_INTERVAL}s", flush=True)
     print("=" * 60, flush=True)
 
@@ -256,7 +264,7 @@ def main() -> None:
             apply_new_url(current_url)
             last_url = current_url
         elif not current_url and last_url is None:
-            print(f"  [WATCH] Waiting for tunnel URL in log...", flush=True)
+            print(f"  [WATCH] Waiting for tunnel URL in logs...", flush=True)
 
         time.sleep(CHECK_INTERVAL)
 
