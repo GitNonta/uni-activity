@@ -341,12 +341,38 @@ export function SpeedTestPage({ serverSpeedtest }) {
     return id
   }, [])
 
-  // ── LAN Ping (server-side ICMP) ───────────────────────────────────────
+  // ── LAN Ping (server-side: ICMP→TCP→HTTP, then browser fallback) ────────
   const doLanPing = useCallback(async (signal) => {
-    const url = `${LAN_SERVER}/api/st/lan-ping?target=${LAN_TARGET}&count=${PING_COUNT}`
-    const r = await fetch(url, { signal, cache: 'no-store' })
-    return await r.json()
-    // returns: { ok, ping_ms, jitter_ms, min_ms, max_ms, samples, rtt_values }
+    // First try server-side (tries ICMP → TCP → HTTP in Python)
+    try {
+      const url = `${LAN_SERVER}/api/st/lan-ping?target=${LAN_TARGET}&count=${PING_COUNT}`
+      const r   = await fetch(url, { signal, cache: 'no-store' })
+      const j   = await r.json()
+      if (j.ok) return j  // success: { ok, ping_ms, jitter_ms, min_ms, max_ms, samples, method }
+    } catch { /* server unreachable or aborted */ }
+
+    // Fallback: browser-side timing → server at LAN_SERVER
+    const rtts = []
+    let jitter = 0, prev = null
+    for (let i = 0; i < PING_COUNT; i++) {
+      if (signal.aborted) break
+      const t0 = performance.now()
+      try { await fetch(`${LAN_SERVER}/api/stats?nc=${Date.now()}`, { signal, cache: 'no-store' }) } catch { /**/ }
+      const rtt = performance.now() - t0
+      rtts.push(rtt)
+      if (prev !== null) jitter = rfcJitter(jitter, rtt, prev)
+      prev = rtt
+      await new Promise(r => setTimeout(r, 30))
+    }
+    const avg = rtts.reduce((a, b) => a + b, 0) / (rtts.length || 1)
+    return {
+      ok: true, method: 'HTTP-Browser',
+      ping_ms:   +avg.toFixed(1),
+      jitter_ms: +jitter.toFixed(1),
+      min_ms:    +Math.min(...rtts).toFixed(1),
+      max_ms:    +Math.max(...rtts).toFixed(1),
+      samples:   rtts.length,
+    }
   }, [])
 
   // ── External Ping (browser fetch timing, 10 samples) ─────────────────
@@ -509,16 +535,17 @@ export function SpeedTestPage({ serverSpeedtest }) {
       const download = await doDownload(dlCtrl.signal, isLan ? DL_CONNS_LAN : DL_CONNS_EXT)
 
       const newResult = {
-        ping:     pingData.ping_ms   || 0,
-        jitter:   pingData.jitter_ms || 0,
-        pingMin:  pingData.min_ms    || 0,
-        pingMax:  pingData.max_ms    || 0,
-        samples:  pingData.samples   || 0,
+        ping:       pingData.ping_ms   || 0,
+        jitter:     pingData.jitter_ms || 0,
+        pingMin:    pingData.min_ms    || 0,
+        pingMax:    pingData.max_ms    || 0,
+        samples:    pingData.samples   || 0,
+        pingMethod: pingData.method    || '—',
         upload,
         download,
         mode,
         ts: Date.now(),
-        error: pingData.error || (!pingData.ok ? 'No ICMP reply' : null),
+        error: pingData.error || null,
       }
       setResult(newResult)
       setHistory(h => [newResult, ...h].slice(0, 5))
@@ -647,14 +674,20 @@ export function SpeedTestPage({ serverSpeedtest }) {
           <StatCard icon={Icon.Down}  label="Download" value={res.download}  unit="Mbps" color="#1d4ed8" bg="#eff6ff"   border="#bfdbfe" />
           <StatCard icon={Icon.Up}    label="Upload"   value={res.upload}    unit="Mbps" color="#15803d" bg="#f0fdf4"   border="#bbf7d0" />
           <StatCard
-            icon={Icon.Clock} label={`Ping (${res.samples || PING_COUNT}×)`}
+            icon={Icon.Clock}
+            label={`Ping (${res.samples || PING_COUNT}×)`}
             value={res.ping} unit="ms" color="#7e22ce" bg="#faf5ff" border="#e9d5ff"
-            sub={res.pingMin > 0 ? `↓${res.pingMin}  ↑${res.pingMax} ms` : undefined}
+            sub={
+              res.pingMin > 0
+                ? `↓${res.pingMin}  ↑${res.pingMax} ms  [${res.pingMethod || '—'}]`
+                : res.pingMethod ? `[${res.pingMethod}]` : undefined
+            }
           />
           <StatCard icon={Icon.Wave}  label="Jitter"   value={res.jitter}    unit="ms"   color="#c2410c" bg="#fff7ed"   border="#ffedd5"
             sub="RFC 3550"
           />
         </div>
+
 
         {/* Error notice */}
         {res.error && (

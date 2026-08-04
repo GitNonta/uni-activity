@@ -1162,39 +1162,90 @@ class MonitorHandler(BaseHTTPRequestHandler):
             self._handle_websocket()
             return
 
-        # LAN Ping endpoint — ICMP ping from server to target IP (server-side)
+        # LAN Ping endpoint — multi-method: ICMP → TCP socket → HTTP timing fallback
         if self.path.startswith("/api/st/lan-ping"):
             from urllib.parse import urlparse, parse_qs
-            import subprocess, re as _re
-            qs = parse_qs(urlparse(self.path).query)
+            import subprocess, re as _re, socket as _sock, time as _time, urllib.request as _ureq
+            qs     = parse_qs(urlparse(self.path).query)
             target = qs.get("target", ["192.168.1.45"])[0]
             count  = min(int(qs.get("count", ["10"])[0]), 20)
+
+            def _calc_stats(rtts, method):
+                jitter = 0.0
+                for i in range(1, len(rtts)):
+                    jitter += (abs(rtts[i] - rtts[i-1]) - jitter) / 16
+                return {
+                    "ok": True, "target": target, "method": method,
+                    "ping_ms":   round(sum(rtts) / len(rtts), 1),
+                    "jitter_ms": round(jitter, 1),
+                    "min_ms":    round(min(rtts), 1),
+                    "max_ms":    round(max(rtts), 1),
+                    "samples":   len(rtts),
+                    "rtt_values": rtts,
+                }
+
+            resp = None
+
+            # ── Layer 1: ICMP ping (may fail on Android/if target blocks ICMP) ──
             try:
                 result = subprocess.run(
                     ["ping", "-c", str(count), "-W", "1", target],
-                    capture_output=True, text=True, timeout=20
+                    capture_output=True, text=True, timeout=15
                 )
-                rtt_values = [float(m.group(1)) for m in
+                rtts = [float(m.group(1)) for m in
                     _re.finditer(r"time[=<]([\d.]+)\s*ms", result.stdout)]
-                if rtt_values:
-                    ping_avg = round(sum(rtt_values) / len(rtt_values), 1)
-                    jitter = 0.0
-                    for i in range(1, len(rtt_values)):
-                        jitter += (abs(rtt_values[i] - rtt_values[i-1]) - jitter) / 16
-                    resp = {
-                        "ok": True, "target": target,
-                        "ping_ms": ping_avg,
-                        "jitter_ms": round(jitter, 1),
-                        "min_ms": round(min(rtt_values), 1),
-                        "max_ms": round(max(rtt_values), 1),
-                        "samples": len(rtt_values),
-                        "rtt_values": rtt_values
-                    }
-                else:
-                    resp = {"ok": False, "target": target, "ping_ms": 0, "jitter_ms": 0,
-                            "error": "No ICMP reply from target"}
-            except Exception as exc:
-                resp = {"ok": False, "target": target, "error": str(exc)}
+                if rtts:
+                    resp = _calc_stats(rtts, "ICMP")
+            except Exception:
+                pass
+
+            # ── Layer 2: TCP socket connect (works if any port is open) ──
+            if resp is None:
+                TCP_PORTS = [9999, 80, 443, 22, 8080]
+                for port in TCP_PORTS:
+                    rtts = []
+                    try:
+                        for _ in range(count):
+                            t0 = _time.perf_counter()
+                            s  = _sock.create_connection((target, port), timeout=1)
+                            rtt = (_time.perf_counter() - t0) * 1000
+                            s.close()
+                            rtts.append(round(rtt, 2))
+                        if rtts:
+                            resp = _calc_stats(rtts, f"TCP:{port}")
+                            break
+                    except Exception:
+                        continue
+
+            # ── Layer 3: HTTP GET timing to monitor port on target ──
+            if resp is None:
+                HTTP_URLS = [
+                    f"http://{target}:9999/api/stats",
+                    f"http://{target}/",
+                    f"http://{target}:8080/",
+                ]
+                for url in HTTP_URLS:
+                    rtts = []
+                    try:
+                        for _ in range(min(count, 5)):
+                            t0 = _time.perf_counter()
+                            _ureq.urlopen(url, timeout=1).read(64)
+                            rtt = (_time.perf_counter() - t0) * 1000
+                            rtts.append(round(rtt, 2))
+                        if rtts:
+                            resp = _calc_stats(rtts, f"HTTP")
+                            break
+                    except Exception:
+                        continue
+
+            if resp is None:
+                resp = {
+                    "ok": False, "target": target,
+                    "ping_ms": 0, "jitter_ms": 0,
+                    "error": "All methods failed (ICMP blocked, no open TCP port, no HTTP service)",
+                    "method": "none",
+                }
+
             data = json.dumps(resp).encode()
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -1203,6 +1254,7 @@ class MonitorHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(data)
             return
+
 
         # Download endpoint — generate random binary in-memory, no disk write
         if self.path.startswith("/api/st/download"):
