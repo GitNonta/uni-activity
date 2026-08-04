@@ -48,8 +48,8 @@
 
                 <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:0.25rem;">
                     <h2 class="font-bold" style="font-size:1.25rem; color:#1e293b; margin:0;">{{ $user->full_name }}</h2>
-                    <a href="{{ route('admin.settings.index', ['tab' => 'privacy']) }}" title="แก้ไขข้อมูลโปรไฟล์ & ตั้งค่าความเป็นส่วนตัว" style="display:inline-flex; align-items:center; justify-content:center; color:#4f46e5; background:#e0e7ff; padding:4px 6px; border-radius:8px; transition:all 0.2s; text-decoration:none;" onmouseover="this.style.background='#c7d2fe';" onmouseout="this.style.background='#e0e7ff';">
-                        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                    <a href="{{ route('admin.settings.index', ['tab' => 'privacy']) }}" title="แก้ไขข้อมูลโปรไฟล์ & ตั้งค่าความเป็นส่วนตัว" style="display:inline-flex; align-items:center; justify-content:center; color:#6366f1; background:transparent; padding:0; border:none; text-decoration:none; transition:color 0.2s, transform 0.2s;" onmouseover="this.style.color='#4338ca'; this.style.transform='scale(1.15)';" onmouseout="this.style.color='#6366f1'; this.style.transform='scale(1)';">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                     </a>
                 </div>
                 <p class="text-sm text-muted mb-4">{{ $user->position ?? 'ไม่ได้ระบุตำแหน่ง' }}</p>
