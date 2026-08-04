@@ -3,140 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Uni-Activity | Connecting...</title>
+    <title>UNI Activity | Connecting...</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --bg: #0f172a;
-            --card-bg: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent: #38bdf8;
-            --danger: #f43f5e;
+            --primary: #4f46e5;
+            --primary-light: #6366f1;
+            --primary-bg: #eef2ff;
+            --bg-color: #ffffff;
+            --card-bg: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
         }
 
-        * { box-sizing: border-box; }
-
-        html, body {
-            background-color: var(--bg);
-            color: var(--text-main);
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 440px;
             padding: 1.5rem;
         }
 
-        .status-card {
+        .loader-card {
+            width: 100%;
+            max-width: 420px;
             background: var(--card-bg);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 2.5rem 2rem;
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 3rem 2rem;
             text-align: center;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
             transition: all 0.3s ease;
         }
 
-        .spinner-wrapper {
+        .logo-wrapper {
             position: relative;
-            width: 64px;
-            height: 64px;
+            width: 88px;
+            height: 88px;
             margin: 0 auto 1.5rem auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+            border-radius: 24px;
+            box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.8), 0 8px 16px -4px rgba(79, 70, 229, 0.15);
         }
 
-        .spinner {
-            width: 64px;
-            height: 64px;
-            border: 4px solid rgba(56, 189, 248, 0.15);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+        .logo-svg {
+            width: 48px;
+            height: 48px;
         }
 
-        .pulse-dot {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 16px;
-            height: 16px;
-            background-color: var(--accent);
-            border-radius: 50%;
-            box-shadow: 0 0 12px var(--accent);
-            animation: pulse 1.5s ease-in-out infinite;
+        .app-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.35rem;
+            letter-spacing: -0.02em;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.6; }
-            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
-        }
-
-        .title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin: 0 0 0.5rem 0;
-            color: #ffffff;
-        }
-
-        .desc {
-            font-size: 0.875rem;
+        .app-subtitle {
+            font-size: 0.9rem;
             color: var(--text-muted);
             line-height: 1.5;
-            margin: 0 0 1.5rem 0;
+            margin-bottom: 2rem;
         }
 
-        .badge {
+        /* Loading Progress Bar Component */
+        .progress-container {
+            width: 100%;
+            background-color: var(--primary-bg);
+            height: 8px;
+            border-radius: 999px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 1.25rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 35%;
+            background: linear-gradient(90deg, #4f46e5, #818cf8, #4f46e5);
+            background-size: 200% 100%;
+            border-radius: 999px;
+            position: absolute;
+            animation: loading-slide 1.6s ease-in-out infinite;
+        }
+
+        @keyframes loading-slide {
+            0% {
+                left: -35%;
+                width: 35%;
+            }
+            50% {
+                width: 60%;
+            }
+            100% {
+                left: 100%;
+                width: 25%;
+            }
+        }
+
+        .status-badge {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            background: rgba(56, 189, 248, 0.1);
-            border: 1px solid rgba(56, 189, 248, 0.2);
-            color: var(--accent);
-            padding: 0.4rem 0.85rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
+            font-size: 0.825rem;
             font-weight: 500;
+            color: var(--primary);
+            background: var(--primary-bg);
+            padding: 0.4rem 0.9rem;
+            border-radius: 999px;
         }
 
-        .badge-dot {
+        .status-dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background-color: var(--accent);
-            box-shadow: 0 0 8px var(--accent);
+            background-color: var(--primary);
+            box-shadow: 0 0 8px var(--primary-light);
+            animation: pulse-dot 1.2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { transform: scale(0.85); opacity: 0.6; }
+            50% { transform: scale(1.15); opacity: 1; }
         }
 
         .btn-retry {
-            margin-top: 1.25rem;
+            margin-top: 1.5rem;
             background: var(--primary);
             color: #ffffff;
             border: none;
-            padding: 0.65rem 1.25rem;
-            border-radius: 10px;
+            padding: 0.65rem 1.5rem;
+            border-radius: 12px;
             font-size: 0.875rem;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.1s;
             display: none;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
         }
 
         .btn-retry:hover {
-            background: var(--primary-hover);
+            background: var(--primary-light);
+        }
+
+        .btn-retry:active {
+            transform: scale(0.98);
         }
     </style>
     <script>
@@ -167,7 +193,6 @@
                 sessionStorage.removeItem('active_tunnel_url');
             }
 
-            // Quick async health check for URL reachability
             async function isUrlAlive(baseUrl) {
                 if (!baseUrl || typeof baseUrl !== 'string' || !baseUrl.startsWith('http')) {
                     return false;
@@ -176,7 +201,6 @@
                 const timeoutId = setTimeout(() => controller.abort(), 2500);
 
                 try {
-                    // Try /up route first with cors, fallback to HEAD / with no-cors
                     const res = await fetch(baseUrl.replace(/\/$/, '') + '/up', {
                         method: 'GET',
                         mode: 'cors',
@@ -187,7 +211,6 @@
                     return res.ok || res.status < 500;
                 } catch (e) {
                     clearTimeout(timeoutId);
-                    // Opaque check fallback (no-cors mode succeeds if network/DNS resolves)
                     const controller2 = new AbortController();
                     const timeoutId2 = setTimeout(() => controller2.abort(), 2500);
                     try {
@@ -217,33 +240,31 @@
 
                 const searchStr = window.location.search;
 
-                // 1. Check override URL if specified in query
+                // 1. Check override URL
                 if (overrideUrl && await isUrlAlive(overrideUrl)) {
                     sessionStorage.setItem('active_tunnel_url', overrideUrl);
                     window.location.replace(getTargetUrl(overrideUrl, searchStr));
                     return;
                 }
 
-                // 2. Check cached URL if available
+                // 2. Check cached URL
                 const cachedUrl = sessionStorage.getItem('active_tunnel_url');
                 if (cachedUrl) {
                     if (await isUrlAlive(cachedUrl)) {
                         window.location.replace(getTargetUrl(cachedUrl, searchStr));
                         return;
                     } else {
-                        // Purge dead cached URL
                         sessionStorage.removeItem('active_tunnel_url');
                     }
                 }
 
-                // 3. Fetch latest active_url.json
+                // 3. Fetch active_url.json
                 try {
                     const res = await fetch('active_url.json?t=' + Date.now());
                     const data = await res.json();
 
                     if (data && data.url) {
-                        const isAlive = await isUrlAlive(data.url);
-                        if (isAlive) {
+                        if (await isUrlAlive(data.url)) {
                             sessionStorage.setItem('active_tunnel_url', data.url);
                             window.location.replace(getTargetUrl(data.url, searchStr));
                             return;
@@ -253,7 +274,7 @@
                     console.warn('active_url.json fetch failed:', err);
                 }
 
-                // 4. URL dead or server restarting - Auto Retry loop every 3s
+                // 4. Retry loop
                 if (statusBadge) {
                     statusBadge.innerText = `กำลังรอเซิร์ฟเวอร์อัปเดต URL ใหม่ (ลองใหม่ใน 3 วิ)...`;
                 }
@@ -271,22 +292,32 @@
     </script>
 </head>
 <body>
-    <div class="container">
-        <div class="status-card">
-            <div class="spinner-wrapper">
-                <div class="spinner"></div>
-                <div class="pulse-dot"></div>
-            </div>
-            <h1 class="title">กำลังเชื่อมต่อกับเซิร์ฟเวอร์...</h1>
-            <p class="desc">ระบบกำลังตรวจสอบและเปลี่ยน URL ของเซิร์ฟเวอร์แบบเรียลไทม์ โปรดรอสักครู่</p>
-            
-            <div class="badge">
-                <div class="badge-dot"></div>
-                <span id="status-text">กำลังตรวจสอบการเชื่อมต่อ...</span>
-            </div>
-            <br>
-            <button id="retry-btn" class="btn-retry" onclick="location.reload()">รีโหลดอีกครั้ง</button>
+    <div class="loader-card">
+        <!-- SVG App Logo in Center -->
+        <div class="logo-wrapper">
+            <svg class="logo-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 3L1 9L12 15L23 9L12 3Z" stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M5 13.16V17.5C5 17.5 8.5 20.5 12 20.5C15.5 20.5 19 17.5 19 17.5V13.16" stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M22 10V16" stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
         </div>
+
+        <h1 class="app-title">UNI Activity</h1>
+        <p class="app-subtitle">กำลังเชื่อมต่อและค้นหาที่อยู่เซิร์ฟเวอร์แบบเรียลไทม์</p>
+
+        <!-- Progress Loading Bar Component -->
+        <div class="progress-container">
+            <div class="progress-bar"></div>
+        </div>
+
+        <!-- Status Badge -->
+        <div class="status-badge">
+            <div class="status-dot"></div>
+            <span id="status-text">กำลังตรวจสอบการเชื่อมต่อ...</span>
+        </div>
+
+        <br>
+        <button id="retry-btn" class="btn-retry" onclick="location.reload()">รีโหลดอีกครั้ง</button>
     </div>
 </body>
 </html>
