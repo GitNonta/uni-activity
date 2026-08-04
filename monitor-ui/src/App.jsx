@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useWebSocket } from './hooks/useWebSocket'
 import { ConnectionCard } from './components/ConnectionCard'
+import { SpeedTestCard } from './components/SpeedTestCard'
 import { SystemCard } from './components/SystemCard'
 import { NetworkCard } from './components/NetworkCard'
 import { ServicesCard } from './components/ServicesCard'
@@ -74,6 +75,7 @@ export default function App() {
           <>
             <AlertsBanner alerts={data?.alerts} />
             <ConnectionCard url={data?.cf_url} status={data?.cf_status} lineStatus={data?.line_status} />
+            <SpeedTestCard speedtest={data?.speedtest} />
             <div className="grid-3">
               <SystemCard memory={data?.memory} load={data?.load} temp={data?.temp} disk={data?.disk} battery={data?.battery} />
               <NetworkCard network={data?.network} networkInfo={data?.network_info} />

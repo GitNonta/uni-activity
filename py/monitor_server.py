@@ -31,6 +31,92 @@ url_status = {"online": False, "ping_ms": 0}
 alerts_history = collections.deque(maxlen=100)
 active_alert_ids = set()
 
+speedtest_data = {
+    "status": "idle",
+    "stage": "idle",
+    "ping_ms": 0,
+    "jitter_ms": 0,
+    "download_mbps": 0,
+    "upload_mbps": 0,
+    "last_test": None
+}
+
+def run_speedtest_thread():
+    global speedtest_data
+    if speedtest_data.get("status") == "running":
+        return
+
+    import time, urllib.request, urllib.parse, concurrent.futures
+
+    speedtest_data["status"] = "running"
+    speedtest_data["stage"] = "ping"
+
+    # 1. Ping & Jitter
+    pings = []
+    for _ in range(5):
+        t0 = time.time()
+        try:
+            req = urllib.request.Request('https://1.1.1.1', headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=3) as r:
+                r.read()
+            pings.append((time.time() - t0) * 1000)
+        except Exception:
+            pass
+        time.sleep(0.05)
+
+    ping = round(sum(pings) / len(pings), 1) if pings else 0
+    jitter = round(sum(abs(pings[i] - pings[i-1]) for i in range(1, len(pings))) / (len(pings) - 1), 1) if len(pings) > 1 else 0
+    speedtest_data["ping_ms"] = ping
+    speedtest_data["jitter_ms"] = jitter
+
+    # 2. Download
+    speedtest_data["stage"] = "download"
+    urls = [
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js',
+        'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+        'https://code.jquery.com/jquery-3.7.0.min.js'
+    ] * 4
+
+    def fetch(u):
+        try:
+            req = urllib.request.Request(u, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=5) as r:
+                return len(r.read())
+        except Exception:
+            return 0
+
+    t0 = time.time()
+    total_bytes = 0
+    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as ex:
+        futures = [ex.submit(fetch, u) for u in urls]
+        for f in concurrent.futures.as_completed(futures):
+            total_bytes += f.result()
+            if time.time() - t0 >= 4.0:
+                break
+
+    dur = time.time() - t0
+    dl_mbps = round((total_bytes * 8 / dur) / 1_000_000, 2) if dur > 0 else 0
+    speedtest_data["download_mbps"] = dl_mbps
+
+    # 3. Upload
+    speedtest_data["stage"] = "upload"
+    t0 = time.time()
+    data = b'0' * (2 * 1024 * 1024)
+    try:
+        req = urllib.request.Request('https://speed.cloudflare.com/__up', data=data, method='POST', headers={'User-Agent': 'SpeedTest/1.0', 'Content-Type': 'application/octet-stream'})
+        with urllib.request.urlopen(req, timeout=8) as r:
+            r.read()
+        dur = time.time() - t0
+        up_mbps = round((len(data) * 8 / dur) / 1_000_000, 2) if dur > 0 else 0
+        speedtest_data["upload_mbps"] = up_mbps
+    except Exception:
+        pass
+
+    speedtest_data["stage"] = "idle"
+    speedtest_data["status"] = "idle"
+    speedtest_data["last_test"] = int(time.time())
+
 def ping_url_thread():
     import urllib.parse, http.client, socket, ssl, time
 
@@ -781,6 +867,7 @@ def collect_stats():
         "server_info": get_server_info(),
         "cf_url": get_cf_url(),
         "cf_status": url_status,
+        "speedtest": speedtest_data,
         "line_status": get_line_status(),
         "memory": get_memory(),
         "load": get_load(),
@@ -899,6 +986,16 @@ class MonitorHandler(BaseHTTPRequestHandler):
         pass  # Suppress access logs
 
     def do_POST(self):
+        if self.path == "/api/speedtest":
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(b'{"status":"started"}')
+            import threading
+            threading.Thread(target=run_speedtest_thread, daemon=True).start()
+            return
+
         if self.path == "/api/restart-tunnel":
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
