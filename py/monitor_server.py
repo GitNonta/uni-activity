@@ -58,15 +58,30 @@ _ext_job = {
 }
 _ext_lock = threading.Lock()
 
-def run_ext_speedtest_thread():
-    """Server-side external speedtest: TCP ping → upload → download via Cloudflare."""
-    global _ext_job
+
+def start_ext_speedtest() -> bool:
+    """Reset the external test state before its worker is started."""
     with _ext_lock:
         if _ext_job.get("status") == "running":
-            return
-        _ext_job["status"] = "running"
-        _ext_job["error"]  = None
+            return False
 
+        _ext_job.update({
+            "status": "running",
+            "stage": "ping",
+            "ping": 0.0,
+            "jitter": 0.0,
+            "ping_min": 0.0,
+            "ping_max": 0.0,
+            "download": 0.0,
+            "upload": 0.0,
+            "error": None,
+        })
+
+    return True
+
+
+def run_ext_speedtest_thread():
+    """Server-side external speedtest: TCP ping → upload → download via Cloudflare."""
     import urllib.request as _ureq, socket as _sock, time as _time
 
     def _upd(**kw):
@@ -75,17 +90,25 @@ def run_ext_speedtest_thread():
 
     # ── 1. TCP Ping to 1.1.1.1:443 (10 samples, discard first 2) ─────────
     _upd(stage="ping", ping=0.0, jitter=0.0)
-    try:
-        rtts = []
-        for i in range(12):   # take 12, discard first 2
+    rtts = []
+
+    def collect_ping_samples() -> None:
+        for _ in range(12):   # take 12, discard first 2
             t0 = _time.perf_counter()
             try:
-                s = _sock.create_connection(("1.1.1.1", 443), timeout=2)
-                s.close()
-                rtts.append((_time.perf_counter() - t0) * 1000)
+                with _sock.create_connection(("1.1.1.1", 443), timeout=2):
+                    rtts.append((_time.perf_counter() - t0) * 1000)
             except Exception:
                 pass
             _time.sleep(0.02)
+
+    ping_worker = threading.Thread(target=collect_ping_samples, daemon=True)
+    ping_worker.start()
+    ping_worker.join(timeout=12)
+
+    if ping_worker.is_alive():
+        _upd(error="Ping timed out after 12 seconds")
+    else:
         rtts = rtts[2:]  # discard first 2 (connection warmup)
         if rtts:
             ping_avg = round(sum(rtts) / len(rtts), 1)
@@ -94,8 +117,6 @@ def run_ext_speedtest_thread():
                 jitter += (abs(rtts[i] - rtts[i-1]) - jitter) / 16
             _upd(ping=ping_avg, jitter=round(jitter, 1),
                  ping_min=round(min(rtts), 1), ping_max=round(max(rtts), 1))
-    except Exception as e:
-        _upd(error=f"Ping: {e}")
 
     # ── 2. Upload — 4 concurrent POSTs to Cloudflare ─────────────────────
     _upd(stage="upload")
@@ -139,6 +160,7 @@ def run_ext_speedtest_thread():
         DURATION = 8.0
         WARMUP   = 1.5
         chunks   = []   # (bytes, timestamp)
+        dl_errors = []
         c_lock   = threading.Lock()
         stop_ev  = threading.Event()
 
@@ -153,8 +175,9 @@ def run_ext_speedtest_thread():
                             break
                         with c_lock:
                             chunks.append((len(chunk), _time.perf_counter()))
-            except Exception:
-                pass
+            except Exception as e:
+                with c_lock:
+                    dl_errors.append(str(e))
 
         t_start = _time.perf_counter()
         workers = [threading.Thread(target=_dl_worker, daemon=True) for _ in range(DL_CONNS)]
@@ -186,6 +209,30 @@ def run_ext_speedtest_thread():
         else:
             total = sum(b for b, _ in chunks)
             dl_mbps = round((total * 8) / (max(t_end - t_start, 1) * 1_000_000), 2)
+
+        # Some mobile networks throttle or delay parallel streams long enough
+        # that none produces a chunk before the timed test stops. Retry once
+        # with a bounded single stream so the result is still measurable.
+        if dl_mbps == 0:
+            try:
+                fallback_start = _time.perf_counter()
+                fallback_bytes = 0
+                fallback_url = "https://speed.cloudflare.com/__down?bytes=10485760"
+                with _ureq.urlopen(
+                    _ureq.Request(fallback_url, headers={"User-Agent": "SpeedTest/2.0"}),
+                    timeout=20,
+                ) as response:
+                    while True:
+                        chunk = response.read(65536)
+                        if not chunk:
+                            break
+                        fallback_bytes += len(chunk)
+
+                fallback_elapsed = max(_time.perf_counter() - fallback_start, 0.001)
+                dl_mbps = round((fallback_bytes * 8) / (fallback_elapsed * 1_000_000), 2)
+            except Exception as e:
+                detail = dl_errors[0] if dl_errors else "no data received"
+                _upd(error=f"Download: {detail}; fallback: {e}")
 
         _upd(download=dl_mbps, status="done", stage="done")
     except Exception as e:
@@ -1252,21 +1299,21 @@ class MonitorHandler(BaseHTTPRequestHandler):
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             self.wfile.write(b'{"status":"started"}')
-            import threading
             threading.Thread(target=run_speedtest_thread, daemon=True).start()
             return
 
         # External speedtest start (server-side, no CORS) — POST triggers background job
         if self.path == "/api/st/ext-start":
-            global _ext_job
-            resp_body = json.dumps({"status": "started"}).encode()
-            self.send_response(200)
+            started = start_ext_speedtest()
+            resp_body = json.dumps({"status": "started" if started else "running"}).encode()
+            self.send_response(202 if started else 409)
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", str(len(resp_body)))
             self._cors_headers()
             self.end_headers()
             self.wfile.write(resp_body)
-            threading.Thread(target=run_ext_speedtest_thread, daemon=True).start()
+            if started:
+                threading.Thread(target=run_ext_speedtest_thread, daemon=True).start()
             return
 
         if self.path == "/api/restart-tunnel":
@@ -1311,7 +1358,6 @@ class MonitorHandler(BaseHTTPRequestHandler):
                                 else:
                                     f.write(line)
             
-            import threading
             threading.Thread(target=restart).start()
             return
 

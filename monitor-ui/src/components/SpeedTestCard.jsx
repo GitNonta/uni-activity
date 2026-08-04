@@ -3,9 +3,10 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 // ═══════════════════════════════════════════════════════
 // CONSTANTS
 // ═══════════════════════════════════════════════════════
-const LAN_SERVER  = import.meta.env.DEV ? 'http://192.168.1.222:9999' : ''
-const LAN_TARGET  = '192.168.1.45'
-const LAN_INFO    = { name: 'Termux Monitor Server', location: 'Home Network (TH)', ip: '192.168.1.222', port: 9999, target: LAN_TARGET }
+// LAN tests must bypass the page origin (which may be a Cloudflare Tunnel).
+// It can be overridden for another local monitor host at build time.
+const LAN_SERVER  = import.meta.env.VITE_LAN_SERVER || 'http://192.168.1.222:9999'
+const LAN_INFO    = { name: 'Termux Monitor Server', location: 'Home Network (TH)', ip: '192.168.1.222', port: 9999, target: 'Browser ↔ Monitor Server' }
 
 const EXT_DL_URLS = [
   'https://speed.cloudflare.com/__down?bytes=104857600',
@@ -383,32 +384,32 @@ export function SpeedTestPage({ serverSpeedtest }) {
     return id
   }, [])
 
-  // ── LAN Ping (server-side: ICMP→TCP→HTTP, then browser fallback) ────────
+  // ── LAN Ping (browser → monitor server, same path as upload/download) ──
   const doLanPing = useCallback(async (signal) => {
-    // First try server-side (tries ICMP → TCP → HTTP in Python)
-    try {
-      const url = `${LAN_SERVER}/api/st/lan-ping?target=${LAN_TARGET}&count=${PING_COUNT}`
-      const r   = await fetch(url, { signal, cache: 'no-store' })
-      const j   = await r.json()
-      if (j.ok) return j  // success: { ok, ping_ms, jitter_ms, min_ms, max_ms, samples, method }
-    } catch { /* server unreachable or aborted */ }
-
-    // Fallback: browser-side timing → server at LAN_SERVER
     const rtts = []
     let jitter = 0, prev = null
     for (let i = 0; i < PING_COUNT; i++) {
       if (signal.aborted) break
       const t0 = performance.now()
-      try { await fetch(`${LAN_SERVER}/api/stats?nc=${Date.now()}`, { signal, cache: 'no-store' }) } catch { /**/ }
-      const rtt = performance.now() - t0
-      rtts.push(rtt)
-      if (prev !== null) jitter = rfcJitter(jitter, rtt, prev)
-      prev = rtt
+      try {
+        const response = await fetch(`${LAN_SERVER}/api/stats?nc=${Date.now()}`, { signal, cache: 'no-store' })
+        if (!response.ok) continue
+
+        const rtt = performance.now() - t0
+        rtts.push(rtt)
+        if (prev !== null) jitter = rfcJitter(jitter, rtt, prev)
+        prev = rtt
+      } catch (error) {
+        if (error.name === 'AbortError') throw error
+      }
       await new Promise(r => setTimeout(r, 30))
     }
+
+    if (!rtts.length) throw new Error('Monitor Server is unreachable')
+
     const avg = rtts.reduce((a, b) => a + b, 0) / (rtts.length || 1)
     return {
-      ok: true, method: 'HTTP-Browser',
+      ok: true, method: 'HTTP Browser → Monitor',
       ping_ms:   +avg.toFixed(1),
       jitter_ms: +jitter.toFixed(1),
       min_ms:    +Math.min(...rtts).toFixed(1),
@@ -718,7 +719,7 @@ export function SpeedTestPage({ serverSpeedtest }) {
       {/* ── Mode Switcher ────────────────────────────────── */}
       <div style={{ display: 'flex', gap: '0.5rem', background: '#f1f5f9', borderRadius: '12px', padding: '5px', marginBottom: '1rem' }}>
         {[
-          { id: 'lan',      Icon: Icon.Router, label: 'LAN',      sub: `${LAN_INFO.ip} → ${LAN_TARGET}` },
+          { id: 'lan',      Icon: Icon.Router, label: 'LAN',      sub: `Browser ↔ ${LAN_INFO.ip}` },
           { id: 'external', Icon: Icon.Globe,  label: 'Internet', sub: 'Cloudflare CDN' },
         ].map(m => (
           <button key={m.id}
@@ -877,7 +878,7 @@ export function SpeedTestPage({ serverSpeedtest }) {
         <span><strong>Speed</strong> = (bytes × 8) / (ms × 1000) Mbps</span>
         <span><strong>Jitter</strong> = acc + (|cur−prev| − acc) / 16  (RFC 3550)</span>
         <span><strong>Result</strong> = median of 1-s snapshots, warm-up {WARMUP_MS}ms discarded</span>
-        <span><strong>LAN Ping</strong> = ICMP from {LAN_INFO.ip} → {LAN_TARGET}</span>
+        <span><strong>LAN Ping</strong> = Browser → Monitor Server ({LAN_INFO.ip})</span>
       </div>
     </div>
   )
