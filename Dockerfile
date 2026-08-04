@@ -15,7 +15,7 @@ RUN composer install \
 # Copy application code
 COPY . .
 # Generate optimized autoloader
-RUN composer dump-autoload --optimize --classmap-authoritative
+RUN composer dump-autoload --optimize --classmap-authoritative --no-scripts
 
 # ─── Stage 2: Frontend Assets ───────────────────────────
 FROM node:20-alpine AS frontend
