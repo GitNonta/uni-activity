@@ -509,101 +509,51 @@ export function SpeedTestPage({ serverSpeedtest }) {
     setLiveVal(0)
 
     try {
-      if (isLan) {
-        // --- LAN MODE (Browser drives the test against local server) ---
-        // Step 1: Ping / Jitter
-        setStage('ping')
-        setLiveSide('dl')
-        const pingData = await doLanPing(ctrl.signal)
+      // Step 1: Ping / Jitter
+      setStage('ping')
+      setLiveSide('dl')
+      const pingData = isLan
+        ? await doLanPing(ctrl.signal)
+        : await doExtPing(ctrl.signal)
 
-        if (ctrl.signal.aborted) { setStage('idle'); return }
+      if (ctrl.signal.aborted) { setStage('idle'); return }
 
-        // Step 2: Upload (fresh abort controller)
-        const ulCtrl = new AbortController()
-        abortRef.current = ulCtrl
-        setStage('upload')
-        setLiveSide('ul')
-        const upload = await doUpload(ulCtrl.signal, UL_CONNS)
+      // Step 2: Upload (fresh abort controller)
+      const ulCtrl = new AbortController()
+      abortRef.current = ulCtrl
+      setStage('upload')
+      setLiveSide('ul')
+      const upload = await doUpload(ulCtrl.signal, UL_CONNS)
 
-        if (ulCtrl.signal.aborted && upload === 0) { setStage('idle'); return }
+      if (ulCtrl.signal.aborted && upload === 0) { setStage('idle'); return }
 
-        // Step 3: Download (fresh abort controller)
-        const dlCtrl = new AbortController()
-        abortRef.current = dlCtrl
-        setStage('download')
-        setLiveSide('dl')
-        const download = await doDownload(dlCtrl.signal, DL_CONNS_LAN)
+      // Step 3: Download (fresh abort controller)
+      const dlCtrl = new AbortController()
+      abortRef.current = dlCtrl
+      setStage('download')
+      setLiveSide('dl')
+      const download = await doDownload(dlCtrl.signal, isLan ? DL_CONNS_LAN : DL_CONNS_EXT)
 
-        const newResult = {
-          ping:       pingData.ping_ms   || 0,
-          jitter:     pingData.jitter_ms || 0,
-          pingMin:    pingData.min_ms    || 0,
-          pingMax:    pingData.max_ms    || 0,
-          samples:    pingData.samples   || 0,
-          pingMethod: pingData.method    || '—',
-          upload,
-          download,
-          mode,
-          ts: Date.now(),
-          error: pingData.error || null,
-        }
-        setResult(newResult)
-        setHistory(h => [newResult, ...h].slice(0, 5))
-        setStage('done')
-      } else {
-        // --- EXTERNAL MODE (Server drives the test against Cloudflare, browser polls) ---
-        // Start the job
-        await fetch(`${LAN_SERVER}/api/st/ext-start`, { method: 'POST', signal: ctrl.signal, cache: 'no-store' })
-        
-        let lastStatus = null
-        // Poll every 200ms
-        while (!ctrl.signal.aborted) {
-          await new Promise(r => setTimeout(r, 200))
-          try {
-            const r = await fetch(`${LAN_SERVER}/api/st/ext-status?nc=${Date.now()}`, { signal: ctrl.signal, cache: 'no-store' })
-            const st = await r.json()
-            lastStatus = st
-            
-            // Map stage
-            if (st.stage !== 'idle' && st.stage !== 'done') {
-              setStage(st.stage)
-              setLiveSide(st.stage === 'upload' ? 'ul' : 'dl')
-            }
-            
-            // Update live gauge depending on stage
-            if (st.stage === 'ping') setLiveVal(0)
-            if (st.stage === 'upload') setLiveVal(st.upload)
-            if (st.stage === 'download') setLiveVal(st.download)
-            
-            if (st.status === 'done' || st.status === 'error') {
-              const newResult = {
-                ping:       st.ping       || 0,
-                jitter:     st.jitter     || 0,
-                pingMin:    st.ping_min   || 0,
-                pingMax:    st.ping_max   || 0,
-                samples:    10,
-                pingMethod: st.method     || '—',
-                upload:     st.upload     || 0,
-                download:   st.download   || 0,
-                mode,
-                ts: Date.now(),
-                error: st.error || null,
-              }
-              setResult(newResult)
-              setLiveVal(0)
-              setHistory(h => [newResult, ...h].slice(0, 5))
-              setStage('done')
-              break
-            }
-          } catch {
-            // Ignore fetch errors during polling
-          }
-        }
+      const newResult = {
+        ping:       pingData.ping_ms   || 0,
+        jitter:     pingData.jitter_ms || 0,
+        pingMin:    pingData.min_ms    || 0,
+        pingMax:    pingData.max_ms    || 0,
+        samples:    pingData.samples   || 0,
+        pingMethod: pingData.method    || '—',
+        upload,
+        download,
+        mode,
+        ts: Date.now(),
+        error: pingData.error || null,
       }
+      setResult(newResult)
+      setHistory(h => [newResult, ...h].slice(0, 5))
+      setStage('done')
     } catch (e) {
       setStage('idle')
     }
-  }, [isTesting, isLan, mode, doLanPing, doUpload, doDownload])
+  }, [isTesting, isLan, mode, doLanPing, doExtPing, doUpload, doDownload])
 
   const STEPS = ['ping', 'upload', 'download']
   const stageIdx = STEPS.indexOf(stage)
