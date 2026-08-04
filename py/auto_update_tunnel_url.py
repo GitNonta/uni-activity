@@ -9,7 +9,7 @@ Monitors the Cloudflare Tunnel log for URL changes and automatically:
   4. Updates LINE Webhook endpoint
 
 Usage (on Termux server):
-  python3 auto_update_tunnel_url.py &
+  python3 -u auto_update_tunnel_url.py &
 
 Requirements:
   - GITHUB_PAT=<your_personal_access_token> in .env
@@ -72,18 +72,50 @@ def update_env(updates: dict[str, str]) -> None:
                         break
                 if not replaced:
                     f.write(line)
-        print(f"  [ENV] Updated .env: {list(updates.keys())}")
+        print(f"  [ENV] Updated .env: {list(updates.keys())}", flush=True)
     except OSError as e:
-        print(f"  [ENV] Failed to update .env: {e}")
+        print(f"  [ENV] Failed to update .env: {e}", flush=True)
+
+
+def is_url_alive(url: str) -> bool:
+    """Check if the given Cloudflare Tunnel URL is currently responding and healthy."""
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Termux-Tunnel-Checker"})
+        with urllib.request.urlopen(req, timeout=4) as r:
+            return True
+    except urllib.error.HTTPError as e:
+        # Tunnel status codes like 530 / 1033 indicate dead tunnel, but HTTP 200..404 mean tunnel is alive!
+        if e.code in (530, 520, 521, 522, 523, 524, 1033):
+            return False
+        return True
+    except Exception:
+        return False
 
 
 def get_tunnel_url_from_log() -> str | None:
-    """Parse the latest trycloudflare URL from cloudflared log."""
+    """Parse trycloudflare URLs from log, returning the newest LIVE URL."""
     try:
+        if not os.path.exists(LOG_FILE):
+            return None
         with open(LOG_FILE, "r") as f:
             content = f.read()
         matches = re.findall(r'https://[a-zA-Z0-9-]+\.trycloudflare\.com', content)
-        return matches[-1] if matches else None
+        if not matches:
+            return None
+
+        # Filter unique candidate URLs in reverse order (newest first)
+        seen = set()
+        candidates = []
+        for url in reversed(matches):
+            if url not in seen:
+                seen.add(url)
+                candidates.append(url)
+
+        # Return first candidate that is actually alive
+        for candidate in candidates:
+            if is_url_alive(candidate):
+                return candidate
+        return None
     except OSError:
         return None
 
@@ -94,16 +126,16 @@ def update_local_json(url: str) -> None:
         os.makedirs(os.path.dirname(LOCAL_JSON), exist_ok=True)
         with open(LOCAL_JSON, "w") as f:
             json.dump({"url": url}, f, indent=2)
-        print(f"  [LOCAL] Updated local active_url.json → {url}")
+        print(f"  [LOCAL] Updated local active_url.json → {url}", flush=True)
     except OSError as e:
-        print(f"  [LOCAL] Failed to write local JSON: {e}")
+        print(f"  [LOCAL] Failed to write local JSON: {e}", flush=True)
 
 
 def update_github_json(url: str) -> bool:
     """Update docs/active_url.json on GitHub via API. Returns True on success."""
     pat = read_env("GITHUB_PAT")
     if not pat:
-        print("  [GITHUB] GITHUB_PAT not found in .env — skipping GitHub update.")
+        print("  [GITHUB] GITHUB_PAT not found in .env — skipping GitHub update.", flush=True)
         return False
 
     headers = {
@@ -121,9 +153,9 @@ def update_github_json(url: str) -> bool:
             sha = json.loads(r.read())["sha"]
     except urllib.error.HTTPError as e:
         if e.code != 404:
-            print(f"  [GITHUB] Could not fetch SHA: HTTP {e.code}")
+            print(f"  [GITHUB] Could not fetch SHA: HTTP {e.code}", flush=True)
     except Exception as e:
-        print(f"  [GITHUB] Could not fetch SHA: {e}")
+        print(f"  [GITHUB] Could not fetch SHA: {e}", flush=True)
 
     # Push updated content
     content_b64 = base64.b64encode(
@@ -142,12 +174,12 @@ def update_github_json(url: str) -> bool:
         req = urllib.request.Request(GITHUB_API, data=data, method="PUT", headers=headers)
         with urllib.request.urlopen(req, timeout=10) as r:
             if r.status in (200, 201):
-                print(f"  [GITHUB] Updated active_url.json on GitHub Pages → {url}")
+                print(f"  [GITHUB] Updated active_url.json on GitHub Pages → {url}", flush=True)
                 return True
     except urllib.error.HTTPError as e:
-        print(f"  [GITHUB] Push failed: HTTP {e.code} — {e.read().decode()[:200]}")
+        print(f"  [GITHUB] Push failed: HTTP {e.code} — {e.read().decode()[:200]}", flush=True)
     except Exception as e:
-        print(f"  [GITHUB] Push failed: {e}")
+        print(f"  [GITHUB] Push failed: {e}", flush=True)
 
     return False
 
@@ -156,7 +188,7 @@ def update_line_webhook(url: str) -> None:
     """Update LINE Official Account Webhook URL."""
     token = read_env("LINE_CHANNEL_ACCESS_TOKEN")
     if not token:
-        print("  [LINE] LINE_CHANNEL_ACCESS_TOKEN not found — skipping.")
+        print("  [LINE] LINE_CHANNEL_ACCESS_TOKEN not found — skipping.", flush=True)
         return
 
     webhook = f"{url}/line/callback"
@@ -174,9 +206,9 @@ def update_line_webhook(url: str) -> None:
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
         with opener.open(req, timeout=10) as r:
             if r.status == 200:
-                print(f"  [LINE] Webhook updated → {webhook}")
+                print(f"  [LINE] Webhook updated → {webhook}", flush=True)
     except Exception as e:
-        print(f"  [LINE] Webhook update failed: {e}")
+        print(f"  [LINE] Webhook update failed: {e}", flush=True)
 
 
 def clear_laravel_cache() -> None:
@@ -189,14 +221,14 @@ def clear_laravel_cache() -> None:
                 capture_output=True, text=True, timeout=30
             )
             status = "OK" if result.returncode == 0 else "FAIL"
-            print(f"  [ARTISAN] {cmd} → {status}")
+            print(f"  [ARTISAN] {cmd} → {status}", flush=True)
         except Exception as e:
-            print(f"  [ARTISAN] {cmd} failed: {e}")
+            print(f"  [ARTISAN] {cmd} failed: {e}", flush=True)
 
 
 def apply_new_url(url: str) -> None:
     """Full update pipeline for a new tunnel URL."""
-    print(f"\n[TUNNEL] New URL detected: {url}")
+    print(f"\n[TUNNEL] New URL detected: {url}", flush=True)
     update_local_json(url)
     update_env({
         "APP_URL": url,
@@ -205,15 +237,15 @@ def apply_new_url(url: str) -> None:
     update_github_json(url)
     update_line_webhook(url)
     clear_laravel_cache()
-    print("[TUNNEL] All updates applied.\n")
+    print("[TUNNEL] All updates applied.\n", flush=True)
 
 
 def main() -> None:
-    print("=" * 60)
-    print("  Cloudflare Tunnel Auto-Updater  (auto_update_tunnel_url.py)")
-    print(f"  Watching: {LOG_FILE}")
-    print(f"  Interval: {CHECK_INTERVAL}s")
-    print("=" * 60)
+    print("=" * 60, flush=True)
+    print("  Cloudflare Tunnel Auto-Updater  (auto_update_tunnel_url.py)", flush=True)
+    print(f"  Watching: {LOG_FILE}", flush=True)
+    print(f"  Interval: {CHECK_INTERVAL}s", flush=True)
+    print("=" * 60, flush=True)
 
     last_url: str | None = None
 
@@ -224,7 +256,7 @@ def main() -> None:
             apply_new_url(current_url)
             last_url = current_url
         elif not current_url and last_url is None:
-            print(f"  [WATCH] Waiting for tunnel URL in log...")
+            print(f"  [WATCH] Waiting for tunnel URL in log...", flush=True)
 
         time.sleep(CHECK_INTERVAL)
 
