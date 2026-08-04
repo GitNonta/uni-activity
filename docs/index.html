@@ -13,10 +13,8 @@
             --primary-light: #6366f1;
             --primary-bg: #eef2ff;
             --bg-color: #ffffff;
-            --card-bg: #ffffff;
             --text-dark: #0f172a;
             --text-muted: #64748b;
-            --border-color: #e2e8f0;
         }
 
         * {
@@ -36,38 +34,32 @@
             padding: 1.5rem;
         }
 
-        .loader-card {
+        .splash-container {
             width: 100%;
-            max-width: 420px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 3rem 2rem;
+            max-width: 380px;
             text-align: center;
-            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
-            transition: all 0.3s ease;
-        }
-
-        .logo-wrapper {
-            position: relative;
-            width: 88px;
-            height: 88px;
-            margin: 0 auto 1.5rem auto;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
-            border-radius: 24px;
-            box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.8), 0 8px 16px -4px rgba(79, 70, 229, 0.15);
         }
 
-        .logo-svg {
-            width: 48px;
-            height: 48px;
+        .app-logo {
+            width: 110px;
+            height: 110px;
+            object-fit: contain;
+            margin-bottom: 1.25rem;
+            filter: drop-shadow(0 6px 12px rgba(79, 70, 229, 0.15));
+            animation: float-logo 3s ease-in-out infinite;
+        }
+
+        @keyframes float-logo {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
         }
 
         .app-title {
-            font-size: 1.5rem;
+            font-size: 1.65rem;
             font-weight: 700;
             color: var(--text-dark);
             margin-bottom: 0.35rem;
@@ -84,8 +76,9 @@
         /* Loading Progress Bar Component */
         .progress-container {
             width: 100%;
+            max-width: 320px;
             background-color: var(--primary-bg);
-            height: 8px;
+            height: 6px;
             border-radius: 999px;
             overflow: hidden;
             position: relative;
@@ -292,15 +285,9 @@
     </script>
 </head>
 <body>
-    <div class="loader-card">
-        <!-- SVG App Logo in Center -->
-        <div class="logo-wrapper">
-            <svg class="logo-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 3L1 9L12 15L23 9L12 3Z" stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M5 13.16V17.5C5 17.5 8.5 20.5 12 20.5C15.5 20.5 19 17.5 19 17.5V13.16" stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M22 10V16" stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        </div>
+    <div class="splash-container">
+        <!-- Web Logo Image -->
+        <img src="logo.svg" alt="UNI Activity Logo" class="app-logo">
 
         <h1 class="app-title">UNI Activity</h1>
         <p class="app-subtitle">กำลังเชื่อมต่อและค้นหาที่อยู่เซิร์ฟเวอร์แบบเรียลไทม์</p>
