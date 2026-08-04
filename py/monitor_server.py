@@ -38,6 +38,7 @@ speedtest_data = {
     "jitter_ms": 0,
     "download_mbps": 0,
     "upload_mbps": 0,
+    "server": {"name": "Auto-Select Server", "code": "AUTO", "latency_ms": 0},
     "last_test": None
 }
 
@@ -48,39 +49,103 @@ def run_speedtest_thread():
 
     import time, urllib.request, urllib.parse, concurrent.futures
 
-    speedtest_data["status"] = "running"
-    speedtest_data["stage"] = "ping"
+    test_nodes = [
+        {
+            "name": "Bangkok, Thailand",
+            "code": "BKK",
+            "ping_url": "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js",
+            "dl_urls": [
+                "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js",
+                "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js",
+                "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css",
+                "https://code.jquery.com/jquery-3.7.0.min.js"
+            ]
+        },
+        {
+            "name": "Singapore",
+            "code": "SIN",
+            "ping_url": "https://sin.download.datapacket.com/10mb.bin",
+            "dl_urls": ["https://sin.download.datapacket.com/10mb.bin"]
+        },
+        {
+            "name": "Hong Kong",
+            "code": "HKG",
+            "ping_url": "https://hkg.download.datapacket.com/10mb.bin",
+            "dl_urls": ["https://hkg.download.datapacket.com/10mb.bin"]
+        },
+        {
+            "name": "Tokyo, Japan",
+            "code": "NRT",
+            "ping_url": "https://tyo.download.datapacket.com/10mb.bin",
+            "dl_urls": ["https://tyo.download.datapacket.com/10mb.bin"]
+        },
+        {
+            "name": "Cloudflare Global",
+            "code": "GLOBAL",
+            "ping_url": "https://1.1.1.1",
+            "dl_urls": ["https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"]
+        }
+    ]
 
-    # 1. Ping & Jitter
+    speedtest_data["status"] = "running"
+    speedtest_data["stage"] = "Finding Best Server"
+
+    # 1. Multi-region Server Latency Discovery
+    best_node = test_nodes[0]
+    min_lat = 99999.0
+
+    for node in test_nodes:
+        node_pings = []
+        for _ in range(2):
+            t0 = time.time()
+            try:
+                req = urllib.request.Request(node["ping_url"], headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(req, timeout=2.5) as r:
+                    r.read(512)
+                node_pings.append((time.time() - t0) * 1000)
+            except Exception:
+                pass
+            time.sleep(0.02)
+        
+        if node_pings:
+            avg_p = sum(node_pings) / len(node_pings)
+            if avg_p < min_lat:
+                min_lat = avg_p
+                best_node = node
+
+    speedtest_data["server"] = {
+        "name": best_node["name"],
+        "code": best_node["code"],
+        "latency_ms": round(min_lat, 1)
+    }
+
+    # 2. Testing Latency & Jitter (8 ping samples)
+    speedtest_data["stage"] = "Testing Latency"
     pings = []
-    for _ in range(5):
+    for _ in range(8):
         t0 = time.time()
         try:
-            req = urllib.request.Request('https://1.1.1.1', headers={'User-Agent': 'Mozilla/5.0'})
+            req = urllib.request.Request(best_node["ping_url"], headers={"User-Agent": "Mozilla/5.0"})
             with urllib.request.urlopen(req, timeout=3) as r:
-                r.read()
+                r.read(512)
             pings.append((time.time() - t0) * 1000)
         except Exception:
             pass
-        time.sleep(0.05)
+        time.sleep(0.04)
 
-    ping = round(sum(pings) / len(pings), 1) if pings else 0
-    jitter = round(sum(abs(pings[i] - pings[i-1]) for i in range(1, len(pings))) / (len(pings) - 1), 1) if len(pings) > 1 else 0
+    ping = round(sum(pings) / len(pings), 1) if pings else round(min_lat, 1)
+    jitter = round(sum(abs(pings[i] - pings[i-1]) for i in range(1, len(pings))) / (len(pings) - 1), 1) if len(pings) > 1 else 0.0
     speedtest_data["ping_ms"] = ping
     speedtest_data["jitter_ms"] = jitter
+    speedtest_data["server"]["latency_ms"] = ping
 
-    # 2. Download
-    speedtest_data["stage"] = "download"
-    urls = [
-        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js',
-        'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js',
-        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-        'https://code.jquery.com/jquery-3.7.0.min.js'
-    ] * 4
+    # 3. Testing Download (Parallel Chunking)
+    speedtest_data["stage"] = "Testing Download"
+    dl_targets = best_node["dl_urls"] * 3
 
-    def fetch(u):
+    def fetch_dl(u):
         try:
-            req = urllib.request.Request(u, headers={'User-Agent': 'Mozilla/5.0'})
+            req = urllib.request.Request(u, headers={"User-Agent": "Mozilla/5.0"})
             with urllib.request.urlopen(req, timeout=5) as r:
                 return len(r.read())
         except Exception:
@@ -89,31 +154,44 @@ def run_speedtest_thread():
     t0 = time.time()
     total_bytes = 0
     with concurrent.futures.ThreadPoolExecutor(max_workers=6) as ex:
-        futures = [ex.submit(fetch, u) for u in urls]
+        futures = [ex.submit(fetch_dl, u) for u in dl_targets]
         for f in concurrent.futures.as_completed(futures):
             total_bytes += f.result()
-            if time.time() - t0 >= 4.0:
+            if time.time() - t0 >= 4.5:
                 break
 
     dur = time.time() - t0
-    dl_mbps = round((total_bytes * 8 / dur) / 1_000_000, 2) if dur > 0 else 0
+    dl_mbps = round((total_bytes * 8 / dur) / 1_000_000, 2) if dur > 0 else 0.0
     speedtest_data["download_mbps"] = dl_mbps
 
-    # 3. Upload
-    speedtest_data["stage"] = "upload"
-    t0 = time.time()
-    data = b'0' * (2 * 1024 * 1024)
-    try:
-        req = urllib.request.Request('https://speed.cloudflare.com/__up', data=data, method='POST', headers={'User-Agent': 'SpeedTest/1.0', 'Content-Type': 'application/octet-stream'})
-        with urllib.request.urlopen(req, timeout=8) as r:
-            r.read()
-        dur = time.time() - t0
-        up_mbps = round((len(data) * 8 / dur) / 1_000_000, 2) if dur > 0 else 0
-        speedtest_data["upload_mbps"] = up_mbps
-    except Exception:
-        pass
+    # 4. Testing Upload (3 Iteration Average)
+    speedtest_data["stage"] = "Testing Upload"
+    up_results = []
+    dummy_data = b"0" * (2 * 1024 * 1024)
 
-    speedtest_data["stage"] = "idle"
+    for _ in range(3):
+        t0 = time.time()
+        try:
+            req = urllib.request.Request(
+                "https://speed.cloudflare.com/__up",
+                data=dummy_data,
+                method="POST",
+                headers={"User-Agent": "SpeedTest/1.0", "Content-Type": "application/octet-stream"}
+            )
+            with urllib.request.urlopen(req, timeout=6) as r:
+                r.read()
+            dur = time.time() - t0
+            if dur > 0:
+                up_results.append((len(dummy_data) * 8 / dur) / 1_000_000)
+        except Exception:
+            pass
+        time.sleep(0.05)
+
+    avg_up = round(sum(up_results) / len(up_results), 2) if up_results else 0.0
+    speedtest_data["upload_mbps"] = avg_up
+
+    # 5. Complete
+    speedtest_data["stage"] = "Complete"
     speedtest_data["status"] = "idle"
     speedtest_data["last_test"] = int(time.time())
 
