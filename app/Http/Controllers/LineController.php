@@ -171,13 +171,34 @@ class LineController extends Controller
         $events = $request->input('events', []);
 
         foreach ($events as $event) {
+            $lineUserId = $event['source']['userId'] ?? null;
+            if (!$lineUserId) {
+                continue;
+            }
+
             // รองรับ Follow event (เมื่อผู้ใช้ Add Friend)
             if ($event['type'] === 'follow') {
-                $lineUserId = $event['source']['userId'] ?? null;
-                if ($lineUserId) {
+                $linkUrl = config('services.line.redirect_base_url')
+                    ? config('services.line.redirect_base_url') . '?path=student/profile'
+                    : route('student.profile');
+
+                $this->lineService->pushMessage($lineUserId, [[
+                    'type' => 'text',
+                    'text' => "👋 สวัสดีครับ!\n\nขอบคุณที่เพิ่มเพื่อน UNI Activity\n\n🎓 คลิกที่ลิงก์ด้านล่างเพื่อผูกบัญชีนักศึกษา และรับการแจ้งเตือนกิจกรรมแบบ Real-time ได้ทันทีครับ:\n\n👉 {$linkUrl}",
+                ]]);
+            }
+
+            // รองรับข้อความทักทาย หรือคำว่า "ผูกบัญชี" / "เข้าสู่ระบบ" / "login"
+            if ($event['type'] === 'message' && isset($event['message']['text'])) {
+                $userText = trim($event['message']['text']);
+                if (in_array(mb_strtolower($userText), ['ผูกบัญชี', 'เข้าสู่ระบบ', 'link', 'login', 'ผูกไลน์', 'เมนู'], true)) {
+                    $linkUrl = config('services.line.redirect_base_url')
+                        ? config('services.line.redirect_base_url') . '?path=student/profile'
+                        : route('student.profile');
+
                     $this->lineService->pushMessage($lineUserId, [[
                         'type' => 'text',
-                        'text' => "👋 สวัสดีครับ!\n\nขอบคุณที่ Follow UNI Activity\n\nกรุณาเข้าสู่ระบบที่เว็บไซต์และผูกบัญชี LINE เพื่อรับการแจ้งเตือนกิจกรรมและประกาศต่างๆ ได้เลยครับ 🎓",
+                        'text' => "🔗 เข้าสู่ระบบและผูกบัญชี LINE:\n\n👉 {$linkUrl}",
                     ]]);
                 }
             }
