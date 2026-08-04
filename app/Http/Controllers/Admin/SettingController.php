@@ -15,10 +15,11 @@ class SettingController extends Controller
             'student_email_domain' => Setting::get('student_email_domain', '@pkru.ac.th'),
         ];
 
-        $tokens = auth()->user()->tokens()->latest()->get();
-        $activeTab = request()->get('tab', 'general');
+        $user = auth()->user();
+        $tokens = $user->tokens()->latest()->get();
+        $activeTab = request()->get('tab', 'privacy');
 
-        return view('admin.settings.index', compact('settings', 'tokens', 'activeTab'));
+        return view('admin.settings.index', compact('settings', 'tokens', 'activeTab', 'user'));
     }
 
     public function update(Request $request)

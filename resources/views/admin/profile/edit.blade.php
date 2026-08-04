@@ -117,164 +117,23 @@
         </div>
     </div>
 
-    {{-- ═══ คอลัมน์ขวา: ฟอร์มแก้ไขข้อมูลต่างๆ (2 ส่วน) ═══ --}}
+    {{-- ═══ คอลัมน์ขวา: ย้ายฟอร์มทั้งหมดที่วงสีแดงไปอยู่ที่ตั้งค่าความเป็นส่วนตัว ═══ --}}
     <div style="grid-column: span 2; display:flex; flex-direction:column; gap:1.5rem;">
-        
-        <form method="POST" action="{{ route('admin.profile.update') }}">
-            @csrf
-            @method('PATCH')
-
-            {{-- ข้อมูลส่วนตัว --}}
-            <div class="card mb-6" style="border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                <div class="card-header" style="background:#fff; border-bottom:1px solid #f1f5f9; padding:1rem 1.5rem;">
-                    <h3 class="font-semi" style="font-size:1rem; color:#1e293b;">ข้อมูลส่วนตัว</h3>
-                </div>
-                <div class="card-body" style="padding:1.5rem;">
-                    <div class="grid-2 mb-4">
-                        <div>
-                            <label class="form-label">ชื่อ-นามสกุล (ภาษาไทย) <span class="text-danger">*</span></label>
-                            <input type="text" name="full_name" value="{{ old('full_name', $user->full_name) }}" class="form-control" required>
-                            @error('full_name') <div class="form-error">{{ $message }}</div> @enderror
-                        </div>
-                        <div>
-                            <label class="form-label">ชื่อ-นามสกุล (ภาษาอังกฤษ) <span class="text-danger">*</span></label>
-                            <input type="text" name="english_name" value="{{ old('english_name', $user->english_name) }}" class="form-control" placeholder="เช่น John Doe" required>
-                            @error('english_name') <div class="form-error">{{ $message }}</div> @enderror
-                        </div>
-                    </div>
-
-                    <div class="grid-2 mb-4">
-                        <div>
-                            <label class="form-label">อีเมลติดต่อ <span class="text-danger">*</span></label>
-                            <input type="email" name="email" value="{{ old('email', $user->email) }}" class="form-control" required>
-                            @error('email') <div class="form-error">{{ $message }}</div> @enderror
-                        </div>
-                        <div>
-                            <label class="form-label">เบอร์โทรศัพท์</label>
-                            <input type="text" name="phone" value="{{ old('phone', $user->phone) }}" class="form-control" placeholder="เช่น 081-xxx-xxxx">
-                            @error('phone') <div class="form-error">{{ $message }}</div> @enderror
-                        </div>
-                    </div>
-
-                    <div class="grid-2 mb-4">
-                        <div>
-                            <label class="form-label">ตำแหน่ง</label>
-                            <input type="text" name="position" value="{{ old('position', $user->position) }}" class="form-control" placeholder="เช่น นักวิชาการศึกษา">
-                            @error('position') <div class="form-error">{{ $message }}</div> @enderror
-                        </div>
-                        <div>
-                            <label class="form-label">สังกัด / หน่วยงาน</label>
-                            <input type="text" name="organization" value="{{ old('organization', $user->organization) }}" class="form-control" placeholder="เช่น สำนักวิทยบริการและเทคโนโลยีสารสนเทศ">
-                            @error('organization') <div class="form-error">{{ $message }}</div> @enderror
-                        </div>
-                    </div>
-                </div>
+        <div class="card" style="border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-radius:12px; background:#fff; padding:3rem 2rem; text-align:center;">
+            <div style="width:64px; height:64px; background:#e0e7ff; color:#4f46e5; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:1rem;">
+                <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
             </div>
-
-            {{-- ความปลอดภัยและรหัสผ่าน --}}
-            <div class="card mb-6" style="border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                <div class="card-header" style="background:#fff; border-bottom:1px solid #f1f5f9; padding:1rem 1.5rem;">
-                    <div class="flex items-center gap-2">
-                        <svg style="width:20px; height:20px; color:#4f46e5;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                        <h3 class="font-semi" style="font-size:1rem; color:#1e293b;">ความปลอดภัยและรหัสผ่าน</h3>
-                    </div>
-                    <p class="text-xs text-muted mt-1" style="font-weight:normal;">ปล่อยช่องรหัสผ่านใหม่ว่างไว้ หากไม่ต้องการเปลี่ยนแปลง</p>
-                </div>
-                <div class="card-body" style="padding:1.5rem;">
-                    <div class="mb-4">
-                        <label class="form-label">รหัสผ่านปัจจุบัน</label>
-                        <input type="password" name="password_old" class="form-control" style="max-width:400px;" placeholder="กรุณากรอกรหัสผ่านเดิม หากต้องการแก้ไขรหัสผ่าน">
-                        @error('password_old') <div class="form-error">{{ $message }}</div> @enderror
-                    </div>
-
-                    <div class="grid-2">
-                        <div>
-                            <label class="form-label">รหัสผ่านใหม่</label>
-                            <input type="password" name="password" class="form-control" placeholder="ความยาวไม่น้อยกว่า 6 ตัวอักษร">
-                            @error('password') <div class="form-error">{{ $message }}</div> @enderror
-                        </div>
-                        <div>
-                            <label class="form-label">ยืนยันรหัสผ่านใหม่</label>
-                            <input type="password" name="password_confirmation" class="form-control" placeholder="กรอกรหัสผ่านใหม่อีกครั้ง">
-                        </div>
-                    </div>
-                </div>
+            <h2 class="font-bold mb-2" style="font-size:1.25rem; color:#1e293b;">ย้ายไปที่หน้า "ตั้งค่าความเป็นส่วนตัว" แล้ว</h2>
+            <p class="text-sm text-muted mb-6" style="line-height:1.6; max-width:520px; margin-left:auto; margin-right:auto;">
+                ฟอร์มแก้ไขข้อมูลส่วนตัว รหัสผ่าน และการจัดการ API Keys (ส่วนที่อยู่ในวงสีแดง) ถูกย้ายไปจัดกลุ่มในหน้า <strong>"ตั้งค่าระบบ & ความเป็นส่วนตัว"</strong> เรียบร้อยแล้ว เพื่อความปลอดภัยและเป็นสัดส่วน
+            </p>
+            <div>
+                <a href="{{ route('admin.settings.index', ['tab' => 'privacy']) }}" class="btn btn-primary" style="padding:0.75rem 1.75rem; border-radius:10px; font-weight:600; background:#4f46e5; color:#fff; border:none; text-decoration:none; display:inline-flex; align-items:center; gap:0.5rem; box-shadow:0 4px 12px rgba(79,70,229,0.25);">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    ไปยังหน้าตั้งค่าความเป็นส่วนตัว & รหัสผ่าน
+                </a>
             </div>
-
-            {{-- 🔑 การจัดการ API Keys & Tokens (ความเป็นส่วนตัว) --}}
-            <div class="card mb-6" style="border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                <div class="card-header" style="background:#fff; border-bottom:1px solid #f1f5f9; padding:1rem 1.5rem;">
-                    <div class="flex items-center gap-2">
-                        <svg style="width:20px; height:20px; color:#059669;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
-                        <div>
-                            <h3 class="font-semi" style="font-size:1rem; color:#1e293b;">API Keys & Tokens (ตั้งค่าความเป็นส่วนตัว)</h3>
-                            <p class="text-xs text-muted mt-0.5" style="font-weight:normal;">จัดการ Personal Access Token สำหรับการเชื่อมต่อแอปพลิเคชันหรือระบบภายนอกอย่างปลอดภัย</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body" style="padding:1.5rem;">
-                    @if(session('new_token'))
-                        <div style="background:#ecfdf5; border:1px solid #a7f3d0; border-radius:8px; padding:1rem; margin-bottom:1.25rem;">
-                            <div style="font-weight:700; color:#065f46; font-size:0.9rem; margin-bottom:0.35rem;">🔑 Token ใหม่ถูกสร้างเรียบร้อยแล้ว:</div>
-                            <div style="font-family:monospace; background:#ffffff; padding:0.6rem 0.8rem; border-radius:6px; border:1px solid #6ee7b7; color:#047857; font-size:0.85rem; word-break:break-all;">
-                                {{ session('new_token') }}
-                            </div>
-                            <p style="font-size:0.75rem; color:#047857; margin-top:0.35rem; font-weight:500;">⚠️ กรุณาคัดลอก Token นี้เก็บไว้ทันที เพราะระบบจะแสดงเพียงครั้งเดียวเพื่อความปลอดภัย</p>
-                        </div>
-                    @endif
-
-                    {{-- ตารางแสดง Token ทั้งหมด --}}
-                    <div style="overflow-x:auto;">
-                        <table class="table" style="width:100%; font-size:0.85rem; border-collapse:collapse;">
-                            <thead>
-                                <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0; text-align:left;">
-                                    <th style="padding:0.6rem 0.75rem; color:#475569; font-weight:600;">ชื่อ Token</th>
-                                    <th style="padding:0.6rem 0.75rem; color:#475569; font-weight:600;">ใช้งานล่าสุด</th>
-                                    <th style="padding:0.6rem 0.75rem; color:#475569; font-weight:600;">วันที่สร้าง</th>
-                                    <th style="padding:0.6rem 0.75rem; color:#475569; font-weight:600; text-align:right;">การจัดการ</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($tokens ?? [] as $token)
-                                    <tr style="border-bottom:1px solid #f1f5f9;">
-                                        <td style="padding:0.65rem 0.75rem; font-weight:600; color:#1e293b;">
-                                            {{ $token->name }}
-                                        </td>
-                                        <td style="padding:0.65rem 0.75rem; color:#64748b;">
-                                            {{ $token->last_used_at ? $token->last_used_at->diffForHumans() : 'ยังไม่เคยใช้งาน' }}
-                                        </td>
-                                        <td style="padding:0.65rem 0.75rem; color:#64748b;">
-                                            {{ $token->created_at ? $token->created_at->format('d/m/Y H:i') : '-' }}
-                                        </td>
-                                        <td style="padding:0.65rem 0.75rem; text-align:right;">
-                                            <button type="button" onclick="event.preventDefault(); if(confirm('ยืนยันลบ API Key นี้?')) document.getElementById('delete-token-{{ $token->id }}').submit();" style="background:none; border:none; color:#ef4444; font-size:0.8rem; cursor:pointer; font-weight:500;">
-                                                ลบ Token
-                                            </button>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="4" style="text-align:center; padding:1.5rem; color:#94a3b8; font-size:0.85rem;">
-                                            ยังไม่มีการสร้าง API Key ในระบบ
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Action Buttons --}}
-            <div class="flex justify-end gap-2 mt-4">
-                <a href="{{ route('admin.dashboard') }}" class="btn btn-outline" style="background:#fff;">ยกเลิก</a>
-                <button type="submit" class="btn btn-primary" style="box-shadow:0 1px 2px rgba(0,0,0,0.05);">
-                    <svg style="width:16px; height:16px; margin-right:6px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                    บันทึกข้อมูล
-                </button>
-            </div>
-
-        </form>
+        </div>
     </div>
 </div>
 @endsection
