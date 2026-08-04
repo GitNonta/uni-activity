@@ -356,7 +356,7 @@ export function SpeedTestPage({ serverSpeedtest }) {
     for (let i = 0; i < PING_COUNT; i++) {
       if (signal.aborted) break
       const t0 = performance.now()
-      try { await fetch(`https://speed.cloudflare.com/__down?bytes=1&nc=${Date.now()}`, { signal, cache: 'no-store' }) } catch { /**/ }
+      try { await fetch(`https://speed.cloudflare.com/__down?bytes=1&nc=${Date.now()}`, { signal }) } catch { /**/ }
       const rtt = performance.now() - t0
       rtts.push(rtt)
       if (prev !== null) jitter = rfcJitter(jitter, rtt, prev)
@@ -377,7 +377,12 @@ export function SpeedTestPage({ serverSpeedtest }) {
 
     const fetchOne = async (url) => {
       try {
-        const r = await fetch(url, { signal, cache: 'no-store', headers: { 'Cache-Control': 'no-store' } })
+        // LAN: add Cache-Control header (our server allows it)
+        // External CDN (Cloudflare): NO custom headers — CORS preflight blocks Cache-Control
+        const fetchOpts = isLan
+          ? { signal, cache: 'no-store', headers: { 'Cache-Control': 'no-store' } }
+          : { signal }
+        const r = await fetch(url, fetchOpts)
         if (!r.ok || !r.body) return
         const reader = r.body.getReader()
         while (true) {
@@ -439,9 +444,12 @@ export function SpeedTestPage({ serverSpeedtest }) {
     const loop = async () => {
       while (!signal.aborted && (performance.now() - startRef.current) < UL_DURATION_MS) {
         try {
+          // LAN: can send Cache-Control; external Cloudflare: omit it (CORS preflight blocks it)
+          const hdrs = isLan
+            ? { 'Content-Type': 'application/octet-stream', 'Cache-Control': 'no-store' }
+            : { 'Content-Type': 'application/octet-stream' }
           const r = await fetch(`${ulUrl}?nc=${Date.now()}`, {
-            method: 'POST', signal, body: BLOB,
-            headers: { 'Content-Type': 'application/octet-stream', 'Cache-Control': 'no-store' }
+            method: 'POST', signal, body: BLOB, headers: hdrs,
           })
           if (isLan) {
             const j = await r.json().catch(() => ({}))
