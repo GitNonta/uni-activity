@@ -223,19 +223,15 @@
 <div class="card mb-4" style="background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border: 1px solid #f1f5f9;">
     <div class="card-body" style="padding: 1.5rem;">
         <h2 class="font-bold mb-4" style="font-size: 1.1rem; color: #1e293b; display: flex; align-items: center; gap: 0.5rem;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="#06c755" style="flex-shrink: 0;">
-                <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .348-.281.63-.63.63h-2.425v1.125h2.425c.349 0 .63.283.63.63 0 .348-.281.63-.63.63h-3.055c-.349 0-.63-.282-.63-.63V8.108c0-.348.281-.63.63-.63h3.055c.349 0 .63.282.63.63 0 .348-.281.63-.63.63h-2.425v1.125h2.425zm-3.878-1.755c0-.348-.281-.63-.63-.63-.349 0-.63.282-.63.63v4.516c0 .348.281.63.63.63.349 0 .63-.282.63-.63V8.108zm-2.477 0c0-.348-.281-.63-.63-.63-.348 0-.63.282-.63.63v2.855l-2.023-2.81c-.117-.164-.306-.275-.521-.275-.349 0-.63.282-.63.63v4.516c0 .348.281.63.63.63.349 0 .63-.282.63-.63v-2.855l2.023 2.81c.117.164.306.275.521.275.349 0 .63-.282.63-.63V8.108zm-6.073 4.516h-2.425V8.108c0-.348-.281-.63-.63-.63-.349 0-.63.282-.63.63v5.146c0 .348.281.63.63.63h3.055c.349 0 .63-.282.63-.63 0-.348-.281-.63-.63-.63zM12 2C6.477 2 2 5.795 2 10.477c0 4.187 3.58 7.684 8.414 8.351.328.07.77.215.883.494.101.25.066.64.032.894l-.142.852c-.044.26-.204 1.018.891.555 1.096-.463 5.918-3.485 8.075-5.97C21.43 14.072 22 12.352 22 10.477 22 5.795 17.523 2 12 2z"/>
-            </svg>
+            <img src="{{ asset('images/line-logo.png') }}" alt="LINE" style="width: 22px; height: 22px; object-fit: contain; flex-shrink: 0;">
             การแจ้งเตือนผ่าน LINE
         </h2>
 
         @if(auth()->user()->line_user_id)
             {{-- ═══ สถานะ: ผูกแล้ว ═══ --}}
             <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; margin-bottom: 1rem;">
-                <div style="width: 36px; height: 36px; background: #06c755; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white" style="flex-shrink: 0;">
-                        <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .348-.281.63-.63.63h-2.425v1.125h2.425c.349 0 .63.283.63.63 0 .348-.281.63-.63.63h-3.055c-.349 0-.63-.282-.63-.63V8.108c0-.348.281-.63.63-.63h3.055c.349 0 .63.282.63.63 0 .348-.281.63-.63.63h-2.425v1.125h2.425zm-3.878-1.755c0-.348-.281-.63-.63-.63-.349 0-.63.282-.63.63v4.516c0 .348.281.63.63.63.349 0 .63-.282.63-.63V8.108zm-2.477 0c0-.348-.281-.63-.63-.63-.348 0-.63.282-.63.63v2.855l-2.023-2.81c-.117-.164-.306-.275-.521-.275-.349 0-.63.282-.63.63v4.516c0 .348.281.63.63.63.349 0 .63-.282.63-.63v-2.855l2.023 2.81c.117.164.306.275.521.275.349 0 .63-.282.63-.63V8.108zm-6.073 4.516h-2.425V8.108c0-.348-.281-.63-.63-.63-.349 0-.63.282-.63.63v5.146c0 .348.281.63.63.63h3.055c.349 0 .63-.282.63-.63 0-.348-.281-.63-.63-.63zM12 2C6.477 2 2 5.795 2 10.477c0 4.187 3.58 7.684 8.414 8.351.328.07.77.215.883.494.101.25.066.64.032.894l-.142.852c-.044.26-.204 1.018.891.555 1.096-.463 5.918-3.485 8.075-5.97C21.43 14.072 22 12.352 22 10.477 22 5.795 17.523 2 12 2z"/>
-                    </svg>
+                <div style="width: 36px; height: 36px; background: transparent; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <img src="{{ asset('images/line-logo.png') }}" alt="LINE" style="width: 32px; height: 32px; object-fit: contain; flex-shrink: 0;">
                 </div>
                 <div style="flex: 1; min-width: 0;">
                     <p style="font-weight: 600; font-size: 0.9rem; color: #15803d; margin: 0;">เชื่อมต่อ LINE สำเร็จ</p>
@@ -291,10 +287,8 @@
                 @endforeach
             </div>
 
-            <a href="{{ route('line.redirect') }}" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 0.8rem; background: #06c755; color: #fff; border-radius: 10px; font-weight: 600; font-size: 0.95rem; text-decoration: none; box-shadow: 0 4px 6px rgba(6, 199, 85, 0.2); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 8px rgba(6, 199, 85, 0.3)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(6, 199, 85, 0.2)';">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="white" style="flex-shrink: 0;">
-                    <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .348-.281.63-.63.63h-2.425v1.125h2.425c.349 0 .63.283.63.63 0 .348-.281.63-.63.63h-3.055c-.349 0-.63-.282-.63-.63V8.108c0-.348.281-.63.63-.63h3.055c.349 0 .63.282.63.63 0 .348-.281.63-.63.63h-2.425v1.125h2.425zm-3.878-1.755c0-.348-.281-.63-.63-.63-.349 0-.63.282-.63.63v4.516c0 .348.281.63.63.63.349 0 .63-.282.63-.63V8.108zm-2.477 0c0-.348-.281-.63-.63-.63-.348 0-.63.282-.63.63v2.855l-2.023-2.81c-.117-.164-.306-.275-.521-.275-.349 0-.63.282-.63.63v4.516c0 .348.281.63.63.63.349 0 .63-.282.63-.63v-2.855l2.023 2.81c.117.164.306.275.521.275.349 0 .63-.282.63-.63V8.108zm-6.073 4.516h-2.425V8.108c0-.348-.281-.63-.63-.63-.349 0-.63.282-.63.63v5.146c0 .348.281.63.63.63h3.055c.349 0 .63-.282.63-.63 0-.348-.281-.63-.63-.63zM12 2C6.477 2 2 5.795 2 10.477c0 4.187 3.58 7.684 8.414 8.351.328.07.77.215.883.494.101.25.066.64.032.894l-.142.852c-.044.26-.204 1.018.891.555 1.096-.463 5.918-3.485 8.075-5.97C21.43 14.072 22 12.352 22 10.477 22 5.795 17.523 2 12 2z"/>
-                </svg>
+            <a href="{{ route('line.redirect') }}" style="display: flex; align-items: center; justify-content: center; gap: 0.55rem; width: 100%; padding: 0.8rem; background: #06c755; color: #fff; border-radius: 10px; font-weight: 600; font-size: 0.95rem; text-decoration: none; box-shadow: 0 4px 6px rgba(6, 199, 85, 0.2); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 8px rgba(6, 199, 85, 0.3)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(6, 199, 85, 0.2)';">
+                <img src="{{ asset('images/line-logo.png') }}" alt="LINE" style="width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; filter: brightness(0) invert(1);">
                 เชื่อมต่อบัญชี LINE
             </a>
             <p style="text-align: center; font-size: 0.75rem; color: #94a3b8; margin: 0.75rem 0 0 0;">รับข้อมูลข่าวสารรวดเร็วผ่าน LINE Official Account</p>
