@@ -288,7 +288,7 @@
             </div>
 
             <a href="{{ route('line.redirect') }}" style="display: flex; align-items: center; justify-content: center; gap: 0.55rem; width: 100%; padding: 0.8rem; background: #06c755; color: #fff; border-radius: 10px; font-weight: 600; font-size: 0.95rem; text-decoration: none; box-shadow: 0 4px 6px rgba(6, 199, 85, 0.2); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 8px rgba(6, 199, 85, 0.3)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(6, 199, 85, 0.2)';">
-                <img src="{{ asset('images/line-logo.png') }}" alt="LINE" style="width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; filter: brightness(0) invert(1);">
+                <img src="{{ asset('images/line-logo.png') }}" alt="LINE" style="width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; border-radius: 4px;">
                 เชื่อมต่อบัญชี LINE
             </a>
             <p style="text-align: center; font-size: 0.75rem; color: #94a3b8; margin: 0.75rem 0 0 0;">รับข้อมูลข่าวสารรวดเร็วผ่าน LINE Official Account</p>
