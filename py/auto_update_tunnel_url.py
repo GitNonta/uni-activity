@@ -240,7 +240,7 @@ def apply_new_url(url: str) -> None:
     update_local_json(url)
     update_env({
         "APP_URL": url,
-        "LINE_CALLBACK_URL": "https://gitnonta.github.io/uni-activity/callback.html",
+        "LINE_CALLBACK_URL": f"{url}/line/callback",
     })
     update_github_json(url)
     update_line_webhook(url)
