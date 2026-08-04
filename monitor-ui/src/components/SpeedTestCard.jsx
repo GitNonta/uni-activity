@@ -1,220 +1,355 @@
-import { useState } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 
-export function SpeedTestCard({ speedtest }) {
-  const [isTesting, setIsTesting] = useState(false)
-  const [localStage, setLocalStage] = useState(null)
+// ─── Constants ─────────────────────────────────────────────────────────────
+const DL_DURATION_MS   = 8000   // 8 s download window
+const UL_DURATION_MS   = 6000   // 6 s upload window
+const PING_SAMPLES     = 10     // ping iterations (RFC 3550)
+const DL_CONNECTIONS   = 6      // concurrent download connections
+const UL_CONNECTIONS   = 4      // concurrent upload connections
+const UL_CHUNK_BYTES   = 4 * 1024 * 1024  // 4 MB per upload blob
 
-  const status = speedtest?.status || 'idle'
-  const stage = localStage || speedtest?.stage || 'idle'
-  const ping = speedtest?.ping_ms || 0
-  const jitter = speedtest?.jitter_ms || 0
-  const download = speedtest?.download_mbps || 0
-  const upload = speedtest?.upload_mbps || 0
-  const server = speedtest?.server || { name: 'Auto-Selected Server', code: 'BKK', latency_ms: 0 }
-  const lastTest = speedtest?.last_test ? new Date(speedtest.last_test * 1000).toLocaleTimeString() : null
+// Mbps = (bytes × 8) / (seconds × 1,000,000)
+const toMbps = (bytes, seconds) => seconds > 0
+  ? +((bytes * 8) / (seconds * 1_000_000)).toFixed(2)
+  : 0
 
-  const handleStartSpeedTest = async () => {
-    if (isTesting) return
-    setIsTesting(true)
-    setLocalStage('Finding Best Server')
+// ─── RFC 3550 Jitter accumulator ──────────────────────────────────────────
+const updateJitter = (prev, curr, prevPing) =>
+  prev + (Math.abs(curr - prevPing) - prev) / 16
 
-    try {
-      await fetch('/api/speedtest', { method: 'POST' })
-    } catch (e) {
-      console.error('Failed to trigger speedtest', e)
+// ─── UI helpers ────────────────────────────────────────────────────────────
+const STAGES = {
+  idle:     'Idle',
+  ping:     'Testing Latency',
+  download: 'Testing Download',
+  upload:   'Testing Upload',
+  done:     'Complete',
+}
+
+const getQuality = (dl, ping) => {
+  if (dl === 0)      return { label: 'Not Tested',            color: '#9ca3af', bg: '#f3f4f6' }
+  if (dl >= 50 && ping <= 30)  return { label: 'Excellent',  color: '#059669', bg: '#d1fae5' }
+  if (dl >= 20 && ping <= 60)  return { label: 'High Speed', color: '#0ea5e9', bg: '#e0f2fe' }
+  if (dl >= 8  && ping <= 120) return { label: 'Good',       color: '#2563eb', bg: '#dbeafe' }
+  return { label: 'Fair',                                      color: '#d97706', bg: '#fef3c7' }
+}
+
+// ─── Meter Gauge ────────────────────────────────────────────────────────────
+function Gauge({ value, max = 100, label }) {
+  const pct = Math.min(value / max, 1)
+  const arc  = 172
+  const fill = arc * pct
+  return (
+    <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'0.25rem' }}>
+      <svg width="130" height="82" viewBox="0 0 140 90">
+        <defs>
+          <linearGradient id="gGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stopColor="#3b82f6"/>
+            <stop offset="50%"  stopColor="#10b981"/>
+            <stop offset="100%" stopColor="#8b5cf6"/>
+          </linearGradient>
+        </defs>
+        <path d="M 15 80 A 55 55 0 0 1 125 80" fill="none" stroke="#e2e8f0" strokeWidth="11" strokeLinecap="round"/>
+        <path d="M 15 80 A 55 55 0 0 1 125 80" fill="none" stroke="url(#gGrad)"  strokeWidth="11" strokeLinecap="round"
+          strokeDasharray={arc} strokeDashoffset={arc - fill}
+          style={{ transition: 'stroke-dashoffset 0.35s ease-out' }}/>
+      </svg>
+      <div style={{ marginTop:'-62px', textAlign:'center' }}>
+        <div style={{ fontSize:'1.75rem', fontWeight:800, color:'#0f172a', lineHeight:1 }}>
+          {value.toFixed(value >= 10 ? 1 : 2)}
+        </div>
+        <div style={{ fontSize:'0.68rem', fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'0.05em', marginTop:'4px' }}>
+          {label}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Stat Tile ───────────────────────────────────────────────────────────
+function Tile({ label, value, unit, icon, bg, border, textDark }) {
+  return (
+    <div style={{ background: bg, border: `1px solid ${border}`, borderRadius:'12px', padding:'0.85rem' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:'0.4rem', color: textDark, fontSize:'0.72rem', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.04em' }}>
+        {icon} {label}
+      </div>
+      <div style={{ fontSize:'1.4rem', fontWeight:800, color: textDark, marginTop:'0.3rem', lineHeight:1 }}>
+        {value} <span style={{ fontSize:'0.75rem', fontWeight:600, opacity:0.75 }}>{unit}</span>
+      </div>
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Main Component
+// ═══════════════════════════════════════════════════════════════════════════
+export function SpeedTestCard({ speedtest: serverSpeedtest }) {
+  const [stage,    setStage]    = useState('idle')
+  const [liveMbps, setLiveMbps] = useState(0)       // live gauge value
+  const [result,   setResult]   = useState(null)
+  const abortRef = useRef(null)
+
+  // Determine which results to show: client-side OR server-side fallback
+  const res = result || {
+    ping:     serverSpeedtest?.ping_ms      || 0,
+    jitter:   serverSpeedtest?.jitter_ms   || 0,
+    download: serverSpeedtest?.download_mbps || 0,
+    upload:   serverSpeedtest?.upload_mbps  || 0,
+    server:   serverSpeedtest?.server?.name || 'Server',
+    serverCode: serverSpeedtest?.server?.code || '—',
+    serverLat: serverSpeedtest?.server?.latency_ms || 0,
+    ts: serverSpeedtest?.last_test,
+  }
+
+  const isTesting = stage !== 'idle' && stage !== 'done'
+  const quality   = getQuality(res.download, res.ping)
+  const displayVal = stage === 'upload' ? (liveMbps || res.upload) : (liveMbps || res.download)
+  const displayLabel = stage === 'upload' ? 'Mbps Upload' : 'Mbps Download'
+
+  // ── Helper: get the monitor server's base URL ──────────────────────────
+  const getBase = () => `${window.location.protocol}//${window.location.host}`
+
+  // ── Ping Test (10 samples, RFC 3550 jitter) ────────────────────────────
+  const runPing = useCallback(async (signal) => {
+    let pingSum = 0, jitter = 0, prevPing = null, count = 0
+    for (let i = 0; i < PING_SAMPLES; i++) {
+      if (signal.aborted) break
+      const t0 = performance.now()
+      try {
+        await fetch(`${getBase()}/api/stats?nocache=${Date.now()}`, { signal, cache: 'no-store' })
+        const rtt = performance.now() - t0
+        pingSum += rtt
+        count++
+        if (prevPing !== null) jitter = updateJitter(jitter, rtt, prevPing)
+        prevPing = rtt
+      } catch { break }
+      await new Promise(r => setTimeout(r, 30))
+    }
+    return {
+      ping:   +(pingSum / Math.max(count, 1)).toFixed(1),
+      jitter: +jitter.toFixed(1),
+    }
+  }, [])
+
+  // ── Download Test (multi-connection, time-based, streaming) ────────────
+  const runDownload = useCallback(async (signal) => {
+    const BASE_URL = getBase()
+    const SIZE     = 128 * 1024 * 1024   // 128 MB per connection (time-capped)
+    const start    = performance.now()
+    let totalBytes = 0
+
+    // Live update ticker
+    const ticker = setInterval(() => {
+      const elapsed = (performance.now() - start) / 1000
+      setLiveMbps(toMbps(totalBytes, elapsed))
+    }, 250)
+
+    const fetchStream = async () => {
+      const url = `${BASE_URL}/api/st/download?size=${SIZE}&nocache=${Date.now()}`
+      const res = await fetch(url, {
+        signal,
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-store' },
+      })
+      const reader = res.body.getReader()
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done || signal.aborted) break
+        totalBytes += value.byteLength
+      }
     }
 
-    // Smooth UI Stage progression
-    setTimeout(() => setLocalStage('Testing Latency'), 2000)
-    setTimeout(() => setLocalStage('Testing Download'), 4500)
-    setTimeout(() => setLocalStage('Testing Upload'), 8000)
-    setTimeout(() => {
-      setIsTesting(false)
-      setLocalStage(null)
-    }, 11000)
-  }
+    // Abort after DL_DURATION_MS
+    const timer = setTimeout(() => abortRef.current?.abort(), DL_DURATION_MS)
+    try {
+      await Promise.allSettled(Array.from({ length: DL_CONNECTIONS }, fetchStream))
+    } finally {
+      clearTimeout(timer)
+      clearInterval(ticker)
+    }
 
-  const getQuality = () => {
-    if (download === 0 && upload === 0) return { label: 'Not Tested', color: '#9ca3af', bg: '#f3f4f6' }
-    if (download >= 30 && ping <= 60) return { label: 'High Speed Connection', color: '#059669', bg: '#d1fae5' }
-    if (download >= 10 && ping <= 120) return { label: 'Good Connection', color: '#2563eb', bg: '#dbeafe' }
-    return { label: 'Fair Connection', color: '#d97706', bg: '#fef3c7' }
-  }
+    const elapsed = (performance.now() - start) / 1000
+    return toMbps(totalBytes, elapsed)
+  }, [])
 
-  const quality = getQuality()
-  const displayMbps = stage === 'Testing Upload' ? upload : download
+  // ── Upload Test (multi-connection, time-based) ─────────────────────────
+  const runUpload = useCallback(async (signal) => {
+    const BASE_URL  = getBase()
+    const BLOB      = new Uint8Array(UL_CHUNK_BYTES)   // zeros — no crypto needed
+    const start     = performance.now()
+    let totalBytes  = 0
+
+    const ticker = setInterval(() => {
+      const elapsed = (performance.now() - start) / 1000
+      setLiveMbps(toMbps(totalBytes, elapsed))
+    }, 250)
+
+    const uploadLoop = async () => {
+      while (!signal.aborted && (performance.now() - start) < UL_DURATION_MS) {
+        try {
+          const url = `${BASE_URL}/api/st/upload?nocache=${Date.now()}`
+          const res = await fetch(url, {
+            method:  'POST',
+            signal,
+            body:    BLOB,
+            headers: { 'Content-Type': 'application/octet-stream', 'Cache-Control': 'no-store' },
+          })
+          const j = await res.json()
+          totalBytes += j.received_bytes ?? UL_CHUNK_BYTES
+        } catch { break }
+      }
+    }
+
+    const timer = setTimeout(() => abortRef.current?.abort(), UL_DURATION_MS + 500)
+    try {
+      await Promise.allSettled(Array.from({ length: UL_CONNECTIONS }, uploadLoop))
+    } finally {
+      clearTimeout(timer)
+      clearInterval(ticker)
+    }
+
+    const elapsed = (performance.now() - start) / 1000
+    return toMbps(totalBytes, elapsed)
+  }, [])
+
+  // ── Full speedtest orchestration ───────────────────────────────────────
+  const runTest = useCallback(async () => {
+    if (isTesting) return
+    const controller = new AbortController()
+    abortRef.current = controller
+    const { signal } = controller
+
+    setStage('ping')
+    setLiveMbps(0)
+    setResult(null)
+
+    try {
+      // 1. Ping
+      const { ping, jitter } = await runPing(signal)
+
+      // 2. Download
+      setStage('download')
+      setLiveMbps(0)
+      const download = await runDownload(signal)
+
+      // Reset for upload (need fresh AbortController since previous may be aborted)
+      abortRef.current = new AbortController()
+      const ulSignal = abortRef.current.signal
+
+      // 3. Upload
+      setStage('upload')
+      setLiveMbps(0)
+      const upload = await runUpload(ulSignal)
+
+      setResult({ ping, jitter, download, upload, server: 'Local Monitor Server', serverCode: 'LAN', serverLat: ping, ts: Date.now() / 1000 })
+      setLiveMbps(0)
+      setStage('done')
+    } catch (e) {
+      setStage('idle')
+    }
+  }, [isTesting, runPing, runDownload, runUpload])
+
+  const stageLabel = STAGES[stage] || stage
+  const lastTest = res.ts ? new Date(res.ts * 1000).toLocaleTimeString() : null
 
   return (
-    <div className="card" style={{ background: '#ffffff', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', border: '1px solid #e2e8f0' }}>
-      
-      {/* Header */}
-      <div className="card-header" style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '0.85rem' }}>
-        <svg className="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-        </svg>
+    <div className="card" style={{ background:'#fff', borderRadius:'16px', boxShadow:'0 4px 12px rgba(0,0,0,0.06)', border:'1px solid #e2e8f0' }}>
+
+      {/* ── Header ─────────────────────────────────────────────────────── */}
+      <div className="card-header" style={{ borderBottom:'1px solid #f1f5f9', paddingBottom:'0.9rem', alignItems:'flex-start' }}>
         <div>
-          <h2 className="card-title" style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0f172a' }}>Server Internet Speed Test</h2>
-          <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>Automated Nearest Node Benchmark</div>
-        </div>
-
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          {lastTest && (
-            <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
-              Tested at {lastTest}
-            </span>
-          )}
-
-          <button 
-            onClick={handleStartSpeedTest}
-            disabled={isTesting || status === 'running'}
-            style={{ 
-              background: (isTesting || status === 'running') ? '#94a3b8' : 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)', 
-              border: 'none', 
-              borderRadius: '8px', 
-              padding: '0.5rem 1rem', 
-              fontSize: '0.825rem', 
-              fontWeight: 600, 
-              color: '#ffffff', 
-              cursor: (isTesting || status === 'running') ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              boxShadow: (isTesting || status === 'running') ? 'none' : '0 4px 10px rgba(37, 99, 235, 0.3)',
-              transition: 'all 0.2s ease-in-out'
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ animation: (isTesting || status === 'running') ? 'spin 1s linear infinite' : 'none' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:'0.5rem' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
             </svg>
-            {(isTesting || status === 'running') ? 'Running Speed Test...' : 'Start Speed Test'}
+            <h2 style={{ fontSize:'1rem', fontWeight:700, color:'#0f172a', margin:0 }}>Internet Speed Test</h2>
+          </div>
+          <div style={{ fontSize:'0.73rem', color:'#64748b', marginTop:'3px', marginLeft:'26px' }}>
+            Multi-connection • Time-based • RFC 3550 Jitter • No cache
+          </div>
+        </div>
+
+        <div style={{ marginLeft:'auto', display:'flex', flexDirection:'column', alignItems:'flex-end', gap:'0.35rem' }}>
+          {lastTest && <span style={{ fontSize:'0.72rem', color:'#94a3b8' }}>Last: {lastTest}</span>}
+          <button
+            onClick={runTest}
+            disabled={isTesting}
+            style={{
+              background: isTesting ? '#94a3b8' : 'linear-gradient(135deg,#2563eb,#4f46e5)',
+              border:'none', borderRadius:'8px', padding:'0.5rem 1rem',
+              fontSize:'0.82rem', fontWeight:700, color:'#fff',
+              cursor: isTesting ? 'not-allowed' : 'pointer',
+              display:'flex', alignItems:'center', gap:'0.45rem',
+              boxShadow: isTesting ? 'none' : '0 4px 10px rgba(37,99,235,0.28)',
+              transition:'all 0.2s',
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+              style={{ animation: isTesting ? 'spin 0.8s linear infinite' : 'none' }}>
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+            {isTesting ? `${stageLabel}…` : 'Start Speed Test'}
           </button>
         </div>
       </div>
 
-      {/* Selected Server Banner */}
-      <div style={{ margin: '1.25rem 0 0.85rem', background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)', border: '1px solid #bae6fd', borderRadius: '12px', padding: '0.85rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-          <span style={{ fontSize: '1.2rem' }}>🌐</span>
+      {/* ── Server Banner ──────────────────────────────────────────────── */}
+      <div style={{ margin:'1.1rem 0 0.8rem', background:'linear-gradient(135deg,#f0f9ff,#e0f2fe)', border:'1px solid #bae6fd', borderRadius:'12px', padding:'0.8rem 1.2rem', display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:'0.5rem' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:'0.6rem' }}>
+          <span style={{ fontSize:'1.15rem' }}>🌐</span>
           <div>
-            <div style={{ fontSize: '0.725rem', fontWeight: 600, color: '#0369a1', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Optimal Server Selected</div>
-            <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0c4a6e' }}>
-              {server.name} <span style={{ fontSize: '0.75rem', fontWeight: 600, background: '#0284c7', color: '#ffffff', padding: '0.15rem 0.45rem', borderRadius: '6px', marginLeft: '0.3rem' }}>{server.code}</span>
+            <div style={{ fontSize:'0.68rem', fontWeight:700, color:'#0369a1', textTransform:'uppercase', letterSpacing:'0.06em' }}>Test Server</div>
+            <div style={{ fontSize:'0.9rem', fontWeight:700, color:'#0c4a6e' }}>
+              {res.server}
+              <span style={{ marginLeft:'0.4rem', background:'#0284c7', color:'#fff', fontSize:'0.7rem', fontWeight:700, padding:'0.1rem 0.4rem', borderRadius:'5px' }}>
+                {res.serverCode}
+              </span>
             </div>
           </div>
         </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '0.725rem', color: '#0369a1', fontWeight: 500 }}>Server Latency</div>
-            <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0369a1' }}>{server.latency_ms || ping} ms</div>
-          </div>
-          <div style={{ background: quality.bg, color: quality.color, fontSize: '0.75rem', fontWeight: 700, padding: '0.35rem 0.75rem', borderRadius: '999px', border: '1px solid currentColor' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:'0.75rem' }}>
+          {isTesting && (
+            <div style={{ fontSize:'0.78rem', fontWeight:600, color:'#0369a1', display:'flex', alignItems:'center', gap:'0.35rem' }}>
+              <span style={{ width:'7px', height:'7px', background:'#2563eb', borderRadius:'50%', display:'inline-block',
+                boxShadow:'0 0 0 0 rgba(37,99,235,0.7)', animation:'pulseRing 1s cubic-bezier(0.215,0.61,0.355,1) infinite' }}/>
+              {stageLabel}
+            </div>
+          )}
+          <div style={{ background: quality.bg, color: quality.color, fontSize:'0.73rem', fontWeight:700, padding:'0.3rem 0.7rem', borderRadius:'999px' }}>
             {quality.label}
           </div>
         </div>
       </div>
 
-      {/* Active Stage Indicator */}
-      {(isTesting || status === 'running') && (
-        <div style={{ marginBottom: '1.25rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '0.5rem 0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: '#334155', fontWeight: 600 }}>
-          <span style={{ width: '8px', height: '8px', background: '#2563eb', borderRadius: '50%', animation: 'pulse 1s infinite' }}></span>
-          Current Stage: <span style={{ color: '#2563eb' }}>{stage}</span>
-        </div>
-      )}
+      {/* ── Gauge + Stats Grid ─────────────────────────────────────────── */}
+      <div style={{ display:'grid', gridTemplateColumns:'auto 1fr', gap:'1.25rem', alignItems:'center' }}>
 
-      {/* Speedometer Gauge & Stats Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem' }}>
-        
-        {/* Speedometer Visual Gauge Card */}
-        <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1.25rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-          <div style={{ position: 'relative', width: '130px', height: '90px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="130" height="90" viewBox="0 0 140 90">
-              <path d="M 15 80 A 55 55 0 0 1 125 80" fill="none" stroke="#e2e8f0" strokeWidth="12" strokeLinecap="round" />
-              <path 
-                d="M 15 80 A 55 55 0 0 1 125 80" 
-                fill="none" 
-                stroke="url(#speedGradient)" 
-                strokeWidth="12" 
-                strokeLinecap="round" 
-                strokeDasharray="172"
-                strokeDashoffset={172 - (Math.min(displayMbps, 100) / 100) * 172}
-                style={{ transition: 'stroke-dashoffset 0.5s ease-out' }}
-              />
-              <defs>
-                <linearGradient id="speedGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#3b82f6" />
-                  <stop offset="50%" stopColor="#10b981" />
-                  <stop offset="100%" stopColor="#8b5cf6" />
-                </linearGradient>
-              </defs>
-            </svg>
-            <div style={{ position: 'absolute', bottom: '5px', textAlign: 'center' }}>
-              <div style={{ fontSize: '1.65rem', fontWeight: 800, color: '#0f172a', lineHeight: 1 }}>
-                {displayMbps.toFixed(1)}
-              </div>
-              <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginTop: '3px' }}>
-                Mbps ({stage === 'Testing Upload' ? 'Upload' : 'Download'})
-              </div>
-            </div>
+        {/* Gauge */}
+        <div style={{ background:'#f8fafc', border:'1px solid #e2e8f0', borderRadius:'14px', padding:'1.1rem 1.25rem', display:'flex', flexDirection:'column', alignItems:'center', minWidth:'160px' }}>
+          <Gauge value={displayVal} max={Math.max(100, res.download * 1.5 || 100)} label={displayLabel}/>
+          <div style={{ marginTop:'0.6rem', fontSize:'0.7rem', color:'#64748b', textAlign:'center' }}>
+            {DL_CONNECTIONS} concurrent connections
           </div>
         </div>
 
-        {/* 4 Stats Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-          
-          {/* Download Mbps */}
-          <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '10px', padding: '0.85rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#0369a1', fontSize: '0.75rem', fontWeight: 600 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
-              </svg>
-              Download
-            </div>
-            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0c4a6e', marginTop: '0.25rem' }}>
-              {download} <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>Mbps</span>
-            </div>
-          </div>
-
-          {/* Upload Mbps */}
-          <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', padding: '0.85rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#15803d', fontSize: '0.75rem', fontWeight: 600 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
-              </svg>
-              Upload (3x Avg)
-            </div>
-            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#14532d', marginTop: '0.25rem' }}>
-              {upload} <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>Mbps</span>
-            </div>
-          </div>
-
-          {/* Ping Latency ms */}
-          <div style={{ background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: '10px', padding: '0.85rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#7e22ce', fontSize: '0.75rem', fontWeight: 600 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-              </svg>
-              Ping (8x Samples)
-            </div>
-            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#581c87', marginTop: '0.25rem' }}>
-              {ping} <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>ms</span>
-            </div>
-          </div>
-
-          {/* Jitter ms */}
-          <div style={{ background: '#fff7ed', border: '1px solid #ffedd5', borderRadius: '10px', padding: '0.85rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#c2410c', fontSize: '0.75rem', fontWeight: 600 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-              </svg>
-              Jitter
-            </div>
-            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#7c2d12', marginTop: '0.25rem' }}>
-              {jitter} <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>ms</span>
-            </div>
-          </div>
-
+        {/* Stats 2×2 grid */}
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0.6rem' }}>
+          <Tile label="Download" value={res.download} unit="Mbps" bg="#f0f9ff" border="#bae6fd" textDark="#0369a1"
+            icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>}/>
+          <Tile label={`Upload (${UL_CONNECTIONS}×)`} value={res.upload} unit="Mbps" bg="#f0fdf4" border="#bbf7d0" textDark="#15803d"
+            icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>}/>
+          <Tile label={`Ping (${PING_SAMPLES}× avg)`} value={res.ping} unit="ms" bg="#faf5ff" border="#e9d5ff" textDark="#7e22ce"
+            icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>}/>
+          <Tile label="Jitter (RFC 3550)" value={res.jitter} unit="ms" bg="#fff7ed" border="#ffedd5" textDark="#c2410c"
+            icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>}/>
         </div>
+      </div>
+
+      {/* ── Formula footnote ───────────────────────────────────────────── */}
+      <div style={{ marginTop:'0.9rem', padding:'0.55rem 0.85rem', background:'#f8fafc', border:'1px solid #e2e8f0', borderRadius:'8px', fontSize:'0.68rem', color:'#64748b', display:'flex', gap:'1.25rem', flexWrap:'wrap' }}>
+        <span>⚡ <b>Speed</b> = (bytes × 8) / (s × 1,000,000) Mbps</span>
+        <span>〰️ <b>Jitter</b> = prev + (|curr−prev| − prev) / 16  <span style={{color:'#9ca3af'}}>(RFC 3550)</span></span>
+        <span>⏱ <b>Window</b>: DL {DL_DURATION_MS/1000}s · UL {UL_DURATION_MS/1000}s · Ping {PING_SAMPLES}×</span>
       </div>
     </div>
   )

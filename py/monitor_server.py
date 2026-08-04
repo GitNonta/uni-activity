@@ -1063,7 +1063,39 @@ class MonitorHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         pass  # Suppress access logs
 
+    def _cors_headers(self):
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Cache-Control")
+        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
+        self.send_header("Pragma", "no-cache")
+
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self._cors_headers()
+        self.end_headers()
+
     def do_POST(self):
+        # Upload endpoint — read & discard body, no disk write
+        if self.path.startswith("/api/st/upload"):
+            content_length = int(self.headers.get("Content-Length", 0))
+            received = 0
+            chunk_size = 65536
+            while received < content_length:
+                to_read = min(chunk_size, content_length - received)
+                chunk = self.rfile.read(to_read)
+                if not chunk:
+                    break
+                received += len(chunk)
+            resp = json.dumps({"received_bytes": received}).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(resp)))
+            self._cors_headers()
+            self.end_headers()
+            self.wfile.write(resp)
+            return
+
         if self.path == "/api/speedtest":
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -1130,7 +1162,28 @@ class MonitorHandler(BaseHTTPRequestHandler):
             self._handle_websocket()
             return
 
-        if self.path == "/api/stats":
+        # Download endpoint — generate random binary in-memory, no disk write
+        if self.path.startswith("/api/st/download"):
+            from urllib.parse import urlparse, parse_qs
+            qs = parse_qs(urlparse(self.path).query)
+            size = min(int(qs.get("size", ["104857600"])[0]), 256 * 1024 * 1024)  # max 256 MB
+            self.send_response(200)
+            self.send_header("Content-Type", "application/octet-stream")
+            self.send_header("Content-Length", str(size))
+            self._cors_headers()
+            self.end_headers()
+            chunk = os.urandom(65536)  # 64 KB random chunk, reused
+            sent = 0
+            try:
+                while sent < size:
+                    to_send = min(len(chunk), size - sent)
+                    self.wfile.write(chunk[:to_send])
+                    sent += to_send
+            except Exception:
+                pass
+            return
+
+        if self.path == "/api/stats" or self.path.startswith("/api/stats?"):
             data = json.dumps(collect_stats()).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
