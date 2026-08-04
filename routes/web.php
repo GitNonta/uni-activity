@@ -280,6 +280,10 @@ Route::middleware(['auth', 'role:admin,super-admin'])->prefix('admin')->name('ad
     Route::put('settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
 
     // ── API Keys ──
+    Route::get('api-keys', [\App\Http\Controllers\Admin\ApiKeyController::class, 'index'])->name('api-keys.index');
+    Route::post('api-keys', [\App\Http\Controllers\Admin\ApiKeyController::class, 'store'])->name('api-keys.store');
+    Route::delete('api-keys/{id}', [\App\Http\Controllers\Admin\ApiKeyController::class, 'destroy'])->name('api-keys.destroy');
+
     // API routes for optimized face verification
     Route::prefix('api')->middleware('auth:sanctum')->group(function () {
         Route::post('/face/verify', [App\Http\Controllers\Api\FaceVerificationController::class, 'verify'])->name('api.face.verify');
