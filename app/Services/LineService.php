@@ -32,12 +32,9 @@ class LineService
     /** Get redirect-friendly URL for notifications */
     private function getRedirectUrl(string $path): string
     {
-        $redirectBase = config('services.line.redirect_base_url');
-        if ($redirectBase) {
-            $cleanPath = ltrim($path, '/');
-            return "{$redirectBase}?path={$cleanPath}";
-        }
-        return url($path);
+        $redirectBase = config('services.line.redirect_base_url') ?: 'https://gitnonta.github.io/uni-activity';
+        $cleanPath    = ltrim($path, '/');
+        return "{$redirectBase}?path={$cleanPath}";
     }
 
     /** ส่งข้อความหาผู้ใช้ 1 คน (Push Message) */
