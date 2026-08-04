@@ -59,12 +59,46 @@
             50% { transform: scale(1.04); }
         }
 
-        .status-text {
+        .status-text-wrapper {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
             font-size: 1.15rem;
             font-weight: 600;
             color: var(--line-green);
             margin-bottom: 1rem;
             letter-spacing: -0.01em;
+        }
+
+        /* Animated Dot Wave (. . . .) */
+        .loading-dots {
+            display: inline-flex;
+            gap: 3px;
+            margin-left: 2px;
+        }
+
+        .loading-dots span {
+            display: inline-block;
+            font-weight: 700;
+            color: var(--line-green);
+            animation: wave-dots 1.4s infinite ease-in-out both;
+        }
+
+        .loading-dots span:nth-child(1) { animation-delay: 0.0s; }
+        .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+        .loading-dots span:nth-child(4) { animation-delay: 0.6s; }
+
+        @keyframes wave-dots {
+            0%, 80%, 100% {
+                opacity: 0.2;
+                transform: translateY(0);
+            }
+            40% {
+                opacity: 1;
+                transform: translateY(-4px);
+            }
         }
 
         /* Dotted Circular Spinner Loader (จุดไขปลา สีเขียวเข้ม/เขียวอ่อน) */
@@ -222,14 +256,16 @@
             function triggerSuccessAndRedirect(targetUrl, searchStr) {
                 const spinner = document.getElementById('dotted-spinner');
                 const checkmark = document.getElementById('checkmark-wrapper');
-                const statusText = document.getElementById('status-text');
+                const statusText = document.getElementById('status-text-content');
+                const loadingDots = document.getElementById('loading-dots');
 
-                // 1. Hide spinner & show green checkmark
+                // 1. Hide spinner & dots, show green checkmark
                 if (spinner) spinner.style.display = 'none';
+                if (loadingDots) loadingDots.style.display = 'none';
                 if (checkmark) checkmark.style.display = 'block';
                 if (statusText) statusText.innerText = 'เชื่อมต่อ LINE สำเร็จ!';
 
-                // 2. After 700ms, transition to Web App Loading screen & redirect
+                // 2. After 750ms, transition to Web App Loading screen & redirect
                 setTimeout(() => {
                     const lineState = document.getElementById('line-state');
                     const webState = document.getElementById('web-state');
@@ -240,7 +276,7 @@
                     setTimeout(() => {
                         window.location.replace(getTargetUrl(targetUrl, searchStr));
                     }, 400);
-                }, 700);
+                }, 750);
             }
 
             async function resolveAndRedirect() {
@@ -281,7 +317,15 @@
     <!-- 1. LINE Connection State -->
     <div id="line-state" class="splash-container">
         <img src="line-logo.png" alt="LINE Logo" class="line-logo">
-        <div id="status-text" class="status-text">กำลังเชื่อมต่อ LINE ...</div>
+        <div class="status-text-wrapper">
+            <span id="status-text-content">กำลังเชื่อมต่อ LINE</span>
+            <span id="loading-dots" class="loading-dots">
+                <span>.</span>
+                <span>.</span>
+                <span>.</span>
+                <span>.</span>
+            </span>
+        </div>
 
         <!-- Dotted Spinner Loader (จุดไขปลา สีเขียวเข้ม/เขียวอ่อน) -->
         <div id="dotted-spinner" class="dotted-spinner">
