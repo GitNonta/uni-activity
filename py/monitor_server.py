@@ -1419,7 +1419,7 @@ class MonitorHandler(BaseHTTPRequestHandler):
             return
 
         # External speedtest status (server-side, no CORS issues)
-        if self.path == "/api/st/ext-status":
+        if self.path.startswith("/api/st/ext-status"):
             global _ext_job, _ext_lock
             with _ext_lock:
                 data = json.dumps(_ext_job).encode()
