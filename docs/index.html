@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UNI Activity | Connecting...</title>
+    <title>Connecting...</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -36,7 +36,7 @@
 
         .splash-container {
             width: 100%;
-            max-width: 380px;
+            max-width: 360px;
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -45,98 +45,54 @@
         }
 
         .app-logo {
-            width: 110px;
-            height: 110px;
+            width: 120px;
+            height: 120px;
             object-fit: contain;
-            margin-bottom: 1.25rem;
-            filter: drop-shadow(0 6px 12px rgba(79, 70, 229, 0.15));
+            margin-bottom: 2rem;
+            filter: drop-shadow(0 6px 12px rgba(79, 70, 229, 0.12));
             animation: float-logo 3s ease-in-out infinite;
         }
 
         @keyframes float-logo {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-6px); }
+            50% { transform: translateY(-5px); }
         }
 
-        .app-title {
-            font-size: 1.65rem;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 0.35rem;
-            letter-spacing: -0.02em;
+        .progress-wrapper {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
         }
 
-        .app-subtitle {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            line-height: 1.5;
-            margin-bottom: 2rem;
-        }
-
-        /* Loading Progress Bar Component */
         .progress-container {
             width: 100%;
-            max-width: 320px;
             background-color: var(--primary-bg);
-            height: 6px;
+            height: 8px;
             border-radius: 999px;
             overflow: hidden;
             position: relative;
-            margin-bottom: 1.25rem;
         }
 
         .progress-bar {
             height: 100%;
-            width: 35%;
-            background: linear-gradient(90deg, #4f46e5, #818cf8, #4f46e5);
-            background-size: 200% 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #4f46e5, #6366f1, #818cf8);
             border-radius: 999px;
-            position: absolute;
-            animation: loading-slide 1.6s ease-in-out infinite;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        @keyframes loading-slide {
-            0% {
-                left: -35%;
-                width: 35%;
-            }
-            50% {
-                width: 60%;
-            }
-            100% {
-                left: 100%;
-                width: 25%;
-            }
-        }
-
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.825rem;
-            font-weight: 500;
+        .progress-percent {
+            font-size: 0.95rem;
+            font-weight: 700;
             color: var(--primary);
-            background: var(--primary-bg);
-            padding: 0.4rem 0.9rem;
-            border-radius: 999px;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: var(--primary);
-            box-shadow: 0 0 8px var(--primary-light);
-            animation: pulse-dot 1.2s ease-in-out infinite;
-        }
-
-        @keyframes pulse-dot {
-            0%, 100% { transform: scale(0.85); opacity: 0.6; }
-            50% { transform: scale(1.15); opacity: 1; }
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.01em;
         }
 
         .btn-retry {
-            margin-top: 1.5rem;
+            margin-top: 2rem;
             background: var(--primary);
             color: #ffffff;
             border: none;
@@ -160,6 +116,33 @@
     </style>
     <script>
         (function() {
+            let currentPercent = 0;
+            let animFrame = null;
+
+            function setProgress(targetPercent, duration = 300) {
+                targetPercent = Math.min(100, Math.max(0, targetPercent));
+                const progressBar = document.getElementById('progress-bar');
+                const progressPercent = document.getElementById('progress-percent');
+                
+                if (progressBar) progressBar.style.width = targetPercent + '%';
+                
+                if (animFrame) cancelAnimationFrame(animFrame);
+                const startPercent = currentPercent;
+                const startTime = performance.now();
+                
+                function animate(now) {
+                    const elapsed = now - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const interpolated = Math.round(startPercent + (targetPercent - startPercent) * progress);
+                    currentPercent = interpolated;
+                    if (progressPercent) progressPercent.innerText = interpolated + '%';
+                    if (progress < 1) {
+                        animFrame = requestAnimationFrame(animate);
+                    }
+                }
+                animFrame = requestAnimationFrame(animate);
+            }
+
             function getTargetUrl(baseUrl, searchStr) {
                 const params = new URLSearchParams(searchStr);
                 params.delete('url');
@@ -226,25 +209,28 @@
 
             async function resolveAndRedirect() {
                 attemptCount++;
-                const statusBadge = document.getElementById('status-text');
-                if (statusBadge) {
-                    statusBadge.innerText = `กำลังตรวจสอบการเชื่อมต่อ (รอบที่ ${attemptCount})...`;
-                }
-
                 const searchStr = window.location.search;
 
+                setProgress(15, 200);
+
                 // 1. Check override URL
-                if (overrideUrl && await isUrlAlive(overrideUrl)) {
-                    sessionStorage.setItem('active_tunnel_url', overrideUrl);
-                    window.location.replace(getTargetUrl(overrideUrl, searchStr));
-                    return;
+                if (overrideUrl) {
+                    setProgress(35, 200);
+                    if (await isUrlAlive(overrideUrl)) {
+                        setProgress(100, 200);
+                        sessionStorage.setItem('active_tunnel_url', overrideUrl);
+                        setTimeout(() => window.location.replace(getTargetUrl(overrideUrl, searchStr)), 200);
+                        return;
+                    }
                 }
 
                 // 2. Check cached URL
                 const cachedUrl = sessionStorage.getItem('active_tunnel_url');
                 if (cachedUrl) {
+                    setProgress(55, 250);
                     if (await isUrlAlive(cachedUrl)) {
-                        window.location.replace(getTargetUrl(cachedUrl, searchStr));
+                        setProgress(100, 200);
+                        setTimeout(() => window.location.replace(getTargetUrl(cachedUrl, searchStr)), 200);
                         return;
                     } else {
                         sessionStorage.removeItem('active_tunnel_url');
@@ -252,14 +238,17 @@
                 }
 
                 // 3. Fetch active_url.json
+                setProgress(75, 300);
                 try {
                     const res = await fetch('active_url.json?t=' + Date.now());
                     const data = await res.json();
 
                     if (data && data.url) {
+                        setProgress(88, 250);
                         if (await isUrlAlive(data.url)) {
+                            setProgress(100, 150);
                             sessionStorage.setItem('active_tunnel_url', data.url);
-                            window.location.replace(getTargetUrl(data.url, searchStr));
+                            setTimeout(() => window.location.replace(getTargetUrl(data.url, searchStr)), 200);
                             return;
                         }
                     }
@@ -267,13 +256,11 @@
                     console.warn('active_url.json fetch failed:', err);
                 }
 
-                // 4. Retry loop
-                if (statusBadge) {
-                    statusBadge.innerText = `กำลังรอเซิร์ฟเวอร์อัปเดต URL ใหม่ (ลองใหม่ใน 3 วิ)...`;
-                }
+                // 4. Server restarting/updating - Reset progress to 20% and loop in 3s
+                setProgress(20, 300);
 
                 const retryBtn = document.getElementById('retry-btn');
-                if (retryBtn && attemptCount >= 3) {
+                if (retryBtn && attemptCount >= 4) {
                     retryBtn.style.display = 'inline-block';
                 }
 
@@ -289,21 +276,14 @@
         <!-- Web Logo Image -->
         <img src="logo.svg" alt="UNI Activity Logo" class="app-logo">
 
-        <h1 class="app-title">UNI Activity</h1>
-        <p class="app-subtitle">กำลังเชื่อมต่อและค้นหาที่อยู่เซิร์ฟเวอร์แบบเรียลไทม์</p>
-
-        <!-- Progress Loading Bar Component -->
-        <div class="progress-container">
-            <div class="progress-bar"></div>
+        <!-- Progress Loading Bar & 1-100% Indicator -->
+        <div class="progress-wrapper">
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div class="progress-percent" id="progress-percent">0%</div>
         </div>
 
-        <!-- Status Badge -->
-        <div class="status-badge">
-            <div class="status-dot"></div>
-            <span id="status-text">กำลังตรวจสอบการเชื่อมต่อ...</span>
-        </div>
-
-        <br>
         <button id="retry-btn" class="btn-retry" onclick="location.reload()">รีโหลดอีกครั้ง</button>
     </div>
 </body>
