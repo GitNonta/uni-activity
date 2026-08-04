@@ -28,7 +28,12 @@
             </div>
         @endif
         
-        <div class="prose max-w-none text-sm leading-relaxed mb-6" style="color:#334155;white-space:pre-wrap;">{{ $announcement->content }}</div>
+        <div class="prose max-w-none text-sm leading-relaxed mb-4" style="color:#334155;white-space:pre-wrap;">{{ $announcement->content }}</div>
+        
+        {{-- บล็อกผู้สร้างประกาศ สไตล์ YouTube --}}
+        <div>
+            <x-creator-badge :creator="$announcement->creator" default-role="ผู้ลงประกาศข่าวสาร" />
+        </div>
         
         <div class="pt-4 border-t border-gray-100 flex justify-between items-center text-xs text-muted">
             <div>

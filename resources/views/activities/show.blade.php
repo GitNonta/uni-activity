@@ -27,6 +27,11 @@
             <p class="text-muted text-sm mt-2">{{ $activity->description }}</p>
         @endif
 
+        {{-- บล็อกผู้สร้างกิจกรรม สไตล์ YouTube --}}
+        <div>
+            <x-creator-badge :creator="$activity->creator" default-role="ผู้จัดกิจกรรม / เจ้าหน้าที่" />
+        </div>
+
         <hr class="divider">
 
         {{-- ข้อมูลกิจกรรม: วันที่, เวลา, สถานที่, ชั่วโมง --}}

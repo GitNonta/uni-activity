@@ -90,6 +90,11 @@
             <p class="text-muted text-sm mt-2">{{ $job->description }}</p>
         @endif
 
+        {{-- บล็อกผู้สร้างงาน สไตล์ YouTube --}}
+        <div>
+            <x-creator-badge :creator="$job->creator" default-role="หน่วยงานผู้ลงประกาศงาน" />
+        </div>
+
         <hr class="divider">
 
         {{-- ข้อมูลงาน --}}
