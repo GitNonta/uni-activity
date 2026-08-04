@@ -3,193 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connecting to LINE Login...</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Redirecting...</title>
     <style>
-        :root {
-            --primary: #06c755;
-            --bg: #0f172a;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Plus Jakarta Sans', 'Kanit', -apple-system, sans-serif;
-            background: radial-gradient(circle at 50% 0%, #064e3b 0%, #0f172a 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        html, body {
+            background-color: #0f172a;
             color: #f8fafc;
-            overflow: hidden;
-            padding: 1.5rem;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
         }
-        .card {
-            background: rgba(30, 41, 59, 0.75);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
-            padding: 3rem 2rem;
+        .error-card {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #0f172a;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
             text-align: center;
-            max-width: 420px;
+            padding: 2rem;
+            z-index: 9999;
+        }
+        .error-box {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 16px;
+            max-width: 400px;
             width: 100%;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(12px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .logo-wrap {
-            width: 72px;
-            height: 72px;
-            margin: 0 auto 1.5rem;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .pulse-ring {
-            position: absolute;
-            inset: -8px;
-            border-radius: 50%;
-            border: 2px solid #06c755;
-            animation: pulseRing 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
-        }
-        @keyframes pulseRing {
-            0% { transform: scale(0.85); opacity: 0.8; }
-            50% { transform: scale(1.15); opacity: 0.2; }
-            100% { transform: scale(0.85); opacity: 0.8; }
-        }
-        .icon-box {
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #06c755 0%, #059669 100%);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 10px 20px -5px rgba(6, 199, 85, 0.4);
-            color: white;
-            font-weight: 800;
-            font-size: 1.2rem;
-        }
-        h1 {
-            font-size: 1.35rem;
-            font-weight: 600;
-            color: #ffffff;
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.02em;
-        }
-        p {
-            font-size: 0.9rem;
-            color: #94a3b8;
-            line-height: 1.5;
-            margin-bottom: 1.75rem;
-        }
-        .progress-bar {
-            height: 4px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 999px;
-            overflow: hidden;
-            position: relative;
-        }
-        .progress-inner {
-            height: 100%;
-            background: linear-gradient(90deg, #06c755, #34d399);
-            border-radius: 999px;
-            width: 40%;
-            animation: progressMove 1.2s ease-in-out infinite alternate;
-        }
-        @keyframes progressMove {
-            0% { width: 15%; transform: translateX(0); }
-            100% { width: 70%; transform: translateX(50%); }
-        }
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: 1.5rem;
-            padding: 0.4rem 0.9rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 999px;
-            font-size: 0.78rem;
-            color: #cbd5e1;
-        }
-        .dot {
-            width: 7px;
-            height: 7px;
-            background: #06c755;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #06c755;
         }
     </style>
     <script>
         (function() {
+            function getTargetUrl(baseUrl, searchStr) {
+                let target = baseUrl.endsWith('/') ? baseUrl + 'line/callback' : baseUrl + '/line/callback';
+                target += searchStr;
+                return target;
+            }
+
+            const searchStr = window.location.search;
+
+            // 1. Instant redirect if cached
             const cachedUrl = sessionStorage.getItem('active_tunnel_url');
             if (cachedUrl) {
-                let target = cachedUrl.endsWith('/') ? cachedUrl + 'line/callback' : cachedUrl + '/line/callback';
-                target += window.location.search;
-                window.location.replace(target);
+                window.location.replace(getTargetUrl(cachedUrl, searchStr));
             }
+
+            // 2. Fetch live URL immediately
+            fetch('active_url.json?t=' + Date.now())
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.url) {
+                        sessionStorage.setItem('active_tunnel_url', data.url);
+                        window.location.replace(getTargetUrl(data.url, searchStr));
+                    } else {
+                        throw new Error('Invalid URL');
+                    }
+                })
+                .catch(() => {
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const err = document.getElementById('error-card');
+                        if (err) err.style.display = 'flex';
+                    });
+                });
         })();
     </script>
 </head>
 <body>
-    <div class="card">
-        <div class="logo-wrap">
-            <div class="pulse-ring"></div>
-            <div class="icon-box">LINE</div>
-        </div>
-        
-        <h1 id="title">เชื่อมต่อบัญชี LINE</h1>
-        <p id="subtitle">กำลังบันทึกและส่งข้อมูลงเซิร์ฟเวอร์หลัก...</p>
-
-        <div class="progress-bar" id="progress">
-            <div class="progress-inner"></div>
-        </div>
-
-        <div class="status-badge">
-            <span class="dot"></span>
-            <span>ตรวจสอบสิทธิ์ปลอดภัยผ่าน LINE OAuth</span>
+    <div class="error-card" id="error-card">
+        <div class="error-box">
+            <h2 style="font-size: 1.25rem; margin-bottom: 0.5rem; color: #ef4444;">ไม่สามารถเชื่อมต่อการผูกบัญชีได้</h2>
+            <p style="font-size: 0.875rem; color: #94a3b8; margin: 0;">โปรดตรวจสอบการเชื่อมต่อ หรือติดต่อผู้ดูแลระบบ</p>
         </div>
     </div>
-
-    <script>
-        (function() {
-            function redirectNow(baseUrl) {
-                sessionStorage.setItem('active_tunnel_url', baseUrl);
-                let target = baseUrl.endsWith('/') ? baseUrl + 'line/callback' : baseUrl + '/line/callback';
-                target += window.location.search;
-
-                try {
-                    const link = document.createElement('link');
-                    link.rel = 'preconnect';
-                    link.href = new URL(baseUrl).origin;
-                    document.head.appendChild(link);
-                } catch(e) {}
-
-                window.location.replace(target);
-            }
-
-            fetch('active_url.json?t=' + Date.now())
-                .then(res => {
-                    if (!res.ok) throw new Error('HTTP ' + res.status);
-                    return res.json();
-                })
-                .then(data => {
-                    if (!data.url) throw new Error('Invalid URL');
-                    redirectNow(data.url);
-                })
-                .catch(err => {
-                    console.error('Callback error:', err);
-                    document.getElementById('title').innerText = 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้';
-                    document.getElementById('subtitle').innerText = 'โปรดตรวจสอบการเชื่อมต่อ หรือติดต่อผู้ดูแลระบบ';
-                    document.getElementById('progress').style.display = 'none';
-                });
-        })();
-    </script>
 </body>
 </html>
