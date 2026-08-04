@@ -106,11 +106,30 @@ def ping_url_thread():
 # ------- Data Collection -------
 
 def get_cf_url():
+    # 1. Check docs/active_url.json first
+    json_path = os.path.join(os.path.dirname(ENV_PATH), "docs", "active_url.json")
+    if os.path.exists(json_path):
+        try:
+            with open(json_path, "r") as f:
+                data = json.load(f)
+                url = data.get("url", "").strip()
+                if url and "trycloudflare" in url:
+                    return url
+        except Exception:
+            pass
+
+    # 2. Read APP_URL from .env
     if os.path.exists(ENV_PATH):
-        with open(ENV_PATH) as f:
-            for line in f:
-                if line.startswith("APP_URL="):
-                    return line.split("=", 1)[1].strip()
+        try:
+            with open(ENV_PATH) as f:
+                for line in f:
+                    if line.startswith("APP_URL="):
+                        val = line.split("=", 1)[1].strip()
+                        if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):
+                            val = val[1:-1]
+                        return val
+        except Exception:
+            pass
     return "Not Found"
 
 line_status_cache = {"status": "Checking...", "error": None, "last_check": 0}
