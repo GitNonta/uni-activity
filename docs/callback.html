@@ -101,13 +101,13 @@
             }
         }
 
-        /* Dotted Circular Spinner Loader (จุดไขปลา สีเขียวเข้ม/เขียวอ่อน) */
+        /* Dynamic Animated Dotted Circular Spinner Loader (จุดไขปลาหมุน + เด้งขยาย + เปล่งแสง) */
         .dotted-spinner {
             position: relative;
-            width: 52px;
-            height: 52px;
+            width: 56px;
+            height: 56px;
             margin: 0.5rem auto 0 auto;
-            animation: rotate-spinner 1.4s linear infinite;
+            animation: rotate-spinner 1.6s linear infinite;
         }
 
         @keyframes rotate-spinner {
@@ -116,19 +116,35 @@
 
         .dot {
             position: absolute;
-            width: 9px;
-            height: 9px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
+            animation: pulse-dot-scale 1.2s ease-in-out infinite alternate;
         }
 
-        .dot:nth-child(1)  { top: 0; left: 21px; background-color: var(--line-green); }
-        .dot:nth-child(2)  { top: 6px; right: 6px; background-color: var(--line-light-green); }
-        .dot:nth-child(3)  { top: 21px; right: 0; background-color: var(--line-dark-green); }
-        .dot:nth-child(4)  { bottom: 6px; right: 6px; background-color: #a7f3d0; }
-        .dot:nth-child(5)  { bottom: 0; left: 21px; background-color: var(--line-green); }
-        .dot:nth-child(6)  { bottom: 6px; left: 6px; background-color: var(--line-light-green); }
-        .dot:nth-child(7)  { top: 21px; left: 0; background-color: var(--line-dark-green); }
-        .dot:nth-child(8)  { top: 6px; left: 6px; background-color: #a7f3d0; }
+        .dot:nth-child(1)  { top: 0; left: 23px; background-color: var(--line-green); box-shadow: 0 0 10px var(--line-green); animation-delay: 0.0s; }
+        .dot:nth-child(2)  { top: 7px; right: 7px; background-color: var(--line-light-green); box-shadow: 0 0 8px var(--line-light-green); animation-delay: 0.15s; }
+        .dot:nth-child(3)  { top: 23px; right: 0; background-color: var(--line-dark-green); box-shadow: 0 0 8px var(--line-dark-green); animation-delay: 0.3s; }
+        .dot:nth-child(4)  { bottom: 7px; right: 7px; background-color: #a7f3d0; box-shadow: 0 0 6px #a7f3d0; animation-delay: 0.45s; }
+        .dot:nth-child(5)  { bottom: 0; left: 23px; background-color: var(--line-green); box-shadow: 0 0 10px var(--line-green); animation-delay: 0.6s; }
+        .dot:nth-child(6)  { bottom: 7px; left: 7px; background-color: var(--line-light-green); box-shadow: 0 0 8px var(--line-light-green); animation-delay: 0.75s; }
+        .dot:nth-child(7)  { top: 23px; left: 0; background-color: var(--line-dark-green); box-shadow: 0 0 8px var(--line-dark-green); animation-delay: 0.9s; }
+        .dot:nth-child(8)  { top: 7px; left: 7px; background-color: #a7f3d0; box-shadow: 0 0 6px #a7f3d0; animation-delay: 1.05s; }
+
+        @keyframes pulse-dot-scale {
+            0% {
+                transform: scale(0.6);
+                opacity: 0.35;
+            }
+            50% {
+                transform: scale(1.35);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0.6);
+                opacity: 0.35;
+            }
+        }
 
         /* Animated Green Checkmark */
         .checkmark-wrapper {
@@ -327,7 +343,7 @@
             </span>
         </div>
 
-        <!-- Dotted Spinner Loader (จุดไขปลา สีเขียวเข้ม/เขียวอ่อน) -->
+        <!-- Dynamic Animated Dotted Spinner Loader (จุดไขปลาหมุน + เด้งขยาย + เปล่งแสง) -->
         <div id="dotted-spinner" class="dotted-spinner">
             <div class="dot"></div>
             <div class="dot"></div>
