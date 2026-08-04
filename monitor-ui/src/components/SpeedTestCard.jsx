@@ -300,19 +300,51 @@ function ServerBanner({ mode, info, quality }) {
 }
 
 // ═══════════════════════════════════════════════════════
+// LIVE CHART
+// ═══════════════════════════════════════════════════════
+function LiveChart({ data }) {
+  if (!data || data.length === 0) return null
+  const W = 800
+  const H = 70
+  
+  const maxVal = Math.max(10, ...data.map(d => Math.max(d.dl, d.ul))) * 1.1
+  const maxTs  = data[data.length - 1].ts || 1
+  
+  const pointsDl = data.map(d => `${(d.ts / maxTs) * W},${H - (d.dl / maxVal) * H}`).join(' ')
+  const pointsUl = data.map(d => `${(d.ts / maxTs) * W},${H - (d.ul / maxVal) * H}`).join(' ')
+
+  return (
+    <div style={{ marginTop: '1.5rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1rem 1.25rem' }}>
+      <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b', marginBottom: '0.75rem', display: 'flex', gap: '1rem' }}>
+        <span style={{ color: '#2563eb' }}>■ Download</span>
+        <span style={{ color: '#059669' }}>■ Upload</span>
+      </div>
+      <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ overflow: 'visible' }}>
+        <line x1="0" y1={H} x2={W} y2={H} stroke="#cbd5e1" strokeWidth="1" />
+        {data.length > 1 && <polyline points={pointsDl} fill="none" stroke="#2563eb" strokeWidth="2.5" strokeLinejoin="round" />}
+        {data.length > 1 && <polyline points={pointsUl} fill="none" stroke="#059669" strokeWidth="2.5" strokeLinejoin="round" />}
+      </svg>
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════
 export function SpeedTestPage({ serverSpeedtest }) {
-  const [mode,     setMode]     = useState('external')
+  const [mode,     setMode]     = useState('lan')
   const [stage,    setStage]    = useState('idle')   // idle | ping | upload | download | done
   const [liveVal,  setLiveVal]  = useState(0)
   const [liveSide, setLiveSide] = useState('dl')
   const [result,   setResult]   = useState(null)
   const [history,  setHistory]  = useState([])
+  const [chartData,setChartData] = useState([])
+  const [errorMsg, setErrorMsg]  = useState(null)
 
-  const abortRef    = useRef(null)
-  const bytesRef    = useRef(0)
-  const startRef    = useRef(0)
+  const abortRef     = useRef(null)
+  const bytesRef     = useRef(0)
+  const startRef     = useRef(0)
+  const testStartRef = useRef(0)
 
   const isTesting  = !['idle', 'done'].includes(stage)
   const isLan      = mode === 'lan'
@@ -333,10 +365,20 @@ export function SpeedTestPage({ serverSpeedtest }) {
   const gaugeLabel = stage === 'upload' ? 'Mbps Upload' : 'Mbps Download'
 
   // ── Ticker: live Mbps every 200ms ────────────────────────────────────
-  const startTicker = useCallback(() => {
+  const startTicker = useCallback((type) => {
     const id = setInterval(() => {
       const ms = performance.now() - startRef.current
-      setLiveVal(toMbps(bytesRef.current, ms))
+      if (ms > 0 && bytesRef.current > 0) {
+        const speed = toMbps(bytesRef.current, ms)
+        setLiveVal(speed)
+        if (type) {
+          setChartData(prev => [...prev, {
+            ts: performance.now() - testStartRef.current,
+            dl: type === 'dl' ? speed : 0,
+            ul: type === 'ul' ? speed : 0
+          }])
+        }
+      }
     }, 200)
     return id
   }, [])
@@ -399,7 +441,7 @@ export function SpeedTestPage({ serverSpeedtest }) {
     bytesRef.current  = 0
     startRef.current  = performance.now()
 
-    const ticker  = startTicker()
+    const ticker  = startTicker('dl')
 
     const fetchOne = async (url) => {
       try {
@@ -421,7 +463,7 @@ export function SpeedTestPage({ serverSpeedtest }) {
     }
 
     // Hard time limit
-    const timer = setTimeout(() => { try { signal } catch {} ; abortRef.current?.abort() }, DL_DURATION_MS)
+    const timer = setTimeout(() => abortRef.current?.abort(), DL_DURATION_MS + 1500)
 
     const urls = Array.from({ length: conns }, (_, i) =>
       isLan
@@ -442,11 +484,11 @@ export function SpeedTestPage({ serverSpeedtest }) {
 
     // Collect per-second snapshots for median
     const snapshots = []
-    let bucket = { bytes: 0, t0: startRef.current }
+    let bucket = { bytes: 0, t0: effective.length ? effective[0].ts : startRef.current }
     for (const c of effective) {
       bucket.bytes += c.bytes
       if (c.ts - bucket.t0 >= 1000) {
-        snapshots.push(bucket.bytes * 8 / ((c.ts - bucket.t0)))
+        snapshots.push(toMbps(bucket.bytes, c.ts - bucket.t0))
         bucket = { bytes: 0, t0: c.ts }
       }
     }
@@ -464,7 +506,7 @@ export function SpeedTestPage({ serverSpeedtest }) {
     bytesRef.current = 0
     startRef.current = performance.now()
 
-    const ticker = startTicker()
+    const ticker = startTicker('ul')
     const ulUrl  = isLan ? `${LAN_SERVER}/api/st/upload` : EXT_UL_URL
 
     const loop = async () => {
@@ -477,6 +519,7 @@ export function SpeedTestPage({ serverSpeedtest }) {
           const r = await fetch(`${ulUrl}?nc=${Date.now()}`, {
             method: 'POST', signal, body: BLOB, headers: hdrs,
           })
+          if (!r.ok) continue
           if (isLan) {
             const j = await r.json().catch(() => ({}))
             bytesRef.current += j.received_bytes ?? UL_CHUNK
@@ -505,8 +548,11 @@ export function SpeedTestPage({ serverSpeedtest }) {
     const ctrl = new AbortController()
     abortRef.current = ctrl
 
+    testStartRef.current = performance.now()
     setResult(null)
     setLiveVal(0)
+    setErrorMsg(null)
+    setChartData([])
 
     try {
       if (isLan) {
@@ -575,6 +621,15 @@ export function SpeedTestPage({ serverSpeedtest }) {
             if (st.stage === 'upload') setLiveVal(st.upload)
             if (st.stage === 'download') setLiveVal(st.download)
             
+            // Add chart data
+            if (st.stage === 'upload' || st.stage === 'download') {
+                setChartData(prev => [...prev, {
+                  ts: performance.now() - testStartRef.current,
+                  dl: st.stage === 'download' ? st.download : 0,
+                  ul: st.stage === 'upload' ? st.upload : 0
+                }])
+            }
+            
             if (st.status === 'done' || st.status === 'error') {
               const newResult = {
                 ping:       st.ping       || 0,
@@ -601,6 +656,7 @@ export function SpeedTestPage({ serverSpeedtest }) {
         }
       }
     } catch (e) {
+      if (e.name !== 'AbortError') setErrorMsg(e.message || String(e))
       setStage('idle')
     }
   }, [isTesting, isLan, mode, doLanPing, doUpload, doDownload])
@@ -625,9 +681,24 @@ export function SpeedTestPage({ serverSpeedtest }) {
             </div>
           </div>
         </div>
-        <button
-          onClick={runTest}
-          disabled={isTesting}
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          {isTesting && (
+            <button
+              onClick={() => { abortRef.current?.abort(); setStage('idle') }}
+              style={{
+                background: '#ef4444',
+                border: 'none', borderRadius: '10px', padding: '0.6rem 1rem',
+                fontSize: '0.85rem', fontWeight: 700, color: '#fff',
+                cursor: 'pointer', display: 'flex', alignItems: 'center',
+                boxShadow: '0 4px 14px rgba(239,68,68,0.3)', transition: 'all 0.2s',
+              }}
+            >
+              Cancel
+            </button>
+          )}
+          <button
+            onClick={runTest}
+            disabled={isTesting}
           style={{
             background: isTesting ? '#94a3b8' : 'linear-gradient(135deg,#2563eb,#4f46e5)',
             border: 'none', borderRadius: '10px', padding: '0.6rem 1.35rem',
@@ -641,8 +712,34 @@ export function SpeedTestPage({ serverSpeedtest }) {
           <Icon.RefreshCw width="15" height="15" style={{ animation: isTesting ? 'spin 0.8s linear infinite' : 'none' }} />
           {isTesting ? 'Testing…' : 'Start Test'}
         </button>
+        </div>
       </div>
 
+      {/* ── Mode Switcher ────────────────────────────────── */}
+      <div style={{ display: 'flex', gap: '0.5rem', background: '#f1f5f9', borderRadius: '12px', padding: '5px', marginBottom: '1rem' }}>
+        {[
+          { id: 'lan',      Icon: Icon.Router, label: 'LAN',      sub: `${LAN_INFO.ip} → ${LAN_TARGET}` },
+          { id: 'external', Icon: Icon.Globe,  label: 'Internet', sub: 'Cloudflare CDN' },
+        ].map(m => (
+          <button key={m.id}
+            onClick={() => { if (!isTesting) { setMode(m.id); setResult(null); setStage('idle'); setLiveVal(0) } }}
+            disabled={isTesting}
+            style={{
+              flex: 1, border: 'none', borderRadius: '9px', padding: '0.55rem 0.75rem',
+              background: mode === m.id ? '#fff' : 'transparent',
+              boxShadow: mode === m.id ? '0 1px 5px rgba(0,0,0,0.1)' : 'none',
+              cursor: isTesting ? 'not-allowed' : 'pointer',
+              transition: 'all 0.18s', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <m.Icon width="14" height="14" color={mode === m.id ? (m.id === 'lan' ? '#0284c7' : '#6d28d9') : '#94a3b8'} />
+              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: mode === m.id ? (m.id === 'lan' ? '#0284c7' : '#6d28d9') : '#64748b' }}>{m.label}</span>
+            </div>
+            <span style={{ fontSize: '0.62rem', color: '#94a3b8' }}>{m.sub}</span>
+          </button>
+        ))}
+      </div>
 
       {/* ── Server Banner ────────────────────────────────── */}
       <div style={{ marginBottom: '1rem' }}>
@@ -666,6 +763,18 @@ export function SpeedTestPage({ serverSpeedtest }) {
             <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#2563eb', animation: 'pulseRing 1s cubic-bezier(0.215,0.61,0.355,1) infinite' }} />
             {liveVal > 0 ? `${liveVal.toFixed(1)} Mbps` : '…'}
           </div>
+        </div>
+      )}
+
+      {/* ── Live Chart ──────────────────────────────────── */}
+      {(isTesting || chartData.length > 0) && (
+        <LiveChart data={chartData} />
+      )}
+
+      {/* ── Error Message ───────────────────────────────── */}
+      {errorMsg && (
+        <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '10px', color: '#991b1b', fontSize: '0.85rem', fontWeight: 600 }}>
+          Test Failed: {errorMsg}
         </div>
       )}
 
@@ -725,7 +834,22 @@ export function SpeedTestPage({ serverSpeedtest }) {
       {/* ── History ──────────────────────────────────────── */}
       {history.length > 0 && (
         <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#374151', marginBottom: '0.6rem' }}>Recent Tests</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#374151' }}>Recent Tests</div>
+            <button
+              onClick={() => {
+                const blob = new Blob([JSON.stringify(history, null, 2)], { type: 'application/json' })
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = `speedtest-export-${Date.now()}.json`
+                a.click()
+              }}
+              style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', padding: '5px 10px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', color: '#475569' }}
+            >
+              Export JSON
+            </button>
+          </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
             {history.map((h, i) => (
               <div key={i} style={{
