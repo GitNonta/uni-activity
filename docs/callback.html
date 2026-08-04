@@ -3,93 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LINE Login Redirecting...</title>
+    <title>Connecting LINE...</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #06c755;
-            --bg: #0f172a;
-            --card-bg: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent: #34d399;
+            --line-green: #06c755;
+            --line-dark-green: #047857;
+            --line-light-green: #6ee7b7;
+            --line-bg: #ffffff;
+            --primary: #4f46e5;
+            --primary-bg: #eef2ff;
         }
 
-        * { box-sizing: border-box; }
-
-        html, body {
-            background-color: var(--bg);
-            color: var(--text-main);
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
+        }
+
+        body {
+            background-color: var(--line-bg);
+            color: #0f172a;
+            font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 440px;
             padding: 1.5rem;
         }
 
-        .status-card {
-            background: var(--card-bg);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 2.5rem 2rem;
+        .splash-container {
+            width: 100%;
+            max-width: 340px;
             text-align: center;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.4s ease;
         }
 
-        .spinner-wrapper {
+        .line-logo {
+            width: 96px;
+            height: 96px;
+            object-fit: contain;
+            margin-bottom: 1.5rem;
+            filter: drop-shadow(0 6px 14px rgba(6, 199, 85, 0.2));
+            animation: pulse-logo 2.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-logo {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+        }
+
+        .status-text {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--line-green);
+            margin-bottom: 1rem;
+            letter-spacing: -0.01em;
+        }
+
+        /* Dotted Circular Spinner Loader (จุดไขปลา สีเขียวเข้ม/เขียวอ่อน) */
+        .dotted-spinner {
             position: relative;
-            width: 64px;
-            height: 64px;
-            margin: 0 auto 1.5rem auto;
+            width: 52px;
+            height: 52px;
+            margin: 0.5rem auto 0 auto;
+            animation: rotate-spinner 1.4s linear infinite;
         }
 
-        .spinner {
-            width: 64px;
-            height: 64px;
-            border: 4px solid rgba(6, 199, 85, 0.15);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
+        @keyframes rotate-spinner {
             100% { transform: rotate(360deg); }
         }
 
-        .title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin: 0 0 0.5rem 0;
-            color: #ffffff;
+        .dot {
+            position: absolute;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
         }
 
-        .desc {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-            line-height: 1.5;
-            margin: 0 0 1.5rem 0;
+        .dot:nth-child(1)  { top: 0; left: 21px; background-color: var(--line-green); }
+        .dot:nth-child(2)  { top: 6px; right: 6px; background-color: var(--line-light-green); }
+        .dot:nth-child(3)  { top: 21px; right: 0; background-color: var(--line-dark-green); }
+        .dot:nth-child(4)  { bottom: 6px; right: 6px; background-color: #a7f3d0; }
+        .dot:nth-child(5)  { bottom: 0; left: 21px; background-color: var(--line-green); }
+        .dot:nth-child(6)  { bottom: 6px; left: 6px; background-color: var(--line-light-green); }
+        .dot:nth-child(7)  { top: 21px; left: 0; background-color: var(--line-dark-green); }
+        .dot:nth-child(8)  { top: 6px; left: 6px; background-color: #a7f3d0; }
+
+        /* Animated Green Checkmark */
+        .checkmark-wrapper {
+            display: none;
+            width: 60px;
+            height: 60px;
+            margin: 0.5rem auto 0 auto;
         }
 
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: rgba(6, 199, 85, 0.1);
-            border: 1px solid rgba(6, 199, 85, 0.2);
-            color: var(--accent);
-            padding: 0.4rem 0.85rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 500;
+        .checkmark-svg {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 3;
+            stroke: var(--line-green);
+            stroke-miterlimit: 10;
+            box-shadow: inset 0px 0px 0px var(--line-green);
+            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+        }
+
+        .checkmark-circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 3;
+            stroke-miterlimit: 10;
+            stroke: var(--line-green);
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .checkmark-check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.5s forwards;
+        }
+
+        @keyframes stroke {
+            100% { stroke-dashoffset: 0; }
+        }
+
+        /* Web App Logo & Loading Bar for redirect state */
+        .web-logo {
+            width: 110px;
+            height: 110px;
+            object-fit: contain;
+            margin-bottom: 2rem;
+            filter: drop-shadow(0 6px 12px rgba(79, 70, 229, 0.12));
+            animation: float-logo 3s ease-in-out infinite;
+        }
+
+        @keyframes float-logo {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .web-progress-container {
+            width: 100%;
+            max-width: 280px;
+            background-color: var(--primary-bg);
+            height: 6px;
+            border-radius: 999px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .web-progress-bar {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #4f46e5, #6366f1, #818cf8);
+            border-radius: 999px;
+            animation: fill-web-bar 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes fill-web-bar {
+            0% { width: 0%; }
+            100% { width: 100%; }
         }
     </style>
     <script>
@@ -136,49 +219,57 @@
                 }
             }
 
-            let attemptCount = 0;
+            function triggerSuccessAndRedirect(targetUrl, searchStr) {
+                const spinner = document.getElementById('dotted-spinner');
+                const checkmark = document.getElementById('checkmark-wrapper');
+                const statusText = document.getElementById('status-text');
+
+                // 1. Hide spinner & show green checkmark
+                if (spinner) spinner.style.display = 'none';
+                if (checkmark) checkmark.style.display = 'block';
+                if (statusText) statusText.innerText = 'เชื่อมต่อ LINE สำเร็จ!';
+
+                // 2. After 700ms, transition to Web App Loading screen & redirect
+                setTimeout(() => {
+                    const lineState = document.getElementById('line-state');
+                    const webState = document.getElementById('web-state');
+
+                    if (lineState) lineState.style.display = 'none';
+                    if (webState) webState.style.display = 'flex';
+
+                    setTimeout(() => {
+                        window.location.replace(getTargetUrl(targetUrl, searchStr));
+                    }, 400);
+                }, 700);
+            }
 
             async function resolveAndRedirect() {
-                attemptCount++;
-                const statusBadge = document.getElementById('status-text');
-                if (statusBadge) {
-                    statusBadge.innerText = `กำลังยืนยันการเชื่อมต่อ LINE... (รอบที่ ${attemptCount})`;
-                }
-
                 const searchStr = window.location.search;
 
                 // 1. Check cached URL
                 const cachedUrl = sessionStorage.getItem('active_tunnel_url');
-                if (cachedUrl) {
-                    if (await isUrlAlive(cachedUrl)) {
-                        window.location.replace(getTargetUrl(cachedUrl, searchStr));
-                        return;
-                    } else {
-                        sessionStorage.removeItem('active_tunnel_url');
-                    }
+                if (cachedUrl && await isUrlAlive(cachedUrl)) {
+                    triggerSuccessAndRedirect(cachedUrl, searchStr);
+                    return;
+                } else {
+                    sessionStorage.removeItem('active_tunnel_url');
                 }
 
-                // 2. Fetch latest active_url.json
+                // 2. Fetch active_url.json
                 try {
                     const res = await fetch('active_url.json?t=' + Date.now());
                     const data = await res.json();
 
-                    if (data && data.url) {
-                        if (await isUrlAlive(data.url)) {
-                            sessionStorage.setItem('active_tunnel_url', data.url);
-                            window.location.replace(getTargetUrl(data.url, searchStr));
-                            return;
-                        }
+                    if (data && data.url && await isUrlAlive(data.url)) {
+                        sessionStorage.setItem('active_tunnel_url', data.url);
+                        triggerSuccessAndRedirect(data.url, searchStr);
+                        return;
                     }
                 } catch (err) {
                     console.warn('active_url.json fetch failed:', err);
                 }
 
                 // 3. Retry loop
-                if (statusBadge) {
-                    statusBadge.innerText = `กำลังรอการอัปเดตเซิร์ฟเวอร์ (ลองใหม่ใน 3 วิ)...`;
-                }
-
                 setTimeout(resolveAndRedirect, 3000);
             }
 
@@ -187,17 +278,37 @@
     </script>
 </head>
 <body>
-    <div class="container">
-        <div class="status-card">
-            <div class="spinner-wrapper">
-                <div class="spinner"></div>
-            </div>
-            <h1 class="title">กำลังกลับไปยังแอปพลิเคชัน...</h1>
-            <p class="desc">ระบบกำลังประมวลผลการเข้าสู่ระบบ LINE และนำคุณไปยังเซิร์ฟเวอร์แบบเรียลไทม์</p>
-            
-            <div class="badge">
-                <span id="status-text">กำลังยืนยันการเชื่อมต่อ LINE...</span>
-            </div>
+    <!-- 1. LINE Connection State -->
+    <div id="line-state" class="splash-container">
+        <img src="line-logo.png" alt="LINE Logo" class="line-logo">
+        <div id="status-text" class="status-text">กำลังเชื่อมต่อ LINE ...</div>
+
+        <!-- Dotted Spinner Loader (จุดไขปลา สีเขียวเข้ม/เขียวอ่อน) -->
+        <div id="dotted-spinner" class="dotted-spinner">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+
+        <!-- Green Checkmark Animation -->
+        <div id="checkmark-wrapper" class="checkmark-wrapper">
+            <svg class="checkmark-svg" viewBox="0 0 52 52">
+                <circle class="checkmark-circle" cx="26" cy="26" r="23"/>
+                <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+            </svg>
+        </div>
+    </div>
+
+    <!-- 2. Web App Loading State (redirecting to profile) -->
+    <div id="web-state" class="splash-container" style="display: none;">
+        <img src="logo.svg" alt="UNI Activity Logo" class="web-logo">
+        <div class="web-progress-container">
+            <div class="web-progress-bar"></div>
         </div>
     </div>
 </body>
