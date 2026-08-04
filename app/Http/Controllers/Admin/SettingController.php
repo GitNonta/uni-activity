@@ -14,8 +14,11 @@ class SettingController extends Controller
             'student_email_prefix' => Setting::get('student_email_prefix', 's'),
             'student_email_domain' => Setting::get('student_email_domain', '@pkru.ac.th'),
         ];
-        
-        return view('admin.settings.index', compact('settings'));
+
+        $tokens = auth()->user()->tokens()->latest()->get();
+        $activeTab = request()->get('tab', 'general');
+
+        return view('admin.settings.index', compact('settings', 'tokens', 'activeTab'));
     }
 
     public function update(Request $request)

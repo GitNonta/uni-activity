@@ -10,9 +10,7 @@ class ApiKeyController extends Controller
 {
     public function index()
     {
-        // We will list tokens for the currently authenticated admin
-        $tokens = auth()->user()->tokens()->latest()->get();
-        return view('admin.api-keys.index', compact('tokens'));
+        return redirect()->route('admin.settings.index', ['tab' => 'api-keys']);
     }
 
     public function store(Request $request)
