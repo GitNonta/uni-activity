@@ -37,6 +37,11 @@ Route::get('/debug-ip', function() {
         'server_remote_addr' => $_SERVER['REMOTE_ADDR'] ?? 'N/A',
     ];
 });
+Route::get('/up', function () {
+    return response()->json(['status' => 'ok', 'timestamp' => time()])
+        ->header('Access-Control-Allow-Origin', '*')
+        ->header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+});
 
 // ── เส้นทางนักศึกษา: เข้าสู่ระบบ / ลงทะเบียนบัญชี / ออกจากระบบ ──
 Route::get('/', function () {

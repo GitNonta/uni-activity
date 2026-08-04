@@ -14,7 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
         then: function () {
             // Test error pages routes (remove in production)
-            if (config('app.env') === 'local') {
+            if (config('app.env') === 'local' && file_exists(base_path('routes/test-errors.php'))) {
                 Route::middleware('web')
                     ->group(base_path('routes/test-errors.php'));
             }

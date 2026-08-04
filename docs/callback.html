@@ -3,35 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirecting...</title>
+    <title>LINE Login Redirecting...</title>
     <style>
+        :root {
+            --primary: #06c755;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #34d399;
+        }
+
+        * { box-sizing: border-box; }
+
         html, body {
-            background-color: #ffffff;
-            color: #1e293b;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
             padding: 0;
-        }
-        .error-card {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: #ffffff;
+            min-height: 100vh;
+            display: flex;
             align-items: center;
             justify-content: center;
-            flex-direction: column;
-            text-align: center;
-            padding: 2rem;
-            z-index: 9999;
         }
-        .error-box {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            padding: 2rem;
-            border-radius: 16px;
-            max-width: 400px;
+
+        .container {
             width: 100%;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            max-width: 440px;
+            padding: 1.5rem;
+        }
+
+        .status-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(12px);
+        }
+
+        .spinner-wrapper {
+            position: relative;
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1.5rem auto;
+        }
+
+        .spinner {
+            width: 64px;
+            height: 64px;
+            border: 4px solid rgba(6, 199, 85, 0.15);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0 0 0.5rem 0;
+            color: #ffffff;
+        }
+
+        .desc {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin: 0 0 1.5rem 0;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(6, 199, 85, 0.1);
+            border: 1px solid rgba(6, 199, 85, 0.2);
+            color: var(--accent);
+            padding: 0.4rem 0.85rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
         }
     </style>
     <script>
@@ -42,39 +100,104 @@
                 return target;
             }
 
-            const searchStr = window.location.search;
+            async function isUrlAlive(baseUrl) {
+                if (!baseUrl || typeof baseUrl !== 'string' || !baseUrl.startsWith('http')) {
+                    return false;
+                }
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 2500);
 
-            // 1. Instant redirect if cached
-            const cachedUrl = sessionStorage.getItem('active_tunnel_url');
-            if (cachedUrl) {
-                window.location.replace(getTargetUrl(cachedUrl, searchStr));
+                try {
+                    const res = await fetch(baseUrl.replace(/\/$/, '') + '/up', {
+                        method: 'GET',
+                        mode: 'cors',
+                        cache: 'no-store',
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                    return res.ok || res.status < 500;
+                } catch (e) {
+                    clearTimeout(timeoutId);
+                    const controller2 = new AbortController();
+                    const timeoutId2 = setTimeout(() => controller2.abort(), 2500);
+                    try {
+                        await fetch(baseUrl, {
+                            method: 'HEAD',
+                            mode: 'no-cors',
+                            cache: 'no-store',
+                            signal: controller2.signal
+                        });
+                        clearTimeout(timeoutId2);
+                        return true;
+                    } catch (e2) {
+                        clearTimeout(timeoutId2);
+                        return false;
+                    }
+                }
             }
 
-            // 2. Fetch live URL immediately
-            fetch('active_url.json?t=' + Date.now())
-                .then(res => res.json())
-                .then(data => {
-                    if (data && data.url) {
-                        sessionStorage.setItem('active_tunnel_url', data.url);
-                        window.location.replace(getTargetUrl(data.url, searchStr));
+            let attemptCount = 0;
+
+            async function resolveAndRedirect() {
+                attemptCount++;
+                const statusBadge = document.getElementById('status-text');
+                if (statusBadge) {
+                    statusBadge.innerText = `กำลังยืนยันการเชื่อมต่อ LINE... (รอบที่ ${attemptCount})`;
+                }
+
+                const searchStr = window.location.search;
+
+                // 1. Check cached URL
+                const cachedUrl = sessionStorage.getItem('active_tunnel_url');
+                if (cachedUrl) {
+                    if (await isUrlAlive(cachedUrl)) {
+                        window.location.replace(getTargetUrl(cachedUrl, searchStr));
+                        return;
                     } else {
-                        throw new Error('Invalid URL');
+                        sessionStorage.removeItem('active_tunnel_url');
                     }
-                })
-                .catch(() => {
-                    document.addEventListener('DOMContentLoaded', function() {
-                        const err = document.getElementById('error-card');
-                        if (err) err.style.display = 'flex';
-                    });
-                });
+                }
+
+                // 2. Fetch latest active_url.json
+                try {
+                    const res = await fetch('active_url.json?t=' + Date.now());
+                    const data = await res.json();
+
+                    if (data && data.url) {
+                        if (await isUrlAlive(data.url)) {
+                            sessionStorage.setItem('active_tunnel_url', data.url);
+                            window.location.replace(getTargetUrl(data.url, searchStr));
+                            return;
+                        }
+                    }
+                } catch (err) {
+                    console.warn('active_url.json fetch failed:', err);
+                }
+
+                // 3. Retry loop
+                if (statusBadge) {
+                    statusBadge.innerText = `กำลังรอการอัปเดตเซิร์ฟเวอร์ (ลองใหม่ใน 3 วิ)...`;
+                }
+
+                setTimeout(resolveAndRedirect, 3000);
+            }
+
+            document.addEventListener('DOMContentLoaded', resolveAndRedirect);
         })();
     </script>
 </head>
 <body>
-    <div class="error-card" id="error-card">
-        <div class="error-box">
-            <h2 style="font-size: 1.25rem; margin-bottom: 0.5rem; color: #ef4444;">ไม่สามารถเชื่อมต่อการผูกบัญชีได้</h2>
-            <p style="font-size: 0.875rem; color: #64748b; margin: 0;">โปรดตรวจสอบการเชื่อมต่อ หรือติดต่อผู้ดูแลระบบ</p>
+    <div class="container">
+        <div class="status-card">
+            <div class="spinner-wrapper">
+                <div class="spinner"></div>
+            </div>
+            <h1 class="title">กำลังกลับไปยังแอปพลิเคชัน...</h1>
+            <p class="desc">ระบบกำลังประมวลผลการเข้าสู่ระบบ LINE และนำคุณไปยังเซิร์ฟเวอร์แบบเรียลไทม์</p>
+            
+            <div class="badge">
+                <span id="status-text">กำลังยืนยันการเชื่อมต่อ LINE...</span>
+            </div>
         </div>
     </div>
 </body>

@@ -60,7 +60,6 @@ class FaceVerificationController extends Controller
         
         return response()->json($result, $statusCode);
     }
-}
     
     public function metrics()
     {

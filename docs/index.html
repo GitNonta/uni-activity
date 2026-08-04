@@ -3,46 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirecting...</title>
+    <title>Uni-Activity | Connecting...</title>
     <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --danger: #f43f5e;
+        }
+
+        * { box-sizing: border-box; }
+
         html, body {
-            background-color: #ffffff;
-            color: #1e293b;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
             padding: 0;
-        }
-        .error-card {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: #ffffff;
+            min-height: 100vh;
+            display: flex;
             align-items: center;
             justify-content: center;
-            flex-direction: column;
-            text-align: center;
-            padding: 2rem;
-            z-index: 9999;
         }
-        .error-box {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            padding: 2rem;
-            border-radius: 16px;
-            max-width: 400px;
+
+        .container {
             width: 100%;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            max-width: 440px;
+            padding: 1.5rem;
+        }
+
+        .status-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(12px);
+            transition: all 0.3s ease;
+        }
+
+        .spinner-wrapper {
+            position: relative;
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1.5rem auto;
+        }
+
+        .spinner {
+            width: 64px;
+            height: 64px;
+            border: 4px solid rgba(56, 189, 248, 0.15);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+        }
+
+        .pulse-dot {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 16px;
+            height: 16px;
+            background-color: var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 12px var(--accent);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.6; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+        }
+
+        .title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0 0 0.5rem 0;
+            color: #ffffff;
+        }
+
+        .desc {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin: 0 0 1.5rem 0;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            color: var(--accent);
+            padding: 0.4rem 0.85rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--accent);
+            box-shadow: 0 0 8px var(--accent);
+        }
+
+        .btn-retry {
+            margin-top: 1.25rem;
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            padding: 0.65rem 1.25rem;
+            border-radius: 10px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: none;
+        }
+
+        .btn-retry:hover {
+            background: var(--primary-hover);
         }
     </style>
     <script>
         (function() {
             function getTargetUrl(baseUrl, searchStr) {
                 const params = new URLSearchParams(searchStr);
+                params.delete('url');
+                params.delete('reset');
+
                 const path = params.get('path') || '';
                 const cleanPath = path.startsWith('/') ? path.slice(1) : path;
                 params.delete('path');
-                const extraQuery = params.toString();
 
+                const extraQuery = params.toString();
                 let target = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
                 target += cleanPath;
                 if (extraQuery) {
@@ -51,39 +159,133 @@
                 return target;
             }
 
-            const searchStr = window.location.search;
+            const searchParams = new URLSearchParams(window.location.search);
+            const overrideUrl = searchParams.get('url');
+            const forceReset = searchParams.get('reset');
 
-            // 1. Instant redirect if cached
-            const cachedUrl = sessionStorage.getItem('active_tunnel_url');
-            if (cachedUrl) {
-                window.location.replace(getTargetUrl(cachedUrl, searchStr));
+            if (forceReset) {
+                sessionStorage.removeItem('active_tunnel_url');
             }
 
-            // 2. Fetch live URL immediately
-            fetch('active_url.json?t=' + Date.now())
-                .then(res => res.json())
-                .then(data => {
-                    if (data && data.url) {
-                        sessionStorage.setItem('active_tunnel_url', data.url);
-                        window.location.replace(getTargetUrl(data.url, searchStr));
-                    } else {
-                        throw new Error('Invalid URL');
-                    }
-                })
-                .catch(() => {
-                    document.addEventListener('DOMContentLoaded', function() {
-                        const err = document.getElementById('error-card');
-                        if (err) err.style.display = 'flex';
+            // Quick async health check for URL reachability
+            async function isUrlAlive(baseUrl) {
+                if (!baseUrl || typeof baseUrl !== 'string' || !baseUrl.startsWith('http')) {
+                    return false;
+                }
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+                try {
+                    // Try /up route first with cors, fallback to HEAD / with no-cors
+                    const res = await fetch(baseUrl.replace(/\/$/, '') + '/up', {
+                        method: 'GET',
+                        mode: 'cors',
+                        cache: 'no-store',
+                        signal: controller.signal
                     });
-                });
+                    clearTimeout(timeoutId);
+                    return res.ok || res.status < 500;
+                } catch (e) {
+                    clearTimeout(timeoutId);
+                    // Opaque check fallback (no-cors mode succeeds if network/DNS resolves)
+                    const controller2 = new AbortController();
+                    const timeoutId2 = setTimeout(() => controller2.abort(), 2500);
+                    try {
+                        await fetch(baseUrl, {
+                            method: 'HEAD',
+                            mode: 'no-cors',
+                            cache: 'no-store',
+                            signal: controller2.signal
+                        });
+                        clearTimeout(timeoutId2);
+                        return true;
+                    } catch (e2) {
+                        clearTimeout(timeoutId2);
+                        return false;
+                    }
+                }
+            }
+
+            let attemptCount = 0;
+
+            async function resolveAndRedirect() {
+                attemptCount++;
+                const statusBadge = document.getElementById('status-text');
+                if (statusBadge) {
+                    statusBadge.innerText = `กำลังตรวจสอบการเชื่อมต่อ (รอบที่ ${attemptCount})...`;
+                }
+
+                const searchStr = window.location.search;
+
+                // 1. Check override URL if specified in query
+                if (overrideUrl && await isUrlAlive(overrideUrl)) {
+                    sessionStorage.setItem('active_tunnel_url', overrideUrl);
+                    window.location.replace(getTargetUrl(overrideUrl, searchStr));
+                    return;
+                }
+
+                // 2. Check cached URL if available
+                const cachedUrl = sessionStorage.getItem('active_tunnel_url');
+                if (cachedUrl) {
+                    if (await isUrlAlive(cachedUrl)) {
+                        window.location.replace(getTargetUrl(cachedUrl, searchStr));
+                        return;
+                    } else {
+                        // Purge dead cached URL
+                        sessionStorage.removeItem('active_tunnel_url');
+                    }
+                }
+
+                // 3. Fetch latest active_url.json
+                try {
+                    const res = await fetch('active_url.json?t=' + Date.now());
+                    const data = await res.json();
+
+                    if (data && data.url) {
+                        const isAlive = await isUrlAlive(data.url);
+                        if (isAlive) {
+                            sessionStorage.setItem('active_tunnel_url', data.url);
+                            window.location.replace(getTargetUrl(data.url, searchStr));
+                            return;
+                        }
+                    }
+                } catch (err) {
+                    console.warn('active_url.json fetch failed:', err);
+                }
+
+                // 4. URL dead or server restarting - Auto Retry loop every 3s
+                if (statusBadge) {
+                    statusBadge.innerText = `กำลังรอเซิร์ฟเวอร์อัปเดต URL ใหม่ (ลองใหม่ใน 3 วิ)...`;
+                }
+
+                const retryBtn = document.getElementById('retry-btn');
+                if (retryBtn && attemptCount >= 3) {
+                    retryBtn.style.display = 'inline-block';
+                }
+
+                setTimeout(resolveAndRedirect, 3000);
+            }
+
+            document.addEventListener('DOMContentLoaded', resolveAndRedirect);
         })();
     </script>
 </head>
 <body>
-    <div class="error-card" id="error-card">
-        <div class="error-box">
-            <h2 style="font-size: 1.25rem; margin-bottom: 0.5rem; color: #ef4444;">ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้</h2>
-            <p style="font-size: 0.875rem; color: #64748b; margin: 0;">โปรดตรวจสอบการเชื่อมต่อ หรือติดต่อผู้ดูแลระบบเพื่อเปิดบริการเซิร์ฟเวอร์</p>
+    <div class="container">
+        <div class="status-card">
+            <div class="spinner-wrapper">
+                <div class="spinner"></div>
+                <div class="pulse-dot"></div>
+            </div>
+            <h1 class="title">กำลังเชื่อมต่อกับเซิร์ฟเวอร์...</h1>
+            <p class="desc">ระบบกำลังตรวจสอบและเปลี่ยน URL ของเซิร์ฟเวอร์แบบเรียลไทม์ โปรดรอสักครู่</p>
+            
+            <div class="badge">
+                <div class="badge-dot"></div>
+                <span id="status-text">กำลังตรวจสอบการเชื่อมต่อ...</span>
+            </div>
+            <br>
+            <button id="retry-btn" class="btn-retry" onclick="location.reload()">รีโหลดอีกครั้ง</button>
         </div>
     </div>
 </body>

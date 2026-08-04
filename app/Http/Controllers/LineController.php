@@ -102,10 +102,26 @@ class LineController extends Controller
         ]);
 
         // ส่งข้อความต้อนรับ
-        $this->lineService->pushMessage($lineUserId, [[
+        $displayName = $lineDisplayName ?: ($user->full_name ?: 'นักศึกษา');
+        $fullName    = $user->full_name ?? '';
+        $studentId   = $user->student_id ?? '';
+
+        $messageText = "สวัสดี {$displayName} 👋\n"
+            . "บัญชีนักศึกษา {$fullName} {$studentId}\n"
+            . "ได้ผูกบัญชีกับ LINE สำเร็จแล้ว\n"
+            . "ไม่พลาดโอกาสดีๆ ผ่าน LINE\n"
+            . "ตอนนี้คุณจะได้รับการแจ้งเตือน กิจกรรม ประกาศ และข่าวสารจาก UNI Activity ผ่าน LINE ได้แล้ว";
+
+        $pushed = $this->lineService->pushMessage($lineUserId, [[
             'type' => 'text',
-            'text' => "✅ ผูกบัญชีสำเร็จ!\n\nสวัสดี {$lineDisplayName} 👋\nตอนนี้คุณจะได้รับการแจ้งเตือนกิจกรรม ประกาศ และข่าวสารจาก UNI Activity ผ่าน LINE แล้ว",
+            'text' => $messageText,
         ]]);
+
+        Log::info('LINE welcome push message sent', [
+            'user_id'      => $user->id,
+            'line_user_id' => $lineUserId,
+            'success'      => $pushed,
+        ]);
 
         return redirect()->route('student.profile')
             ->with('success', "ผูกบัญชี LINE สำเร็จ! เชื่อมต่อกับ {$lineDisplayName} แล้ว");
