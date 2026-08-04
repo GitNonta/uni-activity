@@ -303,7 +303,7 @@ function ServerBanner({ mode, info, quality }) {
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════
 export function SpeedTestPage({ serverSpeedtest }) {
-  const [mode,     setMode]     = useState('lan')
+  const [mode,     setMode]     = useState('external')
   const [stage,    setStage]    = useState('idle')   // idle | ping | upload | download | done
   const [liveVal,  setLiveVal]  = useState(0)
   const [liveSide, setLiveSide] = useState('dl')
@@ -643,31 +643,6 @@ export function SpeedTestPage({ serverSpeedtest }) {
         </button>
       </div>
 
-      {/* ── Mode Switcher ────────────────────────────────── */}
-      <div style={{ display: 'flex', gap: '0.5rem', background: '#f1f5f9', borderRadius: '12px', padding: '5px', marginBottom: '1rem' }}>
-        {[
-          { id: 'lan',      Icon: Icon.Router, label: 'LAN',      sub: `${LAN_INFO.ip} → ${LAN_TARGET}` },
-          { id: 'external', Icon: Icon.Globe,  label: 'Internet', sub: 'Cloudflare CDN' },
-        ].map(m => (
-          <button key={m.id}
-            onClick={() => { if (!isTesting) { setMode(m.id); setResult(null); setStage('idle'); setLiveVal(0) } }}
-            disabled={isTesting}
-            style={{
-              flex: 1, border: 'none', borderRadius: '9px', padding: '0.55rem 0.75rem',
-              background: mode === m.id ? '#fff' : 'transparent',
-              boxShadow: mode === m.id ? '0 1px 5px rgba(0,0,0,0.1)' : 'none',
-              cursor: isTesting ? 'not-allowed' : 'pointer',
-              transition: 'all 0.18s', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <m.Icon width="14" height="14" color={mode === m.id ? (m.id === 'lan' ? '#0284c7' : '#6d28d9') : '#94a3b8'} />
-              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: mode === m.id ? (m.id === 'lan' ? '#0284c7' : '#6d28d9') : '#64748b' }}>{m.label}</span>
-            </div>
-            <span style={{ fontSize: '0.62rem', color: '#94a3b8' }}>{m.sub}</span>
-          </button>
-        ))}
-      </div>
 
       {/* ── Server Banner ────────────────────────────────── */}
       <div style={{ marginBottom: '1rem' }}>
