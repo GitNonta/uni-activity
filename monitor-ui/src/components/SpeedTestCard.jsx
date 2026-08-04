@@ -3,7 +3,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 // ═══════════════════════════════════════════════════════
 // CONSTANTS
 // ═══════════════════════════════════════════════════════
-const LAN_SERVER  = 'http://192.168.1.222:9999'
+const LAN_SERVER  = window.location.port === '5173' ? 'http://192.168.1.222:9999' : ''
 const LAN_TARGET  = '192.168.1.45'
 const LAN_INFO    = { name: 'Termux Monitor Server', location: 'Home Network (TH)', ip: '192.168.1.222', port: 9999, target: LAN_TARGET }
 
