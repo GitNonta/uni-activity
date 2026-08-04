@@ -9,8 +9,7 @@
     </div>
 </div>
 
-<div class="grid-3">
-    {{-- ═══ คอลัมน์ซ้าย: ข้อมูลบัญชีและสถิติ (1 ส่วน) ═══ --}}
+<div style="max-width: 580px; margin: 0 auto;">
     <div style="display:flex; flex-direction:column; gap:1.5rem;">
         
         {{-- การ์ด Avatar และข้อมูลเบื้องต้น --}}
@@ -47,7 +46,12 @@
                     </div>
                 @endif
 
-                <h2 class="font-bold mb-1" style="font-size:1.25rem; color:#1e293b;">{{ $user->full_name }}</h2>
+                <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:0.25rem;">
+                    <h2 class="font-bold" style="font-size:1.25rem; color:#1e293b; margin:0;">{{ $user->full_name }}</h2>
+                    <a href="{{ route('admin.settings.index', ['tab' => 'privacy']) }}" title="แก้ไขข้อมูลโปรไฟล์ & ตั้งค่าความเป็นส่วนตัว" style="display:inline-flex; align-items:center; justify-content:center; color:#4f46e5; background:#e0e7ff; padding:4px 6px; border-radius:8px; transition:all 0.2s; text-decoration:none;" onmouseover="this.style.background='#c7d2fe';" onmouseout="this.style.background='#e0e7ff';">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                    </a>
+                </div>
                 <p class="text-sm text-muted mb-4">{{ $user->position ?? 'ไม่ได้ระบุตำแหน่ง' }}</p>
                 
                 @if($user->isAdmin())
@@ -113,25 +117,6 @@
             <div style="background:#f8fafc; border-top:1px solid #f1f5f9; padding:0.75rem 1.25rem; display:flex; justify-content:space-between; align-items:center;">
                 <span class="text-xs text-muted">เข้าร่วมครั้งแรก</span>
                 <span class="text-xs font-semi text-muted">{{ $user->created_at->translatedFormat('d M Y') }}</span>
-            </div>
-        </div>
-    </div>
-
-    {{-- ═══ คอลัมน์ขวา: ย้ายฟอร์มทั้งหมดที่วงสีแดงไปอยู่ที่ตั้งค่าความเป็นส่วนตัว ═══ --}}
-    <div style="grid-column: span 2; display:flex; flex-direction:column; gap:1.5rem;">
-        <div class="card" style="border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-radius:12px; background:#fff; padding:3rem 2rem; text-align:center;">
-            <div style="width:64px; height:64px; background:#e0e7ff; color:#4f46e5; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:1rem;">
-                <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-            </div>
-            <h2 class="font-bold mb-2" style="font-size:1.25rem; color:#1e293b;">ย้ายไปที่หน้า "ตั้งค่าความเป็นส่วนตัว" แล้ว</h2>
-            <p class="text-sm text-muted mb-6" style="line-height:1.6; max-width:520px; margin-left:auto; margin-right:auto;">
-                ฟอร์มแก้ไขข้อมูลส่วนตัว รหัสผ่าน และการจัดการ API Keys (ส่วนที่อยู่ในวงสีแดง) ถูกย้ายไปจัดกลุ่มในหน้า <strong>"ตั้งค่าระบบ & ความเป็นส่วนตัว"</strong> เรียบร้อยแล้ว เพื่อความปลอดภัยและเป็นสัดส่วน
-            </p>
-            <div>
-                <a href="{{ route('admin.settings.index', ['tab' => 'privacy']) }}" class="btn btn-primary" style="padding:0.75rem 1.75rem; border-radius:10px; font-weight:600; background:#4f46e5; color:#fff; border:none; text-decoration:none; display:inline-flex; align-items:center; gap:0.5rem; box-shadow:0 4px 12px rgba(79,70,229,0.25);">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                    ไปยังหน้าตั้งค่าความเป็นส่วนตัว & รหัสผ่าน
-                </a>
             </div>
         </div>
     </div>
