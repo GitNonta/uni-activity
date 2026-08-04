@@ -201,6 +201,70 @@
                 </div>
             </div>
 
+            {{-- 🔑 การจัดการ API Keys & Tokens (ความเป็นส่วนตัว) --}}
+            <div class="card mb-6" style="border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                <div class="card-header" style="background:#fff; border-bottom:1px solid #f1f5f9; padding:1rem 1.5rem;">
+                    <div class="flex items-center gap-2">
+                        <svg style="width:20px; height:20px; color:#059669;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                        <div>
+                            <h3 class="font-semi" style="font-size:1rem; color:#1e293b;">API Keys & Tokens (ตั้งค่าความเป็นส่วนตัว)</h3>
+                            <p class="text-xs text-muted mt-0.5" style="font-weight:normal;">จัดการ Personal Access Token สำหรับการเชื่อมต่อแอปพลิเคชันหรือระบบภายนอกอย่างปลอดภัย</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body" style="padding:1.5rem;">
+                    @if(session('new_token'))
+                        <div style="background:#ecfdf5; border:1px solid #a7f3d0; border-radius:8px; padding:1rem; margin-bottom:1.25rem;">
+                            <div style="font-weight:700; color:#065f46; font-size:0.9rem; margin-bottom:0.35rem;">🔑 Token ใหม่ถูกสร้างเรียบร้อยแล้ว:</div>
+                            <div style="font-family:monospace; background:#ffffff; padding:0.6rem 0.8rem; border-radius:6px; border:1px solid #6ee7b7; color:#047857; font-size:0.85rem; word-break:break-all;">
+                                {{ session('new_token') }}
+                            </div>
+                            <p style="font-size:0.75rem; color:#047857; margin-top:0.35rem; font-weight:500;">⚠️ กรุณาคัดลอก Token นี้เก็บไว้ทันที เพราะระบบจะแสดงเพียงครั้งเดียวเพื่อความปลอดภัย</p>
+                        </div>
+                    @endif
+
+                    {{-- ตารางแสดง Token ทั้งหมด --}}
+                    <div style="overflow-x:auto;">
+                        <table class="table" style="width:100%; font-size:0.85rem; border-collapse:collapse;">
+                            <thead>
+                                <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0; text-align:left;">
+                                    <th style="padding:0.6rem 0.75rem; color:#475569; font-weight:600;">ชื่อ Token</th>
+                                    <th style="padding:0.6rem 0.75rem; color:#475569; font-weight:600;">ใช้งานล่าสุด</th>
+                                    <th style="padding:0.6rem 0.75rem; color:#475569; font-weight:600;">วันที่สร้าง</th>
+                                    <th style="padding:0.6rem 0.75rem; color:#475569; font-weight:600; text-align:right;">การจัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($tokens ?? [] as $token)
+                                    <tr style="border-bottom:1px solid #f1f5f9;">
+                                        <td style="padding:0.65rem 0.75rem; font-weight:600; color:#1e293b;">
+                                            {{ $token->name }}
+                                        </td>
+                                        <td style="padding:0.65rem 0.75rem; color:#64748b;">
+                                            {{ $token->last_used_at ? $token->last_used_at->diffForHumans() : 'ยังไม่เคยใช้งาน' }}
+                                        </td>
+                                        <td style="padding:0.65rem 0.75rem; color:#64748b;">
+                                            {{ $token->created_at ? $token->created_at->format('d/m/Y H:i') : '-' }}
+                                        </td>
+                                        <td style="padding:0.65rem 0.75rem; text-align:right;">
+                                            <button type="button" onclick="event.preventDefault(); if(confirm('ยืนยันลบ API Key นี้?')) document.getElementById('delete-token-{{ $token->id }}').submit();" style="background:none; border:none; color:#ef4444; font-size:0.8rem; cursor:pointer; font-weight:500;">
+                                                ลบ Token
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" style="text-align:center; padding:1.5rem; color:#94a3b8; font-size:0.85rem;">
+                                            ยังไม่มีการสร้าง API Key ในระบบ
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             {{-- Action Buttons --}}
             <div class="flex justify-end gap-2 mt-4">
                 <a href="{{ route('admin.dashboard') }}" class="btn btn-outline" style="background:#fff;">ยกเลิก</a>

@@ -46,7 +46,10 @@ class ProfileAdminController extends Controller
             'joined_at'            => $user->created_at,
         ];
 
-        return view('admin.profile.edit', compact('user', 'stats'));
+        // API Tokens สำหรับ Personal Access Tokens / Privacy settings
+        $tokens = $user->tokens()->latest()->get();
+
+        return view('admin.profile.edit', compact('user', 'stats', 'tokens'));
     }
 
     /**
