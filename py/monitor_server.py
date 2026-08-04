@@ -42,6 +42,156 @@ speedtest_data = {
     "last_test": None
 }
 
+# ─── External Speedtest Job (server-side, no CORS) ────────────────────────
+_ext_job = {
+    "status": "idle",   # idle | running | done | error
+    "stage":  "idle",   # ping | upload | download | done
+    "ping":     0.0,
+    "jitter":   0.0,
+    "ping_min": 0.0,
+    "ping_max": 0.0,
+    "download": 0.0,
+    "upload":   0.0,
+    "method":   "TCP:443",
+    "server":   "Cloudflare (1.1.1.1)",
+    "error":    None,
+}
+_ext_lock = threading.Lock()
+
+def run_ext_speedtest_thread():
+    """Server-side external speedtest: TCP ping → upload → download via Cloudflare."""
+    global _ext_job
+    with _ext_lock:
+        if _ext_job.get("status") == "running":
+            return
+        _ext_job["status"] = "running"
+        _ext_job["error"]  = None
+
+    import urllib.request as _ureq, socket as _sock, time as _time
+
+    def _upd(**kw):
+        with _ext_lock:
+            _ext_job.update(kw)
+
+    # ── 1. TCP Ping to 1.1.1.1:443 (10 samples, discard first 2) ─────────
+    _upd(stage="ping", ping=0.0, jitter=0.0)
+    try:
+        rtts = []
+        for i in range(12):   # take 12, discard first 2
+            t0 = _time.perf_counter()
+            try:
+                s = _sock.create_connection(("1.1.1.1", 443), timeout=2)
+                s.close()
+                rtts.append((_time.perf_counter() - t0) * 1000)
+            except Exception:
+                pass
+            _time.sleep(0.02)
+        rtts = rtts[2:]  # discard first 2 (connection warmup)
+        if rtts:
+            ping_avg = round(sum(rtts) / len(rtts), 1)
+            jitter   = 0.0
+            for i in range(1, len(rtts)):
+                jitter += (abs(rtts[i] - rtts[i-1]) - jitter) / 16
+            _upd(ping=ping_avg, jitter=round(jitter, 1),
+                 ping_min=round(min(rtts), 1), ping_max=round(max(rtts), 1))
+    except Exception as e:
+        _upd(error=f"Ping: {e}")
+
+    # ── 2. Upload — 4 concurrent POSTs to Cloudflare ─────────────────────
+    _upd(stage="upload")
+    try:
+        BLOB     = os.urandom(2 * 1024 * 1024)   # 2 MB random blob
+        UL_CONNS = 4
+        DURATION = 6.0
+        ul_bytes = [0] * UL_CONNS
+        stop_ev  = threading.Event()
+
+        def _ul_worker(idx):
+            while not stop_ev.is_set():
+                try:
+                    req = _ureq.Request(
+                        "https://speed.cloudflare.com/__up",
+                        data=BLOB, method="POST",
+                        headers={"Content-Type": "application/octet-stream",
+                                 "User-Agent": "SpeedTest/2.0"}
+                    )
+                    _ureq.urlopen(req, timeout=DURATION + 2)
+                    ul_bytes[idx] += len(BLOB)
+                except Exception:
+                    _time.sleep(0.1)
+
+        t_start  = _time.perf_counter()
+        workers  = [threading.Thread(target=_ul_worker, args=(i,), daemon=True) for i in range(UL_CONNS)]
+        for w in workers: w.start()
+        _time.sleep(DURATION)
+        stop_ev.set()
+        for w in workers: w.join(timeout=3)
+        elapsed  = max(_time.perf_counter() - t_start, 0.5)
+        ul_total = sum(ul_bytes)
+        _upd(upload=round((ul_total * 8) / (elapsed * 1_000_000), 2))
+    except Exception as e:
+        _upd(error=f"Upload: {e}")
+
+    # ── 3. Download — 4 concurrent from Cloudflare, 8 s, warmup 1.5 s ───
+    _upd(stage="download")
+    try:
+        DL_CONNS = 4
+        DURATION = 8.0
+        WARMUP   = 1.5
+        chunks   = []   # (bytes, timestamp)
+        c_lock   = threading.Lock()
+        stop_ev  = threading.Event()
+
+        def _dl_worker():
+            url = "https://speed.cloudflare.com/__down?bytes=134217728"
+            try:
+                with _ureq.urlopen(_ureq.Request(url, headers={"User-Agent": "SpeedTest/2.0"}),
+                                   timeout=DURATION + 3) as r:
+                    while not stop_ev.is_set():
+                        chunk = r.read(65536)
+                        if not chunk:
+                            break
+                        with c_lock:
+                            chunks.append((len(chunk), _time.perf_counter()))
+            except Exception:
+                pass
+
+        t_start = _time.perf_counter()
+        workers = [threading.Thread(target=_dl_worker, daemon=True) for _ in range(DL_CONNS)]
+        for w in workers: w.start()
+        _time.sleep(DURATION)
+        stop_ev.set()
+        for w in workers: w.join(timeout=3)
+        t_end   = _time.perf_counter()
+
+        # Discard warmup, use per-second median
+        warmup_end  = t_start + WARMUP
+        effective   = [(b, ts) for b, ts in chunks if ts >= warmup_end]
+        if effective:
+            eff_bytes   = sum(b for b, _ in effective)
+            eff_elapsed = max(t_end - warmup_end, 0.5)
+            # Per-second snapshots for median
+            snaps, bucket_bytes, bucket_t0 = [], 0, warmup_end
+            for b, ts in effective:
+                bucket_bytes += b
+                if ts - bucket_t0 >= 1.0:
+                    snaps.append((bucket_bytes * 8) / ((ts - bucket_t0) * 1_000_000))
+                    bucket_bytes, bucket_t0 = 0, ts
+            if len(snaps) >= 2:
+                snaps_sorted = sorted(snaps)
+                m = len(snaps_sorted) // 2
+                dl_mbps = round(snaps_sorted[m] if len(snaps_sorted) % 2 else (snaps_sorted[m-1]+snaps_sorted[m])/2, 2)
+            else:
+                dl_mbps = round((eff_bytes * 8) / (eff_elapsed * 1_000_000), 2)
+        else:
+            total = sum(b for b, _ in chunks)
+            dl_mbps = round((total * 8) / (max(t_end - t_start, 1) * 1_000_000), 2)
+
+        _upd(download=dl_mbps, status="done", stage="done")
+    except Exception as e:
+        _upd(error=f"Download: {e}", status="error", stage="done")
+
+
 def run_speedtest_thread():
     global speedtest_data
     if speedtest_data.get("status") == "running":
@@ -1106,6 +1256,19 @@ class MonitorHandler(BaseHTTPRequestHandler):
             threading.Thread(target=run_speedtest_thread, daemon=True).start()
             return
 
+        # External speedtest start (server-side, no CORS) — POST triggers background job
+        if self.path == "/api/st/ext-start":
+            global _ext_job
+            resp_body = json.dumps({"status": "started"}).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(resp_body)))
+            self._cors_headers()
+            self.end_headers()
+            self.wfile.write(resp_body)
+            threading.Thread(target=run_ext_speedtest_thread, daemon=True).start()
+            return
+
         if self.path == "/api/restart-tunnel":
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -1255,6 +1418,18 @@ class MonitorHandler(BaseHTTPRequestHandler):
             self.wfile.write(data)
             return
 
+        # External speedtest status (server-side, no CORS issues)
+        if self.path == "/api/st/ext-status":
+            global _ext_job, _ext_lock
+            with _ext_lock:
+                data = json.dumps(_ext_job).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(data)))
+            self._cors_headers()
+            self.end_headers()
+            self.wfile.write(data)
+            return
 
         # Download endpoint — generate random binary in-memory, no disk write
         if self.path.startswith("/api/st/download"):
