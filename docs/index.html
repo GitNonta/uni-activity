@@ -13,8 +13,6 @@
             --primary-light: #6366f1;
             --primary-bg: #eef2ff;
             --bg-color: #ffffff;
-            --text-dark: #0f172a;
-            --text-muted: #64748b;
         }
 
         * {
@@ -25,7 +23,7 @@
 
         body {
             background-color: var(--bg-color);
-            color: var(--text-dark);
+            color: #0f172a;
             font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             min-height: 100vh;
             display: flex;
@@ -36,7 +34,7 @@
 
         .splash-container {
             width: 100%;
-            max-width: 360px;
+            max-width: 320px;
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -48,7 +46,7 @@
             width: 120px;
             height: 120px;
             object-fit: contain;
-            margin-bottom: 2rem;
+            margin-bottom: 2.25rem;
             filter: drop-shadow(0 6px 12px rgba(79, 70, 229, 0.12));
             animation: float-logo 3s ease-in-out infinite;
         }
@@ -58,18 +56,10 @@
             50% { transform: translateY(-5px); }
         }
 
-        .progress-wrapper {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
         .progress-container {
             width: 100%;
             background-color: var(--primary-bg);
-            height: 8px;
+            height: 6px;
             border-radius: 999px;
             overflow: hidden;
             position: relative;
@@ -80,67 +70,17 @@
             width: 0%;
             background: linear-gradient(90deg, #4f46e5, #6366f1, #818cf8);
             border-radius: 999px;
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .progress-percent {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: var(--primary);
-            font-variant-numeric: tabular-nums;
-            letter-spacing: -0.01em;
-        }
-
-        .btn-retry {
-            margin-top: 2rem;
-            background: var(--primary);
-            color: #ffffff;
-            border: none;
-            padding: 0.65rem 1.5rem;
-            border-radius: 12px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-            display: none;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
-        }
-
-        .btn-retry:hover {
-            background: var(--primary-light);
-        }
-
-        .btn-retry:active {
-            transform: scale(0.98);
+            transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         }
     </style>
     <script>
         (function() {
-            let currentPercent = 0;
-            let animFrame = null;
-
-            function setProgress(targetPercent, duration = 300) {
+            function setProgress(targetPercent) {
                 targetPercent = Math.min(100, Math.max(0, targetPercent));
                 const progressBar = document.getElementById('progress-bar');
-                const progressPercent = document.getElementById('progress-percent');
-                
-                if (progressBar) progressBar.style.width = targetPercent + '%';
-                
-                if (animFrame) cancelAnimationFrame(animFrame);
-                const startPercent = currentPercent;
-                const startTime = performance.now();
-                
-                function animate(now) {
-                    const elapsed = now - startTime;
-                    const progress = Math.min(elapsed / duration, 1);
-                    const interpolated = Math.round(startPercent + (targetPercent - startPercent) * progress);
-                    currentPercent = interpolated;
-                    if (progressPercent) progressPercent.innerText = interpolated + '%';
-                    if (progress < 1) {
-                        animFrame = requestAnimationFrame(animate);
-                    }
+                if (progressBar) {
+                    progressBar.style.width = targetPercent + '%';
                 }
-                animFrame = requestAnimationFrame(animate);
             }
 
             function getTargetUrl(baseUrl, searchStr) {
@@ -205,31 +145,29 @@
                 }
             }
 
-            let attemptCount = 0;
-
             async function resolveAndRedirect() {
-                attemptCount++;
                 const searchStr = window.location.search;
 
-                setProgress(15, 200);
+                // Step 1: Initializing
+                setProgress(20);
 
-                // 1. Check override URL
+                // Step 2: Check override URL
                 if (overrideUrl) {
-                    setProgress(35, 200);
+                    setProgress(40);
                     if (await isUrlAlive(overrideUrl)) {
-                        setProgress(100, 200);
+                        setProgress(100);
                         sessionStorage.setItem('active_tunnel_url', overrideUrl);
                         setTimeout(() => window.location.replace(getTargetUrl(overrideUrl, searchStr)), 200);
                         return;
                     }
                 }
 
-                // 2. Check cached URL
+                // Step 3: Check cached URL
                 const cachedUrl = sessionStorage.getItem('active_tunnel_url');
                 if (cachedUrl) {
-                    setProgress(55, 250);
+                    setProgress(60);
                     if (await isUrlAlive(cachedUrl)) {
-                        setProgress(100, 200);
+                        setProgress(100);
                         setTimeout(() => window.location.replace(getTargetUrl(cachedUrl, searchStr)), 200);
                         return;
                     } else {
@@ -237,16 +175,16 @@
                     }
                 }
 
-                // 3. Fetch active_url.json
-                setProgress(75, 300);
+                // Step 4: Fetch active_url.json
+                setProgress(80);
                 try {
                     const res = await fetch('active_url.json?t=' + Date.now());
                     const data = await res.json();
 
                     if (data && data.url) {
-                        setProgress(88, 250);
+                        setProgress(90);
                         if (await isUrlAlive(data.url)) {
-                            setProgress(100, 150);
+                            setProgress(100);
                             sessionStorage.setItem('active_tunnel_url', data.url);
                             setTimeout(() => window.location.replace(getTargetUrl(data.url, searchStr)), 200);
                             return;
@@ -256,14 +194,8 @@
                     console.warn('active_url.json fetch failed:', err);
                 }
 
-                // 4. Server restarting/updating - Reset progress to 20% and loop in 3s
-                setProgress(20, 300);
-
-                const retryBtn = document.getElementById('retry-btn');
-                if (retryBtn && attemptCount >= 4) {
-                    retryBtn.style.display = 'inline-block';
-                }
-
+                // Step 5: Server starting/updating - Smooth loop until server is active
+                setProgress(25);
                 setTimeout(resolveAndRedirect, 3000);
             }
 
@@ -276,15 +208,10 @@
         <!-- Web Logo Image -->
         <img src="logo.svg" alt="UNI Activity Logo" class="app-logo">
 
-        <!-- Progress Loading Bar & 1-100% Indicator -->
-        <div class="progress-wrapper">
-            <div class="progress-container">
-                <div class="progress-bar" id="progress-bar"></div>
-            </div>
-            <div class="progress-percent" id="progress-percent">0%</div>
+        <!-- Pure Loading Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
         </div>
-
-        <button id="retry-btn" class="btn-retry" onclick="location.reload()">รีโหลดอีกครั้ง</button>
     </div>
 </body>
 </html>
