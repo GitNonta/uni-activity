@@ -14,6 +14,15 @@
   width: 100%;
 }
 
+.container-fluid {
+  margin: 0 auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
 .grid-2 {
   display: grid;
   grid-template-columns: 1fr;

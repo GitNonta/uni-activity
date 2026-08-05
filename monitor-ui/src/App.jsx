@@ -60,7 +60,7 @@ export default function App() {
         ))}
       </div>
 
-      <main className="container">
+      <main className={activeTab === 'events' ? 'container-fluid' : 'container'}>
         {/* Dashboard — no SpeedTestCard here anymore */}
         {activeTab === 'dashboard' && (
           <>

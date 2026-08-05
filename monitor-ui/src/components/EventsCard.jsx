@@ -77,8 +77,7 @@ export function EventsCard({ eventsData, connected = true }) {
       padding: '1.75rem',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
       boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)',
-      margin: '0 auto',
-      maxWidth: '1200px',
+      width: '100%',
       position: 'relative'
     }}>
       {/* Toast Notification Banner */}
