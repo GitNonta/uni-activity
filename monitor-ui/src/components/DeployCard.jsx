@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0, selectedEvent }) {
+export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0, selectedEvent, onBack }) {
   const consoleRef = useRef(null);
 
   // Auto-scroll to bottom of logs on update
@@ -73,6 +73,16 @@ export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0, sele
       {/* Render-like Event Summary Header */}
       {selectedEvent && (
         <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px', overflow: 'hidden' }}>
+          {/* Top Back Navigation */}
+          <div style={{ display: 'flex', alignItems: 'center', padding: '0.75rem 1.5rem', background: '#020617', borderBottom: '1px solid #1e293b' }}>
+            <button 
+              onClick={onBack}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}
+            >
+              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+              Back to Events
+            </button>
+          </div>
           {/* Header row */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1.5rem', borderBottom: '1px solid #1e293b', background: '#020617' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

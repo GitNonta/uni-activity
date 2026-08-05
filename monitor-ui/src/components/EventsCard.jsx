@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export function EventsCard({ eventsData, connected = true, setActiveTab, setSelectedEvent }) {
+export function EventsCard({ eventsData, connected = true, onEventClick }) {
   const [filter, setFilter] = useState('all');
   const [showConnect, setShowConnect] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
@@ -343,8 +343,7 @@ export function EventsCard({ eventsData, connected = true, setActiveTab, setSele
                   <div style={{ fontSize: '0.92rem', fontWeight: 600, color: '#f8fafc', lineHeight: 1.4 }}>
                     <span 
                       onClick={() => {
-                        if (setSelectedEvent) setSelectedEvent(ev);
-                        if (setActiveTab) setActiveTab('deploy');
+                        if (onEventClick) onEventClick(ev);
                       }} 
                       style={{ color: '#38bdf8', cursor: 'pointer', textDecoration: 'underline' }}
                       title="View Deploy Logs"

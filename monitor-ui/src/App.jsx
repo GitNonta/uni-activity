@@ -36,7 +36,8 @@ export default function App() {
   // Read initial tab from URL hash (e.g. #events) or default to dashboard
   const getInitialTab = () => {
     const hash = window.location.hash.replace('#', '')
-    if (NAV_TABS.find(t => t.id === hash)) return hash
+    const baseTab = hash.split('/')[0]
+    if (NAV_TABS.find(t => t.id === baseTab)) return baseTab
     return 'dashboard'
   }
   
@@ -47,17 +48,31 @@ export default function App() {
   // Sync state to URL hash
   const handleTabChange = (tabId) => {
     setActiveTab(tabId)
+    setSelectedEvent(null) // clear selected event when switching tabs
     window.history.pushState(null, '', `#${tabId}`)
+  }
+
+  const handleEventDeployClick = (ev) => {
+    setSelectedEvent(ev)
+    // Create a long pseudo-URL like Render.com
+    const ts = encodeURIComponent(ev.timestamp || new Date().toISOString())
+    window.history.pushState(null, '', `#events/web/srv-monitor/deploys/dep-${ev.hash}?r=${ts}`)
   }
 
   // Listen to browser back/forward buttons
   useEffect(() => {
     const handlePopState = () => {
       const hash = window.location.hash.replace('#', '')
-      if (NAV_TABS.find(t => t.id === hash)) {
-        setActiveTab(hash)
+      const baseTab = hash.split('/')[0]
+      
+      if (NAV_TABS.find(t => t.id === baseTab)) {
+        setActiveTab(baseTab)
       } else {
         setActiveTab('dashboard')
+      }
+      
+      if (!hash.includes('/deploys/dep-')) {
+        setSelectedEvent(null)
       }
     }
     window.addEventListener('popstate', handlePopState)
@@ -103,7 +118,22 @@ export default function App() {
           </>
         )}
 
-        {activeTab === 'events' && <EventsCard eventsData={data?.events} connected={connected} setActiveTab={handleTabChange} setSelectedEvent={setSelectedEvent} />}
+        {activeTab === 'events' && (
+          selectedEvent ? (
+            <DeployCard
+              deployLog={data?.deploy_log}
+              sshSessions={data?.ssh_sessions}
+              sftpSessions={data?.sftp_sessions}
+              selectedEvent={selectedEvent}
+              onBack={() => {
+                setSelectedEvent(null)
+                window.history.pushState(null, '', '#events')
+              }}
+            />
+          ) : (
+            <EventsCard eventsData={data?.events} connected={connected} onEventClick={handleEventDeployClick} />
+          )
+        )}
 
         {/* Speed Test — dedicated page */}
         {activeTab === 'speedtest' && (
