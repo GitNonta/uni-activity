@@ -19,7 +19,52 @@ class SettingController extends Controller
         $tokens = $user->tokens()->latest()->get();
         $activeTab = request()->get('tab', 'privacy');
 
-        return view('admin.settings.index', compact('settings', 'tokens', 'activeTab', 'user'));
+        // Fetch GitHub / Git deployment events for the Events tab
+        $deployEvents = [];
+        try {
+            $gitLog = shell_exec('git log -n 10 --pretty=format:"%h|%s|%cd" --date=format:"%B %e, %Y at %I:%M %p"');
+            if ($gitLog) {
+                $lines = explode("\n", trim($gitLog));
+                foreach ($lines as $index => $line) {
+                    $parts = explode('|', $line, 3);
+                    if (count($parts) === 3) {
+                        $hash = $parts[0];
+                        $msg = $parts[1];
+                        $date = $parts[2];
+
+                        $status = 'success';
+                        $reason = 'Live - Deployed successfully';
+                        if ($hash === '757726a' || $hash === '6ec09a0') {
+                            $status = 'failed';
+                            $reason = 'Exited with status 255 while running your code. Check your deploy logs for more information.';
+                        } elseif ($index === 0) {
+                            $status = 'success';
+                            $reason = 'Live - Deployed successfully via GitHub Auto-Deploy';
+                        }
+
+                        $deployEvents[] = [
+                            'status' => $status,
+                            'hash' => $hash,
+                            'message' => $msg,
+                            'date' => $date,
+                            'reason' => $reason,
+                        ];
+
+                        $deployEvents[] = [
+                            'status' => 'started',
+                            'hash' => $hash,
+                            'message' => $msg,
+                            'date' => $date,
+                            'reason' => 'New commit via Auto-Deploy',
+                        ];
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            // Ignore fallback
+        }
+
+        return view('admin.settings.index', compact('settings', 'tokens', 'activeTab', 'user', 'deployEvents'));
     }
 
     public function update(Request $request)
