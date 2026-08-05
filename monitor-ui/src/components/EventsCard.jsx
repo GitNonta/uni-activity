@@ -7,40 +7,7 @@ export function EventsCard({ eventsData, connected = true }) {
   const [loadingAction, setLoadingAction] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
 
-  const defaultEvents = [
-    {
-      id: 1,
-      type: 'failed',
-      hash: '041dbdf',
-      message: 'feat(events): connect get_github_events directly to GitHub REST API for real-time commit status',
-      detail: 'Exited with status 255 while running your code. Check your deploy logs for more information.',
-      timestamp: 'August 5, 2026 at 12:00 PM',
-    },
-    {
-      id: 2,
-      type: 'started',
-      hash: '041dbdf',
-      message: 'feat(events): connect get_github_events directly to GitHub REST API for real-time commit status',
-      detail: 'New commit via Auto-Deploy',
-      timestamp: 'August 5, 2026 at 11:59 AM',
-    },
-    {
-      id: 3,
-      type: 'failed',
-      hash: '27b3294',
-      message: 'feat(events): add real-time WebSocket live streaming indicator and instant log updates for deployment status',
-      detail: 'Exited with status 255 while running your code. Check your deploy logs for more information.',
-      timestamp: 'August 5, 2026 at 11:55 AM',
-    },
-    {
-      id: 4,
-      type: 'started',
-      hash: '27b3294',
-      message: 'feat(events): add real-time WebSocket live streaming indicator and instant log updates for deployment status',
-      detail: 'New commit via Auto-Deploy',
-      timestamp: 'August 5, 2026 at 11:54 AM',
-    }
-  ];
+  const defaultEvents = [];
 
   const rawEvents = (eventsData && eventsData.length > 0) ? eventsData : defaultEvents;
 
