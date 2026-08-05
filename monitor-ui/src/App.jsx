@@ -20,14 +20,14 @@ import './App.css'
 
 const NAV_TABS = [
   { id: 'dashboard',     label: 'Dashboard' },
-  { id: 'events',        label: 'Events' },
-  { id: 'speedtest',     label: 'Speed Test' },
-  { id: 'inspector',     label: 'Inspector' },
-  { id: 'status',        label: 'Status' },
+  { id: 'status',        label: 'System Status' },
+  { id: 'events',        label: 'Deployment Events' },
   { id: 'deploy',        label: 'Deploy Logs' },
-  { id: 'documentation', label: 'Documentation' },
-  { id: 'advanced',      label: 'Advanced Status' },
+  { id: 'inspector',     label: 'Log Inspector' },
+  { id: 'speedtest',     label: 'Network Speed Test' },
+  { id: 'advanced',      label: 'Advanced Details' },
   { id: 'aiscanner',     label: 'AI Scanner' },
+  { id: 'documentation', label: 'Documentation' },
 ]
 
 export default function App() {
