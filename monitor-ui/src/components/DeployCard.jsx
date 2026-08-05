@@ -26,12 +26,39 @@ export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0, sele
 
   // Process logs
   const logLines = deployLog ? deployLog.split('\n').filter(line => line.trim()) : [];
-  let processedLogs = logLines.map((line, idx) => ({
-    id: idx,
-    time: `06:57:${String(50 + (idx % 10)).padStart(2, '0')} PM`,
-    text: line
-  }));
   
+  // Try to use a base timestamp if provided, else use current time
+  const baseTime = selectedEvent?.timestamp ? new Date(selectedEvent.timestamp).getTime() : Date.now() - (logLines.length * 1000);
+
+  let processedLogs = logLines.map((line, idx) => {
+    // Increment time by ~1000ms per line to look realistic
+    const lineDate = new Date(baseTime + (idx * 1000));
+    return {
+      id: idx,
+      time: lineDate.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      text: line
+    };
+  });
+  
+  // Apply category filter
+  if (logFilter === 'Build logs') {
+    processedLogs = processedLogs.filter(log => 
+      log.text.toLowerCase().includes('npm') || 
+      log.text.toLowerCase().includes('composer') || 
+      log.text.toLowerCase().includes('build') || 
+      log.text.toLowerCase().includes('install') ||
+      log.text.toLowerCase().includes('vite')
+    );
+  } else if (logFilter === 'Application logs') {
+    processedLogs = processedLogs.filter(log => 
+      !(log.text.toLowerCase().includes('npm') || 
+        log.text.toLowerCase().includes('composer') || 
+        log.text.toLowerCase().includes('build') || 
+        log.text.toLowerCase().includes('install') ||
+        log.text.toLowerCase().includes('vite'))
+    );
+  }
+
   if (logSearchText) {
     processedLogs = processedLogs.filter(log => log.text.toLowerCase().includes(logSearchText.toLowerCase()));
   }
