@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export function EventsCard({ eventsData }) {
+export function EventsCard({ eventsData, connected = true }) {
   const [filter, setFilter] = useState('all');
   const [showConnect, setShowConnect] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
@@ -156,22 +156,49 @@ export function EventsCard({ eventsData }) {
             marginBottom: '0.3rem',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px'
+            gap: '8px'
           }}>
             <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
             </svg>
-            WEB SERVICE • LIVE SYSTEM
+            WEB SERVICE • LIVE REAL-TIME STREAM
+            
+            {/* Live Streaming Indicator Badge */}
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              background: connected ? '#064e3b' : '#7f1d1d',
+              color: connected ? '#34d399' : '#f87171',
+              padding: '2px 8px',
+              borderRadius: '12px',
+              fontSize: '0.7rem',
+              fontWeight: 700,
+              textTransform: 'none',
+              border: `1px solid ${connected ? '#059669' : '#dc2626'}`
+            }}>
+              <span style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                background: connected ? '#10b981' : '#ef4444',
+                boxShadow: connected ? '0 0 8px #10b981' : 'none'
+              }}></span>
+              {connected ? 'LIVE (WebSocket Connected)' : 'OFFLINE'}
+            </span>
           </div>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
             <h2 style={{ fontSize: '1.6rem', fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '-0.02em' }}>uni-activity</h2>
             <span style={{ background: '#1e293b', color: '#cbd5e1', fontSize: '0.75rem', padding: '3px 8px', borderRadius: '6px', fontWeight: 600, border: '1px solid #334155' }}>Docker / Termux</span>
             <span style={{ background: '#065f46', color: '#6ee7b7', fontSize: '0.75rem', padding: '3px 8px', borderRadius: '6px', fontWeight: 600 }}>Active</span>
             <a href="https://github.com/GitNonta/uni-activity" target="_blank" rel="noreferrer" style={{ color: '#a855f7', fontSize: '0.85rem', textDecoration: 'none', fontWeight: 500 }}>GitHub Repo →</a>
           </div>
+
           <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span>Service ID: <code style={{ color: '#cbd5e1', background: '#1e293b', padding: '2px 6px', borderRadius: '4px', fontFamily: 'monospace' }}>srv-d91sgl3tqb8s739ke9og</code></span>
           </div>
+
           <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#e2e8f0', fontWeight: 500 }}>
               <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
@@ -283,7 +310,7 @@ export function EventsCard({ eventsData }) {
           <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
           </svg>
-          <span>Server Auto-Sync active: GitHub commits are fetched & auto-deployed every 10 seconds.</span>
+          <span>Real-time Sync Active: WebSocket feeds deployment logs & commits every 2 seconds without refresh.</span>
         </div>
       </div>
 

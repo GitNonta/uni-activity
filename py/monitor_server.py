@@ -688,13 +688,34 @@ def get_deploy_logs():
     return "No deployment log found."
 
 def get_github_events():
-    """Fetch real deployment/git commit status from local repo & git logs."""
+    """Fetch real deployment/git commit status from local repo & git sync logs in real-time."""
     events = []
     try:
         import subprocess
         repo_dir = "/data/data/com.termux/files/home/uni-activity"
         if not os.path.exists(repo_dir):
             repo_dir = str(Path(__file__).parent.parent)
+
+        sync_log = os.path.join(repo_dir, "storage/logs/git-sync.log")
+        sync_status = "idle"
+        last_log_msg = ""
+        if os.path.exists(sync_log):
+            try:
+                with open(sync_log, "r", encoding="utf-8", errors="replace") as f:
+                    log_lines = f.readlines()
+                    if log_lines:
+                        last_line = log_lines[-1].strip()
+                        if "Updating server" in last_line:
+                            sync_status = "building"
+                            last_log_msg = last_line
+                        elif "successfully" in last_line:
+                            sync_status = "success"
+                            last_log_msg = last_line
+                        elif "failed" in last_line or "error" in last_line.lower():
+                            sync_status = "failed"
+                            last_log_msg = last_line
+            except Exception:
+                pass
 
         res = subprocess.run(
             ["git", "log", "-n", "15", '--pretty=format:%h|%s|%cd|%an', '--date=format:%B %e, %Y at %I:%M %p'],
@@ -710,8 +731,15 @@ def get_github_events():
                     status_type = "success"
                     detail = f"Live - Deployed via GitHub Auto-Deploy ({author})"
                     if idx == 0:
-                        status_type = "success"
-                        detail = f"Live - Active Deployment on Server ({author})"
+                        if sync_status == "building":
+                            status_type = "started"
+                            detail = f"🔄 Deploying in progress on server ({author})..."
+                        elif sync_status == "failed":
+                            status_type = "failed"
+                            detail = f"❌ Deploy failed: {last_log_msg}"
+                        else:
+                            status_type = "success"
+                            detail = f"🟢 Live - Active Deployment on Server ({author})"
 
                     events.append({
                         "id": f"event-{h}-status",
