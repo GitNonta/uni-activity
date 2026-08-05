@@ -33,35 +33,32 @@ const NAV_TABS = [
 export default function App() {
   const { data, connected } = useWebSocket()
   const [activeTab, setActiveTab] = useState('dashboard')
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
   return (
     <div className="layout">
-      <Header connected={connected} />
+      <Header connected={connected} toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
 
-      {/* ── Navigation Tabs ─────────────────────────────── */}
-      <div style={{
-        padding: '0 2rem', display: 'flex', gap: '0', overflowX: 'auto',
-        borderBottom: '1px solid #e5e7eb', background: '#fff',
-      }}>
-        {NAV_TABS.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            style={{
-              padding: '0.75rem 1rem', background: 'none', border: 'none', whiteSpace: 'nowrap',
-              borderBottom: activeTab === tab.id ? '2px solid #2563eb' : '2px solid transparent',
-              color:      activeTab === tab.id ? '#2563eb' : '#6b7280',
-              fontWeight: activeTab === tab.id ? 600 : 400,
-              cursor: 'pointer', fontSize: '0.9rem', transition: 'color 0.15s',
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <div className="main-wrapper">
+        {/* ── Sidebar Navigation ─────────────────────────────── */}
+        <aside className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
+          <div className="sidebar-nav">
+            {NAV_TABS.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`nav-btn ${activeTab === tab.id ? 'active' : ''}`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </aside>
 
-      <main className={activeTab === 'events' ? 'container-fluid' : 'container'}>
-        {/* Dashboard — no SpeedTestCard here anymore */}
+        {/* ── Main Content Area ─────────────────────────────── */}
+        <div className="content-area">
+          <main className={activeTab === 'events' ? 'container-fluid' : 'container'}>
+            {/* Dashboard — no SpeedTestCard here anymore */}
         {activeTab === 'dashboard' && (
           <>
             <AlertsBanner alerts={data?.alerts} />
@@ -100,7 +97,9 @@ export default function App() {
             serviceStatus={data?.services?.['AI Scan Service']}
           />
         )}
-      </main>
+          </main>
+        </div>
+      </div>
     </div>
   )
 }

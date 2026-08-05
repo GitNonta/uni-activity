@@ -1,4 +1,4 @@
-export function Header({ connected }) {
+export function Header({ connected, toggleSidebar }) {
   return (
     <header style={{
       background: '#ffffff',
@@ -12,6 +12,20 @@ export function Header({ connected }) {
       zIndex: 50,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+        <button 
+          onClick={toggleSidebar}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem',
+            display: 'flex', alignItems: 'center', color: '#4b5563', borderRadius: '4px'
+          }}
+          title="Toggle Menu"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <rect x="2" y="3" width="20" height="14" rx="2"/>
           <line x1="8" y1="21" x2="16" y2="21"/>
