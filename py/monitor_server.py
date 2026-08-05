@@ -687,22 +687,38 @@ def get_deploy_logs():
             return f"Error reading deploy log: {str(e)}"
     return "No deployment log found."
 
-def get_github_sync_logs():
+def get_github_sync_logs_dict():
     from pathlib import Path
-    import os
+    import os, glob
     app_dir = "/data/data/com.termux/files/home/uni-activity"
     if not os.path.exists(app_dir):
         app_dir = str(Path(__file__).parent.parent)
-    sync_log_path = os.path.join(app_dir, "storage/logs/git-sync.log")
+        
+    logs = {}
     
+    # Read global sync log
+    sync_log_path = os.path.join(app_dir, "storage/logs/git-sync.log")
     if os.path.exists(sync_log_path):
         try:
             with open(sync_log_path, "r", encoding="utf-8", errors="replace") as f:
                 lines = f.readlines()
-                return "".join(lines[-200:])
-        except Exception as e:
-            return f"Error reading sync log: {str(e)}"
-    return ""
+                logs["latest"] = "".join(lines[-200:])
+        except Exception:
+            pass
+
+    # Read per-commit logs
+    log_pattern = os.path.join(app_dir, "storage/logs/git-sync-*.log")
+    for filepath in glob.glob(log_pattern):
+        filename = os.path.basename(filepath)
+        commit_hash = filename.replace("git-sync-", "").replace(".log", "")
+        try:
+            with open(filepath, "r", encoding="utf-8", errors="replace") as f:
+                lines = f.readlines()
+                logs[commit_hash] = "".join(lines[-200:])
+        except Exception:
+            pass
+            
+    return logs
 
 def get_github_events():
     """Fetch real-time commit & local deployment events."""
@@ -1245,7 +1261,7 @@ def collect_stats():
         "logs": get_logs(),
         "inspector": list(inspector_logs),
         "deploy_log": get_deploy_logs(),
-        "github_deploy_log": get_github_sync_logs(),
+        "github_deploy_logs": get_github_sync_logs_dict(),
         "events": get_github_events(),
         "ai_log": get_ai_logs(),
         "ssh_sessions": get_active_sessions(),
@@ -1517,6 +1533,17 @@ class MonitorHandler(BaseHTTPRequestHandler):
                         subprocess.run(["pkill", "-9", "-f", "php-fpm"])
                         subprocess.Popen(["nohup", "php-fpm"], cwd=app_dir)
                         f.write("Deploy finished.\n")
+                        
+                except Exception:
+                    pass
+                
+                # Try to copy to per-commit log file
+                try:
+                    hash_res = subprocess.run(["git", "rev-parse", "--short", "origin/main"], cwd=app_dir, capture_output=True, text=True)
+                    commit_hash = hash_res.stdout.strip()
+                    if commit_hash:
+                        import shutil
+                        shutil.copy2(sync_log, os.path.join(app_dir, f"storage/logs/git-sync-{commit_hash}.log"))
                 except Exception:
                     pass
                 
@@ -1575,6 +1602,14 @@ class MonitorHandler(BaseHTTPRequestHandler):
                             subprocess.run(["pkill", "-9", "-f", "php-fpm"])
                             subprocess.Popen(["nohup", "php-fpm"], cwd=app_dir)
                             f.write("Rollback finished.\n")
+                    except Exception:
+                        pass
+                        
+                    # Try to copy to per-commit log file
+                    try:
+                        if commit_hash:
+                            import shutil
+                            shutil.copy2(sync_log, os.path.join(app_dir, f"storage/logs/git-sync-{commit_hash}.log"))
                     except Exception:
                         pass
                     
