@@ -666,7 +666,7 @@ export function SpeedTestPage({ serverSpeedtest }) {
   const stageIdx = STEPS.indexOf(stage)
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+    <div style={{ width: '100%', margin: '0 auto' }}>
       {/* ── Page Header ─────────────────────────────────── */}
       <div style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
         <div>

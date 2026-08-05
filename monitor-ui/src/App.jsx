@@ -57,7 +57,7 @@ export default function App() {
 
         {/* ── Main Content Area ─────────────────────────────── */}
         <div className="content-area">
-          <main className={activeTab === 'events' ? 'container-fluid' : 'container'}>
+          <main className="container">
             {/* Dashboard — no SpeedTestCard here anymore */}
         {activeTab === 'dashboard' && (
           <>
