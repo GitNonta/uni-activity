@@ -24,8 +24,13 @@ export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0, sele
     }
   }, [deployLog, logOrder]);
 
-  // Process logs
-  const logLines = deployLog ? deployLog.split('\n').filter(line => line.trim()) : [];
+  // Process logs: Filter out local sync noise (Uploading, Connecting) so we only show github deploy/build logs
+  const logLines = deployLog ? deployLog.split('\n').filter(line => {
+    const t = line.trim();
+    if (!t) return false;
+    if (t.startsWith('Uploading ') || t.startsWith('Connecting to ')) return false;
+    return true;
+  }) : [];
   
   // Try to use a base timestamp if provided, else use current time
   const baseTime = selectedEvent?.timestamp ? new Date(selectedEvent.timestamp).getTime() : Date.now() - (logLines.length * 1000);
