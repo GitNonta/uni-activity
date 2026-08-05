@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export function EventsCard({ eventsData, connected = true, onEventClick }) {
+export function EventsCard({ eventsData, publicIp, connected = true, onEventClick }) {
   const [filter, setFilter] = useState('all');
   const [showConnect, setShowConnect] = useState(false);
   const [showDeployMenu, setShowDeployMenu] = useState(false);
@@ -219,10 +219,9 @@ export function EventsCard({ eventsData, connected = true, onEventClick }) {
                 </p>
                 
                 <div style={{ position: 'relative', background: '#262626', borderRadius: '4px', padding: '0.85rem', fontFamily: 'var(--font-mono, monospace)', fontSize: '0.85rem', color: '#d4d4d8', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                  <div>74.220.52.0/24</div>
-                  <div>74.220.60.0/24</div>
+                  <div>{publicIp ? publicIp : 'Fetching...'}</div>
                   <button 
-                    onClick={() => copyToClipboard('74.220.52.0/24\n74.220.60.0/24', 'IP Addresses')}
+                    onClick={() => copyToClipboard(publicIp || '', 'IP Address')}
                     style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'transparent', border: 'none', color: '#a3a3a3', cursor: 'pointer', padding: '4px' }}
                     title="Copy to clipboard"
                   >

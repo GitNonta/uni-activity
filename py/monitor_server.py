@@ -1277,11 +1277,31 @@ def collect_stats():
             "queue": get_queue_stats(),
             "cloudflared": get_cloudflared_stats(),
             "gpu": get_gpu_stats()
-        }
+        },
+        "public_ip": CACHED_PUBLIC_IP
     }
     stats["alerts"] = get_alerts(stats)
     stats["alerts_history"] = list(alerts_history)
     return stats
+
+CACHED_PUBLIC_IP = ""
+
+def fetch_public_ip_loop():
+    global CACHED_PUBLIC_IP
+    import urllib.request
+    while True:
+        try:
+            req = urllib.request.Request("https://api.ipify.org", headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=10) as response:
+                ip = response.read().decode('utf-8').strip()
+                if ip:
+                    CACHED_PUBLIC_IP = ip
+        except Exception:
+            pass
+        import time
+        time.sleep(600)  # every 10 mins
+
+threading.Thread(target=fetch_public_ip_loop, daemon=True).start()
 
 # ------- UDP Inspector Receiver -------
 def udp_receiver_thread():

@@ -138,7 +138,12 @@ export default function App() {
               }}
             />
           ) : (
-            <EventsCard eventsData={data?.events} connected={connected} onEventClick={handleEventDeployClick} />
+            <EventsCard 
+              eventsData={data?.events} 
+              publicIp={data?.public_ip} 
+              connected={connected} 
+              onEventClick={handleEventDeployClick} 
+            />
           )
         )}
 
