@@ -1228,6 +1228,7 @@ def collect_stats():
         "logs": get_logs(),
         "inspector": list(inspector_logs),
         "deploy_log": get_deploy_logs(),
+        "github_deploy_log": get_github_sync_logs(),
         "events": get_github_events(),
         "ai_log": get_ai_logs(),
         "ssh_sessions": get_active_sessions(),
