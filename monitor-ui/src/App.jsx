@@ -15,10 +15,12 @@ import { DeployCard } from './components/DeployCard'
 import { Documentation } from './components/Documentation'
 import { AdvancedStatus } from './components/AdvancedStatus'
 import { AiScanner } from './components/AiScanner'
+import { EventsCard } from './components/EventsCard'
 import './App.css'
 
 const NAV_TABS = [
   { id: 'dashboard',     label: 'Dashboard' },
+  { id: 'events',        label: 'Events' },
   { id: 'speedtest',     label: 'Speed Test' },
   { id: 'inspector',     label: 'Inspector' },
   { id: 'status',        label: 'Status' },
@@ -73,6 +75,8 @@ export default function App() {
             <AlertsHistory history={data?.alerts_history} />
           </>
         )}
+
+        {activeTab === 'events' && <EventsCard eventsData={data?.events} />}
 
         {/* Speed Test — dedicated page */}
         {activeTab === 'speedtest' && (
