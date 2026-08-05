@@ -1,14 +1,44 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0, selectedEvent, onBack }) {
   const consoleRef = useRef(null);
-
+  const [logSearchText, setLogSearchText] = useState('');
+  const [logFilter, setLogFilter] = useState('All logs');
+  const [logOrder, setLogOrder] = useState('Ascending');
+  const [isAllLogsMenuOpen, setIsAllLogsMenuOpen] = useState(false);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  
+  // Close menus when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setIsAllLogsMenuOpen(false);
+      setIsMoreMenuOpen(false);
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
   // Auto-scroll to bottom of logs on update
   useEffect(() => {
-    if (consoleRef.current) {
+    if (consoleRef.current && logOrder === 'Ascending') {
       consoleRef.current.scrollTop = consoleRef.current.scrollHeight;
     }
-  }, [deployLog]);
+  }, [deployLog, logOrder]);
+
+  // Process logs
+  const logLines = deployLog ? deployLog.split('\n').filter(line => line.trim()) : [];
+  let processedLogs = logLines.map((line, idx) => ({
+    id: idx,
+    time: `06:57:${String(50 + (idx % 10)).padStart(2, '0')} PM`,
+    text: line
+  }));
+  
+  if (logSearchText) {
+    processedLogs = processedLogs.filter(log => log.text.toLowerCase().includes(logSearchText.toLowerCase()));
+  }
+  
+  if (logOrder === 'Descending') {
+    processedLogs = [...processedLogs].reverse();
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', minHeight: 'calc(100vh - 180px)' }}>
@@ -165,19 +195,39 @@ export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0, sele
             
             {/* Left: All logs & Search */}
             <div style={{ display: 'flex', alignItems: 'center', height: '32px' }}>
-              <button style={{ 
-                display: 'flex', alignItems: 'center', gap: '0.5rem', 
-                background: 'transparent', border: 'none', borderRight: '1px solid #262626',
-                color: '#f5f5f5', fontSize: '0.85rem', padding: '0 1rem', height: '100%', cursor: 'pointer' 
-              }}>
-                All logs
-                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/></svg>
-              </button>
+              <div style={{ position: 'relative', height: '100%' }}>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); setIsAllLogsMenuOpen(!isAllLogsMenuOpen); setIsMoreMenuOpen(false); }}
+                  style={{ 
+                    display: 'flex', alignItems: 'center', gap: '0.5rem', 
+                    background: 'transparent', border: 'none', borderRight: '1px solid #262626',
+                    color: '#f5f5f5', fontSize: '0.85rem', padding: '0 1rem', height: '100%', cursor: 'pointer' 
+                  }}>
+                  {logFilter}
+                  <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                {isAllLogsMenuOpen && (
+                  <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: '4px', background: '#0f0f0f', border: '1px solid #262626', borderRadius: '4px', width: '200px', padding: '0.5rem', zIndex: 10, boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)' }}>
+                    {['All logs', 'Application logs', 'Build logs'].map(opt => (
+                      <div 
+                        key={opt}
+                        onClick={(e) => { e.stopPropagation(); setLogFilter(opt); setIsAllLogsMenuOpen(false); }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem', cursor: 'pointer', borderRadius: '4px', background: logFilter === opt ? '#1a1a1a' : 'transparent', borderLeft: logFilter === opt ? '2px solid #a855f7' : '2px solid transparent' }}
+                      >
+                        <div style={{ width: '12px', height: '12px', borderRadius: '50%', border: logFilter === opt ? '4px solid #a855f7' : '1px solid #525252' }}></div>
+                        <span style={{ fontSize: '0.85rem', color: logFilter === opt ? '#e879f9' : '#d4d4d8' }}>{opt}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div style={{ display: 'flex', alignItems: 'center', padding: '0 1rem', color: '#a3a3a3' }}>
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 <input 
                   type="text" 
                   placeholder="Search logs" 
+                  value={logSearchText}
+                  onChange={(e) => setLogSearchText(e.target.value)}
                   style={{ background: 'transparent', border: 'none', color: '#f5f5f5', outline: 'none', marginLeft: '0.5rem', fontSize: '0.85rem', width: '150px' }} 
                 />
               </div>
@@ -201,9 +251,66 @@ export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0, sele
                 <button style={{ background: 'transparent', border: 'none', color: '#a3a3a3', padding: '0 0.5rem', height: '100%', cursor: 'pointer', borderRight: '1px solid #262626', display: 'flex', alignItems: 'center' }}>
                   <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
                 </button>
-                <button style={{ background: 'transparent', border: 'none', color: '#a3a3a3', padding: '0 0.5rem', height: '100%', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                  <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg>
-                </button>
+                <div style={{ position: 'relative', height: '100%' }}>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setIsMoreMenuOpen(!isMoreMenuOpen); setIsAllLogsMenuOpen(false); }}
+                    style={{ background: isMoreMenuOpen ? '#fff' : 'transparent', border: 'none', color: isMoreMenuOpen ? '#000' : '#a3a3a3', padding: '0 0.5rem', height: '100%', cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'all 0.2s' }}>
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg>
+                  </button>
+                  {isMoreMenuOpen && (
+                    <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '4px', background: '#0f0f0f', border: '1px solid #262626', borderRadius: '4px', width: '220px', zIndex: 10, boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)' }}>
+                      <div 
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          navigator.clipboard.writeText(processedLogs.map(l => l.text).join('\n')); 
+                          setIsMoreMenuOpen(false); 
+                          alert('Logs copied to clipboard!'); 
+                        }}
+                        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem', cursor: 'pointer', borderBottom: '1px solid #262626', color: '#d4d4d8', fontSize: '0.85rem' }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                          Copy logs
+                        </div>
+                        <span style={{ fontSize: '0.7rem', color: '#737373', display: 'flex', gap: '2px' }}><span>^</span><span>C</span></span>
+                      </div>
+                      <div style={{ padding: '0.75rem 1rem' }}>
+                        <div style={{ fontSize: '0.7rem', color: '#737373', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>ORDER BY</div>
+                        <div 
+                          onClick={(e) => { e.stopPropagation(); setLogOrder('Ascending'); }}
+                          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.4rem 0', cursor: 'pointer', color: '#d4d4d8', fontSize: '0.85rem' }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7"/></svg>
+                            Ascending
+                          </div>
+                          {logOrder === 'Ascending' && <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>}
+                        </div>
+                        <div 
+                          onClick={(e) => { e.stopPropagation(); setLogOrder('Descending'); }}
+                          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.4rem 0', cursor: 'pointer', color: '#d4d4d8', fontSize: '0.85rem' }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/></svg>
+                            Descending
+                          </div>
+                          {logOrder === 'Descending' && <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>}
+                        </div>
+                      </div>
+                      <div style={{ borderTop: '1px solid #262626', borderBottom: '1px solid #262626', padding: '0.75rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', color: '#d4d4d8', fontSize: '0.85rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                          <span>Display: <span style={{ fontWeight: 600 }}>Expand everything</span></span>
+                        </div>
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/></svg>
+                      </div>
+                      <div style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', color: '#d4d4d8', fontSize: '0.85rem' }}>
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        Theme Settings
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -213,25 +320,22 @@ export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0, sele
             ref={consoleRef}
             style={{ overflowY: 'auto', flex: 1, maxHeight: '600px', background: '#0a0a0a', padding: '1rem 0' }}
           >
-            {deployLog ? deployLog.split('\n').map((line, idx) => {
-              if (!line.trim()) return null;
-              return (
-                <div key={idx} style={{ display: 'flex', fontFamily: 'monospace', fontSize: '0.8rem', lineHeight: '1.5' }}>
-                  <div style={{ width: '100px', flexShrink: 0, paddingLeft: '1rem', color: '#737373', userSelect: 'none' }}>
-                    06:57:{String(50 + (idx % 10)).padStart(2, '0')} PM
-                  </div>
-                  <div style={{ color: '#d4d4d8', paddingLeft: '1rem', flex: 1, wordBreak: 'break-all', whiteSpace: 'pre-wrap' }}>
-                    {line}
-                  </div>
+            {processedLogs.length > 0 ? processedLogs.map((log) => (
+              <div key={log.id} style={{ display: 'flex', fontFamily: 'monospace', fontSize: '0.8rem', lineHeight: '1.5' }}>
+                <div style={{ width: '100px', flexShrink: 0, paddingLeft: '1rem', color: '#737373', userSelect: 'none' }}>
+                  {log.time}
                 </div>
-              );
-            }) : (
+                <div style={{ color: '#d4d4d8', paddingLeft: '1rem', flex: 1, wordBreak: 'break-all', whiteSpace: 'pre-wrap' }}>
+                  {log.text}
+                </div>
+              </div>
+            )) : (
               <div style={{ display: 'flex', fontFamily: 'monospace', fontSize: '0.8rem', lineHeight: '1.5' }}>
                 <div style={{ width: '100px', flexShrink: 0, paddingLeft: '1rem', color: '#737373', userSelect: 'none' }}>
                   --:--:--
                 </div>
                 <div style={{ color: '#a3a3a3', paddingLeft: '1rem', flex: 1 }}>
-                  No deployment log found. Run a deployment script to generate logs.
+                  {logSearchText ? 'No matching logs found.' : 'No deployment log found. Run a deployment script to generate logs.'}
                 </div>
               </div>
             )}
