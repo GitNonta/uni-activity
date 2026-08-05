@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export function EventsCard({ eventsData, connected = true }) {
+export function EventsCard({ eventsData, connected = true, setActiveTab }) {
   const [filter, setFilter] = useState('all');
   const [showConnect, setShowConnect] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
@@ -341,7 +341,14 @@ export function EventsCard({ eventsData, connected = true }) {
                 {/* Event Content matching Render UI */}
                 <div>
                   <div style={{ fontSize: '0.92rem', fontWeight: 600, color: '#f8fafc', lineHeight: 1.4 }}>
-                    {ev.type === 'failed' ? 'Deploy failed for ' : ev.type === 'started' ? 'Deploy started for ' : 'Deploy succeeded for '}
+                    <span 
+                      onClick={() => setActiveTab && setActiveTab('deploy')} 
+                      style={{ color: '#38bdf8', cursor: 'pointer', textDecoration: 'underline' }}
+                      title="View Deploy Logs"
+                    >
+                      Deploy
+                    </span>
+                    {ev.type === 'failed' ? ' failed for ' : ev.type === 'started' ? ' started for ' : ' succeeded for '}
                     <a href={`https://github.com/GitNonta/uni-activity/commit/${ev.hash}`} target="_blank" rel="noreferrer" style={{ color: '#38bdf8', textDecoration: 'underline', fontFamily: 'monospace' }}>
                       {ev.hash}
                     </a>

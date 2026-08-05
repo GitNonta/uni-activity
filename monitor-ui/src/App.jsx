@@ -73,7 +73,7 @@ export default function App() {
           </>
         )}
 
-        {activeTab === 'events' && <EventsCard eventsData={data?.events} connected={connected} />}
+        {activeTab === 'events' && <EventsCard eventsData={data?.events} connected={connected} setActiveTab={setActiveTab} />}
 
         {/* Speed Test — dedicated page */}
         {activeTab === 'speedtest' && (
