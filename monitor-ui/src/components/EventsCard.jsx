@@ -174,7 +174,7 @@ export function EventsCard({ eventsData, connected = true, onEventClick }) {
           <div style={{ position: 'relative' }}>
             <button
               type="button"
-              onClick={() => setShowConnect(!showConnect)}
+              onClick={(e) => { e.stopPropagation(); setShowConnect(!showConnect); }}
               style={{
                 background: '#1e293b',
                 color: '#e2e8f0',
@@ -251,7 +251,7 @@ export function EventsCard({ eventsData, connected = true, onEventClick }) {
               </button>
               <button
                 type="button"
-                onClick={() => setShowDeployMenu(!showDeployMenu)}
+                onClick={(e) => { e.stopPropagation(); setShowDeployMenu(!showDeployMenu); }}
                 disabled={loadingAction}
                 style={{
                   background: loadingAction ? '#94a3b8' : '#9333ea',
@@ -274,7 +274,9 @@ export function EventsCard({ eventsData, connected = true, onEventClick }) {
             </div>
 
             {showDeployMenu && (
-              <div style={{
+              <div 
+                onClick={(e) => e.stopPropagation()}
+                style={{
                 position: 'absolute',
                 top: '110%',
                 right: 0,
@@ -390,7 +392,7 @@ export function EventsCard({ eventsData, connected = true, onEventClick }) {
       <div style={{ marginBottom: '1rem', position: 'relative' }}>
         <button
           type="button"
-          onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+          onClick={(e) => { e.stopPropagation(); setShowFilterDropdown(!showFilterDropdown); }}
           style={{
             background: '#1e293b',
             color: '#94a3b8',
