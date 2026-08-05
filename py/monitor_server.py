@@ -687,6 +687,23 @@ def get_deploy_logs():
             return f"Error reading deploy log: {str(e)}"
     return "No deployment log found."
 
+def get_github_sync_logs():
+    from pathlib import Path
+    import os
+    app_dir = "/data/data/com.termux/files/home/uni-activity"
+    if not os.path.exists(app_dir):
+        app_dir = str(Path(__file__).parent.parent)
+    sync_log_path = os.path.join(app_dir, "storage/logs/git-sync.log")
+    
+    if os.path.exists(sync_log_path):
+        try:
+            with open(sync_log_path, "r", encoding="utf-8", errors="replace") as f:
+                lines = f.readlines()
+                return "".join(lines[-200:])
+        except Exception as e:
+            return f"Error reading sync log: {str(e)}"
+    return ""
+
 def get_github_events():
     """Fetch real-time commit & local deployment events."""
     events = []
