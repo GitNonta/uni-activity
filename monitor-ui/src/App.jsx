@@ -123,7 +123,12 @@ export default function App() {
         {activeTab === 'events' && (
           selectedEvent ? (
             <DeployCard
-              deployLog={data?.github_deploy_logs?.[selectedEvent.hash] || data?.github_deploy_logs?.latest || ''}
+              deployLog={
+                data?.github_deploy_logs?.[selectedEvent.hash] 
+                || (selectedEvent?.id?.includes('status') || selectedEvent?.detail?.includes('Live') 
+                    ? data?.github_deploy_logs?.latest 
+                    : '')
+              }
               sshSessions={data?.ssh_sessions}
               sftpSessions={data?.sftp_sessions}
               selectedEvent={selectedEvent}
