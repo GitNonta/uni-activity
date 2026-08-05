@@ -688,72 +688,75 @@ def get_deploy_logs():
     return "No deployment log found."
 
 def get_github_events():
-    """Fetch real-time commit & Render deployment events matching Render dashboard exactly."""
+    """Fetch real-time commit & local deployment events."""
     events = []
     try:
-        import urllib.request, json, datetime
+        import subprocess, datetime, os
+        from pathlib import Path
+        
+        app_dir = "/data/data/com.termux/files/home/uni-activity"
+        if not os.path.exists(app_dir):
+            app_dir = str(Path(__file__).parent.parent)
 
-        url = "https://api.github.com/repos/GitNonta/uni-activity/commits?per_page=20"
-        req = urllib.request.Request(url, headers={
-            "User-Agent": "Uni-Activity-Monitor/1.0",
-            "Accept": "application/vnd.github.v3+json"
-        })
+        # Get current active HEAD
+        try:
+            head_res = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=app_dir, capture_output=True, text=True)
+            current_head = head_res.stdout.strip()
+        except Exception:
+            current_head = ""
 
-        with urllib.request.urlopen(req, timeout=4) as response:
-            if response.status == 200:
-                raw_json = json.loads(response.read().decode("utf-8"))
-                for idx, item in enumerate(raw_json):
-                    sha_full = item.get("sha", "")
-                    sha = sha_full[:7]
-                    commit_obj = item.get("commit", {})
-                    msg = commit_obj.get("message", "").split("\n")[0]
-                    author_obj = commit_obj.get("author", {})
-                    date_iso = author_obj.get("date", "")
+        # Get local git log
+        log_res = subprocess.run(
+            ["git", "log", "-n", "20", "--pretty=format:%h|%ad|%s", "--date=iso"],
+            cwd=app_dir, capture_output=True, text=True
+        )
+        
+        if log_res.returncode == 0:
+            lines = log_res.stdout.strip().split("\n")
+            for line in lines:
+                if not line: continue
+                parts = line.split("|", 2)
+                if len(parts) < 3: continue
+                sha = parts[0]
+                date_iso = parts[1]
+                msg = parts[2]
+                
+                dt_str = date_iso
+                try:
+                    dt_obj = datetime.datetime.fromisoformat(date_iso.replace("Z", "+00:00"))
+                    dt_str = dt_obj.strftime("%B %e, %Y at %I:%M %p")
+                except Exception:
+                    pass
 
-                    dt_str = date_iso
-                    try:
-                        dt_obj = datetime.datetime.fromisoformat(date_iso.replace("Z", "+00:00"))
-                        dt_str = dt_obj.strftime("%B %e, %Y at %I:%M %p")
-                    except Exception:
-                        pass
-
-                    # Detect Render exit 255 build failures matching Render dashboard
-                    is_failed = False
-                    if sha in ["041dbdf", "27b3294", "757726a", "6ec09a0"] or "feat(events)" in msg or "fix(composer)" in msg or "fix(docker)" in msg:
-                        is_failed = True
-
-                    if is_failed:
-                        events.append({
-                            "id": f"render-{sha}-fail",
-                            "type": "failed",
-                            "hash": sha,
-                            "message": msg,
-                            "detail": "Exited with status 255 while running your code. Check your deploy logs for more information.",
-                            "timestamp": dt_str
-                        })
-                    else:
-                        events.append({
-                            "id": f"render-{sha}-status",
-                            "type": "success",
-                            "hash": sha,
-                            "message": msg,
-                            "detail": "Live - Deployed successfully",
-                            "timestamp": dt_str
-                        })
-
+                # If this is the current active commit
+                if sha == current_head:
                     events.append({
-                        "id": f"render-{sha}-start",
-                        "type": "started",
+                        "id": f"local-{sha}-status",
+                        "type": "success",
                         "hash": sha,
                         "message": msg,
-                        "detail": "New commit via Auto-Deploy",
+                        "detail": "Live - Deployed successfully on local server",
                         "timestamp": dt_str
                     })
-
-                if events:
-                    return events
-    except Exception:
-        pass
+                
+                events.append({
+                    "id": f"local-{sha}-start",
+                    "type": "started",
+                    "hash": sha,
+                    "message": msg,
+                    "detail": "Commit deployed" if sha == current_head else "Historical commit",
+                    "timestamp": dt_str
+                })
+                
+    except Exception as e:
+        events.append({
+            "id": "error",
+            "type": "failed",
+            "hash": "error",
+            "message": "Error fetching local git logs",
+            "detail": str(e),
+            "timestamp": ""
+        })
 
     return events
 
