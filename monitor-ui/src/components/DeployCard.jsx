@@ -146,7 +146,7 @@ export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0, sele
             gap: '0.25rem'
           }}>
             <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#f5f5f5' }}>
-              {selectedEvent.type === 'failed' ? 'Exited with status 255 while running your code.' : selectedEvent.detail}
+              {selectedEvent.detail || (selectedEvent.type === 'failed' ? 'Exited with an error while running your code.' : 'Deployment process executed.')}
             </div>
             <div style={{ fontSize: '0.85rem', color: '#a3a3a3' }}>
               {selectedEvent.type === 'failed' ? 'Read our docs for common ways to troubleshoot your deploy.' : 'View the logs below for more details.'}

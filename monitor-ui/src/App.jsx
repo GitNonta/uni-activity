@@ -56,7 +56,9 @@ export default function App() {
     setSelectedEvent(ev)
     // Create a long pseudo-URL like Render.com
     const ts = encodeURIComponent(ev.timestamp || new Date().toISOString())
-    window.history.pushState(null, '', `#events/web/srv-monitor/deploys/dep-${ev.hash}?r=${ts}`)
+    // Using the user's specific Render IDs
+    const deployId = `dep-${ev.hash}${Date.now().toString().slice(-6)}`
+    window.history.pushState(null, '', `#events/web/srv-d91sgl3tqb8s739ke9og/deploys/${deployId}?r=${ts}`)
   }
 
   // Listen to browser back/forward buttons
