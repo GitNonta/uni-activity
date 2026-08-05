@@ -1276,6 +1276,42 @@ def udp_ai_receiver_thread():
         except Exception:
             time.sleep(1)
 
+# ------- Auto-Sync Thread -------
+def auto_sync_thread():
+    import subprocess, time, os
+    from pathlib import Path
+    app_dir = "/data/data/com.termux/files/home/uni-activity"
+    if not os.path.exists(app_dir):
+        app_dir = str(Path(__file__).parent.parent)
+    
+    while True:
+        time.sleep(60)  # Poll GitHub every 60 seconds
+        try:
+            subprocess.run(["git", "fetch", "origin", "main"], cwd=app_dir, capture_output=True)
+            local_head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=app_dir, capture_output=True, text=True).stdout.strip()
+            remote_head = subprocess.run(["git", "rev-parse", "origin/main"], cwd=app_dir, capture_output=True, text=True).stdout.strip()
+            
+            if local_head and remote_head and local_head != remote_head:
+                sync_log = os.path.join(app_dir, "storage/logs/git-sync.log")
+                os.makedirs(os.path.dirname(sync_log), exist_ok=True)
+                with open(sync_log, "a", encoding="utf-8") as f:
+                    f.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Auto-Deploy: New commit ({remote_head[:7]}) detected! Updating & restarting...\n")
+                
+                subprocess.run(["git", "reset", "--hard", "origin/main"], cwd=app_dir)
+                subprocess.run(["php", "artisan", "config:clear"], cwd=app_dir)
+                subprocess.run(["php", "artisan", "route:clear"], cwd=app_dir)
+                subprocess.run(["pkill", "-9", "-f", "php-fpm"])
+                subprocess.Popen(["nohup", "php-fpm"], cwd=app_dir)
+                
+                pid = os.getpid()
+                subprocess.Popen(
+                    f"sleep 2 && kill -9 {pid} ; nohup python py/monitor_server.py > storage/logs/monitor.log 2>&1 &",
+                    shell=True, cwd=app_dir
+                )
+                break
+        except Exception:
+            pass
+
 # ------- Start Background Threads -------
 
 def ws_handshake(conn, request_data):
@@ -1757,6 +1793,9 @@ if __name__ == "__main__":
     
     t_ai = threading.Thread(target=manage_ai_service_thread, daemon=True)
     t_ai.start()
+    
+    t_auto_sync = threading.Thread(target=auto_sync_thread, daemon=True)
+    t_auto_sync.start()
     
     server = ThreadingHTTPServer(("", PORT), MonitorHandler)
     server.allow_reuse_address = True
