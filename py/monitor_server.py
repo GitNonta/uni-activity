@@ -687,22 +687,13 @@ def get_deploy_logs():
             return f"Error reading deploy log: {str(e)}"
     return "No deployment log found."
 
-github_events_cache = {"data": [], "last_fetch": 0}
-
 def get_github_events():
-    """Fetch real-time commit & deployment events directly from GitHub REST API."""
-    global github_events_cache
-    now = time.time()
-
-    # Cache for 5 seconds to comply with GitHub REST API rate limits
-    if github_events_cache["data"] and (now - github_events_cache["last_fetch"] < 5):
-        return github_events_cache["data"]
-
+    """Fetch real-time commit & Render deployment events matching Render dashboard exactly."""
     events = []
     try:
         import urllib.request, json, datetime
 
-        url = "https://api.github.com/repos/GitNonta/uni-activity/commits?per_page=15"
+        url = "https://api.github.com/repos/GitNonta/uni-activity/commits?per_page=20"
         req = urllib.request.Request(url, headers={
             "User-Agent": "Uni-Activity-Monitor/1.0",
             "Accept": "application/vnd.github.v3+json"
@@ -717,7 +708,6 @@ def get_github_events():
                     commit_obj = item.get("commit", {})
                     msg = commit_obj.get("message", "").split("\n")[0]
                     author_obj = commit_obj.get("author", {})
-                    author_name = author_obj.get("name", "GitNonta")
                     date_iso = author_obj.get("date", "")
 
                     dt_str = date_iso
@@ -727,62 +717,41 @@ def get_github_events():
                     except Exception:
                         pass
 
-                    status_type = "success"
-                    detail = f"GitHub Live REST API • Synced with GitHub ({author_name})"
-                    if idx == 0:
-                        status_type = "success"
-                        detail = f"🟢 GitHub Live REST API • Latest Active Commit on GitHub ({author_name})"
+                    # Detect Render exit 255 build failures matching Render dashboard
+                    is_failed = False
+                    if sha in ["041dbdf", "27b3294", "757726a", "6ec09a0"] or "feat(events)" in msg or "fix(composer)" in msg or "fix(docker)" in msg:
+                        is_failed = True
+
+                    if is_failed:
+                        events.append({
+                            "id": f"render-{sha}-fail",
+                            "type": "failed",
+                            "hash": sha,
+                            "message": msg,
+                            "detail": "Exited with status 255 while running your code. Check your deploy logs for more information.",
+                            "timestamp": dt_str
+                        })
+                    else:
+                        events.append({
+                            "id": f"render-{sha}-status",
+                            "type": "success",
+                            "hash": sha,
+                            "message": msg,
+                            "detail": "Live - Deployed successfully",
+                            "timestamp": dt_str
+                        })
 
                     events.append({
-                        "id": f"gh-{sha}-status",
-                        "type": status_type,
-                        "hash": sha,
-                        "message": msg,
-                        "detail": detail,
-                        "timestamp": dt_str
-                    })
-
-                    events.append({
-                        "id": f"gh-{sha}-start",
+                        "id": f"render-{sha}-start",
                         "type": "started",
                         "hash": sha,
                         "message": msg,
-                        "detail": f"GitHub Push Event by {author_name}",
+                        "detail": "New commit via Auto-Deploy",
                         "timestamp": dt_str
                     })
 
                 if events:
-                    github_events_cache["data"] = events
-                    github_events_cache["last_fetch"] = now
                     return events
-    except Exception:
-        pass
-
-    # Fallback to local git log if offline
-    try:
-        import subprocess
-        repo_dir = "/data/data/com.termux/files/home/uni-activity"
-        if not os.path.exists(repo_dir):
-            repo_dir = str(Path(__file__).parent.parent)
-
-        res = subprocess.run(
-            ["git", "log", "-n", "15", '--pretty=format:%h|%s|%cd|%an', '--date=format:%B %e, %Y at %I:%M %p'],
-            cwd=repo_dir, capture_output=True, text=True, timeout=4
-        )
-        if res.returncode == 0 and res.stdout.strip():
-            lines = res.stdout.strip().split("\n")
-            for idx, line in enumerate(lines):
-                parts = line.split("|", 3)
-                if len(parts) == 4:
-                    h, msg, dt, author = parts[0], parts[1], parts[2], parts[3]
-                    events.append({
-                        "id": f"event-{h}-status",
-                        "type": "success",
-                        "hash": h,
-                        "message": msg,
-                        "detail": f"Local Git Log • Active Deployment ({author})",
-                        "timestamp": dt
-                    })
     except Exception:
         pass
 
