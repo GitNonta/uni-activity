@@ -1480,14 +1480,28 @@ class MonitorHandler(BaseHTTPRequestHandler):
                     os.makedirs(os.path.dirname(sync_log), exist_ok=True)
                     with open(sync_log, "a", encoding="utf-8") as f:
                         f.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Manual deploy triggered via Monitor UI Events.\n")
+                        f.flush()
+                        
+                        def run_and_log(cmd):
+                            f.write(f"> {' '.join(cmd)}\n")
+                            f.flush()
+                            res = subprocess.run(cmd, cwd=app_dir, capture_output=True, text=True)
+                            if res.stdout: f.write(res.stdout + "\n")
+                            if res.stderr: f.write(res.stderr + "\n")
+                            f.flush()
+
+                        run_and_log(["git", "fetch", "origin", "main"])
+                        run_and_log(["git", "reset", "--hard", "origin/main"])
+                        run_and_log(["php", "artisan", "config:clear"])
+                        run_and_log(["php", "artisan", "route:clear"])
+                        run_and_log(["npm", "run", "build"]) # Generate build logs
+                        
+                        f.write("Restarting php-fpm...\n")
+                        subprocess.run(["pkill", "-9", "-f", "php-fpm"])
+                        subprocess.Popen(["nohup", "php-fpm"], cwd=app_dir)
+                        f.write("Deploy finished.\n")
                 except Exception:
                     pass
-                subprocess.run(["git", "fetch", "origin", "main"], cwd=app_dir)
-                subprocess.run(["git", "reset", "--hard", "origin/main"], cwd=app_dir)
-                subprocess.run(["php", "artisan", "config:clear"], cwd=app_dir)
-                subprocess.run(["php", "artisan", "route:clear"], cwd=app_dir)
-                subprocess.run(["pkill", "-9", "-f", "php-fpm"])
-                subprocess.Popen(["nohup", "php-fpm"], cwd=app_dir)
                 
                 # Auto-restart monitor_server.py so new python code takes effect immediately
                 pid = os.getpid()
@@ -1525,13 +1539,27 @@ class MonitorHandler(BaseHTTPRequestHandler):
                         os.makedirs(os.path.dirname(sync_log), exist_ok=True)
                         with open(sync_log, "a", encoding="utf-8") as f:
                             f.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Rollback executed to commit {commit_hash} via Monitor UI Events.\n")
+                            f.flush()
+
+                            def run_and_log(cmd):
+                                f.write(f"> {' '.join(cmd)}\n")
+                                f.flush()
+                                res = subprocess.run(cmd, cwd=app_dir, capture_output=True, text=True)
+                                if res.stdout: f.write(res.stdout + "\n")
+                                if res.stderr: f.write(res.stderr + "\n")
+                                f.flush()
+
+                            run_and_log(["git", "reset", "--hard", commit_hash])
+                            run_and_log(["php", "artisan", "config:clear"])
+                            run_and_log(["php", "artisan", "route:clear"])
+                            run_and_log(["npm", "run", "build"]) # Generate build logs
+                            
+                            f.write("Restarting php-fpm...\n")
+                            subprocess.run(["pkill", "-9", "-f", "php-fpm"])
+                            subprocess.Popen(["nohup", "php-fpm"], cwd=app_dir)
+                            f.write("Rollback finished.\n")
                     except Exception:
                         pass
-                    subprocess.run(["git", "reset", "--hard", commit_hash], cwd=app_dir)
-                    subprocess.run(["php", "artisan", "config:clear"], cwd=app_dir)
-                    subprocess.run(["php", "artisan", "route:clear"], cwd=app_dir)
-                    subprocess.run(["pkill", "-9", "-f", "php-fpm"])
-                    subprocess.Popen(["nohup", "php-fpm"], cwd=app_dir)
                     
                     # Auto-restart monitor_server.py so rolled-back python code takes effect immediately
                     pid = os.getpid()
