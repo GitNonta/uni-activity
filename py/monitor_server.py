@@ -1407,7 +1407,73 @@ class MonitorHandler(BaseHTTPRequestHandler):
                                 else:
                                     f.write(line)
             
-            threading.Thread(target=restart).start()
+        if self.path == "/api/deploy/manual":
+            def trigger_manual_deploy():
+                import subprocess, time
+                app_dir = "/data/data/com.termux/files/home/uni-activity"
+                if not os.path.exists(app_dir):
+                    app_dir = str(Path(__file__).parent.parent)
+                sync_log = os.path.join(app_dir, "storage/logs/git-sync.log")
+                try:
+                    os.makedirs(os.path.dirname(sync_log), exist_ok=True)
+                    with open(sync_log, "a", encoding="utf-8") as f:
+                        f.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Manual deploy triggered via Monitor UI Events.\n")
+                except Exception:
+                    pass
+                subprocess.run(["git", "fetch", "origin", "main"], cwd=app_dir)
+                subprocess.run(["git", "reset", "--hard", "origin/main"], cwd=app_dir)
+                subprocess.run(["php", "artisan", "config:clear"], cwd=app_dir)
+                subprocess.run(["php", "artisan", "route:clear"], cwd=app_dir)
+                subprocess.run(["pkill", "-9", "-f", "php-fpm"])
+                subprocess.Popen(["nohup", "php-fpm"], cwd=app_dir)
+
+            threading.Thread(target=trigger_manual_deploy, daemon=True).start()
+            resp = json.dumps({"status": "ok", "message": "Manual deployment triggered successfully"}).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self._cors_headers()
+            self.end_headers()
+            self.wfile.write(resp)
+            return
+
+        if self.path == "/api/deploy/rollback":
+            content_length = int(self.headers.get("Content-Length", 0))
+            body = self.rfile.read(content_length).decode('utf-8') if content_length > 0 else "{}"
+            try:
+                payload = json.loads(body)
+            except Exception:
+                payload = {}
+            commit_hash = payload.get("commit_hash", "")
+
+            if commit_hash:
+                def trigger_rollback():
+                    import subprocess, time
+                    app_dir = "/data/data/com.termux/files/home/uni-activity"
+                    if not os.path.exists(app_dir):
+                        app_dir = str(Path(__file__).parent.parent)
+                    sync_log = os.path.join(app_dir, "storage/logs/git-sync.log")
+                    try:
+                        os.makedirs(os.path.dirname(sync_log), exist_ok=True)
+                        with open(sync_log, "a", encoding="utf-8") as f:
+                            f.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Rollback executed to commit {commit_hash} via Monitor UI Events.\n")
+                    except Exception:
+                        pass
+                    subprocess.run(["git", "reset", "--hard", commit_hash], cwd=app_dir)
+                    subprocess.run(["php", "artisan", "config:clear"], cwd=app_dir)
+                    subprocess.run(["php", "artisan", "route:clear"], cwd=app_dir)
+                    subprocess.run(["pkill", "-9", "-f", "php-fpm"])
+                    subprocess.Popen(["nohup", "php-fpm"], cwd=app_dir)
+
+                threading.Thread(target=trigger_rollback, daemon=True).start()
+                resp = json.dumps({"status": "ok", "message": f"Rollback to commit {commit_hash} initiated"}).encode()
+            else:
+                resp = json.dumps({"status": "error", "message": "Missing commit_hash"}).encode()
+
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self._cors_headers()
+            self.end_headers()
+            self.wfile.write(resp)
             return
 
         self.send_response(404)
