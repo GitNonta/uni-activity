@@ -70,53 +70,86 @@ export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0, sele
       </div>
       )}
 
+      {/* Top Back Navigation (Moved outside the box) */}
+      {selectedEvent && (
+        <div style={{ marginBottom: '-0.5rem' }}>
+          <button 
+            onClick={onBack}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}
+          >
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            Back to Events
+          </button>
+        </div>
+      )}
+
       {/* Render-like Event Summary Header */}
       {selectedEvent && (
-        <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px', overflow: 'hidden' }}>
-          {/* Top Back Navigation */}
-          <div style={{ display: 'flex', alignItems: 'center', padding: '0.75rem 1.5rem', background: '#020617', borderBottom: '1px solid #1e293b' }}>
-            <button 
-              onClick={onBack}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}
-            >
-              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-              Back to Events
+        <div style={{ background: '#0a0a0a', border: '1px solid #262626', borderRadius: '6px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          
+          {/* Header row: Time and Status and Rollback button */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <span style={{ fontSize: '0.9rem', color: '#e5e5e5' }}>{selectedEvent.timestamp}</span>
+                <span style={{ 
+                  background: selectedEvent.type === 'failed' ? '#7f1d1d' : (selectedEvent.type === 'success' ? '#064e3b' : '#1e293b'), 
+                  color: selectedEvent.type === 'failed' ? '#fca5a5' : (selectedEvent.type === 'success' ? '#6ee7b7' : '#cbd5e1'), 
+                  padding: '0.15rem 0.4rem', 
+                  borderRadius: '2px', 
+                  fontSize: '0.75rem', 
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}>
+                  {selectedEvent.type === 'failed' ? (
+                    <svg width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12"/></svg>
+                  ) : selectedEvent.type === 'success' ? (
+                    <svg width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"/></svg>
+                  ) : null}
+                  {selectedEvent.type === 'failed' ? 'Failed' : (selectedEvent.type === 'success' ? 'Succeeded' : 'Started')}
+                </span>
+              </div>
+              
+              {/* Details row: Hash and Message */}
+              <div style={{ fontSize: '0.85rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <span style={{ fontFamily: 'monospace', color: '#a3a3a3' }}>{selectedEvent.hash}</span>
+                <span style={{ color: '#a3a3a3' }}>{selectedEvent.message}</span>
+              </div>
+            </div>
+
+            {/* Rollback button on the right */}
+            <button style={{ 
+              background: 'transparent', 
+              border: '1px solid #404040', 
+              color: '#a3a3a3', 
+              padding: '0.4rem 0.75rem', 
+              borderRadius: '4px', 
+              fontSize: '0.75rem', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.4rem',
+              cursor: 'pointer'
+            }}>
+              <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+              Rollback
             </button>
           </div>
-          {/* Header row */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1.5rem', borderBottom: '1px solid #1e293b', background: '#020617' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <span style={{ fontWeight: 600, color: '#f8fafc' }}>{selectedEvent.timestamp}</span>
-              <span style={{ 
-                background: selectedEvent.type === 'failed' ? '#7f1d1d' : (selectedEvent.type === 'success' ? '#064e3b' : '#1e293b'), 
-                color: selectedEvent.type === 'failed' ? '#fca5a5' : (selectedEvent.type === 'success' ? '#6ee7b7' : '#cbd5e1'), 
-                padding: '0.2rem 0.6rem', 
-                borderRadius: '4px', 
-                fontSize: '0.75rem', 
-                fontWeight: 600,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}>
-                {selectedEvent.type === 'failed' ? (
-                  <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12"/></svg>
-                ) : selectedEvent.type === 'success' ? (
-                  <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"/></svg>
-                ) : null}
-                {selectedEvent.type === 'failed' ? 'Failed' : (selectedEvent.type === 'success' ? 'Succeeded' : 'Started')}
-              </span>
-            </div>
-          </div>
           
-          {/* Details row */}
-          <div style={{ padding: '1.25rem 1.5rem', background: '#0f172a' }}>
-            <div style={{ fontFamily: 'monospace', fontSize: '0.85rem', marginBottom: '0.75rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <span style={{ background: '#334155', color: '#f8fafc', padding: '0.1rem 0.4rem', borderRadius: '4px' }}>{selectedEvent.hash}</span>
-              <span style={{ color: '#94a3b8' }}>{selectedEvent.message}</span>
+          {/* Status Message Block (with left border) */}
+          <div style={{ 
+            marginTop: '0.5rem', 
+            paddingLeft: '0.75rem', 
+            borderLeft: `2px solid ${selectedEvent.type === 'failed' ? '#ef4444' : (selectedEvent.type === 'success' ? '#10b981' : '#3b82f6')}`,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.25rem'
+          }}>
+            <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#f5f5f5' }}>
+              {selectedEvent.type === 'failed' ? 'Exited with status 255 while running your code.' : selectedEvent.detail}
             </div>
-            
-            <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#f8fafc' }}>
-              {selectedEvent.detail}
+            <div style={{ fontSize: '0.85rem', color: '#a3a3a3' }}>
+              {selectedEvent.type === 'failed' ? 'Read our docs for common ways to troubleshoot your deploy.' : 'View the logs below for more details.'}
             </div>
           </div>
         </div>
