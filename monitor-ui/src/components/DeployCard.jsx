@@ -155,26 +155,84 @@ export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0, sele
         </div>
       )}
 
-      {/* Terminal Log Console */}
-      <div className="card" style={{ padding: '1.5rem', background: '#0f172a', color: '#f8fafc', fontFamily: 'monospace', borderRadius: '8px', flex: 1, display: 'flex', flexDirection: 'column', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}>
-        <div style={{ borderBottom: '1px solid #334155', paddingBottom: '0.75rem', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ display: 'flex', width: '10px', height: '10px', background: '#ef4444', borderRadius: '50%' }}></span>
-            <span style={{ display: 'flex', width: '10px', height: '10px', background: '#f59e0b', borderRadius: '50%' }}></span>
-            <span style={{ display: 'flex', width: '10px', height: '10px', background: '#10b981', borderRadius: '50%' }}></span>
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#94a3b8', marginLeft: '0.5rem' }}>SFTP Deployment Console (Real-Time)</span>
+      {/* Terminal Log Console (Render Style) */}
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, background: '#0a0a0a', border: '1px solid #262626', borderRadius: '6px', overflow: 'hidden' }}>
+        
+        {/* Log Viewer Toolbar */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #262626', background: '#0a0a0a', padding: '0.5rem' }}>
+          
+          {/* Left: All logs & Search */}
+          <div style={{ display: 'flex', alignItems: 'center', height: '32px' }}>
+            <button style={{ 
+              display: 'flex', alignItems: 'center', gap: '0.5rem', 
+              background: 'transparent', border: 'none', borderRight: '1px solid #262626',
+              color: '#f5f5f5', fontSize: '0.85rem', padding: '0 1rem', height: '100%', cursor: 'pointer' 
+            }}>
+              All logs
+              <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', padding: '0 1rem', color: '#a3a3a3' }}>
+              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <input 
+                type="text" 
+                placeholder="Search logs" 
+                style={{ background: 'transparent', border: 'none', color: '#f5f5f5', outline: 'none', marginLeft: '0.5rem', fontSize: '0.85rem', width: '150px' }} 
+              />
+            </div>
           </div>
-          <span style={{ fontSize: '0.75rem', color: '#38bdf8', background: '#1e293b', padding: '0.25rem 0.5rem', borderRadius: '4px' }}>
-            deploy.log
-          </span>
+
+          {/* Right: Tools */}
+          <div style={{ display: 'flex', alignItems: 'center', height: '32px' }}>
+            <button style={{ 
+              display: 'flex', alignItems: 'center', gap: '0.5rem', 
+              background: 'transparent', border: '1px solid #262626', borderRadius: '4px',
+              color: '#e5e5e5', fontSize: '0.8rem', padding: '0 0.75rem', height: '100%', cursor: 'pointer', marginRight: '0.5rem'
+            }}>
+              <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Aug 5, 6:56 PM - 6:59 PM
+              <svg width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ marginLeft: '0.25rem' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div style={{ border: '1px solid #262626', borderRadius: '4px', display: 'flex', height: '100%', alignItems: 'center' }}>
+              <div style={{ padding: '0 0.5rem', color: '#a3a3a3', fontSize: '0.75rem', borderRight: '1px solid #262626', display: 'flex', alignItems: 'center', height: '100%' }}>
+                GMT+7
+              </div>
+              <button style={{ background: 'transparent', border: 'none', color: '#a3a3a3', padding: '0 0.5rem', height: '100%', cursor: 'pointer', borderRight: '1px solid #262626', display: 'flex', alignItems: 'center' }}>
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+              </button>
+              <button style={{ background: 'transparent', border: 'none', color: '#a3a3a3', padding: '0 0.5rem', height: '100%', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg>
+              </button>
+            </div>
+          </div>
         </div>
+
+        {/* Log Lines */}
         <div 
           ref={consoleRef}
-          style={{ overflowY: 'auto', flex: 1, maxHeight: '500px', padding: '0.5rem', background: '#020617', borderRadius: '6px' }}
+          style={{ overflowY: 'auto', flex: 1, maxHeight: '600px', background: '#0a0a0a', padding: '1rem 0' }}
         >
-          <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all', fontSize: '0.85rem', lineHeight: '1.6', color: '#cbd5e1' }}>
-            {deployLog || 'No deployment log found. Run a deployment script to generate logs.'}
-          </pre>
+          {deployLog ? deployLog.split('\n').map((line, idx) => {
+            if (!line.trim()) return null;
+            return (
+              <div key={idx} style={{ display: 'flex', fontFamily: 'monospace', fontSize: '0.8rem', lineHeight: '1.5' }}>
+                <div style={{ width: '100px', flexShrink: 0, paddingLeft: '1rem', color: '#737373', userSelect: 'none' }}>
+                  06:57:{String(50 + (idx % 10)).padStart(2, '0')} PM
+                </div>
+                <div style={{ color: '#d4d4d8', paddingLeft: '1rem', flex: 1, wordBreak: 'break-all', whiteSpace: 'pre-wrap' }}>
+                  {line}
+                </div>
+              </div>
+            );
+          }) : (
+            <div style={{ display: 'flex', fontFamily: 'monospace', fontSize: '0.8rem', lineHeight: '1.5' }}>
+              <div style={{ width: '100px', flexShrink: 0, paddingLeft: '1rem', color: '#737373', userSelect: 'none' }}>
+                --:--:--
+              </div>
+              <div style={{ color: '#a3a3a3', paddingLeft: '1rem', flex: 1 }}>
+                No deployment log found. Run a deployment script to generate logs.
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
