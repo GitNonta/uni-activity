@@ -1540,12 +1540,15 @@ class MonitorHandler(BaseHTTPRequestHandler):
                         f.flush()
                         
                         def run_and_log(cmd):
-                            f.write(f"> {' '.join(cmd)}\n")
+                            import subprocess, time
+                            f.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] > {' '.join(cmd)}\n")
                             f.flush()
-                            res = subprocess.run(cmd, cwd=app_dir, capture_output=True, text=True)
-                            if res.stdout: f.write(res.stdout + "\n")
-                            if res.stderr: f.write(res.stderr + "\n")
-                            f.flush()
+                            proc = subprocess.Popen(cmd, cwd=app_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+                            for line in iter(proc.stdout.readline, ''):
+                                f.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {line}")
+                                f.flush()
+                            proc.stdout.close()
+                            proc.wait()
 
                         run_and_log(["git", "fetch", "origin", "main"])
                         run_and_log(["git", "reset", "--hard", "origin/main"])
@@ -1645,12 +1648,15 @@ class MonitorHandler(BaseHTTPRequestHandler):
                             f.flush()
 
                             def run_and_log(cmd):
-                                f.write(f"> {' '.join(cmd)}\n")
+                                import subprocess, time
+                                f.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] > {' '.join(cmd)}\n")
                                 f.flush()
-                                res = subprocess.run(cmd, cwd=app_dir, capture_output=True, text=True)
-                                if res.stdout: f.write(res.stdout + "\n")
-                                if res.stderr: f.write(res.stderr + "\n")
-                                f.flush()
+                                proc = subprocess.Popen(cmd, cwd=app_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+                                for line in iter(proc.stdout.readline, ''):
+                                    f.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {line}")
+                                    f.flush()
+                                proc.stdout.close()
+                                proc.wait()
 
                             run_and_log(["git", "reset", "--hard", commit_hash])
                             run_and_log(["php", "artisan", "config:clear"])

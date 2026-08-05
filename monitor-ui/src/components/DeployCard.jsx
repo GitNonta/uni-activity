@@ -32,13 +32,22 @@ export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0, sele
   const baseTime = !isNaN(parsedTime) ? parsedTime : Date.now() - (logLines.length * 1000);
 
   let processedLogs = logLines.map((line, idx) => {
-    // Increment time by ~1000ms per line to look realistic
-    const lineDate = new Date(baseTime + (idx * 1000));
+    let lineDate = new Date(baseTime + (idx * 1000));
+    let text = line;
+    
+    // Parse real timestamp if present: [YYYY-MM-DD HH:MM:SS]
+    const timeMatch = line.match(/^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]\s*(.*)/);
+    if (timeMatch) {
+      // Replace dashes with slashes for better Safari compatibility if needed, though standard formats usually parse
+      lineDate = new Date(timeMatch[1].replace(/-/g, '/'));
+      text = timeMatch[2]; // Strip timestamp from displayed text
+    }
+
     return {
       id: idx,
       dateString: lineDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       time: lineDate.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-      text: line
+      text: text
     };
   });
   
