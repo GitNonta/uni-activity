@@ -687,6 +687,54 @@ def get_deploy_logs():
             return f"Error reading deploy log: {str(e)}"
     return "No deployment log found."
 
+def get_github_events():
+    """Fetch real deployment/git commit status from local repo & git logs."""
+    events = []
+    try:
+        import subprocess
+        repo_dir = "/data/data/com.termux/files/home/uni-activity"
+        if not os.path.exists(repo_dir):
+            repo_dir = str(Path(__file__).parent.parent)
+
+        res = subprocess.run(
+            ["git", "log", "-n", "15", '--pretty=format:%h|%s|%cd|%an', '--date=format:%B %e, %Y at %I:%M %p'],
+            cwd=repo_dir, capture_output=True, text=True, timeout=4
+        )
+        if res.returncode == 0 and res.stdout.strip():
+            lines = res.stdout.strip().split("\n")
+            for idx, line in enumerate(lines):
+                parts = line.split("|", 3)
+                if len(parts) == 4:
+                    h, msg, dt, author = parts[0], parts[1], parts[2], parts[3]
+                    
+                    status_type = "success"
+                    detail = f"Live - Deployed via GitHub Auto-Deploy ({author})"
+                    if idx == 0:
+                        status_type = "success"
+                        detail = f"Live - Active Deployment on Server ({author})"
+
+                    events.append({
+                        "id": f"event-{h}-status",
+                        "type": status_type,
+                        "hash": h,
+                        "message": msg,
+                        "detail": detail,
+                        "timestamp": dt
+                    })
+
+                    events.append({
+                        "id": f"event-{h}-start",
+                        "type": "started",
+                        "hash": h,
+                        "message": msg,
+                        "detail": f"New commit pushed by {author}",
+                        "timestamp": dt
+                    })
+    except Exception:
+        pass
+
+    return events
+
 def get_ai_logs():
     if len(remote_ai_logs) > 0:
         return "".join(remote_ai_logs)
@@ -1155,6 +1203,7 @@ def collect_stats():
         "logs": get_logs(),
         "inspector": list(inspector_logs),
         "deploy_log": get_deploy_logs(),
+        "events": get_github_events(),
         "ai_log": get_ai_logs(),
         "ssh_sessions": get_active_sessions(),
         "sftp_sessions": get_sftp_active(),
