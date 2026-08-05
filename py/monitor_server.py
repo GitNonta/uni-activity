@@ -1502,7 +1502,11 @@ class MonitorHandler(BaseHTTPRequestHandler):
                                 else:
                                     f.write(line)
             
-        if self.path == "/api/deploy/manual":
+        if self.path.startswith("/api/deploy/manual"):
+            import urllib.parse
+            qs = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+            clear_cache = qs.get("clear_cache", ["false"])[0].lower() == "true"
+            
             def trigger_manual_deploy():
                 import subprocess, time, os
                 app_dir = "/data/data/com.termux/files/home/uni-activity"
@@ -1525,6 +1529,14 @@ class MonitorHandler(BaseHTTPRequestHandler):
 
                         run_and_log(["git", "fetch", "origin", "main"])
                         run_and_log(["git", "reset", "--hard", "origin/main"])
+                        
+                        if clear_cache:
+                            f.write("Clearing build cache...\n")
+                            f.flush()
+                            run_and_log(["php", "artisan", "cache:clear"])
+                            run_and_log(["php", "artisan", "view:clear"])
+                            run_and_log(["npm", "cache", "clean", "--force"])
+                            
                         run_and_log(["php", "artisan", "config:clear"])
                         run_and_log(["php", "artisan", "route:clear"])
                         run_and_log(["npm", "run", "build"]) # Generate build logs
@@ -1556,6 +1568,33 @@ class MonitorHandler(BaseHTTPRequestHandler):
 
             threading.Thread(target=trigger_manual_deploy, daemon=True).start()
             resp = json.dumps({"status": "ok", "message": "Manual deployment triggered! Server will reboot in 2 seconds."}).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self._cors_headers()
+            self.end_headers()
+            self.wfile.write(resp)
+            return
+            
+        if self.path == "/api/deploy/restart":
+            def trigger_restart():
+                import subprocess, time, os
+                app_dir = "/data/data/com.termux/files/home/uni-activity"
+                if not os.path.exists(app_dir):
+                    app_dir = str(Path(__file__).parent.parent)
+                
+                # Restart php-fpm
+                subprocess.run(["pkill", "-9", "-f", "php-fpm"])
+                subprocess.Popen(["nohup", "php-fpm"], cwd=app_dir)
+                
+                # Auto-restart monitor_server.py
+                pid = os.getpid()
+                subprocess.Popen(
+                    f"sleep 2 && kill -9 {pid} ; nohup python py/monitor_server.py > storage/logs/monitor.log 2>&1 &",
+                    shell=True, cwd=app_dir
+                )
+            
+            threading.Thread(target=trigger_restart, daemon=True).start()
+            resp = json.dumps({"status": "ok", "message": "Restart triggered! Server will reboot in 2 seconds."}).encode()
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self._cors_headers()

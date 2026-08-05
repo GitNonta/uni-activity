@@ -1,11 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export function EventsCard({ eventsData, connected = true, onEventClick }) {
   const [filter, setFilter] = useState('all');
   const [showConnect, setShowConnect] = useState(false);
+  const [showDeployMenu, setShowDeployMenu] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
+
+  useEffect(() => {
+    const closeMenu = () => {
+      setShowFilterDropdown(false);
+      setShowConnect(false);
+      setShowDeployMenu(false);
+    };
+    window.addEventListener('click', closeMenu);
+    return () => window.removeEventListener('click', closeMenu);
+  }, []);
 
   const defaultEvents = [];
 
@@ -210,27 +221,166 @@ export function EventsCard({ eventsData, connected = true, onEventClick }) {
             )}
           </div>
 
-          {/* Manual Deploy Button */}
-          <button
-            type="button"
-            onClick={handleManualDeploy}
-            disabled={loadingAction}
-            style={{
-              background: loadingAction ? '#94a3b8' : '#f8fafc',
-              color: '#0f172a',
-              border: 'none',
-              padding: '0.5rem 1rem',
-              borderRadius: '8px',
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              cursor: loadingAction ? 'wait' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-          >
-            {loadingAction ? 'Deploying...' : 'Manual Deploy'} <span>▾</span>
-          </button>
+          {/* Manual Deploy Button Group */}
+          <div style={{ position: 'relative' }}>
+            <div style={{ display: 'flex' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.confirm("Deploy latest commit from main branch?")) {
+                    handleManualDeploy();
+                  }
+                }}
+                disabled={loadingAction}
+                style={{
+                  background: loadingAction ? '#94a3b8' : '#9333ea',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '0.5rem 1rem',
+                  borderTopLeftRadius: '8px',
+                  borderBottomLeftRadius: '8px',
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                  cursor: loadingAction ? 'wait' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                {loadingAction ? 'Deploying...' : 'Manual Deploy'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowDeployMenu(!showDeployMenu)}
+                disabled={loadingAction}
+                style={{
+                  background: loadingAction ? '#94a3b8' : '#9333ea',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderLeft: '1px solid rgba(255,255,255,0.2)',
+                  padding: '0.5rem 0.5rem',
+                  borderTopRightRadius: '8px',
+                  borderBottomRightRadius: '8px',
+                  cursor: loadingAction ? 'wait' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <span style={{ transform: showDeployMenu ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', fontSize: '0.7rem' }}>
+                  ▲
+                </span>
+              </button>
+            </div>
+
+            {showDeployMenu && (
+              <div style={{
+                position: 'absolute',
+                top: '110%',
+                right: 0,
+                width: '240px',
+                background: '#121212',
+                border: '1px solid #262626',
+                boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)',
+                zIndex: 100,
+                padding: '0.5rem 0'
+              }}>
+                <button
+                  onClick={() => {
+                    setShowDeployMenu(false);
+                    if (window.confirm("Deploy latest commit from main branch?")) handleManualDeploy();
+                  }}
+                  style={{ width: '100%', textAlign: 'left', padding: '0.6rem 1rem', background: 'none', border: 'none', color: '#e5e5e5', fontSize: '0.82rem', cursor: 'pointer', display: 'block' }}
+                  onMouseEnter={(e) => e.target.style.background = '#262626'}
+                  onMouseLeave={(e) => e.target.style.background = 'none'}
+                >
+                  Deploy latest commit
+                </button>
+                <button
+                  onClick={async () => {
+                    setShowDeployMenu(false);
+                    const hash = window.prompt("Enter the specific commit hash to deploy (e.g. a1b2c3d):");
+                    if (!hash) return;
+                    if (!window.confirm(`Are you sure you want to rollback/deploy commit ${hash}?`)) return;
+                    try {
+                      setLoadingAction(true);
+                      const host = window.location.hostname;
+                      const protocol = window.location.protocol;
+                      const port = window.location.port ? `:${window.location.port}` : (host === 'localhost' ? ':8000' : '');
+                      const baseUrl = import.meta.env.VITE_API_URL || `${protocol}//${host}${port}`;
+                      const res = await fetch(`${baseUrl}/api/deploy/rollback`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ commit: hash })
+                      });
+                      if (!res.ok) throw new Error("Request failed");
+                      alert("Deployment triggered! Please wait a few seconds.");
+                    } catch (err) {
+                      alert("Error: " + err.message);
+                    } finally {
+                      setLoadingAction(false);
+                    }
+                  }}
+                  style={{ width: '100%', textAlign: 'left', padding: '0.6rem 1rem', background: 'none', border: 'none', color: '#e5e5e5', fontSize: '0.82rem', cursor: 'pointer', display: 'block' }}
+                  onMouseEnter={(e) => e.target.style.background = '#262626'}
+                  onMouseLeave={(e) => e.target.style.background = 'none'}
+                >
+                  Deploy a specific commit
+                </button>
+                <button
+                  onClick={async () => {
+                    setShowDeployMenu(false);
+                    if (!window.confirm("Are you sure you want to clear build cache and deploy?")) return;
+                    try {
+                      setLoadingAction(true);
+                      const host = window.location.hostname;
+                      const protocol = window.location.protocol;
+                      const port = window.location.port ? `:${window.location.port}` : (host === 'localhost' ? ':8000' : '');
+                      const baseUrl = import.meta.env.VITE_API_URL || `${protocol}//${host}${port}`;
+                      const res = await fetch(`${baseUrl}/api/deploy/manual?clear_cache=true`);
+                      if (!res.ok) throw new Error("Request failed");
+                      alert("Cache clear & deployment triggered!");
+                    } catch (err) {
+                      alert("Error: " + err.message);
+                    } finally {
+                      setLoadingAction(false);
+                    }
+                  }}
+                  style={{ width: '100%', textAlign: 'left', padding: '0.6rem 1rem', background: 'none', border: 'none', color: '#e5e5e5', fontSize: '0.82rem', cursor: 'pointer', display: 'block' }}
+                  onMouseEnter={(e) => e.target.style.background = '#262626'}
+                  onMouseLeave={(e) => e.target.style.background = 'none'}
+                >
+                  Clear build cache & deploy
+                </button>
+                <div style={{ height: '1px', background: '#262626', margin: '0.5rem 1rem' }}></div>
+                <button
+                  onClick={async () => {
+                    setShowDeployMenu(false);
+                    if (!window.confirm("Are you sure you want to restart the service (PHP-FPM and Monitor)?")) return;
+                    try {
+                      setLoadingAction(true);
+                      const host = window.location.hostname;
+                      const protocol = window.location.protocol;
+                      const port = window.location.port ? `:${window.location.port}` : (host === 'localhost' ? ':8000' : '');
+                      const baseUrl = import.meta.env.VITE_API_URL || `${protocol}//${host}${port}`;
+                      const res = await fetch(`${baseUrl}/api/deploy/restart`);
+                      if (!res.ok) throw new Error("Request failed");
+                      alert("Restart triggered! The service will come back in a few seconds.");
+                    } catch (err) {
+                      alert("Error: " + err.message);
+                    } finally {
+                      setLoadingAction(false);
+                    }
+                  }}
+                  style={{ width: '100%', textAlign: 'left', padding: '0.6rem 1rem', background: 'none', border: 'none', color: '#e5e5e5', fontSize: '0.82rem', cursor: 'pointer', display: 'block' }}
+                  onMouseEnter={(e) => e.target.style.background = '#262626'}
+                  onMouseLeave={(e) => e.target.style.background = 'none'}
+                >
+                  Restart service
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
