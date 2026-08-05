@@ -176,47 +176,63 @@ export function EventsCard({ eventsData, connected = true, onEventClick }) {
               type="button"
               onClick={(e) => { e.stopPropagation(); setShowConnect(!showConnect); }}
               style={{
-                background: '#1e293b',
-                color: '#e2e8f0',
-                border: '1px solid #334155',
-                padding: '0.5rem 1rem',
-                borderRadius: '8px',
-                fontWeight: 600,
+                background: showConnect ? '#ffffff' : 'transparent',
+                color: showConnect ? '#000000' : '#e2e8f0',
+                border: '1px solid ' + (showConnect ? '#ffffff' : '#334155'),
+                padding: '0.45rem 0.85rem',
+                borderRadius: '6px',
+                fontWeight: 500,
                 fontSize: '0.85rem',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px'
+                gap: '6px',
+                transition: 'all 0.15s ease'
               }}
             >
-              Connect <span>▾</span>
+              Connect <span style={{ transform: showConnect ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', fontSize: '0.7rem' }}>▼</span>
             </button>
 
             {showConnect && (
-              <div style={{
-                position: 'absolute',
-                top: '110%',
-                right: 0,
-                width: '240px',
-                background: '#1e293b',
-                border: '1px solid #334155',
-                borderRadius: '8px',
-                boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)',
-                zIndex: 100,
-                padding: '0.5rem 0'
-              }}>
-                <button
-                  onClick={() => copyToClipboard('ssh -p 8022 u0_a231@localhost', 'SSH Command')}
-                  style={{ width: '100%', textAlign: 'left', padding: '0.6rem 1rem', background: 'none', border: 'none', color: '#e2e8f0', fontSize: '0.82rem', cursor: 'pointer', display: 'block' }}
-                >
-                  💻 Copy SSH Command
-                </button>
-                <button
-                  onClick={() => copyToClipboard('sftp -P 8022 u0_a231@localhost', 'SFTP Login')}
-                  style={{ width: '100%', textAlign: 'left', padding: '0.6rem 1rem', background: 'none', border: 'none', color: '#e2e8f0', fontSize: '0.82rem', cursor: 'pointer', display: 'block' }}
-                >
-                  📁 Copy SFTP Command
-                </button>
+              <div 
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 4px)',
+                  right: 0,
+                  width: '420px',
+                  background: '#121212',
+                  border: '1px solid #334155',
+                  borderRadius: '6px',
+                  boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)',
+                  zIndex: 100,
+                  padding: '1.25rem',
+                  color: '#e5e5e5',
+                  textAlign: 'left'
+                }}>
+                <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '0.95rem', fontWeight: 700 }}>Outbound IP Addresses</h3>
+                <p style={{ margin: '0 0 1rem 0', fontSize: '0.85rem', color: '#a3a3a3', lineHeight: '1.5' }}>
+                  Network requests from your service to the public internet will come from one of the following <b>IP addresses or ranges</b>.
+                </p>
+                <p style={{ margin: '0 0 1rem 0', fontSize: '0.85rem', color: '#a3a3a3', lineHeight: '1.5' }}>
+                  These IP addresses are not unique to your service or workspace. They are shared by other Render services in the same region.
+                </p>
+                
+                <div style={{ position: 'relative', background: '#262626', borderRadius: '4px', padding: '0.85rem', fontFamily: 'var(--font-mono, monospace)', fontSize: '0.85rem', color: '#d4d4d8', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  <div>74.220.52.0/24</div>
+                  <div>74.220.60.0/24</div>
+                  <button 
+                    onClick={() => copyToClipboard('74.220.52.0/24\n74.220.60.0/24', 'IP Addresses')}
+                    style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'transparent', border: 'none', color: '#a3a3a3', cursor: 'pointer', padding: '4px' }}
+                    title="Copy to clipboard"
+                  >
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                  </button>
+                </div>
+
+                <p style={{ margin: '1rem 0 0 0', fontSize: '0.85rem', color: '#a3a3a3' }}>
+                  Need a unique, static outbound IP? <a href="#" style={{ color: '#a855f7', textDecoration: 'none' }}>Create a Dedicated IP.</a>
+                </p>
               </div>
             )}
           </div>
