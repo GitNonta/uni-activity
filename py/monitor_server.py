@@ -1511,7 +1511,7 @@ class MonitorHandler(BaseHTTPRequestHandler):
                 sync_log = os.path.join(app_dir, "storage/logs/git-sync.log")
                 try:
                     os.makedirs(os.path.dirname(sync_log), exist_ok=True)
-                    with open(sync_log, "a", encoding="utf-8") as f:
+                    with open(sync_log, "w", encoding="utf-8") as f:
                         f.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Manual deploy triggered via Monitor UI Events.\n")
                         f.flush()
                         
