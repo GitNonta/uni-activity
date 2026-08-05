@@ -133,13 +133,12 @@ export function EventsCard({ eventsData, connected = true }) {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
             <h2 style={{ fontSize: '1.6rem', fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '-0.02em' }}>uni-activity</h2>
-            <span style={{ background: '#1e293b', color: '#cbd5e1', fontSize: '0.75rem', padding: '3px 8px', borderRadius: '6px', fontWeight: 600, border: '1px solid #334155' }}>Docker</span>
-            <span style={{ background: '#581c87', color: '#f0abfc', fontSize: '0.75rem', padding: '3px 8px', borderRadius: '6px', fontWeight: 600 }}>Free</span>
-            <a href="https://uni-activity.onrender.com" target="_blank" rel="noreferrer" style={{ color: '#a855f7', fontSize: '0.85rem', textDecoration: 'none', fontWeight: 500 }}>Upgrade your instance →</a>
+            <span style={{ background: '#1e293b', color: '#cbd5e1', fontSize: '0.75rem', padding: '3px 8px', borderRadius: '6px', fontWeight: 600, border: '1px solid #334155' }}>Termux Server</span>
+            <span style={{ background: '#047857', color: '#6ee7b7', fontSize: '0.75rem', padding: '3px 8px', borderRadius: '6px', fontWeight: 600 }}>Active</span>
           </div>
 
           <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>Service ID: <code style={{ color: '#cbd5e1', background: '#1e293b', padding: '2px 6px', borderRadius: '4px', fontFamily: 'monospace' }}>srv-d91sgl3tqb8s739ke9og</code></span>
+            <span>Environment: <code style={{ color: '#cbd5e1', background: '#1e293b', padding: '2px 6px', borderRadius: '4px', fontFamily: 'monospace' }}>Production (Local)</code></span>
           </div>
 
           <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -156,15 +155,6 @@ export function EventsCard({ eventsData, connected = true }) {
               </svg>
               main
             </span>
-          </div>
-
-          <div style={{ fontSize: '0.85rem', marginTop: '0.4rem' }}>
-            <a href="https://uni-activity.onrender.com" target="_blank" rel="noreferrer" style={{ color: '#38bdf8', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              https://uni-activity.onrender.com
-              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-              </svg>
-            </a>
           </div>
         </div>
 
@@ -245,27 +235,7 @@ export function EventsCard({ eventsData, connected = true }) {
         </div>
       </div>
 
-      {/* Purple Alert Banner matching dashboard.render.com */}
-      <div style={{
-        background: '#4c1d95',
-        color: '#f3e8ff',
-        borderRadius: '10px',
-        padding: '0.85rem 1.25rem',
-        fontSize: '0.85rem',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '1.5rem',
-        border: '1px solid #6b21a8'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-          </svg>
-          <span>Your free instance will spin down with inactivity, which can delay requests by 50 seconds or more.</span>
-        </div>
-        <a href="https://uni-activity.onrender.com" target="_blank" rel="noreferrer" style={{ color: '#fff', textDecoration: 'underline', fontWeight: 600, flexShrink: 0 }}>Upgrade now</a>
-      </div>
+
 
       {/* Filter Button Dropdown */}
       <div style={{ marginBottom: '1rem', position: 'relative' }}>
