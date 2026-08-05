@@ -366,10 +366,6 @@
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
                 <span class="sb-link-text">API Keys & ความเป็นส่วนตัว</span>
             </a>
-            <a href="{{ route('admin.settings.index', ['tab' => 'events']) }}" class="sb-link {{ request()->routeIs('admin.settings.*') && request()->get('tab') === 'events' ? 'active' : '' }}">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                <span class="sb-link-text">Events (สถานะ Deploy)</span>
-            </a>
             @endif
 
             <div class="sb-section-label">รายงาน & ผลการเรียน</div>
