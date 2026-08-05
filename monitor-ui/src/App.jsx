@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useWebSocket } from './hooks/useWebSocket'
 import { ConnectionCard } from './components/ConnectionCard'
 import { SpeedTestPage } from './components/SpeedTestCard'
@@ -32,8 +32,37 @@ const NAV_TABS = [
 
 export default function App() {
   const { data, connected } = useWebSocket()
-  const [activeTab, setActiveTab] = useState('dashboard')
+  
+  // Read initial tab from URL hash (e.g. #events) or default to dashboard
+  const getInitialTab = () => {
+    const hash = window.location.hash.replace('#', '')
+    if (NAV_TABS.find(t => t.id === hash)) return hash
+    return 'dashboard'
+  }
+  
+  const [activeTab, setActiveTab] = useState(getInitialTab)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+
+  // Sync state to URL hash
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId)
+    window.history.pushState(null, '', `#${tabId}`)
+  }
+
+  // Listen to browser back/forward buttons
+  useEffect(() => {
+    const handlePopState = () => {
+      const hash = window.location.hash.replace('#', '')
+      if (NAV_TABS.find(t => t.id === hash)) {
+        setActiveTab(hash)
+      } else {
+        setActiveTab('dashboard')
+      }
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
 
   return (
     <div className="layout">
@@ -46,7 +75,7 @@ export default function App() {
             {NAV_TABS.map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabChange(tab.id)}
                 className={`nav-btn ${activeTab === tab.id ? 'active' : ''}`}
               >
                 {tab.label}
@@ -73,7 +102,7 @@ export default function App() {
           </>
         )}
 
-        {activeTab === 'events' && <EventsCard eventsData={data?.events} connected={connected} setActiveTab={setActiveTab} />}
+        {activeTab === 'events' && <EventsCard eventsData={data?.events} connected={connected} setActiveTab={handleTabChange} />}
 
         {/* Speed Test — dedicated page */}
         {activeTab === 'speedtest' && (
