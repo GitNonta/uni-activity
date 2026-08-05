@@ -1434,7 +1434,7 @@ class MonitorHandler(BaseHTTPRequestHandler):
             
         if self.path == "/api/deploy/manual":
             def trigger_manual_deploy():
-                import subprocess, time
+                import subprocess, time, os
                 app_dir = "/data/data/com.termux/files/home/uni-activity"
                 if not os.path.exists(app_dir):
                     app_dir = str(Path(__file__).parent.parent)
@@ -1451,9 +1451,16 @@ class MonitorHandler(BaseHTTPRequestHandler):
                 subprocess.run(["php", "artisan", "route:clear"], cwd=app_dir)
                 subprocess.run(["pkill", "-9", "-f", "php-fpm"])
                 subprocess.Popen(["nohup", "php-fpm"], cwd=app_dir)
+                
+                # Auto-restart monitor_server.py so new python code takes effect immediately
+                pid = os.getpid()
+                subprocess.Popen(
+                    f"sleep 2 && kill -9 {pid} ; nohup python py/monitor_server.py > storage/logs/monitor.log 2>&1 &",
+                    shell=True, cwd=app_dir
+                )
 
             threading.Thread(target=trigger_manual_deploy, daemon=True).start()
-            resp = json.dumps({"status": "ok", "message": "Manual deployment triggered successfully"}).encode()
+            resp = json.dumps({"status": "ok", "message": "Manual deployment triggered! Server will reboot in 2 seconds."}).encode()
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self._cors_headers()
@@ -1472,7 +1479,7 @@ class MonitorHandler(BaseHTTPRequestHandler):
 
             if commit_hash:
                 def trigger_rollback():
-                    import subprocess, time
+                    import subprocess, time, os
                     app_dir = "/data/data/com.termux/files/home/uni-activity"
                     if not os.path.exists(app_dir):
                         app_dir = str(Path(__file__).parent.parent)
@@ -1488,9 +1495,16 @@ class MonitorHandler(BaseHTTPRequestHandler):
                     subprocess.run(["php", "artisan", "route:clear"], cwd=app_dir)
                     subprocess.run(["pkill", "-9", "-f", "php-fpm"])
                     subprocess.Popen(["nohup", "php-fpm"], cwd=app_dir)
+                    
+                    # Auto-restart monitor_server.py so rolled-back python code takes effect immediately
+                    pid = os.getpid()
+                    subprocess.Popen(
+                        f"sleep 2 && kill -9 {pid} ; nohup python py/monitor_server.py > storage/logs/monitor.log 2>&1 &",
+                        shell=True, cwd=app_dir
+                    )
 
                 threading.Thread(target=trigger_rollback, daemon=True).start()
-                resp = json.dumps({"status": "ok", "message": f"Rollback to commit {commit_hash} initiated"}).encode()
+                resp = json.dumps({"status": "ok", "message": f"Rollback to commit {commit_hash} initiated! Server will reboot in 2 seconds."}).encode()
             else:
                 resp = json.dumps({"status": "error", "message": "Missing commit_hash"}).encode()
 
