@@ -31,16 +31,20 @@ export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0, sele
   const parsedTime = selectedEvent?.timestamp ? new Date(selectedEvent.timestamp.replace(' at ', ' ')).getTime() : NaN;
   const baseTime = !isNaN(parsedTime) ? parsedTime : Date.now() - (logLines.length * 1000);
 
+  let lastParsedDate = new Date(baseTime);
   let processedLogs = logLines.map((line, idx) => {
-    let lineDate = new Date(baseTime + (idx * 1000));
+    let lineDate;
     let text = line;
     
     // Parse real timestamp if present: [YYYY-MM-DD HH:MM:SS]
     const timeMatch = line.match(/^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]\s*(.*)/);
     if (timeMatch) {
-      // Replace dashes with slashes for better Safari compatibility if needed, though standard formats usually parse
       lineDate = new Date(timeMatch[1].replace(/-/g, '/'));
+      lastParsedDate = lineDate; // Save for subsequent lines that might lack a timestamp
       text = timeMatch[2]; // Strip timestamp from displayed text
+    } else {
+      // Fallback: use the last parsed date (or baseTime) and add a tiny increment so order is preserved
+      lineDate = new Date(lastParsedDate.getTime() + (idx * 10)); 
     }
 
     return {
