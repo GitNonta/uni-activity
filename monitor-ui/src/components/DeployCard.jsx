@@ -28,7 +28,8 @@ export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0, sele
   const logLines = deployLog ? deployLog.split('\n').filter(line => line.trim()) : [];
   
   // Try to use a base timestamp if provided, else use current time
-  const baseTime = selectedEvent?.timestamp ? new Date(selectedEvent.timestamp).getTime() : Date.now() - (logLines.length * 1000);
+  const parsedTime = selectedEvent?.timestamp ? new Date(selectedEvent.timestamp.replace(' at ', ' ')).getTime() : NaN;
+  const baseTime = !isNaN(parsedTime) ? parsedTime : Date.now() - (logLines.length * 1000);
 
   let processedLogs = logLines.map((line, idx) => {
     // Increment time by ~1000ms per line to look realistic
