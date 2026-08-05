@@ -687,35 +687,83 @@ def get_deploy_logs():
             return f"Error reading deploy log: {str(e)}"
     return "No deployment log found."
 
+github_events_cache = {"data": [], "last_fetch": 0}
+
 def get_github_events():
-    """Fetch real deployment/git commit status from local repo & git sync logs in real-time."""
+    """Fetch real-time commit & deployment events directly from GitHub REST API."""
+    global github_events_cache
+    now = time.time()
+
+    # Cache for 5 seconds to comply with GitHub REST API rate limits
+    if github_events_cache["data"] and (now - github_events_cache["last_fetch"] < 5):
+        return github_events_cache["data"]
+
     events = []
+    try:
+        import urllib.request, json, datetime
+
+        url = "https://api.github.com/repos/GitNonta/uni-activity/commits?per_page=15"
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "Uni-Activity-Monitor/1.0",
+            "Accept": "application/vnd.github.v3+json"
+        })
+
+        with urllib.request.urlopen(req, timeout=4) as response:
+            if response.status == 200:
+                raw_json = json.loads(response.read().decode("utf-8"))
+                for idx, item in enumerate(raw_json):
+                    sha_full = item.get("sha", "")
+                    sha = sha_full[:7]
+                    commit_obj = item.get("commit", {})
+                    msg = commit_obj.get("message", "").split("\n")[0]
+                    author_obj = commit_obj.get("author", {})
+                    author_name = author_obj.get("name", "GitNonta")
+                    date_iso = author_obj.get("date", "")
+
+                    dt_str = date_iso
+                    try:
+                        dt_obj = datetime.datetime.fromisoformat(date_iso.replace("Z", "+00:00"))
+                        dt_str = dt_obj.strftime("%B %e, %Y at %I:%M %p")
+                    except Exception:
+                        pass
+
+                    status_type = "success"
+                    detail = f"GitHub Live REST API • Synced with GitHub ({author_name})"
+                    if idx == 0:
+                        status_type = "success"
+                        detail = f"🟢 GitHub Live REST API • Latest Active Commit on GitHub ({author_name})"
+
+                    events.append({
+                        "id": f"gh-{sha}-status",
+                        "type": status_type,
+                        "hash": sha,
+                        "message": msg,
+                        "detail": detail,
+                        "timestamp": dt_str
+                    })
+
+                    events.append({
+                        "id": f"gh-{sha}-start",
+                        "type": "started",
+                        "hash": sha,
+                        "message": msg,
+                        "detail": f"GitHub Push Event by {author_name}",
+                        "timestamp": dt_str
+                    })
+
+                if events:
+                    github_events_cache["data"] = events
+                    github_events_cache["last_fetch"] = now
+                    return events
+    except Exception:
+        pass
+
+    # Fallback to local git log if offline
     try:
         import subprocess
         repo_dir = "/data/data/com.termux/files/home/uni-activity"
         if not os.path.exists(repo_dir):
             repo_dir = str(Path(__file__).parent.parent)
-
-        sync_log = os.path.join(repo_dir, "storage/logs/git-sync.log")
-        sync_status = "idle"
-        last_log_msg = ""
-        if os.path.exists(sync_log):
-            try:
-                with open(sync_log, "r", encoding="utf-8", errors="replace") as f:
-                    log_lines = f.readlines()
-                    if log_lines:
-                        last_line = log_lines[-1].strip()
-                        if "Updating server" in last_line:
-                            sync_status = "building"
-                            last_log_msg = last_line
-                        elif "successfully" in last_line:
-                            sync_status = "success"
-                            last_log_msg = last_line
-                        elif "failed" in last_line or "error" in last_line.lower():
-                            sync_status = "failed"
-                            last_log_msg = last_line
-            except Exception:
-                pass
 
         res = subprocess.run(
             ["git", "log", "-n", "15", '--pretty=format:%h|%s|%cd|%an', '--date=format:%B %e, %Y at %I:%M %p'],
@@ -727,35 +775,12 @@ def get_github_events():
                 parts = line.split("|", 3)
                 if len(parts) == 4:
                     h, msg, dt, author = parts[0], parts[1], parts[2], parts[3]
-                    
-                    status_type = "success"
-                    detail = f"Live - Deployed via GitHub Auto-Deploy ({author})"
-                    if idx == 0:
-                        if sync_status == "building":
-                            status_type = "started"
-                            detail = f"🔄 Deploying in progress on server ({author})..."
-                        elif sync_status == "failed":
-                            status_type = "failed"
-                            detail = f"❌ Deploy failed: {last_log_msg}"
-                        else:
-                            status_type = "success"
-                            detail = f"🟢 Live - Active Deployment on Server ({author})"
-
                     events.append({
                         "id": f"event-{h}-status",
-                        "type": status_type,
+                        "type": "success",
                         "hash": h,
                         "message": msg,
-                        "detail": detail,
-                        "timestamp": dt
-                    })
-
-                    events.append({
-                        "id": f"event-{h}-start",
-                        "type": "started",
-                        "hash": h,
-                        "message": msg,
-                        "detail": f"New commit pushed by {author}",
+                        "detail": f"Local Git Log • Active Deployment ({author})",
                         "timestamp": dt
                     })
     except Exception:
