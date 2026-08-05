@@ -35,6 +35,7 @@ export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0, sele
     const lineDate = new Date(baseTime + (idx * 1000));
     return {
       id: idx,
+      dateString: lineDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       time: lineDate.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
       text: line
     };
@@ -347,21 +348,34 @@ export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0, sele
             ref={consoleRef}
             style={{ overflowY: 'auto', flex: 1, maxHeight: '600px', background: '#0a0a0a', padding: '1rem 0' }}
           >
-            {processedLogs.length > 0 ? processedLogs.map((log) => (
-              <div key={log.id} style={{ display: 'flex', fontFamily: 'monospace', fontSize: '0.8rem', lineHeight: '1.5' }}>
-                <div style={{ width: '100px', flexShrink: 0, paddingLeft: '1rem', color: '#737373', userSelect: 'none' }}>
-                  {log.time}
-                </div>
-                <div style={{ color: '#d4d4d8', paddingLeft: '1rem', flex: 1, wordBreak: 'break-all', whiteSpace: 'pre-wrap' }}>
-                  {log.text}
-                </div>
-              </div>
-            )) : (
-              <div style={{ display: 'flex', fontFamily: 'monospace', fontSize: '0.8rem', lineHeight: '1.5' }}>
-                <div style={{ width: '100px', flexShrink: 0, paddingLeft: '1rem', color: '#737373', userSelect: 'none' }}>
+            {processedLogs.length > 0 ? processedLogs.map((log, index) => {
+              const showDateHeader = index === 0 || processedLogs[index - 1].dateString !== log.dateString;
+              return (
+                <React.Fragment key={log.id}>
+                  {showDateHeader && (
+                    <div style={{ display: 'flex', fontFamily: 'var(--font-mono, monospace)', fontSize: '0.8rem', lineHeight: '1.5' }}>
+                      <div style={{ width: '130px', flexShrink: 0, padding: '0.2rem 0.5rem', color: '#e5e5e5', fontWeight: 600, borderRight: '1px solid #262626', borderBottom: '1px solid #262626', textAlign: 'center' }}>
+                        {log.dateString}
+                      </div>
+                      <div style={{ flexGrow: 1, padding: '0.2rem 0.75rem', borderBottom: '1px solid #262626' }}></div>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', fontFamily: 'var(--font-mono, monospace)', fontSize: '0.8rem', lineHeight: '1.5' }}>
+                    <div style={{ width: '130px', flexShrink: 0, padding: '0.1rem 0.5rem', color: '#737373', borderRight: '1px solid #262626', borderBottom: '1px solid #171717', textAlign: 'right' }}>
+                      {log.time}
+                    </div>
+                    <div style={{ flexGrow: 1, padding: '0.1rem 0.75rem', color: '#d4d4d8', borderBottom: '1px solid #171717', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                      {log.text}
+                    </div>
+                  </div>
+                </React.Fragment>
+              );
+            }) : (
+              <div style={{ display: 'flex', fontFamily: 'var(--font-mono, monospace)', fontSize: '0.8rem', lineHeight: '1.5' }}>
+                <div style={{ width: '130px', flexShrink: 0, padding: '0.1rem 0.5rem', color: '#737373', borderRight: '1px solid #262626', borderBottom: '1px solid #171717', textAlign: 'right' }}>
                   --:--:--
                 </div>
-                <div style={{ color: '#a3a3a3', paddingLeft: '1rem', flex: 1 }}>
+                <div style={{ flexGrow: 1, padding: '0.1rem 0.75rem', color: '#d4d4d8', borderBottom: '1px solid #171717', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
                   {logSearchText ? 'No matching logs found.' : 'No deployment log found. Run a deployment script to generate logs.'}
                 </div>
               </div>
