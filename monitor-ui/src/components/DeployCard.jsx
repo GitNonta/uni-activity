@@ -12,8 +12,9 @@ export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0 }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', minHeight: 'calc(100vh - 180px)' }}>
-      {/* Session Access Panel */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+      {/* Session Access Panel (Hidden when viewing specific deployment details) */}
+      {!selectedEvent && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
         {/* SSH Card */}
         <div className="card" style={{ padding: '1.25rem', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
@@ -67,6 +68,49 @@ export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0 }) {
           </div>
         </div>
       </div>
+      )}
+
+      {/* Render-like Event Summary Header */}
+      {selectedEvent && (
+        <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px', overflow: 'hidden' }}>
+          {/* Header row */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1.5rem', borderBottom: '1px solid #1e293b', background: '#020617' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <span style={{ fontWeight: 600, color: '#f8fafc' }}>{selectedEvent.timestamp}</span>
+              <span style={{ 
+                background: selectedEvent.type === 'failed' ? '#7f1d1d' : (selectedEvent.type === 'success' ? '#064e3b' : '#1e293b'), 
+                color: selectedEvent.type === 'failed' ? '#fca5a5' : (selectedEvent.type === 'success' ? '#6ee7b7' : '#cbd5e1'), 
+                padding: '0.2rem 0.6rem', 
+                borderRadius: '4px', 
+                fontSize: '0.75rem', 
+                fontWeight: 600,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}>
+                {selectedEvent.type === 'failed' ? (
+                  <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12"/></svg>
+                ) : selectedEvent.type === 'success' ? (
+                  <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"/></svg>
+                ) : null}
+                {selectedEvent.type === 'failed' ? 'Failed' : (selectedEvent.type === 'success' ? 'Succeeded' : 'Started')}
+              </span>
+            </div>
+          </div>
+          
+          {/* Details row */}
+          <div style={{ padding: '1.25rem 1.5rem', background: '#0f172a' }}>
+            <div style={{ fontFamily: 'monospace', fontSize: '0.85rem', marginBottom: '0.75rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <span style={{ background: '#334155', color: '#f8fafc', padding: '0.1rem 0.4rem', borderRadius: '4px' }}>{selectedEvent.hash}</span>
+              <span style={{ color: '#94a3b8' }}>{selectedEvent.message}</span>
+            </div>
+            
+            <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#f8fafc' }}>
+              {selectedEvent.detail}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Terminal Log Console */}
       <div className="card" style={{ padding: '1.5rem', background: '#0f172a', color: '#f8fafc', fontFamily: 'monospace', borderRadius: '8px', flex: 1, display: 'flex', flexDirection: 'column', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}>

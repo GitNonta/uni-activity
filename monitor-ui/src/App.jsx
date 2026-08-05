@@ -42,6 +42,7 @@ export default function App() {
   
   const [activeTab, setActiveTab] = useState(getInitialTab)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [selectedEvent, setSelectedEvent] = useState(null)
 
   // Sync state to URL hash
   const handleTabChange = (tabId) => {
@@ -102,7 +103,7 @@ export default function App() {
           </>
         )}
 
-        {activeTab === 'events' && <EventsCard eventsData={data?.events} connected={connected} setActiveTab={handleTabChange} />}
+        {activeTab === 'events' && <EventsCard eventsData={data?.events} connected={connected} setActiveTab={handleTabChange} setSelectedEvent={setSelectedEvent} />}
 
         {/* Speed Test — dedicated page */}
         {activeTab === 'speedtest' && (
@@ -116,6 +117,7 @@ export default function App() {
             deployLog={data?.deploy_log}
             sshSessions={data?.ssh_sessions}
             sftpSessions={data?.sftp_sessions}
+            selectedEvent={selectedEvent}
           />
         )}
         {activeTab === 'documentation' && <Documentation />}
