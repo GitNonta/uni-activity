@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0 }) {
+export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0, selectedEvent }) {
   const consoleRef = useRef(null);
 
   // Auto-scroll to bottom of logs on update
