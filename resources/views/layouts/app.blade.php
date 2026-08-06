@@ -208,9 +208,9 @@
     <style>
     .chat-list-item { background: #fff; transition: background .15s; }
     .chat-list-item:hover { background: #f8fafc; }
-    .chat-list-item.unread { background: #FF9933; color: #fff; } /* Requested #FF9933 orange background */
+    .chat-list-item.unread { background: #FF9933; color: #000; } /* Requested #FF9933 orange background */
     .chat-list-item.unread:hover { background: #e68a2e; }
-    .chat-list-item.unread .chat-title, .chat-list-item.unread .chat-preview { color: #fff !important; }
+    .chat-list-item.unread .chat-title, .chat-list-item.unread .chat-preview { color: #000 !important; }
     </style>
     
     <div id="chatFloatWidget" style="position:fixed;bottom:5.5rem;right:1.1rem;z-index:8500;display:flex;flex-direction:column;align-items:flex-end;gap:.5rem;">

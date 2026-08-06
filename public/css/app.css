@@ -618,10 +618,10 @@ nav[role="navigation"] span[aria-current="page"] span { background: #ea580c; col
     .act-card:hover { box-shadow: 0 6px 16px rgba(234, 88, 12, 0.4) !important; }
     .act-map-btn { background: rgba(255, 255, 255, 0.2) !important; color: #fff !important; }
     .act-map-btn:hover { background: rgba(255, 255, 255, 0.3) !important; }
-    
     /* Floating Chat Widget */
+    .chat-list-item { background: #36383a !important; border-color: #4a4d50 !important; }
     .chat-list-item:hover { background: #4a4d50 !important; }
-    .chat-list-item.unread { background: #FF9933 !important; color: #fff !important; } /* User requested #FF9933 */
+    .chat-list-item.unread { background: #FF9933 !important; color: #000 !important; } /* User requested #FF9933 with black text */
     .chat-list-item.unread:hover { background: #e68a2e !important; }
-    .chat-list-item.unread .chat-title, .chat-list-item.unread .chat-preview { color: #fff !important; }
+    .chat-list-item.unread .chat-title, .chat-list-item.unread .chat-preview { color: #000 !important; }
 }
