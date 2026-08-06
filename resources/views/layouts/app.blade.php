@@ -208,8 +208,9 @@
     <style>
     .chat-list-item { background: #fff; transition: background .15s; }
     .chat-list-item:hover { background: #f8fafc; }
-    .chat-list-item.unread { background: #fff7ed; } /* Light orange background */
-    .chat-list-item.unread:hover { background: #ffedd5; }
+    .chat-list-item.unread { background: #FF9933; color: #fff; } /* Requested #FF9933 orange background */
+    .chat-list-item.unread:hover { background: #e68a2e; }
+    .chat-list-item.unread .chat-title, .chat-list-item.unread .chat-preview { color: #fff !important; }
     </style>
     
     <div id="chatFloatWidget" style="position:fixed;bottom:5.5rem;right:1.1rem;z-index:8500;display:flex;flex-direction:column;align-items:flex-end;gap:.5rem;">
@@ -333,8 +334,8 @@
                 + '<svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.05 2a9 9 0 0 1 8 7.94"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.05 6A5 5 0 0 1 18 10"/></svg>'
                 + '</div>'
                 + '<div style="flex:1;min-width:0;">'
-                + '<div style="font-size:.82rem;font-weight:' + (isSupportUnread?'700':'500') + ';color:#1e293b;">ติดต่อสอบถามเจ้าหน้าที่</div>'
-                + '<div style="font-size:.7rem;color:' + (isSupportUnread?'#1e293b':'#64748b') + ';">' + supportPreview + '</div>'
+                + '<div class="chat-title" style="font-size:.82rem;font-weight:' + (isSupportUnread?'700':'500') + ';color:#1e293b;">ติดต่อสอบถามเจ้าหน้าที่</div>'
+                + '<div class="chat-preview" style="font-size:.7rem;color:' + (isSupportUnread?'#1e293b':'#64748b') + ';">' + supportPreview + '</div>'
                 + '</div>'
                 + (isSupportUnread ? '<div style="min-width:18px;height:18px;border-radius:9px;background:#ef4444;color:#fff;font-size:.6rem;font-weight:700;line-height:18px;text-align:center;padding:0 4px;">' + supportThread.unread + '</div>' : '')
                 + '</div>';
@@ -351,8 +352,8 @@
                     + 'style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;border-bottom:1px solid #f1f5f9;cursor:pointer;" class="chat-list-item ' + (isUnread ? 'unread' : '') + '">'
                     + '<div style="width:34px;height:34px;border-radius:50%;background:#ea580c;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0;">' + safeTitle.charAt(0).toUpperCase() + '</div>'
                     + '<div style="flex:1;min-width:0;">'
-                    + '<div style="font-size:.82rem;font-weight:' + (isUnread?'700':'500') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#1e293b;">' + safeTitle + '</div>'
-                    + '<div style="font-size:.7rem;color:' + (isUnread?'#1e293b':'#64748b') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + preview + '</div>'
+                    + '<div class="chat-title" style="font-size:.82rem;font-weight:' + (isUnread?'700':'500') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#1e293b;">' + safeTitle + '</div>'
+                    + '<div class="chat-preview" style="font-size:.7rem;color:' + (isUnread?'#1e293b':'#64748b') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + preview + '</div>'
                     + '</div>'
                     + (isUnread ? '<div style="min-width:18px;height:18px;border-radius:9px;background:#ef4444;color:#fff;font-size:.6rem;font-weight:700;line-height:18px;text-align:center;padding:0 4px;">' + t.unread + '</div>' : '')
                     + '</div>';

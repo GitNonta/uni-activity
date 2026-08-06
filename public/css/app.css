@@ -621,6 +621,7 @@ nav[role="navigation"] span[aria-current="page"] span { background: #ea580c; col
     
     /* Floating Chat Widget */
     .chat-list-item:hover { background: #4a4d50 !important; }
-    .chat-list-item.unread { background: #78350f !important; } /* Dark orange/brown for unread in dark mode */
-    .chat-list-item.unread:hover { background: #92400e !important; }
+    .chat-list-item.unread { background: #FF9933 !important; color: #fff !important; } /* User requested #FF9933 */
+    .chat-list-item.unread:hover { background: #e68a2e !important; }
+    .chat-list-item.unread .chat-title, .chat-list-item.unread .chat-preview { color: #fff !important; }
 }
