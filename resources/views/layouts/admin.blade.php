@@ -11,6 +11,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ filemtime(public_path('css/app.css')) }}">
     @vite(['resources/js/app.js'])
+    <script>
+        // ป้องกันปัญหา 419 Page Expired จาก BFCache (การกดปุ่ม Back)
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+    </script>
     @yield('styles')
 <style>
 

@@ -33,13 +33,20 @@
             </p>
 
             <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <button onclick="location.reload()" class="w-full sm:w-auto bg-orange-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all duration-200">
+                <button onclick="location.reload()" class="w-full sm:w-auto bg-orange-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-orange-700 focus:outline-none focus:ring-4 focus:ring-orange-100 transition-all duration-200">
                     รีเฟรชหน้าเว็บ
                 </button>
-                <a href="{{ url('/') }}" class="w-full sm:w-auto bg-white text-gray-700 px-8 py-3 rounded-lg font-medium border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-4 focus:ring-gray-100 transition-all duration-200 text-center">
-                    กลับสู่หน้าหลัก
+                <a href="{{ url('/login') }}" class="w-full sm:w-auto bg-white text-gray-700 px-8 py-3 rounded-lg font-medium border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-4 focus:ring-gray-100 transition-all duration-200 text-center">
+                    เข้าสู่ระบบใหม่
                 </a>
             </div>
+            
+            <script>
+                // Auto-redirect to login page after 3 seconds
+                setTimeout(function() {
+                    window.location.href = "{{ url('/login') }}";
+                }, 3000);
+            </script>
             
             <div class="mt-8 pt-6 border-t border-gray-100">
                 <p class="text-sm text-gray-400">
