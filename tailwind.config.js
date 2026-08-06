@@ -11,6 +11,14 @@ export default {
 
     theme: {
         extend: {
+            colors: {
+                primary: {
+                    DEFAULT: '#ea580c', // Red-Orange
+                    light: '#f97316', // Orange
+                    dark: '#c2410c', // Darker Orange
+                    bg: '#fff7ed', // Very light orange background
+                },
+            },
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
