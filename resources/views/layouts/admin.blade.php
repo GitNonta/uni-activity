@@ -9,7 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ filemtime(public_path('css/app.css')) }}">
+    @vite(['resources/js/app.js'])
     @yield('styles')
 <style>
 
@@ -94,9 +95,9 @@
 }
 
 .sb-link.active { 
-    background: linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(139,92,246,0.15) 100%);
+    background: linear-gradient(135deg, rgba(249,115,22,0.15) 0%, rgba(139,92,246,0.15) 100%);
     color: #a5b4fc; 
-    box-shadow: inset 0 0 0 1px rgba(99,102,241,0.2);
+    box-shadow: inset 0 0 0 1px rgba(249,115,22,0.2);
 }
 
 .sb-link svg { 
@@ -153,7 +154,7 @@
 }
 .sb-avatar { 
     width: 36px; height: 36px; 
-    background: linear-gradient(135deg, #6366f1, #8b5cf6); 
+    background: linear-gradient(135deg, #f97316, #f87171); 
     border-radius: 10px; 
     display: flex; 
     align-items: center; 
@@ -161,7 +162,7 @@
     color: #fff; 
     font-size: 14px; 
     font-weight: 700;
-    box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+    box-shadow: 0 4px 12px rgba(249,115,22,0.3);
 }
 .sb-user-info { flex: 1; min-width: 0; }
 .sb-user-name { 
@@ -541,7 +542,7 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .acw-header {
-    background: #4f46e5;
+    background: #ea580c;
     color: #fff;
     padding: 0.75rem 1rem;
     display: flex;
