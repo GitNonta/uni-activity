@@ -1,5 +1,6 @@
 import defaultTheme from 'tailwindcss/defaultTheme';
 import forms from '@tailwindcss/forms';
+import colors from 'tailwindcss/colors';
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -18,6 +19,10 @@ export default {
                     dark: '#c2410c', // Darker Orange
                     bg: '#fff7ed', // Very light orange background
                 },
+                // Override default colors to apply the Orange theme globally
+                indigo: colors.orange,
+                blue: colors.orange,
+                purple: colors.red,
             },
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
