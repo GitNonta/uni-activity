@@ -61,7 +61,7 @@ database_dumps/
 # -----------------------------------------------------------------
 /vendor/
 /node_modules/
-/public/build/
+# /public/build/
 /public/hot/
 monitor-ui/node_modules/
 monitor-ui/dist/
