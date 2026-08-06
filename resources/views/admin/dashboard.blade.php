@@ -13,15 +13,15 @@
 
 {{-- การ์ดสถิติ --}}
 <div class="grid-4 mb-6">
-    <a href="{{ route('admin.activities.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #6366f1; text-decoration:none;">
+    <a href="{{ route('admin.activities.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #f97316; text-decoration:none;">
         <p class="stat-label">กิจกรรมทั้งหมด</p>
         <p class="stat-value">{{ $stats['totalActivities'] }}</p>
     </a>
-    <a href="{{ route('admin.activities.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #8b5cf6; text-decoration:none;">
+    <a href="{{ route('admin.activities.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #f87171; text-decoration:none;">
         <p class="stat-label">เปิดรับสมัคร</p>
         <p class="stat-value primary">{{ $stats['upcomingActivities'] }}</p>
     </a>
-    <a href="{{ route('admin.students.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #3b82f6; text-decoration:none;">
+    <a href="{{ route('admin.students.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #ea580c; text-decoration:none;">
         <p class="stat-label">นักศึกษา</p>
         <p class="stat-value">{{ $stats['totalStudents'] }}</p>
     </a>
@@ -105,7 +105,7 @@
              style="display:flex;align-items:center;gap:.75rem;padding:.85rem 1.1rem;border-bottom:1px solid #fef3c7;transition:background .2s;">
             {{-- Type Badge --}}
             <span style="flex-shrink:0;font-size:.7rem;font-weight:600;padding:3px 8px;border-radius:999px;
-                {{ $item['type'] === 'registration' ? 'background:#ede9fe;color:#6d28d9;' : 'background:#dcfce7;color:#15803d;' }}">
+                {{ $item['type'] === 'registration' ? 'background:#ffedd5;color:#6d28d9;' : 'background:#dcfce7;color:#15803d;' }}">
                 {{ $item['type'] === 'registration' ? 'ลงทะเบียน' : 'เช็คอิน' }}
             </span>
             {{-- Info --}}
@@ -168,7 +168,7 @@
     {{-- Section Header --}}
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem;">
         <div style="display:flex;align-items:center;gap:.625rem;">
-            <div style="width:36px;height:36px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:11px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(99,102,241,.22);">
+            <div style="width:36px;height:36px;background:linear-gradient(135deg,#f97316,#f87171);border-radius:11px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(249,115,22,.22);">
                 <svg style="width:18px;height:18px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01"/></svg>
             </div>
             <div>
@@ -176,7 +176,7 @@
                 <p class="text-xs text-muted" style="margin-top:1px;">Audit Logs — บันทึกการเปลี่ยนแปลงในระบบ</p>
             </div>
         </div>
-        <a href="{{ route('admin.audit-logs.index') }}" style="display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:10px;font-size:.78rem;font-weight:600;color:#6366f1;background:#f5f3ff;border:1px solid #e0e7ff;text-decoration:none;transition:all .2s;" onmouseover="this.style.background='#6366f1';this.style.color='#fff';this.style.borderColor='#6366f1';this.style.boxShadow='0 2px 8px rgba(99,102,241,.25)'" onmouseout="this.style.background='#f5f3ff';this.style.color='#6366f1';this.style.borderColor='#e0e7ff';this.style.boxShadow='none'">
+        <a href="{{ route('admin.audit-logs.index') }}" style="display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:10px;font-size:.78rem;font-weight:600;color:#f97316;background:#fff5f5;border:1px solid #ffedd5;text-decoration:none;transition:all .2s;" onmouseover="this.style.background='#f97316';this.style.color='#fff';this.style.borderColor='#f97316';this.style.boxShadow='0 2px 8px rgba(249,115,22,.25)'" onmouseout="this.style.background='#fff5f5';this.style.color='#f97316';this.style.borderColor='#ffedd5';this.style.boxShadow='none'">
             ดูประวัติทั้งหมด
             <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
         </a>
@@ -193,7 +193,7 @@
                 'approve' => 'linear-gradient(135deg,#22c55e,#4ade80)',
                 'reject'  => 'linear-gradient(135deg,#ef4444,#f87171)',
                 'toggle'  => 'linear-gradient(135deg,#eab308,#facc15)',
-                'login'   => 'linear-gradient(135deg,#3b82f6,#60a5fa)',
+                'login'   => 'linear-gradient(135deg,#ea580c,#60a5fa)',
                 'logout'  => 'linear-gradient(135deg,#6b7280,#9ca3af)',
                 default   => 'linear-gradient(135deg,#6b7280,#9ca3af)',
             };
@@ -211,7 +211,7 @@
                 'create','approve' => 'background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;',
                 'update','toggle'  => 'background:#fffbeb;color:#a16207;border:1px solid #fde68a;',
                 'delete','reject'  => 'background:#fef2f2;color:#dc2626;border:1px solid #fecaca;',
-                'login'            => 'background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;',
+                'login'            => 'background:#eff6ff;color:#ea580c;border:1px solid #bfdbfe;',
                 default            => 'background:#f8fafc;color:#64748b;border:1px solid #e2e8f0;',
             };
         @endphp

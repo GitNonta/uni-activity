@@ -24,7 +24,7 @@
         <div class="card" style="border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background:#fff; border-radius:12px;">
             <div class="card-header" style="background:#fff; border-bottom:1px solid #f1f5f9; padding:1.25rem 1.5rem;">
                 <h3 class="font-semi flex items-center gap-2" style="font-size:1.05rem; color:#1e293b; margin:0;">
-                    <svg style="width:20px; height:20px; color:#4f46e5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg style="width:20px; height:20px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     ข้อมูลกิจกรรมและคะแนนภาพรวม
@@ -46,7 +46,7 @@
                     </div>
                     <div>
                         <span class="text-xs text-muted" style="display:block; margin-bottom:4px;">จำนวนผู้ร่วมตอบประเมิน</span>
-                        <span class="font-bold" style="color:#4f46e5; font-size:1.1rem; display:block;">{{ number_format($stats['total']) }} คน</span>
+                        <span class="font-bold" style="color:#ea580c; font-size:1.1rem; display:block;">{{ number_format($stats['total']) }} คน</span>
                     </div>
                     <div>
                         <span class="text-xs text-muted" style="display:block; margin-bottom:4px;">คะแนนความพึงพอใจเฉลี่ย</span>
@@ -63,7 +63,7 @@
         <div class="card" style="border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background:#fff; border-radius:12px;">
             <div class="card-header" style="background:#fff; border-bottom:1px solid #f1f5f9; padding:1.25rem 1.5rem;">
                 <h3 class="font-semi flex items-center gap-2" style="font-size:1.05rem; color:#1e293b; margin:0;">
-                    <svg style="width:20px; height:20px; color:#4f46e5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg style="width:20px; height:20px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                     </svg>
                     สัดส่วนคะแนนความพึงพอใจ
@@ -105,7 +105,7 @@
         <div class="card" style="border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background:#fff; border-radius:12px;">
             <div class="card-header" style="background:#fff; border-bottom:1px solid #f1f5f9; padding:1.25rem 1.5rem;">
                 <h3 class="font-semi flex items-center gap-2" style="font-size:1.05rem; color:#1e293b; margin:0;">
-                    <svg style="width:20px; height:20px; color:#4f46e5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg style="width:20px; height:20px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
                     </svg>
                     ความคิดเห็นและข้อเสนอแนะรายบุคคล ({{ $activity->feedbacks->count() }})
@@ -186,7 +186,7 @@
         @if(array_sum($detailedAvg) > 0)
             <div class="card" style="border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background:#fff; border-radius:12px;">
                 <div class="card-header flex items-center gap-2" style="background:#f8fafc; border-bottom:1px solid #f1f5f9; padding:1rem 1.25rem;">
-                    <svg style="width:20px; height:20px; color:#4f46e5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg style="width:20px; height:20px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                     </svg>
                     <span class="font-semi text-sm" style="color:#334155;">ความพึงพอใจแยกตามหัวข้อ</span>
@@ -194,8 +194,8 @@
                 <div class="card-body" style="padding:1.25rem; display:flex; flex-direction:column; gap:0.85rem;">
                     
                     @foreach([
-                        ['key' => 'content', 'title' => 'เนื้อหากิจกรรมและการเรียนรู้', 'color' => '#6366f1'],
-                        ['key' => 'speaker', 'title' => 'วิทยากร / ผู้บรรยาย / ผู้ดำเนินการ', 'color' => '#8b5cf6'],
+                        ['key' => 'content', 'title' => 'เนื้อหากิจกรรมและการเรียนรู้', 'color' => '#f97316'],
+                        ['key' => 'speaker', 'title' => 'วิทยากร / ผู้บรรยาย / ผู้ดำเนินการ', 'color' => '#f87171'],
                         ['key' => 'location', 'title' => 'สถานที่ / ระบบดิจิทัล / สิ่งอำนวยความสะดวก', 'color' => '#06b6d4'],
                         ['key' => 'organization', 'title' => 'การบริหารจัดการและการประสานงาน', 'color' => '#10b981']
                     ] as $item)

@@ -179,8 +179,8 @@
         }
 
         .primary-btn {
-            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-            box-shadow: 0 0 25px rgba(99,102,241,0.3);
+            background: linear-gradient(135deg, #f97316 0%, #a855f7 100%);
+            box-shadow: 0 0 25px rgba(249,115,22,0.3);
         }
     </style>
 </head>

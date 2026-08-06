@@ -1,10 +1,10 @@
 {{-- คอมโพเนนต์แสดงป้ายสถานะกิจกรรม: แปลงสถานะ (upcoming, open, full, ...) เป็นสี + ข้อความไทย --}}
 @php
     $map = [
-        'upcoming' => ['badge-blue', 'เร็วๆ นี้'],
+        'upcoming' => ['badge-orange', 'เร็วๆ นี้'],
         'open' => ['badge-green', 'เปิดรับสมัคร'],
         'full' => ['badge-yellow', 'เต็ม'],
-        'ongoing' => ['badge-purple', 'กำลังดำเนินการ'],
+        'ongoing' => ['badge-orange', 'กำลังดำเนินการ'],
         'done' => ['badge-gray', 'เสร็จสิ้น'],
         'cancelled' => ['badge-red', 'ยกเลิก'],
     ];

@@ -6,8 +6,8 @@
 <style>
 /* Official & Professional UI Design */
 :root {
-    --primary: #4f46e5;
-    --primary-hover: #4338ca;
+    --primary: #ea580c;
+    --primary-hover: #c2410c;
     --surface: #ffffff;
     --background: #f8fafc;
     --border: #e2e8f0;
@@ -16,7 +16,7 @@
     --danger: #ef4444;
     --warning: #f59e0b;
     --success: #10b981;
-    --info: #3b82f6;
+    --info: #ea580c;
 }
 
 .sec-header {
@@ -37,7 +37,7 @@
 .sec-header-icon {
     width: 40px;
     height: 40px;
-    background: #e0e7ff;
+    background: #ffedd5;
     color: var(--primary);
     border-radius: 10px;
     display: flex;
@@ -93,7 +93,7 @@
 
 .stat-icon.purple { background: #f3e8ff; color: #9333ea; }
 .stat-icon.red    { background: #fee2e2; color: #dc2626; }
-.stat-icon.blue   { background: #dbeafe; color: #2563eb; }
+.stat-icon.blue   { background: #ffedd5; color: #c2410c; }
 .stat-icon.orange { background: #ffedd5; color: #ea580c; }
 
 .stat-info { flex: 1; }

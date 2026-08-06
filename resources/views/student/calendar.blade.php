@@ -19,7 +19,7 @@
 {{-- Legend --}}
 <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem;">
     <div style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:#475569;">
-        <span style="width:12px;height:12px;border-radius:3px;background:#6366f1;display:inline-block;flex-shrink:0;"></span> ลงทะเบียนแล้ว
+        <span style="width:12px;height:12px;border-radius:3px;background:#f97316;display:inline-block;flex-shrink:0;"></span> ลงทะเบียนแล้ว
     </div>
     <div style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:#475569;">
         <span style="width:12px;height:12px;border-radius:3px;background:#16a34a;display:inline-block;flex-shrink:0;"></span> เช็คอินแล้ว
@@ -48,15 +48,15 @@
         <div class="modal-body" style="padding-top:.5rem;">
             <div style="display:grid;gap:.5rem;margin-bottom:1rem;">
                 <div style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;color:#374151;">
-                    <svg style="width:15px;height:15px;color:#6366f1;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <svg style="width:15px;height:15px;color:#f97316;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                     <span id="eventModalDate"></span>
                 </div>
                 <div style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;color:#374151;">
-                    <svg style="width:15px;height:15px;color:#6366f1;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <svg style="width:15px;height:15px;color:#f97316;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     <span id="eventModalLocation"></span>
                 </div>
                 <div style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;color:#374151;">
-                    <svg style="width:15px;height:15px;color:#6366f1;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <svg style="width:15px;height:15px;color:#f97316;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     <span id="eventModalHours"></span>
                 </div>
             </div>
@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Badges
             var badges = '';
             if (ep.is_checked_in) badges += '<span style="background:#dcfce7;color:#15803d;border-radius:999px;padding:3px 10px;font-size:.75rem;font-weight:600;">✓ เช็คอินแล้ว</span>';
-            else if (ep.is_registered) badges += '<span style="background:#ede9fe;color:#6d28d9;border-radius:999px;padding:3px 10px;font-size:.75rem;font-weight:600;">ลงทะเบียนแล้ว</span>';
+            else if (ep.is_registered) badges += '<span style="background:#ffedd5;color:#6d28d9;border-radius:999px;padding:3px 10px;font-size:.75rem;font-weight:600;">ลงทะเบียนแล้ว</span>';
             if (ep.needs_feedback) badges += '<span style="background:#fef9c3;color:#a16207;border-radius:999px;padding:3px 10px;font-size:.75rem;font-weight:600;display:inline-flex;align-items:center;"><svg style="width:12px;height:12px;margin-right:2px;" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg> รอประเมิน</span>';
             document.getElementById('eventModalBadges').innerHTML = badges;
 

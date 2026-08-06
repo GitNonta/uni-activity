@@ -16,11 +16,11 @@
                     @include('components.status-badge', ['status' => $activity->computed_status])
                     @if($activity->is_mandatory)<span class="badge badge-red">บังคับ</span>@endif
                     @if($activity->allow_walkin)<span class="badge" style="background:#dcfce7;color:#166534;">เปิดรับ Walk-in</span>@else<span class="badge" style="background:#fee2e2;color:#991b1b;">เฉพาะผู้ลงทะเบียน</span>@endif
-                    @if($activity->category)<span class="badge badge-blue">{{ $activity->category->name }}</span>@endif
+                    @if($activity->category)<span class="badge badge-orange">{{ $activity->category->name }}</span>@endif
                     @if($activity->scope === 'faculty')
                         <span class="badge" style="background:#fef3c7;color:#92400e;">คณะ: {{ $activity->faculty }}</span>
                     @elseif($activity->scope === 'department')
-                        <span class="badge" style="background:#ede9fe;color:#5b21b6;">สาขา: {{ $activity->department }} ({{ $activity->faculty }})</span>
+                        <span class="badge" style="background:#ffedd5;color:#5b21b6;">สาขา: {{ $activity->department }} ({{ $activity->faculty }})</span>
                     @else
                         <span class="badge" style="background:#e0f2fe;color:#0369a1;">ระดับมหาวิทยาลัย</span>
                     @endif
@@ -153,8 +153,8 @@
                 </div>
 
                 {{-- QR 2: Check-out --}}
-                <div class="card" style="border:1px solid #e0e7ff;box-shadow:none;">
-                    <div class="card-header" style="background:#e0e7ff;color:#3730a3;padding:0.75rem 1rem;">QR ที่ 2: ออกงาน (Check-out)</div>
+                <div class="card" style="border:1px solid #ffedd5;box-shadow:none;">
+                    <div class="card-header" style="background:#ffedd5;color:#9a3412;padding:0.75rem 1rem;">QR ที่ 2: ออกงาน (Check-out)</div>
                     <div class="card-body" style="padding:1rem;">
                         @if($activity->qr_checkout_token)
                             <div class="flex items-center gap-2 mb-3" style="flex-wrap:wrap;">
@@ -177,7 +177,7 @@
                                     <option value="6">6 ชั่วโมง</option>
                                     <option value="24">24 ชั่วโมง</option>
                                 </select>
-                                <button type="submit" class="btn btn-sm" style="background:#3730a3;color:#fff;">สร้าง QR ใหม่</button>
+                                <button type="submit" class="btn btn-sm" style="background:#9a3412;color:#fff;">สร้าง QR ใหม่</button>
                             </div>
                         </form>
                     </div>
@@ -341,8 +341,8 @@ document.addEventListener('DOMContentLoaded', function() {
     L.marker([lat, lng]).addTo(map).bindPopup('{{ $activity->location ?? $activity->title }}');
     L.circle([lat, lng], {
         radius: radius,
-        color: '#4f46e5',
-        fillColor: '#818cf8',
+        color: '#ea580c',
+        fillColor: '#fb923c',
         fillOpacity: 0.15,
         weight: 2
     }).addTo(map);

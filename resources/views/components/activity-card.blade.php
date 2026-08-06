@@ -28,7 +28,7 @@
             @if($activity->scope === 'faculty')
                 <span class="badge" style="background:#fef3c7;color:#92400e;font-size:.65rem;">{{ $activity->faculty }}</span>
             @elseif($activity->scope === 'department')
-                <span class="badge" style="background:#ede9fe;color:#5b21b6;font-size:.65rem;">{{ $activity->department }}</span>
+                <span class="badge" style="background:#ffedd5;color:#5b21b6;font-size:.65rem;">{{ $activity->department }}</span>
             @endif
         </div>
         <h3 class="font-semi line-clamp-1" style="font-size:.95rem;">{{ $activity->title }}</h3>

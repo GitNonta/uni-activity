@@ -5,7 +5,7 @@
 <div class="flex items-center justify-between mb-6">
     <div>
         <h1 class="font-bold flex items-center gap-3" style="font-size:1.5rem; color:#1e293b;">
-            <svg style="width:28px; height:28px; color:#4f46e5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg style="width:28px; height:28px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
             </svg>
@@ -17,11 +17,11 @@
 
 {{-- Navigation Tabs for Settings & Privacy --}}
 <div style="display:flex; gap:0.5rem; border-bottom:1px solid #e2e8f0; margin-bottom:1.5rem;">
-    <a href="{{ route('admin.settings.index', ['tab' => 'privacy']) }}" style="padding:0.75rem 1.25rem; font-weight:600; font-size:0.9rem; text-decoration:none; border-bottom: 2px solid {{ in_array($activeTab, ['privacy', 'profile']) ? '#4f46e5' : 'transparent' }}; color: {{ in_array($activeTab, ['privacy', 'profile']) ? '#4f46e5' : '#64748b' }}; display:flex; align-items:center; gap:0.5rem;">
+    <a href="{{ route('admin.settings.index', ['tab' => 'privacy']) }}" style="padding:0.75rem 1.25rem; font-weight:600; font-size:0.9rem; text-decoration:none; border-bottom: 2px solid {{ in_array($activeTab, ['privacy', 'profile']) ? '#ea580c' : 'transparent' }}; color: {{ in_array($activeTab, ['privacy', 'profile']) ? '#ea580c' : '#64748b' }}; display:flex; align-items:center; gap:0.5rem;">
         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
         ตั้งค่าความเป็นส่วนตัว & ข้อมูลส่วนตัว
     </a>
-    <a href="{{ route('admin.settings.index', ['tab' => 'general']) }}" style="padding:0.75rem 1.25rem; font-weight:600; font-size:0.9rem; text-decoration:none; border-bottom: 2px solid {{ $activeTab === 'general' ? '#4f46e5' : 'transparent' }}; color: {{ $activeTab === 'general' ? '#4f46e5' : '#64748b' }}; display:flex; align-items:center; gap:0.5rem;">
+    <a href="{{ route('admin.settings.index', ['tab' => 'general']) }}" style="padding:0.75rem 1.25rem; font-weight:600; font-size:0.9rem; text-decoration:none; border-bottom: 2px solid {{ $activeTab === 'general' ? '#ea580c' : 'transparent' }}; color: {{ $activeTab === 'general' ? '#ea580c' : '#64748b' }}; display:flex; align-items:center; gap:0.5rem;">
         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
         ตั้งค่าทั่วไป & SSO
     </a>
@@ -85,7 +85,7 @@
             <div class="card mb-6" style="border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); border-radius:12px; background:#fff;">
                 <div class="card-header" style="background:#fff; border-bottom:1px solid #f1f5f9; padding:1rem 1.5rem;">
                     <div class="flex items-center gap-2">
-                        <svg style="width:20px; height:20px; color:#4f46e5;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        <svg style="width:20px; height:20px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                         <h3 class="font-semi" style="font-size:1rem; color:#1e293b;">ความปลอดภัยและรหัสผ่าน</h3>
                     </div>
                     <p class="text-xs text-muted mt-1" style="font-weight:normal;">ปล่อยช่องรหัสผ่านใหม่ว่างไว้ หากไม่ต้องการเปลี่ยนแปลง</p>
@@ -169,7 +169,7 @@
             {{-- Action Buttons --}}
             <div class="flex justify-end gap-2 mt-4">
                 <a href="{{ route('admin.dashboard') }}" class="btn btn-outline" style="background:#fff;">ยกเลิก</a>
-                <button type="submit" class="btn btn-primary" style="background:#4f46e5; color:white; border-radius:8px; font-weight:600; border:none; padding:0.6rem 1.5rem; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                <button type="submit" class="btn btn-primary" style="background:#ea580c; color:white; border-radius:8px; font-weight:600; border:none; padding:0.6rem 1.5rem; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
                     <svg style="width:16px; height:16px; margin-right:6px; display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                     บันทึกข้อมูล
                 </button>
@@ -191,7 +191,7 @@
         <div class="card" style="border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); background:#fff; border-radius:12px;">
             <div class="card-header" style="background:#fff; border-bottom:1px solid #f1f5f9; padding:1.25rem 1.5rem;">
                 <h3 class="font-semi flex items-center gap-2" style="font-size:1.05rem; color:#1e293b; margin:0;">
-                    <svg style="width:20px; height:20px; color:#4f46e5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg style="width:20px; height:20px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                     </svg>
                     รูปแบบอีเมลนักศึกษาอัตโนมัติ (SSO Sync)
@@ -230,14 +230,14 @@
                     <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 1.25rem; margin-bottom: 1.5rem; display:flex; flex-direction:column; gap:6px;">
                         <span class="text-xs font-semi text-muted" style="text-transform:uppercase; letter-spacing:0.05em;">ตัวอย่างอีเมลที่ได้จริง:</span>
                         <div style="display:flex; align-items:center; gap:8px;">
-                            <code class="font-mono text-sm" id="email-preview" style="color: #4f46e5; background: #fff; padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0; display:inline-block; font-weight:700; box-shadow: 0 1px 2px rgba(0,0,0,0.02); letter-spacing:-0.01em;"></code>
+                            <code class="font-mono text-sm" id="email-preview" style="color: #ea580c; background: #fff; padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0; display:inline-block; font-weight:700; box-shadow: 0 1px 2px rgba(0,0,0,0.02); letter-spacing:-0.01em;"></code>
                             <span style="font-size:0.75rem; color:#64748b;">(สมมติรหัส นศ. 6710886217)</span>
                         </div>
                     </div>
 
                     <div class="flex justify-end gap-2">
                         <a href="{{ route('admin.dashboard') }}" class="btn btn-outline" style="background:#fff; border-radius:8px;">ยกเลิก</a>
-                        <button type="submit" class="btn btn-primary" style="background:#4f46e5; color:white; border-radius:8px; font-weight:600; border:none; padding:0.6rem 1.5rem; box-shadow:0 2px 4px rgba(79,70,229,0.2);">
+                        <button type="submit" class="btn btn-primary" style="background:#ea580c; color:white; border-radius:8px; font-weight:600; border:none; padding:0.6rem 1.5rem; box-shadow:0 2px 4px rgba(234,88,12,0.2);">
                             บันทึกการตั้งค่า
                         </button>
                     </div>
@@ -314,7 +314,7 @@
                 </div>
                 <div class="flex justify-between items-center text-sm">
                     <span class="text-muted text-xs">Queue Driver</span>
-                    <span class="font-mono font-semi" style="color:#4f46e5; text-transform:uppercase;">{{ config('queue.default') }}</span>
+                    <span class="font-mono font-semi" style="color:#ea580c; text-transform:uppercase;">{{ config('queue.default') }}</span>
                 </div>
             </div>
         </div>

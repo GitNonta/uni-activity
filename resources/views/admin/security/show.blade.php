@@ -11,7 +11,7 @@
     gap: 16px;
     margin-bottom: 28px;
 }
-.detail-back { text-decoration: none; color: #6366f1; font-size: .875rem; display: inline-flex; align-items: center; gap: 4px; }
+.detail-back { text-decoration: none; color: #f97316; font-size: .875rem; display: inline-flex; align-items: center; gap: 4px; }
 .detail-back:hover { text-decoration: underline; }
 .event-badge {
     display: inline-block;
@@ -41,7 +41,7 @@
 .related-card { background: #fff; border-radius: 14px; padding: 22px; box-shadow: 0 1px 8px rgba(0,0,0,.07); margin-bottom: 20px; }
 .related-card h3 { font-size: .9rem; font-weight: 700; color: #374151; margin: 0 0 14px; }
 .related-user { display: flex; align-items: center; gap: 12px; padding: 10px; background: #f8fafc; border-radius: 9px; margin-bottom: 8px; }
-.related-user-avatar { width: 36px; height: 36px; background: #6366f1; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: .85rem; }
+.related-user-avatar { width: 36px; height: 36px; background: #f97316; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: .85rem; }
 .related-user-name { font-weight: 600; font-size: .875rem; }
 .related-user-sub { font-size: .78rem; color: #6b7280; }
 
@@ -112,7 +112,7 @@
                 <span class="detail-value">{{ $securityLog->user->faculty ?? '—' }}</span>
             </div>
             <div style="margin-top:12px;">
-                <a href="{{ route('admin.students.show', $securityLog->user->id) }}" style="color:#6366f1; font-size:.875rem; text-decoration:none; font-weight:600;">
+                <a href="{{ route('admin.students.show', $securityLog->user->id) }}" style="color:#f97316; font-size:.875rem; text-decoration:none; font-weight:600;">
                     → ดูโปรไฟล์นักศึกษา
                 </a>
             </div>
@@ -133,7 +133,7 @@
                 <div class="related-user-name">{{ $ru->full_name }}</div>
                 <div class="related-user-sub">{{ $ru->student_id }} · {{ $ru->faculty ?? '—' }}</div>
             </div>
-            <a href="{{ route('admin.students.show', $ru->id) }}" style="margin-left:auto; color:#6366f1; font-size:.8rem; text-decoration:none;">ดูโปรไฟล์ →</a>
+            <a href="{{ route('admin.students.show', $ru->id) }}" style="margin-left:auto; color:#f97316; font-size:.8rem; text-decoration:none;">ดูโปรไฟล์ →</a>
         </div>
         @endforeach
     </div>

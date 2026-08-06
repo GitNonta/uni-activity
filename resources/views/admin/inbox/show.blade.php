@@ -17,12 +17,12 @@
 
     {{-- Header --}}
     <div class="chat-header-container" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;flex-wrap:wrap;gap:.5rem;">
-        <a href="{{ route('admin.inbox.index') }}" style="color:#6366f1;font-size:.85rem;">← กล่องข้อความ</a>
+        <a href="{{ route('admin.inbox.index') }}" style="color:#f97316;font-size:.85rem;">← กล่องข้อความ</a>
         <div>
             <h2 style="margin:0;font-size:1.05rem;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:.4rem;">
                 {{ $student->full_name }}
                 <span id="adminOnlineDot" style="display:none;width:8px;height:8px;background:#10b981;border-radius:50%;vertical-align:middle;box-shadow:0 0 0 2px #fff;" title="ออนไลน์"></span>
-                <span style="font-size:.85rem;color:#6366f1;font-weight:500;">[{{ $job->title }}]</span>
+                <span style="font-size:.85rem;color:#f97316;font-weight:500;">[{{ $job->title }}]</span>
             </h2>
         </div>
         <button onclick="deleteChat()" style="background:none;border:none;color:#ef4444;cursor:pointer;padding:0.4rem;border-radius:50%;margin-left:auto;display:flex;align-items:center;justify-content:center;" title="ลบแชท">
@@ -38,7 +38,7 @@
                 $label    = $isMine ? 'คุณ' : ($msg->user?->full_name ?? $student->full_name);
                 $photoUrl = $msg->user?->profile_photo ? asset('storage/' . $msg->user->profile_photo) : null;
                 $initial  = mb_strtoupper(mb_substr($label, 0, 1));
-                $avatarBg = $isMine ? '#4f46e5' : '#64748b';
+                $avatarBg = $isMine ? '#ea580c' : '#64748b';
             @endphp
             <div id="cm-{{ $msg->id }}"
                  class="msg-bubble-container"
@@ -63,7 +63,7 @@
                     @php
                         $hasText = !empty($msg->body);
                         $hasOnlyImages = !$hasText && count($msg->attachments ?? []) > 0 && collect($msg->attachments)->every(fn($a) => str_starts_with($a['mime_type'] ?? '', 'image/'));
-                        $bg = $hasOnlyImages ? 'transparent' : ($isMine ? '#4f46e5' : '#fff');
+                        $bg = $hasOnlyImages ? 'transparent' : ($isMine ? '#ea580c' : '#fff');
                         $pad = $hasOnlyImages ? '0' : '.55rem .85rem';
                         $shadow = $hasOnlyImages ? 'none' : '0 1px 3px rgba(0,0,0,.08)';
                     @endphp
@@ -79,7 +79,7 @@
                                      onclick="window.openLightbox('{{ $att['url'] }}')">
                             @else
                                 <a href="{{ $att['url'] }}" target="_blank" download="{{ $att['original_name'] }}"
-                                   style="display:flex;align-items:center;gap:.4rem;margin-top:.35rem;color:{{ $isMine ? '#c7d2fe' : '#4f46e5' }};font-size:.8rem;text-decoration:none;">
+                                   style="display:flex;align-items:center;gap:.4rem;margin-top:.35rem;color:{{ $isMine ? '#fed7aa' : '#ea580c' }};font-size:.8rem;text-decoration:none;">
                                     <svg style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> {{ $att['original_name'] }}
                                 </a>
                             @endif
@@ -108,7 +108,7 @@
     </div>
 
     {{-- Typing indicator bar --}}
-    <div id="adminTypingBar" style="display:none;align-items:center;padding:.4rem .75rem;background:#f8fafc;font-size:.72rem;color:#6366f1;">
+    <div id="adminTypingBar" style="display:none;align-items:center;padding:.4rem .75rem;background:#f8fafc;font-size:.72rem;color:#f97316;">
         <svg style="width:12px;height:12px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
         {{ $student->full_name }} กำลังพิมพ์...
     </div>
@@ -126,7 +126,7 @@
                 style="flex:1;resize:none;border:1px solid #e2e8f0;border-radius:10px;padding:.55rem .8rem;font-size:.875rem;line-height:1.5;outline:none;font-family:inherit;max-height:100px;overflow-y:auto;"
                 onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();document.getElementById('sendBtn').click();}"></textarea>
             <button id="sendBtn" type="submit"
-                style="background:#4f46e5;color:#fff;border:none;border-radius:10px;padding:.55rem 1.1rem;font-size:.875rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+                style="background:#ea580c;color:#fff;border:none;border-radius:10px;padding:.55rem 1.1rem;font-size:.875rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
                 <svg style="width:16px;height:16px;transform:rotate(45deg);margin-left:-2px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
             </button>
         </div>
@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function () {
         preview.style.display = 'flex';
         Array.from(fileInput.files).forEach(f => {
             const chip = document.createElement('span');
-            chip.style.cssText = 'background:#e0e7ff;color:#3730a3;border-radius:6px;padding:.2rem .55rem;font-size:.78rem;';
+            chip.style.cssText = 'background:#ffedd5;color:#9a3412;border-radius:6px;padding:.2rem .55rem;font-size:.78rem;';
             chip.textContent = f.name;
             preview.appendChild(chip);
         });
@@ -193,13 +193,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const dir   = isMine ? 'row-reverse' : 'row';
         const align = isMine ? 'flex-end' : 'flex-start';
-        const bg    = isMine ? '#4f46e5' : '#fff';
+        const bg    = isMine ? '#ea580c' : '#fff';
         const color = isMine ? '#fff'    : '#1e293b';
         const br    = isMine ? '16px 4px 16px 16px' : '4px 16px 16px 16px';
-        const linkC = isMine ? '#c7d2fe' : '#4f46e5';
+        const linkC = isMine ? '#fed7aa' : '#ea580c';
         const label = isMine ? 'คุณ' : (msg.user?.name || '{{ $student->full_name }}');
         const photo = msg.user?.photo || msg.sender_photo || null;
-        const avatarBg = isMine ? '#4f46e5' : '#64748b';
+        const avatarBg = isMine ? '#ea580c' : '#64748b';
         const initial  = label.charAt(0).toUpperCase();
         
         var avatarHtml = '';
@@ -222,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const time = msg.created_at ? new Date(msg.created_at).toLocaleTimeString('th-TH', {hour:'2-digit',minute:'2-digit'}) : '';
         var status = '';
         if (isMine && msg.read_at) {
-            status = '<span id="admin-read-' + msg.id + '" style="font-size:.6rem;color:#6366f1;">✓✓ เห็นเมื่อ ' + new Date(msg.read_at).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}) + '</span>';
+            status = '<span id="admin-read-' + msg.id + '" style="font-size:.6rem;color:#f97316;">✓✓ เห็นเมื่อ ' + new Date(msg.read_at).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}) + '</span>';
         } else if (isMine) {
             status = '<span id="admin-read-' + msg.id + '" style="font-size:.6rem;color:#94a3b8;">✓ ส่งแล้ว</span>';
         }
@@ -287,7 +287,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     window.currentAdminEditId = null;
                     input.value = '';
                     btn.innerHTML = '<svg style="width:16px;height:16px;transform:rotate(45deg);margin-left:-2px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';
-                    btn.style.background = '#4f46e5';
+                    btn.style.background = '#ea580c';
                     var cancelBtn = document.getElementById('adminCancelEditBtn');
                     if (cancelBtn) cancelBtn.remove();
                     
@@ -480,7 +480,7 @@ window.editMessageBtn = function(id) {
             window.currentAdminEditId = null;
             input.value = '';
             btn.innerHTML = '<svg style="width:16px;height:16px;transform:rotate(45deg);margin-left:-2px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';
-            btn.style.background = '#4f46e5';
+            btn.style.background = '#ea580c';
             this.remove();
         };
         btn.parentNode.insertBefore(cancelBtn, btn);

@@ -274,7 +274,7 @@ function placePin(lat, lng) {
 
     var r = parseInt(document.getElementById('checkin_radius').value) || 200;
     if (circle) { circle.setLatLng([lat, lng]).setRadius(r); }
-    else { circle = L.circle([lat, lng], { radius: r, color: '#4f46e5', fillColor: '#818cf8', fillOpacity: 0.15, weight: 2 }).addTo(map); }
+    else { circle = L.circle([lat, lng], { radius: r, color: '#ea580c', fillColor: '#fb923c', fillOpacity: 0.15, weight: 2 }).addTo(map); }
 
     map.setView([lat, lng], Math.max(map.getZoom(), 15));
 }

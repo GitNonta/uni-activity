@@ -8,7 +8,7 @@
         <h1 class="font-bold" style="font-size:1.4rem;">จัดการนักศึกษา</h1>
         <p class="text-sm text-muted">นักศึกษาทั้งหมด <strong>{{ $students->total() }}</strong> คน
             @if(request()->anyFilled(['search','faculty','department','year','program','completion']))
-                <span style="color:#6366f1;font-weight:600;">(กรองแล้ว)</span>
+                <span style="color:#f97316;font-weight:600;">(กรองแล้ว)</span>
             @endif
         </p>
     </div>
@@ -43,7 +43,7 @@
 <div class="flex" style="gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem;">
     @foreach($activeFilters as $filter)
     <a href="{{ request()->fullUrlWithoutQuery([$filter['key']]) }}"
-       style="display:inline-flex;align-items:center;gap:4px;background:#ede9fe;color:#6d28d9;border-radius:999px;padding:4px 12px;font-size:.78rem;font-weight:600;text-decoration:none;">
+       style="display:inline-flex;align-items:center;gap:4px;background:#ffedd5;color:#6d28d9;border-radius:999px;padding:4px 12px;font-size:.78rem;font-weight:600;text-decoration:none;">
         {{ $filter['label'] }}
         <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
     </a>
@@ -132,7 +132,7 @@
                 @php
                     $hrs = (float)($hoursMap[$student->id] ?? 0);
                     $pct = $totalRequired > 0 ? min(100, ($hrs / $totalRequired) * 100) : 0;
-                    $barColor = $hrs >= $totalRequired ? '#16a34a' : ($hrs >= $totalRequired * 0.5 ? '#f59e0b' : '#6366f1');
+                    $barColor = $hrs >= $totalRequired ? '#16a34a' : ($hrs >= $totalRequired * 0.5 ? '#f59e0b' : '#f97316');
                 @endphp
                 <tr>
                     <td>
@@ -148,7 +148,7 @@
                             @endif
                             @if($student->program)
                             <span style="font-size:.7rem;border-radius:4px;padding:1px 6px;
-                                {{ $student->program === 'กศ.บป.' ? 'background:#ede9fe;color:#7c3aed;' : 'background:#dbeafe;color:#1d4ed8;' }}">
+                                {{ $student->program === 'กศ.บป.' ? 'background:#ffedd5;color:#ef4444;' : 'background:#ffedd5;color:#ea580c;' }}">
                                 {{ $student->program }}
                             </span>
                             @endif

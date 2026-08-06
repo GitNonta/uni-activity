@@ -10,7 +10,7 @@
 </div>
 
 <div class="card overflow-hidden">
-    <div style="height:6px;background:{{ $announcement->type==='danger'?'#dc2626':($announcement->type==='warning'?'#d97706':($announcement->type==='success'?'#16a34a':'#3b82f6')) }};"></div>
+    <div style="height:6px;background:{{ $announcement->type==='danger'?'#dc2626':($announcement->type==='warning'?'#d97706':($announcement->type==='success'?'#16a34a':'#ea580c')) }};"></div>
     <div class="card-body p-5">
         <div class="flex flex-wrap items-center gap-2 mb-3">
              <span class="text-xs font-semi {{ $announcement->type==='danger'?'text-red-700':($announcement->type==='warning'?'text-yellow-700':($announcement->type==='success'?'text-green-700':'text-blue-700')) }}">

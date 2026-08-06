@@ -57,9 +57,9 @@
                     </td>
                     <td data-label="กลุ่มเป้าหมาย">
                         @if($item->target_faculty)
-                            <span class="badge badge-purple">{{ $item->target_faculty }}</span>
+                            <span class="badge badge-orange">{{ $item->target_faculty }}</span>
                         @else
-                            <span class="badge badge-blue">ทุกคน</span>
+                            <span class="badge badge-orange">ทุกคน</span>
                         @endif
                     </td>
                     <td data-label="ประเภท">

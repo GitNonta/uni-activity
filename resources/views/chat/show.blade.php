@@ -5,11 +5,11 @@
     :root {
         --chat-bg: #f8fafc;
         --chat-border: #e2e8f0;
-        --chat-primary: #4f46e5;
-        --chat-primary-hover: #4338ca;
+        --chat-primary: #ea580c;
+        --chat-primary-hover: #c2410c;
         --chat-text-main: #1e293b;
         --chat-text-muted: #64748b;
-        --chat-bubble-mine: #4f46e5;
+        --chat-bubble-mine: #ea580c;
         --chat-bubble-theirs: #ffffff;
         --chat-bubble-text-mine: #ffffff;
         --chat-bubble-text-theirs: #1e293b;
@@ -225,7 +225,7 @@
 
     .preview-item {
         padding: 0.35rem 0.75rem;
-        background: #eef2ff;
+        background: #fff7ed;
         border-radius: 20px;
         font-size: 0.75rem;
         color: var(--chat-primary);
@@ -506,7 +506,7 @@ document.addEventListener('DOMContentLoaded', () => {
             statusHtml = `
                 <div style="display:flex;align-items:center;gap:.25rem;margin-top:.35rem;">
                     <span class="message-time">${timeStr}</span>
-                    <span id="status-${msg.id}" style="font-size:.65rem;color:${isTemp ? '#94a3b8' : '#6366f1'};">
+                    <span id="status-${msg.id}" style="font-size:.65rem;color:${isTemp ? '#94a3b8' : '#f97316'};">
                         ${isTemp ? 'กำลังส่ง...' : '✓ ส่งแล้ว'}
                     </span>
                 </div>`;

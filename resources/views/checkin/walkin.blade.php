@@ -21,7 +21,7 @@
             padding: 0.75rem; /* Reduced padding for mobile */
         }
         .walkin-header {
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            background: linear-gradient(135deg, #ea580c, #ef4444);
             color: #fff;
             border-radius: 16px;
             padding: 1.25rem; /* Slightly reduced */
@@ -82,13 +82,13 @@
             background: #f8fafc;
         }
         .walkin-input-row input:focus { 
-            border-color: #4f46e5; 
+            border-color: #ea580c; 
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
             background: #fff;
         }
         .walkin-input-row button {
             padding: 1rem 1.5rem; /* Larger touch target */
-            background: #4f46e5;
+            background: #ea580c;
             color: #fff;
             border: none;
             border-radius: 12px;
@@ -101,7 +101,7 @@
             min-height: 48px; /* Minimum touch target */
         }
         .walkin-input-row button:hover { 
-            background: #4338ca; 
+            background: #c2410c; 
             transform: translateY(-1px);
             box-shadow: 0 4px 8px rgba(79, 70, 229, 0.3);
         }
@@ -130,7 +130,7 @@
             gap: 0.5rem;
         }
         .attendees-count {
-            background: #4f46e5;
+            background: #ea580c;
             color: #fff;
             padding: 4px 14px; /* Larger padding */
             border-radius: 20px;
@@ -200,7 +200,7 @@
             justify-content: center;
             font-size: .8rem; /* Larger */
             font-weight: 700;
-            color: #4f46e5;
+            color: #ea580c;
             margin-right: 1rem; /* More space */
             flex-shrink: 0;
             box-shadow: 0 2px 4px rgba(0,0,0,.1);
@@ -382,7 +382,7 @@
 <div id="feedbackModal" style="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:2000;justify-content:center;align-items:center;animation:fadeIn 0.3s ease;">
     <div style="background:white;padding:0;border-radius:16px;max-width:480px;width:95%;max-height:90vh;overflow-y:auto;animation:slideUp 0.3s ease;">
         <!-- Header -->
-        <div style="background:linear-gradient(135deg, #4f46e5, #7c3aed);color:white;padding:1.5rem;border-radius:16px 16px 0 0;text-align:center;">
+        <div style="background:linear-gradient(135deg, #ea580c, #ef4444);color:white;padding:1.5rem;border-radius:16px 16px 0 0;text-align:center;">
             <div style="width:60px;height:60px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
                 <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:30px;height:30px;">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -423,7 +423,7 @@
                 <label for="feedbackComment" style="display:block;margin-bottom:0.5rem;font-weight:600;color:#374151;">ความคิดเห็นเพิ่มเติม (ไม่บังคับ)</label>
                 <textarea id="feedbackComment" rows="3" placeholder="บอกเราว่าคุณคิดอย่างไรกับกิจกรรมนี้..."
                     style="width:100%;padding:0.75rem;border:2px solid #e5e7eb;border-radius:8px;font-size:0.9rem;font-family:inherit;resize:vertical;outline:none;transition:border-color 0.2s;"
-                    onfocus="this.style.borderColor='#4f46e5'"
+                    onfocus="this.style.borderColor='#ea580c'"
                     onblur="this.style.borderColor='#e5e7eb'"></textarea>
             </div>
 
@@ -432,7 +432,7 @@
                 <button onclick="closeFeedbackModal()" style="flex:1;padding:0.75rem 1rem;border:2px solid #e5e7eb;background:white;color:#6b7280;border-radius:8px;font-weight:600;cursor:pointer;transition:all 0.2s;">
                     ข้าม
                 </button>
-                <button onclick="submitFeedback()" style="flex:1;padding:0.75rem 1rem;background:#4f46e5;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;transition:all 0.2s;">
+                <button onclick="submitFeedback()" style="flex:1;padding:0.75rem 1rem;background:#ea580c;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;transition:all 0.2s;">
                     ส่งประเมิน
                 </button>
             </div>

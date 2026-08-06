@@ -94,7 +94,7 @@
             </div>
             <div class="flex gap-2" style="flex-shrink:0;">
                 @if($att->activity->feedbacks->where('user_id', auth()->id())->count() > 0)
-                    <span class="badge badge-blue flex items-center gap-1" style="padding:.375rem .75rem;font-size:.8rem;">
+                    <span class="badge badge-orange flex items-center gap-1" style="padding:.375rem .75rem;font-size:.8rem;">
                         <svg style="width:14px;height:14px;" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                         ประเมินแล้ว
                     </span>
@@ -136,7 +136,7 @@
                     <span class="badge {{ $sc[$reg->status] ?? 'badge-gray' }}" style="font-size:.72rem; padding:.25rem .6rem; border-radius:999px;">{{ $sl[$reg->status] ?? $reg->status }}</span>
                     
                     @if($att && $att->status === 'approved')
-                        <span class="badge badge-blue flex items-center gap-1" style="font-size:.72rem; padding:.25rem .6rem; border-radius:999px;">
+                        <span class="badge badge-orange flex items-center gap-1" style="font-size:.72rem; padding:.25rem .6rem; border-radius:999px;">
                             <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                             เช็คอินแล้ว
                         </span>
@@ -154,14 +154,14 @@
             <div class="flex gap-1" style="flex-shrink:0;flex-direction:column;align-items:flex-end;">
                 {{-- Checkin --}}
                 @if(!$att && $reg->status === 'approved' && $checkinOpen)
-                <span class="badge badge-blue" style="font-size:.72rem;padding:.3rem .6rem;">สแกน QR หน้างาน</span>
+                <span class="badge badge-orange" style="font-size:.72rem;padding:.3rem .6rem;">สแกน QR หน้างาน</span>
                 @elseif($att && $att->status === 'approved' && !$hasFeedback && $status === 'done')
                 <a href="{{ route('feedback.create', $reg->activity_id) }}" class="btn btn-primary btn-sm flex items-center gap-1" style="font-size:.75rem;">
                     <svg style="width:14px;height:14px;" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                     ประเมิน
                 </a>
                 @elseif($att && $att->status === 'approved' && $hasFeedback)
-                <span class="badge badge-blue" style="font-size:.72rem;padding:.3rem .6rem;">ประเมินแล้ว</span>
+                <span class="badge badge-orange" style="font-size:.72rem;padding:.3rem .6rem;">ประเมินแล้ว</span>
                 @endif
                 {{-- Cancel --}}
                 @if($reg->status === 'approved' && !$att && in_array($status, ['upcoming','open','ongoing']))

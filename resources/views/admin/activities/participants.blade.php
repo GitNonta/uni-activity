@@ -30,7 +30,7 @@
                     <td class="text-muted">{{ $reg->user->faculty }}</td>
                     <td class="text-sm">
                         @if($reg->user->program)
-                            <span class="text-xs {{ $reg->user->program === 'กศ.บป.' ? 'text-purple-600' : 'text-blue-600' }}" style="font-weight:600;">{{ $reg->user->program }}</span>
+                            <span class="text-xs {{ $reg->user->program === 'กศ.บป.' ? 'text-purple-600' : 'text-orange-600' }}" style="font-weight:600;">{{ $reg->user->program }}</span>
                         @else
                             -
                         @endif
@@ -49,7 +49,7 @@
                             // ถ้าลงทะเบียนแล้วและมี attendance approved = สำเร็จ
                             if ($reg->status === 'approved' && $hasApprovedAttendance) {
                                 $displayStatus = 'สำเร็จ';
-                                $badgeClass = 'badge-blue';
+                                $badgeClass = 'badge-orange';
                             } else {
                                 $displayStatus = $statusLabels[$reg->status] ?? $reg->status;
                                 $badgeClass = $sc[$reg->status] ?? 'badge-gray';
@@ -98,7 +98,7 @@
                     <td class="text-muted">{{ $att->user->faculty }}</td>
                     <td class="text-sm">
                         @if($att->user->program)
-                            <span class="text-xs {{ $att->user->program === 'กศ.บป.' ? 'text-purple-600' : 'text-blue-600' }}" style="font-weight:600;">{{ $att->user->program }}</span>
+                            <span class="text-xs {{ $att->user->program === 'กศ.บป.' ? 'text-purple-600' : 'text-orange-600' }}" style="font-weight:600;">{{ $att->user->program }}</span>
                         @else
                             -
                         @endif

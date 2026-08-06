@@ -26,7 +26,7 @@
             <img src="{{ $thread['student_photo'] }}" alt="{{ $thread['student_name'] }}"
                  style="width:42px;height:42px;border-radius:50%;object-fit:cover;flex-shrink:0;">
         @else
-            <div style="width:42px;height:42px;border-radius:50%;background:#4f46e5;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;flex-shrink:0;">
+            <div style="width:42px;height:42px;border-radius:50%;background:#ea580c;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;flex-shrink:0;">
                 {{ strtoupper(mb_substr($thread['student_name'], 0, 1)) }}
             </div>
         @endif
@@ -37,7 +37,7 @@
                 <span style="font-weight:{{ $unread > 0 ? '700' : '600' }};font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;">
                     {{ $thread['student_name'] }}
                 </span>
-                <span style="font-size:.8rem;color:#6366f1;font-weight:500;flex-shrink:0;">
+                <span style="font-size:.8rem;color:#f97316;font-weight:500;flex-shrink:0;">
                     [{{ $thread['job_title'] }}]
                 </span>
             </div>
@@ -52,7 +52,7 @@
                 {{ $time ? $time->diffForHumans() : '' }}
             </span>
             @if($unread > 0)
-            <span style="background:#4f46e5;color:#fff;border-radius:999px;font-size:.7rem;font-weight:700;padding:.1rem .45rem;min-width:20px;text-align:center;">
+            <span style="background:#ea580c;color:#fff;border-radius:999px;font-size:.7rem;font-weight:700;padding:.1rem .45rem;min-width:20px;text-align:center;">
                 {{ $unread }}
             </span>
             @endif

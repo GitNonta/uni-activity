@@ -21,7 +21,7 @@
             overflow: hidden;
         }
         .header {
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            background: linear-gradient(135deg, #ea580c, #ea580c);
             color: white;
             padding: 30px 40px;
             text-align: center;
@@ -46,7 +46,7 @@
         }
         .reset-button {
             display: inline-block;
-            background: #3b82f6;
+            background: #ea580c;
             color: white;
             padding: 12px 30px;
             border-radius: 8px;
@@ -55,7 +55,7 @@
             margin: 20px 0;
         }
         .reset-button:hover {
-            background: #2563eb;
+            background: #c2410c;
         }
         .security-notice {
             background: #fef3c7;

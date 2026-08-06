@@ -10,7 +10,7 @@
     @if($creatorPhoto)
         <img src="{{ $creatorPhoto }}" alt="{{ $creatorName }}" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1.5px solid #e2e8f0; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
     @else
-        <div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #4f46e5, #6366f1); color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem; flex-shrink: 0; box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);">
+        <div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #ea580c, #f97316); color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem; flex-shrink: 0; box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);">
             {{ mb_substr($creatorName, 0, 1, 'UTF-8') }}
         </div>
     @endif

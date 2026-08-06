@@ -87,11 +87,11 @@
     .act-map-btn:hover { background:#bae6fd;transform:scale(1.15); }
     .map-marker-img {
         width:44px;height:44px;border-radius:50%;object-fit:cover;
-        border:3px solid #4f46e5;box-shadow:0 2px 8px rgba(0,0,0,.3);
+        border:3px solid #ea580c;box-shadow:0 2px 8px rgba(0,0,0,.3);
         background:#fff;
     }
     .map-marker-name {
-        background:#4f46e5;color:#fff;padding:3px 8px;border-radius:12px;
+        background:#ea580c;color:#fff;padding:3px 8px;border-radius:12px;
         font-size:.7rem;font-weight:600;white-space:nowrap;
         box-shadow:0 2px 6px rgba(0,0,0,.25);border:2px solid #fff;
         max-width:120px;overflow:hidden;text-overflow:ellipsis;
@@ -102,11 +102,11 @@
     .map-popup-img { width:100%;height:100px;object-fit:cover;border-radius:8px;margin-bottom:8px; }
     .map-popup-title { font-weight:700;font-size:.9rem;margin-bottom:4px; }
     .map-popup-meta { font-size:.8rem;color:#64748b;margin-bottom:2px; }
-    .map-popup-dist { font-size:.8rem;color:#4f46e5;font-weight:600;margin-top:6px; }
-    .map-popup-link { display:inline-block;margin-top:8px;padding:4px 12px;background:#4f46e5;color:#fff;border-radius:6px;text-decoration:none;font-size:.8rem;font-weight:500; }
-    .map-popup-link:hover { background:#4338ca; }
+    .map-popup-dist { font-size:.8rem;color:#ea580c;font-weight:600;margin-top:6px; }
+    .map-popup-link { display:inline-block;margin-top:8px;padding:4px 12px;background:#ea580c;color:#fff;border-radius:6px;text-decoration:none;font-size:.8rem;font-weight:500; }
+    .map-popup-link:hover { background:#c2410c; }
     .map-dist-label {
-        background:rgba(79,70,229,.85);color:#fff;padding:2px 8px;border-radius:10px;
+        background:rgba(234,88,12,.85);color:#fff;padding:2px 8px;border-radius:10px;
         font-size:.7rem;font-weight:600;white-space:nowrap;
         box-shadow:0 1px 4px rgba(0,0,0,.2);
     }
@@ -130,7 +130,7 @@
     .dir-header h3 { font-size:.95rem;font-weight:700;margin:0 0 .5rem; }
     .dir-summary { display:flex;gap:1rem;margin-bottom:.5rem; }
     .dir-summary-item { text-align:center; }
-    .dir-summary-value { font-size:1.1rem;font-weight:700;color:#4f46e5; }
+    .dir-summary-value { font-size:1.1rem;font-weight:700;color:#ea580c; }
     .dir-summary-label { font-size:.7rem;color:#64748b; }
     .dir-steps { list-style:none;padding:0;margin:0; }
     .dir-step { padding:.75rem 1rem;border-bottom:1px solid #f1f5f9;display:flex;gap:.75rem;align-items:flex-start;font-size:.8rem; }
@@ -150,7 +150,7 @@
         width:20px;height:20px;position:relative;
     }
     .nav-me-dot-inner {
-        width:20px;height:20px;background:#3b82f6;border:3px solid #fff;border-radius:50%;
+        width:20px;height:20px;background:#ea580c;border:3px solid #fff;border-radius:50%;
         box-shadow:0 0 0 3px rgba(59,130,246,.35);position:relative;z-index:2;
     }
     .nav-me-dot-pulse {
@@ -161,7 +161,7 @@
     @keyframes navPulse { 0%{transform:scale(.5);opacity:1} 100%{transform:scale(2.5);opacity:0} }
     .nav-heading-arrow {
         position:absolute;top:-14px;left:50%;margin-left:-8px;width:0;height:0;
-        border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:14px solid #3b82f6;
+        border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:14px solid #ea580c;
         filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));z-index:3;transition:transform .3s ease;
     }
     .nav-accuracy-ring {
@@ -186,8 +186,8 @@
     .nav-hud-divider { width:1px;height:32px;background:rgba(255,255,255,.2); }
     .nav-hud-instruction {
         position:absolute;top:100px;left:50%;transform:translateX(-50%);z-index:1000;
-        background:rgba(79,70,229,.95);color:#fff;border-radius:12px;padding:8px 18px;
-        font-size:.85rem;font-weight:600;box-shadow:0 4px 16px rgba(79,70,229,.3);
+        background:rgba(234,88,12,.95);color:#fff;border-radius:12px;padding:8px 18px;
+        font-size:.85rem;font-weight:600;box-shadow:0 4px 16px rgba(234,88,12,.3);
         max-width:90%;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
     }
     .nav-tunnel-badge {
@@ -210,7 +210,7 @@
         box-shadow:0 8px 40px rgba(0,0,0,.3);max-width:320px;
     }
     .nav-arrived h2 { font-size:1.2rem;margin-bottom:.5rem; }
-    .dir-step-active { background:#eff6ff;border-left:3px solid #4f46e5; }
+    .dir-step-active { background:#eff6ff;border-left:3px solid #ea580c; }
 </style>
 <script>
 var geoJobs = {!! json_encode($geoJobs->values()) !!};
@@ -316,7 +316,7 @@ function buildMarkers() {
     geoJobs.forEach(function(j) {
         var isHL = (highlightId && j.id === highlightId);
         
-        var color = j.type === 'parttime' ? '#f97316' : '#3b82f6';
+        var color = j.type === 'parttime' ? '#f97316' : '#ea580c';
         var iconHtml = '<div style="width:32px;height:32px;background:'+color+';border:3px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.3);"><svg width="16" height="16" fill="none" stroke="#fff" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div>';
         
         var icon = L.divIcon({ className: '', html: iconHtml, iconSize: [32, 32], iconAnchor: [16, 16] });
@@ -329,7 +329,7 @@ function buildMarkers() {
             dist = '<div class="map-popup-dist">ระยะตรง: ' + formatDist(d) + '</div>';
 
             var line = L.polyline([[userLat, userLng], [j.lat, j.lng]], {
-                color: isHL ? '#f59e0b' : '#4f46e5', weight: 2, dashArray: '6, 6', opacity: 0.4
+                color: isHL ? '#f59e0b' : '#ea580c', weight: 2, dashArray: '6, 6', opacity: 0.4
             }).addTo(jobMap);
             jobLines.push(line);
 
@@ -348,7 +348,7 @@ function buildMarkers() {
                 + '<a href="' + aUrl + '" target="_blank" class="map-dir-btn map-dir-apple">Apple Maps</a></div>';
         }
         var imgHtml = j.image ? '<img src="' + j.image + '" style="width:100%;height:80px;object-fit:cover;border-radius:8px;margin-bottom:8px;">' : '';
-        var typeLabel = j.type === 'parttime' ? '<span style="background:#fed7aa;color:#c2410c;padding:1px 6px;border-radius:10px;font-size:.7rem;font-weight:600;">Part-time</span>' : '<span style="background:#dbeafe;color:#1d4ed8;padding:1px 6px;border-radius:10px;font-size:.7rem;font-weight:600;">งานทั่วไป</span>';
+        var typeLabel = j.type === 'parttime' ? '<span style="background:#fed7aa;color:#c2410c;padding:1px 6px;border-radius:10px;font-size:.7rem;font-weight:600;">Part-time</span>' : '<span style="background:#ffedd5;color:#ea580c;padding:1px 6px;border-radius:10px;font-size:.7rem;font-weight:600;">งานทั่วไป</span>';
 
         marker.bindPopup(
             imgHtml
@@ -368,7 +368,7 @@ function buildMarkers() {
     });
 
     if (userLat !== null && userLng !== null && !nav.active) {
-        var meIcon = L.divIcon({ className: '', html: '<div style="width:16px;height:16px;background:#3b82f6;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 3px rgba(59,130,246,.35);"></div>', iconSize: [16, 16], iconAnchor: [8, 8] });
+        var meIcon = L.divIcon({ className: '', html: '<div style="width:16px;height:16px;background:#ea580c;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 3px rgba(59,130,246,.35);"></div>', iconSize: [16, 16], iconAnchor: [8, 8] });
         meMarker = L.marker([userLat, userLng], { icon: meIcon, zIndexOffset: 1000 }).addTo(jobMap).bindPopup('<b>ตำแหน่งของคุณ</b>');
         bounds.push([userLat, userLng]);
     }
@@ -492,7 +492,7 @@ function fetchRoute(fromLat, fromLng, toLat, toLng, cb) {
         if (nav.routeLine) jobMap.removeLayer(nav.routeLine);
         if (nav.traveledLine) jobMap.removeLayer(nav.traveledLine);
         nav.routeLine = L.polyline(nav.routeCoords, {
-            color: '#4f46e5', weight: 6, opacity: 0.8
+            color: '#ea580c', weight: 6, opacity: 0.8
         }).addTo(jobMap);
         nav.traveledLine = L.polyline([], {
             color: '#94a3b8', weight: 6, opacity: 0.5

@@ -82,7 +82,7 @@
             @enderror
         </div>
 
-        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem; background: #4f46e5; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s;">
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem; background: #ea580c; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s;">
             ยืนยันรหัส
         </button>
     </form>
@@ -90,7 +90,7 @@
     <div style="text-align: center; margin-top: 2rem;">
         <p style="font-size: 0.8125rem; color: #64748b;">
             ไม่ได้รับรหัส? 
-            <a href="{{ route('admin.password.request') }}" style="color: #4f46e5; text-decoration: none; font-weight: 500;">ส่งใหม่อีกครั้ง</a>
+            <a href="{{ route('admin.password.request') }}" style="color: #ea580c; text-decoration: none; font-weight: 500;">ส่งใหม่อีกครั้ง</a>
         </p>
     </div>
 </div>

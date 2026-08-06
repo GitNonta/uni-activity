@@ -32,7 +32,7 @@
         <div class="card" style="border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background:#fff; border-radius:12px;">
             <div class="card-header" style="background:#fff; border-bottom:1px solid #f1f5f9; padding:1.25rem 1.5rem;">
                 <h3 class="font-semi flex items-center gap-2" style="font-size:1.05rem; color:#1e293b; margin:0;">
-                    <svg style="width:20px; height:20px; color:#4f46e5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg style="width:20px; height:20px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     สร้าง API Key ใหม่
@@ -50,7 +50,7 @@
                         <p class="text-xs text-muted mt-2" style="line-height:1.4;">ระบุชื่อที่ชัดเจนเพื่อให้คุณจดจำได้ว่าคีย์นี้ใช้เชื่อมต่อกับแอปพลิเคชันหรือบริการใด</p>
                     </div>
                     
-                    <button type="submit" class="btn btn-primary" style="background:#4f46e5; color:white; border-radius:8px; font-weight:600; border:none; padding:0.65rem 1rem; width:100%; box-shadow:0 2px 4px rgba(79,70,229,0.15);">
+                    <button type="submit" class="btn btn-primary" style="background:#ea580c; color:white; border-radius:8px; font-weight:600; border:none; padding:0.65rem 1rem; width:100%; box-shadow:0 2px 4px rgba(234,88,12,0.15);">
                         สร้างกุญแจ API Key
                     </button>
                 </form>
@@ -63,7 +63,7 @@
         <div class="card" style="border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background:#fff; border-radius:12px;">
             <div class="card-header" style="background:#fff; border-bottom:1px solid #f1f5f9; padding:1.25rem 1.5rem;">
                 <h3 class="font-semi flex items-center gap-2" style="font-size:1.05rem; color:#1e293b; margin:0;">
-                    <svg style="width:20px; height:20px; color:#4f46e5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg style="width:20px; height:20px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
                     </svg>
                     API Keys ที่ใช้งานอยู่
@@ -99,7 +99,7 @@
                                     <tr style="border-bottom:1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background='transparent'">
                                         <td style="padding:1.1rem 1.5rem;">
                                             <div style="display:flex; align-items:center; gap:10px;">
-                                                <div style="width:8px; height:8px; border-radius:50%; background:#4f46e5;"></div>
+                                                <div style="width:8px; height:8px; border-radius:50%; background:#ea580c;"></div>
                                                 <span style="font-size:0.9rem; font-weight:600; color:#1e293b;">{{ $token->name }}</span>
                                             </div>
                                         </td>

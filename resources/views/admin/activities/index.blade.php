@@ -128,7 +128,7 @@
     50% { opacity: 0.7; transform: scale(1.05); }
     100% { opacity: 1; transform: scale(1); }
 }
-.spinner { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto; }
+.spinner { border: 3px solid #f3f3f3; border-top: 3px solid #ea580c; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 </style>
 @endsection
@@ -155,7 +155,7 @@ function loadPendingRequests(activityId) {
             let html = '<div class="space-y-3">';
             data.items.forEach(item => {
                 const typeLabel = item.type === 'registration' ? 'ขอร่วมกิจกรรม' : 'ขออนุมัติเช็คอิน';
-                const typeColor = item.type === 'registration' ? '#3b82f6' : '#f59e0b';
+                const typeColor = item.type === 'registration' ? '#ea580c' : '#f59e0b';
                 
                 html += `
                     <div style="background:#f8fafc; border-radius:10px; padding:1rem; margin-bottom:0.75rem; border-left:4px solid ${typeColor}">

@@ -62,7 +62,7 @@
                         @endif
                     </td>
                     <td>
-                        <span class="badge badge-blue">{{ $job->applications_count }} คน</span>
+                        <span class="badge badge-orange">{{ $job->applications_count }} คน</span>
                     </td>
                     <td>{{ $job->start_date?->format('d/m/Y') ?? '-' }}</td>
                     <td>

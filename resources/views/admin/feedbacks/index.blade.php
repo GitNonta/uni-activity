@@ -5,7 +5,7 @@
 <div class="flex items-center justify-between mb-6">
     <div>
         <h1 class="font-bold flex items-center gap-3" style="font-size:1.5rem; color:#1e293b;">
-            <svg style="width:28px; height:28px; color:#4f46e5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg style="width:28px; height:28px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
             </svg>
             การประเมินกิจกรรม
@@ -81,7 +81,7 @@
             </div>
             
             <div style="display:flex; gap:6px;">
-                <button type="submit" class="btn btn-primary" style="font-size:.85rem; padding:0.5rem 1.25rem; border-radius:8px; background:#4f46e5; border:none; font-weight:600;">
+                <button type="submit" class="btn btn-primary" style="font-size:.85rem; padding:0.5rem 1.25rem; border-radius:8px; background:#ea580c; border:none; font-weight:600;">
                     กรองข้อมูล
                 </button>
                 <a href="{{ route('admin.feedbacks.index') }}" class="btn btn-outline" style="font-size:.85rem; padding:0.5rem 1rem; border-radius:8px; background:#fff; font-weight:600;">
@@ -110,7 +110,7 @@
                 @forelse($feedbacks as $fb)
                     <tr style="border-bottom:1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background='transparent'">
                         <td style="padding:1.1rem 1.5rem;">
-                            <a href="{{ route('admin.feedbacks.show', $fb->activity_id) }}" class="font-semi" style="color:#4f46e5; text-decoration:none; display:block;">
+                            <a href="{{ route('admin.feedbacks.show', $fb->activity_id) }}" class="font-semi" style="color:#ea580c; text-decoration:none; display:block;">
                                 {{ Str::limit($fb->activity->title, 40) }}
                             </a>
                         </td>

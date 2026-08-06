@@ -2,7 +2,7 @@
 @section('title', 'ประกาศ/ข่าวสาร')
 
 @section('content')
-<div class="hero-card mb-4" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);padding:1.5rem;">
+<div class="hero-card mb-4" style="background:linear-gradient(135deg,#ef4444,#ea580c);padding:1.5rem;">
     <h1 class="font-bold text-white mb-1" style="font-size:1.4rem;">ประกาศ/ข่าวสาร</h1>
     <p class="text-white opacity-75 text-sm">อัปเดตข้อมูลข่าวสารล่าสุดจากแอดมิน</p>
 </div>
@@ -12,7 +12,7 @@
     <a href="{{ route('announcements.show', $item->id) }}" class="card mb-3 block" style="text-decoration:none;">
         <div class="card-body" style="padding:1rem;">
             <div class="flex gap-3">
-                <div style="width:4px;background:{{ $item->type==='danger'?'#dc2626':($item->type==='warning'?'#d97706':($item->type==='success'?'#16a34a':'#3b82f6')) }};border-radius:2px;flex-shrink:0;"></div>
+                <div style="width:4px;background:{{ $item->type==='danger'?'#dc2626':($item->type==='warning'?'#d97706':($item->type==='success'?'#16a34a':'#ea580c')) }};border-radius:2px;flex-shrink:0;"></div>
                 <div style="flex:1;">
                     <div class="flex gap-3">
                         <div style="flex:1;">
@@ -30,7 +30,7 @@
                     </div>
                     <div class="flex items-center gap-2 mt-2">
                         @if($item->target_faculty)
-                            <span class="text-xs font-medium" style="color:#7c3aed;background:#f5f3ff;padding:2px 6px;border-radius:4px;">คณะ{{ $item->target_faculty }}</span>
+                            <span class="text-xs font-medium" style="color:#ef4444;background:#fff5f5;padding:2px 6px;border-radius:4px;">คณะ{{ $item->target_faculty }}</span>
                         @endif
                         <span class="text-xs text-muted">โดย {{ $item->creator->full_name }}</span>
                     </div>

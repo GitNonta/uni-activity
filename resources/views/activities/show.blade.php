@@ -19,7 +19,7 @@
         <div class="flex items-center gap-2 mb-2">
             @include('components.status-badge', ['status' => $activity->computed_status])
             @if($activity->is_mandatory)<span class="badge badge-red">บังคับ</span>@endif
-            @if($activity->category)<span class="badge badge-blue">{{ $activity->category->name }}</span>@endif
+            @if($activity->category)<span class="badge badge-orange">{{ $activity->category->name }}</span>@endif
         </div>
         <h1 class="font-bold" style="font-size:1.25rem;">{{ $activity->title }}</h1>
 

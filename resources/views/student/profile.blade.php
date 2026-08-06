@@ -59,10 +59,10 @@
                                 </svg>
                             </div>
                             <div class="swap-badge-2" title="อัปโหลดรูปโปรไฟล์">
-                                <svg width="15" height="15" fill="none" stroke="#4f46e5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>
+                                <svg width="15" height="15" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>
                             </div>
                         @else
-                            <svg width="15" height="15" fill="none" stroke="#4f46e5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>
+                            <svg width="15" height="15" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>
                         @endif
                     </div>
                 </label>
@@ -74,7 +74,7 @@
                 </form>
                 {{-- Loading overlay for profile picture --}}
                 <div id="photoLoadingOverlay" style="position: absolute; inset: 0; background: rgba(255,255,255,0.8); border-radius: 50%; display: none; align-items: center; justify-content: center; z-index: 10;">
-                    <div style="width:24px;height:24px;border:3px solid #e2e8f0;border-top-color:#4f46e5;border-radius:50%;animation:spin 1s linear infinite;"></div>
+                    <div style="width:24px;height:24px;border:3px solid #e2e8f0;border-top-color:#ea580c;border-radius:50%;animation:spin 1s linear infinite;"></div>
                 </div>
             </div>
             <div style="flex: 1; min-width: 0;">
@@ -90,13 +90,13 @@
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px; margin: 0 0 0.4rem 0;">
                     <p style="color: #64748b; font-size: 0.95rem; font-weight: 600; margin: 0;">{{ $user->english_name ?? '(กำลังประมวลผลชื่อภาษาอังกฤษ...)' }}</p>
-                    <button onclick="editEnglishName('{{ addslashes($user->english_name) }}')" style="background: none; border: none; color: #4f46e5; cursor: pointer; padding: 0; display: flex; align-items: center;" title="แก้ไขชื่อภาษาอังกฤษ">
+                    <button onclick="editEnglishName('{{ addslashes($user->english_name) }}')" style="background: none; border: none; color: #ea580c; cursor: pointer; padding: 0; display: flex; align-items: center;" title="แก้ไขชื่อภาษาอังกฤษ">
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                     </button>
                 </div>
                 <p style="color: #64748b; font-size: 0.9rem; margin: 0 0 0.4rem 0; font-weight: 500;">{{ $user->student_id }}</p>
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <span style="background: #e0e7ff; color: #4338ca; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600;">
+                    <span style="background: #ffedd5; color: #c2410c; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600;">
                         {{ $user->program ?? 'นักศึกษา' }}
                     </span>
                     @if($user->profile_photo)
@@ -113,7 +113,7 @@
         {{-- Stats (Right) --}}
         <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
             <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.75rem 1.25rem; text-align: center; flex: 1; min-width: 100px;">
-                <p style="font-size: 1.5rem; font-weight: 700; color: #4f46e5; line-height: 1; margin: 0;">{{ number_format($totalHours, 1) }}</p>
+                <p style="font-size: 1.5rem; font-weight: 700; color: #ea580c; line-height: 1; margin: 0;">{{ number_format($totalHours, 1) }}</p>
                 <p style="font-size: 0.75rem; color: #64748b; margin-top: 0.35rem; font-weight: 500;">ชั่วโมงรวม</p>
             </div>
             <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.75rem 1.25rem; text-align: center; flex: 1; min-width: 100px;">
@@ -130,7 +130,7 @@
 
 {{-- QR Code Button (Changed to Modal Popup) --}}
 <div style="margin-bottom: 1.5rem;">
-    <button onclick="document.getElementById('idCardModal').style.display='flex'" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 0.875rem; background: #ffffff; color: #4f46e5; border: 1px solid #c7d2fe; border-radius: 10px; font-weight: 600; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: background 0.2s; cursor: pointer;">
+    <button onclick="document.getElementById('idCardModal').style.display='flex'" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 0.875rem; background: #ffffff; color: #ea580c; border: 1px solid #fed7aa; border-radius: 10px; font-weight: 600; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: background 0.2s; cursor: pointer;">
         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
         บัตรประจำตัวนักศึกษา
     </button>
@@ -140,7 +140,7 @@
 <div class="card mb-4" style="background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border: 1px solid #f1f5f9;">
     <div class="card-body" style="padding: 1.5rem;">
         <h2 class="font-bold mb-4" style="font-size: 1.1rem; color: #1e293b; display: flex; align-items: center; gap: 0.5rem;">
-            <svg width="20" height="20" fill="none" stroke="#4f46e5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
+            <svg width="20" height="20" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
             ข้อมูลประวัตินักศึกษา
         </h2>
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.25rem;">
@@ -188,7 +188,7 @@
 <div class="card mb-4" style="background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border: 1px solid #f1f5f9;">
     <div class="card-body" style="padding: 1.5rem;">
         <h2 class="font-bold mb-4" style="font-size: 1.1rem; color: #1e293b; display: flex; align-items: center; gap: 0.5rem;">
-            <svg width="20" height="20" fill="none" stroke="#4f46e5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            <svg width="20" height="20" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
             ความคืบหน้าตามหมวดหมู่
         </h2>
         
@@ -206,7 +206,7 @@
                     </span>
                 </div>
                 <div style="height: 8px; background: #f1f5f9; border-radius: 999px; overflow: hidden; position: relative;">
-                    <div style="position: absolute; top: 0; left: 0; height: 100%; width: {{ $p }}%; background: {{ $isCompleted ? '#10b981' : '#4f46e5' }}; border-radius: 999px; transition: width 0.5s ease;"></div>
+                    <div style="position: absolute; top: 0; left: 0; height: 100%; width: {{ $p }}%; background: {{ $isCompleted ? '#10b981' : '#ea580c' }}; border-radius: 999px; transition: width 0.5s ease;"></div>
                 </div>
                 @if(!$isCompleted && $cat['required'] > 0)
                 <p class="text-xs" style="color: #94a3b8; margin-top: 0.3rem; text-align: right;">ขาดอีก {{ number_format($cat['required'] - $cat['hours'], 1) }} ชม.</p>
@@ -222,10 +222,10 @@
     <div class="card-body" style="padding: 1.5rem;">
         <div class="flex items-center justify-between mb-4">
             <h2 class="font-bold" style="font-size: 1.1rem; color: #1e293b; display: flex; align-items: center; gap: 0.5rem;">
-                <svg width="20" height="20" fill="none" stroke="#4f46e5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <svg width="20" height="20" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 ประวัติกิจกรรมล่าสุด
             </h2>
-            <a href="{{ route('student.history') }}" class="text-sm" style="color: #4f46e5; font-weight: 600; text-decoration: none;">ดูทั้งหมด →</a>
+            <a href="{{ route('student.history') }}" class="text-sm" style="color: #ea580c; font-weight: 600; text-decoration: none;">ดูทั้งหมด →</a>
         </div>
         
         <div style="display: flex; flex-direction: column; gap: 0.75rem;">
@@ -389,7 +389,7 @@
                     @if($user->profile_photo)
                         <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="profile" style="width: 125px; height: 160px; object-fit: cover; border-radius: 2px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                     @else
-                        <div style="width: 125px; height: 160px; background: #3b82f6; display: inline-flex; align-items: center; justify-content: center; border-radius: 2px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); color: #fff; margin: 0 auto;">
+                        <div style="width: 125px; height: 160px; background: #ea580c; display: inline-flex; align-items: center; justify-content: center; border-radius: 2px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); color: #fff; margin: 0 auto;">
                             <svg width="50" height="50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                         </div>
                     @endif

@@ -131,7 +131,7 @@
         .detection-point { position: absolute; width: 4px; height: 4px; background: #00ff88; border-radius: 50%; animation: pointPulse 1.5s ease-in-out infinite; }
         @keyframes pointPulse { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 1; transform: scale(1.5); } }
         
-        .scanning-ring { border-color: #4f46e5 !important; }
+        .scanning-ring { border-color: #ea580c !important; }
         .scanning-ring .corner { border-color: #00ff88 !important; animation: cornerPulse 1s ease-in-out infinite; }
         @keyframes cornerPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
         
@@ -1344,7 +1344,7 @@
         el.style.display = 'block';
         if (type === 'error') el.style.background = 'rgba(239,68,68,0.9)';
         else if (type === 'success') el.style.background = 'rgba(16,185,129,0.9)';
-        else el.style.background = 'rgba(79,70,229,0.9)';
+        else el.style.background = 'rgba(234,88,12,0.9)';
     }
 
     // ===== 5. ส่งฟอร์มพร้อม GPS =====

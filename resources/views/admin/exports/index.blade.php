@@ -16,7 +16,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
                 รายชื่อนักศึกษา
-                <span id="field-count-badge" style="background:#6366f1;color:#fff;border-radius:999px;padding:2px 10px;font-size:.75rem;margin-left:8px;font-weight:600;">11 fields</span>
+                <span id="field-count-badge" style="background:#f97316;color:#fff;border-radius:999px;padding:2px 10px;font-size:.75rem;margin-left:8px;font-weight:600;">11 fields</span>
             </h3>
         </div>
         <div class="card-body">
@@ -86,10 +86,10 @@
                         @endphp
                         @foreach($availableFields as $key => $label)
                         <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;padding:.4rem .6rem;border-radius:8px;transition:background .15s;"
-                               onmouseover="this.style.background='#ede9fe'" onmouseout="this.style.background='transparent'">
+                               onmouseover="this.style.background='#ffedd5'" onmouseout="this.style.background='transparent'">
                             <input type="checkbox" name="fields[]" value="{{ $key }}" checked
                                    class="field-checkbox"
-                                   style="width:16px;height:16px;accent-color:#6366f1;cursor:pointer;"
+                                   style="width:16px;height:16px;accent-color:#f97316;cursor:pointer;"
                                    onchange="updateFieldCount()">
                             <span style="font-size:.85rem;color:#374151;">{{ $label }}</span>
                         </label>

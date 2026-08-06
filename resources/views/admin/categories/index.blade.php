@@ -12,7 +12,7 @@
 </div>
 
 {{-- Card: เกณฑ์ชั่วโมงรวมทั้งระบบ (แก้ไขได้) --}}
-<div class="card mb-4" style="border-left:4px solid {{ $isOverridden ? '#16a34a' : '#3b82f6' }};">
+<div class="card mb-4" style="border-left:4px solid {{ $isOverridden ? '#16a34a' : '#ea580c' }};">
     <div class="card-body">
         <div class="flex items-center justify-between" style="flex-wrap:wrap;gap:.75rem;">
             <div>
@@ -170,7 +170,7 @@
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label" style="font-weight:600;color:#1e40af;">เกณฑ์ชั่วโมง <span style="color:#dc2626;">*</span></label>
-                    <input type="number" name="required_hours" id="editHours" class="form-control" step="0.5" min="0" required style="border-color:#3b82f6;font-size:1.1rem;">
+                    <input type="number" name="required_hours" id="editHours" class="form-control" step="0.5" min="0" required style="border-color:#ea580c;font-size:1.1rem;">
                     <p class="text-xs text-muted" style="margin-top:.25rem;">ชั่วโมงขั้นต่ำที่นักศึกษาต้องสะสม</p>
                 </div>
                 <div class="form-group">

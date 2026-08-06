@@ -10,7 +10,7 @@
             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             สร้างนักศึกษา
         </a>
-        <a href="{{ route('admin.users.create', ['type' => 'staff']) }}" class="btn btn-sm" style="background:#7c3aed;color:#fff;">
+        <a href="{{ route('admin.users.create', ['type' => 'staff']) }}" class="btn btn-sm" style="background:#ef4444;color:#fff;">
             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             สร้างเจ้าหน้าที่
         </a>
@@ -29,7 +29,7 @@
     </div>
     <div class="card" style="padding:.875rem 1rem;text-align:center;">
         <div class="text-xs text-muted">เจ้าหน้าที่</div>
-        <div class="font-bold" style="font-size:1.5rem;color:#7c3aed;">{{ $counts['staff'] }}</div>
+        <div class="font-bold" style="font-size:1.5rem;color:#ef4444;">{{ $counts['staff'] }}</div>
     </div>
 </div>
 
@@ -87,9 +87,9 @@
                     </td>
                     <td data-label="บทบาท">
                         @if($user->role === 'staff')
-                            <span class="badge badge-purple">เจ้าหน้าที่</span>
+                            <span class="badge badge-orange">เจ้าหน้าที่</span>
                         @else
-                            <span class="badge badge-blue">นักศึกษา</span>
+                            <span class="badge badge-orange">นักศึกษา</span>
                         @endif
                     </td>
                     <td data-label="อีเมล / รหัส">

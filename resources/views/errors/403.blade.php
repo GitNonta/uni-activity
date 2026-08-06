@@ -23,7 +23,7 @@
     <div class="max-w-md w-full text-center">
         <!-- Shield SVG Illustration -->
         <div class="mb-8 flex justify-center">
-            <div class="glow-shield bg-indigo-50 text-indigo-600 rounded-full p-6 inline-flex items-center justify-center border border-indigo-100/50">
+            <div class="glow-shield bg-indigo-50 text-orange-600 rounded-full p-6 inline-flex items-center justify-center border border-indigo-100/50">
                 <svg class="w-20 h-20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"></path>
                 </svg>
@@ -31,7 +31,7 @@
         </div>
 
         <!-- Error Code -->
-        <div class="text-xs uppercase tracking-widest font-bold text-indigo-600 mb-2 font-mono">
+        <div class="text-xs uppercase tracking-widest font-bold text-orange-600 mb-2 font-mono">
             Error Code: 403 Forbidden
         </div>
         
@@ -45,7 +45,7 @@
 
         <!-- Actions Buttons -->
         <div class="flex flex-col sm:flex-row gap-3 justify-center mb-8">
-            <a href="/" class="inline-flex items-center justify-center px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-lg transition-colors shadow-sm gap-2">
+            <a href="/" class="inline-flex items-center justify-center px-5 py-2.5 bg-orange-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-lg transition-colors shadow-sm gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"></path>
                 </svg>

@@ -6,7 +6,7 @@
 <div class="container-sm" style="padding-top:2rem;">
     <div class="card">
         <div class="card-body text-center">
-            <svg class="icon-xl" style="margin:0 auto 1rem;color:#4f46e5;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <svg class="icon-xl" style="margin:0 auto 1rem;color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             @if(isset($isCheckoutToken) && $isCheckoutToken)
                 <h1 class="font-bold" style="font-size:1.25rem;">บันทึกเวลาออกงาน</h1>
             @else

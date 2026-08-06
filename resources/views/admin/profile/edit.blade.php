@@ -21,12 +21,12 @@
                             <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="profile"
                                 style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 4px solid #fff; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
                         @else
-                            <div style="display:inline-flex; align-items:center; justify-content:center; width:90px; height:90px; border-radius:50%; background:#e0e7ff; color:#4f46e5; font-size:2rem; font-weight:700; border:4px solid #fff; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                            <div style="display:inline-flex; align-items:center; justify-content:center; width:90px; height:90px; border-radius:50%; background:#ffedd5; color:#ea580c; font-size:2rem; font-weight:700; border:4px solid #fff; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
                                 {{ strtoupper(substr($user->full_name ?? 'A', 0, 1)) }}
                             </div>
                         @endif
                         <div style="position: absolute; bottom: 0; right: 0; width: 26px; height: 26px; background: #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.15); border: 1px solid #e2e8f0;">
-                            <svg width="14" height="14" fill="none" stroke="#4f46e5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>
+                            <svg width="14" height="14" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>
                         </div>
                     </label>
                     <form id="photoForm" method="POST" action="{{ route('profile.photo.upload') }}" enctype="multipart/form-data" style="display:none;">
@@ -48,7 +48,7 @@
 
                 <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:0.25rem;">
                     <h2 class="font-bold" style="font-size:1.25rem; color:#1e293b; margin:0;">{{ $user->full_name }}</h2>
-                    <a href="{{ route('admin.settings.index', ['tab' => 'privacy']) }}" title="แก้ไขข้อมูลโปรไฟล์ & ตั้งค่าความเป็นส่วนตัว" style="display:inline-flex; align-items:center; justify-content:center; color:#6366f1; background:transparent; padding:0; border:none; text-decoration:none; transition:color 0.2s, transform 0.2s;" onmouseover="this.style.color='#4338ca'; this.style.transform='scale(1.15)';" onmouseout="this.style.color='#6366f1'; this.style.transform='scale(1)';">
+                    <a href="{{ route('admin.settings.index', ['tab' => 'privacy']) }}" title="แก้ไขข้อมูลโปรไฟล์ & ตั้งค่าความเป็นส่วนตัว" style="display:inline-flex; align-items:center; justify-content:center; color:#f97316; background:transparent; padding:0; border:none; text-decoration:none; transition:color 0.2s, transform 0.2s;" onmouseover="this.style.color='#c2410c'; this.style.transform='scale(1.15)';" onmouseout="this.style.color='#f97316'; this.style.transform='scale(1)';">
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                     </a>
                 </div>
@@ -60,8 +60,8 @@
                         ผู้ดูแลระบบ (Admin)
                     </span>
                 @else
-                    <span style="display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:999px; font-size:0.75rem; font-weight:600; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe;">
-                        <span style="display:block; width:6px; height:6px; border-radius:50%; background:#3b82f6;"></span>
+                    <span style="display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:999px; font-size:0.75rem; font-weight:600; background:#eff6ff; color:#ea580c; border:1px solid #bfdbfe;">
+                        <span style="display:block; width:6px; height:6px; border-radius:50%; background:#ea580c;"></span>
                         เจ้าหน้าที่ (Staff)
                     </span>
                 @endif

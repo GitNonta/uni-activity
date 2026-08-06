@@ -18,7 +18,7 @@
     .nav-hud-label { font-size: 0.6rem; opacity: 0.7; text-transform: uppercase; }
     .nav-hud-divider { width: 1px; height: 28px; background: rgba(255,255,255,0.2); }
     .nav-me-dot {
-        position: relative; width: 18px; height: 18px; background: #3b82f6; border: 3px solid #fff;
+        position: relative; width: 18px; height: 18px; background: #ea580c; border: 3px solid #fff;
         border-radius: 50%; box-shadow: 0 0 10px rgba(59,130,246,0.5); z-index: 10;
     }
     .nav-me-dot-pulse {
@@ -33,8 +33,8 @@
     }
     .nav-hud-instruction {
         position: absolute; top: 76px; left: 50%; transform: translateX(-50%); z-index: 1000;
-        background: rgba(79,70,229,0.95); color: #fff; border-radius: 12px; padding: 6px 14px;
-        font-size: 0.85rem; font-weight: 600; box-shadow: 0 4px 16px rgba(79,70,229,0.3);
+        background: rgba(234,88,12,0.95); color: #fff; border-radius: 12px; padding: 6px 14px;
+        font-size: 0.85rem; font-weight: 600; box-shadow: 0 4px 16px rgba(234,88,12,0.3);
         max-width: 90%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: none;
     }
     .nav-tunnel-badge {
@@ -51,7 +51,7 @@
     .dir-header { padding: 1rem; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-weight: 700; }
     .dir-steps { list-style: none; padding: 0; margin: 0; max-height: 250px; overflow-y: auto; }
     .dir-step { padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9; display: flex; gap: 0.75rem; font-size: 0.8rem; }
-    .dir-step-active { background: #eff6ff; border-left: 3px solid #4f46e5; }
+    .dir-step-active { background: #eff6ff; border-left: 3px solid #ea580c; }
     .dir-step-icon { width: 28px; height: 28px; background: #e0f2fe; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .dir-step-text { flex: 1; line-height: 1.4; }
     .dir-step-dist { color: #64748b; font-size: 0.75rem; margin-top: 2px; }
@@ -64,7 +64,7 @@
     @if($job->image_path)
         <img src="{{ Storage::url($job->image_path) }}" alt="{{ $job->title }}" class="activity-hero-image" style="background:#f1f5f9; cursor:zoom-in;" onclick="openImageModal(this.src || this.dataset.src)">
     @else
-        <div class="act-card-img" style="background:linear-gradient(135deg,{{ $job->job_type === 'parttime' ? '#f97316,#fb923c' : '#3b82f6,#60a5fa' }});height:120px;">
+        <div class="act-card-img" style="background:linear-gradient(135deg,{{ $job->job_type === 'parttime' ? '#f97316,#fb923c' : '#ea580c,#60a5fa' }});height:120px;">
             <svg class="icon-xl" style="color:rgba(255,255,255,.3);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
         </div>
     @endif
@@ -100,7 +100,7 @@
         {{-- ข้อมูลงาน --}}
         <div class="grid-2" style="font-size:.875rem;">
             <div class="flex items-start gap-2">
-                <div class="bg-blue-50 p-2 rounded-lg" style="background:#eff6ff;color:#2563eb;">
+                <div class="bg-blue-50 p-2 rounded-lg" style="background:#eff6ff;color:#c2410c;">
                     <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                 </div>
                 <div>
@@ -109,7 +109,7 @@
                 </div>
             </div>
             <div class="flex items-start gap-2">
-                <div class="bg-blue-50 p-2 rounded-lg" style="background:#eff6ff;color:#2563eb;">
+                <div class="bg-blue-50 p-2 rounded-lg" style="background:#eff6ff;color:#c2410c;">
                     <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                 </div>
                 <div>
@@ -119,7 +119,7 @@
             </div>
             @if($job->work_period)
             <div class="flex items-start gap-2">
-                <div class="bg-blue-50 p-2 rounded-lg" style="background:#eff6ff;color:#2563eb;">
+                <div class="bg-blue-50 p-2 rounded-lg" style="background:#eff6ff;color:#c2410c;">
                     <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
                 <div>
@@ -130,7 +130,7 @@
             @endif
             @if($job->compensation)
             <div class="flex items-start gap-2">
-                <div class="bg-blue-50 p-2 rounded-lg" style="background:#eff6ff;color:#2563eb;">
+                <div class="bg-blue-50 p-2 rounded-lg" style="background:#eff6ff;color:#c2410c;">
                     <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
                 <div>
@@ -140,7 +140,7 @@
             </div>
             @endif
             <div class="flex items-start gap-2">
-                <div class="bg-blue-50 p-2 rounded-lg" style="background:#eff6ff;color:#2563eb;">
+                <div class="bg-blue-50 p-2 rounded-lg" style="background:#eff6ff;color:#c2410c;">
                     <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 </div>
                 <div>
@@ -149,7 +149,7 @@
                 </div>
             </div>
             <div class="flex items-start gap-2">
-                <div class="bg-blue-50 p-2 rounded-lg" style="background:#eff6ff;color:#2563eb;">
+                <div class="bg-blue-50 p-2 rounded-lg" style="background:#eff6ff;color:#c2410c;">
                     <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                 </div>
                 <div>
@@ -159,7 +159,7 @@
             </div>
             @if($job->dresscode)
             <div class="flex items-start gap-2">
-                <div class="bg-blue-50 p-2 rounded-lg" style="background:#eff6ff;color:#2563eb;">
+                <div class="bg-blue-50 p-2 rounded-lg" style="background:#eff6ff;color:#c2410c;">
                     <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                 </div>
                 <div>
@@ -169,7 +169,7 @@
             </div>
             @endif
             <div class="flex items-start gap-2">
-                <div class="bg-blue-50 p-2 rounded-lg" style="background:#eff6ff;color:#2563eb;">
+                <div class="bg-blue-50 p-2 rounded-lg" style="background:#eff6ff;color:#c2410c;">
                     <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                 </div>
                 <div>
@@ -282,7 +282,7 @@
     <div style="background:#fff;border-radius:16px;width:100%;max-width:480px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden;">
 
         {{-- Header --}}
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.1rem;background:#4f46e5;color:#fff;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.1rem;background:#ea580c;color:#fff;">
             <div>
                 <p style="margin:0;font-weight:700;font-size:.95rem;display:flex;align-items:center;gap:4px;">
                     <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
@@ -298,7 +298,7 @@
 
         {{-- Input --}}
         <div style="border-top:1px solid #e2e8f0;padding:.65rem .85rem;background:#fff;">
-            <div id="popupTypingLabel" style="display:none;align-items:center;font-size:.72rem;color:#6366f1;margin-bottom:.3rem;">
+            <div id="popupTypingLabel" style="display:none;align-items:center;font-size:.72rem;color:#f97316;margin-bottom:.3rem;">
                 <svg style="width:12px;height:12px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                 ผู้ดูแลกำลังพิมพ์...
             </div>
@@ -311,7 +311,7 @@
                         <input type="file" id="popupFileInput" name="attachments[]" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.zip,.txt" style="display:none;">
                     </label>
                     <textarea id="popupMsgInput" name="message" rows="1" placeholder="พิมพ์คำถามหรือข้อความ..." style="flex:1;resize:none;border:1px solid #e2e8f0;border-radius:8px;padding:.5rem .7rem;font-size:.875rem;line-height:1.4;outline:none;font-family:inherit;max-height:100px;overflow-y:auto;"></textarea>
-                    <button type="submit" id="popupSendBtn" style="padding:.48rem 1rem;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-size:.875rem;cursor:pointer;font-weight:500;flex-shrink:0;">ส่ง</button>
+                    <button type="submit" id="popupSendBtn" style="padding:.48rem 1rem;background:#ea580c;color:#fff;border:none;border-radius:8px;font-size:.875rem;cursor:pointer;font-weight:500;flex-shrink:0;">ส่ง</button>
                 </div>
             </form>
         </div>
@@ -341,7 +341,7 @@
             <div class="flex items-center gap-2 mb-1">
                 <span class="font-semi text-sm">{{ $comment->user->full_name ?? 'ผู้ใช้' }}</span>
                 @if($comment->user->isStaffOrAdmin())
-                    <span class="badge badge-purple" style="font-size:.6rem;">ผู้ดูแล</span>
+                    <span class="badge badge-orange" style="font-size:.6rem;">ผู้ดูแล</span>
                 @endif
                 <span class="text-xs text-muted">{{ $comment->created_at->diffForHumans() }}</span>
                 @if(auth()->check() && auth()->id() === $comment->user_id)
@@ -359,7 +359,7 @@
                 <div class="flex items-center gap-2 mb-1">
                     <span class="font-semi text-sm">{{ $reply->user->full_name ?? 'ผู้ใช้' }}</span>
                     @if($reply->user->isStaffOrAdmin())
-                        <span class="badge badge-purple" style="font-size:.6rem;">ผู้ดูแล</span>
+                        <span class="badge badge-orange" style="font-size:.6rem;">ผู้ดูแล</span>
                     @endif
                     <span class="text-xs text-muted">{{ $reply->created_at->diffForHumans() }}</span>
                 </div>
@@ -478,7 +478,7 @@
         attachPrev.style.display = 'flex';
         Array.from(fileInput.files).forEach(function(f) {
             var chip = document.createElement('span');
-            chip.style.cssText = 'padding:.2rem .5rem;background:#e0e7ff;border-radius:20px;font-size:.72rem;color:#4f46e5;';
+            chip.style.cssText = 'padding:.2rem .5rem;background:#ffedd5;border-radius:20px;font-size:.72rem;color:#ea580c;';
             chip.textContent = f.name.length > 22 ? f.name.slice(0, 22) + '...' : f.name;
             attachPrev.appendChild(chip);
         });
@@ -508,7 +508,7 @@
             avatar.style.cssText = 'width:26px;height:26px;border-radius:50%;object-fit:cover;';
         } else {
             avatar.textContent = label.charAt(0).toUpperCase();
-            avatar.style.cssText = 'width:26px;height:26px;border-radius:50%;background:' + (isMine ? '#4f46e5' : '#64748b') + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;';
+            avatar.style.cssText = 'width:26px;height:26px;border-radius:50%;background:' + (isMine ? '#ea580c' : '#64748b') + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;';
         }
         avatarWrap.appendChild(avatar);
         wrap.appendChild(avatarWrap);
@@ -524,7 +524,7 @@
         var bubble = document.createElement('div');
         bubble.style.cssText = 'padding:.5rem .8rem;border-radius:' +
             (isMine ? '14px 4px 14px 14px' : '4px 14px 14px 14px') +
-            ';background:' + (isMine ? '#4f46e5' : '#fff') +
+            ';background:' + (isMine ? '#ea580c' : '#fff') +
             ';color:' + (isMine ? '#fff' : '#1e293b') +
             ';font-size:.85rem;box-shadow:0 1px 3px rgba(0,0,0,.08);word-break:break-word;';
 
@@ -546,7 +546,7 @@
                 } else {
                     var a = document.createElement('a');
                     a.href = att.url; a.target = '_blank'; a.download = att.original_name;
-                    a.style.cssText = 'display:flex;align-items:center;gap:.35rem;margin-top:.3rem;color:' + (isMine ? '#c7d2fe' : '#4f46e5') + ';font-size:.78rem;text-decoration:none;';
+                    a.style.cssText = 'display:flex;align-items:center;gap:.35rem;margin-top:.3rem;color:' + (isMine ? '#fed7aa' : '#ea580c') + ';font-size:.78rem;text-decoration:none;';
                     a.innerHTML = '<svg style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> ' + att.original_name;
                     bubble.appendChild(a);
                 }
@@ -556,7 +556,7 @@
 
         if (isMine && msg.read_at) {
             var st = document.createElement('span');
-            st.style.cssText = 'font-size:.6rem;color:#6366f1;margin-top:.08rem;';
+            st.style.cssText = 'font-size:.6rem;color:#f97316;margin-top:.08rem;';
             var dt = new Date(msg.read_at);
             st.textContent = '✓✓ เห็นเมื่อ ' + dt.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
             col.appendChild(st);

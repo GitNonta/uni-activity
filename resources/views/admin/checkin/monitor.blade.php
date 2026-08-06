@@ -24,7 +24,7 @@
 
         {{-- QR Check-out URL สำหรับให้นักศึกษาสแกน --}}
         <div class="card mb-4">
-            <div class="card-header" style="background:#e0e7ff;color:#3730a3;">QR สำหรับ "ออกงาน (รับชั่วโมง)"</div>
+            <div class="card-header" style="background:#ffedd5;color:#9a3412;">QR สำหรับ "ออกงาน (รับชั่วโมง)"</div>
             <div class="card-body text-center">
                 <code class="text-sm" style="word-break:break-all;">{{ url('/check-in/' . $activity->qr_checkout_token) }}</code>
                 <p class="text-xs text-muted mt-2">แสดง QR Code เพื่อบันทึกออกงานและรับชั่วโมง (QR ที่ 2)</p>
