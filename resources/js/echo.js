@@ -7,25 +7,39 @@ import axios from 'axios';
 window.axios = axios;
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
-// Dynamically determine WebSocket host, port, and TLS mode based on current URL
-const isHttps = window.location.protocol === 'https:';
-const host = window.location.hostname;
-const isIp = /^(\d{1,3}\.){3}\d{1,3}$/.test(host) || host === 'localhost';
+// ─────────────────────────────────────────────────────────────────────────────
+// Reverb WebSocket Config
+//
+// กลยุทธ์:
+//   1. ถ้าเข้าผ่าน local IP (192.168.x.x) หรือ localhost → connect ตรงไปที่
+//      VITE_REVERB_HOST:VITE_REVERB_PORT (ไม่ใช้ TLS)
+//   2. ถ้าเข้าผ่าน domain/tunnel (HTTPS) → connect ไปที่ wsHost เดิม
+//      แต่ใช้ REVERB_HOST จาก env เป็น wsHost จริง (ไม่ใช้ tunnel hostname)
+//      เพราะ Cloudflare Tunnel ไม่ proxy WebSocket ตรงๆ
+// ─────────────────────────────────────────────────────────────────────────────
 
-// For domain names over HTTPS (e.g. Cloudflare Tunnel), use WSS on port 443
-// For local IP / localhost or plain HTTP, use plain WS on port 8080
-const forceTLS = isHttps && !isIp;
-const wsPort = forceTLS ? 443 : (parseInt(import.meta.env.VITE_REVERB_PORT) || 8080);
+const currentHost = window.location.hostname;
+const isLocalAccess = /^(192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.|localhost|127\.)/.test(currentHost);
 
-console.log('🔌 Dynamic Reverb Config:', { host, wsPort, isHttps, isIp, forceTLS });
+// ใช้ REVERB_HOST จาก env เสมอ (ชี้ที่ server จริง 192.168.1.222)
+const reverbHost = import.meta.env.VITE_REVERB_HOST || currentHost;
+const reverbPort = parseInt(import.meta.env.VITE_REVERB_PORT) || 8080;
+const reverbScheme = import.meta.env.VITE_REVERB_SCHEME || 'http';
+
+const forceTLS = reverbScheme === 'https';
+const wsPort   = reverbPort;
+
+console.log('🔌 Reverb Config:', {
+    reverbHost, wsPort, forceTLS, isLocalAccess,
+    currentHost, scheme: reverbScheme,
+});
 
 window.Echo = new Echo({
     broadcaster: 'reverb',
     key: import.meta.env.VITE_REVERB_APP_KEY || 'uni-chat-key',
-    wsHost: host,
+    wsHost: reverbHost,
     wsPort: wsPort,
     wssPort: wsPort,
     forceTLS: forceTLS,
     enabledTransports: ['ws', 'wss'],
 });
-

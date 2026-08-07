@@ -342,8 +342,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (window.Echo) {
             window.Echo.private('chat.room.' + '{{ $room->id }}')
                 .listen('.MessageSent', function (msg) {
-
-                    if (msg.user.id == myId) return;
+                    if (msg.user && msg.user.id == myId) return;
                     const noMsg = document.getElementById('noMsg');
                     if (noMsg) noMsg.remove();
                     if (!document.getElementById('cm-' + msg.id)) {
@@ -352,6 +351,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                     // Auto mark-read
                     window.axios.post(readUrl);
+                })
+                .listen('.MessageDeleted', function (e) {
+                    const el = document.getElementById('cm-' + e.id);
+                    if (el) el.remove();
+                })
+                .listen('.MessageEdited', function (e) {
+                    const bodyEl = document.getElementById('msg-body-' + e.id);
+                    if (bodyEl) {
+                        bodyEl.innerHTML = '<p style="margin:0;">' + e.message.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</p><span style="font-size:0.6rem;opacity:0.7;margin-left:5px;">(แก้ไขแล้ว)</span>';
+                    }
                 })
                 .listenForWhisper('typing', function(e) {
                     if (e.userId == myId) return;
@@ -366,43 +375,10 @@ document.addEventListener('DOMContentLoaded', function () {
             // Typing emit
             input.addEventListener('input', function() {
                 window.Echo.private('chat.room.' + '{{ $room->id }}')
-                    .whisper('typing', {
-                        userId: myId,
-                        name: 'ผู้ดูแล'
-                    });
+                    .whisper('typing', { userId: myId, name: 'ผู้ดูแล' });
             });
-            
-            // Presence
-            window.Echo.join('online')
-                .here((users) => {
-                    const isOnline = users.some(u => u.id == studentId);
-                    toggleStudentOnline(isOnline);
-                })
-                .joining((user) => {
-                    if (user.id == studentId) toggleStudentOnline(true);
-                })
-                .leaving((user) => {
-                    if (user.id == studentId) toggleStudentOnline(false);
-                });
-        } else {
-            setTimeout(initEcho, 200);
-        }
-    };
-    initEcho();
 
-            // Delete and Edit Listeners
-            window.Echo.private('chat.room.' + '{{ $room->id }}')
-                .listen('.MessageDeleted', function (e) {
-                    const el = document.getElementById('cm-' + e.id);
-                    if (el) el.remove();
-                })
-                .listen('.MessageEdited', function (e) {
-                    const bodyEl = document.getElementById('msg-body-' + e.id);
-                    if (bodyEl) {
-                        bodyEl.innerHTML = '<p style="margin:0;">' + e.message.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</p><span style="font-size:0.6rem;opacity:0.7;margin-left:5px;">(แก้ไขแล้ว)</span>';
-                    }
-                });
-            
+            // Admin inbox channel (chat deleted notification)
             window.Echo.private('admin.inbox')
                 .listen('.ChatDeleted', function (e) {
                     if (e.room_id === '{{ $room->id }}') {
@@ -414,10 +390,27 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 });
 
-    function toggleStudentOnline(isOnline) {
-        const headerDot = document.getElementById('adminOnlineDot');
-        if (headerDot) headerDot.style.display = isOnline ? 'inline-block' : 'none';
+            // Presence channel — student online status
+            window.Echo.join('online')
+                .here((users) => {
+                    const isOnline = users.some(u => u.id == studentId);
+                    toggleStudentOnline(isOnline);
+                })
+                .joining((user) => {
+                    if (user.id == studentId) toggleStudentOnline(true);
+                })
+                .leaving((user) => {
+                    if (user.id == studentId) toggleStudentOnline(false);
+                });
+
+        } else {
+            setTimeout(initEcho, 200);
+        }
+    };
+    initEcho();
+
     // Backup polling (every 4 seconds) to guarantee 100% real-time delivery
+    // NOTE: อยู่นอก initEcho() เพื่อให้ทำงานแม้ Echo ยังไม่ได้เชื่อมต่อ
     setInterval(function() {
         fetch(window.location.href, { headers: { 'Accept': 'text/html', 'X-Requested-With': 'XMLHttpRequest' } })
             .then(r => r.text())
@@ -441,6 +434,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }).catch(() => {});
     }, 4000);
+
+    function toggleStudentOnline(isOnline) {
+        const headerDot = document.getElementById('adminOnlineDot');
+        if (headerDot) headerDot.style.display = isOnline ? 'inline-block' : 'none';
+        document.querySelectorAll('.student-online-dot').forEach(dot => {
+            dot.style.display = isOnline ? 'inline-block' : 'none';
+        });
+    }
 
 });
 
