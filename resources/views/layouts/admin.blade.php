@@ -263,8 +263,17 @@
     .admin-mobile-header { display: flex; align-items: center; justify-content: space-between; background: #111827; color: #fff; padding: 0 1.25rem; height: 64px; }
     .sb-topbar { display: none; }
 }
-@media (min-width: 769px) { .admin-mobile-header { display: none !important; } }
-</style>
+    @if(request('widget'))
+    <style>
+        html, body { background: #fff !important; overflow: hidden !important; height: 100vh !important; margin: 0 !important; padding: 0 !important; }
+        .sb-sidebar, .sb-topbar, .admin-mobile-header, .admin-bottom-nav, .sb-footer, .chat-header-container { display: none !important; }
+        .sb-content { margin-left: 0 !important; padding-top: 0 !important; height: 100vh !important; width: 100% !important; }
+        .sb-main { padding: 0 !important; height: 100vh !important; max-width: 100% !important; display: flex !important; flex-direction: column !important; margin: 0 !important; }
+        @media (prefers-color-scheme: dark) {
+            html, body { background: #202124 !important; }
+        }
+    </style>
+    @endif
 </head>
 <body>
 

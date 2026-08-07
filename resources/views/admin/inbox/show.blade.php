@@ -5,13 +5,16 @@
 @section('content')
     @if(request('widget'))
     <style>
-        .sb-sidebar, .sb-topbar, .admin-mobile-header { display: none !important; }
-        .sb-content { margin-left: 0 !important; padding-top: 0 !important; }
-        .sb-main { padding: 0 !important; height: 100vh; display: flex; flex-direction: column; }
-        .chat-header-container { display: none !important; }
-        #chatWindow { flex: 1; height: 0 !important; border: none !important; border-radius: 0 !important; margin: 0 !important; }
-        body { background: #fff !important; overflow: hidden; }
-        form#chatForm { padding: 0.75rem; background: #fff; border-top: 1px solid #e2e8f0; }
+        html, body { background: #fff !important; overflow: hidden !important; height: 100vh !important; margin: 0 !important; padding: 0 !important; }
+        .sb-sidebar, .sb-topbar, .admin-mobile-header, .admin-bottom-nav, .sb-footer, .chat-header-container { display: none !important; }
+        .sb-content { margin-left: 0 !important; padding-top: 0 !important; height: 100vh !important; width: 100% !important; }
+        .sb-main { padding: 0 !important; height: 100vh !important; max-width: 100% !important; display: flex !important; flex-direction: column !important; margin: 0 !important; }
+        #chatWindow { flex: 1 !important; height: 0 !important; border: none !important; border-radius: 0 !important; margin: 0 !important; }
+        form#chatForm { padding: 0.6rem 0.75rem; background: #fff; border-top: 1px solid #e2e8f0; flex-shrink: 0; }
+        @media (prefers-color-scheme: dark) {
+            html, body, form#chatForm { background: #202124 !important; border-top-color: #36383a !important; }
+            #chatWindow { background: #202124 !important; }
+        }
     </style>
     @endif
 
