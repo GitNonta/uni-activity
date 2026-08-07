@@ -61,7 +61,7 @@ class AdminInboxController extends Controller
                 'student_id'   => $student?->id,
                 'job_title'    => $room->job_id ? ($room->job?->title ?? "งาน #{$room->job_id}") : 'ติดต่อสอบถามเจ้าหน้าที่',
                 'student_name'  => $student?->full_name ?? 'นักศึกษา',
-                'student_photo' => $student?->profile_photo ? asset('storage/' . $student->profile_photo) : null,
+                'student_photo' => $student?->profile_photo ? '/storage/' . $student->profile_photo : null,
                 'last_message' => $lastMsg?->body ?? '',
                 'last_time'    => $lastMsg?->created_at,
                 'unread'       => $room->messages()
@@ -329,7 +329,7 @@ class AdminInboxController extends Controller
                 'id'    => $msg->user_id,
                 'name'  => $user?->full_name ?? 'ผู้ดูแล',
                 'role'  => $user?->role ?? 'system',
-                'photo' => $user?->profile_photo ? asset('storage/' . $user->profile_photo) : null,
+                'photo' => $user?->profile_photo ? '/storage/' . $user->profile_photo : null,
             ],
             'attachments' => $msg->attachments ?? [],
             'created_at'  => $msg->created_at?->toISOString(),

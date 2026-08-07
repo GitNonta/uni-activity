@@ -80,7 +80,7 @@ class MessageSent implements ShouldBroadcastNow
                 'id'    => $this->message->user_id,
                 'name'  => $user?->full_name ?? 'ผู้ใช้',
                 'role'  => $user?->role ?? 'system',
-                'photo' => $user?->profile_photo ? asset('storage/' . $user->profile_photo) : null,
+                'photo' => $user?->profile_photo ? '/storage/' . $user->profile_photo : null,
             ],
             'attachments' => $this->message->attachments ?? [],
             'created_at'  => $this->message->created_at?->toISOString(),
