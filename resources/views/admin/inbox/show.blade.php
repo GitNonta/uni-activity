@@ -414,10 +414,30 @@ document.addEventListener('DOMContentLoaded', function () {
     function toggleStudentOnline(isOnline) {
         const headerDot = document.getElementById('adminOnlineDot');
         if (headerDot) headerDot.style.display = isOnline ? 'inline-block' : 'none';
-        document.querySelectorAll('.student-online-dot').forEach(el => {
-            el.style.display = isOnline ? 'inline-block' : 'none';
-        });
-    }
+    // Backup polling (every 4 seconds) to guarantee 100% real-time delivery
+    setInterval(function() {
+        fetch(window.location.href, { headers: { 'Accept': 'text/html', 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(r => r.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newWin = doc.getElementById('chatWindow');
+                if (newWin) {
+                    const newBubbles = newWin.querySelectorAll('.msg-bubble-container');
+                    let added = false;
+                    newBubbles.forEach(b => {
+                        if (b.id && !document.getElementById(b.id)) {
+                            win.insertAdjacentHTML('beforeend', b.outerHTML);
+                            added = true;
+                        }
+                    });
+                    if (added) {
+                        win.scrollTop = win.scrollHeight;
+                        window.axios.post(readUrl).catch(() => {});
+                    }
+                }
+            }).catch(() => {});
+    }, 4000);
 
 });
 

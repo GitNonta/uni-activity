@@ -516,6 +516,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
     })();
+
+    // Periodic backup poll (every 5s) to keep admin badge & inbox list 100% updated in real-time
+    setInterval(function() {
+        refreshAdminBadge();
+        if (window.refreshInboxList) {
+            window.refreshInboxList();
+        }
+    }, 5000);
 });
 </script>
 <style>
