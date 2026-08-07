@@ -205,12 +205,92 @@
     @auth
     @if(!in_array(auth()->user()->role ?? 'student', ['admin','staff']))
     {{-- ── Floating Chat Widget ── --}}
+    {{-- ── Floating Chat Widget Styles ── --}}
     <style>
     .chat-list-item { background: #fff; transition: background .15s; }
     .chat-list-item:hover { background: #f8fafc; }
     .chat-list-item.unread { background: #FF9933; color: #000; } /* Requested #FF9933 orange background */
     .chat-list-item.unread:hover { background: #e68a2e; }
     .chat-list-item.unread .chat-title, .chat-list-item.unread .chat-preview { color: #000 !important; }
+
+    /* Custom scrollbars for chat */
+    #cfChatWindow::-webkit-scrollbar,
+    #cfViewList::-webkit-scrollbar,
+    #cfMsgInput::-webkit-scrollbar {
+        width: 5px;
+    }
+    #cfChatWindow::-webkit-scrollbar-track,
+    #cfViewList::-webkit-scrollbar-track,
+    #cfMsgInput::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    #cfChatWindow::-webkit-scrollbar-thumb,
+    #cfViewList::-webkit-scrollbar-thumb,
+    #cfMsgInput::-webkit-scrollbar-thumb {
+        background: rgba(148, 163, 184, 0.4);
+        border-radius: 4px;
+    }
+    #cfChatWindow::-webkit-scrollbar-thumb:hover,
+    #cfViewList::-webkit-scrollbar-thumb:hover {
+        background: rgba(148, 163, 184, 0.7);
+    }
+
+    /* Input & Bottom Bar Elements */
+    .cf-chat-input-area {
+        border-top: 1px solid #e2e8f0;
+        padding: .5rem .75rem;
+        background: #fff;
+        flex-shrink: 0;
+    }
+    .cf-input-field {
+        flex: 1;
+        resize: none;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: .45rem .65rem;
+        font-size: .85rem;
+        line-height: 1.4;
+        outline: none;
+        font-family: inherit;
+        max-height: 80px;
+        overflow-y: auto;
+        background: #fff;
+        color: #1e293b;
+    }
+    .cf-attach-label {
+        cursor: pointer;
+        padding: .45rem .65rem;
+        background: #f1f5f9;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-size: .9rem;
+        line-height: 1;
+        flex-shrink: 0;
+        color: #475569;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        .cf-chat-input-area {
+            background: #202124 !important;
+            border-top-color: #36383a !important;
+        }
+        .cf-input-field {
+            background: #36383a !important;
+            border-color: #5f6368 !important;
+            color: #f1f5f9 !important;
+        }
+        .cf-attach-label {
+            background: #36383a !important;
+            border-color: #5f6368 !important;
+            color: #e8eaed !important;
+        }
+        #cfChatWindow, #cfTypingBar {
+            background: #202124 !important;
+        }
+    }
     </style>
     
     <div id="chatFloatWidget" style="position:fixed;bottom:5.5rem;right:1.1rem;z-index:8500;display:flex;flex-direction:column;align-items:flex-end;gap:.5rem;">
@@ -231,15 +311,15 @@
                     <svg style="width:12px;height:12px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                     ผู้ดูแลกำลังพิมพ์...
                 </div>
-                <div style="border-top:1px solid #e2e8f0;padding:.5rem .75rem;background:#fff;flex-shrink:0;">
+                <div class="cf-chat-input-area">
                     <div id="cfAttachPreview" style="display:none;gap:.3rem;flex-wrap:wrap;margin-bottom:.3rem;"></div>
                     <form id="cfChatForm" enctype="multipart/form-data" style="display:flex;gap:.35rem;align-items:flex-end;">
                         @csrf
-                        <label style="cursor:pointer;padding:.4rem .5rem;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;font-size:.9rem;line-height:1;flex-shrink:0;" title="แนบไฟล์">
+                        <label class="cf-attach-label" title="แนบไฟล์">
                             <svg style="width:16px;height:16px;display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg><input type="file" id="cfFileInput" name="attachments[]" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.zip,.txt" style="display:none;">
                         </label>
-                        <textarea id="cfMsgInput" name="message" rows="1" placeholder="พิมพ์ข้อความ..." style="flex:1;resize:none;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .6rem;font-size:.82rem;line-height:1.4;outline:none;font-family:inherit;max-height:80px;overflow-y:auto;"></textarea>
-                        <button type="submit" id="cfSendBtn" style="padding:.4rem .85rem;background:#ea580c;color:#fff;border:none;border-radius:8px;font-size:.82rem;cursor:pointer;font-weight:500;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+                        <textarea id="cfMsgInput" class="cf-input-field" name="message" rows="1" placeholder="พิมพ์ข้อความ..."></textarea>
+                        <button type="submit" id="cfSendBtn" style="padding:.45rem .85rem;background:#ea580c;color:#fff;border:none;border-radius:8px;font-size:.82rem;cursor:pointer;font-weight:500;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
                             <svg style="width:16px;height:16px;transform:rotate(45deg);margin-left:-2px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                         </button>
                     </form>
@@ -445,12 +525,13 @@
             if (hasOnlyImages) {
                 bubble.style.cssText = 'border-radius:' + (mine?'14px 4px 14px 14px':'4px 14px 14px 14px') + ';background:transparent;padding:0;box-shadow:none;display:flex;flex-direction:column;gap:4px;';
             } else {
-                bubble.style.cssText = 'padding:.45rem .75rem;border-radius:' + (mine?'14px 4px 14px 14px':'4px 14px 14px 14px') + ';background:' + (mine?'#ea580c':'#fff') + ';color:' + (mine?'#fff':'#1e293b') + ';font-size:.82rem;box-shadow:0 1px 2px rgba(0,0,0,.08);word-break:break-word;white-space:pre-wrap;';
+                if (!mine) bubble.className = 'cf-msg-bubble-other';
+                bubble.style.cssText = 'padding:.45rem .75rem;border-radius:' + (mine?'14px 4px 14px 14px':'4px 14px 14px 14px') + ';background:' + (mine?'#ea580c':'#fff') + ';color:' + (mine?'#ffffff':'#1e293b') + ';font-size:.82rem;line-height:1.45;box-shadow:0 1px 2px rgba(0,0,0,.08);word-break:break-word;white-space:pre-wrap;';
             }
             
             if (msg.message) {
                 var p = document.createElement('p');
-                p.style.margin = '0';
+                p.style.cssText = 'margin:0;padding:0;line-height:1.45;color:inherit;font-size:inherit;font-family:inherit;';
                 p.textContent = msg.message;
                 bubble.appendChild(p);
             }

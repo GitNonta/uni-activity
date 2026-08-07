@@ -624,4 +624,5 @@ nav[role="navigation"] span[aria-current="page"] span { background: #ea580c; col
     .chat-list-item.unread { background: #FF9933 !important; color: #000 !important; } /* User requested #FF9933 with black text */
     .chat-list-item.unread:hover { background: #e68a2e !important; }
     .chat-list-item.unread .chat-title, .chat-list-item.unread .chat-preview { color: #000 !important; }
+    .cf-msg-bubble-other { background: #36383a !important; color: #f1f5f9 !important; border: 1px solid #4a4d50 !important; }
 }
