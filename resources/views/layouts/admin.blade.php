@@ -263,6 +263,8 @@
     .admin-mobile-header { display: flex; align-items: center; justify-content: space-between; background: #111827; color: #fff; padding: 0 1.25rem; height: 64px; }
     .sb-topbar { display: none; }
 }
+</style>
+
     @if(request('widget'))
     <style>
         html, body { background: #fff !important; overflow: hidden !important; height: 100vh !important; margin: 0 !important; padding: 0 !important; }
