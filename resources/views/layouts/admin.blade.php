@@ -98,14 +98,14 @@
 }
 
 .sb-link:hover { 
-    background: rgba(234, 88, 12, 0.1); 
-    color: #fdba74; 
+    background: rgba(234, 88, 12, 0.25); 
+    color: #f97316; 
 }
 
 .sb-link.active { 
-    background: rgba(234, 88, 12, 0.15);
-    color: #f97316; 
-    box-shadow: inset 0 0 0 1px rgba(234, 88, 12, 0.3);
+    background: #ea580c;
+    color: #ffffff; 
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);
 }
 
 .sb-link svg { 
