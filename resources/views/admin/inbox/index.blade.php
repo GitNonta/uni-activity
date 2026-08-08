@@ -18,6 +18,8 @@
 .inbox-thread-item.unread:hover { background: #e68a2e !important; }
 .inbox-thread-item.unread .inbox-unread-text { color: #000 !important; }
 .inbox-thread-item.unread p { color: #000 !important; }
+.inbox-thread-item.unread .inbox-job-title { color: #431407 !important; font-weight: 600 !important; }
+.inbox-thread-item.unread .inbox-time { color: #431407 !important; font-weight: 500 !important; }
 
 @media (prefers-color-scheme: dark) {
     .inbox-thread-item { border-bottom-color: #36383a !important; }
@@ -53,7 +55,7 @@
                 <span class="{{ $unread > 0 ? 'inbox-unread-text' : '' }}" style="font-weight:{{ $unread > 0 ? '700' : '600' }};font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;">
                     {{ $thread['student_name'] }}
                 </span>
-                <span style="font-size:.8rem;color:#f97316;font-weight:500;flex-shrink:0;">
+                <span class="inbox-job-title" style="font-size:.8rem;color:#f97316;font-weight:500;flex-shrink:0;">
                     [{{ $thread['job_title'] }}]
                 </span>
             </div>
@@ -64,7 +66,7 @@
 
         {{-- Time + Unread --}}
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.3rem;flex-shrink:0;">
-            <span style="font-size:.72rem;color:#94a3b8;">
+            <span class="inbox-time" style="font-size:.72rem;color:#94a3b8;">
                 {{ $time ? $time->diffForHumans() : '' }}
             </span>
             @if($unread > 0)
