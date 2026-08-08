@@ -117,20 +117,7 @@
         flex-direction: row-reverse;
     }
 
-    .message-avatar {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        object-fit: cover;
-        flex-shrink: 0;
-        background: #94a3b8;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 0.75rem;
-        font-weight: 600;
-    }
+    /* message-avatar removed */
 
     .message-content {
         display: flex;
@@ -350,13 +337,6 @@
             @endif
 
             <div id="cm-{{ $msg->id }}" class="message-wrapper {{ $isMine ? 'message-mine' : 'message-theirs' }}">
-                <div class="message-avatar">
-                    @if($msg->user?->profile_photo)
-                        <img src="{{ asset('storage/' . $msg->user->profile_photo) }}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
-                    @else
-                        {{ mb_strtoupper(mb_substr($senderLabel, 0, 1)) }}
-                    @endif
-                </div>
                 <div class="message-content">
                     <div class="message-info">{{ $senderLabel }}</div>
                     <div class="message-bubble">
@@ -476,10 +456,6 @@ document.addEventListener('DOMContentLoaded', () => {
         wrapper.id = 'cm-' + msg.id;
         wrapper.className = `message-wrapper ${isMine ? 'message-mine' : 'message-theirs'}`;
 
-        let avatarHtml = photo 
-            ? `<img src="${photo}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
-            : label.charAt(0).toUpperCase();
-
         let attachmentsHtml = '';
         (msg.attachments || []).forEach(att => {
             const isImg = att.mime_type?.startsWith('image/');
@@ -513,7 +489,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         wrapper.innerHTML = `
-            <div class="message-avatar">${avatarHtml}</div>
             <div class="message-content">
                 <div class="message-info">${label}</div>
                 <div class="message-bubble">

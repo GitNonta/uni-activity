@@ -48,18 +48,7 @@
                  style="display:flex;flex-direction:{{ $isMine ? 'row-reverse' : 'row' }};align-items:flex-end;gap:.4rem;position:relative;"
                  onmouseover="const a=this.querySelector('.msg-actions');if(a)a.style.display='flex'"
                  onmouseout="const a=this.querySelector('.msg-actions');if(a)a.style.display='none'">
-                {{-- Avatar with online dot --}}
-                <div style="position:relative;flex-shrink:0;">
-                    @if($photoUrl)
-                        <img src="{{ $photoUrl }}" alt="{{ $label }}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;">
-                    @else
-                        <div style="width:28px;height:28px;border-radius:50%;background:{{ $avatarBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;">{{ $initial }}</div>
-                    @endif
-                    {{-- Online dot for student --}}
-                    @if(!$isMine)
-                        <span id="avatar-dot-{{ $msg->id }}" class="student-online-dot" style="display:none;position:absolute;bottom:0;right:0;width:10px;height:10px;background:#10b981;border-radius:50%;border:2px solid #f8fafc;"></span>
-                    @endif
-                </div>
+                {{-- Avatar removed --}}
                 {{-- Bubble column --}}
                 <div style="display:flex;flex-direction:column;align-items:{{ $isMine ? 'flex-end' : 'flex-start' }};max-width:72%;">
                     <span style="font-size:.68rem;color:#94a3b8;margin-bottom:.15rem;">{{ $label }}</span>
@@ -205,12 +194,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const avatarBg = isMine ? '#ea580c' : '#64748b';
         const initial  = label.charAt(0).toUpperCase();
         
-        var avatarHtml = '';
-        if (photo) {
-            avatarHtml = '<div style="position:relative;flex-shrink:0;"><img src="' + photo + '" alt="' + label + '" style="width:28px;height:28px;border-radius:50%;object-fit:cover;">' + (!isMine ? '<span id="avatar-dot-' + msg.id + '" class="student-online-dot" style="display:none;position:absolute;bottom:0;right:0;width:10px;height:10px;background:#10b981;border-radius:50%;border:2px solid #f8fafc;"></span>' : '') + '</div>';
-        } else {
-            avatarHtml = '<div style="position:relative;flex-shrink:0;"><div style="width:28px;height:28px;border-radius:50%;background:' + avatarBg + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;">' + initial + '</div>' + (!isMine ? '<span id="avatar-dot-' + msg.id + '" class="student-online-dot" style="display:none;position:absolute;bottom:0;right:0;width:10px;height:10px;background:#10b981;border-radius:50%;border:2px solid #f8fafc;"></span>' : '') + '</div>';
-        }
+        var avatarHtml = ''; // Avatar removed
 
         var hasOnlyImages = !msg.message && msg.attachments && msg.attachments.length > 0 && msg.attachments.every(a => (a.mime_type || '').startsWith('image/'));
         var attHtml = '';
