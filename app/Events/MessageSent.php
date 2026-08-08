@@ -36,12 +36,11 @@ class MessageSent implements ShouldBroadcastNow
         $sender = $this->message->user;
 
         if ($room && $sender) {
-            if ($sender->isAdmin() || $sender->isStaff()) {
-                // Admin/Staff ส่ง → แจ้งเตือนนักศึกษาผ่าน personal channel
-                $student = $room->users()->where('users.role', 'student')->first();
-                if ($student) {
-                    $channels[] = new PrivateChannel('chat.student.' . $student->id);
-                }
+            // แจ้งเตือนนักศึกษาทุกคนในห้องผ่าน personal channel
+            // (เพื่อให้หน้าต่าง Message List View ของนักศึกษาอัพเดตแบบ real-time เสมอ แม้จะเป็นคนส่งเองในแท็บอื่น)
+            $students = $room->users()->where('users.role', 'student')->get();
+            foreach ($students as $student) {
+                $channels[] = new PrivateChannel('chat.student.' . $student->id);
             }
             // ทุก message ใน direct room → แจ้งเตือน admin inbox list ด้วย
             // เพื่อให้หน้า inbox index และ sidebar badge อัพเดต real-time
