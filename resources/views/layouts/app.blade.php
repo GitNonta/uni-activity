@@ -273,6 +273,8 @@
     }
 
     @media (prefers-color-scheme: dark) {
+        .chat-list-item.unread { background: #ea580c; color: #fff; }
+        .chat-list-item.unread .chat-title, .chat-list-item.unread .chat-preview { color: #fff !important; }
         .cf-chat-input-area {
             background: #202124 !important;
             border-top-color: #36383a !important;
