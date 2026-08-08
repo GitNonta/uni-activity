@@ -14,16 +14,16 @@
 <style>
 .inbox-thread-item { transition: background .15s, border-color .15s; }
 .inbox-thread-item:hover { background: #f8fafc; }
-.inbox-thread-item.unread { background: #faf5ff; }
-.inbox-thread-item.unread:hover { background: #f3e8ff; }
+.inbox-thread-item.unread { background: #FF9933 !important; color: #000 !important; }
+.inbox-thread-item.unread:hover { background: #e68a2e !important; }
+.inbox-thread-item.unread .inbox-unread-text { color: #000 !important; }
+.inbox-thread-item.unread p { color: #000 !important; }
 
 @media (prefers-color-scheme: dark) {
     .inbox-thread-item { border-bottom-color: #36383a !important; }
     .inbox-thread-item:hover { background: #334155 !important; }
-    .inbox-unread-text { color: #ffffff !important; }
     .inbox-read-text { color: #cbd5e1 !important; }
-    .inbox-thread-item.unread { background: #ea580c !important; }
-    .inbox-thread-item.unread:hover { background: #c2410c !important; }
+    /* Unread keeps #FF9933 and black text in dark mode too, for visibility */
 }
 </style>
 
