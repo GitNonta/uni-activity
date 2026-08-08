@@ -98,14 +98,14 @@
 }
 
 .sb-link:hover { 
-    background: rgba(255,255,255,0.05); 
-    color: #f3f4f6; 
+    background: rgba(234, 88, 12, 0.1); 
+    color: #fdba74; 
 }
 
 .sb-link.active { 
-    background: linear-gradient(135deg, rgba(249,115,22,0.15) 0%, rgba(139,92,246,0.15) 100%);
-    color: #a5b4fc; 
-    box-shadow: inset 0 0 0 1px rgba(249,115,22,0.2);
+    background: rgba(234, 88, 12, 0.15);
+    color: #f97316; 
+    box-shadow: inset 0 0 0 1px rgba(234, 88, 12, 0.3);
 }
 
 .sb-link svg { 
