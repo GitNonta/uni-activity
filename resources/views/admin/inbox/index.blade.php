@@ -12,10 +12,18 @@
 </div>
 
 <style>
+.inbox-thread-item { transition: background .15s, border-color .15s; }
+.inbox-thread-item:hover { background: #f8fafc; }
+.inbox-thread-item.unread { background: #faf5ff; }
+.inbox-thread-item.unread:hover { background: #f3e8ff; }
+
 @media (prefers-color-scheme: dark) {
+    .inbox-thread-item { border-bottom-color: #36383a !important; }
+    .inbox-thread-item:hover { background: #334155 !important; }
     .inbox-unread-text { color: #ffffff !important; }
     .inbox-read-text { color: #cbd5e1 !important; }
     .inbox-thread-item.unread { background: #ea580c !important; }
+    .inbox-thread-item.unread:hover { background: #c2410c !important; }
 }
 </style>
 
@@ -27,8 +35,7 @@
     @endphp
     <a href="javascript:void(0)" onclick="if(window.AdminChatManager) window.AdminChatManager.openChat('{{ route('admin.inbox.show', [$thread['job_id'], $thread['student_id']]) }}', '{{ addslashes($thread['student_name']) }}', '{{ $thread['job_id'] }}_{{ $thread['student_id'] }}'); else window.location.href='{{ route('admin.inbox.show', [$thread['job_id'], $thread['student_id']]) }}';"
        class="inbox-thread-item {{ $unread > 0 ? 'unread' : '' }}"
-       style="display:flex;align-items:center;gap:1rem;padding:.9rem 1.25rem;border-bottom:1px solid #f1f5f9;text-decoration:none;color:inherit;transition:background .15s;{{ $unread > 0 ? 'background:#faf5ff;' : '' }}"
-       onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='{{ $unread > 0 ? '#faf5ff' : '' }}'">
+       style="display:flex;align-items:center;gap:1rem;padding:.9rem 1.25rem;border-bottom:1px solid #f1f5f9;text-decoration:none;color:inherit;">
 
         {{-- Avatar --}}
         @if(!empty($thread['student_photo']))
