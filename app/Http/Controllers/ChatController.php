@@ -225,11 +225,16 @@ class ChatController extends Controller
                 ->where('created_at', '>', $me->pivot->last_read_at ?? '1970-01-01')
                 ->count();
 
+            $otherUser = $room->users->where('id', '!=', $userId)->first();
+            $avatarUrl = null;
+            if ($otherUser && $otherUser->profile_photo) {
+                $avatarUrl = '/storage/' . $otherUser->profile_photo;
+            }
+
             if ($room->job_id) {
                 $jobId = $room->job_id;
                 $jobTitle = $job?->title ?? "งาน #{$room->job_id}";
             } else {
-                $otherUser = $room->users->where('id', '!=', $userId)->first();
                 if ($otherUser && $otherUser->id != $defaultAdminId) {
                     $jobId = -$otherUser->id;
                     $jobTitle = $otherUser->full_name;
@@ -242,6 +247,7 @@ class ChatController extends Controller
             return [
                 'job_id'           => $jobId,
                 'job_title'        => $jobTitle,
+                'avatar'           => $avatarUrl,
                 'last_message'     => $lastMsg?->body ?? '',
                 'last_sender_role' => $lastMsg?->user_id === $userId ? 'self' : 'other',
                 'last_time'        => $lastMsg?->created_at?->toISOString(),

@@ -428,9 +428,17 @@
                 var isUnread = (t.unread || 0) > 0;
                 var preview = t.last_message ? (t.last_message.length > 32 ? t.last_message.slice(0,32)+'…' : t.last_message) : '<svg style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> ไฟล์แนบ';
                 var safeTitle = (t.job_title || 'งานกิจกรรม').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                
+                var avatarHtml = '';
+                if (t.avatar) {
+                    avatarHtml = '<img src="' + t.avatar + '" style="width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;">';
+                } else {
+                    avatarHtml = '<div style="width:34px;height:34px;border-radius:50%;background:#ea580c;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0;">' + safeTitle.charAt(0).toUpperCase() + '</div>';
+                }
+
                 return '<div onclick="showChatView(' + t.job_id + ',\'' + safeTitle + '\')" '
                     + 'style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;border-bottom:1px solid #f1f5f9;cursor:pointer;" class="chat-list-item ' + (isUnread ? 'unread' : '') + '">'
-                    + '<div style="width:34px;height:34px;border-radius:50%;background:#ea580c;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0;">' + safeTitle.charAt(0).toUpperCase() + '</div>'
+                    + avatarHtml
                     + '<div style="flex:1;min-width:0;">'
                     + '<div class="chat-title" style="font-size:.82rem;font-weight:' + (isUnread?'700':'500') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#1e293b;">' + safeTitle + '</div>'
                     + '<div class="chat-preview" style="font-size:.7rem;color:' + (isUnread?'#1e293b':'#64748b') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + preview + '</div>'
