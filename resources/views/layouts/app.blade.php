@@ -525,6 +525,22 @@
             row.id = 'cf-msg-' + msg.id;
             row.style.cssText = 'display:flex;flex-direction:' + (mine?'row-reverse':'row') + ';align-items:flex-end;gap:.3rem;margin-bottom:.2rem;position:relative;';
             
+            if (!mine) {
+                var avatarDiv = document.createElement('div');
+                avatarDiv.style.cssText = 'width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#94a3b8;color:#fff;font-size:0.65rem;font-weight:700;overflow:hidden;';
+                var photo = msg.user && msg.user.photo ? msg.user.photo : null;
+                var label = msg.user && msg.user.name ? msg.user.name : 'ผู้ดูแล';
+                if (photo) {
+                    var img = document.createElement('img');
+                    img.src = photo;
+                    img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+                    avatarDiv.appendChild(img);
+                } else {
+                    avatarDiv.textContent = label.charAt(0).toUpperCase();
+                }
+                row.appendChild(avatarDiv);
+            }
+
             var col = document.createElement('div');
             col.style.cssText = 'display:flex;flex-direction:column;align-items:' + (mine?'flex-end':'flex-start') + ';max-width:75%;';
             
