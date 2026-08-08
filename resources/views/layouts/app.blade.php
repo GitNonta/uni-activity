@@ -273,7 +273,12 @@
     }
 
     @media (prefers-color-scheme: dark) {
-        .chat-list-item.unread { background: #ea580c; color: #fff; }
+        #chatFloatPanel { background: #1e293b !important; }
+        .chat-list-item { border-color: #334155 !important; }
+        .chat-list-item:hover { background: #334155 !important; border-color: #475569 !important; }
+        .chat-list-item .chat-title { color: #f1f5f9 !important; }
+        .chat-list-item .chat-preview { color: #94a3b8 !important; }
+        .chat-list-item.unread { background: #ea580c !important; color: #fff !important; border-color: #ea580c !important; }
         .chat-list-item.unread .chat-title, .chat-list-item.unread .chat-preview { color: #fff !important; }
         .cf-chat-input-area {
             background: #202124 !important;
