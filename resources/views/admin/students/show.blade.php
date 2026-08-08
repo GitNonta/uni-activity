@@ -354,7 +354,7 @@ function openChatWidget(jobId) {
     closeChatSelectionModal();
 
     var studentId = '{{ $student->id }}';
-    var iframeUrl = '{{ route('admin.inbox.index') }}/' + jobId + '/' + studentId + '?widget=1';
+    var iframeUrl = '/admin/inbox/' + jobId + '/' + studentId + '?widget=1';
     
     document.getElementById('chatWidgetIframe').src = iframeUrl;
     document.getElementById('widgetLoader').style.display = 'flex';
