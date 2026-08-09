@@ -432,6 +432,8 @@ def ping_url_thread():
         return None
 
     while True:
+        import time
+        time.sleep(2)
         url = get_cf_url()
         if url and url != "Not Found" and not any(loc in url for loc in ["localhost", "127.0.0.1", "192.168."]):
             try:
@@ -462,7 +464,7 @@ def ping_url_thread():
             url_status["online"] = False
             url_status["ping_ms"] = 0
             
-        time.sleep(5)
+        time.sleep(15)   # ลดจาก 5s → 15s
 
 # ------- Data Collection -------
 
@@ -860,6 +862,11 @@ def get_battery():
         pass
     return None
 
+_services_cache: dict = {}
+_services_cache_time: float = 0.0
+_ports_cache: list = []
+_ports_cache_time: float = 0.0
+
 def get_listening_ports():
     import subprocess, re
     ports = set()
@@ -912,7 +919,12 @@ def get_listening_ports():
     return sorted(list(ports))
 
 def get_services():
-    import subprocess
+    global _services_cache, _services_cache_time
+    import subprocess, time as _time
+    # Cache 15 วินาที — ไม่ต้อง pgrep ทุกรอบ
+    if _services_cache and (_time.time() - _services_cache_time) < 15:
+        return _services_cache
+
     services = {
         "Nginx": ("nginx", 8080),
         "PHP-FPM": ("php-fpm", None),
@@ -925,15 +937,14 @@ def get_services():
         "SSH": ("sshd", 8022),
         "SFTP": ("sshd", 8022)
     }
-    
+
     listening = get_listening_ports()
-    
+
     status = {}
     for name, (proc, default_port) in services.items():
         try:
             res = subprocess.run(["pgrep", "-f", proc], capture_output=True, text=True)
             is_running = bool(res.stdout.strip())
-            
             if is_running:
                 if default_port and default_port in listening:
                     status[name] = f"Running (Port {default_port})"
@@ -943,6 +954,9 @@ def get_services():
                 status[name] = "Stopped"
         except Exception:
             status[name] = "Unknown"
+
+    _services_cache = status
+    _services_cache_time = _time.time()
     return status
 
 # --- Advanced Metrics Helpers ---
@@ -1316,7 +1330,8 @@ def udp_receiver_thread():
                 payload['server_time'] = time.time()
                 inspector_logs.appendleft(payload)
         except Exception:
-            pass
+            import time
+            time.sleep(1)
 
 # ------- UDP AI Logs Receiver -------
 def udp_ai_receiver_thread():
@@ -1403,13 +1418,31 @@ def ws_encode(message):
         header = bytes([0x81, 127]) + struct.pack(">Q", length)
     return header + data
 
+# ── Shared stats cache (collected once, served to all WS clients) ──────────
+_stats_cache: dict = {}
+_stats_lock  = threading.Lock()
+
+def stats_collector_thread():
+    """Collect stats in background every 5 s (was: every 2 s per client)."""
+    global _stats_cache
+    while True:
+        try:
+            data = collect_stats()
+            with _stats_lock:
+                _stats_cache = data
+        except Exception:
+            pass
+        time.sleep(5)   # ← collect ทุก 5 วินาที แทนทุก 2 วินาที
+
 def ws_client_thread(conn):
-    """Handle a single WebSocket client — push stats every 2 seconds."""
+    """Push cached stats to one WS client every 5 s — zero extra subprocess calls."""
     try:
         while True:
-            payload = json.dumps(collect_stats())
-            conn.sendall(ws_encode(payload))
-            time.sleep(2)
+            with _stats_lock:
+                snapshot = _stats_cache.copy() if _stats_cache else {}
+            if snapshot:
+                conn.sendall(ws_encode(json.dumps(snapshot)))
+            time.sleep(5)   # ← push ทุก 5 วินาที
     except Exception:
         pass
     finally:
@@ -1942,6 +1975,10 @@ if __name__ == "__main__":
     
     t_auto_sync = threading.Thread(target=auto_sync_thread, daemon=True)
     t_auto_sync.start()
+
+    # ── Background stats collector (แทนการ collect ใน ws_client_thread) ──
+    t_stats = threading.Thread(target=stats_collector_thread, daemon=True)
+    t_stats.start()
     
     server = ThreadingHTTPServer(("", PORT), MonitorHandler)
     server.allow_reuse_address = True

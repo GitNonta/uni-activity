@@ -1,8 +1,9 @@
+import os
 import paramiko
 
-HOST = "192.168.1.222"
+HOST = os.environ.get('TERMUX_HOST', '192.168.1.222')
 PORT = 8022
-USER = "u0_a175"
+USER = os.environ.get('TERMUX_USER', 'u0_a175')
 PASSWORD = os.getenv("SSH_PASS", "<YOUR_SSH_PASSWORD>")
 
 boot_script = """#!/data/data/com.termux/files/usr/bin/bash
