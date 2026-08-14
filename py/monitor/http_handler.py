@@ -6,8 +6,10 @@ from http.server import BaseHTTPRequestHandler
 import monitor.config as cfg
 from monitor.telegram import tg_send
 from monitor.alerts import collect_stats
-from monitor.speedtest import start_ext_speedtest, run_ext_speedtest_thread
+from monitor.speedtest import start_ext_speedtest, run_ext_speedtest_thread, run_speedtest_thread
 from monitor.threads import ws_handshake, ws_client_thread
+from monitor.collectors import get_cf_url
+from pathlib import Path
 
 
 # ------- HTTP Handler -------
@@ -113,7 +115,9 @@ class MonitorHandler(BaseHTTPRequestHandler):
                                     f.write(f"APP_URL={new_url}\n")
                                 else:
                                     f.write(line)
-            
+            threading.Thread(target=restart, daemon=True).start()
+            return
+
         if self.path.startswith("/api/deploy/manual"):
             import urllib.parse
             qs = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
@@ -338,8 +342,8 @@ class MonitorHandler(BaseHTTPRequestHandler):
 
             # ── Layer 2: TCP socket connect (works if any port is open) ──
             if resp is None:
-                TCP_cfg.PORTS = [9999, 80, 443, 22, 8080]
-                for port in TCP_cfg.PORTS:
+                TCP_PORTS = [9999, 80, 443, 22, 8080]
+                for port in TCP_PORTS:
                     rtts = []
                     try:
                         for _ in range(count):
