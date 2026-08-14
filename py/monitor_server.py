@@ -784,45 +784,62 @@ def _cmd_tunnel_restart_http() -> None:
 
     def do_http():
         try:
-            # kill เฉพาะ cloudflared ตัวที่ connect :8080
-            procs = subprocess.run(["pgrep", "-a", "cloudflared"],
-                                   capture_output=True, text=True).stdout.strip().splitlines()
-            for line in procs:
-                if "8080" in line:
-                    pid = line.split()[0]
-                    subprocess.run(["kill", "-9", pid], capture_output=True)
-            time.sleep(3)
-
             log_http = "/data/data/com.termux/files/home/cloudflared.log"
+
+            # ── 1. Kill เฉพาะ cloudflared ที่ forward :8080 ─────────────────
+            # ใช้ pkill -f เพื่อ match argument จริงๆ ไม่ใช่แค่ตัวเลขใน path
+            subprocess.run(
+                ["pkill", "-9", "-f", "cloudflared.*8080"],
+                capture_output=True
+            )
+            time.sleep(3)  # รอให้ process ตายจริงก่อน
+
+            # ── 2. Clear log หลัง kill (ไม่ใช่ก่อน) ─────────────────────────
             with open(log_http, "w") as f:
                 f.write("")
 
+            # ── 3. Start cloudflared ใหม่ ─────────────────────────────────
             subprocess.Popen(
                 f"nohup cloudflared tunnel --url http://127.0.0.1:8080 "
                 f"--no-autoupdate > {log_http} 2>&1 &",
                 shell=True,
             )
 
-            # รอ URL ใหม่ (40 วิ)
+            # ── 4. รอ URL ใหม่จาก log (สูงสุด 45 วิ) ─────────────────────
             http_url = None
-            for _ in range(40):
+            for _ in range(45):
                 time.sleep(1)
                 try:
                     with open(log_http, "r") as f:
                         content = f.read()
-                    m = re.search(r"https://[a-zA-Z0-9-]+\.trycloudflare\.com", content)
+                    # ต้องเจอ URL ที่ขึ้นต้นด้วย https:// และมี subdomain จริง
+                    # (ไม่ใช่ https://api.trycloudflare.com)
+                    m = re.search(
+                        r'https://[a-zA-Z0-9]+-[a-zA-Z0-9]+-[a-zA-Z0-9-]+\.trycloudflare\.com',
+                        content
+                    )
                     if m:
                         http_url = m.group(0)
+                        break
+                    # fallback: pattern ทั่วไป (กัน edge case subdomain สั้น)
+                    m2 = re.search(
+                        r'https://(?!api\b)[a-zA-Z0-9][a-zA-Z0-9-]+\.trycloudflare\.com',
+                        content
+                    )
+                    if m2:
+                        http_url = m2.group(0)
                         break
                 except Exception:
                     pass
 
-            # fallback metrics
+            # ── 5. fallback: metrics port (รอให้เก่าตายก่อน ~10 วิ) ────────
             if not http_url:
+                time.sleep(5)  # รอให้ cloudflared เก่าตาย + ใหม่ขึ้น metrics
                 try:
                     import urllib.request as _ur
                     resp = _ur.urlopen("http://127.0.0.1:20241/metrics", timeout=3)
-                    m = re.search(r'userHostname="(https://[^"]+)"', resp.read().decode())
+                    raw = resp.read().decode()
+                    m = re.search(r'userHostname="(https://(?!api)[^"]+)"', raw)
                     if m:
                         http_url = m.group(1)
                 except Exception:
@@ -869,6 +886,7 @@ def _cmd_tunnel_restart_http() -> None:
             tg_send(f"❌ HTTP Restart ล้มเหลว: {e}")
 
     threading.Thread(target=do_http, daemon=True).start()
+
 
 
 def _cmd_tunnel_restart_ssh() -> None:
