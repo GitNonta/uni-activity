@@ -8,8 +8,13 @@ All logic is in py/monitor/ package.
 import sys
 import os
 
-# Make sure py/ is in path when running as: python py/monitor_server.py
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# ── Ensure py/ directory is in sys.path so `import monitor` works ─────────────
+# This file lives at: <project>/py/monitor_server.py
+# monitor package is:  <project>/py/monitor/
+# So we add <project>/py/ to the path
+_py_dir = os.path.dirname(os.path.abspath(__file__))   # → .../py/
+if _py_dir not in sys.path:
+    sys.path.insert(0, _py_dir)
 
 import time
 import threading
