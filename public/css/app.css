@@ -76,7 +76,7 @@ table th { font-weight: 600; color: #475569; background: #f8fafc; }
 .justify-between { justify-content: space-between; }
 .justify-center { justify-content: center; }
 .flex-1 { flex: 1; }
-.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
 .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
 .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
 .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.5rem; }
@@ -89,22 +89,23 @@ table th { font-weight: 600; color: #475569; background: #f8fafc; }
     .grid-4 { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
     .grid-5 { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
 }
-
-@media (max-width: 640px) {
-    .grid-2 { grid-template-columns: 1fr; }
-    .grid-3 { grid-template-columns: 1fr; }
-    .grid-4 { grid-template-columns: 1fr; gap: .75rem; }
-    .grid-5 { grid-template-columns: 1fr; gap: .75rem; }
-}
-
 @media (max-width: 768px) {
-    /* Tablet Portrait: Keep 2 columns for most elements to utilize space */
-    .grid-3 { grid-template-columns: repeat(2, 1fr); gap: .75rem; }
-    .grid-4 { grid-template-columns: repeat(2, 1fr); gap: .75rem; }
-    .grid-5 { grid-template-columns: repeat(2, 1fr); gap: .75rem; }
+    /* Mobile & Tablet: Single card (1 column) per row for activities, jobs, and general cards */
+    .grid-2 { grid-template-columns: 1fr; gap: 1rem; }
+    .grid-3 { grid-template-columns: 1fr; gap: 1rem; }
+    .grid-4 { grid-template-columns: 1fr; gap: 1rem; }
+    .grid-5 { grid-template-columns: 1fr; gap: 1rem; }
+    
+    .act-card-img { height: 160px; }
 }
-
 @media (max-width: 480px) {
+    /* Mobile Compact Screens: Single card (1 column) */
+    .grid-2 { grid-template-columns: 1fr; gap: 0.875rem; }
+    .grid-3 { grid-template-columns: 1fr; gap: 0.875rem; }
+    .grid-4 { grid-template-columns: 1fr; gap: 0.875rem; }
+    .grid-5 { grid-template-columns: 1fr; gap: 0.875rem; }
+    
+    .act-card-img { height: 180px; }
 }
 .line-clamp-1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
