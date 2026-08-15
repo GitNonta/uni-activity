@@ -87,8 +87,8 @@
                     <button type="submit" class="btn btn-outline btn-sm">ออก</button>
                 </form>
             </div>
-            @else
-            {{-- Guest Desktop Menu --}}
+            @elseif(!request()->routeIs('login*', 'admin.login*', 'register*', 'password.*', 'admin.password.*'))
+            {{-- Guest Desktop Menu (แสดงเฉพาะหน้าข้อมูลสาธารณะ ไม่แสดงในหน้า login/register) --}}
             <nav class="navbar-center navbar-desktop">
                 <a href="{{ route('activities.index') }}" class="{{ request()->routeIs('activities.*') ? 'active' : '' }}">
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -172,7 +172,7 @@
             <span>โปรไฟล์</span>
         </a>
     </nav>
-    @else
+    @elseif(!request()->routeIs('login*', 'admin.login*', 'register*', 'password.*', 'admin.password.*'))
     <nav class="bottom-nav">
         <a href="{{ route('activities.index') }}" class="bottom-nav-item {{ request()->routeIs('activities.*') ? 'active' : '' }}">
             <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
