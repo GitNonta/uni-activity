@@ -37,24 +37,42 @@
 {{-- แถบจัดเรียงลำดับอัจฉริยะ (Smart Sorting Tabs) --}}
 @php
     $currentSort = request('sort', 'recommended');
-    $sortItems = [
-        'recommended' => ['icon' => '🎯', 'label' => 'แนะนำสำหรับคุณ'],
-        'closing_soon' => ['icon' => '⚡', 'label' => 'ใกล้ปิดรับ'],
-        'popular' => ['icon' => '🌟', 'label' => 'ยอดนิยม'],
-        'upcoming' => ['icon' => '🕒', 'label' => 'จัดเร็วๆ นี้'],
-        'latest' => ['icon' => '🆕', 'label' => 'มาใหม่'],
-    ];
 @endphp
-<div class="flex items-center gap-2 mb-4" style="overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;">
-    <span class="text-xs text-muted font-bold" style="white-space:nowrap;margin-right:2px;">เรียงตาม:</span>
-    @foreach($sortItems as $key => $item)
-        <a href="{{ request()->fullUrlWithQuery(['sort' => $key]) }}" 
-           class="sort-pill {{ $currentSort === $key ? 'active' : '' }}"
-           style="white-space:nowrap;padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:600;text-decoration:none;transition:all 0.15s ease;display:inline-flex;align-items:center;gap:4px;{{ $currentSort === $key ? 'background:#ea580c;color:#fff;box-shadow:0 2px 6px rgba(234,88,12,0.3);' : 'background:#fff;color:#475569;border:1px solid #e2e8f0;' }}">
-            <span>{{ $item['icon'] }}</span>
-            <span>{{ $item['label'] }}</span>
-        </a>
-    @endforeach
+<div class="sort-scroll-container mb-4">
+    <span class="text-xs text-muted font-bold" style="white-space:nowrap;margin-right:2px;display:inline-flex;align-items:center;gap:4px;">
+        <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/></svg>
+        เรียงตาม:
+    </span>
+    <a href="{{ request()->fullUrlWithQuery(['sort' => 'recommended']) }}" 
+       class="sort-pill {{ $currentSort === 'recommended' ? 'active' : '' }}"
+       style="white-space:nowrap;padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:600;text-decoration:none;transition:all 0.15s ease;display:inline-flex;align-items:center;gap:5px;{{ $currentSort === 'recommended' ? 'background:#ea580c;color:#fff;box-shadow:0 2px 6px rgba(234,88,12,0.3);' : 'background:#fff;color:#475569;border:1px solid #e2e8f0;' }}">
+        <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+        <span>แนะนำสำหรับคุณ</span>
+    </a>
+    <a href="{{ request()->fullUrlWithQuery(['sort' => 'closing_soon']) }}" 
+       class="sort-pill {{ $currentSort === 'closing_soon' ? 'active' : '' }}"
+       style="white-space:nowrap;padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:600;text-decoration:none;transition:all 0.15s ease;display:inline-flex;align-items:center;gap:5px;{{ $currentSort === 'closing_soon' ? 'background:#ea580c;color:#fff;box-shadow:0 2px 6px rgba(234,88,12,0.3);' : 'background:#fff;color:#475569;border:1px solid #e2e8f0;' }}">
+        <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        <span>ใกล้ปิดรับ</span>
+    </a>
+    <a href="{{ request()->fullUrlWithQuery(['sort' => 'popular']) }}" 
+       class="sort-pill {{ $currentSort === 'popular' ? 'active' : '' }}"
+       style="white-space:nowrap;padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:600;text-decoration:none;transition:all 0.15s ease;display:inline-flex;align-items:center;gap:5px;{{ $currentSort === 'popular' ? 'background:#ea580c;color:#fff;box-shadow:0 2px 6px rgba(234,88,12,0.3);' : 'background:#fff;color:#475569;border:1px solid #e2e8f0;' }}">
+        <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+        <span>ยอดนิยม</span>
+    </a>
+    <a href="{{ request()->fullUrlWithQuery(['sort' => 'upcoming']) }}" 
+       class="sort-pill {{ $currentSort === 'upcoming' ? 'active' : '' }}"
+       style="white-space:nowrap;padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:600;text-decoration:none;transition:all 0.15s ease;display:inline-flex;align-items:center;gap:5px;{{ $currentSort === 'upcoming' ? 'background:#ea580c;color:#fff;box-shadow:0 2px 6px rgba(234,88,12,0.3);' : 'background:#fff;color:#475569;border:1px solid #e2e8f0;' }}">
+        <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        <span>จัดเร็วๆ นี้</span>
+    </a>
+    <a href="{{ request()->fullUrlWithQuery(['sort' => 'latest']) }}" 
+       class="sort-pill {{ $currentSort === 'latest' ? 'active' : '' }}"
+       style="white-space:nowrap;padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:600;text-decoration:none;transition:all 0.15s ease;display:inline-flex;align-items:center;gap:5px;{{ $currentSort === 'latest' ? 'background:#ea580c;color:#fff;box-shadow:0 2px 6px rgba(234,88,12,0.3);' : 'background:#fff;color:#475569;border:1px solid #e2e8f0;' }}">
+        <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span>มาใหม่</span>
+    </a>
 </div>
 
 {{-- แสดงการ์ดกิจกรรม หรือข้อความว่างถ้าไม่พบ --}}
