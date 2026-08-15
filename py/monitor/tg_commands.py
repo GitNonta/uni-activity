@@ -56,7 +56,10 @@ def tg_command_poll_thread() -> None:
 
 def _dispatch_command(text: str) -> None:
     """เรียก handler ตาม command ที่ได้รับ"""
-    cmd = text.split()[0].lower().split("@")[0] if text else ""
+    parts = text.split() if text else []
+    if not parts:
+        return
+    cmd = parts[0].lower().split("@")[0]
 
     handlers = {
         "/start"          : _cmd_start,
@@ -951,10 +954,11 @@ def _cmd_tunnel_log() -> None:
             important.append(line[-120:])
 
     lines_to_show = important[-10:] if important else output.splitlines()[-10:]
+    log_text = "\n".join(lines_to_show)
     tg_send(
         f"📋 <b>Cloudflare Tunnel Log</b>\n"
         f"━━━━━━━━━━━━━━━━━━━━\n"
-        f"<code>{'chr(10)'.join(lines_to_show)}</code>"
+        f"<code>{log_text}</code>"
     )
 
 
