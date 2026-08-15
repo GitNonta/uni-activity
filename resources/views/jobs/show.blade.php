@@ -205,7 +205,7 @@
                 <div id="jobDetailMap" style="height:200px;border-radius:8px;border:1px solid #e2e8f0;margin-top:8px;"></div>
             </div>
 
-            <a href="{{ route('jobs.index', ['showMap' => $job->id, 'autoNav' => 1]) }}" class="btn btn-primary btn-block btn-sm mt-2 text-center" style="text-decoration:none;">
+            <a href="{{ route('map.index', ['type' => 'job', 'id' => $job->id, 'nav' => 1]) }}" class="btn btn-primary btn-block btn-sm mt-2 text-center" style="text-decoration:none;">
                 <svg class="icon-sm" style="display:inline;vertical-align:-2px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 ดูแผนที่และเริ่มบอกเส้นทาง
             </a>

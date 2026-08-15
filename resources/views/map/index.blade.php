@@ -635,7 +635,43 @@
                         ...(data.landmarks || [])
                     ];
                     document.getElementById('total-count-label').textContent = 'พบ ' + allLocations.length + ' จุดสถานที่';
+
+                    // Parse URL Query Parameters for Focus & Filters
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const targetType = urlParams.get('type');
+                    const targetId = urlParams.get('id');
+                    const autoNav = urlParams.get('nav');
+
+                    if (targetType && !targetId) {
+                        currentFilterType = targetType;
+                        document.querySelectorAll('.map-filter-pill').forEach(b => {
+                            const onclickAttr = b.getAttribute('onclick') || '';
+                            b.classList.toggle('active', onclickAttr.includes("'" + targetType + "'"));
+                        });
+                    }
+
                     renderMarkers();
+
+                    // If a specific target ID is requested, center, zoom, and open bottom sheet
+                    if (targetId) {
+                        const target = allLocations.find(loc => {
+                            const matchId = String(loc.id) === String(targetId);
+                            if (targetType) return loc.type === targetType && matchId;
+                            return matchId;
+                        });
+
+                        if (target) {
+                            setTimeout(() => {
+                                map.setView([target.lat, target.lng], 17, { animate: true });
+                                showBottomSheet(target);
+                                if (autoNav === '1') {
+                                    setTimeout(() => {
+                                        startNavigationToActive();
+                                    }, 400);
+                                }
+                            }, 300);
+                        }
+                    }
                 }
             })
             .catch(err => {
