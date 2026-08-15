@@ -103,17 +103,17 @@
                     หางาน / ฝึกงาน
                 </a>
             </nav>
-            <div class="navbar-right navbar-desktop" style="display:flex; align-items:center; gap:8px;">
-                <a href="{{ route('login') }}" class="btn btn-outline btn-sm" style="display:inline-flex; align-items:center; gap:4px;">
+            <div class="navbar-right navbar-desktop">
+                <a href="{{ route('login') }}" class="btn btn-primary btn-sm" style="display:inline-flex; align-items:center; gap:4px;">
                     <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
                     เข้าสู่ระบบ
                 </a>
-                <a href="{{ route('register') }}" class="btn btn-primary btn-sm" style="display:inline-flex; align-items:center; gap:4px;">
-                    ลงทะเบียน
+                <a href="{{ route('register') }}" class="btn btn-outline btn-sm" style="display:inline-flex; align-items:center; gap:4px;">
+                    สมัครสมาชิก
                 </a>
             </div>
             {{-- Guest Mobile Header Right --}}
-            <div class="navbar-mobile-right" style="display:flex; align-items:center; gap:6px;">
+            <div class="navbar-mobile-right">
                 <a href="{{ route('login') }}" class="btn btn-sm btn-primary" style="padding:.3rem .65rem; font-size:.8rem; display:inline-flex; align-items:center; gap:4px;">
                     <svg class="icon-sm" style="width:14px; height:14px; margin:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
                     เข้าสู่ระบบ
