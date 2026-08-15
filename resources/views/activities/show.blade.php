@@ -72,13 +72,13 @@
             <div>
                 <span class="text-muted" style="font-size: 0.8rem;">เปิด-ปิดลงทะเบียน</span>
                 <p class="font-semi" style="font-size: 0.85rem; color:#475569;">
-                    {{ $activity->register_open_at->format('d/m/Y H:i') }}<br>ถึง {{ $activity->register_close_at->format('d/m/Y H:i') }}
+                    {{ $activity->register_open_at ? $activity->register_open_at->format('d/m/Y H:i') : '-' }}<br>ถึง {{ $activity->register_close_at ? $activity->register_close_at->format('d/m/Y H:i') : '-' }}
                 </p>
             </div>
             <div>
                 <span class="text-muted" style="font-size: 0.8rem;">เปิด-ปิดเช็คอินหน้างาน</span>
                 <p class="font-semi" style="font-size: 0.85rem; color:#475569;">
-                    {{ $activity->checkin_open_at->format('d/m/Y H:i') }}<br>ถึง {{ $activity->checkin_close_at->format('d/m/Y H:i') }}
+                    {{ $activity->checkin_open_at ? $activity->checkin_open_at->format('d/m/Y H:i') : '-' }}<br>ถึง {{ $activity->checkin_close_at ? $activity->checkin_close_at->format('d/m/Y H:i') : '-' }}
                 </p>
             </div>
             <div>
@@ -160,11 +160,24 @@
             @endif
         @endauth
         @guest
-            @if($activity->computed_status === 'open' && $activity->getRemainingSlots() > 0)
-                <a href="{{ route('login') }}" class="btn btn-primary btn-block btn-lg" style="text-align: center; display: block; text-decoration: none; line-height: 1.5;">เข้าสู่ระบบเพื่อลงทะเบียน</a>
-            @else
-                <button disabled class="btn btn-outline btn-block">ไม่สามารถลงทะเบียนได้</button>
-            @endif
+            <div style="background:#fff7ed; border:1.5px solid #fdba74; border-radius:12px; padding:16px; margin-top:14px; text-align:center; box-shadow:0 2px 8px rgba(234,88,12,0.08);">
+                <div class="flex items-center justify-center gap-2 mb-2" style="color:#c2410c; font-weight:700; font-size:.9rem;">
+                    <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    ต้องเข้าสู่ระบบเพื่อลงทะเบียนกิจกรรมนี้
+                </div>
+                <p class="text-xs text-muted mb-3" style="color:#9a3412;">
+                    กรุณาเข้าสู่ระบบด้วยรหัสนักศึกษาเพื่อบันทึกการเข้าร่วมและสะสมชั่วโมงกิจกรรม
+                </p>
+                <div class="flex gap-2" style="flex-wrap:wrap;">
+                    <a href="{{ route('login') }}" class="btn btn-primary btn-block btn-lg flex-1" style="text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-weight:700; border-radius:10px;">
+                        <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                        เข้าสู่ระบบทันที
+                    </a>
+                    <a href="{{ route('register') }}" class="btn btn-outline" style="border-color:#ea580c; color:#ea580c; background:#fff; font-weight:600; display: inline-flex; align-items: center; justify-content: center; padding: 0 16px; border-radius:10px;">
+                        สมัครสมาชิก
+                    </a>
+                </div>
+            </div>
         @endguest
     </div>
 </div>
