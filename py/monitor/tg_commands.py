@@ -1,7 +1,7 @@
 """
 monitor/tg_commands.py — Telegram bot command handlers (_cmd_* functions).
 """
-import time, json, threading, subprocess, re, os
+import time, json, threading, subprocess, re, os, html
 import monitor.config as cfg
 from monitor.telegram import tg_send, tg_daily_report
 from monitor.collectors import get_cf_url
@@ -11,21 +11,19 @@ _tg_last_update_id: int = 0
 _tg_cmd_queue = None   # กำหนดใน __main__
 
 def tg_handle_commands() -> None:
-    """Long-poll Telegram getUpdates — block 20 วิ แต่ตอบสนองทันทีเมื่อมี update"""
+    """Long-poll Telegram getUpdates — block 25 วิ ตอบสนองทันทีแบบ Real-time เมื่อมี update"""
     global _tg_last_update_id
     if not cfg.TELEGRAM_BOT_TOKEN or not cfg.TELEGRAM_CHAT_ID:
         return
 
     try:
         import urllib.request, json as _json
-        # long-poll 20 วิ — Telegram จะ return ทันทีเมื่อมี update ใหม่
-        # ไม่ต้อง sleep เพิ่มอีก
         url = (
             f"https://api.telegram.org/bot{cfg.TELEGRAM_BOT_TOKEN}/getUpdates"
-            f"?offset={_tg_last_update_id + 1}&limit=10&timeout=5"
+            f"?offset={_tg_last_update_id + 1}&limit=10&timeout=25"
         )
         req = urllib.request.Request(url, headers={"User-Agent": "UniMonitor/2.0"})
-        with urllib.request.urlopen(req, timeout=10) as r:
+        with urllib.request.urlopen(req, timeout=30) as r:
             data = _json.loads(r.read())
 
         for update in data.get("result", []):
@@ -95,7 +93,7 @@ def _dispatch_command(text: str) -> None:
     if fn:
         threading.Thread(target=fn, daemon=True).start()
     elif cmd.startswith("/"):
-        tg_send(f"❓ ไม่รู้จัก command: <code>{cmd}</code>\nพิมพ์ /help เพื่อดูคำสั่งทั้งหมด")
+        tg_send(f"❓ ไม่รู้จัก command: <code>{html.escape(cmd)}</code>\nพิมพ์ /help เพื่อดูคำสั่งทั้งหมด")
 
 
 # ── Command Implementations ───────────────────────────────────────────────────
@@ -214,7 +212,7 @@ def _cmd_load() -> None:
     load  = s.get("load", [0, 0, 0])
     procs = s.get("advanced_metrics", {}).get("top_procs", [])
     icon  = "🔴" if load[0] > 8 else "🟡" if load[0] > 5 else "🟢"
-    lines = [f"  {p['cpu']:>5}%  {p['name']}" for p in procs[:5]]
+    lines = [f"  {p['cpu']:>5}%  {html.escape(str(p['name']))}" for p in procs[:5]]
     tg_send(
         f"{icon} <b>CPU Load Average</b>\n"
         f"━━━━━━━━━━━━━━━━━━━━\n"
@@ -286,12 +284,12 @@ def _cmd_logs() -> None:
         errors = [l for l in lines if any(k in l for k in ["ERROR", "CRITICAL", "Exception", "exception"])]
         if errors:
             out = "\n".join(errors[-10:])
-            tg_send(f"📝 <b>Laravel Errors (ล่าสุด)</b>\n━━━━━━━━━━━━━━━━━━━━\n<code>{out[:1000]}</code>")
+            tg_send(f"📝 <b>Laravel Errors (ล่าสุด)</b>\n━━━━━━━━━━━━━━━━━━━━\n<code>{html.escape(out[:1000])}</code>")
         else:
             last = "\n".join(lines[-5:]) if lines else "ว่าง"
-            tg_send(f"📝 <b>Laravel Log</b>\n━━━━━━━━━━━━━━━━━━━━\n✅ ไม่มี Errors\n<code>{last[:500]}</code>")
+            tg_send(f"📝 <b>Laravel Log</b>\n━━━━━━━━━━━━━━━━━━━━\n✅ ไม่มี Errors\n<code>{html.escape(last[:500])}</code>")
     except Exception as e:
-        tg_send(f"❌ อ่าน log ไม่ได้: {e}")
+        tg_send(f"❌ อ่าน log ไม่ได้: {html.escape(str(e))}")
 
 
 def _cmd_ports() -> None:
@@ -322,7 +320,7 @@ def _cmd_top() -> None:
         tg_send("⏳ ยังไม่มีข้อมูล processes")
         return
     lines = [
-        f"  {p['cpu']:>5}% CPU  {p['mem']:>4}% MEM  {p['name'][:30]}"
+        f"  {p['cpu']:>5}% CPU  {p['mem']:>4}% MEM  {html.escape(str(p['name'])[:30])}"
         for p in procs[:8]
     ]
     tg_send(
@@ -954,7 +952,7 @@ def _cmd_tunnel_log() -> None:
             important.append(line[-120:])
 
     lines_to_show = important[-10:] if important else output.splitlines()[-10:]
-    log_text = "\n".join(lines_to_show)
+    log_text = html.escape("\n".join(lines_to_show))
     tg_send(
         f"📋 <b>Cloudflare Tunnel Log</b>\n"
         f"━━━━━━━━━━━━━━━━━━━━\n"

@@ -1,49 +1,137 @@
 """
-monitor/telegram.py — Telegram send/alert/resolved/daily-report helpers.
+monitor/telegram.py — Resilient queue-based Telegram messaging with auto-retry and rate limiting.
 """
 import time
 import threading
-from monitor.config import (
-    TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID,
-    ALERT_MIN_INTERVAL, STARTUP_GRACE,
-    _tg_sent_ids, _tg_resolved, _tg_alert_cooldown, _monitor_start_time,
-)
+import queue
+import urllib.request
+import urllib.error
+import json as _json
+import re
+
 import monitor.config as cfg
+
+# ── Message Queue & Worker ───────────────────────────────────────────────────
+_tg_queue: queue.Queue = queue.Queue(maxsize=500)
+_worker_started = False
+_worker_lock = threading.Lock()
+
+
+def _strip_html_tags(text: str) -> str:
+    """Fallback: strip HTML tags if Telegram rejects invalid markup."""
+    clean = re.sub(r"<[^>]+>", "", text)
+    return clean.replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", '"')
+
+
+def _send_http(text: str, parse_mode: str | None = "HTML") -> bool:
+    """Send a single message via Telegram Bot API with retry on 429 and fallback on 400."""
+    if not cfg.TELEGRAM_BOT_TOKEN or not cfg.TELEGRAM_CHAT_ID:
+        return False
+
+    url = f"https://api.telegram.org/bot{cfg.TELEGRAM_BOT_TOKEN}/sendMessage"
+
+    for attempt in range(3):
+        try:
+            body = {
+                "chat_id": cfg.TELEGRAM_CHAT_ID,
+                "text": text,
+                "disable_web_page_preview": True,
+            }
+            if parse_mode:
+                body["parse_mode"] = parse_mode
+
+            payload = _json.dumps(body).encode("utf-8")
+            req = urllib.request.Request(
+                url,
+                data=payload,
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=12) as r:
+                return r.status == 200
+
+        except urllib.error.HTTPError as e:
+            # 1. Rate limited (429) -> wait and retry
+            if e.code == 429:
+                try:
+                    err_data = _json.loads(e.read().decode("utf-8", "ignore"))
+                    wait_sec = err_data.get("parameters", {}).get("retry_after", 2)
+                    time.sleep(wait_sec + 0.5)
+                except Exception:
+                    time.sleep(2)
+                continue
+
+            # 2. Bad request (400) -> HTML parse error -> fallback to plain text
+            elif e.code == 400 and parse_mode == "HTML":
+                text = _strip_html_tags(text)
+                parse_mode = None
+                continue
+            else:
+                break
+
+        except Exception:
+            # Network hiccup or timeout -> backoff and retry
+            time.sleep(1.0 * (attempt + 1))
+
+    return False
+
+
+def _send_worker_loop():
+    """Background worker that drains _tg_queue with pacing (0.25s) to avoid 429 rate limits."""
+    while True:
+        try:
+            item = _tg_queue.get()
+            if item is None:
+                break
+            text, parse_mode = item
+            _send_http(text, parse_mode)
+            _tg_queue.task_done()
+            time.sleep(0.25)  # Pacing: max ~4 messages/sec (well within Telegram 30/sec limit)
+        except Exception:
+            time.sleep(0.5)
+
+
+def _ensure_worker():
+    global _worker_started
+    if not _worker_started:
+        with _worker_lock:
+            if not _worker_started:
+                t = threading.Thread(target=_send_worker_loop, daemon=True, name="TelegramSendWorker")
+                t.start()
+                _worker_started = True
+
+
+# Start worker immediately
+_ensure_worker()
 
 
 def tg_send(text: str, parse_mode: str = "HTML") -> bool:
-    """ส่งข้อความไป Telegram — return True ถ้าสำเร็จ"""
+    """Non-blocking: Enqueue message for reliable background delivery."""
     if not cfg.TELEGRAM_BOT_TOKEN or not cfg.TELEGRAM_CHAT_ID:
         return False
+    _ensure_worker()
     try:
-        import urllib.request, json as _json
-        payload = _json.dumps({
-            "chat_id": cfg.TELEGRAM_CHAT_ID,
-            "text": text,
-            "parse_mode": parse_mode,
-            "disable_web_page_preview": True,
-        }).encode()
-        req = urllib.request.Request(
-            f"https://api.telegram.org/bot{cfg.TELEGRAM_BOT_TOKEN}/sendMessage",
-            data=payload,
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
-        with urllib.request.urlopen(req, timeout=8) as r:
-            return r.status == 200
-    except Exception:
-        return False
+        _tg_queue.put_nowait((text, parse_mode))
+        return True
+    except queue.Full:
+        # If queue is full, drop oldest and insert
+        try:
+            _tg_queue.get_nowait()
+        except Exception:
+            pass
+        _tg_queue.put((text, parse_mode))
+        return True
 
 
 def tg_alert(alert_id: str, alert_type: str, message: str) -> None:
-    """ส่ง alert ใหม่ (ส่งซ้ำได้อีกครั้งหลัง ALERT_MIN_INTERVAL วินาที)"""
+    """Send alert with cooldown and deduplication."""
     now = time.time()
 
-    # Startup grace: ไม่ส่ง cf_offline ในช่วง 90 วิแรก
+    # Startup grace: do not send cf_offline during first 90s
     if alert_id == "cf_offline" and (now - cfg._monitor_start_time) < cfg.STARTUP_GRACE:
         return
 
-    # Cooldown ต่อ alert_id
+    # Cooldown per alert_id
     last_sent = cfg._tg_alert_cooldown.get(alert_id, 0.0)
     if now - last_sent < cfg.ALERT_MIN_INTERVAL:
         return
@@ -71,11 +159,11 @@ def tg_alert(alert_id: str, alert_type: str, message: str) -> None:
         f"🕐 {ts}\n"
         f"🆔 <code>{alert_id}</code>"
     )
-    threading.Thread(target=tg_send, args=(text,), daemon=True).start()
+    tg_send(text)
 
 
 def tg_resolved(alert_id: str, message: str) -> None:
-    """แจ้งว่า alert หายแล้ว (ส่งแค่ครั้งเดียว)"""
+    """Notify alert resolved."""
     if alert_id in cfg._tg_resolved:
         return
     cfg._tg_resolved.add(alert_id)
@@ -86,11 +174,11 @@ def tg_resolved(alert_id: str, message: str) -> None:
         f"📋 {message}\n"
         f"🕐 {ts}"
     )
-    threading.Thread(target=tg_send, args=(text,), daemon=True).start()
+    tg_send(text)
 
 
 def tg_daily_report(stats: dict) -> None:
-    """ส่ง daily summary ทุก 24 ชั่วโมง"""
+    """Daily summary report every 24 hours."""
     if time.time() - cfg._tg_last_daily < 86400:
         return
     cfg._tg_last_daily = time.time()
@@ -113,4 +201,4 @@ def tg_daily_report(stats: dict) -> None:
         f"🔧 Services  : {running}/{total} Running\n"
         f"🌐 Uptime    : {stats.get('uptime','N/A')}"
     )
-    threading.Thread(target=tg_send, args=(text,), daemon=True).start()
+    tg_send(text)
