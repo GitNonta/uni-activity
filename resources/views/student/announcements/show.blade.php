@@ -28,7 +28,7 @@
             </div>
         @endif
         
-        <div class="prose max-w-none text-sm leading-relaxed mb-4" style="color:#334155;white-space:pre-wrap;">{{ $announcement->content }}</div>
+        <div class="prose max-w-none text-sm leading-relaxed mb-4" style="color:#334155;white-space:pre-wrap;">@linkify($announcement->content)</div>
         
         {{-- บล็อกผู้สร้างประกาศ สไตล์ YouTube --}}
         <div>

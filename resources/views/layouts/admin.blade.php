@@ -677,5 +677,77 @@ window.AdminChatManager = (function() {
     return { openChat: openChat };
 })();
 </script>
+
+<!-- Auto-Linker Script for Admin Cards and Descriptions -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var urlPattern = /(https?:\/\/[^\s<]+|(?<![\/\w])www\.[^\s<]+)/gi;
+    
+    function linkifyTextNodes(element) {
+        if (!element || element.classList.contains('no-linkify')) return;
+        
+        var walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
+        var textNodes = [];
+        var node;
+        while (node = walker.nextNode()) {
+            if (node.nodeValue && urlPattern.test(node.nodeValue)) {
+                var parent = node.parentNode;
+                if (parent && parent.tagName !== 'A' && parent.tagName !== 'SCRIPT' && parent.tagName !== 'STYLE' && parent.tagName !== 'BUTTON' && parent.tagName !== 'TEXTAREA') {
+                    textNodes.push(node);
+                }
+            }
+            urlPattern.lastIndex = 0;
+        }
+        
+        textNodes.forEach(function(textNode) {
+            var val = textNode.nodeValue;
+            var frag = document.createDocumentFragment();
+            var lastIdx = 0;
+            var match;
+            urlPattern.lastIndex = 0;
+            
+            while ((match = urlPattern.exec(val)) !== null) {
+                if (match.index > lastIdx) {
+                    frag.appendChild(document.createTextNode(val.substring(lastIdx, match.index)));
+                }
+                
+                var raw = match[0];
+                var trailing = '';
+                while (raw.length > 0 && /[.,;:!?)}\]"']/.test(raw[raw.length - 1])) {
+                    trailing = raw[raw.length - 1] + trailing;
+                    raw = raw.substring(0, raw.length - 1);
+                }
+                
+                var a = document.createElement('a');
+                a.href = /^https?:\/\//i.test(raw) ? raw : 'https://' + raw;
+                a.target = '_blank';
+                a.rel = 'noopener noreferrer';
+                a.className = 'linkified-url text-primary';
+                a.style.cssText = 'color:#ea580c;text-decoration:underline;word-break:break-word;font-weight:500;cursor:pointer;position:relative;z-index:2;';
+                a.textContent = raw;
+                a.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+                
+                frag.appendChild(a);
+                if (trailing) {
+                    frag.appendChild(document.createTextNode(trailing));
+                }
+                lastIdx = match.index + match[0].length;
+            }
+            
+            if (lastIdx < val.length) {
+                frag.appendChild(document.createTextNode(val.substring(lastIdx)));
+            }
+            
+            if (textNode.parentNode) {
+                textNode.parentNode.replaceChild(frag, textNode);
+            }
+        });
+    }
+    
+    document.querySelectorAll('.card, .prose, .act-card, .comment-body, .alert, .modal, .table').forEach(linkifyTextNodes);
+});
+</script>
 </body>
 </html>

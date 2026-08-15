@@ -87,7 +87,7 @@
         <h1 class="font-bold" style="font-size:1.25rem;">{{ $job->title }}</h1>
 
         @if($job->description)
-            <p class="text-muted text-sm mt-2">{{ $job->description }}</p>
+            <p class="text-muted text-sm mt-2" style="white-space:pre-wrap;line-height:1.6;">@linkify($job->description)</p>
         @endif
 
         {{-- บล็อกผู้สร้างงาน สไตล์ YouTube --}}
@@ -180,8 +180,8 @@
         </div>
 
         @if($job->note)
-        <div class="alert alert-info text-sm mt-4" style="background:#fef3c7;color:#92400e;border-color:#fde68a;">
-            <strong>* หมายเหตุ:</strong> {{ $job->note }}
+        <div class="alert alert-info text-sm mt-4" style="background:#fef3c7;color:#92400e;border-color:#fde68a;line-height:1.6;">
+            <strong>* หมายเหตุ:</strong> @linkify($job->note)
         </div>
         @endif
 

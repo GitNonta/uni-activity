@@ -36,6 +36,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (file_exists(app_path('Helpers/TextHelper.php'))) {
+            require_once app_path('Helpers/TextHelper.php');
+        }
+
+        \Illuminate\Support\Facades\Blade::directive('linkify', function ($expression) {
+            return "<?php echo \App\Helpers\linkify($expression); ?>";
+        });
+
         $this->configureRateLimiters();
         // $this->registerLineEvents();
         $this->registerConsoleCommandLogger();
