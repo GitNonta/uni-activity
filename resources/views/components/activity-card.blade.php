@@ -1,6 +1,6 @@
 {{-- คอมโพเนนต์การ์ดกิจกรรม: แสดงรูป, สถานะ, ชื่อ, วันที่, สถานที่, ชั่วโมง, จำนวนคน --}}
 @props(['activity', 'isRegistered' => false, 'isAttended' => false])
-<a href="{{ route('activities.show', $activity->id) }}" class="card act-card">
+<a href="{{ route('activities.show', $activity->id) }}" class="card act-card no-linkify">
     {{-- รูปภาพกิจกรรม (ถ้าไม่มีแสดงไอคอนแทน) --}}
     <div class="act-card-img">
         @if($activity->image_path)

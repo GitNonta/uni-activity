@@ -10,7 +10,7 @@ if (!function_exists('format_description')) {
      * - จัดระยะห่างพารากราฟ (Paragraphs) และความสูงบรรทัด (Line-height)
      * - จัดรูปแบบรายการหัวข้อย่อยอัตโนมัติ (Bullet Lists: -, *, • และ Numbered Lists: 1., 2., 1))
      * - แปลงลิงก์ URL (http://, https://, www.) เป็นลิงก์ที่คลิกได้ปลอดภัย
-     * - แปลงแฮชแท็ก (#hashtag, #จิตอาสา) เป็นปุ่มค้นหาแบบ Badge อัตโนมัติ
+     * - แปลงแฮชแท็ก (#hashtag, #จิตอาสา) เป็นปุ่มค้นหาแบบ Badge อัตโนมัติ (โดยไม่กระทบกับ Hex Color Code)
      * - รองรับตัวหนา (**bold**), ตัวเอียง (*italic*), และโค้ด/ไฮไลต์ (`code`)
      * - แปลงป้ายแจ้งเตือน เช่น [สำคัญ], [ด่วน], [หมายเหตุ]
      */
@@ -29,21 +29,19 @@ if (!function_exists('format_description')) {
         // 2. ป้องกัน XSS
         $escaped = htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
-        // 3. ตรวจจับและแปลง แฮชแท็ก #hashtag (ทั้งภาษาไทยและอังกฤษ) ก่อนใส่ style tags
-        $hashtagPattern = '/(?<![\w#&;])#([a-zA-Z0-9_\x{0E00}-\x{0E7F}]+)/u';
+        // 3. ตรวจจับและแปลง แฮชแท็ก #hashtag (ทั้งภาษาไทยและอังกฤษ โดยยกเว้น Hex Color Code)
+        // Lookahead (?!(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\b) ป้องกันการจับสี เช่น #fff, #ea580c
+        $hashtagPattern = '/(?<![\w#&;:=])#(?!(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\b)([a-zA-Z0-9_\x{0E00}-\x{0E7F}]+)/u';
         $escaped = preg_replace_callback($hashtagPattern, function (array $matches): string {
             $tag = $matches[1];
             $searchUrl = url('/activities') . '?search=' . urlencode('#' . $tag);
-            return '<a href="' . $searchUrl . '" class="hashtag-badge" style="color:#ea580c;background:#fff7ed;padding:2px 8px;border-radius:6px;font-weight:600;text-decoration:none;border:1px solid #fed7aa;display:inline-block;margin:1px 2px;font-size:0.85em;transition:all 0.15s ease;" onclick="event.stopPropagation();">#' . $tag . '</a>';
+            return '<a href="' . $searchUrl . '" class="hashtag-badge" onclick="event.stopPropagation();">#' . $tag . '</a>';
         }, $escaped) ?? $escaped;
 
         // 4. แปลง Markdown พื้นฐาน (ตัวหนา, ตัวเอียง, โค้ด)
-        // **bold** -> <strong>
-        $escaped = preg_replace('/\*\*(.+?)\*\*/s', '<strong style="color:#0f172a;font-weight:700;">$1</strong>', $escaped) ?? $escaped;
-        // *italic* -> <em>
+        $escaped = preg_replace('/\*\*(.+?)\*\*/s', '<strong>$1</strong>', $escaped) ?? $escaped;
         $escaped = preg_replace('/(?<!\*)\*([^*]+?)\*(?!\*)/s', '<em>$1</em>', $escaped) ?? $escaped;
-        // `code` -> <code>
-        $escaped = preg_replace('/`([^`]+?)`/', '<code style="background:#f1f5f9;color:#ea580c;padding:2px 6px;border-radius:4px;font-size:0.88em;font-family:monospace;">$1</code>', $escaped) ?? $escaped;
+        $escaped = preg_replace('/`([^`]+?)`/', '<code>$1</code>', $escaped) ?? $escaped;
 
         // 5. แปลงป้ายแจ้งเตือนอัตโนมัติ [สำคัญ], [ด่วน], [ประกาศ]
         $escaped = preg_replace('/\[(สำคัญ|ด่วน|URGENT|IMPORTANT)\]/iu', '<span class="badge badge-red" style="font-size:0.75rem;vertical-align:middle;margin-right:4px;">$1</span>', $escaped) ?? $escaped;
@@ -75,7 +73,7 @@ if (!function_exists('format_description')) {
                 ? $raw
                 : 'https://' . $raw;
 
-            return '<a href="' . $url . '" target="_blank" rel="noopener noreferrer" class="linkified-url" style="color:#ea580c;text-decoration:underline;word-break:break-word;font-weight:500;" onclick="event.stopPropagation();">' . $raw . '</a>' . $trailing;
+            return '<a href="' . $url . '" target="_blank" rel="noopener noreferrer" class="linkified-url" onclick="event.stopPropagation();">' . $raw . '</a>' . $trailing;
         }, $escaped) ?? $escaped;
 
         // 7. แยก Paragraphs และจัดการ Bullet / Numbered Lists
@@ -126,7 +124,7 @@ if (!function_exists('format_description')) {
             }
         }
 
-        return '<div class="desc-content" style="font-size:0.92rem;line-height:1.75;color:#334155;word-break:break-word;">' . implode("\n", $outputBlocks) . '</div>';
+        return '<div class="desc-content">' . implode("\n", $outputBlocks) . '</div>';
     }
 }
 
@@ -141,7 +139,7 @@ if (!function_exists('extract_hashtags')) {
             return [];
         }
 
-        $pattern = '/(?<![\w#&;])#([a-zA-Z0-9_\x{0E00}-\x{0E7F}]+)/u';
+        $pattern = '/(?<![\w#&;:=])#(?!(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\b)([a-zA-Z0-9_\x{0E00}-\x{0E7F}]+)/u';
         if (preg_match_all($pattern, $text, $matches)) {
             return array_values(array_unique($matches[1]));
         }

@@ -9,7 +9,7 @@
 
 <div class="space-y-3">
     @forelse($announcements as $item)
-    <a href="{{ route('announcements.show', $item->id) }}" class="card mb-3 block" style="text-decoration:none;">
+    <a href="{{ route('announcements.show', $item->id) }}" class="card mb-3 block no-linkify" style="text-decoration:none;">
         <div class="card-body" style="padding:1rem;">
             <div class="flex gap-3">
                 <div style="width:4px;background:{{ $item->type==='danger'?'#dc2626':($item->type==='warning'?'#d97706':($item->type==='success'?'#16a34a':'#ea580c')) }};border-radius:2px;flex-shrink:0;"></div>

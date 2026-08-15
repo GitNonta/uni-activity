@@ -678,21 +678,21 @@ window.AdminChatManager = (function() {
 })();
 </script>
 
-<!-- Auto-Linker & Hashtag Script for Admin Cards and Descriptions -->
+<!-- Auto-Linker & Hashtag Script for Admin Descriptions and Comments -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    var tokenPattern = /((?:https?:\/\/[^\s<]+|(?<![\/\w])www\.[^\s<]+)|(?<![\w#&;])#([a-zA-Z0-9_\u0E00-\u0E7F]+))/gi;
+    var tokenPattern = /(?:(https?:\/\/[^\s<]+|(?<![\/\w])www\.[^\s<]+)|(?<![\w#&;:=])#(?!(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\b)([a-zA-Z0-9_\u0E00-\u0E7F]+))/gi;
     
     function linkifyTextNodes(element) {
-        if (!element || element.classList.contains('no-linkify')) return;
+        if (!element || element.classList.contains('no-linkify') || element.closest('a') || element.closest('.no-linkify')) return;
         
         var walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
         var textNodes = [];
         var node;
         while (node = walker.nextNode()) {
             if (node.nodeValue && tokenPattern.test(node.nodeValue)) {
-                var parent = node.parentNode;
-                if (parent && parent.tagName !== 'A' && parent.tagName !== 'SCRIPT' && parent.tagName !== 'STYLE' && parent.tagName !== 'BUTTON' && parent.tagName !== 'TEXTAREA') {
+                var parent = node.parentElement;
+                if (parent && !parent.closest('a') && parent.tagName !== 'SCRIPT' && parent.tagName !== 'STYLE' && parent.tagName !== 'BUTTON' && parent.tagName !== 'TEXTAREA') {
                     textNodes.push(node);
                 }
             }
@@ -700,6 +700,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         textNodes.forEach(function(textNode) {
+            if (!textNode.parentNode || textNode.parentNode.closest('a')) return;
             var val = textNode.nodeValue;
             var frag = document.createDocumentFragment();
             var lastIdx = 0;
@@ -712,33 +713,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 var raw = match[0];
-                var isHashtag = raw.startsWith('#');
-                
-                if (isHashtag) {
-                    var tag = raw.substring(1);
+                if (match[2]) {
+                    // Hashtag match
+                    var tag = match[2];
                     var a = document.createElement('a');
                     a.href = '/admin/activities?search=' + encodeURIComponent('#' + tag);
                     a.className = 'hashtag-badge';
-                    a.style.cssText = 'color:#ea580c;background:#fff7ed;padding:2px 8px;border-radius:6px;font-weight:600;text-decoration:none;border:1px solid #fed7aa;display:inline-block;margin:1px 2px;font-size:0.85em;cursor:pointer;position:relative;z-index:2;';
                     a.textContent = '#' + tag;
                     a.addEventListener('click', function(e) {
                         e.stopPropagation();
                     });
                     frag.appendChild(a);
-                } else {
+                } else if (match[1]) {
+                    // URL match
+                    var rawUrl = match[1];
                     var trailing = '';
-                    while (raw.length > 0 && /[.,;:!?)}\]"']/.test(raw[raw.length - 1])) {
-                        trailing = raw[raw.length - 1] + trailing;
-                        raw = raw.substring(0, raw.length - 1);
+                    while (rawUrl.length > 0 && /[.,;:!?)}\]"']/.test(rawUrl[rawUrl.length - 1])) {
+                        trailing = rawUrl[rawUrl.length - 1] + trailing;
+                        rawUrl = rawUrl.substring(0, rawUrl.length - 1);
                     }
                     
                     var a = document.createElement('a');
-                    a.href = /^https?:\/\//i.test(raw) ? raw : 'https://' + raw;
+                    a.href = /^https?:\/\//i.test(rawUrl) ? rawUrl : 'https://' + rawUrl;
                     a.target = '_blank';
                     a.rel = 'noopener noreferrer';
-                    a.className = 'linkified-url text-primary';
-                    a.style.cssText = 'color:#ea580c;text-decoration:underline;word-break:break-word;font-weight:500;cursor:pointer;position:relative;z-index:2;';
-                    a.textContent = raw;
+                    a.className = 'linkified-url';
+                    a.textContent = rawUrl;
                     a.addEventListener('click', function(e) {
                         e.stopPropagation();
                     });
@@ -755,13 +755,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 frag.appendChild(document.createTextNode(val.substring(lastIdx)));
             }
             
-            if (textNode.parentNode) {
+            if (textNode.parentNode && !textNode.parentNode.closest('a')) {
                 textNode.parentNode.replaceChild(frag, textNode);
             }
         });
     }
     
-    document.querySelectorAll('.card, .prose, .act-card, .comment-body, .alert, .modal, .table').forEach(linkifyTextNodes);
+    document.querySelectorAll('.desc-content, .prose, .comment-body, .user-content').forEach(linkifyTextNodes);
 });
 </script>
 </body>

@@ -1,5 +1,5 @@
 {{-- การ์ดแสดงงาน: badge ประเภท, สถานะ, ข้อมูลย่อ, progress --}}
-<a href="{{ route('jobs.show', $job->id) }}" class="card act-card job-card">
+<a href="{{ route('jobs.show', $job->id) }}" class="card act-card job-card no-linkify">
     {{-- รูปภาพ / gradient --}}
     @if($job->image_path)
         <div class="act-card-img">
