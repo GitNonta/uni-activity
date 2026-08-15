@@ -635,13 +635,50 @@ function buildMarkers() {
         var icon = createCustomIcon(a, isHL);
         var marker = L.marker([a.lat, a.lng], { icon: icon }).addTo(actMap);
 
-        marker.on('click', function() {
-            showActBottomSheet(a);
-        });
+        var dist = '', dirBtn = '', navBtn = '';
+        if (userLat !== null && userLng !== null) {
+            var d = haversine(userLat, userLng, a.lat, a.lng);
+            dist = '<div class="map-popup-dist">ระยะตรง: ' + formatDist(d) + '</div>';
 
-        if (isHL) {
-            showActBottomSheet(a);
+            var line = L.polyline([[userLat, userLng], [a.lat, a.lng]], {
+                color: isHL ? '#f59e0b' : '#ea580c', weight: 2, dashArray: '6, 6', opacity: 0.4
+            }).addTo(actMap);
+            actLines.push(line);
+
+            var midLat = (userLat + a.lat) / 2, midLng = (userLng + a.lng) / 2;
+            var distLabel = L.marker([midLat, midLng], {
+                icon: L.divIcon({ className: '', html: '<span class="map-dist-label">' + formatDist(d) + '</span>', iconSize: [80, 20], iconAnchor: [40, 10] }),
+                interactive: false
+            }).addTo(actMap);
+            actDistLabels.push(distLabel);
+
+            navBtn = '<button class="map-nav-btn" onclick="startRealtimeNav(' + a.id + ',' + a.lat + ',' + a.lng + ')"><svg class="icon-sm" style="display:inline;vertical-align:-2px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>นำทางแบบเรียลไทม์</button>';
+            var gUrl = 'https://www.google.com/maps/dir/?api=1&origin=' + userLat + ',' + userLng + '&destination=' + a.lat + ',' + a.lng;
+            var aUrl = 'https://maps.apple.com/?saddr=' + userLat + ',' + userLng + '&daddr=' + a.lat + ',' + a.lng;
+            dirBtn = '<div class="map-popup-dir">'
+                + '<a href="' + gUrl + '" target="_blank" class="map-dir-btn map-dir-google">Google Maps</a>'
+                + '<a href="' + aUrl + '" target="_blank" class="map-dir-btn map-dir-apple">Apple Maps</a></div>';
+        } else {
+            navBtn = '<button class="map-nav-btn" onclick="startRealtimeNav(' + a.id + ',' + a.lat + ',' + a.lng + ')"><svg class="icon-sm" style="display:inline;vertical-align:-2px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>นำทางแบบเรียลไทม์</button>';
+            var gUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + a.lat + ',' + a.lng;
+            var aUrl = 'https://maps.apple.com/?daddr=' + a.lat + ',' + a.lng;
+            dirBtn = '<div class="map-popup-dir">'
+                + '<a href="' + gUrl + '" target="_blank" class="map-dir-btn map-dir-google">Google Maps</a>'
+                + '<a href="' + aUrl + '" target="_blank" class="map-dir-btn map-dir-apple">Apple Maps</a></div>';
         }
+
+        var imgHtml = a.image ? '<img src="' + a.image + '" class="map-popup-img" style="width:100%;max-height:100px;object-fit:cover;border-radius:8px;margin-bottom:8px;">' : '';
+        marker.bindPopup(
+            imgHtml
+            + '<div class="map-popup-title" style="font-weight:700;font-size:0.9rem;margin-bottom:4px;">' + escHtml(a.title) + '</div>'
+            + '<div class="map-popup-meta" style="font-size:0.8rem;color:#64748b;margin-bottom:2px;"><svg style="width:12px;height:12px;display:inline;margin-right:2px;vertical-align:-1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>' + a.date + ' เวลา ' + a.start + ' - ' + a.end + '</div>'
+            + '<div class="map-popup-meta" style="font-size:0.8rem;color:#64748b;margin-bottom:2px;"><svg style="width:12px;height:12px;display:inline;margin-right:2px;vertical-align:-1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>' + escHtml(a.location || '-') + '</div>'
+            + '<div class="map-popup-meta" style="font-size:0.8rem;color:#64748b;margin-bottom:4px;"><svg style="width:12px;height:12px;display:inline;margin-right:2px;vertical-align:-1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' + a.hours + ' ชั่วโมง</div>'
+            + dist + navBtn + dirBtn
+            + '<a href="' + a.url + '" class="map-popup-link" style="display:block;text-align:center;margin-top:6px;padding:5px 12px;background:#ea580c;color:#fff;border-radius:6px;text-decoration:none;font-size:0.8rem;font-weight:600;">ดูรายละเอียดกิจกรรม</a>'
+        , { maxWidth: 280 });
+
+        if (isHL) marker.openPopup();
 
         actMarkers[a.id] = marker;
         bounds.push([a.lat, a.lng]);

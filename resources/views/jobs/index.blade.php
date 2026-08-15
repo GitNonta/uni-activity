@@ -633,19 +633,58 @@ function buildMarkers() {
 
     filtered.forEach(function(j) {
         var isHL = (highlightId && j.id === highlightId);
-        var color = j.type === 'parttime' ? '#0284c7' : '#0284c7';
+        var color = j.type === 'parttime' ? '#f97316' : '#0284c7';
         var iconHtml = '<div style="width:34px;height:34px;background:'+color+';border:3px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.3);"><svg width="18" height="18" fill="none" stroke="#fff" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div>';
         
         var icon = L.divIcon({ className: '', html: iconHtml, iconSize: [34, 34], iconAnchor: [17, 17] });
         var marker = L.marker([j.lat, j.lng], { icon: icon }).addTo(jobMap);
 
-        marker.on('click', function() {
-            showJobBottomSheet(j);
-        });
+        var dist = '', dirBtn = '', navBtn = '';
+        if (userLat !== null && userLng !== null) {
+            var d = haversine(userLat, userLng, j.lat, j.lng);
+            dist = '<div class="map-popup-dist">ระยะตรง: ' + formatDist(d) + '</div>';
 
-        if (isHL) {
-            showJobBottomSheet(j);
+            var line = L.polyline([[userLat, userLng], [j.lat, j.lng]], {
+                color: isHL ? '#f59e0b' : '#0284c7', weight: 2, dashArray: '6, 6', opacity: 0.4
+            }).addTo(jobMap);
+            jobLines.push(line);
+
+            var midLat = (userLat + j.lat) / 2, midLng = (userLng + j.lng) / 2;
+            var distLabel = L.marker([midLat, midLng], {
+                icon: L.divIcon({ className: '', html: '<span class="map-dist-label">' + formatDist(d) + '</span>', iconSize: [80, 20], iconAnchor: [40, 10] }),
+                interactive: false
+            }).addTo(jobMap);
+            jobDistLabels.push(distLabel);
+
+            navBtn = '<button class="map-nav-btn" onclick="startRealtimeNav(' + j.id + ',' + j.lat + ',' + j.lng + ')"><svg class="icon-sm" style="display:inline;vertical-align:-2px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>นำทางแบบเรียลไทม์</button>';
+            var gUrl = 'https://www.google.com/maps/dir/?api=1&origin=' + userLat + ',' + userLng + '&destination=' + j.lat + ',' + j.lng;
+            var aUrl = 'https://maps.apple.com/?saddr=' + userLat + ',' + userLng + '&daddr=' + j.lat + ',' + j.lng;
+            dirBtn = '<div class="map-popup-dir">'
+                + '<a href="' + gUrl + '" target="_blank" class="map-dir-btn map-dir-google">Google Maps</a>'
+                + '<a href="' + aUrl + '" target="_blank" class="map-dir-btn map-dir-apple">Apple Maps</a></div>';
+        } else {
+            navBtn = '<button class="map-nav-btn" onclick="startRealtimeNav(' + j.id + ',' + j.lat + ',' + j.lng + ')"><svg class="icon-sm" style="display:inline;vertical-align:-2px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>นำทางแบบเรียลไทม์</button>';
+            var gUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + j.lat + ',' + j.lng;
+            var aUrl = 'https://maps.apple.com/?daddr=' + j.lat + ',' + j.lng;
+            dirBtn = '<div class="map-popup-dir">'
+                + '<a href="' + gUrl + '" target="_blank" class="map-dir-btn map-dir-google">Google Maps</a>'
+                + '<a href="' + aUrl + '" target="_blank" class="map-dir-btn map-dir-apple">Apple Maps</a></div>';
         }
+
+        var imgHtml = j.image ? '<img src="' + j.image + '" class="map-popup-img" style="width:100%;max-height:100px;object-fit:cover;border-radius:8px;margin-bottom:8px;">' : '';
+        var typeLabel = j.type === 'parttime' ? '<span style="background:#fed7aa;color:#c2410c;padding:1px 6px;border-radius:10px;font-size:.7rem;font-weight:600;">Part-time</span>' : '<span style="background:#e0f2fe;color:#0284c7;padding:1px 6px;border-radius:10px;font-size:.7rem;font-weight:600;">งานทั่วไป</span>';
+
+        marker.bindPopup(
+            imgHtml
+            + '<div class="map-popup-title" style="font-weight:700;font-size:0.9rem;margin-bottom:4px;">' + typeLabel + ' ' + escHtml(j.title) + '</div>'
+            + '<div class="map-popup-meta" style="font-size:0.8rem;color:#64748b;margin-bottom:2px;"><svg style="width:12px;height:12px;display:inline;margin-right:2px;vertical-align:-1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg> ' + escHtml(j.position) + '</div>'
+            + '<div class="map-popup-meta" style="font-size:0.8rem;color:#64748b;margin-bottom:2px;"><svg style="width:12px;height:12px;display:inline;margin-right:2px;vertical-align:-1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> ' + escHtml(j.location) + '</div>'
+            + (j.compensation ? '<div class="map-popup-meta" style="font-size:0.8rem;color:#64748b;margin-bottom:4px;"><svg style="width:12px;height:12px;display:inline;margin-right:2px;vertical-align:-1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> ' + escHtml(j.compensation) + '</div>' : '')
+            + dist + navBtn + dirBtn
+            + '<a href="' + j.url + '" class="map-popup-link" style="display:block;text-align:center;margin-top:6px;padding:5px 12px;background:#0284c7;color:#fff;border-radius:6px;text-decoration:none;font-size:0.8rem;font-weight:600;">ดูรายละเอียดประกาศ</a>'
+        , { maxWidth: 280 });
+
+        if (isHL) marker.openPopup();
 
         jobMarkers[j.id] = marker;
         bounds.push([j.lat, j.lng]);
