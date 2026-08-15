@@ -34,7 +34,9 @@
         </div>
 
         @if($activity->description)
-            <p class="text-muted text-sm mt-4" style="white-space:pre-wrap;line-height:1.6;">@linkify($activity->description)</p>
+            <div class="mt-4 mb-3">
+                @format_description($activity->description)
+            </div>
         @endif
 
         {{-- การ์ดข้อมูล: วันที่, เวลา, สถานที่, ชั่วโมง --}}

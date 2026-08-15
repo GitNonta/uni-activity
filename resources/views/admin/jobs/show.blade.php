@@ -82,7 +82,9 @@
         </div>
         @if($job->description)
             <hr class="divider">
-            <p class="text-sm" style="white-space:pre-wrap;line-height:1.6;">@linkify($job->description)</p>
+            <div class="mt-2 mb-2">
+                @format_description($job->description)
+            </div>
         @endif
         @if($job->note)
             <div class="alert alert-info text-sm mt-2" style="background:#fef3c7;color:#92400e;border-color:#fde68a;line-height:1.6;"><strong>หมายเหตุ:</strong> @linkify($job->note)</div>

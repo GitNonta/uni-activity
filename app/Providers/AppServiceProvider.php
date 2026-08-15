@@ -41,7 +41,11 @@ class AppServiceProvider extends ServiceProvider
         }
 
         \Illuminate\Support\Facades\Blade::directive('linkify', function ($expression) {
-            return "<?php echo \App\Helpers\linkify($expression); ?>";
+            return '<?php echo \App\Helpers\linkify(' . $expression . '); ?>';
+        });
+
+        \Illuminate\Support\Facades\Blade::directive('format_description', function ($expression) {
+            return '<?php echo \App\Helpers\format_description(' . $expression . '); ?>';
         });
 
         $this->configureRateLimiters();

@@ -626,3 +626,53 @@ nav[role="navigation"] span[aria-current="page"] span { background: #ea580c; col
     .chat-list-item.unread .chat-title, .chat-list-item.unread .chat-preview { color: #000 !important; }
     .cf-msg-bubble-other { background: #36383a !important; color: #f1f5f9 !important; border: 1px solid #4a4d50 !important; }
 }
+
+/* ── Description Auto-Formatting & Typography ── */
+.desc-content {
+    font-size: 0.9375rem;
+    line-height: 1.75;
+    color: #334155;
+    word-break: break-word;
+    letter-spacing: 0.01em;
+}
+.desc-content p {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    line-height: 1.75;
+}
+.desc-content p:last-child {
+    margin-bottom: 0;
+}
+.desc-content ul, .desc-content ol {
+    margin: 0.6rem 0;
+    padding-left: 1.4rem;
+}
+.desc-content li {
+    margin-bottom: 0.3rem;
+    line-height: 1.65;
+}
+.desc-content strong {
+    color: #0f172a;
+    font-weight: 700;
+}
+.desc-content em {
+    font-style: italic;
+}
+.desc-content code {
+    background: #f1f5f9;
+    color: #ea580c;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.88em;
+    font-family: monospace;
+}
+.desc-content .linkified-url {
+    color: #ea580c;
+    text-decoration: underline;
+    font-weight: 500;
+    transition: color 0.15s ease;
+}
+.desc-content .linkified-url:hover {
+    color: #c2410c;
+}
+

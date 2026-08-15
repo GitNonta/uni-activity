@@ -24,7 +24,9 @@
         <h1 class="font-bold" style="font-size:1.25rem;">{{ $activity->title }}</h1>
 
         @if($activity->description)
-            <p class="text-muted text-sm mt-2" style="white-space:pre-wrap;line-height:1.6;">@linkify($activity->description)</p>
+            <div class="mt-3 mb-3">
+                @format_description($activity->description)
+            </div>
         @endif
 
         {{-- บล็อกผู้สร้างกิจกรรม สไตล์ YouTube --}}

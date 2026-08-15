@@ -4,22 +4,44 @@ declare(strict_types=1);
 
 namespace App\Helpers;
 
-if (!function_exists('linkify')) {
+if (!function_exists('format_description')) {
     /**
-     * แปลงลิงก์ URL ในข้อความ (http://, https://, www.) ให้เป็นแท็ก <a> ที่คลิกได้
-     * มีการ Escaped ป้องกัน XSS และรองรับการตัดวรรคตอนท้าย URL
+     * ระบบจัดรูปแบบข้อความคำอธิบายอัตโนมัติ (Smart Auto-Formatting)
+     * - จัดระยะห่างพารากราฟ (Paragraphs) และความสูงบรรทัด (Line-height)
+     * - จัดรูปแบบรายการหัวข้อย่อยอัตโนมัติ (Bullet Lists: -, *, • และ Numbered Lists: 1., 2., 1))
+     * - แปลงลิงก์ URL (http://, https://, www.) เป็นลิงก์ที่คลิกได้ปลอดภัย
+     * - รองรับตัวหนา (**bold**), ตัวเอียง (*italic*), และโค้ด/ไฮไลต์ (`code`)
+     * - แปลงป้ายแจ้งเตือน เช่น [สำคัญ], [ด่วน], [หมายเหตุ]
      */
-    function linkify(?string $text): string
+    function format_description(?string $text): string
     {
         if ($text === null || trim($text) === '') {
             return '';
         }
 
-        // 1. ป้องกัน XSS โดยการแปลง entity ก่อน
+        // 1. ปรับบรรทัดและตัดช่องว่างส่วนเกิน
+        $text = str_replace(["\r\n", "\r"], "\n", $text);
+        $text = preg_replace('/[ \t]+$/m', '', $text) ?? $text;
+        $text = preg_replace('/\n{3,}/', "\n\n", $text) ?? $text;
+        $text = trim($text);
+
+        // 2. ป้องกัน XSS
         $escaped = htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
-        // 2. ตรวจจับ URLs (http, https, www)
-        $pattern = '/(?xi)
+        // 3. แปลง Markdown พื้นฐาน (ตัวหนา, ตัวเอียง, โค้ด)
+        // **bold** -> <strong>
+        $escaped = preg_replace('/\*\*(.+?)\*\*/s', '<strong style="color:#0f172a;font-weight:700;">$1</strong>', $escaped) ?? $escaped;
+        // *italic* -> <em>
+        $escaped = preg_replace('/(?<!\*)\*([^*]+?)\*(?!\*)/s', '<em>$1</em>', $escaped) ?? $escaped;
+        // `code` -> <code>
+        $escaped = preg_replace('/`([^`]+?)`/', '<code style="background:#f1f5f9;color:#ea580c;padding:2px 6px;border-radius:4px;font-size:0.88em;font-family:monospace;">$1</code>', $escaped) ?? $escaped;
+
+        // 4. แปลงป้ายแจ้งเตือนอัตโนมัติ [สำคัญ], [ด่วน], [ประกาศ]
+        $escaped = preg_replace('/\[(สำคัญ|ด่วน|URGENT|IMPORTANT)\]/iu', '<span class="badge badge-red" style="font-size:0.75rem;vertical-align:middle;margin-right:4px;">$1</span>', $escaped) ?? $escaped;
+        $escaped = preg_replace('/\[(หมายเหตุ|NOTE|INFO)\]/iu', '<span class="badge badge-orange" style="font-size:0.75rem;vertical-align:middle;margin-right:4px;">$1</span>', $escaped) ?? $escaped;
+
+        // 5. ตรวจจับและแปลง URLs (http://, https://, www.)
+        $urlPattern = '/(?xi)
             (?:
                 (https?:\/\/[^\s<]+)
                 |
@@ -27,11 +49,10 @@ if (!function_exists('linkify')) {
             )
         /u';
 
-        $linked = preg_replace_callback($pattern, function (array $matches): string {
+        $escaped = preg_replace_callback($urlPattern, function (array $matches): string {
             $raw = $matches[0];
             $trailing = '';
 
-            // ตัดเครื่องหมายวรรคตอนท้าย URL ที่อาจติดมา (เช่น .,;:!?)]} เป็นต้น)
             while ($raw !== '' && in_array(mb_substr($raw, -1), ['.', ',', ';', ':', '!', '?', ')', ']', '}', '"', '\''], true)) {
                 $trailing = mb_substr($raw, -1) . $trailing;
                 $raw = mb_substr($raw, 0, -1);
@@ -46,8 +67,66 @@ if (!function_exists('linkify')) {
                 : 'https://' . $raw;
 
             return '<a href="' . $url . '" target="_blank" rel="noopener noreferrer" class="linkified-url" style="color:#ea580c;text-decoration:underline;word-break:break-word;font-weight:500;" onclick="event.stopPropagation();">' . $raw . '</a>' . $trailing;
-        }, $escaped);
+        }, $escaped) ?? $escaped;
 
-        return nl2br($linked ?? '');
+        // 6. แยก Paragraphs และจัดการ Bullet / Numbered Lists
+        $blocks = explode("\n\n", $escaped);
+        $outputBlocks = [];
+
+        foreach ($blocks as $block) {
+            $lines = explode("\n", trim($block));
+            $isBulletList = true;
+            $isNumberList = true;
+
+            foreach ($lines as $line) {
+                $tLine = trim($line);
+                if ($tLine === '') continue;
+
+                if (!preg_match('/^[-*•]\s+/u', $tLine)) {
+                    $isBulletList = false;
+                }
+                if (!preg_match('/^\d+[\.\)]\s+/u', $tLine)) {
+                    $isNumberList = false;
+                }
+            }
+
+            if ($isBulletList && count($lines) > 0) {
+                $listHtml = '<ul style="margin:0.5rem 0;padding-left:1.4rem;list-style-type:disc;line-height:1.7;">';
+                foreach ($lines as $l) {
+                    $item = preg_replace('/^[-*•]\s+/u', '', trim($l));
+                    if ($item !== '') {
+                        $listHtml .= '<li style="margin-bottom:0.25rem;">' . $item . '</li>';
+                    }
+                }
+                $listHtml .= '</ul>';
+                $outputBlocks[] = $listHtml;
+            } elseif ($isNumberList && count($lines) > 0) {
+                $listHtml = '<ol style="margin:0.5rem 0;padding-left:1.4rem;list-style-type:decimal;line-height:1.7;">';
+                foreach ($lines as $l) {
+                    $item = preg_replace('/^\d+[\.\)]\s+/u', '', trim($l));
+                    if ($item !== '') {
+                        $listHtml .= '<li style="margin-bottom:0.25rem;">' . $item . '</li>';
+                    }
+                }
+                $listHtml .= '</ol>';
+                $outputBlocks[] = $listHtml;
+            } else {
+                // พารากราฟธรรมดาที่มีการเว้นบรรทัด
+                $formattedLines = implode("<br>\n", $lines);
+                $outputBlocks[] = '<p style="margin-bottom:0.75rem;line-height:1.75;color:#334155;word-break:break-word;">' . $formattedLines . '</p>';
+            }
+        }
+
+        return '<div class="desc-content" style="font-size:0.92rem;line-height:1.75;color:#334155;word-break:break-word;">' . implode("\n", $outputBlocks) . '</div>';
+    }
+}
+
+if (!function_exists('linkify')) {
+    /**
+     * Alias สำหรับ format_description
+     */
+    function linkify(?string $text): string
+    {
+        return format_description($text);
     }
 }
