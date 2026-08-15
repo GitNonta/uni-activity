@@ -936,7 +936,29 @@ nav[role="navigation"] span[aria-current="page"] span { background: #ea580c; col
 }
 .bs-app-btn:hover { background: #e2e8f0; text-decoration: none; color: #0f172a; }
 
+/* ── Leaflet Popup Constraints ── */
+.leaflet-popup-content-wrapper {
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2) !important;
+}
+.leaflet-popup-content {
+    max-width: 260px !important;
+    margin: 10px !important;
+}
+.leaflet-popup-content img, .map-popup-img {
+    width: 100% !important;
+    max-height: 110px !important;
+    object-fit: cover !important;
+    border-radius: 8px !important;
+}
+
 @media (prefers-color-scheme: dark) {
+    .map-modal-topbar {
+        background: #202124 !important;
+        border-color: #3c4043 !important;
+        color: #f1f5f9 !important;
+    }
     .map-bottom-sheet, .map-locate-btn {
         background: #202124 !important;
         border-color: #3c4043 !important;

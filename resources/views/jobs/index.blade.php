@@ -99,37 +99,40 @@
 <div id="jobMapModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);">
     <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#fff;">
         {{-- Map Top Bar --}}
-        <div style="background:#fff;padding:.6rem 1rem;border-bottom:1px solid #e2e8f0;display:flex;flex-direction:column;gap:.4rem;z-index:10;">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+        <div class="map-modal-topbar" style="background:#fff;padding:.6rem 1rem;border-bottom:1px solid #e2e8f0;display:flex;flex-direction:column;gap:.5rem;z-index:10;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
                 <div style="display:flex;align-items:center;gap:8px;">
                     <div style="width:30px;height:30px;border-radius:8px;background:rgba(2,132,199,0.1);color:#0284c7;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                         <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                     </div>
-                    <span style="font-weight:700;font-size:1rem;" id="mapTitle">แผนที่ประกาศงาน</span>
+                    <span style="font-weight:700;font-size:0.95rem;" id="mapTitle">แผนที่ประกาศงาน</span>
                 </div>
-
-                {{-- Map Mode Switchers --}}
-                <div style="display:flex;align-items:center;gap:4px;">
-                    <button type="button" class="map-mode-btn active" id="btn-job-streets" onclick="switchJobMapLayer('streets')" title="แผนที่ปกติ">
-                        <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-                        <span>ปกติ</span>
-                    </button>
-                    <button type="button" class="map-mode-btn" id="btn-job-satellite" onclick="switchJobMapLayer('satellite')" title="ภาพถ่ายดาวเทียม">
-                        <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        <span>ดาวเทียม</span>
-                    </button>
-                    <button type="button" class="map-mode-btn" id="btn-job-heat" onclick="toggleJobHeatmap()" title="แผนที่ความหนาแน่น">
-                        <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/></svg>
-                        <span>ความหนาแน่น</span>
-                    </button>
+                <div style="display:flex;align-items:center;gap:6px;">
                     <button id="btnClearRoute" onclick="clearRoute()" style="display:none;padding:4px 10px;background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;border-radius:6px;font-size:.75rem;font-weight:600;cursor:pointer;">✕ ปิดนำทาง</button>
                     <button onclick="closeJobMap()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;padding:0 .4rem;line-height:1;color:#64748b;">&times;</button>
                 </div>
             </div>
 
-            {{-- Radius Radar Pills --}}
-            <div class="sort-scroll-container">
-                <span class="text-xs text-muted font-bold" style="display:inline-flex;align-items:center;gap:4px;white-space:nowrap;margin-right:2px;">
+            {{-- Controls Horizontal Scrollable Bar --}}
+            <div class="sort-scroll-container" style="display:flex;align-items:center;gap:6px;overflow-x:auto;padding-bottom:2px;">
+                {{-- Layer Buttons --}}
+                <button type="button" class="map-mode-btn active" id="btn-job-streets" onclick="switchJobMapLayer('streets')" title="แผนที่ปกติ">
+                    <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                    <span>ปกติ</span>
+                </button>
+                <button type="button" class="map-mode-btn" id="btn-job-satellite" onclick="switchJobMapLayer('satellite')" title="ภาพถ่ายดาวเทียม">
+                    <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span>ดาวเทียม</span>
+                </button>
+                <button type="button" class="map-mode-btn" id="btn-job-heat" onclick="toggleJobHeatmap()" title="แผนที่ความหนาแน่น">
+                    <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/></svg>
+                    <span>ความหนาแน่น</span>
+                </button>
+
+                <div style="width:1px;height:18px;background:#cbd5e1;flex-shrink:0;margin:0 2px;"></div>
+
+                {{-- Radius Pills --}}
+                <span class="text-xs text-muted font-bold" style="display:inline-flex;align-items:center;gap:3px;white-space:nowrap;margin-right:2px;">
                     <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     รัศมี:
                 </span>
