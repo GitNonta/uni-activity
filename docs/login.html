@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<!-- GitHub Pages Redirect: Login -->
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เข้าสู่ระบบ - UNI Activity</title>
+    <script>window.TARGET_ROUTE = 'login';</script>
+</head>
+<body style="margin:0;padding:0;">
+    <script>
+        // Directly reuse index.html logic by including target
+        const params = new URLSearchParams(window.location.search);
+        if (!params.has('to')) params.set('to', 'login');
+        window.location.replace('index.html?' + params.toString());
+    </script>
+</body>
+</html>

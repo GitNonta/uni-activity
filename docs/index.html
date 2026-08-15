@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Cache-Bust: 202608050242 -->
+<!-- GitHub Pages Permanent Redirect Router for LINE Rich Menu -->
 <html lang="th">
 <head>
     <meta charset="UTF-8">
@@ -7,24 +7,22 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connecting...</title>
+    <title>กำลังนำทางไปยัง UNI Activity...</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #ea580c; /* Red-Orange */
-            --primary-light: #f97316; /* Orange */
-            --primary-bg: #fff7ed; /* Light Orange Bg */
+            --primary: #ea580c;
+            --primary-light: #f97316;
+            --primary-bg: #fff7ed;
             --bg-color: #ffffff;
         }
-
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
-
         body {
             background-color: var(--bg-color);
             color: #0f172a;
@@ -35,7 +33,18 @@
             justify-content: center;
             padding: 1.5rem;
         }
-
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #202124;
+                color: #f1f5f9;
+            }
+            .loading-text {
+                color: #94a3b8 !important;
+            }
+            .progress-container {
+                background-color: #334155 !important;
+            }
+        }
         .splash-container {
             width: 100%;
             max-width: 320px;
@@ -45,21 +54,25 @@
             align-items: center;
             justify-content: center;
         }
-
         .app-logo {
-            width: 120px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             object-fit: contain;
-            margin-bottom: 2.25rem;
-            filter: drop-shadow(0 6px 12px rgba(79, 70, 229, 0.12));
-            animation: float-logo 3s ease-in-out infinite;
+            margin-bottom: 1.5rem;
+            filter: drop-shadow(0 6px 12px rgba(234, 88, 12, 0.15));
+            animation: float-logo 2.5s ease-in-out infinite;
         }
-
         @keyframes float-logo {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
+            50% { transform: translateY(-6px); }
         }
-
+        .loading-text {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #64748b;
+            margin-bottom: 1.25rem;
+            transition: all 0.2s ease;
+        }
         .progress-container {
             width: 100%;
             background-color: var(--primary-bg);
@@ -68,34 +81,57 @@
             overflow: hidden;
             position: relative;
         }
-
         .progress-bar {
             height: 100%;
             width: 0%;
             background: linear-gradient(90deg, #ea580c, #f97316, #fdba74);
             border-radius: 999px;
-            transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
     </style>
     <script>
         (function() {
-            function setProgress(targetPercent) {
+            const DEFAULT_ROUTE = ''; // default to root
+
+            function setProgress(targetPercent, text) {
                 targetPercent = Math.min(100, Math.max(0, targetPercent));
                 const progressBar = document.getElementById('progress-bar');
-                if (progressBar) {
-                    progressBar.style.width = targetPercent + '%';
-                }
+                if (progressBar) progressBar.style.width = targetPercent + '%';
+                const statusText = document.getElementById('status-text');
+                if (statusText && text) statusText.textContent = text;
             }
 
-            function getTargetUrl(baseUrl, searchStr) {
+            function getTargetUrl(baseUrl, searchStr, defaultTarget) {
                 const params = new URLSearchParams(searchStr);
                 params.delete('url');
                 params.delete('reset');
 
-                const path = params.get('path') || '';
-                const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+                let dest = params.get('to') || params.get('path') || defaultTarget || '';
+                params.delete('to');
                 params.delete('path');
 
+                const routeMap = {
+                    'login': 'login',
+                    'auth': 'login',
+                    'signin': 'login',
+                    'jobs': 'jobs',
+                    'job': 'jobs',
+                    'activities': 'activities',
+                    'activity': 'activities',
+                    'announcements': 'announcements',
+                    'announcement': 'announcements',
+                    'news': 'announcements',
+                    'my-activities': 'my-activities',
+                    'history': 'history',
+                    'profile': 'profile',
+                    'home': ''
+                };
+
+                if (routeMap[dest] !== undefined) {
+                    dest = routeMap[dest];
+                }
+
+                const cleanPath = dest.startsWith('/') ? dest.slice(1) : dest;
                 const extraQuery = params.toString();
                 let target = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
                 target += cleanPath;
@@ -151,46 +187,46 @@
 
             async function resolveAndRedirect() {
                 const searchStr = window.location.search;
+                const targetRoute = window.TARGET_ROUTE || DEFAULT_ROUTE;
 
-                // Step 1: Initializing
-                setProgress(20);
+                setProgress(25, 'กำลังเชื่อมต่อระบบ...');
 
-                // Step 2: Check override URL
+                // 1. Override URL
                 if (overrideUrl) {
-                    setProgress(40);
+                    setProgress(50, 'กำลังตรวจสอบเซิร์ฟเวอร์...');
                     if (await isUrlAlive(overrideUrl)) {
-                        setProgress(100);
+                        setProgress(100, 'กำลังเปิดหน้าเว็บ...');
                         sessionStorage.setItem('active_tunnel_url', overrideUrl);
-                        setTimeout(() => window.location.replace(getTargetUrl(overrideUrl, searchStr)), 200);
+                        setTimeout(() => window.location.replace(getTargetUrl(overrideUrl, searchStr, targetRoute)), 150);
                         return;
                     }
                 }
 
-                // Step 3: Check cached URL
+                // 2. Cached URL
                 const cachedUrl = sessionStorage.getItem('active_tunnel_url');
                 if (cachedUrl) {
-                    setProgress(60);
+                    setProgress(60, 'กำลังเชื่อมต่อไปยังเซิร์ฟเวอร์...');
                     if (await isUrlAlive(cachedUrl)) {
-                        setProgress(100);
-                        setTimeout(() => window.location.replace(getTargetUrl(cachedUrl, searchStr)), 200);
+                        setProgress(100, 'กำลังเปิดหน้าเว็บ...');
+                        setTimeout(() => window.location.replace(getTargetUrl(cachedUrl, searchStr, targetRoute)), 150);
                         return;
                     } else {
                         sessionStorage.removeItem('active_tunnel_url');
                     }
                 }
 
-                // Step 4: Fetch active_url.json
-                setProgress(80);
+                // 3. Fetch active_url.json
+                setProgress(80, 'กำลังค้นหาเซิร์ฟเวอร์ที่พร้อมใช้งาน...');
                 try {
                     const res = await fetch('active_url.json?t=' + Date.now());
                     const data = await res.json();
 
                     if (data && data.url) {
-                        setProgress(90);
+                        setProgress(95, 'กำลังเปิดหน้าเว็บ...');
                         if (await isUrlAlive(data.url)) {
-                            setProgress(100);
+                            setProgress(100, 'สำเร็จ!');
                             sessionStorage.setItem('active_tunnel_url', data.url);
-                            setTimeout(() => window.location.replace(getTargetUrl(data.url, searchStr)), 200);
+                            setTimeout(() => window.location.replace(getTargetUrl(data.url, searchStr, targetRoute)), 150);
                             return;
                         }
                     }
@@ -198,9 +234,9 @@
                     console.warn('active_url.json fetch failed:', err);
                 }
 
-                // Step 5: Server starting/updating - Smooth loop until server is active
-                setProgress(25);
-                setTimeout(resolveAndRedirect, 3000);
+                // 4. Retry
+                setProgress(30, 'กำลังรอเซิร์ฟเวอร์ตอบรับ...');
+                setTimeout(resolveAndRedirect, 2500);
             }
 
             document.addEventListener('DOMContentLoaded', resolveAndRedirect);
@@ -209,10 +245,8 @@
 </head>
 <body>
     <div class="splash-container">
-        <!-- Web Logo Image -->
         <img src="logo.svg" alt="UNI Activity Logo" class="app-logo">
-
-        <!-- Pure Loading Progress Bar -->
+        <p class="loading-text" id="status-text">กำลังเชื่อมต่อระบบ...</p>
         <div class="progress-container">
             <div class="progress-bar" id="progress-bar"></div>
         </div>
