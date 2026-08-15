@@ -45,19 +45,12 @@
         </div>
 
         @guest
-        <div style="background:#fff7ed; border:1.5px solid #fdba74; border-radius:12px; padding:16px; margin-top:16px; text-align:center; box-shadow:0 2px 8px rgba(234,88,12,0.08);">
-            <div class="flex items-center justify-center gap-2 mb-2" style="color:#c2410c; font-weight:700; font-size:.95rem;">
-                <svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                เข้าสู่ระบบเพื่อเข้าร่วมกิจกรรมและรับการแจ้งเตือน
-            </div>
-            <p class="text-xs text-muted mb-3" style="color:#9a3412;">
-                เข้าสู่ระบบด้วยรหัสนักศึกษาเพื่อรับการแจ้งเตือนข่าวสารสำคัญและลงทะเบียนกิจกรรมที่เกี่ยวข้อง
-            </p>
+        <div style="margin-top:16px; text-align:center;">
             <a href="{{ route('login') }}" class="btn btn-primary btn-block btn-lg" style="text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-weight:700; border-radius:10px; width: 100%; box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);">
                 <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-                เข้าสู่ระบบทันที
+                เข้าสู่ระบบ
             </a>
-            <p class="text-xs mt-3" style="margin-bottom: 0; color:#9a3412;">
+            <p class="text-xs mt-3 mb-0" style="color:#64748b;">
                 ยังไม่มีบัญชีนักศึกษา? <a href="{{ route('register') }}" style="color:#ea580c; text-decoration:underline; font-weight:600;">สมัครสมาชิกที่นี่</a>
             </p>
         </div>
