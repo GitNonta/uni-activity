@@ -5,6 +5,16 @@ import time, threading, json
 import monitor.config as cfg
 from monitor.telegram import tg_alert, tg_resolved, tg_daily_report
 from monitor import collectors
+from monitor.collectors import (
+    get_uptime, get_server_info, get_cf_url, get_line_status,
+    get_memory, get_load, get_temp, get_battery, get_disk,
+    get_services, get_network, get_network_info, get_logs,
+    get_deploy_logs, get_github_sync_logs_dict, get_github_events,
+    get_ai_logs, get_active_sessions, get_sftp_active,
+    get_listening_ports, get_cpu_freqs, get_wifi_rssi, get_net_speeds,
+    get_top_processes, get_postgres_stats, get_redis_stats,
+    get_queue_stats, get_cloudflared_stats, get_gpu_stats,
+)
 
 def get_alerts(stats):
     # active_alert_ids lives in cfg (no global needed)
@@ -51,7 +61,6 @@ def get_alerts(stats):
         alerts.append({"id": "high_disk", "type": "warning", "message": f"Disk Space Low: {disk_percent}% used"})
         
     # 7. Abnormal Traffic Spike (Per IP)
-    import time
     current_time = time.time()
     ip_counts = {}
     for log in cfg.inspector_logs:
@@ -69,7 +78,7 @@ def get_alerts(stats):
     from datetime import datetime
     for a in alerts:
         current_ids.add(a["id"])
-        if a["id"] not in active_alert_ids:
+        if a["id"] not in cfg.active_alert_ids:
             # บันทึก history
             history_item = a.copy()
             history_item["time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -79,7 +88,7 @@ def get_alerts(stats):
 
     # แจ้ง resolved เมื่อ alert หายไป
     for resolved_id in (cfg.active_alert_ids - current_ids):
-        _tg_resolved.discard(resolved_id)   # reset เพื่อให้ส่งได้อีกถ้าเกิดซ้ำ
+        cfg._tg_resolved.discard(resolved_id)   # reset เพื่อให้ส่งได้อีกถ้าเกิดซ้ำ
         resolved_msg = {
             "cf_offline"    : "Cloudflare Tunnel กลับมา Online แล้ว",
             "service_crash" : "Services กลับมา Running แล้ว",
@@ -99,8 +108,8 @@ def collect_stats():
         "uptime": get_uptime(),
         "server_info": get_server_info(),
         "cf_url": get_cf_url(),
-        "cf_status": url_status,
-        "speedtest": speedtest_data,
+        "cf_status": cfg.url_status,
+        "speedtest": cfg.speedtest_data,
         "line_status": get_line_status(),
         "memory": get_memory(),
         "load": get_load(),
@@ -136,7 +145,7 @@ def collect_stats():
     stats["alerts_history"] = list(cfg.alerts_history)
     return stats
 
-cfg.CACHED_PUBLIC_IP = ""
+
 
 def fetch_public_ip_loop():
     import urllib.request

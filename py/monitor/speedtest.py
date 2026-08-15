@@ -1,35 +1,8 @@
 """
 monitor/speedtest.py — Speedtest threads (internal + external via Cloudflare).
 """
-import time, threading, concurrent.futures
+import os, time, threading, concurrent.futures
 import monitor.config as cfg
-
-speedtest_data = {
-    "status": "idle",
-    "stage": "idle",
-    "ping_ms": 0,
-    "jitter_ms": 0,
-    "download_mbps": 0,
-    "upload_mbps": 0,
-    "server": {"name": "Auto-Select Server", "code": "AUTO", "latency_ms": 0},
-    "last_test": None
-}
-
-# ─── External Speedtest Job (server-side, no CORS) ────────────────────────
-_ext_job = {
-    "status": "idle",   # idle | running | done | error
-    "stage":  "idle",   # ping | upload | download | done
-    "ping":     0.0,
-    "jitter":   0.0,
-    "ping_min": 0.0,
-    "ping_max": 0.0,
-    "download": 0.0,
-    "upload":   0.0,
-    "method":   "TCP:443",
-    "server":   "Cloudflare (1.1.1.1)",
-    "error":    None,
-}
-_ext_lock = threading.Lock()
 
 
 def start_ext_speedtest() -> bool:
@@ -37,9 +10,7 @@ def start_ext_speedtest() -> bool:
     with cfg._ext_lock:
         if cfg._ext_job.get("status") == "running":
             return False
-
-        with cfg._ext_lock:
-            cfg._ext_job.update({
+        cfg._ext_job.update({
             "status": "running",
             "stage": "ping",
             "ping": 0.0,
@@ -50,7 +21,6 @@ def start_ext_speedtest() -> bool:
             "upload": 0.0,
             "error": None,
         })
-
     return True
 
 
@@ -215,7 +185,7 @@ def run_ext_speedtest_thread():
 
 def run_speedtest_thread():
     
-    if speedtest_data.get("status") == "running":
+    if cfg.speedtest_data.get("status") == "running":
         return
 
     import time, urllib.request, urllib.parse, concurrent.futures

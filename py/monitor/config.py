@@ -64,3 +64,8 @@ _ext_lock = threading.Lock()
 server_info_cache = None
 line_status_cache = {"status": "Checking...", "error": None, "last_check": 0}
 prev_net_bytes    = {"rx": 0, "tx": 0, "time": 0.0}
+
+# ── Network counters (for get_network() in collectors) ────────────────────────
+last_rx:       int   = 0
+last_tx:       int   = 0
+last_net_time: float = 0.0

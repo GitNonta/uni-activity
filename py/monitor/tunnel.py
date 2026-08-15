@@ -5,6 +5,7 @@ import time, threading, json, re, os, socket, ssl
 import urllib.parse, http.client, subprocess
 import monitor.config as cfg
 from monitor.telegram import tg_send
+from monitor.collectors import get_cf_url
 
 def ping_url_thread():
     import urllib.parse, http.client, socket, ssl, time, subprocess, re
@@ -211,7 +212,6 @@ def ping_url_thread():
             error_type = detect_error(exc, domain)
             cfg.url_status.update({"online": False, "ping_ms": 0, "error": error_type, "url": url})
             _fail_count    += 1
-            _consecutive_ok = 0
 
             # ──────────────────────────────────────────────────────────────────
             # Auto-restart เมื่อ fail ถึง threshold และผ่าน cooldown

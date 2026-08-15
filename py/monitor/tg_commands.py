@@ -4,15 +4,16 @@ monitor/tg_commands.py — Telegram bot command handlers (_cmd_* functions).
 import time, json, threading, subprocess, re, os
 import monitor.config as cfg
 from monitor.telegram import tg_send, tg_daily_report
+from monitor.collectors import get_cf_url
 
 # ── Telegram Bot Command Handler ─────────────────────────────────────────────
 _tg_last_update_id: int = 0
-_tg_cmd_queue: "queue.Queue[str]" = None   # กำหนดใน __main__
+_tg_cmd_queue = None   # กำหนดใน __main__
 
 def tg_handle_commands() -> None:
     """Long-poll Telegram getUpdates — block 20 วิ แต่ตอบสนองทันทีเมื่อมี update"""
     global _tg_last_update_id
-    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+    if not cfg.TELEGRAM_BOT_TOKEN or not cfg.TELEGRAM_CHAT_ID:
         return
 
     try:
@@ -20,7 +21,7 @@ def tg_handle_commands() -> None:
         # long-poll 20 วิ — Telegram จะ return ทันทีเมื่อมี update ใหม่
         # ไม่ต้อง sleep เพิ่มอีก
         url = (
-            f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getUpdates"
+            f"https://api.telegram.org/bot{cfg.TELEGRAM_BOT_TOKEN}/getUpdates"
             f"?offset={_tg_last_update_id + 1}&limit=10&timeout=5"
         )
         req = urllib.request.Request(url, headers={"User-Agent": "UniMonitor/2.0"})
@@ -33,7 +34,7 @@ def tg_handle_commands() -> None:
             chat = str(msg.get("chat", {}).get("id", ""))
             text = msg.get("text", "").strip()
 
-            if chat != TELEGRAM_CHAT_ID:
+            if chat != cfg.TELEGRAM_CHAT_ID:
                 tg_send(f"⛔ Unauthorized: <code>{chat}</code>")
                 continue
 

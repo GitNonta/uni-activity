@@ -33,7 +33,7 @@ def get_cf_url():
             pass
     return "Not Found"
 
-cfg.line_status_cache = {"status": "Checking...", "error": None, "last_check": 0}
+
 
 def get_line_status():
     # line_status_cache lives in cfg (no global needed)
@@ -137,9 +137,6 @@ def get_disk():
     except Exception:
         return {"total_gb": 0, "used_gb": 0, "percent": 0}
 
-last_rx = 0
-last_tx = 0
-last_net_time = 0
 
 def get_network_info():
     import subprocess
@@ -160,7 +157,6 @@ def get_network_info():
     return info
 
 def get_network():
-    global last_rx, last_tx, last_net_time
     import time
     try:
         with open("/proc/net/dev") as f:
@@ -174,15 +170,15 @@ def get_network():
                     
                     rx_rate = 0.0
                     tx_rate = 0.0
-                    if last_rx > 0 and last_tx > 0:
-                        diff = now - last_net_time
+                    if cfg.last_rx > 0 and cfg.last_tx > 0:
+                        diff = now - cfg.last_net_time
                         if diff > 0:
-                            rx_rate = ((rx - last_rx) / 1024) / diff
-                            tx_rate = ((tx - last_tx) / 1024) / diff
+                            rx_rate = ((rx - cfg.last_rx) / 1024) / diff
+                            tx_rate = ((tx - cfg.last_tx) / 1024) / diff
                             
-                    last_rx = rx
-                    last_tx = tx
-                    last_net_time = now
+                    cfg.last_rx = rx
+                    cfg.last_tx = tx
+                    cfg.last_net_time = now
                     
                     return {
                         "rx_rate": round(rx_rate, 2),
@@ -497,8 +493,8 @@ def get_services():
     _services_cache_time = _time.time()
     return status
 
+
 # --- Advanced Metrics Helpers ---
-cfg.prev_net_bytes = {"rx": 0, "tx": 0, "time": 0}
 
 def get_cpu_freqs():
     freqs = []
@@ -735,7 +731,7 @@ def get_gpu_stats():
         pass
     return stats
 
-cfg.server_info_cache = None
+
 
 def get_server_info():
     if cfg.server_info_cache is not None:
