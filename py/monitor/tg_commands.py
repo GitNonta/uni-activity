@@ -5,6 +5,7 @@ import time, json, threading, subprocess, re, os, html
 import monitor.config as cfg
 from monitor.telegram import tg_send, tg_daily_report
 from monitor.collectors import get_cf_url
+from monitor.tunnel import push_active_url_to_github
 
 # ── Telegram Bot Command Handler ─────────────────────────────────────────────
 _tg_last_update_id: int = 0
@@ -597,6 +598,9 @@ def _cmd_tunnel_restart() -> None:
                     "updated_at" : time.strftime("%Y-%m-%d %H:%M:%S"),
                 }, f)
 
+            if http_url:
+                threading.Thread(target=push_active_url_to_github, args=(http_url, ssh_url or ""), daemon=True).start()
+
             # ── 6. แจ้งผล ─────────────────────────────────────────────────
             h_icon = "✅" if http_url else "❌"
             s_icon = "✅" if ssh_url  else "❌"
@@ -728,6 +732,8 @@ def _cmd_tunnel_restart_http() -> None:
                 with open(jp, "w") as f:
                     json.dump(old_data, f)
 
+                threading.Thread(target=push_active_url_to_github, args=(http_url, old_data.get("ssh_url", "")), daemon=True).start()
+
                 ts = time.strftime("%H:%M:%S")
                 tg_send(
                     f"✅ <b>HTTP Tunnel Restarted!</b>  ({ts})\n"
@@ -819,6 +825,8 @@ def _cmd_tunnel_restart_ssh() -> None:
                 old_data.update({"ssh_url": ssh_url, "updated_at": time.strftime("%Y-%m-%d %H:%M:%S")})
                 with open(jp, "w") as f:
                     json.dump(old_data, f)
+
+                threading.Thread(target=push_active_url_to_github, args=(old_data.get("url", ""), ssh_url), daemon=True).start()
 
                 domain = ssh_url.replace("https://", "").strip("/")
                 ts = time.strftime("%H:%M:%S")

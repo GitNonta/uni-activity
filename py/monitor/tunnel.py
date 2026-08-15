@@ -80,83 +80,148 @@ def ping_url_thread():
                 return f"HTTP_{code}"
         return "UNKNOWN"
 
-    def do_restart_tunnel() -> str | None:
-        """Kill cloudflared → start ทั้ง 2 ใหม่ → รอ HTTP URL → return URL หรือ None"""
+def push_active_url_to_github(http_url: str, ssh_url: str = "") -> bool:
+    """Update docs/active_url.json on GitHub Pages via GitHub REST API."""
+    pat = None
+    env_path = "/data/data/com.termux/files/home/uni-activity/.env"
+    if os.path.exists(env_path):
         try:
-            subprocess.run(["pkill", "-9", "cloudflared"], capture_output=True)
-            time.sleep(3)
-
-            log_http = "/data/data/com.termux/files/home/cloudflared.log"
-            log_ssh  = "/data/data/com.termux/files/home/cloudflared-ssh.log"
-
-            for lp in [log_http, log_ssh]:
-                with open(lp, "w") as f:
-                    f.write("")
-
-            # Tunnel 1 — HTTP :8080
-            subprocess.Popen(
-                f"nohup cloudflared tunnel --url http://127.0.0.1:8080 "
-                f"--no-autoupdate > {log_http} 2>&1 &",
-                shell=True,
-            )
-            time.sleep(2)
-
-            # Tunnel 2 — SSH :80
-            subprocess.Popen(
-                f"nohup cloudflared tunnel --url http://127.0.0.1:80 "
-                f"--no-autoupdate > {log_ssh} 2>&1 &",
-                shell=True,
-            )
-
-            # รอ HTTP URL (สูงสุด 40 วิ)
-            new_url = None
-            ssh_url = None
-            for _ in range(40):
-                time.sleep(1)
-                try:
-                    if not new_url:
-                        with open(log_http, "r") as f:
-                            content = f.read()
-                        m = re.search(r"https://[a-zA-Z0-9-]+\.trycloudflare\.com", content)
-                        if m:
-                            new_url = m.group(0)
-                except Exception:
-                    pass
-                try:
-                    if not ssh_url:
-                        with open(log_ssh, "r") as f:
-                            content = f.read()
-                        m = re.search(r"https://[a-zA-Z0-9-]+\.trycloudflare\.com", content)
-                        if m:
-                            ssh_url = m.group(0)
-                except Exception:
-                    pass
-                if new_url and ssh_url:
-                    break
-
-            if new_url:
-                # อัพเดต .env
-                env_path = "/data/data/com.termux/files/home/uni-activity/.env"
-                if os.path.exists(env_path):
-                    with open(env_path, "r") as f:
-                        env_lines = f.readlines()
-                    with open(env_path, "w") as f:
-                        for line in env_lines:
-                            f.write(f"APP_URL={new_url}\n" if line.startswith("APP_URL=") else line)
-
-                # อัพเดต active_url.json
-                json_path = "/data/data/com.termux/files/home/uni-activity/docs/active_url.json"
-                os.makedirs(os.path.dirname(json_path), exist_ok=True)
-                with open(json_path, "w") as f:
-                    json.dump({
-                        "url"        : new_url,
-                        "ssh_url"    : ssh_url or "",
-                        "updated_at" : time.strftime("%Y-%m-%d %H:%M:%S"),
-                    }, f)
-
-            return new_url
+            with open(env_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    if line.startswith("GITHUB_PAT="):
+                        pat = line.split("=", 1)[1].strip().strip('"\'')
+                        break
         except Exception:
-            return None
+            pass
+
+    if not pat:
+        return False
+
+    import urllib.request, json as _json, base64
+
+    owner = "GitNonta"
+    repo = "uni-activity"
+    path = "docs/active_url.json"
+    api_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
+
+    headers = {
+        "Authorization": f"token {pat}",
+        "Accept": "application/vnd.github.v3+json",
+        "User-Agent": "UniActivity-Monitor",
+        "Content-Type": "application/json",
+    }
+
+    sha = None
+    try:
+        req = urllib.request.Request(api_url, headers=headers)
+        with urllib.request.urlopen(req, timeout=8) as r:
+            sha = _json.loads(r.read()).get("sha")
+    except Exception:
+        pass
+
+    content_data = {
+        "url": http_url,
+        "ssh_url": ssh_url,
+        "updated_at": time.strftime("%Y-%m-%d %H:%M:%S")
+    }
+    content_b64 = base64.b64encode(_json.dumps(content_data, indent=2).encode("utf-8")).decode("utf-8")
+
+    payload = {
+        "message": f"chore: update active tunnel URL to {http_url} [auto-sync]",
+        "content": content_b64,
+    }
+    if sha:
+        payload["sha"] = sha
+
+    try:
+        data = _json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(api_url, data=data, method="PUT", headers=headers)
+        with urllib.request.urlopen(req, timeout=10) as r:
+            return r.status in (200, 201)
+    except Exception:
+        return False
+
+
+def do_restart_tunnel() -> str | None:
+    """Kill cloudflared → start ทั้ง 2 ใหม่ → รอ HTTP URL → return URL หรือ None"""
+    try:
+        subprocess.run(["pkill", "-9", "cloudflared"], capture_output=True)
+        time.sleep(3)
+
+        log_http = "/data/data/com.termux/files/home/cloudflared.log"
+        log_ssh  = "/data/data/com.termux/files/home/cloudflared-ssh.log"
+
+        for lp in [log_http, log_ssh]:
+            with open(lp, "w") as f:
+                f.write("")
+
+        # Tunnel 1 — HTTP :8080
+        subprocess.Popen(
+            f"nohup cloudflared tunnel --url http://127.0.0.1:8080 "
+            f"--no-autoupdate > {log_http} 2>&1 &",
+            shell=True,
+        )
+        time.sleep(2)
+
+        # Tunnel 2 — SSH :80
+        subprocess.Popen(
+            f"nohup cloudflared tunnel --url http://127.0.0.1:80 "
+            f"--no-autoupdate > {log_ssh} 2>&1 &",
+            shell=True,
+        )
+
+        # รอ HTTP URL (สูงสุด 40 วิ)
+        new_url = None
+        ssh_url = None
+        for _ in range(40):
+            time.sleep(1)
+            try:
+                if not new_url:
+                    with open(log_http, "r") as f:
+                        content = f.read()
+                    m = re.search(r"https://[a-zA-Z0-9-]+\.trycloudflare\.com", content)
+                    if m:
+                        new_url = m.group(0)
+            except Exception:
+                pass
+            try:
+                if not ssh_url:
+                    with open(log_ssh, "r") as f:
+                        content = f.read()
+                    m = re.search(r"https://[a-zA-Z0-9-]+\.trycloudflare\.com", content)
+                    if m:
+                        ssh_url = m.group(0)
+            except Exception:
+                pass
+            if new_url and ssh_url:
+                break
+
+        if new_url:
+            # อัพเดต .env
+            env_path = "/data/data/com.termux/files/home/uni-activity/.env"
+            if os.path.exists(env_path):
+                with open(env_path, "r") as f:
+                    env_lines = f.readlines()
+                with open(env_path, "w") as f:
+                    for line in env_lines:
+                        f.write(f"APP_URL={new_url}\n" if line.startswith("APP_URL=") else line)
+
+            # อัพเดต active_url.json
+            json_path = "/data/data/com.termux/files/home/uni-activity/docs/active_url.json"
+            os.makedirs(os.path.dirname(json_path), exist_ok=True)
+            with open(json_path, "w") as f:
+                json.dump({
+                    "url"        : new_url,
+                    "ssh_url"    : ssh_url or "",
+                    "updated_at" : time.strftime("%Y-%m-%d %H:%M:%S"),
+                }, f)
+
+            # Auto-push to GitHub Pages
+            threading.Thread(target=push_active_url_to_github, args=(new_url, ssh_url or ""), daemon=True).start()
+
+        return new_url
+    except Exception:
+        return None
 
     # ── Main loop ─────────────────────────────────────────────────────────────
     while True:
