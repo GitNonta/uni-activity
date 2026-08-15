@@ -42,8 +42,13 @@ class ActivityController extends Controller
             ->when($request->category, fn($q) => $q->where('category_id', $request->category))
             ->when($request->mandatory, fn($q) => $q->where('is_mandatory', true))
             ->when($request->search, fn($q) => $q->where(function ($query) use ($request) {
-                $query->where('title', 'like', "%{$request->search}%")
-                      ->orWhere('location', 'like', "%{$request->search}%");
+                $rawSearch = trim((string) $request->search);
+                $cleanSearch = ltrim($rawSearch, '#');
+                $query->where('title', 'like', "%{$rawSearch}%")
+                      ->orWhere('title', 'like', "%{$cleanSearch}%")
+                      ->orWhere('description', 'like', "%{$rawSearch}%")
+                      ->orWhere('description', 'like', "%{$cleanSearch}%")
+                      ->orWhere('location', 'like', "%{$cleanSearch}%");
             }))
             ->when($request->scope, fn($q) => $q->where('scope', $request->scope))
             ->where('status', '!=', 'cancelled')

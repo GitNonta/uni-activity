@@ -676,3 +676,28 @@ nav[role="navigation"] span[aria-current="page"] span { background: #ea580c; col
     color: #c2410c;
 }
 
+/* ── Hashtag Pill Badges ── */
+.hashtag-badge {
+    color: #ea580c !important;
+    background: #fff7ed !important;
+    padding: 2px 8px !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    border: 1px solid #fed7aa !important;
+    display: inline-block !important;
+    margin: 1px 3px !important;
+    font-size: 0.85em !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    line-height: 1.4 !important;
+}
+.hashtag-badge:hover {
+    background: #ffedd5 !important;
+    color: #c2410c !important;
+    border-color: #fdba74 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(234, 88, 12, 0.15);
+}
+
+

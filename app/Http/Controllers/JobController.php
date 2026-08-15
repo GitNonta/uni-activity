@@ -26,12 +26,18 @@ class JobController extends Controller
         $data = \Illuminate\Support\Facades\Cache::remember($cacheKey, 60, function () use ($request) {
             $query = JobListing::query()->withCount(['applications', 'comments']);
 
-            // ค้นหาด้วยชื่องาน / สถานที่
+            // ค้นหาด้วยชื่องาน / ตำแหน่ง / คำอธิบาย / หมายเหตุ / แฮชแท็ก
             if ($search = $request->input('search')) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('title', 'like', "%{$search}%")
-                      ->orWhere('position', 'like', "%{$search}%")
-                      ->orWhere('location', 'like', "%{$search}%");
+                $rawSearch = trim((string) $search);
+                $cleanSearch = ltrim($rawSearch, '#');
+                $query->where(function ($q) use ($rawSearch, $cleanSearch) {
+                    $q->where('title', 'like', "%{$rawSearch}%")
+                      ->orWhere('title', 'like', "%{$cleanSearch}%")
+                      ->orWhere('position', 'like', "%{$cleanSearch}%")
+                      ->orWhere('description', 'like', "%{$rawSearch}%")
+                      ->orWhere('description', 'like', "%{$cleanSearch}%")
+                      ->orWhere('note', 'like', "%{$cleanSearch}%")
+                      ->orWhere('location', 'like', "%{$cleanSearch}%");
                 });
             }
 
