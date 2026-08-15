@@ -95,17 +95,145 @@
 <div class="mt-4">{{ $activities->links() }}</div>
 
 {{-- Map Modal Overlay --}}
-<div id="actMapModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);">
-    <div style="position:absolute;inset:0;display:flex;flex-direction:column;">
-        <div style="background:#fff;padding:.75rem 1rem;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.1);z-index:10;">
-            <span style="font-weight:700;font-size:1rem;" id="mapTitle">แผนที่กิจกรรม</span>
-            <div style="display:flex;gap:.5rem;align-items:center;">
-                <button id="btnClearRoute" onclick="clearRoute()" style="display:none;padding:4px 12px;background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;border-radius:6px;font-size:.8rem;font-weight:500;cursor:pointer;">✕ ปิดนำทาง</button>
-                <button onclick="closeMapModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;padding:0 .5rem;line-height:1;">&times;</button>
+<div id="actMapModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);">
+    <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#fff;">
+        {{-- Map Top Bar --}}
+        <div style="background:#fff;padding:.6rem 1rem;border-bottom:1px solid #e2e8f0;display:flex;flex-direction:column;gap:.4rem;z-index:10;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <div style="width:30px;height:30px;border-radius:8px;background:rgba(234,88,12,0.1);color:#ea580c;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                    </div>
+                    <span style="font-weight:700;font-size:1rem;" id="mapTitle">แผนที่กิจกรรม</span>
+                </div>
+
+                {{-- Map Mode Switchers --}}
+                <div style="display:flex;align-items:center;gap:4px;">
+                    <button type="button" class="map-mode-btn active" id="btn-act-streets" onclick="switchActMapLayer('streets')" title="แผนที่ปกติ">
+                        <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                        <span>ปกติ</span>
+                    </button>
+                    <button type="button" class="map-mode-btn" id="btn-act-satellite" onclick="switchActMapLayer('satellite')" title="ภาพถ่ายดาวเทียม">
+                        <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span>ดาวเทียม</span>
+                    </button>
+                    <button type="button" class="map-mode-btn" id="btn-act-heat" onclick="toggleActHeatmap()" title="แผนที่ความหนาแน่น">
+                        <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/></svg>
+                        <span>ความหนาแน่น</span>
+                    </button>
+                    <button id="btnClearRoute" onclick="clearRoute()" style="display:none;padding:4px 10px;background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;border-radius:6px;font-size:.75rem;font-weight:600;cursor:pointer;">✕ ปิดนำทาง</button>
+                    <button onclick="closeMapModal()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;padding:0 .4rem;line-height:1;color:#64748b;">&times;</button>
+                </div>
+            </div>
+
+            {{-- Radius Radar Pills --}}
+            <div class="sort-scroll-container">
+                <span class="text-xs text-muted font-bold" style="display:inline-flex;align-items:center;gap:4px;white-space:nowrap;margin-right:2px;">
+                    <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    รัศมี:
+                </span>
+                <button type="button" class="map-radius-pill active" data-radius="0" onclick="filterActRadius(0, this)">
+                    <span>ไม่จำกัด</span>
+                </button>
+                <button type="button" class="map-radius-pill" data-radius="2" onclick="filterActRadius(2, this)">
+                    <span>&lt; 2 กม.</span>
+                </button>
+                <button type="button" class="map-radius-pill" data-radius="5" onclick="filterActRadius(5, this)">
+                    <span>&lt; 5 กม.</span>
+                </button>
+                <button type="button" class="map-radius-pill" data-radius="10" onclick="filterActRadius(10, this)">
+                    <span>&lt; 10 กม.</span>
+                </button>
+                <button type="button" class="map-radius-pill" data-radius="25" onclick="filterActRadius(25, this)">
+                    <span>&lt; 25 กม.</span>
+                </button>
             </div>
         </div>
-        <div style="flex:1;display:flex;position:relative;">
-            <div id="actMapContainer" style="flex:1;"></div>
+
+        {{-- Map Canvas & Floating Elements --}}
+        <div style="flex:1;display:flex;position:relative;overflow:hidden;">
+            <div id="actMapContainer" style="flex:1;width:100%;height:100%;"></div>
+
+            {{-- Floating Locate Me Button --}}
+            <button type="button" class="map-locate-btn" onclick="locateAndCenterActUser()" title="ระบุตำแหน่งของฉัน">
+                <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </button>
+
+            {{-- BottomSheet Preview Card --}}
+            <div id="actBottomSheet" class="map-bottom-sheet" style="display:none;">
+                <div class="bs-handle"></div>
+                <div class="bs-content">
+                    <button type="button" class="bs-close-btn" onclick="closeActBottomSheet()">
+                        <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                    <div class="flex gap-3 items-start">
+                        <div class="bs-thumb">
+                            <img id="act-bs-img" src="" alt="Poster" style="display:none;">
+                            <div id="act-bs-fallback" class="bs-icon-fallback">
+                                <svg style="width:24px;height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            </div>
+                        </div>
+                        <div style="flex:1;min-width:0;">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span id="act-bs-badge" class="badge badge-orange">กิจกรรม</span>
+                                <span id="act-bs-distance" class="bs-distance-pill">-</span>
+                            </div>
+                            <h3 id="act-bs-title" class="bs-title" style="font-size:0.95rem;margin:0 0 2px;"></h3>
+                            <p id="act-bs-location" class="bs-subtitle" style="font-size:0.78rem;color:#64748b;margin:0;"></p>
+                        </div>
+                    </div>
+
+                    {{-- ETAs & Meta --}}
+                    <div class="bs-meta-grid mt-2" style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;">
+                        <div class="bs-meta-card" style="padding:4px 8px;">
+                            <div class="bs-meta-label" style="font-size:0.68rem;color:#64748b;display:flex;align-items:center;gap:3px;">
+                                <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                <span>เดินเท้า</span>
+                            </div>
+                            <span id="act-bs-walk-eta" class="bs-meta-val" style="font-size:0.8rem;font-weight:700;">-</span>
+                        </div>
+                        <div class="bs-meta-card" style="padding:4px 8px;">
+                            <div class="bs-meta-label" style="font-size:0.68rem;color:#64748b;display:flex;align-items:center;gap:3px;">
+                                <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
+                                <span>ขับขี่</span>
+                            </div>
+                            <span id="act-bs-drive-eta" class="bs-meta-val" style="font-size:0.8rem;font-weight:700;">-</span>
+                        </div>
+                        <div class="bs-meta-card" style="grid-column:span 2;padding:4px 8px;">
+                            <div class="bs-meta-label" style="font-size:0.68rem;color:#64748b;display:flex;align-items:center;gap:3px;">
+                                <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                <span>กำหนดการ</span>
+                            </div>
+                            <span id="act-bs-meta-info" class="bs-meta-val" style="font-size:0.8rem;font-weight:700;">-</span>
+                        </div>
+                    </div>
+
+                    {{-- Action Buttons --}}
+                    <div class="bs-actions mt-2" style="display:flex;gap:6px;">
+                        <a id="act-bs-detail-btn" href="#" class="btn btn-primary btn-sm flex-1" style="font-size:0.78rem;padding:.35rem .6rem;">
+                            <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            <span>ดูรายละเอียด</span>
+                        </a>
+                        <button type="button" id="act-bs-nav-btn" onclick="startNavFromBottomSheet()" class="btn btn-outline btn-sm flex-1" style="font-size:0.78rem;padding:.35rem .6rem;color:#ea580c;border-color:#ea580c;">
+                            <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                            <span>นำทางแบบเรียลไทม์</span>
+                        </button>
+                    </div>
+
+                    {{-- External Apps --}}
+                    <div style="display:flex;gap:6px;margin-top:6px;">
+                        <a id="act-bs-gmaps" href="#" target="_blank" rel="noopener noreferrer" class="bs-app-btn flex-1" style="font-size:0.72rem;padding:4px 8px;">
+                            <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                            <span>Google Maps</span>
+                        </a>
+                        <a id="act-bs-applemaps" href="#" target="_blank" rel="noopener noreferrer" class="bs-app-btn flex-1" style="font-size:0.72rem;padding:4px 8px;">
+                            <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                            <span>Apple Maps</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
             <div id="directionsPanel" style="display:none;width:320px;background:#fff;overflow-y:auto;border-left:1px solid #e2e8f0;flex-shrink:0;"></div>
         </div>
     </div>
@@ -116,6 +244,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.min.js"></script>
 <style>
     .act-map-btn {
@@ -321,6 +450,137 @@ var kalman = {
 // ══════════════════════════════
 //  Map & Marker basics
 // ══════════════════════════════
+var actStreetTile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' });
+var actSatelliteTile = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: '&copy; Esri' });
+var actHeatLayer = null;
+var actRadiusCircle = null;
+var actCurrentRadius = 0;
+var actActiveLoc = null;
+
+function switchActMapLayer(type) {
+    if (!actMap) return;
+    document.getElementById('btn-act-streets').classList.toggle('active', type === 'streets');
+    document.getElementById('btn-act-satellite').classList.toggle('active', type === 'satellite');
+    if (type === 'satellite') {
+        actMap.removeLayer(actStreetTile);
+        actMap.addLayer(actSatelliteTile);
+    } else {
+        actMap.removeLayer(actSatelliteTile);
+        actMap.addLayer(actStreetTile);
+    }
+}
+
+function toggleActHeatmap() {
+    if (!actMap) return;
+    var btn = document.getElementById('btn-act-heat');
+    var isActive = btn.classList.toggle('active');
+    if (isActive) {
+        var points = geoActivities.map(function(a) { return [a.lat, a.lng, 0.8]; });
+        if (!actHeatLayer) actHeatLayer = L.heatLayer(points, { radius: 25, blur: 15 });
+        actMap.addLayer(actHeatLayer);
+        Object.values(actMarkers).forEach(function(m) { actMap.removeLayer(m); });
+    } else {
+        if (actHeatLayer) actMap.removeLayer(actHeatLayer);
+        buildMarkers();
+    }
+}
+
+function filterActRadius(km, btn) {
+    actCurrentRadius = km;
+    document.querySelectorAll('#actMapModal .map-radius-pill').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    if (km > 0) {
+        if (userLat === null || userLng === null) {
+            locateAndCenterActUser(function() { updateActRadiusCircle(km); });
+        } else {
+            updateActRadiusCircle(km);
+        }
+    } else {
+        if (actRadiusCircle) actMap.removeLayer(actRadiusCircle);
+        buildMarkers();
+    }
+}
+
+function updateActRadiusCircle(km) {
+    if (userLat === null || userLng === null || !actMap) return;
+    if (actRadiusCircle) actMap.removeLayer(actRadiusCircle);
+    actRadiusCircle = L.circle([userLat, userLng], {
+        radius: km * 1000,
+        color: '#ea580c',
+        fillColor: '#ea580c',
+        fillOpacity: 0.08,
+        weight: 2,
+        dashArray: '6, 6'
+    }).addTo(actMap);
+    actMap.fitBounds(actRadiusCircle.getBounds());
+    buildMarkers();
+}
+
+function locateAndCenterActUser(cb) {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(function(pos) {
+        userLat = pos.coords.latitude;
+        userLng = pos.coords.longitude;
+        if (actMap) actMap.setView([userLat, userLng], 16, { animate: true });
+        buildMarkers();
+        if (cb) cb();
+    }, function(err) {
+        console.warn('GPS location error:', err);
+    }, { enableHighAccuracy: true, timeout: 8000 });
+}
+
+function showActBottomSheet(a) {
+    actActiveLoc = a;
+    var sheet = document.getElementById('actBottomSheet');
+    var img = document.getElementById('act-bs-img');
+    var fallback = document.getElementById('act-bs-fallback');
+    if (a.image) {
+        img.src = a.image;
+        img.style.display = 'block';
+        fallback.style.display = 'none';
+    } else {
+        img.style.display = 'none';
+        fallback.style.display = 'flex';
+    }
+
+    document.getElementById('act-bs-title').textContent = a.title;
+    document.getElementById('act-bs-location').textContent = (a.location || 'มหาวิทยาลัย') + ' • ' + (a.category_name || 'กิจกรรม');
+
+    var badge = document.getElementById('act-bs-badge');
+    badge.textContent = a.is_mandatory ? 'กิจกรรมบังคับ' : 'กิจกรรม';
+    badge.className = 'badge ' + (a.is_mandatory ? 'badge-red' : 'badge-orange');
+
+    var distText = '-', walkText = '-', driveText = '-';
+    if (userLat !== null && userLng !== null) {
+        var d = haversine(userLat, userLng, a.lat, a.lng);
+        distText = formatDist(d);
+        var distKm = d / 1000;
+        walkText = '~' + Math.round((distKm / 4.8) * 60) + ' นาที';
+        driveText = '~' + Math.max(1, Math.round((distKm / 35) * 60)) + ' นาที';
+    }
+    document.getElementById('act-bs-distance').textContent = distText;
+    document.getElementById('act-bs-walk-eta').textContent = walkText;
+    document.getElementById('act-bs-drive-eta').textContent = driveText;
+    document.getElementById('act-bs-meta-info').textContent = a.date + ' (' + a.hours + ' ชม.)';
+
+    document.getElementById('act-bs-detail-btn').href = a.url;
+    document.getElementById('act-bs-gmaps').href = 'https://www.google.com/maps/dir/?api=1&destination=' + a.lat + ',' + a.lng;
+    document.getElementById('act-bs-applemaps').href = 'https://maps.apple.com/?daddr=' + a.lat + ',' + a.lng;
+
+    sheet.style.display = 'block';
+}
+
+function closeActBottomSheet() {
+    document.getElementById('actBottomSheet').style.display = 'none';
+    actActiveLoc = null;
+}
+
+function startNavFromBottomSheet() {
+    if (!actActiveLoc) return;
+    closeActBottomSheet();
+    startRealtimeNav(actActiveLoc.id, actActiveLoc.lat, actActiveLoc.lng);
+}
+
 function openActivityMap(focusId) {
     var modal = document.getElementById('actMapModal');
     modal.style.display = 'block';
@@ -328,10 +588,15 @@ function openActivityMap(focusId) {
     highlightId = focusId || null;
 
     if (!actMap) {
-        actMap = L.map('actMapContainer', { zoomControl: true });
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap'
-        }).addTo(actMap);
+        actMap = L.map('actMapContainer', { zoomControl: false });
+        L.control.zoom({ position: 'topright' }).addTo(actMap);
+        actStreetTile.addTo(actMap);
+
+        actMap.on('click', function(e) {
+            if (e.originalEvent.target.id === 'actMapContainer' || e.originalEvent.target.classList.contains('leaflet-container')) {
+                closeActBottomSheet();
+            }
+        });
     }
 
     if (navigator.geolocation) {
@@ -353,62 +618,42 @@ function buildMarkers() {
     if (meMarker && !nav.active) { actMap.removeLayer(meMarker); meMarker = null; }
 
     var bounds = [];
-    geoActivities.forEach(function(a) {
+    var filtered = geoActivities.filter(function(a) {
+        if (actCurrentRadius > 0 && userLat !== null && userLng !== null) {
+            var d = haversine(userLat, userLng, a.lat, a.lng);
+            if (d > actCurrentRadius * 1000) return false;
+        }
+        return true;
+    });
+
+    filtered.forEach(function(a) {
         var isHL = (highlightId && a.id === highlightId);
         var icon = createCustomIcon(a, isHL);
         var marker = L.marker([a.lat, a.lng], { icon: icon }).addTo(actMap);
 
-        var dist = '', dirBtn = '', navBtn = '';
-        if (userLat !== null && userLng !== null) {
-            var d = haversine(userLat, userLng, a.lat, a.lng);
-            dist = '<div class="map-popup-dist">ระยะตรง: ' + formatDist(d) + '</div>';
+        marker.on('click', function() {
+            showActBottomSheet(a);
+        });
 
-            var line = L.polyline([[userLat, userLng], [a.lat, a.lng]], {
-                color: isHL ? '#f59e0b' : '#ea580c', weight: 2, dashArray: '6, 6', opacity: 0.4
-            }).addTo(actMap);
-            actLines.push(line);
-
-            var midLat = (userLat + a.lat) / 2, midLng = (userLng + a.lng) / 2;
-            var distLabel = L.marker([midLat, midLng], {
-                icon: L.divIcon({ className: '', html: '<span class="map-dist-label">' + formatDist(d) + '</span>', iconSize: [80, 20], iconAnchor: [40, 10] }),
-                interactive: false
-            }).addTo(actMap);
-            actDistLabels.push(distLabel);
-
-            navBtn = '<button class="map-nav-btn" onclick="startRealtimeNav(' + a.id + ',' + a.lat + ',' + a.lng + ')"><svg class="icon-sm" style="display:inline;vertical-align:-2px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>นำทางแบบเรียลไทม์</button>';
-            var gUrl = 'https://www.google.com/maps/dir/?api=1&origin=' + userLat + ',' + userLng + '&destination=' + a.lat + ',' + a.lng;
-            var aUrl = 'https://maps.apple.com/?saddr=' + userLat + ',' + userLng + '&daddr=' + a.lat + ',' + a.lng;
-            dirBtn = '<div class="map-popup-dir">'
-                + '<a href="' + gUrl + '" target="_blank" class="map-dir-btn map-dir-google">Google Maps</a>'
-                + '<a href="' + aUrl + '" target="_blank" class="map-dir-btn map-dir-apple">Apple Maps</a></div>';
+        if (isHL) {
+            showActBottomSheet(a);
         }
-        var imgHtml = a.image ? '<img src="' + a.image + '" class="map-popup-img">' : '';
-        marker.bindPopup(
-            imgHtml
-            + '<div class="map-popup-title">' + escHtml(a.title) + '</div>'
-            + '<div class="map-popup-meta"><svg class="icon-sm" style="display:inline;vertical-align:-2px;margin-right:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>' + a.date + ' เวลา ' + a.start + ' - ' + a.end + '</div>'
-            + '<div class="map-popup-meta"><svg class="icon-sm" style="display:inline;vertical-align:-2px;margin-right:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>' + escHtml(a.location || '-') + '</div>'
-            + '<div class="map-popup-meta"><svg class="icon-sm" style="display:inline;vertical-align:-2px;margin-right:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' + a.hours + ' ชั่วโมง</div>'
-            + dist + navBtn + dirBtn
-            + '<a href="' + a.url + '" class="map-popup-link">ดูรายละเอียด</a>'
-        , { maxWidth: 280 });
 
-        if (isHL) marker.openPopup();
         actMarkers[a.id] = marker;
         bounds.push([a.lat, a.lng]);
     });
 
     if (userLat !== null && userLng !== null && !nav.active) {
-        var meIcon = L.divIcon({ className: '', html: '<div style="width:16px;height:16px;background:#ea580c;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 3px rgba(59,130,246,.35);"></div>', iconSize: [16, 16], iconAnchor: [8, 8] });
+        var meIcon = L.divIcon({ className: '', html: '<div class="user-gps-dot"></div>', iconSize: [16, 16], iconAnchor: [8, 8] });
         meMarker = L.marker([userLat, userLng], { icon: meIcon, zIndexOffset: 1000 }).addTo(actMap).bindPopup('<b>ตำแหน่งของคุณ</b>');
         bounds.push([userLat, userLng]);
     }
 
     if (highlightId && actMarkers[highlightId]) {
         actMap.setView(actMarkers[highlightId].getLatLng(), 16);
-    } else if (bounds.length > 1) {
+    } else if (bounds.length > 1 && actCurrentRadius === 0) {
         actMap.fitBounds(bounds, { padding: [40, 40] });
-    } else if (bounds.length === 1) {
+    } else if (bounds.length === 1 && actCurrentRadius === 0) {
         actMap.setView(bounds[0], 15);
     }
     setTimeout(function() { actMap.invalidateSize(); }, 200);

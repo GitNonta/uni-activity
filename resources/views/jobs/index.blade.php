@@ -96,17 +96,145 @@
 <div class="mt-4">{{ $jobs->links() }}</div>
 
 {{-- Map Modal Overlay --}}
-<div id="jobMapModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);">
-    <div style="position:absolute;inset:0;display:flex;flex-direction:column;">
-        <div style="background:#fff;padding:.75rem 1rem;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.1);z-index:10;">
-            <span style="font-weight:700;font-size:1rem;" id="mapTitle">แผนที่ประกาศงาน</span>
-            <div style="display:flex;gap:.5rem;align-items:center;">
-                <button id="btnClearRoute" onclick="clearRoute()" style="display:none;padding:4px 12px;background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;border-radius:6px;font-size:.8rem;font-weight:500;cursor:pointer;">✕ ปิดนำทาง</button>
-                <button onclick="closeJobMap()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;padding:0 .5rem;line-height:1;">&times;</button>
+<div id="jobMapModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);">
+    <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#fff;">
+        {{-- Map Top Bar --}}
+        <div style="background:#fff;padding:.6rem 1rem;border-bottom:1px solid #e2e8f0;display:flex;flex-direction:column;gap:.4rem;z-index:10;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <div style="width:30px;height:30px;border-radius:8px;background:rgba(2,132,199,0.1);color:#0284c7;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    </div>
+                    <span style="font-weight:700;font-size:1rem;" id="mapTitle">แผนที่ประกาศงาน</span>
+                </div>
+
+                {{-- Map Mode Switchers --}}
+                <div style="display:flex;align-items:center;gap:4px;">
+                    <button type="button" class="map-mode-btn active" id="btn-job-streets" onclick="switchJobMapLayer('streets')" title="แผนที่ปกติ">
+                        <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                        <span>ปกติ</span>
+                    </button>
+                    <button type="button" class="map-mode-btn" id="btn-job-satellite" onclick="switchJobMapLayer('satellite')" title="ภาพถ่ายดาวเทียม">
+                        <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span>ดาวเทียม</span>
+                    </button>
+                    <button type="button" class="map-mode-btn" id="btn-job-heat" onclick="toggleJobHeatmap()" title="แผนที่ความหนาแน่น">
+                        <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/></svg>
+                        <span>ความหนาแน่น</span>
+                    </button>
+                    <button id="btnClearRoute" onclick="clearRoute()" style="display:none;padding:4px 10px;background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;border-radius:6px;font-size:.75rem;font-weight:600;cursor:pointer;">✕ ปิดนำทาง</button>
+                    <button onclick="closeJobMap()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;padding:0 .4rem;line-height:1;color:#64748b;">&times;</button>
+                </div>
+            </div>
+
+            {{-- Radius Radar Pills --}}
+            <div class="sort-scroll-container">
+                <span class="text-xs text-muted font-bold" style="display:inline-flex;align-items:center;gap:4px;white-space:nowrap;margin-right:2px;">
+                    <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    รัศมี:
+                </span>
+                <button type="button" class="map-radius-pill active" data-radius="0" onclick="filterJobRadius(0, this)">
+                    <span>ไม่จำกัด</span>
+                </button>
+                <button type="button" class="map-radius-pill" data-radius="2" onclick="filterJobRadius(2, this)">
+                    <span>&lt; 2 กม.</span>
+                </button>
+                <button type="button" class="map-radius-pill" data-radius="5" onclick="filterJobRadius(5, this)">
+                    <span>&lt; 5 กม.</span>
+                </button>
+                <button type="button" class="map-radius-pill" data-radius="10" onclick="filterJobRadius(10, this)">
+                    <span>&lt; 10 กม.</span>
+                </button>
+                <button type="button" class="map-radius-pill" data-radius="25" onclick="filterJobRadius(25, this)">
+                    <span>&lt; 25 กม.</span>
+                </button>
             </div>
         </div>
-        <div style="flex:1;display:flex;position:relative;">
-            <div id="jobMapContainer" style="flex:1;"></div>
+
+        {{-- Map Canvas & Floating Elements --}}
+        <div style="flex:1;display:flex;position:relative;overflow:hidden;">
+            <div id="jobMapContainer" style="flex:1;width:100%;height:100%;"></div>
+
+            {{-- Floating Locate Me Button --}}
+            <button type="button" class="map-locate-btn" onclick="locateAndCenterJobUser()" title="ระบุตำแหน่งของฉัน">
+                <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </button>
+
+            {{-- BottomSheet Preview Card --}}
+            <div id="jobBottomSheet" class="map-bottom-sheet" style="display:none;">
+                <div class="bs-handle"></div>
+                <div class="bs-content">
+                    <button type="button" class="bs-close-btn" onclick="closeJobBottomSheet()">
+                        <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                    <div class="flex gap-3 items-start">
+                        <div class="bs-thumb">
+                            <img id="job-bs-img" src="" alt="Poster" style="display:none;">
+                            <div id="job-bs-fallback" class="bs-icon-fallback" style="background:rgba(2,132,199,0.1);color:#0284c7;">
+                                <svg style="width:24px;height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                            </div>
+                        </div>
+                        <div style="flex:1;min-width:0;">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span id="job-bs-badge" class="badge badge-blue">หางาน</span>
+                                <span id="job-bs-distance" class="bs-distance-pill">-</span>
+                            </div>
+                            <h3 id="job-bs-title" class="bs-title" style="font-size:0.95rem;margin:0 0 2px;"></h3>
+                            <p id="job-bs-location" class="bs-subtitle" style="font-size:0.78rem;color:#64748b;margin:0;"></p>
+                        </div>
+                    </div>
+
+                    {{-- ETAs & Meta --}}
+                    <div class="bs-meta-grid mt-2" style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;">
+                        <div class="bs-meta-card" style="padding:4px 8px;">
+                            <div class="bs-meta-label" style="font-size:0.68rem;color:#64748b;display:flex;align-items:center;gap:3px;">
+                                <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                <span>เดินเท้า</span>
+                            </div>
+                            <span id="job-bs-walk-eta" class="bs-meta-val" style="font-size:0.8rem;font-weight:700;">-</span>
+                        </div>
+                        <div class="bs-meta-card" style="padding:4px 8px;">
+                            <div class="bs-meta-label" style="font-size:0.68rem;color:#64748b;display:flex;align-items:center;gap:3px;">
+                                <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
+                                <span>ขับขี่</span>
+                            </div>
+                            <span id="job-bs-drive-eta" class="bs-meta-val" style="font-size:0.8rem;font-weight:700;">-</span>
+                        </div>
+                        <div class="bs-meta-card" style="grid-column:span 2;padding:4px 8px;">
+                            <div class="bs-meta-label" style="font-size:0.68rem;color:#64748b;display:flex;align-items:center;gap:3px;">
+                                <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <span>ค่าตอบแทน / วันเริ่มงาน</span>
+                            </div>
+                            <span id="job-bs-meta-info" class="bs-meta-val" style="font-size:0.8rem;font-weight:700;">-</span>
+                        </div>
+                    </div>
+
+                    {{-- Action Buttons --}}
+                    <div class="bs-actions mt-2" style="display:flex;gap:6px;">
+                        <a id="job-bs-detail-btn" href="#" class="btn btn-primary btn-sm flex-1" style="font-size:0.78rem;padding:.35rem .6rem;">
+                            <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            <span>ดูรายละเอียด</span>
+                        </a>
+                        <button type="button" id="job-bs-nav-btn" onclick="startNavFromJobBottomSheet()" class="btn btn-outline btn-sm flex-1" style="font-size:0.78rem;padding:.35rem .6rem;color:#0284c7;border-color:#0284c7;">
+                            <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                            <span>นำทางแบบเรียลไทม์</span>
+                        </button>
+                    </div>
+
+                    {{-- External Apps --}}
+                    <div style="display:flex;gap:6px;margin-top:6px;">
+                        <a id="job-bs-gmaps" href="#" target="_blank" rel="noopener noreferrer" class="bs-app-btn flex-1" style="font-size:0.72rem;padding:4px 8px;">
+                            <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                            <span>Google Maps</span>
+                        </a>
+                        <a id="job-bs-applemaps" href="#" target="_blank" rel="noopener noreferrer" class="bs-app-btn flex-1" style="font-size:0.72rem;padding:4px 8px;">
+                            <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                            <span>Apple Maps</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
             <div id="directionsPanel" style="display:none;width:320px;background:#fff;overflow-y:auto;border-left:1px solid #e2e8f0;flex-shrink:0;"></div>
         </div>
     </div>
@@ -117,6 +245,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
 <style>
     .act-map-btn {
@@ -322,6 +451,137 @@ var kalman = {
 // ══════════════════════════════
 //  Map & Marker basics
 // ══════════════════════════════
+var jobStreetTile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' });
+var jobSatelliteTile = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: '&copy; Esri' });
+var jobHeatLayer = null;
+var jobRadiusCircle = null;
+var jobCurrentRadius = 0;
+var jobActiveLoc = null;
+
+function switchJobMapLayer(type) {
+    if (!jobMap) return;
+    document.getElementById('btn-job-streets').classList.toggle('active', type === 'streets');
+    document.getElementById('btn-job-satellite').classList.toggle('active', type === 'satellite');
+    if (type === 'satellite') {
+        jobMap.removeLayer(jobStreetTile);
+        jobMap.addLayer(jobSatelliteTile);
+    } else {
+        jobMap.removeLayer(jobSatelliteTile);
+        jobMap.addLayer(jobStreetTile);
+    }
+}
+
+function toggleJobHeatmap() {
+    if (!jobMap) return;
+    var btn = document.getElementById('btn-job-heat');
+    var isActive = btn.classList.toggle('active');
+    if (isActive) {
+        var points = geoJobs.map(function(j) { return [j.lat, j.lng, 0.7]; });
+        if (!jobHeatLayer) jobHeatLayer = L.heatLayer(points, { radius: 25, blur: 15 });
+        jobMap.addLayer(jobHeatLayer);
+        Object.values(jobMarkers).forEach(function(m) { jobMap.removeLayer(m); });
+    } else {
+        if (jobHeatLayer) jobMap.removeLayer(jobHeatLayer);
+        buildMarkers();
+    }
+}
+
+function filterJobRadius(km, btn) {
+    jobCurrentRadius = km;
+    document.querySelectorAll('#jobMapModal .map-radius-pill').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    if (km > 0) {
+        if (userLat === null || userLng === null) {
+            locateAndCenterJobUser(function() { updateJobRadiusCircle(km); });
+        } else {
+            updateJobRadiusCircle(km);
+        }
+    } else {
+        if (jobRadiusCircle) jobMap.removeLayer(jobRadiusCircle);
+        buildMarkers();
+    }
+}
+
+function updateJobRadiusCircle(km) {
+    if (userLat === null || userLng === null || !jobMap) return;
+    if (jobRadiusCircle) jobMap.removeLayer(jobRadiusCircle);
+    jobRadiusCircle = L.circle([userLat, userLng], {
+        radius: km * 1000,
+        color: '#0284c7',
+        fillColor: '#0284c7',
+        fillOpacity: 0.08,
+        weight: 2,
+        dashArray: '6, 6'
+    }).addTo(jobMap);
+    jobMap.fitBounds(jobRadiusCircle.getBounds());
+    buildMarkers();
+}
+
+function locateAndCenterJobUser(cb) {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(function(pos) {
+        userLat = pos.coords.latitude;
+        userLng = pos.coords.longitude;
+        if (jobMap) jobMap.setView([userLat, userLng], 16, { animate: true });
+        buildMarkers();
+        if (cb) cb();
+    }, function(err) {
+        console.warn('GPS location error:', err);
+    }, { enableHighAccuracy: true, timeout: 8000 });
+}
+
+function showJobBottomSheet(j) {
+    jobActiveLoc = j;
+    var sheet = document.getElementById('jobBottomSheet');
+    var img = document.getElementById('job-bs-img');
+    var fallback = document.getElementById('job-bs-fallback');
+    if (j.image) {
+        img.src = j.image;
+        img.style.display = 'block';
+        fallback.style.display = 'none';
+    } else {
+        img.style.display = 'none';
+        fallback.style.display = 'flex';
+    }
+
+    document.getElementById('job-bs-title').textContent = j.title;
+    document.getElementById('job-bs-location').textContent = (j.position || 'ตำแหน่งงาน') + ' • ' + (j.location || 'สถานที่ทำงาน');
+
+    var badge = document.getElementById('job-bs-badge');
+    badge.textContent = j.type === 'parttime' ? 'Part-time' : 'งานทั่วไป';
+    badge.className = 'badge ' + (j.type === 'parttime' ? 'badge-orange' : 'badge-blue');
+
+    var distText = '-', walkText = '-', driveText = '-';
+    if (userLat !== null && userLng !== null) {
+        var d = haversine(userLat, userLng, j.lat, j.lng);
+        distText = formatDist(d);
+        var distKm = d / 1000;
+        walkText = '~' + Math.round((distKm / 4.8) * 60) + ' นาที';
+        driveText = '~' + Math.max(1, Math.round((distKm / 35) * 60)) + ' นาที';
+    }
+    document.getElementById('job-bs-distance').textContent = distText;
+    document.getElementById('job-bs-walk-eta').textContent = walkText;
+    document.getElementById('job-bs-drive-eta').textContent = driveText;
+    document.getElementById('job-bs-meta-info').textContent = (j.compensation ? j.compensation + ' • ' : '') + 'เริ่ม ' + (j.start_date || '-');
+
+    document.getElementById('job-bs-detail-btn').href = j.url;
+    document.getElementById('job-bs-gmaps').href = 'https://www.google.com/maps/dir/?api=1&destination=' + j.lat + ',' + j.lng;
+    document.getElementById('job-bs-applemaps').href = 'https://maps.apple.com/?daddr=' + j.lat + ',' + j.lng;
+
+    sheet.style.display = 'block';
+}
+
+function closeJobBottomSheet() {
+    document.getElementById('jobBottomSheet').style.display = 'none';
+    jobActiveLoc = null;
+}
+
+function startNavFromJobBottomSheet() {
+    if (!jobActiveLoc) return;
+    closeJobBottomSheet();
+    startRealtimeNav(jobActiveLoc.id, jobActiveLoc.lat, jobActiveLoc.lng);
+}
+
 function openJobMap(focusId) {
     var modal = document.getElementById('jobMapModal');
     modal.style.display = 'block';
@@ -329,10 +589,15 @@ function openJobMap(focusId) {
     highlightId = focusId || null;
 
     if (!jobMap) {
-        jobMap = L.map('jobMapContainer', { zoomControl: true });
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap'
-        }).addTo(jobMap);
+        jobMap = L.map('jobMapContainer', { zoomControl: false });
+        L.control.zoom({ position: 'topright' }).addTo(jobMap);
+        jobStreetTile.addTo(jobMap);
+
+        jobMap.on('click', function(e) {
+            if (e.originalEvent.target.id === 'jobMapContainer' || e.originalEvent.target.classList.contains('leaflet-container')) {
+                closeJobBottomSheet();
+            }
+        });
     }
 
     if (navigator.geolocation) {
@@ -354,71 +619,45 @@ function buildMarkers() {
     if (meMarker && !nav.active) { jobMap.removeLayer(meMarker); meMarker = null; }
 
     var bounds = [];
-    geoJobs.forEach(function(j) {
-        var isHL = (highlightId && j.id === highlightId);
-        
-        var color = j.type === 'parttime' ? '#f97316' : '#ea580c';
-        var iconHtml = '<div style="width:32px;height:32px;background:'+color+';border:3px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.3);"><svg width="16" height="16" fill="none" stroke="#fff" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div>';
-        
-        var icon = L.divIcon({ className: '', html: iconHtml, iconSize: [32, 32], iconAnchor: [16, 16] });
+    var filtered = geoJobs.filter(function(j) {
+        if (jobCurrentRadius > 0 && userLat !== null && userLng !== null) {
+            var d = haversine(userLat, userLng, j.lat, j.lng);
+            if (d > jobCurrentRadius * 1000) return false;
+        }
+        return true;
+    });
 
+    filtered.forEach(function(j) {
+        var isHL = (highlightId && j.id === highlightId);
+        var color = j.type === 'parttime' ? '#0284c7' : '#0284c7';
+        var iconHtml = '<div style="width:34px;height:34px;background:'+color+';border:3px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.3);"><svg width="18" height="18" fill="none" stroke="#fff" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div>';
+        
+        var icon = L.divIcon({ className: '', html: iconHtml, iconSize: [34, 34], iconAnchor: [17, 17] });
         var marker = L.marker([j.lat, j.lng], { icon: icon }).addTo(jobMap);
 
-        var dist = '', dirBtn = '', navBtn = '';
-        if (userLat !== null && userLng !== null) {
-            var d = haversine(userLat, userLng, j.lat, j.lng);
-            dist = '<div class="map-popup-dist">ระยะตรง: ' + formatDist(d) + '</div>';
-
-            var line = L.polyline([[userLat, userLng], [j.lat, j.lng]], {
-                color: isHL ? '#f59e0b' : '#ea580c', weight: 2, dashArray: '6, 6', opacity: 0.4
-            }).addTo(jobMap);
-            jobLines.push(line);
-
-            var midLat = (userLat + j.lat) / 2, midLng = (userLng + j.lng) / 2;
-            var distLabel = L.marker([midLat, midLng], {
-                icon: L.divIcon({ className: '', html: '<span class="map-dist-label">' + formatDist(d) + '</span>', iconSize: [80, 20], iconAnchor: [40, 10] }),
-                interactive: false
-            }).addTo(jobMap);
-            jobDistLabels.push(distLabel);
-
-            navBtn = '<button class="map-nav-btn" onclick="startRealtimeNav(' + j.id + ',' + j.lat + ',' + j.lng + ')"><svg class="icon-sm" style="display:inline;vertical-align:-2px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>นำทางแบบเรียลไทม์</button>';
-            var gUrl = 'https://www.google.com/maps/dir/?api=1&origin=' + userLat + ',' + userLng + '&destination=' + j.lat + ',' + j.lng;
-            var aUrl = 'https://maps.apple.com/?saddr=' + userLat + ',' + userLng + '&daddr=' + j.lat + ',' + j.lng;
-            dirBtn = '<div class="map-popup-dir">'
-                + '<a href="' + gUrl + '" target="_blank" class="map-dir-btn map-dir-google">Google Maps</a>'
-                + '<a href="' + aUrl + '" target="_blank" class="map-dir-btn map-dir-apple">Apple Maps</a></div>';
-        }
-        var imgHtml = j.image ? '<img src="' + j.image + '" style="width:100%;height:80px;object-fit:cover;border-radius:8px;margin-bottom:8px;">' : '';
-        var typeLabel = j.type === 'parttime' ? '<span style="background:#fed7aa;color:#c2410c;padding:1px 6px;border-radius:10px;font-size:.7rem;font-weight:600;">Part-time</span>' : '<span style="background:#ffedd5;color:#ea580c;padding:1px 6px;border-radius:10px;font-size:.7rem;font-weight:600;">งานทั่วไป</span>';
-
-        marker.bindPopup(
-            imgHtml
-            + '<div class="map-popup-title">' + typeLabel + ' ' + escHtml(j.title) + '</div>'
-            + '<div class="map-popup-meta"><svg style="width:12px;height:12px;display:inline;margin-right:2px;vertical-align:-1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg> ' + escHtml(j.position) + '</div>'
-            + '<div class="map-popup-meta"><svg style="width:12px;height:12px;display:inline;margin-right:2px;vertical-align:-1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> ' + escHtml(j.location) + '</div>'
-            + (j.compensation ? '<div class="map-popup-meta"><svg style="width:12px;height:12px;display:inline;margin-right:2px;vertical-align:-1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> ' + escHtml(j.compensation) + '</div>' : '')
-            + dist + dirBtn + navBtn
-            + '<a href="' + j.url + '" class="map-popup-link">ดูรายละเอียดทั้งหมด</a>'
-        , { maxWidth: 280 });
+        marker.on('click', function() {
+            showJobBottomSheet(j);
+        });
 
         if (isHL) {
-            marker.openPopup();
+            showJobBottomSheet(j);
         }
+
         jobMarkers[j.id] = marker;
         bounds.push([j.lat, j.lng]);
     });
 
     if (userLat !== null && userLng !== null && !nav.active) {
-        var meIcon = L.divIcon({ className: '', html: '<div style="width:16px;height:16px;background:#ea580c;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 3px rgba(59,130,246,.35);"></div>', iconSize: [16, 16], iconAnchor: [8, 8] });
+        var meIcon = L.divIcon({ className: '', html: '<div class="user-gps-dot"></div>', iconSize: [16, 16], iconAnchor: [8, 8] });
         meMarker = L.marker([userLat, userLng], { icon: meIcon, zIndexOffset: 1000 }).addTo(jobMap).bindPopup('<b>ตำแหน่งของคุณ</b>');
         bounds.push([userLat, userLng]);
     }
 
     if (highlightId && jobMarkers[highlightId]) {
         jobMap.setView(jobMarkers[highlightId].getLatLng(), 16);
-    } else if (bounds.length > 1) {
+    } else if (bounds.length > 1 && jobCurrentRadius === 0) {
         jobMap.fitBounds(bounds, { padding: [40, 40] });
-    } else if (bounds.length === 1) {
+    } else if (bounds.length === 1 && jobCurrentRadius === 0) {
         jobMap.setView(bounds[0], 15);
     }
     setTimeout(function() { jobMap.invalidateSize(); }, 200);
