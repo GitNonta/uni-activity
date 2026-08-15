@@ -26,6 +26,7 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\Admin\AdminInboxController;
 use App\Http\Controllers\UserStatusController;
 use App\Http\Controllers\LineController;
+use App\Http\Controllers\MapController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/debug-ip', function() {
@@ -108,6 +109,8 @@ Route::get('/announcements', [StudentAnnouncementController::class, 'index'])->n
 Route::get('/announcements/{id}', [StudentAnnouncementController::class, 'show'])->name('announcements.show');
 Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
 Route::get('/jobs/{id}', [JobController::class, 'show'])->name('jobs.show');
+Route::get('/map', [MapController::class, 'index'])->name('map.index');
+Route::get('/api/map/locations', [MapController::class, 'locationsApi'])->name('api.map.locations');
 
 // ── เส้นทางนักศึกษา (ต้อง login ก่อน) ──────────────────
 Route::middleware('auth')->group(function () {
