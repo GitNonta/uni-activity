@@ -716,8 +716,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (match[2]) {
                     // Hashtag match
                     var tag = match[2];
+                    var basePath = '/admin/activities';
+                    if (window.location.pathname.startsWith('/admin/jobs')) {
+                        basePath = '/admin/jobs';
+                    } else if (window.location.pathname.startsWith('/admin/announcements')) {
+                        basePath = '/admin/announcements';
+                    }
                     var a = document.createElement('a');
-                    a.href = '/admin/activities?search=' + encodeURIComponent('#' + tag);
+                    a.href = basePath + '?search=' + encodeURIComponent('#' + tag);
                     a.className = 'hashtag-badge';
                     a.textContent = '#' + tag;
                     a.addEventListener('click', function(e) {

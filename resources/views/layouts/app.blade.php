@@ -992,8 +992,14 @@
                     if (match[2]) {
                         // Hashtag match
                         var tag = match[2];
+                        var basePath = '/activities';
+                        if (window.location.pathname.startsWith('/jobs')) {
+                            basePath = '/jobs';
+                        } else if (window.location.pathname.startsWith('/announcements')) {
+                            basePath = '/announcements';
+                        }
                         var a = document.createElement('a');
-                        a.href = '/activities?search=' + encodeURIComponent('#' + tag);
+                        a.href = basePath + '?search=' + encodeURIComponent('#' + tag);
                         a.className = 'hashtag-badge';
                         a.textContent = '#' + tag;
                         a.addEventListener('click', function(e) {

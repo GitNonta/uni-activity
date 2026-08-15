@@ -6,11 +6,12 @@ namespace App\Helpers;
 
 if (!function_exists('format_description')) {
     /**
-     * ระบบจัดรูปแบบข้อความคำอธิบายอัตโนมัติ (Smart Auto-Formatting)
+     * ระบบจัดรูปแบบข้อความคำอธิบายอัตโนมัติ (Smart Tokenized Auto-Formatting)
+     * - ป้องกันการเกิด Nested Links ซ้ำซ้อน 100% ด้วยระบบ Tokenization
      * - จัดระยะห่างพารากราฟ (Paragraphs) และความสูงบรรทัด (Line-height)
      * - จัดรูปแบบรายการหัวข้อย่อยอัตโนมัติ (Bullet Lists: -, *, • และ Numbered Lists: 1., 2., 1))
      * - แปลงลิงก์ URL (http://, https://, www.) เป็นลิงก์ที่คลิกได้ปลอดภัย
-     * - แปลงแฮชแท็ก (#hashtag, #จิตอาสา) เป็นปุ่มค้นหาแบบ Badge อัตโนมัติ (โดยไม่กระทบกับ Hex Color Code)
+     * - แปลงแฮชแท็ก (#hashtag, #จิตอาสา) เป็นปุ่มค้นหาแบบ Badge อัจฉริยะตามบริบทหน้า (Activities/Jobs/Announcements)
      * - รองรับตัวหนา (**bold**), ตัวเอียง (*italic*), และโค้ด/ไฮไลต์ (`code`)
      * - แปลงป้ายแจ้งเตือน เช่น [สำคัญ], [ด่วน], [หมายเหตุ]
      */
@@ -29,25 +30,10 @@ if (!function_exists('format_description')) {
         // 2. ป้องกัน XSS
         $escaped = htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
-        // 3. ตรวจจับและแปลง แฮชแท็ก #hashtag (ทั้งภาษาไทยและอังกฤษ โดยยกเว้น Hex Color Code)
-        // Lookahead (?!(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\b) ป้องกันการจับสี เช่น #fff, #ea580c
-        $hashtagPattern = '/(?<![\w#&;:=])#(?!(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\b)([a-zA-Z0-9_\x{0E00}-\x{0E7F}]+)/u';
-        $escaped = preg_replace_callback($hashtagPattern, function (array $matches): string {
-            $tag = $matches[1];
-            $searchUrl = url('/activities') . '?search=' . urlencode('#' . $tag);
-            return '<a href="' . $searchUrl . '" class="hashtag-badge" onclick="event.stopPropagation();">#' . $tag . '</a>';
-        }, $escaped) ?? $escaped;
+        $tokens = [];
+        $tokenIdx = 0;
 
-        // 4. แปลง Markdown พื้นฐาน (ตัวหนา, ตัวเอียง, โค้ด)
-        $escaped = preg_replace('/\*\*(.+?)\*\*/s', '<strong>$1</strong>', $escaped) ?? $escaped;
-        $escaped = preg_replace('/(?<!\*)\*([^*]+?)\*(?!\*)/s', '<em>$1</em>', $escaped) ?? $escaped;
-        $escaped = preg_replace('/`([^`]+?)`/', '<code>$1</code>', $escaped) ?? $escaped;
-
-        // 5. แปลงป้ายแจ้งเตือนอัตโนมัติ [สำคัญ], [ด่วน], [ประกาศ]
-        $escaped = preg_replace('/\[(สำคัญ|ด่วน|URGENT|IMPORTANT)\]/iu', '<span class="badge badge-red" style="font-size:0.75rem;vertical-align:middle;margin-right:4px;">$1</span>', $escaped) ?? $escaped;
-        $escaped = preg_replace('/\[(หมายเหตุ|NOTE|INFO)\]/iu', '<span class="badge badge-orange" style="font-size:0.75rem;vertical-align:middle;margin-right:4px;">$1</span>', $escaped) ?? $escaped;
-
-        // 6. ตรวจจับและแปลง URLs (http://, https://, www.)
+        // 3. แปลง URLs และเก็บเป็น Token ก่อน เพื่อป้องกันไม่ให้เกิด Regex Collision กับแท็ก HTML อื่น
         $urlPattern = '/(?xi)
             (?:
                 (https?:\/\/[^\s<]+)
@@ -56,7 +42,7 @@ if (!function_exists('format_description')) {
             )
         /u';
 
-        $escaped = preg_replace_callback($urlPattern, function (array $matches): string {
+        $escaped = preg_replace_callback($urlPattern, function (array $matches) use (&$tokens, &$tokenIdx): string {
             $raw = $matches[0];
             $trailing = '';
 
@@ -73,8 +59,40 @@ if (!function_exists('format_description')) {
                 ? $raw
                 : 'https://' . $raw;
 
-            return '<a href="' . $url . '" target="_blank" rel="noopener noreferrer" class="linkified-url" onclick="event.stopPropagation();">' . $raw . '</a>' . $trailing;
+            $tokenKey = '___URL_TOKEN_' . ($tokenIdx++) . '___';
+            $tokens[$tokenKey] = '<a href="' . $url . '" target="_blank" rel="noopener noreferrer" class="linkified-url" onclick="event.stopPropagation();">' . $raw . '</a>';
+            return $tokenKey . $trailing;
         }, $escaped) ?? $escaped;
+
+        // 4. แปลง แฮชแท็ก #hashtag และเก็บเป็น Token (ยกเว้นรหัสสี Hex)
+        $hashtagPattern = '/(?<![\w#&;:=])#(?!(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\b)([a-zA-Z0-9_\x{0E00}-\x{0E7F}]+)/u';
+        $escaped = preg_replace_callback($hashtagPattern, function (array $matches) use (&$tokens, &$tokenIdx): string {
+            $tag = $matches[1];
+
+            // ลิงก์ไปยังส่วนที่ตรงกับบริบท (Jobs / Announcements / Activities)
+            $basePath = '/activities';
+            if (request()->is('jobs*') || request()->is('*/jobs*')) {
+                $basePath = request()->is('admin/*') ? '/admin/jobs' : '/jobs';
+            } elseif (request()->is('announcements*') || request()->is('*/announcements*')) {
+                $basePath = request()->is('admin/*') ? '/admin/announcements' : '/announcements';
+            } elseif (request()->is('admin/*')) {
+                $basePath = '/admin/activities';
+            }
+
+            $searchUrl = url($basePath) . '?search=' . urlencode('#' . $tag);
+            $tokenKey = '___TAG_TOKEN_' . ($tokenIdx++) . '___';
+            $tokens[$tokenKey] = '<a href="' . $searchUrl . '" class="hashtag-badge" onclick="event.stopPropagation();">#' . $tag . '</a>';
+            return $tokenKey;
+        }, $escaped) ?? $escaped;
+
+        // 5. แปลง Markdown พื้นฐาน (ตัวหนา, ตัวเอียง, โค้ด)
+        $escaped = preg_replace('/\*\*(.+?)\*\*/s', '<strong>$1</strong>', $escaped) ?? $escaped;
+        $escaped = preg_replace('/(?<!\*)\*([^*]+?)\*(?!\*)/s', '<em>$1</em>', $escaped) ?? $escaped;
+        $escaped = preg_replace('/`([^`]+?)`/', '<code>$1</code>', $escaped) ?? $escaped;
+
+        // 6. แปลงป้ายแจ้งเตือนอัตโนมัติ [สำคัญ], [ด่วน], [ประกาศ]
+        $escaped = preg_replace('/\[(สำคัญ|ด่วน|URGENT|IMPORTANT)\]/iu', '<span class="badge badge-red" style="font-size:0.75rem;vertical-align:middle;margin-right:4px;">$1</span>', $escaped) ?? $escaped;
+        $escaped = preg_replace('/\[(หมายเหตุ|NOTE|INFO)\]/iu', '<span class="badge badge-orange" style="font-size:0.75rem;vertical-align:middle;margin-right:4px;">$1</span>', $escaped) ?? $escaped;
 
         // 7. แยก Paragraphs และจัดการ Bullet / Numbered Lists
         $blocks = explode("\n\n", $escaped);
@@ -124,7 +142,14 @@ if (!function_exists('format_description')) {
             }
         }
 
-        return '<div class="desc-content">' . implode("\n", $outputBlocks) . '</div>';
+        $finalHtml = '<div class="desc-content">' . implode("\n", $outputBlocks) . '</div>';
+
+        // 8. คืนค่า Tokens ทั้งหมดลงใน HTML ที่สร้างเสร็จแล้ว (strtr ปลอดภัยและเร็วที่สุด)
+        if (!empty($tokens)) {
+            $finalHtml = strtr($finalHtml, $tokens);
+        }
+
+        return $finalHtml;
     }
 }
 
