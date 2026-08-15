@@ -58,12 +58,56 @@ class JobController extends Controller
                 $query->where('status', $status);
             }
 
-            // กรองตามค่าตอบแทน
-            $sort = $request->input('sort', 'latest');
+            $user = auth()->user();
+            $sort = $request->input('sort', 'recommended');
+            $todayStr = now()->toDateString();
+            $fourteenDaysLaterStr = now()->addDays(14)->toDateString();
+            $sevenDaysAgoStr = now()->subDays(7)->toDateTimeString();
+
+            // จัดเรียงตามอัลกอริทึม
             if ($sort === 'compensation') {
-                $query->orderByRaw("CAST(REGEXP_REPLACE(compensation, '[^0-9]', '') AS UNSIGNED) DESC");
-            } else {
+                $driver = \Illuminate\Support\Facades\DB::connection()->getDriverName();
+                if ($driver === 'pgsql') {
+                    $query->orderByRaw("CASE WHEN NULLIF(REGEXP_REPLACE(compensation, '[^0-9]', '', 'g'), '') IS NOT NULL THEN CAST(NULLIF(REGEXP_REPLACE(compensation, '[^0-9]', '', 'g'), '') AS BIGINT) ELSE 0 END DESC")
+                          ->orderBy('created_at', 'desc');
+                } else {
+                    $query->orderByRaw("CAST(REGEXP_REPLACE(compensation, '[^0-9]', '') AS UNSIGNED) DESC")
+                          ->orderBy('created_at', 'desc');
+                }
+            } elseif ($sort === 'starting_soon') {
+                $query->orderByRaw("CASE WHEN start_date >= '{$todayStr}' THEN 0 ELSE 1 END ASC")
+                      ->orderBy('start_date', 'asc');
+            } elseif ($sort === 'popular') {
+                $query->orderBy('applications_count', 'desc')
+                      ->orderBy('created_at', 'desc');
+            } elseif ($sort === 'latest') {
                 $query->orderBy('created_at', 'desc');
+            } else {
+                // 'recommended' (อัลกอริทึมอัจฉริยะ: เปิดรับ + เพศตรง + เริ่มงานเร็วๆ นี้ + ประกาศใหม่)
+                $userGender = $user ? addslashes($user->gender ?? '') : '';
+                $genderScore = ($userGender !== '') ? "WHEN gender = '{$userGender}' THEN 35" : "";
+
+                $scoreSql = "
+                    (
+                        CASE 
+                            WHEN status = 'open' THEN 100 
+                            WHEN status = 'closed' THEN 20 
+                            ELSE 0 
+                        END
+                        + CASE 
+                            {$genderScore}
+                            WHEN gender = 'any' THEN 25 
+                            ELSE 0 
+                        END
+                        + CASE WHEN start_date >= '{$todayStr}' AND start_date <= '{$fourteenDaysLaterStr}' THEN 30 ELSE 0 END
+                        + CASE WHEN created_at >= '{$sevenDaysAgoStr}' THEN 25 ELSE 0 END
+                    )
+                ";
+
+                $query->orderByRaw("{$scoreSql} DESC")
+                      ->orderByRaw("CASE WHEN start_date >= '{$todayStr}' THEN 0 ELSE 1 END ASC")
+                      ->orderBy('start_date', 'asc')
+                      ->orderBy('created_at', 'desc');
             }
 
             return $query->paginate(12)->withQueryString();

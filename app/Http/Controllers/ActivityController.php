@@ -33,28 +33,80 @@ class ActivityController extends Controller
             ->orderBy('name')
             ->get();
 
-        $activities = Activity::query()
+        $user = auth()->user();
+        $sort = $request->input('sort', 'recommended');
+        $nowStr = now()->toDateTimeString();
+        $threeDaysLaterStr = now()->addDays(3)->toDateTimeString();
+        $todayStr = now()->toDateString();
+        $sevenDaysLaterStr = now()->addDays(7)->toDateString();
+
+        $query = Activity::query()
             ->with('category')
             ->withCount([
-                'registrations as registered_count' => fn($query) => $query->whereIn('status', ['pending', 'approved']),
+                'registrations as registered_count' => fn($q) => $q->whereIn('status', ['pending', 'approved']),
             ])
             ->when($request->status, fn($q) => $q->where('status', $request->status))
             ->when($request->category, fn($q) => $q->where('category_id', $request->category))
             ->when($request->mandatory, fn($q) => $q->where('is_mandatory', true))
-            ->when($request->search, fn($q) => $q->where(function ($query) use ($request) {
+            ->when($request->search, fn($q) => $q->where(function ($sq) use ($request) {
                 $rawSearch = trim((string) $request->search);
                 $cleanSearch = ltrim($rawSearch, '#');
-                $query->where('title', 'like', "%{$rawSearch}%")
-                      ->orWhere('title', 'like', "%{$cleanSearch}%")
-                      ->orWhere('description', 'like', "%{$rawSearch}%")
-                      ->orWhere('description', 'like', "%{$cleanSearch}%")
-                      ->orWhere('location', 'like', "%{$cleanSearch}%");
+                $sq->where('title', 'like', "%{$rawSearch}%")
+                   ->orWhere('title', 'like', "%{$cleanSearch}%")
+                   ->orWhere('description', 'like', "%{$rawSearch}%")
+                   ->orWhere('description', 'like', "%{$cleanSearch}%")
+                   ->orWhere('location', 'like', "%{$cleanSearch}%");
             }))
             ->when($request->scope, fn($q) => $q->where('scope', $request->scope))
-            ->where('status', '!=', 'cancelled')
-            ->orderBy('activity_date')
-            ->paginate(12)
-            ->withQueryString();
+            ->where('status', '!=', 'cancelled');
+
+        // จัดเรียงตามอัลกอริทึม
+        if ($sort === 'closing_soon') {
+            $query->orderByRaw("CASE WHEN register_close_at IS NOT NULL AND register_close_at >= '{$nowStr}' THEN 0 ELSE 1 END ASC")
+                  ->orderBy('register_close_at', 'asc')
+                  ->orderBy('activity_date', 'asc');
+        } elseif ($sort === 'popular') {
+            $query->orderBy('registered_count', 'desc')
+                  ->orderBy('activity_date', 'asc');
+        } elseif ($sort === 'upcoming') {
+            $query->orderByRaw("CASE WHEN activity_date >= '{$todayStr}' THEN 0 ELSE 1 END ASC")
+                  ->orderBy('activity_date', 'asc');
+        } elseif ($sort === 'latest') {
+            $query->orderBy('created_at', 'desc');
+        } else {
+            // 'recommended' (อัลกอริทึมอัจฉริยะ: สถานะเปิดรับ + บังคับ + คณะ/สาขา + ความเร่งด่วน)
+            $userFaculty = $user ? addslashes($user->faculty ?? '') : '';
+            $userDept = $user ? addslashes($user->department ?? '') : '';
+
+            $facultyScore = ($userFaculty !== '') ? "WHEN scope = 'faculty' AND faculty = '{$userFaculty}' THEN 35" : "";
+            $deptScore = ($userDept !== '') ? "WHEN scope = 'department' AND department = '{$userDept}' THEN 45" : "";
+
+            $scoreSql = "
+                (
+                    CASE 
+                        WHEN status = 'open' THEN 100 
+                        WHEN status = 'in_progress' THEN 80 
+                        WHEN status = 'closed' THEN 20 
+                        ELSE 0 
+                    END
+                    + CASE WHEN is_mandatory = true THEN 50 ELSE 0 END
+                    + CASE 
+                        {$deptScore}
+                        {$facultyScore}
+                        WHEN scope = 'university' THEN 25 
+                        ELSE 0 
+                    END
+                    + CASE WHEN register_close_at IS NOT NULL AND register_close_at >= '{$nowStr}' AND register_close_at <= '{$threeDaysLaterStr}' THEN 35 ELSE 0 END
+                    + CASE WHEN activity_date >= '{$todayStr}' AND activity_date <= '{$sevenDaysLaterStr}' THEN 25 ELSE 0 END
+                )
+            ";
+
+            $query->orderByRaw("{$scoreSql} DESC")
+                  ->orderByRaw("CASE WHEN activity_date >= '{$todayStr}' THEN 0 ELSE 1 END ASC")
+                  ->orderBy('activity_date', 'asc');
+        }
+
+        $activities = $query->paginate(12)->withQueryString();
 
         $registeredActivityIds = [];
         $attendedActivityIds = [];

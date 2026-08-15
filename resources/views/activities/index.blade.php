@@ -34,6 +34,29 @@
     @endif
 </form>
 
+{{-- แถบจัดเรียงลำดับอัจฉริยะ (Smart Sorting Tabs) --}}
+@php
+    $currentSort = request('sort', 'recommended');
+    $sortItems = [
+        'recommended' => ['icon' => '🎯', 'label' => 'แนะนำสำหรับคุณ'],
+        'closing_soon' => ['icon' => '⚡', 'label' => 'ใกล้ปิดรับ'],
+        'popular' => ['icon' => '🌟', 'label' => 'ยอดนิยม'],
+        'upcoming' => ['icon' => '🕒', 'label' => 'จัดเร็วๆ นี้'],
+        'latest' => ['icon' => '🆕', 'label' => 'มาใหม่'],
+    ];
+@endphp
+<div class="flex items-center gap-2 mb-4" style="overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;">
+    <span class="text-xs text-muted font-bold" style="white-space:nowrap;margin-right:2px;">เรียงตาม:</span>
+    @foreach($sortItems as $key => $item)
+        <a href="{{ request()->fullUrlWithQuery(['sort' => $key]) }}" 
+           class="sort-pill {{ $currentSort === $key ? 'active' : '' }}"
+           style="white-space:nowrap;padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:600;text-decoration:none;transition:all 0.15s ease;display:inline-flex;align-items:center;gap:4px;{{ $currentSort === $key ? 'background:#ea580c;color:#fff;box-shadow:0 2px 6px rgba(234,88,12,0.3);' : 'background:#fff;color:#475569;border:1px solid #e2e8f0;' }}">
+            <span>{{ $item['icon'] }}</span>
+            <span>{{ $item['label'] }}</span>
+        </a>
+    @endforeach
+</div>
+
 {{-- แสดงการ์ดกิจกรรม หรือข้อความว่างถ้าไม่พบ --}}
 <div class="grid-5">
     @forelse($activities as $activity)
