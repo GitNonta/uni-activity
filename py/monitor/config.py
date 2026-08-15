@@ -27,6 +27,19 @@ active_alert_ids: set = set()
 # ── Telegram config ───────────────────────────────────────────────────────────
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID   = os.environ.get("TELEGRAM_CHAT_ID", "")
+
+if (not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID) and os.path.exists(ENV_PATH):
+    try:
+        with open(ENV_PATH, "r", encoding="utf-8") as _f:
+            for _line in _f:
+                _line = _line.strip()
+                if _line.startswith("TELEGRAM_BOT_TOKEN=") and not TELEGRAM_BOT_TOKEN:
+                    TELEGRAM_BOT_TOKEN = _line.split("=", 1)[1].strip().strip('"\'')
+                elif _line.startswith("TELEGRAM_CHAT_ID=") and not TELEGRAM_CHAT_ID:
+                    TELEGRAM_CHAT_ID = _line.split("=", 1)[1].strip().strip('"\'')
+    except Exception:
+        pass
+
 ALERT_MIN_INTERVAL = 600   # ขั้นต่ำ 10 นาที ระหว่าง alert เดิม
 STARTUP_GRACE      = 90    # วินาที หลัง start ไม่ส่ง cf_offline
 
