@@ -579,9 +579,10 @@ function closeActBottomSheet() {
 }
 
 function startNavFromBottomSheet() {
-    if (!actActiveLoc) return;
-    closeActBottomSheet();
-    startRealtimeNav(actActiveLoc.id, actActiveLoc.lat, actActiveLoc.lng);
+    var target = actActiveLoc;
+    if (!target) return;
+    document.getElementById('actBottomSheet').style.display = 'none';
+    startRealtimeNav(target.id, target.lat, target.lng);
 }
 
 function openActivityMap(focusId) {

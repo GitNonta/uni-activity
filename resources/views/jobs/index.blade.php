@@ -580,9 +580,10 @@ function closeJobBottomSheet() {
 }
 
 function startNavFromJobBottomSheet() {
-    if (!jobActiveLoc) return;
-    closeJobBottomSheet();
-    startRealtimeNav(jobActiveLoc.id, jobActiveLoc.lat, jobActiveLoc.lng);
+    var target = jobActiveLoc;
+    if (!target) return;
+    document.getElementById('jobBottomSheet').style.display = 'none';
+    startRealtimeNav(target.id, target.lat, target.lng);
 }
 
 function openJobMap(focusId) {

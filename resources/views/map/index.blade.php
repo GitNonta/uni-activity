@@ -849,21 +849,47 @@
 
     // In-App Turn-by-Turn Navigation (Leaflet Routing Machine)
     window.startNavigationToActive = function() {
-        if (!activeLocation) return;
+        const target = activeLocation;
+        if (!target) return;
+
         if (!userCoords) {
-            alert('กรุณาเปิด GPS เพื่อเริ่มต้นนำทาง');
-            getUserLocation(() => startNavigationToActive());
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(pos) {
+                    userCoords = [pos.coords.latitude, pos.coords.longitude];
+                    setUserGpsMarker();
+                    startNavigationToActive();
+                }, function(err) {
+                    alert('กรุณาเปิด GPS หรืออนุญาตการเข้าถึงตำแหน่งในเบราว์เซอร์เพื่อเริ่มนำทาง');
+                }, { enableHighAccuracy: true, timeout: 10000 });
+            } else {
+                alert('เบราว์เซอร์ไม่รองรับ GPS');
+            }
             return;
         }
 
-        closeBottomSheet();
-        if (routingControl) map.removeControl(routingControl);
+        document.getElementById('mapBottomSheet').style.display = 'none';
+        if (routingControl) {
+            map.removeControl(routingControl);
+            routingControl = null;
+        }
+        if (window._fallbackRouteLine) {
+            map.removeLayer(window._fallbackRouteLine);
+            window._fallbackRouteLine = null;
+        }
+
+        const dirPanel = document.getElementById('mapDirectionsPanel');
+        const stepsList = document.getElementById('routeStepsList');
+        dirPanel.style.display = 'flex';
+        stepsList.innerHTML = '<div style="padding:10px;text-align:center;color:#64748b;">กำลังคำนวณเส้นทาง...</div>';
 
         routingControl = L.Routing.control({
             waypoints: [
                 L.latLng(userCoords[0], userCoords[1]),
-                L.latLng(activeLocation.lat, activeLocation.lng)
+                L.latLng(target.lat, target.lng)
             ],
+            router: L.Routing.osrmv1({
+                serviceUrl: 'https://router.project-osrm.org/route/v1'
+            }),
             routeWhileDragging: false,
             showAlternatives: false,
             addWaypoints: false,
@@ -872,10 +898,6 @@
                 styles: [{ color: '#ea580c', weight: 6, opacity: 0.85 }]
             }
         }).addTo(map);
-
-        const dirPanel = document.getElementById('mapDirectionsPanel');
-        const stepsList = document.getElementById('routeStepsList');
-        dirPanel.style.display = 'flex';
 
         routingControl.on('routesfound', function(e) {
             const routes = e.routes;
@@ -894,12 +916,12 @@
         routingControl.on('routingerror', function(err) {
             console.warn('Routing error, falling back to direct line:', err);
             if (window._fallbackRouteLine) map.removeLayer(window._fallbackRouteLine);
-            window._fallbackRouteLine = L.polyline([userCoords, [activeLocation.lat, activeLocation.lng]], {
+            window._fallbackRouteLine = L.polyline([userCoords, [target.lat, target.lng]], {
                 color: '#ea580c', weight: 6, opacity: 0.85, dashArray: '8, 8'
             }).addTo(map);
             map.fitBounds(window._fallbackRouteLine.getBounds(), { padding: [60, 60] });
-            const dist = calculateDistance(userCoords[0], userCoords[1], activeLocation.lat, activeLocation.lng);
-            stepsList.innerHTML = `<div style="margin-bottom:8px;font-weight:700;color:#ea580c;">ระยะทางเส้นตรง ${dist.toFixed(1)} กม.</div><p class="text-xs text-muted" style="margin:0 0 8px;">เซิร์ฟเวอร์เส้นทางถนนไม่ตอบสนอง คุณสามารถกดเปิดนำทางผ่าน Google Maps หรือ Apple Maps ด้านล่างนี้ได้ทันที</p><div style="display:flex;gap:6px;"><a href="https://www.google.com/maps/dir/?api=1&destination=${activeLocation.lat},${activeLocation.lng}" target="_blank" class="bs-app-btn flex-1">Google Maps</a><a href="https://maps.apple.com/?daddr=${activeLocation.lat},${activeLocation.lng}" target="_blank" class="bs-app-btn flex-1">Apple Maps</a></div>`;
+            const dist = calculateDistance(userCoords[0], userCoords[1], target.lat, target.lng);
+            stepsList.innerHTML = `<div style="margin-bottom:8px;font-weight:700;color:#ea580c;">ระยะทางเส้นตรง ${dist.toFixed(1)} กม.</div><p class="text-xs text-muted" style="margin:0 0 8px;">เซิร์ฟเวอร์เส้นทางถนนไม่ตอบสนอง คุณสามารถกดเปิดนำทางผ่าน Google Maps หรือ Apple Maps ด้านล่างนี้ได้ทันที</p><div style="display:flex;gap:6px;"><a href="https://www.google.com/maps/dir/?api=1&destination=${target.lat},${target.lng}" target="_blank" class="bs-app-btn flex-1">Google Maps</a><a href="https://maps.apple.com/?daddr=${target.lat},${target.lng}" target="_blank" class="bs-app-btn flex-1">Apple Maps</a></div>`;
         });
     };
 
