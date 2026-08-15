@@ -666,9 +666,26 @@ function buildMarkers() {
 //  START Real-time Navigation
 // ══════════════════════════════════════════
 function startRealtimeNav(actId, destLat, destLng) {
-    if (userLat === null || userLng === null) return;
     var act = geoActivities.find(function(a) { return a.id === actId; });
+    if (!act && actActiveLoc) act = actActiveLoc;
     if (!act) return;
+
+    if (userLat === null || userLng === null) {
+        document.getElementById('mapTitle').textContent = 'กำลังค้นหาตำแหน่ง GPS...';
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(pos) {
+                userLat = pos.coords.latitude;
+                userLng = pos.coords.longitude;
+                startRealtimeNav(actId, destLat, destLng);
+            }, function(err) {
+                alert('กรุณาเปิด GPS หรืออนุญาตการเข้าถึงตำแหน่งในเบราว์เซอร์เพื่อเริ่มนำทาง');
+                document.getElementById('mapTitle').textContent = 'แผนที่กิจกรรม';
+            }, { enableHighAccuracy: true, timeout: 10000 });
+        } else {
+            alert('เบราว์เซอร์ไม่รองรับ GPS');
+        }
+        return;
+    }
 
     // ── ล้าง state การนำทางเก่า (กรณีเปลี่ยนกิจกรรมระหว่างนำทาง) ──
     stopGpsWatch();
@@ -680,7 +697,6 @@ function startRealtimeNav(actId, destLat, destLng) {
     if (arrivedEl) arrivedEl.remove();
     matchBuffer = [];
 
-    actMap.closePopup();
     nav.active = true;
     nav.destLat = destLat;
     nav.destLng = destLng;
@@ -724,16 +740,20 @@ function startRealtimeNav(actId, destLat, destLng) {
 }
 
 // ══════════════════════════════════════
-//  Fetch Route from OSRM
+//  Fetch Route from OSRM with Fallback
 // ══════════════════════════════════════
 function fetchRoute(fromLat, fromLng, toLat, toLng, cb) {
     var url = 'https://router.project-osrm.org/route/v1/driving/'
         + fromLng + ',' + fromLat + ';' + toLng + ',' + toLat
         + '?overview=full&geometries=geojson&steps=true';
 
-    fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+    var controller = new AbortController();
+    var timeoutId = setTimeout(function() { controller.abort(); }, 6000);
+
+    fetch(url, { signal: controller.signal }).then(function(r) { return r.json(); }).then(function(data) {
+        clearTimeout(timeoutId);
         if (data.code !== 'Ok' || !data.routes || !data.routes.length) {
-            showNavError();
+            useFallbackRoute(fromLat, fromLng, toLat, toLng, cb);
             return;
         }
         var route = data.routes[0];
@@ -743,7 +763,7 @@ function fetchRoute(fromLat, fromLng, toLat, toLng, cb) {
         nav.routeSteps = [];
         route.legs[0].steps.forEach(function(step) {
             nav.routeSteps.push({
-                text: step.maneuver.type.replace(/_/g, ' ') + (step.name ? ' — ' + step.name : ''),
+                text: (step.maneuver.type || '').replace(/_/g, ' ') + (step.name ? ' — ' + step.name : ''),
                 type: maneuverToIcon(step.maneuver.type, step.maneuver.modifier),
                 distance: step.distance,
                 duration: step.duration,
@@ -755,7 +775,7 @@ function fetchRoute(fromLat, fromLng, toLat, toLng, cb) {
         if (nav.routeLine) actMap.removeLayer(nav.routeLine);
         if (nav.traveledLine) actMap.removeLayer(nav.traveledLine);
         nav.routeLine = L.polyline(nav.routeCoords, {
-            color: '#ea580c', weight: 6, opacity: 0.8
+            color: '#ea580c', weight: 6, opacity: 0.85
         }).addTo(actMap);
         nav.traveledLine = L.polyline([], {
             color: '#94a3b8', weight: 6, opacity: 0.5
@@ -770,9 +790,35 @@ function fetchRoute(fromLat, fromLng, toLat, toLng, cb) {
         setTimeout(function() { actMap.invalidateSize(); }, 200);
 
         if (cb) cb();
-    }).catch(function() {
-        showNavError();
+    }).catch(function(err) {
+        clearTimeout(timeoutId);
+        useFallbackRoute(fromLat, fromLng, toLat, toLng, cb);
     });
+}
+
+function useFallbackRoute(fromLat, fromLng, toLat, toLng, cb) {
+    nav.routeCoords = [[fromLat, fromLng], [toLat, toLng]];
+    var d = haversine(fromLat, fromLng, toLat, toLng) * 1000;
+    var t = (d / 1000 / 30) * 3600; // ~30 km/h
+
+    nav.routeSteps = [
+        { text: 'มุ่งหน้าตรงไปยังจุดหมายปลายทาง', type: maneuverToIcon('straight'), distance: d, duration: t, coord: [toLat, toLng] }
+    ];
+
+    if (nav.routeLine) actMap.removeLayer(nav.routeLine);
+    if (nav.traveledLine) actMap.removeLayer(nav.traveledLine);
+    nav.routeLine = L.polyline(nav.routeCoords, {
+        color: '#ea580c', weight: 6, opacity: 0.85, dashArray: '8, 8'
+    }).addTo(actMap);
+    nav.traveledLine = L.polyline([], {
+        color: '#94a3b8', weight: 6, opacity: 0.5
+    }).addTo(actMap);
+
+    showNavDirectionsPanel(d, t);
+    actMap.fitBounds(nav.routeLine.getBounds(), { padding: [60, 60] });
+    setTimeout(function() { actMap.invalidateSize(); }, 200);
+
+    if (cb) cb();
 }
 
 // ══════════════════════════════════════

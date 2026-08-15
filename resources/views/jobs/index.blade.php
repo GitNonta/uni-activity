@@ -744,16 +744,20 @@ function startRealtimeNav(actId, destLat, destLng) {
 }
 
 // ══════════════════════════════════════
-//  Fetch Route from OSRM
+//  Fetch Route from OSRM with Fallback
 // ══════════════════════════════════════
 function fetchRoute(fromLat, fromLng, toLat, toLng, cb) {
     var url = 'https://router.project-osrm.org/route/v1/driving/'
         + fromLng + ',' + fromLat + ';' + toLng + ',' + toLat
         + '?overview=full&geometries=geojson&steps=true';
 
-    fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+    var controller = new AbortController();
+    var timeoutId = setTimeout(function() { controller.abort(); }, 6000);
+
+    fetch(url, { signal: controller.signal }).then(function(r) { return r.json(); }).then(function(data) {
+        clearTimeout(timeoutId);
         if (data.code !== 'Ok' || !data.routes || !data.routes.length) {
-            showNavError();
+            useJobFallbackRoute(fromLat, fromLng, toLat, toLng, cb);
             return;
         }
         var route = data.routes[0];
@@ -763,7 +767,7 @@ function fetchRoute(fromLat, fromLng, toLat, toLng, cb) {
         nav.routeSteps = [];
         route.legs[0].steps.forEach(function(step) {
             nav.routeSteps.push({
-                text: step.maneuver.type.replace(/_/g, ' ') + (step.name ? ' — ' + step.name : ''),
+                text: (step.maneuver.type || '').replace(/_/g, ' ') + (step.name ? ' — ' + step.name : ''),
                 type: maneuverToIcon(step.maneuver.type, step.maneuver.modifier),
                 distance: step.distance,
                 duration: step.duration,
@@ -775,7 +779,7 @@ function fetchRoute(fromLat, fromLng, toLat, toLng, cb) {
         if (nav.routeLine) jobMap.removeLayer(nav.routeLine);
         if (nav.traveledLine) jobMap.removeLayer(nav.traveledLine);
         nav.routeLine = L.polyline(nav.routeCoords, {
-            color: '#ea580c', weight: 6, opacity: 0.8
+            color: '#0284c7', weight: 6, opacity: 0.85
         }).addTo(jobMap);
         nav.traveledLine = L.polyline([], {
             color: '#94a3b8', weight: 6, opacity: 0.5
@@ -790,9 +794,35 @@ function fetchRoute(fromLat, fromLng, toLat, toLng, cb) {
         setTimeout(function() { jobMap.invalidateSize(); }, 200);
 
         if (cb) cb();
-    }).catch(function() {
-        showNavError();
+    }).catch(function(err) {
+        clearTimeout(timeoutId);
+        useJobFallbackRoute(fromLat, fromLng, toLat, toLng, cb);
     });
+}
+
+function useJobFallbackRoute(fromLat, fromLng, toLat, toLng, cb) {
+    nav.routeCoords = [[fromLat, fromLng], [toLat, toLng]];
+    var d = haversine(fromLat, fromLng, toLat, toLng) * 1000;
+    var t = (d / 1000 / 30) * 3600; // ~30 km/h
+
+    nav.routeSteps = [
+        { text: 'มุ่งหน้าตรงไปยังสถานที่ปฏิบัติงาน', type: maneuverToIcon('straight'), distance: d, duration: t, coord: [toLat, toLng] }
+    ];
+
+    if (nav.routeLine) jobMap.removeLayer(nav.routeLine);
+    if (nav.traveledLine) jobMap.removeLayer(nav.traveledLine);
+    nav.routeLine = L.polyline(nav.routeCoords, {
+        color: '#0284c7', weight: 6, opacity: 0.85, dashArray: '8, 8'
+    }).addTo(jobMap);
+    nav.traveledLine = L.polyline([], {
+        color: '#94a3b8', weight: 6, opacity: 0.5
+    }).addTo(jobMap);
+
+    showNavDirectionsPanel(d, t);
+    jobMap.fitBounds(nav.routeLine.getBounds(), { padding: [60, 60] });
+    setTimeout(function() { jobMap.invalidateSize(); }, 200);
+
+    if (cb) cb();
 }
 
 function showNavError() {

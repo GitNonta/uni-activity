@@ -890,12 +890,27 @@
             html += '</ol>';
             stepsList.innerHTML = html;
         });
+
+        routingControl.on('routingerror', function(err) {
+            console.warn('Routing error, falling back to direct line:', err);
+            if (window._fallbackRouteLine) map.removeLayer(window._fallbackRouteLine);
+            window._fallbackRouteLine = L.polyline([userCoords, [activeLocation.lat, activeLocation.lng]], {
+                color: '#ea580c', weight: 6, opacity: 0.85, dashArray: '8, 8'
+            }).addTo(map);
+            map.fitBounds(window._fallbackRouteLine.getBounds(), { padding: [60, 60] });
+            const dist = calculateDistance(userCoords[0], userCoords[1], activeLocation.lat, activeLocation.lng);
+            stepsList.innerHTML = `<div style="margin-bottom:8px;font-weight:700;color:#ea580c;">ระยะทางเส้นตรง ${dist.toFixed(1)} กม.</div><p class="text-xs text-muted" style="margin:0 0 8px;">เซิร์ฟเวอร์เส้นทางถนนไม่ตอบสนอง คุณสามารถกดเปิดนำทางผ่าน Google Maps หรือ Apple Maps ด้านล่างนี้ได้ทันที</p><div style="display:flex;gap:6px;"><a href="https://www.google.com/maps/dir/?api=1&destination=${activeLocation.lat},${activeLocation.lng}" target="_blank" class="bs-app-btn flex-1">Google Maps</a><a href="https://maps.apple.com/?daddr=${activeLocation.lat},${activeLocation.lng}" target="_blank" class="bs-app-btn flex-1">Apple Maps</a></div>`;
+        });
     };
 
     window.clearNavigationRoute = function() {
         if (routingControl) {
             map.removeControl(routingControl);
             routingControl = null;
+        }
+        if (window._fallbackRouteLine) {
+            map.removeLayer(window._fallbackRouteLine);
+            window._fallbackRouteLine = null;
         }
         document.getElementById('mapDirectionsPanel').style.display = 'none';
     };
