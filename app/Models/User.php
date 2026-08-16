@@ -48,10 +48,12 @@ class User extends Authenticatable
         'face_descriptor_js',
     ];
 
-    /** ฟิลด์ที่ซ่อนเมื่อแปลงเป็น JSON */
+    /** ฟิลด์ที่ซ่อนเมื่อแปลงเป็น JSON (Biometric PDPA Compliance) */
     protected $hidden = [
         'password',
         'remember_token',
+        'face_descriptor',
+        'face_descriptor_js',
     ];
 
     /** กำหนดประเภทการแปลงค่าฟิลด์ */
@@ -64,8 +66,8 @@ class User extends Authenticatable
             'last_seen_at'        => 'datetime',
             'line_notify_enabled' => 'boolean',
             'last_login_at'       => 'datetime',
-            'face_descriptor'     => 'array',
-            'face_descriptor_js'  => 'array',
+            'face_descriptor'     => 'encrypted:array',
+            'face_descriptor_js'  => 'encrypted:array',
         ];
     }
 
