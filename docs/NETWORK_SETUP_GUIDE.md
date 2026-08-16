@@ -156,8 +156,8 @@ wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-arm64.tgz
 tar -xzf ngrok-v3-stable-linux-arm64.tgz
 mv ngrok $PREFIX/bin/
 
-# Configure authtoken (you already have this)
-ngrok config add-authtoken 2uFi3a4jZKYC8KUyULMHUuYXinm_5r7ukz2z1jiQXsJxEVgxS
+# Configure authtoken (replace with your token from ngrok dashboard)
+ngrok config add-authtoken <YOUR_NGROK_AUTHTOKEN>
 
 # Start tunnel to port 8000
 ngrok http 8000
