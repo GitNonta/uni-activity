@@ -477,7 +477,8 @@ export function DeployCard({ deployLog, deployChannels = {}, sshSessions = [], s
                   gap: '0.35rem'
                 }}
               >
-                <span>⚡ All Logs</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                <span>All Logs</span>
               </button>
               <button
                 onClick={() => setChannelTab('scp')}
@@ -497,6 +498,7 @@ export function DeployCard({ deployLog, deployChannels = {}, sshSessions = [], s
                 }}
               >
                 <span style={{ width: '6px', height: '6px', background: scpSessions > 0 ? '#22c55e' : '#64748b', borderRadius: '50%' }}></span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                 <span>SCP Transfers</span>
                 {scpSessions > 0 && <span style={{ background: '#22c55e', color: '#022c22', fontSize: '0.65rem', padding: '0.05rem 0.35rem', borderRadius: '10px', fontWeight: 700 }}>{scpSessions}</span>}
               </button>
@@ -518,6 +520,7 @@ export function DeployCard({ deployLog, deployChannels = {}, sshSessions = [], s
                 }}
               >
                 <span style={{ width: '6px', height: '6px', background: sftpSessions > 0 ? '#eab308' : '#64748b', borderRadius: '50%' }}></span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
                 <span>SFTP Subsystem</span>
                 {sftpSessions > 0 && <span style={{ background: '#eab308', color: '#422006', fontSize: '0.65rem', padding: '0.05rem 0.35rem', borderRadius: '10px', fontWeight: 700 }}>{sftpSessions}</span>}
               </button>
@@ -538,7 +541,8 @@ export function DeployCard({ deployLog, deployChannels = {}, sshSessions = [], s
                   gap: '0.35rem'
                 }}
               >
-                <span>📦 Git Sync</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/><line x1="6" y1="9" x2="6" y2="21"/></svg>
+                <span>Git Sync</span>
               </button>
             </div>
             <span style={{ fontSize: '0.75rem', color: '#64748b' }}>

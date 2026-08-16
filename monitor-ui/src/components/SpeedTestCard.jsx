@@ -826,8 +826,9 @@ export function SpeedTestPage({ serverSpeedtest }) {
 
         {/* Error notice */}
         {res.error && (
-          <div style={{ marginTop: '0.75rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', padding: '0.5rem 0.8rem', fontSize: '0.75rem', color: '#b91c1c' }}>
-            ⚠ {res.error}
+          <div style={{ marginTop: '0.75rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', padding: '0.5rem 0.8rem', fontSize: '0.75rem', color: '#b91c1c', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            {res.error}
           </div>
         )}
       </div>

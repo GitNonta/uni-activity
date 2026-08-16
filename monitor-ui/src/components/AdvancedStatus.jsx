@@ -111,13 +111,19 @@ export function AdvancedStatus({ data }) {
               {/* Traffic Speed indicators */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
                 <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '0.75rem', borderRadius: '0.5rem', textAlign: 'center' }}>
-                  <div style={{ fontSize: '0.75rem', color: '#166534', fontWeight: 600, marginBottom: '0.25rem' }}>📥 Download Speed</div>
+                  <div style={{ fontSize: '0.75rem', color: '#166534', fontWeight: 600, marginBottom: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Download Speed
+                  </div>
                   <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#15803d' }}>
                     {netSpeeds.rx_kbps} <span style={{ fontSize: '0.8rem', fontWeight: 400 }}>KB/s</span>
                   </div>
                 </div>
                 <div style={{ background: '#fef2f2', border: '1px solid #fecaca', padding: '0.75rem', borderRadius: '0.5rem', textAlign: 'center' }}>
-                  <div style={{ fontSize: '0.75rem', color: '#991b1b', fontWeight: 600, marginBottom: '0.25rem' }}>📤 Upload Speed</div>
+                  <div style={{ fontSize: '0.75rem', color: '#991b1b', fontWeight: 600, marginBottom: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Upload Speed
+                  </div>
                   <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#b91c1c' }}>
                     {netSpeeds.tx_kbps} <span style={{ fontSize: '0.8rem', fontWeight: 400 }}>KB/s</span>
                   </div>

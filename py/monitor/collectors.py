@@ -276,7 +276,7 @@ def get_channel_logs():
     scp_lines = []
     scp_active = get_scp_active()
     now_str = time.strftime('%Y-%m-%d %H:%M:%S')
-    scp_lines.append(f"[{now_str}] ─── SCP Transfer Monitor (Port 8022) ───")
+    scp_lines.append(f"[{now_str}] === SCP Transfer Monitor (Port 8022) ===")
     scp_lines.append(f"Active SCP Sessions: {scp_active}")
     if scp_active > 0:
         try:
@@ -289,7 +289,7 @@ def get_channel_logs():
     else:
         scp_lines.append("[IDLE] No active SCP file copy processes currently running.")
         scp_lines.append("")
-        scp_lines.append("📌 Quick SCP Transfer Command Example:")
+        scp_lines.append("[Command] Quick SCP Transfer Example:")
         scp_lines.append("   scp -P 8022 -r ./app/ u0_a175@192.168.1.222:/data/data/com.termux/files/home/uni-activity/app/")
 
     # Check recently modified files in app/ and routes/
@@ -301,9 +301,9 @@ def get_channel_logs():
         files = [f for f in recent_files.stdout.strip().split('\n') if f]
         if files:
             scp_lines.append("")
-            scp_lines.append(f"📁 Files updated in last 2 hours ({len(files)} files):")
+            scp_lines.append(f"[Files] Updated in last 2 hours ({len(files)} files):")
             for f in files[:20]:
-                scp_lines.append(f"   ✓ {f}")
+                scp_lines.append(f"   * {f}")
     except Exception:
         pass
 
@@ -312,7 +312,7 @@ def get_channel_logs():
     # 4. SFTP Status & Log
     sftp_lines = []
     sftp_active = get_sftp_active()
-    sftp_lines.append(f"[{now_str}] ─── SFTP Subsystem Monitor (Port 8022) ───")
+    sftp_lines.append(f"[{now_str}] === SFTP Subsystem Monitor (Port 8022) ===")
     sftp_lines.append(f"Active SFTP Sessions: {sftp_active}")
     if sftp_active > 0:
         try:
@@ -325,7 +325,7 @@ def get_channel_logs():
     else:
         sftp_lines.append("[IDLE] No active SFTP clients connected.")
         sftp_lines.append("")
-        sftp_lines.append("📌 SFTP Connection Settings:")
+        sftp_lines.append("[Config] SFTP Connection Settings:")
         sftp_lines.append("   Host: 192.168.1.222 | Port: 8022 | User: u0_a175")
         sftp_lines.append("   Root Path: /data/data/com.termux/files/home/uni-activity")
 

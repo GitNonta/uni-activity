@@ -35,25 +35,25 @@ export function EventsCard({ eventsData, publicIp, connected = true, onEventClic
   };
 
   const handleManualDeploy = async () => {
-    if (!window.confirm('🚀 Trigger manual deployment from GitHub origin/main on server?')) return;
+    if (!window.confirm('Trigger manual deployment from GitHub origin/main on server?')) return;
     setLoadingAction(true);
     try {
       const res = await fetch('/api/deploy/manual', { method: 'POST' });
       const data = await res.json();
       if (res.ok) {
-        showToast('🚀 Manual Deployment Triggered! Server is pulling origin/main & restarting workers...');
+        showToast('Manual Deployment Triggered! Server is pulling origin/main & restarting workers...');
       } else {
-        showToast('❌ Deploy Trigger Error: ' + (data.message || 'Failed'));
+        showToast('Deploy Trigger Error: ' + (data.message || 'Failed'));
       }
     } catch (err) {
-      showToast('🚀 Deployment command sent to server!');
+      showToast('Deployment command sent to server!');
     } finally {
       setLoadingAction(false);
     }
   };
 
   const handleRollback = async (hash) => {
-    if (!window.confirm(`⚠️ Are you sure you want to rollback the server to commit ${hash}?`)) return;
+    if (!window.confirm(`Are you sure you want to rollback the server to commit ${hash}?`)) return;
     setLoadingAction(true);
     try {
       const res = await fetch('/api/deploy/rollback', {
@@ -63,12 +63,12 @@ export function EventsCard({ eventsData, publicIp, connected = true, onEventClic
       });
       const data = await res.json();
       if (res.ok) {
-        showToast(`⏪ Server Rollback to commit ${hash} initiated successfully!`);
+        showToast(`Server Rollback to commit ${hash} initiated successfully!`);
       } else {
-        showToast('❌ Rollback Error: ' + (data.message || 'Failed'));
+        showToast('Rollback Error: ' + (data.message || 'Failed'));
       }
     } catch (err) {
-      showToast(`⏪ Rollback command sent for ${hash}!`);
+      showToast(`Rollback command sent for ${hash}!`);
     } finally {
       setLoadingAction(false);
     }
@@ -76,7 +76,7 @@ export function EventsCard({ eventsData, publicIp, connected = true, onEventClic
 
   const copyToClipboard = (text, label) => {
     navigator.clipboard.writeText(text);
-    showToast(`📋 Copied ${label} to clipboard!`);
+    showToast(`Copied ${label} to clipboard!`);
     setShowConnect(false);
   };
 

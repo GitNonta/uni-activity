@@ -26,7 +26,10 @@ export function Documentation() {
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
             <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', padding: '1rem', borderRadius: '0.75rem' }}>
-              <div style={{ fontWeight: 600, color: '#111827', marginBottom: '0.5rem' }}>🌐 Public Access</div>
+              <div style={{ fontWeight: 600, color: '#111827', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                Public Access
+              </div>
               <ul style={{ margin: 0, paddingLeft: '1.25rem', color: '#4b5563', fontSize: '0.85rem', lineHeight: '1.6' }}>
                 <li><strong>Cloudflared:</strong> Dynamic Tunnel</li>
                 <li><strong>Web Entry:</strong> Port 8080 (Nginx)</li>
@@ -34,7 +37,10 @@ export function Documentation() {
               </ul>
             </div>
             <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', padding: '1rem', borderRadius: '0.75rem' }}>
-              <div style={{ fontWeight: 600, color: '#111827', marginBottom: '0.5rem' }}>🚀 Application Services</div>
+              <div style={{ fontWeight: 600, color: '#111827', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                Application Services
+              </div>
               <ul style={{ margin: 0, paddingLeft: '1.25rem', color: '#4b5563', fontSize: '0.85rem', lineHeight: '1.6' }}>
                 <li><strong>PHP-FPM:</strong> Unix Socket Handler</li>
                 <li><strong>Reverb:</strong> Port 8082 (WebSockets)</li>
@@ -42,7 +48,10 @@ export function Documentation() {
               </ul>
             </div>
             <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', padding: '1rem', borderRadius: '0.75rem' }}>
-              <div style={{ fontWeight: 600, color: '#111827', marginBottom: '0.5rem' }}>💾 Data Infrastructure</div>
+              <div style={{ fontWeight: 600, color: '#111827', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                Data Infrastructure
+              </div>
               <ul style={{ margin: 0, paddingLeft: '1.25rem', color: '#4b5563', fontSize: '0.85rem', lineHeight: '1.6' }}>
                 <li><strong>PostgreSQL:</strong> Port 5432</li>
                 <li><strong>Redis Server:</strong> Port 6379</li>
@@ -69,7 +78,10 @@ export function Documentation() {
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', padding: '1rem', borderRadius: '0.75rem' }}>
-              <div style={{ fontWeight: 600, color: '#1e3a8a', marginBottom: '0.25rem' }}>📱 1. Termux:Boot Integration (Device Reboot)</div>
+              <div style={{ fontWeight: 600, color: '#1e3a8a', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                1. Termux:Boot Integration (Device Reboot)
+              </div>
               <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', color: '#1e40af' }}>
                 Runs automatically on Android boot. Script path on server:
               </p>
@@ -78,7 +90,10 @@ export function Documentation() {
               </code>
             </div>
             <div style={{ background: '#f5f3ff', border: '1px solid #ddd6fe', padding: '1rem', borderRadius: '0.75rem' }}>
-              <div style={{ fontWeight: 600, color: '#4c1d95', marginBottom: '0.25rem' }}>🐚 2. Shell Hook Autostart (Termux App Launch)</div>
+              <div style={{ fontWeight: 600, color: '#4c1d95', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                2. Shell Hook Autostart (Termux App Launch)
+              </div>
               <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', color: '#5b21b6' }}>
                 Monitors Port 9999 and starts the python server automatically whenever you open Termux. Sourced in:
               </p>
