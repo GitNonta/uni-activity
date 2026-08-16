@@ -14,7 +14,7 @@ class SendLineJobNotification implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    public string $queue = 'line-notifications';
+    public string $queue = 'default';
     public int $tries    = 3;
     public int $backoff  = 30;
 

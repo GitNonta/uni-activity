@@ -37,6 +37,28 @@ class LineService
         return "{$redirectBase}?path={$cleanPath}";
     }
 
+    /** Ensure image URL uses HTTPS for LINE Flex Message requirement */
+    private function getValidHttpsImageUrl(?string $imagePath): ?string
+    {
+        if (!$imagePath) {
+            return null;
+        }
+
+        $url = asset('storage/' . $imagePath);
+        if (str_starts_with($url, 'https://')) {
+            return $url;
+        }
+
+        // If app URL is not HTTPS, check if HTTPS_HOST or proxy is available
+        $httpsHost = env('APP_HTTPS_URL');
+        if ($httpsHost && str_starts_with($httpsHost, 'https://')) {
+            return rtrim($httpsHost, '/') . '/storage/' . ltrim($imagePath, '/');
+        }
+
+        // Return null to avoid LINE rejecting the entire Flex Message on non-HTTPS development URLs
+        return null;
+    }
+
     /** ส่งข้อความหาผู้ใช้ 1 คน (Push Message) */
     public function pushMessage(string $lineUserId, array $messages): bool
     {
@@ -122,9 +144,7 @@ class LineService
     {
         $date     = $activity->activity_date
             ? \Carbon\Carbon::parse($activity->activity_date)->translatedFormat('j M Y') : '-';
-        $imageUrl = $activity->image_path
-            ? asset('storage/' . $activity->image_path)
-            : null;
+        $imageUrl = $this->getValidHttpsImageUrl($activity->image_path);
 
         $body = [
             'type'     => 'box',
@@ -222,7 +242,7 @@ class LineService
     public function buildJobMessage(JobListing $job): array
     {
         $type     = $job->job_type === 'parttime' ? 'งาน Part-time' : 'งานทั่วไป';
-        $imageUrl = $job->image_path ? asset('storage/' . $job->image_path) : null;
+        $imageUrl = $this->getValidHttpsImageUrl($job->image_path);
 
         $body = [
             'type'     => 'box',
@@ -311,7 +331,7 @@ class LineService
     /** สร้าง Flex Message สำหรับประกาศข่าวสาร */
     public function buildAnnouncementMessage(Announcement $announcement): array
     {
-        $imageUrl = $announcement->image_path ? asset('storage/' . $announcement->image_path) : null;
+        $imageUrl = $this->getValidHttpsImageUrl($announcement->image_path);
 
         $body = [
             'type'     => 'box',
