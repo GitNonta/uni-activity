@@ -59,7 +59,8 @@ os.environ.setdefault("OPENBLAS_NUM_THREADS", "4")
 os.environ.setdefault("MKL_NUM_THREADS", "4")
 
 # ── FastAPI ───────────────────────────────────────────────────────────────────
-from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Query
+from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Query, Security, Depends, status
+from fastapi.security.api_key import APIKeyHeader
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -85,6 +86,23 @@ FACE_MATCH_THRESHOLD = float(os.environ.get("FACE_MATCH_THRESHOLD", "0.65"))
 USE_YOLO = os.environ.get("USE_YOLO", "1") == "1"
 USE_LIVENESS = os.environ.get("USE_LIVENESS", "1") == "1"
 
+# ── API Key & Security Configuration ──────────────────────────────────────────
+AI_SERVER_KEY = os.environ.get("AI_SERVER_KEY", os.environ.get("AI_SERVICE_API_KEY", "uni-activity-ai-secret-key-2026"))
+API_KEY_NAME = "X-API-Key"
+api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
+
+async def verify_api_key(api_key: str = Security(api_key_header)):
+    """Verify that incoming request contains the valid secret API Key"""
+    if not AI_SERVER_KEY:
+        return True
+    if not api_key or api_key.strip() != AI_SERVER_KEY.strip():
+        logger.warning(f"Unauthorized API request rejected: missing or invalid '{API_KEY_NAME}' header")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Forbidden: Invalid or missing '{API_KEY_NAME}' header for AI Service.",
+        )
+    return True
+
 # ── Resolve model path relative to this file's directory ──────────────────────
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _DEFAULT_YOLO = os.path.join(_HERE, "yolov8n-face.pt")
@@ -97,7 +115,7 @@ async def lifespan(app: FastAPI):
     global face_app, liveness_detector, yolo_model, pca_reducer
 
     logger.info("=" * 60)
-    logger.info("Starting Uni-Activity AI Server v2.0")
+    logger.info("Starting Uni-Activity AI Server v2.0 (Secured with API Key & Restricted CORS)")
     logger.info("=" * 60)
 
     # ── 1. InsightFace (SCRFD + ArcFace) ─────────────────────────────
@@ -155,8 +173,7 @@ async def lifespan(app: FastAPI):
     # ── 4. PCA Reducer for 512D → 128D ────────────────────────────────
     logger.info("Setting up PCA reducer for 512D \u2192 128D conversion...")
     pca_reducer = PCA(n_components=128, random_state=42)
-    # Initialize with sufficient dummy data (PCA needs n_samples >= n_components)
-    dummy_data = np.random.randn(200, 512).astype(np.float32)  # 200 samples > 128 components
+    dummy_data = np.random.randn(200, 512).astype(np.float32)
     pca_reducer.fit(dummy_data)
     logger.info("PCA reducer initialized \u2713")
 
@@ -177,18 +194,16 @@ def reduce_to_128d(embedding_512d: np.ndarray) -> np.ndarray:
     orthogonal projection (seed=42) if PCA is not yet initialized.
     """
     global pca_reducer
-    emb = np.array(embedding_512d, dtype=np.float32).reshape(1, -1)  # (1, 512)
+    emb = np.array(embedding_512d, dtype=np.float32).reshape(1, -1)
 
     if pca_reducer is not None:
-        reduced = pca_reducer.transform(emb)[0]          # (128,)
+        reduced = pca_reducer.transform(emb)[0]
     else:
-        # Fallback: fixed random orthogonal projection
         rng = np.random.RandomState(42)
         proj = rng.randn(512, 128).astype(np.float32)
-        proj, _ = np.linalg.qr(proj)                     # orthonormalize
-        reduced = emb[0] @ proj[:, :128]                 # (128,)
+        proj, _ = np.linalg.qr(proj)
+        reduced = emb[0] @ proj[:, :128]
 
-    # L2-normalize so cosine similarity still works
     norm = np.linalg.norm(reduced)
     if norm > 0:
         reduced = reduced / norm
@@ -202,12 +217,19 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# ── Restricted CORS Configuration ─────────────────────────────────────────────
+ALLOWED_ORIGINS_RAW = os.environ.get(
+    "CORS_ALLOWED_ORIGINS",
+    "http://127.0.0.1:8080,http://localhost:8080,http://192.168.1.222:8080,http://127.0.0.1:8000,http://localhost:8000"
+)
+allowed_origins = [orig.strip() for orig in ALLOWED_ORIGINS_RAW.split(",") if orig.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-API-Key", "X-Requested-With", "Accept", "X-CSRF-TOKEN"],
 )
 
 
@@ -332,6 +354,7 @@ async def health():
     return {
         "status": "ok",
         "version": "2.0.0",
+        "auth_required": bool(AI_SERVER_KEY),
         "models": {
             "insightface": face_app is not None,
             "yolov8": yolo_model is not None,
@@ -345,7 +368,7 @@ async def health():
     }
 
 
-@app.post("/extract")
+@app.post("/extract", dependencies=[Depends(verify_api_key)])
 async def extract_face(image: UploadFile = File(...)):
     """
     สร้าง face embedding จากรูปโปรไฟล์ในสองรูปแบบ:
@@ -399,7 +422,7 @@ async def extract_face(image: UploadFile = File(...)):
     }
 
 
-@app.post("/verify")
+@app.post("/verify", dependencies=[Depends(verify_api_key)])
 async def verify_face(
     image: UploadFile = File(...),
     known_embedding: str = Form(...),
@@ -525,7 +548,7 @@ async def verify_face(
     }
 
 
-@app.post("/liveness")
+@app.post("/liveness", dependencies=[Depends(verify_api_key)])
 async def check_liveness_only(image: UploadFile = File(...)):
     """
     ตรวจ Liveness อย่างเดียว ไม่ verify identity

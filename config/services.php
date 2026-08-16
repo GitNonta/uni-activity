@@ -45,7 +45,8 @@ return [
     ],
     
     'ai_server' => [
-        'url' => env('AI_SERVER_URL', 'http://192.168.1.45:8000'),
+        'url' => env('AI_SERVER_URL', 'http://127.0.0.1:8001'),
+        'key' => env('AI_SERVER_KEY', env('AI_SERVICE_API_KEY', 'uni-activity-ai-secret-key-2026')),
     ],
 
 ];

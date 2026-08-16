@@ -14,12 +14,14 @@ use Illuminate\Support\Facades\Log;
 class FaceVerificationService
 {
     protected $aiServerUrl;
+    protected $aiServerKey;
     protected $fallbackThreshold = 3;
     protected $timeoutSeconds = 8;
 
     public function __construct()
     {
         $this->aiServerUrl = config('services.ai_server.url');
+        $this->aiServerKey = config('services.ai_server.key');
     }
 
     /**
@@ -91,7 +93,11 @@ class FaceVerificationService
         }
 
         try {
-            $response = Http::timeout($this->timeoutSeconds)
+            $httpRequest = Http::timeout($this->timeoutSeconds);
+            if (!empty($this->aiServerKey)) {
+                $httpRequest = $httpRequest->withHeaders(['X-API-Key' => $this->aiServerKey]);
+            }
+            $response = $httpRequest
                 ->attach('image', $imageDecoded, 'frame.jpg')
                 ->post(rtrim($this->aiServerUrl, '/') . '/verify', [
                     'known_embedding' => json_encode($user->face_descriptor),
@@ -218,7 +224,11 @@ class FaceVerificationService
             ];
         } else {
             try {
-                $response = Http::timeout(3)->get(rtrim($this->aiServerUrl, '/') . '/health');
+                $httpHealth = Http::timeout(3);
+                if (!empty($this->aiServerKey)) {
+                    $httpHealth = $httpHealth->withHeaders(['X-API-Key' => $this->aiServerKey]);
+                }
+                $response = $httpHealth->get(rtrim($this->aiServerUrl, '/') . '/health');
                 
                 if ($response->successful()) {
                     $healthData = $response->json();
@@ -227,7 +237,7 @@ class FaceVerificationService
                         'status' => $healthData['status'] ?? 'unknown',
                         'models' => $healthData['models'] ?? [],
                         'pipeline' => $healthData['pipeline'] ?? 'unknown',
-                        'response_time_ms' => round($response->transferStats?->getTotalTime() * 1000),
+                        'response_time_ms' => round(($response->transferStats?->getTransferTime() ?? 0) * 1000),
                         'checked_at' => time()
                     ];
                 } else {

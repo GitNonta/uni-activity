@@ -147,7 +147,12 @@ class ExtractMissingFaceEncodings extends Command
 
         // อ่านไฟล์และส่งไป AI Server
         try {
-            $response = Http::timeout(15)
+            $httpReq = Http::timeout(15);
+            $aiKey = config('services.ai_server.key');
+            if (!empty($aiKey)) {
+                $httpReq = $httpReq->withHeaders(['X-API-Key' => $aiKey]);
+            }
+            $response = $httpReq
                 ->attach('image', file_get_contents($fullPath), basename($fullPath))
                 ->post(rtrim($aiServerUrl, '/') . '/extract');
 

@@ -62,7 +62,12 @@ class ProfilePhotoController extends Controller
                     \Log::info("⏱️  [STEP 4] Sending HTTP request to AI Server...");
                     
                     $startTime = microtime(true);
-                    $response = \Illuminate\Support\Facades\Http::timeout(15)
+                    $httpExtract = \Illuminate\Support\Facades\Http::timeout(15);
+                    $aiKey = config('services.ai_server.key');
+                    if (!empty($aiKey)) {
+                        $httpExtract = $httpExtract->withHeaders(['X-API-Key' => $aiKey]);
+                    }
+                    $response = $httpExtract
                         ->attach('image', file_get_contents($file->getRealPath()), $file->getClientOriginalName())
                         ->post(rtrim($aiServerUrl, '/') . '/extract');
                     $responseTime = round((microtime(true) - $startTime) * 1000);

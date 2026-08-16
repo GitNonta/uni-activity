@@ -257,7 +257,12 @@ class CheckInController extends Controller
         Cache::put($cacheKey, true, 1); // 1 second cooldown
 
         try {
-            $response = \Illuminate\Support\Facades\Http::timeout(8) // Reduced timeout
+            $httpReq = \Illuminate\Support\Facades\Http::timeout(8);
+            $aiKey = config('services.ai_server.key');
+            if (!empty($aiKey)) {
+                $httpReq = $httpReq->withHeaders(['X-API-Key' => $aiKey]);
+            }
+            $response = $httpReq
                 ->attach('image', $imageDecoded, 'frame.jpg')
                 ->post(rtrim($aiServerUrl, '/') . '/verify', [
                     'known_embedding' => json_encode($storedDescriptor),
@@ -353,7 +358,12 @@ class CheckInController extends Controller
             $aiServerUrl = config('services.ai_server.url');
             if (!empty($aiServerUrl)) {
                 try {
-                    $response = \Illuminate\Support\Facades\Http::timeout(15)
+                    $httpReq = \Illuminate\Support\Facades\Http::timeout(15);
+                    $aiKey = config('services.ai_server.key');
+                    if (!empty($aiKey)) {
+                        $httpReq = $httpReq->withHeaders(['X-API-Key' => $aiKey]);
+                    }
+                    $response = $httpReq
                         ->attach('image', $imageData, 'selfie.jpg')
                         ->post(rtrim($aiServerUrl, '/') . '/verify', [
                             'known_embedding' => json_encode($storedDescriptor),
