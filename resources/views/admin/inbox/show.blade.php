@@ -18,6 +18,31 @@
     </style>
     @endif
 
+    <style>
+        .chat-link {
+            color: #dc2626 !important;
+            text-decoration: underline !important;
+            text-underline-offset: 3px;
+            word-break: break-all;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .chat-link-mine {
+            color: #ef4444 !important;
+            background: #ffffff;
+            padding: 1px 6px;
+            border-radius: 6px;
+            display: inline-block;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            text-decoration: underline !important;
+        }
+        .chat-link:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+    </style>
+
     {{-- Header --}}
     <div class="chat-header-container" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;flex-wrap:wrap;gap:.5rem;">
         <a href="{{ route('admin.inbox.index') }}" style="color:#f97316;font-size:.85rem;">← กล่องข้อความ</a>
@@ -73,9 +98,10 @@
                     <div style="padding:{{$pad}};border-radius:{{ $isMine ? '16px 4px 16px 16px' : '4px 16px 16px 16px' }};background:{{$bg}};color:{{ $isMine ? '#fff' : '#1e293b' }};font-size:.875rem;box-shadow:{{$shadow}};word-break:break-word;">
                         @if($msg->body)
                             @php
+                                $linkClass = $isMine ? 'chat-link chat-link-mine' : 'chat-link';
                                 $linkified = preg_replace(
                                     '~(https?://[^\s<]+[^<.,:;"\')\]\s])~i',
-                                    '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;word-break:break-all;font-weight:500;">$1</a>',
+                                    '<a href="$1" target="_blank" rel="noopener noreferrer" class="' . $linkClass . '">$1</a>',
                                     e($msg->body)
                                 );
                             @endphp
@@ -195,7 +221,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    function linkifyText(text) {
+    function linkifyText(text, isMine) {
         if (!text) return '';
         const safe = text
             .replace(/&/g, '&amp;')
@@ -203,8 +229,9 @@ document.addEventListener('DOMContentLoaded', function () {
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#039;');
+        const cls = isMine ? 'chat-link chat-link-mine' : 'chat-link';
         return safe.replace(/(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/gi, function(url) {
-            return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;word-break:break-all;font-weight:500;">${url}</a>`;
+            return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="${cls}">${url}</a>`;
         });
     }
 
@@ -271,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function () {
             '<div style="display:flex;flex-direction:column;align-items:' + align + ';max-width:72%;">' +
                 '<span style="font-size:.68rem;color:#94a3b8;margin-bottom:.15rem;">' + label + '</span>' +
                 '<div style="padding:' + (hasOnlyImages ? '0' : '.55rem .85rem') + ';border-radius:' + br + ';background:' + (hasOnlyImages ? 'transparent' : bg) + ';color:' + color + ';font-size:.875rem;box-shadow:' + (hasOnlyImages ? 'none' : '0 1px 3px rgba(0,0,0,.08)') + ';word-break:break-word;" id="msg-body-' + msg.id + '">' +
-                    (msg.message ? '<p style="margin:0;">' + linkifyText(msg.message) + '</p>' : '') +
+                    (msg.message ? '<p style="margin:0;">' + linkifyText(msg.message, isMine) + '</p>' : '') +
                     (msg.is_edited ? '<span style="font-size:0.6rem;opacity:0.7;margin-left:5px;">(แก้ไขแล้ว)</span>' : '') +
                     attHtml +
                 '</div>' +
@@ -306,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (res.success) {
                     const bodyEl = document.getElementById('msg-body-' + window.currentAdminEditId);
                     if (bodyEl) {
-                        bodyEl.innerHTML = '<p style="margin:0;">' + linkifyText(text) + '</p><span style="font-size:0.6rem;opacity:0.7;margin-left:5px;">(แก้ไขแล้ว)</span>';
+                        bodyEl.innerHTML = '<p style="margin:0;">' + linkifyText(text, true) + '</p><span style="font-size:0.6rem;opacity:0.7;margin-left:5px;">(แก้ไขแล้ว)</span>';
                     }
                     
                     window.currentAdminEditId = null;
@@ -381,7 +408,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 .listen('.MessageEdited', function (e) {
                     const bodyEl = document.getElementById('msg-body-' + e.id);
                     if (bodyEl) {
-                        bodyEl.innerHTML = '<p style="margin:0;">' + linkifyText(e.message) + '</p><span style="font-size:0.6rem;opacity:0.7;margin-left:5px;">(แก้ไขแล้ว)</span>';
+                        bodyEl.innerHTML = '<p style="margin:0;">' + linkifyText(e.message, false) + '</p><span style="font-size:0.6rem;opacity:0.7;margin-left:5px;">(แก้ไขแล้ว)</span>';
                     }
                 })
                 .listenForWhisper('typing', function(e) {

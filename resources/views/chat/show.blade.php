@@ -175,27 +175,33 @@
     }
 
     .chat-link {
-        color: inherit;
-        text-decoration: underline;
+        color: #dc2626 !important;
+        text-decoration: underline !important;
+        text-underline-offset: 3px;
         word-break: break-all;
-        font-weight: 500;
-        transition: opacity 0.15s ease;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
     }
 
     .message-mine .chat-link {
-        color: #ffffff;
-        text-decoration: underline;
-        text-underline-offset: 2px;
+        color: #ef4444 !important;
+        background: #ffffff;
+        padding: 1px 6px;
+        border-radius: 6px;
+        display: inline-block;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        text-decoration: underline !important;
     }
 
     .message-theirs .chat-link {
-        color: var(--chat-primary, #ea580c);
-        text-decoration: underline;
-        text-underline-offset: 2px;
+        color: #dc2626 !important;
+        text-decoration: underline !important;
     }
 
     .chat-link:hover {
-        opacity: 0.85;
+        opacity: 0.9;
+        transform: translateY(-1px);
     }
 
     .message-time {
