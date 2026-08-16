@@ -4,7 +4,7 @@
     {{-- รูปภาพกิจกรรม (ถ้าไม่มีแสดงไอคอนแทน) --}}
     <div class="act-card-img">
         @if($activity->image_path)
-            <img src="{{ Storage::url($activity->image_path) }}" alt="{{ $activity->title }}" class="lazy-img" loading="lazy" style="background:#f1f5f9;">
+            <img data-src="{{ Storage::url($activity->image_path) }}" alt="{{ $activity->title }}" class="lazy-img" loading="lazy" style="background:#f1f5f9;">
         @else
             <svg class="icon-xl" style="color:rgba(255,255,255,.3);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
         @endif

@@ -1,21 +1,25 @@
 {{-- การ์ดแสดงงาน: badge ประเภท, สถานะ, ข้อมูลย่อ, progress --}}
 <a href="{{ route('jobs.show', $job->id) }}" class="card act-card job-card no-linkify">
-    {{-- รูปภาพ / gradient --}}
+    {{-- รูปภาพ / gradient + badge ต้องอยู่ใน .act-card-img เพื่อให้ position:absolute ทำงาน --}}
     @if($job->image_path)
         <div class="act-card-img">
             <img data-src="{{ Storage::url($job->image_path) }}" alt="{{ $job->title }}" class="lazy-img">
+            @if(isset($isApplied) && $isApplied)
+                <span class="act-card-user-badge act-badge-registered">
+                    <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    สมัครแล้ว
+                </span>
+            @endif
         </div>
     @else
-        <div class="act-card-img" style="background:linear-gradient(135deg,{{ $job->job_type === 'parttime' ? '#f97316,#fb923c' : '#ea580c,#60a5fa' }});height:100px;">
+        <div class="act-card-img" style="background:linear-gradient(135deg,{{ $job->job_type === 'parttime' ? '#f97316,#fb923c' : '#ea580c,#60a5fa' }});">
             <svg class="icon-xl" style="color:rgba(255,255,255,.3);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-        </div>
-    @endif
-
-    {{-- Badge สถานะผู้สมัคร --}}
-    @if(isset($isApplied) && $isApplied)
-        <div class="act-card-user-badge act-badge-registered">
-            <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-            สมัครแล้ว
+            @if(isset($isApplied) && $isApplied)
+                <span class="act-card-user-badge act-badge-registered">
+                    <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    สมัครแล้ว
+                </span>
+            @endif
         </div>
     @endif
 
@@ -26,11 +30,11 @@
                 {{ $job->job_type === 'parttime' ? 'Part-time' : 'งานทั่วไป' }}
             </span>
             @if($job->status === 'open')
-                <span class="badge badge-green">🟢 เปิดรับสมัคร</span>
+                <span class="badge badge-green">เปิดรับสมัคร</span>
             @elseif($job->status === 'closed')
-                <span class="badge badge-red">🔴 ปิดรับสมัคร</span>
+                <span class="badge badge-red">ปิดรับสมัคร</span>
             @else
-                <span class="badge badge-gray">⚫ เสร็จสิ้น</span>
+                <span class="badge badge-gray">เสร็จสิ้น</span>
             @endif
         </div>
 
@@ -39,17 +43,17 @@
 
         {{-- ข้อมูลย่อ --}}
         <div class="act-card-meta">
-            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-            {{ $job->position }}
+            <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            <span class="line-clamp-1">{{ $job->position }}</span>
         </div>
         @if($job->compensation)
         <div class="act-card-meta">
-            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            {{ $job->compensation }}
+            <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span class="line-clamp-1">{{ $job->compensation }}</span>
         </div>
         @endif
         <div class="act-card-meta">
-            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             <span class="line-clamp-1">{{ $job->location }}</span>
         </div>
 
