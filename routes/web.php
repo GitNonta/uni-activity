@@ -10,6 +10,10 @@ use App\Http\Controllers\CheckInController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\ProfilePhotoController;
 use App\Http\Controllers\Admin\ActivityAdminController;
+use App\Http\Controllers\Admin\AdminAttendanceController;
+use App\Http\Controllers\Admin\AdminQuickApprovalController;
+use App\Http\Controllers\Admin\AdminRegistrationController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\StudentAdminController;
 use App\Http\Controllers\Admin\CategoryAdminController;
 use App\Http\Controllers\Admin\UserAdminController;
@@ -179,28 +183,28 @@ Route::match(['get', 'post'], '/line/webhook', [LineController::class, 'webhook'
 // ── เส้นทางหลังบ้าน (staff + admin เข้าได้) ───────────
 Route::middleware(['auth', 'role:staff'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', fn() => redirect()->route('admin.dashboard'));
-    Route::get('/dashboard', [ActivityAdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // ── กิจกรรม ──
     Route::resource('activities', ActivityAdminController::class);
-    Route::get('activities/{id}/participants', [ActivityAdminController::class, 'participants'])->name('activities.participants');
-    Route::get('activities/{id}/checkin', [ActivityAdminController::class, 'checkinMonitor'])->name('activities.checkin');
-    Route::get('activities/{id}/pending-requests', [ActivityAdminController::class, 'pendingRequests'])->name('activities.pending-requests');
-    Route::post('registrations/{id}/approve', [ActivityAdminController::class, 'approveRegistration'])->name('registrations.approve');
-    Route::post('registrations/{id}/reject', [ActivityAdminController::class, 'rejectRegistration'])->name('registrations.reject');
-    Route::post('activities/{id}/manual-checkin', [ActivityAdminController::class, 'manualCheckIn'])->name('activities.manual-checkin');
-    Route::post('attendances/{id}/approve', [ActivityAdminController::class, 'approveAttendance'])->name('attendances.approve');
-    Route::post('attendances/{id}/reject', [ActivityAdminController::class, 'rejectAttendance'])->name('attendances.reject');
+    Route::get('activities/{activity}/participants', [AdminAttendanceController::class, 'participants'])->name('activities.participants');
+    Route::get('activities/{activity}/checkin', [AdminAttendanceController::class, 'monitor'])->name('activities.checkin');
+    Route::get('activities/{activity}/pending-requests', [AdminRegistrationController::class, 'pendingRequests'])->name('activities.pending-requests');
+    Route::post('registrations/{registration}/approve', [AdminRegistrationController::class, 'approveRegistration'])->name('registrations.approve');
+    Route::post('registrations/{registration}/reject', [AdminRegistrationController::class, 'rejectRegistration'])->name('registrations.reject');
+    Route::post('activities/{activity}/manual-checkin', [AdminAttendanceController::class, 'manualCheckIn'])->name('activities.manual-checkin');
+    Route::post('attendances/{attendance}/approve', [AdminAttendanceController::class, 'approve'])->name('attendances.approve');
+    Route::post('attendances/{attendance}/reject', [AdminAttendanceController::class, 'reject'])->name('attendances.reject');
     Route::post('activities/quick-store', [ActivityAdminController::class, 'quickStore'])->name('activities.quick-store');
-    Route::post('activities/{id}/toggle-early-checkin', [ActivityAdminController::class, 'toggleEarlyCheckin'])->name('activities.toggle-early-checkin');
-    Route::post('attendances/{id}/review-selfie', [ActivityAdminController::class, 'reviewSelfie'])->name('attendances.review-selfie');
+    Route::post('activities/{activity}/toggle-early-checkin', [ActivityAdminController::class, 'toggleEarlyCheckin'])->name('activities.toggle-early-checkin');
+    Route::post('attendances/{attendance}/review-selfie', [AdminAttendanceController::class, 'reviewSelfie'])->name('attendances.review-selfie');
     // ── AJAX: approve/reject จาก Dashboard unified queue ──
-    Route::post('quick-approve', [ActivityAdminController::class, 'quickApprove'])->name('quick.approve');
-    Route::post('quick-reject', [ActivityAdminController::class, 'quickReject'])->name('quick.reject');
+    Route::post('quick-approve', [AdminQuickApprovalController::class, 'approve'])->name('quick.approve');
+    Route::post('quick-reject', [AdminQuickApprovalController::class, 'reject'])->name('quick.reject');
     
     // ── QR Code ──
-    Route::post('activities/{id}/regenerate-qr', [ActivityAdminController::class, 'regenerateQr'])->name('activities.regenerate-qr');
-    Route::post('activities/{id}/regenerate-checkout-qr', [ActivityAdminController::class, 'regenerateCheckoutQr'])->name('activities.regenerate-checkout-qr');
+    Route::post('activities/{activity}/regenerate-qr', [ActivityAdminController::class, 'regenerateQr'])->name('activities.regenerate-qr');
+    Route::post('activities/{activity}/regenerate-checkout-qr', [ActivityAdminController::class, 'regenerateCheckoutQr'])->name('activities.regenerate-checkout-qr');
 
 
     // ── ประกาศ ──
