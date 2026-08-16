@@ -240,6 +240,54 @@ def get_deploy_logs():
 
     return "No deployment log found. Deploy via SCP, SFTP, or Git Sync to generate logs."
 
+def get_log_files_info():
+    import os, glob, time
+    from pathlib import Path
+    app_dir = "/data/data/com.termux/files/home/uni-activity"
+    if not os.path.exists(app_dir):
+        app_dir = str(Path(__file__).parent.parent)
+
+    logs_dir = os.path.join(app_dir, "storage/logs")
+    log_files = []
+    total_bytes = 0
+
+    if os.path.exists(logs_dir):
+        for file_path in glob.glob(os.path.join(logs_dir, "*.log")):
+            try:
+                name = os.path.basename(file_path)
+                stat = os.stat(file_path)
+                size_bytes = stat.st_size
+                total_bytes += size_bytes
+                mtime_str = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(stat.st_mtime))
+                
+                # Read snippet
+                snippet = ""
+                if size_bytes > 0:
+                    try:
+                        with open(file_path, "r", encoding="utf-8", errors="replace") as f:
+                            snippet = "".join(f.readlines()[-200:])
+                    except Exception:
+                        pass
+                
+                log_files.append({
+                    "name": name,
+                    "size_bytes": size_bytes,
+                    "size_kb": round(size_bytes / 1024, 1),
+                    "size_mb": round(size_bytes / (1024 * 1024), 2),
+                    "modified": mtime_str,
+                    "content": snippet
+                })
+            except Exception:
+                pass
+
+    log_files.sort(key=lambda x: x["name"])
+
+    return {
+        "count": len(log_files),
+        "total_size_mb": round(total_bytes / (1024 * 1024), 2),
+        "files": log_files
+    }
+
 def get_channel_logs():
     import os, subprocess, time
     from pathlib import Path
@@ -247,11 +295,14 @@ def get_channel_logs():
     if not os.path.exists(app_dir):
         app_dir = str(Path(__file__).parent.parent)
 
+    now_str = time.strftime('%Y-%m-%d %H:%M:%S')
+
     result = {
         "deploy": "",
         "git": "",
         "scp": "",
-        "sftp": ""
+        "sftp": "",
+        "ssh": ""
     }
 
     # 1. deploy.log
@@ -272,10 +323,51 @@ def get_channel_logs():
         except Exception:
             pass
 
-    # 3. SCP Status & Log
+    # 3. SSH Status & Live Log
+    ssh_lines = []
+    ssh_sessions = get_active_sessions()
+    ssh_lines.append(f"[{now_str}] === SSH Session & Daemon Monitor (Port 8022) ===")
+    ssh_lines.append(f"Active Connected Clients: {len(ssh_sessions)}")
+    if ssh_sessions:
+        for idx, sess in enumerate(ssh_sessions, 1):
+            ssh_lines.append(f"   [{idx}] Client Remote Socket: {sess} -> Termux Daemon (Port 8022)")
+    else:
+        ssh_lines.append("   [IDLE] No remote SSH client sessions currently connected.")
+
+    ssh_lines.append("")
+    ssh_lines.append("=== Active Shell & SSH Daemon Processes ===")
+    try:
+        ps_res = subprocess.run(["ps", "-ef"], capture_output=True, text=True)
+        found_procs = 0
+        for line in ps_res.stdout.split('\n'):
+            if any(k in line.lower() for k in ["sshd", "ssh-", "dropbear", "zsh", "bash"]) and "grep" not in line and line.strip():
+                ssh_lines.append(f"   * {line.strip()}")
+                found_procs += 1
+        if found_procs == 0:
+            ssh_lines.append("   No active shell processes found.")
+    except Exception as e:
+        ssh_lines.append(f"   Error reading processes: {str(e)}")
+
+    # Check for shell activity or auth log
+    shell_log_path = os.path.join(app_dir, "storage/logs/shell_activity.log")
+    if os.path.exists(shell_log_path) and os.path.getsize(shell_log_path) > 0:
+        try:
+            with open(shell_log_path, "r", encoding="utf-8", errors="replace") as f:
+                ssh_lines.append("")
+                ssh_lines.append("=== Recent Shell Command Activity ===")
+                ssh_lines.extend(f.readlines()[-30:])
+        except Exception:
+            pass
+
+    ssh_lines.append("")
+    ssh_lines.append("[Config] SSH Direct Connect Command:")
+    ssh_lines.append("   ssh -p 8022 u0_a175@192.168.1.222")
+
+    result["ssh"] = "\n".join(ssh_lines)
+
+    # 4. SCP Status & Log
     scp_lines = []
     scp_active = get_scp_active()
-    now_str = time.strftime('%Y-%m-%d %H:%M:%S')
     scp_lines.append(f"[{now_str}] === SCP Transfer Monitor (Port 8022) ===")
     scp_lines.append(f"Active SCP Sessions: {scp_active}")
     if scp_active > 0:
@@ -309,7 +401,7 @@ def get_channel_logs():
 
     result["scp"] = "\n".join(scp_lines)
 
-    # 4. SFTP Status & Log
+    # 5. SFTP Status & Log
     sftp_lines = []
     sftp_active = get_sftp_active()
     sftp_lines.append(f"[{now_str}] === SFTP Subsystem Monitor (Port 8022) ===")

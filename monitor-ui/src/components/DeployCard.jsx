@@ -1,11 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-export function DeployCard({ deployLog, deployChannels = {}, sshSessions = [], sftpSessions = 0, scpSessions = 0, selectedEvent, onBack }) {
+export function DeployCard({ deployLog, deployChannels = {}, logFilesInfo = { count: 0, total_size_mb: 0, files: [] }, sshSessions = [], sftpSessions = 0, scpSessions = 0, selectedEvent, onBack }) {
   const consoleRef = useRef(null);
   const [logSearchText, setLogSearchText] = useState('');
   const [logFilter, setLogFilter] = useState('All logs');
   const [logOrder, setLogOrder] = useState('Ascending');
-  const [channelTab, setChannelTab] = useState('all'); // 'all' | 'scp' | 'sftp' | 'git'
+  const [channelTab, setChannelTab] = useState('all'); // 'all' | 'ssh' | 'scp' | 'sftp' | 'git' | 'file'
+  const [selectedLogFile, setSelectedLogFile] = useState(null);
+  const [showLogFilesDropdown, setShowLogFilesDropdown] = useState(false);
   const [isAllLogsMenuOpen, setIsAllLogsMenuOpen] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   
@@ -432,7 +434,98 @@ export function DeployCard({ deployLog, deployChannels = {}, sshSessions = [], s
               <span style={{ display: 'flex', width: '10px', height: '10px', background: '#10b981', borderRadius: '50%' }}></span>
               <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#f8fafc', marginLeft: '0.5rem' }}>Deployment Console (Real-Time)</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+              {/* Log files count summary badge */}
+              <div style={{ position: 'relative' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowLogFilesDropdown(!showLogFilesDropdown)}
+                  style={{
+                    background: '#1e293b',
+                    color: '#38bdf8',
+                    border: '1px solid #0284c7',
+                    padding: '0.2rem 0.6rem',
+                    borderRadius: '4px',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.35rem'
+                  }}
+                  title="View all storage log files"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>{logFilesInfo?.count || 0} Log Files ({logFilesInfo?.total_size_mb || 0} MB)</span>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+
+                {showLogFilesDropdown && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '115%',
+                    right: 0,
+                    width: '320px',
+                    background: '#0f172a',
+                    border: '1px solid #334155',
+                    borderRadius: '6px',
+                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.7)',
+                    zIndex: 100,
+                    padding: '0.5rem 0',
+                    maxHeight: '320px',
+                    overflowY: 'auto'
+                  }}>
+                    <div style={{ padding: '0.4rem 0.8rem', borderBottom: '1px solid #1e293b', fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600, display: 'flex', justifyContent: 'space-between' }}>
+                      <span>System Storage Logs ({logFilesInfo?.count || 0})</span>
+                      <span>{logFilesInfo?.total_size_mb || 0} MB Total</span>
+                    </div>
+                    {(!logFilesInfo?.files || logFilesInfo.files.length === 0) ? (
+                      <div style={{ padding: '0.8rem', color: '#64748b', fontSize: '0.75rem', textAlign: 'center' }}>No log files in storage/logs</div>
+                    ) : (
+                      logFilesInfo.files.map((file, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => {
+                            setSelectedLogFile(file);
+                            setChannelTab('file');
+                            setShowLogFilesDropdown(false);
+                          }}
+                          style={{
+                            width: '100%',
+                            textAlign: 'left',
+                            padding: '0.5rem 0.8rem',
+                            background: selectedLogFile?.name === file.name && channelTab === 'file' ? '#1e3a8a' : 'transparent',
+                            border: 'none',
+                            color: '#f8fafc',
+                            fontSize: '0.78rem',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            borderBottom: '1px solid #172554'
+                          }}
+                        >
+                          <div>
+                            <div style={{ fontWeight: 600, color: '#38bdf8' }}>{file.name}</div>
+                            <div style={{ fontSize: '0.68rem', color: '#64748b' }}>{file.modified}</div>
+                          </div>
+                          <span style={{ fontSize: '0.72rem', color: '#94a3b8', background: '#1e293b', padding: '0.15rem 0.4rem', borderRadius: '4px' }}>
+                            {file.size_kb > 1024 ? `${file.size_mb} MB` : `${file.size_kb} KB`}
+                          </span>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {sshSessions.length > 0 && (
+                <span style={{ fontSize: '0.7rem', color: '#93c5fd', background: '#1e3a8a', padding: '0.2rem 0.5rem', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ width: '6px', height: '6px', background: '#3b82f6', borderRadius: '50%' }}></span>
+                  SSH Active ({sshSessions.length})
+                </span>
+              )}
               {scpSessions > 0 && (
                 <span style={{ fontSize: '0.7rem', color: '#86efac', background: '#14532d', padding: '0.2rem 0.5rem', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                   <span style={{ width: '6px', height: '6px', background: '#22c55e', borderRadius: '50%' }}></span>
@@ -445,13 +538,7 @@ export function DeployCard({ deployLog, deployChannels = {}, sshSessions = [], s
                   SFTP Active ({sftpSessions})
                 </span>
               )}
-              {sshSessions.length > 0 && (
-                <span style={{ fontSize: '0.7rem', color: '#93c5fd', background: '#1e3a8a', padding: '0.2rem 0.5rem', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  <span style={{ width: '6px', height: '6px', background: '#3b82f6', borderRadius: '50%' }}></span>
-                  SSH Active ({sshSessions.length})
-                </span>
-              )}
-              <span style={{ fontSize: '0.75rem', color: '#38bdf8', background: '#1e293b', padding: '0.25rem 0.5rem', borderRadius: '4px' }}>
+              <span style={{ fontSize: '0.75rem', color: '#94a3b8', background: '#1e293b', padding: '0.25rem 0.5rem', borderRadius: '4px' }}>
                 Port 8022
               </span>
             </div>
@@ -459,9 +546,9 @@ export function DeployCard({ deployLog, deployChannels = {}, sshSessions = [], s
 
           {/* Channel Selector Tab Bar */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
-            <div style={{ display: 'inline-flex', background: '#020617', padding: '0.2rem', borderRadius: '6px', border: '1px solid #1e293b', gap: '0.25rem' }}>
+            <div style={{ display: 'inline-flex', background: '#020617', padding: '0.2rem', borderRadius: '6px', border: '1px solid #1e293b', gap: '0.25rem', flexWrap: 'wrap' }}>
               <button
-                onClick={() => setChannelTab('all')}
+                onClick={() => { setChannelTab('all'); setSelectedLogFile(null); }}
                 style={{
                   background: channelTab === 'all' ? '#334155' : 'transparent',
                   color: channelTab === 'all' ? '#f8fafc' : '#94a3b8',
@@ -481,7 +568,29 @@ export function DeployCard({ deployLog, deployChannels = {}, sshSessions = [], s
                 <span>All Logs</span>
               </button>
               <button
-                onClick={() => setChannelTab('scp')}
+                onClick={() => { setChannelTab('ssh'); setSelectedLogFile(null); }}
+                style={{
+                  background: channelTab === 'ssh' ? '#1e3a8a' : 'transparent',
+                  color: channelTab === 'ssh' ? '#93c5fd' : '#94a3b8',
+                  border: 'none',
+                  borderRadius: '4px',
+                  padding: '0.35rem 0.75rem',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem'
+                }}
+              >
+                <span style={{ width: '6px', height: '6px', background: sshSessions.length > 0 ? '#3b82f6' : '#64748b', borderRadius: '50%' }}></span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+                <span>SSH Sessions</span>
+                {sshSessions.length > 0 && <span style={{ background: '#3b82f6', color: '#ffffff', fontSize: '0.65rem', padding: '0.05rem 0.35rem', borderRadius: '10px', fontWeight: 700 }}>{sshSessions.length}</span>}
+              </button>
+              <button
+                onClick={() => { setChannelTab('scp'); setSelectedLogFile(null); }}
                 style={{
                   background: channelTab === 'scp' ? '#14532d' : 'transparent',
                   color: channelTab === 'scp' ? '#86efac' : '#94a3b8',
@@ -503,7 +612,7 @@ export function DeployCard({ deployLog, deployChannels = {}, sshSessions = [], s
                 {scpSessions > 0 && <span style={{ background: '#22c55e', color: '#022c22', fontSize: '0.65rem', padding: '0.05rem 0.35rem', borderRadius: '10px', fontWeight: 700 }}>{scpSessions}</span>}
               </button>
               <button
-                onClick={() => setChannelTab('sftp')}
+                onClick={() => { setChannelTab('sftp'); setSelectedLogFile(null); }}
                 style={{
                   background: channelTab === 'sftp' ? '#713f12' : 'transparent',
                   color: channelTab === 'sftp' ? '#fde047' : '#94a3b8',
@@ -525,7 +634,7 @@ export function DeployCard({ deployLog, deployChannels = {}, sshSessions = [], s
                 {sftpSessions > 0 && <span style={{ background: '#eab308', color: '#422006', fontSize: '0.65rem', padding: '0.05rem 0.35rem', borderRadius: '10px', fontWeight: 700 }}>{sftpSessions}</span>}
               </button>
               <button
-                onClick={() => setChannelTab('git')}
+                onClick={() => { setChannelTab('git'); setSelectedLogFile(null); }}
                 style={{
                   background: channelTab === 'git' ? '#1e3a8a' : 'transparent',
                   color: channelTab === 'git' ? '#93c5fd' : '#94a3b8',
@@ -546,7 +655,24 @@ export function DeployCard({ deployLog, deployChannels = {}, sshSessions = [], s
               </button>
             </div>
             <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
-              Channel: <strong style={{ color: '#cbd5e1' }}>{channelTab === 'all' ? 'Combined Deploy Log' : (channelTab === 'scp' ? 'SCP Transfer Stream' : (channelTab === 'sftp' ? 'SFTP Subsystem' : 'git-sync.log'))}</strong>
+              Viewing: <strong style={{ color: '#cbd5e1' }}>
+                {channelTab === 'file' && selectedLogFile
+                  ? `File: storage/logs/${selectedLogFile.name} (${selectedLogFile.size_kb > 1024 ? `${selectedLogFile.size_mb} MB` : `${selectedLogFile.size_kb} KB`})`
+                  : (channelTab === 'ssh' 
+                      ? 'SSH Daemon & Session Monitor'
+                      : (channelTab === 'scp'
+                          ? 'SCP Transfer Stream'
+                          : (channelTab === 'sftp'
+                              ? 'SFTP Subsystem'
+                              : (channelTab === 'git'
+                                  ? 'git-sync.log'
+                                  : 'Combined Deploy Log'
+                                )
+                            )
+                        )
+                    )
+                }
+              </strong>
             </span>
           </div>
 
@@ -555,13 +681,19 @@ export function DeployCard({ deployLog, deployChannels = {}, sshSessions = [], s
             style={{ overflowY: 'auto', flex: 1, maxHeight: '500px', padding: '0.75rem', background: '#020617', borderRadius: '6px', border: '1px solid #1e293b' }}
           >
             <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all', fontSize: '0.85rem', lineHeight: '1.6', color: '#cbd5e1' }}>
-              {channelTab === 'scp' 
-                ? (deployChannels?.scp || 'No active SCP transfer logs.')
-                : (channelTab === 'sftp'
-                    ? (deployChannels?.sftp || 'No active SFTP subsystem logs.')
-                    : (channelTab === 'git'
-                        ? (deployChannels?.git || 'No Git sync logs found.')
-                        : (deployLog || deployChannels?.deploy || deployChannels?.git || 'No deployment log found. Deploy via SCP, SFTP, or Git Sync to generate logs.')
+              {channelTab === 'file' && selectedLogFile
+                ? (selectedLogFile.content || `[Empty log file: ${selectedLogFile.name}]`)
+                : (channelTab === 'ssh'
+                    ? (deployChannels?.ssh || 'No active SSH session logs.')
+                    : (channelTab === 'scp' 
+                        ? (deployChannels?.scp || 'No active SCP transfer logs.')
+                        : (channelTab === 'sftp'
+                            ? (deployChannels?.sftp || 'No active SFTP subsystem logs.')
+                            : (channelTab === 'git'
+                                ? (deployChannels?.git || 'No Git sync logs found.')
+                                : (deployLog || deployChannels?.deploy || deployChannels?.git || 'No deployment log found. Deploy via SCP, SFTP, or Git Sync to generate logs.')
+                              )
+                          )
                       )
                   )
               }

@@ -130,6 +130,7 @@ export default function App() {
                     : '')
               }
               deployChannels={data?.deploy_channels}
+              logFilesInfo={data?.log_files_info}
               sshSessions={data?.ssh_sessions}
               sftpSessions={data?.sftp_sessions}
               scpSessions={data?.scp_sessions}
@@ -160,6 +161,7 @@ export default function App() {
           <DeployCard
             deployLog={data?.deploy_log}
             deployChannels={data?.deploy_channels}
+            logFilesInfo={data?.log_files_info}
             sshSessions={data?.ssh_sessions}
             sftpSessions={data?.sftp_sessions}
             scpSessions={data?.scp_sessions}
