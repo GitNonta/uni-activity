@@ -8,6 +8,7 @@ use App\Events\AnnouncementPublished;
 use App\Services\LineService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class SendLineAnnouncementNotification implements ShouldQueue
@@ -24,6 +25,13 @@ class SendLineAnnouncementNotification implements ShouldQueue
 
     public function handle(AnnouncementPublished $event): void
     {
+        // ป้องกันการส่งซ้ำ (Idempotency Lock 60 วินาที)
+        $lockKey = "line_notify_announcement_{$event->announcement->id}";
+        if (!Cache::add($lockKey, true, 60)) {
+            Log::info('Duplicate LINE announcement notification prevented', ['announcement_id' => $event->announcement->id]);
+            return;
+        }
+
         try {
             $message = $this->lineService->buildAnnouncementMessage($event->announcement);
             $this->lineService->broadcastToLinkedUsers([$message]);

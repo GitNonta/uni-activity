@@ -8,6 +8,7 @@ use App\Events\JobPublished;
 use App\Services\LineService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class SendLineJobNotification implements ShouldQueue
@@ -24,6 +25,13 @@ class SendLineJobNotification implements ShouldQueue
 
     public function handle(JobPublished $event): void
     {
+        // ป้องกันการส่งซ้ำ (Idempotency Lock 60 วินาที)
+        $lockKey = "line_notify_job_{$event->job->id}";
+        if (!Cache::add($lockKey, true, 60)) {
+            Log::info('Duplicate LINE job notification prevented', ['job_id' => $event->job->id]);
+            return;
+        }
+
         try {
             $message = $this->lineService->buildJobMessage($event->job);
             $this->lineService->broadcastToLinkedUsers([$message]);

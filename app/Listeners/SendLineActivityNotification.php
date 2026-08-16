@@ -8,6 +8,7 @@ use App\Events\ActivityPublished;
 use App\Services\LineService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class SendLineActivityNotification implements ShouldQueue
@@ -24,6 +25,13 @@ class SendLineActivityNotification implements ShouldQueue
 
     public function handle(ActivityPublished $event): void
     {
+        // ป้องกันการส่งซ้ำ (Idempotency Lock 60 วินาที)
+        $lockKey = "line_notify_activity_{$event->activity->id}";
+        if (!Cache::add($lockKey, true, 60)) {
+            Log::info('Duplicate LINE activity notification prevented', ['activity_id' => $event->activity->id]);
+            return;
+        }
+
         try {
             $message = $this->lineService->buildActivityMessage($event->activity);
             $this->lineService->broadcastToLinkedUsers([$message]);

@@ -129,6 +129,7 @@ class LineService
             ->where('line_notify_enabled', true)
             ->pluck('line_user_id')
             ->filter()
+            ->unique()
             ->values()
             ->toArray();
 

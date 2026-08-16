@@ -49,7 +49,6 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->configureRateLimiters();
-        $this->registerLineEvents();
         $this->registerConsoleCommandLogger();
         
         // ตรวจสอบและบังคับใช้โปรโตคอลและโดเมนตามที่เรียกเข้ามาจริง (รองรับทั้ง localhost และ ngrok)
