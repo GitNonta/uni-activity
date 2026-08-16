@@ -22,23 +22,27 @@
         @endif
     </div>
     <div class="card-body">
-        <div class="flex items-center justify-between mb-2" style="flex-wrap:wrap;gap:4px;">
-            @include('components.status-badge', ['status' => $activity->computed_status])
-            @if($activity->is_mandatory)<span class="badge badge-red">บังคับ</span>@endif
-            @if($activity->scope === 'faculty')
-                <span class="badge" style="background:#fef3c7;color:#92400e;font-size:.65rem;">{{ $activity->faculty }}</span>
-            @elseif($activity->scope === 'department')
-                <span class="badge" style="background:#ffedd5;color:#5b21b6;font-size:.65rem;">{{ $activity->department }}</span>
-            @endif
-        </div>
-        <h3 class="font-semi line-clamp-1" style="font-size:.95rem;">{{ $activity->title }}</h3>
-        <div class="act-card-meta">
-            <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-            {{ $activity->activity_date->format('d/m/Y') }}
-        </div>
-        <div class="act-card-meta">
-            <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            {{ $activity->location ?? '-' }}
+        <div class="act-card-top">
+            <div class="flex items-center justify-between mb-2" style="flex-wrap:wrap;gap:4px;min-height:24px;">
+                <div class="flex items-center gap-1" style="flex-wrap:wrap;">
+                    @include('components.status-badge', ['status' => $activity->computed_status])
+                    @if($activity->is_mandatory)<span class="badge badge-red">บังคับ</span>@endif
+                </div>
+                @if($activity->scope === 'faculty')
+                    <span class="badge" style="background:#fef3c7;color:#92400e;font-size:.65rem;">{{ $activity->faculty }}</span>
+                @elseif($activity->scope === 'department')
+                    <span class="badge" style="background:#ffedd5;color:#5b21b6;font-size:.65rem;">{{ $activity->department }}</span>
+                @endif
+            </div>
+            <h3 class="font-semi line-clamp-2" style="font-size:.95rem;line-height:1.35;min-height:2.7em;margin-bottom:0.4rem;">{{ $activity->title }}</h3>
+            <div class="act-card-meta">
+                <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <span class="line-clamp-1">{{ $activity->activity_date->format('d/m/Y') }}</span>
+            </div>
+            <div class="act-card-meta">
+                <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span class="line-clamp-1">{{ $activity->location ?? '-' }}</span>
+            </div>
         </div>
         <div class="act-card-footer">
             <span>{{ $activity->activity_hours }} ชม.</span>

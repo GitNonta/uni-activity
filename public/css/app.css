@@ -427,7 +427,6 @@ table tbody tr:hover { background: #f8fafc; }
     height: auto;
     min-height: 100%;
 }
-.act-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.08); text-decoration: none; }
 .act-card .card-body { 
     padding: 1rem; 
     flex: 1 1 auto; 
@@ -435,6 +434,11 @@ table tbody tr:hover { background: #f8fafc; }
     flex-direction: column; 
     justify-content: space-between;
     min-width: 0; 
+}
+.act-card-top {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
 }
 .act-card-img { 
     position: relative; 

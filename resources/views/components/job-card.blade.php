@@ -24,48 +24,50 @@
     @endif
 
     <div class="card-body">
-        {{-- Badges --}}
-        <div class="flex items-center gap-2 mb-2" style="flex-wrap:wrap;">
-            <span class="badge {{ $job->job_type === 'parttime' ? 'job-badge-parttime' : 'job-badge-general' }}">
-                {{ $job->job_type === 'parttime' ? 'Part-time' : 'งานทั่วไป' }}
-            </span>
-            @if($job->status === 'open')
-                <span class="badge badge-green">เปิดรับสมัคร</span>
-            @elseif($job->status === 'closed')
-                <span class="badge badge-red">ปิดรับสมัคร</span>
-            @else
-                <span class="badge badge-gray">เสร็จสิ้น</span>
-            @endif
-        </div>
-
-        {{-- ชื่องาน --}}
-        <h3 class="font-semi line-clamp-1" style="font-size:.95rem;">{{ $job->title }}</h3>
-
-        {{-- ข้อมูลย่อ --}}
-        <div class="act-card-meta">
-            <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-            <span class="line-clamp-1">{{ $job->position }}</span>
-        </div>
-        @if($job->compensation)
-        <div class="act-card-meta">
-            <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <span class="line-clamp-1">{{ $job->compensation }}</span>
-        </div>
-        @endif
-        <div class="act-card-meta">
-            <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            <span class="line-clamp-1">{{ $job->location }}</span>
-        </div>
-
-        {{-- Progress bar --}}
-        <div style="margin-top:.5rem;">
-            <div class="flex justify-between text-xs text-muted">
-                <span>ยืนยันแล้ว</span>
-                <span class="font-semi">{{ $job->confirmed_applicants }} / {{ $job->quota }} คน</span>
+        <div class="act-card-top">
+            {{-- Badges --}}
+            <div class="flex items-center gap-2 mb-2" style="flex-wrap:wrap;min-height:24px;">
+                <span class="badge {{ $job->job_type === 'parttime' ? 'job-badge-parttime' : 'job-badge-general' }}">
+                    {{ $job->job_type === 'parttime' ? 'Part-time' : 'งานทั่วไป' }}
+                </span>
+                @if($job->status === 'open')
+                    <span class="badge badge-green">เปิดรับสมัคร</span>
+                @elseif($job->status === 'closed')
+                    <span class="badge badge-red">ปิดรับสมัคร</span>
+                @else
+                    <span class="badge badge-gray">เสร็จสิ้น</span>
+                @endif
             </div>
-            <div class="progress" style="margin-top:.25rem;">
-                @php $pct = $job->progress_percent; @endphp
-                <div class="progress-bar {{ $pct >= 100 ? 'red' : ($pct >= 70 ? 'yellow' : 'green') }}" style="width:{{ $pct }}%"></div>
+
+            {{-- ชื่องาน --}}
+            <h3 class="font-semi line-clamp-2" style="font-size:.95rem;line-height:1.35;min-height:2.7em;margin-bottom:0.4rem;">{{ $job->title }}</h3>
+
+            {{-- ข้อมูลย่อ --}}
+            <div class="act-card-meta">
+                <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <span class="line-clamp-1">{{ $job->position }}</span>
+            </div>
+            @if($job->compensation)
+            <div class="act-card-meta">
+                <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span class="line-clamp-1">{{ $job->compensation }}</span>
+            </div>
+            @endif
+            <div class="act-card-meta">
+                <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span class="line-clamp-1">{{ $job->location }}</span>
+            </div>
+
+            {{-- Progress bar --}}
+            <div style="margin-top:.5rem;">
+                <div class="flex justify-between text-xs text-muted">
+                    <span>ยืนยันแล้ว</span>
+                    <span class="font-semi">{{ $job->confirmed_applicants }} / {{ $job->quota }} คน</span>
+                </div>
+                <div class="progress" style="margin-top:.25rem;">
+                    @php $pct = $job->progress_percent; @endphp
+                    <div class="progress-bar {{ $pct >= 100 ? 'red' : ($pct >= 70 ? 'yellow' : 'green') }}" style="width:{{ $pct }}%"></div>
+                </div>
             </div>
         </div>
 
