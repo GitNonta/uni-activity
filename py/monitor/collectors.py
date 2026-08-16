@@ -213,15 +213,32 @@ def get_logs():
     return logs
 
 def get_deploy_logs():
-    deploy_log_path = "/data/data/com.termux/files/home/uni-activity/storage/logs/deploy.log"
-    if os.path.exists(deploy_log_path):
+    app_dir = "/data/data/com.termux/files/home/uni-activity"
+    if not os.path.exists(app_dir):
+        from pathlib import Path
+        app_dir = str(Path(__file__).parent.parent)
+
+    # 1. Check deploy.log
+    deploy_log_path = os.path.join(app_dir, "storage/logs/deploy.log")
+    if os.path.exists(deploy_log_path) and os.path.getsize(deploy_log_path) > 0:
         try:
             with open(deploy_log_path, "r", encoding="utf-8", errors="replace") as f:
                 lines = f.readlines()
-                return "".join(lines[-200:])
+                return "".join(lines[-250:])
         except Exception as e:
             return f"Error reading deploy log: {str(e)}"
-    return "No deployment log found."
+
+    # 2. Check git-sync.log as fallback
+    sync_log_path = os.path.join(app_dir, "storage/logs/git-sync.log")
+    if os.path.exists(sync_log_path) and os.path.getsize(sync_log_path) > 0:
+        try:
+            with open(sync_log_path, "r", encoding="utf-8", errors="replace") as f:
+                lines = f.readlines()
+                return "".join(lines[-250:])
+        except Exception:
+            pass
+
+    return "No deployment log found. Deploy via SCP, SFTP, or Git Sync to generate logs."
 
 def get_github_sync_logs_dict():
     from pathlib import Path
@@ -373,6 +390,14 @@ def get_sftp_active():
     import subprocess
     try:
         res = subprocess.run(["pgrep", "-f", "sftp"], capture_output=True, text=True)
+        return len(res.stdout.strip().split('\n')) if res.stdout.strip() else 0
+    except:
+        return 0
+
+def get_scp_active():
+    import subprocess
+    try:
+        res = subprocess.run(["pgrep", "-f", "scp"], capture_output=True, text=True)
         return len(res.stdout.strip().split('\n')) if res.stdout.strip() else 0
     except:
         return 0

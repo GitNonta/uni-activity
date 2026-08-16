@@ -131,6 +131,7 @@ export default function App() {
               }
               sshSessions={data?.ssh_sessions}
               sftpSessions={data?.sftp_sessions}
+              scpSessions={data?.scp_sessions}
               selectedEvent={selectedEvent}
               onBack={() => {
                 setSelectedEvent(null)
@@ -159,6 +160,7 @@ export default function App() {
             deployLog={data?.deploy_log}
             sshSessions={data?.ssh_sessions}
             sftpSessions={data?.sftp_sessions}
+            scpSessions={data?.scp_sessions}
             selectedEvent={selectedEvent}
           />
         )}

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0, selectedEvent, onBack }) {
+export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0, scpSessions = 0, selectedEvent, onBack }) {
   const consoleRef = useRef(null);
   const [logSearchText, setLogSearchText] = useState('');
   const [logFilter, setLogFilter] = useState('All logs');
@@ -135,6 +135,31 @@ export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0, sele
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
             <span style={{ fontSize: '1.875rem', fontWeight: 700, color: sftpSessions > 0 ? '#d97706' : '#64748b' }}>
               {sftpSessions}
+            </span>
+            <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>session(s) active</span>
+          </div>
+        </div>
+
+        {/* SCP Card */}
+        <div className="card" style={{ padding: '1.25rem', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', background: '#f0fdf4', borderRadius: '6px' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
+              </svg>
+            </span>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: 600, color: '#334155' }}>SCP Transfers</h3>
+              <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748b' }}>Active SCP secure copy sessions</p>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+            <span style={{ fontSize: '1.875rem', fontWeight: 700, color: scpSessions > 0 ? '#16a34a' : '#64748b' }}>
+              {scpSessions}
             </span>
             <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>session(s) active</span>
           </div>
@@ -398,24 +423,47 @@ export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0, sele
         </div>
       ) : (
         <div className="card" style={{ padding: '1.5rem', background: '#0f172a', color: '#f8fafc', fontFamily: 'monospace', borderRadius: '8px', flex: 1, display: 'flex', flexDirection: 'column', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}>
-          {/* Old Terminal Log Console for generic Deploy Logs view */}
-          <div style={{ borderBottom: '1px solid #334155', paddingBottom: '0.75rem', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          {/* Terminal Log Console for SCP / SFTP / Git Deployments */}
+          <div style={{ borderBottom: '1px solid #334155', paddingBottom: '0.75rem', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <span style={{ display: 'flex', width: '10px', height: '10px', background: '#ef4444', borderRadius: '50%' }}></span>
               <span style={{ display: 'flex', width: '10px', height: '10px', background: '#f59e0b', borderRadius: '50%' }}></span>
               <span style={{ display: 'flex', width: '10px', height: '10px', background: '#10b981', borderRadius: '50%' }}></span>
-              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#94a3b8', marginLeft: '0.5rem' }}>SFTP Deployment Console (Real-Time)</span>
+              <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#f8fafc', marginLeft: '0.5rem' }}>Deployment Console (Real-Time)</span>
+              <span style={{ fontSize: '0.75rem', color: '#94a3b8', background: '#1e293b', padding: '0.2rem 0.5rem', borderRadius: '4px', border: '1px solid #334155' }}>
+                SCP · SFTP · Git Sync
+              </span>
             </div>
-            <span style={{ fontSize: '0.75rem', color: '#38bdf8', background: '#1e293b', padding: '0.25rem 0.5rem', borderRadius: '4px' }}>
-              deploy.log
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              {scpSessions > 0 && (
+                <span style={{ fontSize: '0.7rem', color: '#86efac', background: '#14532d', padding: '0.2rem 0.5rem', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ width: '6px', height: '6px', background: '#22c55e', borderRadius: '50%' }}></span>
+                  SCP Active ({scpSessions})
+                </span>
+              )}
+              {sftpSessions > 0 && (
+                <span style={{ fontSize: '0.7rem', color: '#fde047', background: '#713f12', padding: '0.2rem 0.5rem', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ width: '6px', height: '6px', background: '#eab308', borderRadius: '50%' }}></span>
+                  SFTP Active ({sftpSessions})
+                </span>
+              )}
+              {sshSessions.length > 0 && (
+                <span style={{ fontSize: '0.7rem', color: '#93c5fd', background: '#1e3a8a', padding: '0.2rem 0.5rem', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ width: '6px', height: '6px', background: '#3b82f6', borderRadius: '50%' }}></span>
+                  SSH Active ({sshSessions.length})
+                </span>
+              )}
+              <span style={{ fontSize: '0.75rem', color: '#38bdf8', background: '#1e293b', padding: '0.25rem 0.5rem', borderRadius: '4px' }}>
+                storage/logs
+              </span>
+            </div>
           </div>
           <div 
             ref={consoleRef}
-            style={{ overflowY: 'auto', flex: 1, maxHeight: '500px', padding: '0.5rem', background: '#020617', borderRadius: '6px' }}
+            style={{ overflowY: 'auto', flex: 1, maxHeight: '500px', padding: '0.75rem', background: '#020617', borderRadius: '6px', border: '1px solid #1e293b' }}
           >
             <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all', fontSize: '0.85rem', lineHeight: '1.6', color: '#cbd5e1' }}>
-              {deployLog || 'No deployment log found. Run a deployment script to generate logs.'}
+              {deployLog || 'No deployment log found. Deploy via SCP, SFTP, or Git Sync to generate logs.'}
             </pre>
           </div>
         </div>

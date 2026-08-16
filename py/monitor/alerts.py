@@ -10,7 +10,7 @@ from monitor.collectors import (
     get_memory, get_load, get_temp, get_battery, get_disk,
     get_services, get_network, get_network_info, get_logs,
     get_deploy_logs, get_github_sync_logs_dict, get_github_events,
-    get_ai_logs, get_active_sessions, get_sftp_active,
+    get_ai_logs, get_active_sessions, get_sftp_active, get_scp_active,
     get_listening_ports, get_cpu_freqs, get_wifi_rssi, get_net_speeds,
     get_top_processes, get_postgres_stats, get_redis_stats,
     get_queue_stats, get_cloudflared_stats, get_gpu_stats,
@@ -127,6 +127,7 @@ def collect_stats():
         "ai_log": get_ai_logs(),
         "ssh_sessions": get_active_sessions(),
         "sftp_sessions": get_sftp_active(),
+        "scp_sessions": get_scp_active(),
         "listening_ports": get_listening_ports(),
         "advanced_metrics": {
             "cpu_freqs": get_cpu_freqs(),
