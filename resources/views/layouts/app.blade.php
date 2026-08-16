@@ -341,6 +341,29 @@
         justify-content: center;
     }
 
+    .chat-link {
+        color: #dc2626 !important;
+        text-decoration: underline !important;
+        text-underline-offset: 3px;
+        word-break: break-all;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .chat-link-mine {
+        color: #ef4444 !important;
+        background: #ffffff;
+        padding: 1px 6px;
+        border-radius: 6px;
+        display: inline-block;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        text-decoration: underline !important;
+    }
+    .chat-link:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+    }
+
     @media (prefers-color-scheme: dark) {
         #chatFloatPanel { background: #1e293b !important; }
         .chat-list-item { border-color: #334155 !important; }
@@ -565,7 +588,7 @@
                     var el = document.getElementById('cf-msg-' + e.id);
                     if (el) {
                         var p = el.querySelector('p');
-                        if (p) p.textContent = e.message;
+                        if (p) p.innerHTML = linkifyText(e.message, false);
                         if (!el.textContent.includes('(แก้ไขแล้ว)')) {
                             var editedSpan = document.createElement('span');
                             editedSpan.style.cssText = 'font-size:0.6rem;opacity:0.7;margin-left:5px;';
@@ -575,6 +598,20 @@
                     }
                 });
             console.log('Subscribed to chat.room.' + roomId);
+        }
+
+        function linkifyText(text, isMine) {
+            if (!text) return '';
+            var safe = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+            var cls = isMine ? 'chat-link chat-link-mine' : 'chat-link';
+            return safe.replace(/(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/gi, function(url) {
+                return '<a href="' + url + '" target="_blank" rel="noopener noreferrer" class="' + cls + '">' + url + '</a>';
+            });
         }
 
         function loadMessages(jobId) {
@@ -632,7 +669,7 @@
             if (msg.message) {
                 var p = document.createElement('p');
                 p.style.cssText = 'margin:0;padding:0;line-height:1.45;color:inherit;font-size:inherit;font-family:inherit;';
-                p.textContent = msg.message;
+                p.innerHTML = linkifyText(msg.message, mine);
                 bubble.appendChild(p);
             }
             if (msg.is_edited) {

@@ -184,7 +184,8 @@
         transition: all 0.2s ease;
     }
 
-    .message-mine .chat-link {
+    .message-mine .chat-link,
+    .chat-link-mine {
         color: #ef4444 !important;
         background: #ffffff;
         padding: 1px 6px;
@@ -394,9 +395,10 @@
                     <div class="message-bubble">
                         @if($msg->body)
                             @php
+                                $linkClass = $isMine ? 'chat-link chat-link-mine' : 'chat-link';
                                 $linkifiedMsg = preg_replace(
                                     '~(https?://[^\s<]+[^<.,:;"\')\]\s])~i',
-                                    '<a href="$1" target="_blank" rel="noopener noreferrer" class="chat-link">$1</a>',
+                                    '<a href="$1" target="_blank" rel="noopener noreferrer" class="' . $linkClass . '">$1</a>',
                                     e($msg->body)
                                 );
                             @endphp
@@ -540,7 +542,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const timeStr = new Date(msg.created_at).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
 
-        function linkify(text) {
+        function linkify(text, isMine) {
             if (!text) return '';
             const safe = text
                 .replace(/&/g, '&amp;')
@@ -548,13 +550,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
+            const cls = isMine ? 'chat-link chat-link-mine' : 'chat-link';
             const urlRegex = /(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/gi;
             return safe.replace(urlRegex, function(url) {
-                return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="chat-link">${url}</a>`;
+                return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="${cls}">${url}</a>`;
             });
         }
 
-        const safeMessage = linkify(msg.message || msg.body || '');
+        const safeMessage = linkify(msg.message || msg.body || '', isMine);
 
         let statusHtml = `<div class="message-time">${timeStr}</div>`;
         if (isMine) {
