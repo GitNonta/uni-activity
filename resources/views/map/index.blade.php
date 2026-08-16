@@ -152,25 +152,34 @@
 
                 {{-- Action Buttons --}}
                 <div class="bs-actions mt-3">
-                    <a id="bs-detail-btn" href="#" class="btn btn-primary btn-sm flex-1">
+                    <button type="button" id="bs-native-btn" onclick="openActiveNativeMap()" class="btn btn-primary btn-sm flex-1" style="background:#ea580c;color:#fff;font-weight:600;border:none;">
+                        <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                        <span id="bs-native-text">เปิดแอปแผนที่ในเครื่อง</span>
+                    </button>
+                    <button type="button" id="bs-route-btn" onclick="startNavigationToActive()" class="btn btn-outline btn-sm flex-1">
+                        <svg style="width:14px;height:14px;color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                        <span>นำทางบนเว็บ</span>
+                    </button>
+                </div>
+
+                {{-- Detail Link --}}
+                <div class="mt-2">
+                    <a id="bs-detail-btn" href="#" class="btn btn-light btn-sm w-full text-center" style="display:flex;align-items:center;justify-content:center;gap:4px;border:1px solid #e2e8f0;font-size:0.8rem;text-decoration:none;color:#475569;background:#f8fafc;">
                         <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                         <span>ดูรายละเอียด</span>
                     </a>
-                    <button type="button" id="bs-route-btn" onclick="startNavigationToActive()" class="btn btn-outline btn-sm flex-1">
-                        <svg style="width:14px;height:14px;color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-                        <span>นำทางในระบบ</span>
-                    </button>
                 </div>
 
                 {{-- External Navigation Apps --}}
                 <div class="flex gap-2 mt-2">
                     <a id="bs-gmaps-btn" href="#" target="_blank" rel="noopener noreferrer" class="bs-app-btn flex-1">
-                        <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                        <span>Google Maps</span>
+                        <span>🗺️ Google Maps</span>
                     </a>
                     <a id="bs-applemaps-btn" href="#" target="_blank" rel="noopener noreferrer" class="bs-app-btn flex-1">
-                        <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                        <span>Apple Maps</span>
+                        <span>🍏 Apple Maps</span>
+                    </a>
+                    <a id="bs-waze-btn" href="#" target="_blank" rel="noopener noreferrer" class="bs-app-btn flex-1">
+                        <span>🚙 Waze</span>
                     </a>
                 </div>
             </div>
@@ -866,12 +875,52 @@
             detailBtn.style.display = 'none';
         }
 
+        // Native App Detect & Label
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        const isAndroid = /Android/.test(navigator.userAgent);
+        const nativeText = document.getElementById('bs-native-text');
+        if (nativeText) {
+            if (isIOS) nativeText.textContent = '🍏 เปิดใน Apple Maps';
+            else if (isAndroid) nativeText.textContent = '🗺️ เปิดใน Google Maps (แอป)';
+            else nativeText.textContent = '📱 เปิดแอปแผนที่ในเครื่อง';
+        }
+
         // Navigation Apps Links
+        const encodedTitle = encodeURIComponent(loc.title || loc.location_name || 'จุดหมาย');
         document.getElementById('bs-gmaps-btn').href = `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}`;
-        document.getElementById('bs-applemaps-btn').href = `https://maps.apple.com/?daddr=${loc.lat},${loc.lng}`;
+        document.getElementById('bs-applemaps-btn').href = `https://maps.apple.com/?daddr=${loc.lat},${loc.lng}&q=${encodedTitle}`;
+        const wazeBtn = document.getElementById('bs-waze-btn');
+        if (wazeBtn) wazeBtn.href = `https://waze.com/ul?ll=${loc.lat},${loc.lng}&navigate=yes`;
 
         sheet.style.display = 'block';
     }
+
+    // Native Maps Universal Deep Link
+    window.openNativeMap = function(lat, lng, title) {
+        if (!lat || !lng) return;
+        const encTitle = encodeURIComponent(title || 'จุดหมาย');
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        const isAndroid = /Android/.test(navigator.userAgent);
+
+        if (isIOS) {
+            window.location.href = `maps://?q=${encTitle}&ll=${lat},${lng}&daddr=${lat},${lng}`;
+            setTimeout(() => {
+                window.open(`https://maps.apple.com/?daddr=${lat},${lng}&q=${encTitle}`, '_blank');
+            }, 500);
+        } else if (isAndroid) {
+            window.location.href = `geo:${lat},${lng}?q=${lat},${lng}(${encTitle})`;
+            setTimeout(() => {
+                window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
+            }, 500);
+        } else {
+            window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
+        }
+    };
+
+    window.openActiveNativeMap = function() {
+        if (!activeLocation) return;
+        openNativeMap(activeLocation.lat, activeLocation.lng, activeLocation.title || activeLocation.location_name);
+    };
 
     window.closeBottomSheet = function() {
         document.getElementById('mapBottomSheet').style.display = 'none';

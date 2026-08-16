@@ -329,6 +329,27 @@
 @section('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script>
+function openNativeMap(lat, lng, title) {
+    if (!lat || !lng) return;
+    const encTitle = encodeURIComponent(title || 'สถานที่กิจกรรม');
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isAndroid = /Android/.test(navigator.userAgent);
+
+    if (isIOS) {
+        window.location.href = `maps://?q=${encTitle}&ll=${lat},${lng}&daddr=${lat},${lng}`;
+        setTimeout(() => {
+            window.open(`https://maps.apple.com/?daddr=${lat},${lng}&q=${encTitle}`, '_blank');
+        }, 500);
+    } else if (isAndroid) {
+        window.location.href = `geo:${lat},${lng}?q=${lat},${lng}(${encTitle})`;
+        setTimeout(() => {
+            window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
+        }, 500);
+    } else {
+        window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     var lat = {!! json_encode((float)$activity->latitude) !!};
     var lng = {!! json_encode((float)$activity->longitude) !!};
@@ -340,7 +361,12 @@ document.addEventListener('DOMContentLoaded', function() {
         maxZoom: 19
     }).addTo(map);
 
-    L.marker([lat, lng]).addTo(map).bindPopup('{{ $activity->location ?? $activity->title }}');
+    L.marker([lat, lng]).addTo(map).bindPopup(`
+        <div style="text-align:center;padding:4px;">
+            <b style="display:block;margin-bottom:6px;">{{ addslashes($activity->location ?? $activity->title) }}</b>
+            <button type="button" onclick="openNativeMap(${lat}, ${lng}, '{{ addslashes($activity->title) }}')" class="btn btn-primary btn-sm" style="padding:4px 10px;font-size:12px;cursor:pointer;">📱 เปิดแอปแผนที่นำทาง</button>
+        </div>
+    `);
     L.circle([lat, lng], {
         radius: radius,
         color: '#ea580c',

@@ -655,6 +655,31 @@ var jobMap, destMarker;
 var destLat = parseFloat('{{ $job->latitude }}');
 var destLng = parseFloat('{{ $job->longitude }}');
 
+function openDirections(lat, lng, title) {
+    lat = lat || destLat;
+    lng = lng || destLng;
+    title = title || '{{ addslashes($job->title ?? $job->location) }}';
+    if (!lat || !lng) return;
+    
+    const encTitle = encodeURIComponent(title);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isAndroid = /Android/.test(navigator.userAgent);
+
+    if (isIOS) {
+        window.location.href = `maps://?q=${encTitle}&ll=${lat},${lng}&daddr=${lat},${lng}`;
+        setTimeout(() => {
+            window.open(`https://maps.apple.com/?daddr=${lat},${lng}&q=${encTitle}`, '_blank');
+        }, 500);
+    } else if (isAndroid) {
+        window.location.href = `geo:${lat},${lng}?q=${lat},${lng}(${encTitle})`;
+        setTimeout(() => {
+            window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
+        }, 500);
+    } else {
+        window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
+    }
+}
+
 function initMap() {
     if (isNaN(destLat) || isNaN(destLng)) return;
     jobMap = L.map('jobDetailMap', { scrollWheelZoom: false }).setView([destLat, destLng], 16);
@@ -664,9 +689,9 @@ function initMap() {
 
     destMarker = L.marker([destLat, destLng]).addTo(jobMap);
     destMarker.bindPopup(`
-        <div style="text-align:center;">
-            <b style="display:block;margin-bottom:5px;">{{ addslashes($job->location) }}</b>
-            <a href="https://www.google.com/maps/dir/?api=1&destination=${destLat},${destLng}" target="_blank" class="btn btn-primary btn-sm" style="padding:2px 8px;font-size:11px;text-decoration:none;">เปิดแอปแผนที่</a>
+        <div style="text-align:center;padding:4px;">
+            <b style="display:block;margin-bottom:6px;">{{ addslashes($job->location) }}</b>
+            <button type="button" onclick="openDirections(${destLat}, ${destLng})" class="btn btn-primary btn-sm" style="padding:4px 10px;font-size:12px;cursor:pointer;">📱 เปิดแอปแผนที่นำทาง</button>
         </div>
     `).openPopup();
 }
