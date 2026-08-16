@@ -72,11 +72,13 @@ def is_cloudflared_ok():
     return bool(out)
 
 
-# --- Restarts ---
 def restart_redis():
-    log.warning('RESTART: Redis')
-    shell('pkill -9 redis-server ; sleep 1')
-    shell(f'nohup redis-server </dev/null >{APP}/storage/logs/redis.log 2>&1 &')
+    log.warning('RESTART: In-Memory Datastore (Dragonfly/Redis)')
+    shell('pkill -9 -f "dragonfly|redis-server" ; sleep 1')
+    if os.path.exists('/usr/local/bin/dragonfly') or shell('which dragonfly 2>/dev/null')[0]:
+        shell(f'nohup dragonfly --cache_mode=true </dev/null >{APP}/storage/logs/dragonfly.log 2>&1 &')
+    else:
+        shell(f'nohup redis-server </dev/null >{APP}/storage/logs/redis.log 2>&1 &')
     time.sleep(4)
     return is_redis_ok()
 
@@ -157,7 +159,7 @@ def restart_web_engine():
     return restart_phpfpm()
 
 SERVICES = [
-    {'name': 'Redis',       'check': is_redis_ok,       'restart': restart_redis,       'cascade': ['Queue', 'Reverb']},
+    {'name': 'Datastore',   'check': is_redis_ok,       'restart': restart_redis,       'cascade': ['Queue', 'Reverb']},
     {'name': 'Nginx',       'check': is_nginx_ok,        'restart': restart_nginx,       'cascade': []},
     {'name': 'WebEngine',   'check': is_web_engine_ok,   'restart': restart_web_engine,  'cascade': []},
     {'name': 'Queue',       'check': is_queue_ok,        'restart': restart_queue,       'cascade': []},

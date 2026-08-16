@@ -79,14 +79,17 @@ services:
         condition: service_healthy
 
   redis:
-    image: redis:7-alpine
-    container_name: laravel-redis
+    image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
+    container_name: laravel-dragonfly
     restart: unless-stopped
-    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru --appendonly yes
+    command: dragonfly --cache_mode=true --maxmemory=512mb
     volumes:
-      - redis-data:/data
+      - dragonfly-data:/data
     networks:
-      - laravel-network
+      laravel-network:
+        aliases:
+          - redis
+          - dragonfly
     ports:
       - "6379:6379"
 
@@ -250,6 +253,8 @@ volumes:
   mysql-data:
     driver: local
   redis-data:
+    driver: local
+  dragonfly-data:
     driver: local
   mongodb-data:
     driver: local
