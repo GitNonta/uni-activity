@@ -417,14 +417,35 @@ table thead th { font-weight: 600; color: #475569; border-bottom: 2px solid #e2e
 table tbody tr { border-bottom: 1px solid #f1f5f9; }
 table tbody tr:hover { background: #f8fafc; }
 
-/* ── การ์ดกิจกรรม: รูป, ข้อมูลย่อ, ท้ายการ์ด ──────
-* การ์ดกิจกรรมที่มีรูป, ข้อมูลย่อ และท้ายการ์ด
-*/
-.act-card { display: flex; flex-direction: column; color: inherit; transition: box-shadow .2s; height: 100%; }
+.act-card { 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: space-between;
+    color: inherit; 
+    transition: box-shadow .2s; 
+    height: auto;
+    min-height: 100%;
+}
 .act-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.08); text-decoration: none; }
-.act-card .card-body { padding: 1rem; flex: 1; display: flex; flex-direction: column; min-width: 0; }
-.act-card-footer { margin-top: auto; }
-.act-card-img { position: relative; width: 100%; height: 140px; overflow: hidden; background: linear-gradient(135deg, #ea580c, #ef4444); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.act-card .card-body { 
+    padding: 1rem; 
+    flex: 1 1 auto; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: space-between;
+    min-width: 0; 
+}
+.act-card-img { 
+    position: relative; 
+    width: 100%; 
+    height: 140px; 
+    overflow: hidden; 
+    background: linear-gradient(135deg, #ea580c, #ef4444); 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    flex-shrink: 0; 
+}
 .act-card-img img { width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform .3s ease, opacity .4s ease; background: transparent; }
 .act-card:hover .act-card-img img { transform: scale(1.05); }
 /* Lazy loading states */
@@ -453,9 +474,29 @@ table tbody tr:hover { background: #f8fafc; }
 .act-badge-registered { background: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }
 .act-badge-completed { background: #ffedd5; color: #1e40af; border: 1px solid #60a5fa; }
 .act-card-user-badge .icon-sm { width: 14px; height: 14px; flex-shrink: 0; }
-.act-card-meta { display: flex; align-items: center; gap: .375rem; font-size: .8rem; color: #64748b; margin-top: .375rem; }
-.act-card-meta .icon { width: 14px; height: 14px; }
-.act-card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: .5rem; padding-top: .5rem; border-top: 1px solid #f1f5f9; font-size: .8rem; color: #64748b; }
+.act-card-meta { 
+    display: flex; 
+    align-items: center; 
+    gap: .375rem; 
+    font-size: .8rem; 
+    color: #64748b; 
+    margin-top: .375rem; 
+    min-width: 0;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+.act-card-meta .icon-sm { width: 14px; height: 14px; flex-shrink: 0; }
+.act-card-footer { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-top: auto; 
+    padding-top: .5rem; 
+    border-top: 1px solid #f1f5f9; 
+    font-size: .8rem; 
+    color: #64748b; 
+    flex-shrink: 0;
+}
 .act-map-btn { display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;border:none;background:#e0f2fe;color:#0284c7;cursor:pointer;transition:background .2s,transform .15s;margin-left:auto;flex-shrink:0; }
 .act-map-btn:hover { background:#bae6fd;transform:scale(1.15); }
 
