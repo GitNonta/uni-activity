@@ -614,15 +614,17 @@ nav[role="navigation"] span[aria-current="page"] span { background: #ea580c; col
     [style*="background:#f8fafc"], [style*="background: #f8fafc"], [style*="background:#f1f5f9"], [style*="background: #f1f5f9"] { background: #202124 !important; }
     [style*="border:1px solid #e2e8f0"], [style*="border: 1px solid #e2e8f0"], [style*="border-bottom:1px solid #e2e8f0"], [style*="border-bottom: 1px solid #e2e8f0"], [style*="border-bottom:1px solid #f1f5f9"], [style*="border-bottom: 1px solid #f1f5f9"] { border-color: #4a4d50 !important; }
 
-    /* Make Activity and Job cards orange in dark mode */
-    .act-card { background: linear-gradient(145deg, #ea580c, #c2410c) !important; border-color: #9a3412 !important; color: #fff !important; }
-    .act-card .act-card-meta { color: rgba(255, 255, 255, 0.8) !important; }
-    .act-card .act-card-meta .icon { color: rgba(255, 255, 255, 0.8) !important; }
-    .act-card .act-card-footer { color: rgba(255, 255, 255, 0.9) !important; border-top-color: rgba(255, 255, 255, 0.2) !important; }
-    .act-card h3 { color: #fff !important; }
-    .act-card:hover { box-shadow: 0 6px 16px rgba(234, 88, 12, 0.4) !important; }
-    .act-map-btn { background: rgba(255, 255, 255, 0.2) !important; color: #fff !important; }
-    .act-map-btn:hover { background: rgba(255, 255, 255, 0.3) !important; }
+    /* Dark mode cards: gradient only in image area, clean dark card body */
+    .act-card { background: #2d2f31 !important; border-color: #4a4d50 !important; color: #f1f5f9 !important; }
+    .act-card .act-card-img { background: linear-gradient(145deg, #ea580c, #c2410c) !important; }
+    .act-card .card-body { background: #2d2f31 !important; }
+    .act-card h3 { color: #f8fafc !important; }
+    .act-card .act-card-meta { color: #9aa0a6 !important; }
+    .act-card .act-card-meta svg { color: #9aa0a6 !important; }
+    .act-card .act-card-footer { color: #9aa0a6 !important; border-top-color: #3f4246 !important; }
+    .act-card:hover { box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3) !important; border-color: #5f6368 !important; }
+    .act-map-btn { background: #3f4246 !important; color: #93c5fd !important; }
+    .act-map-btn:hover { background: #4a4d50 !important; }
     /* Floating Chat Widget */
     .chat-list-item { background: #36383a !important; border-color: #4a4d50 !important; }
     .chat-list-item:hover { background: #4a4d50 !important; }
