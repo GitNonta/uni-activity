@@ -668,7 +668,7 @@ export function SpeedTestPage({ serverSpeedtest }) {
   return (
     <div style={{ width: '100%', margin: '0 auto' }}>
       {/* ── Page Header ─────────────────────────────────── */}
-      <div style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+      <div style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg,#2563eb,#4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -682,38 +682,22 @@ export function SpeedTestPage({ serverSpeedtest }) {
             </div>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          {isTesting && (
+        {isTesting && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <button
               onClick={() => { abortRef.current?.abort(); setStage('idle') }}
               style={{
                 background: '#ef4444',
-                border: 'none', borderRadius: '10px', padding: '0.6rem 1rem',
-                fontSize: '0.85rem', fontWeight: 700, color: '#fff',
-                cursor: 'pointer', display: 'flex', alignItems: 'center',
+                border: 'none', borderRadius: '8px', padding: '0.45rem 0.9rem',
+                fontSize: '0.78rem', fontWeight: 700, color: '#fff',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem',
                 boxShadow: '0 4px 14px rgba(239,68,68,0.3)', transition: 'all 0.2s',
               }}
             >
-              Cancel
+              Cancel Test
             </button>
-          )}
-          <button
-            onClick={runTest}
-            disabled={isTesting}
-          style={{
-            background: isTesting ? '#94a3b8' : 'linear-gradient(135deg,#2563eb,#4f46e5)',
-            border: 'none', borderRadius: '10px', padding: '0.6rem 1.35rem',
-            fontSize: '0.875rem', fontWeight: 700, color: '#fff',
-            cursor: isTesting ? 'not-allowed' : 'pointer',
-            display: 'flex', alignItems: 'center', gap: '0.5rem',
-            boxShadow: isTesting ? 'none' : '0 4px 14px rgba(37,99,235,0.3)',
-            transition: 'all 0.2s',
-          }}
-        >
-          <Icon.RefreshCw width="15" height="15" style={{ animation: isTesting ? 'spin 0.8s linear infinite' : 'none' }} />
-          {isTesting ? 'Testing…' : 'Start Test'}
-        </button>
-        </div>
+          </div>
+        )}
       </div>
 
       {/* ── Mode Switcher ────────────────────────────────── */}
@@ -779,10 +763,11 @@ export function SpeedTestPage({ serverSpeedtest }) {
         </div>
       )}
 
-      {/* ── Main Gauges + Stats ──────────────────────────── */}
+      {/* ── Main Gauges + Circular Test Button + Stats ──────────────────────────── */}
       <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', boxShadow: '0 4px 16px rgba(0,0,0,0.06)', padding: '1.5rem', marginBottom: '1rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', justifyItems: 'center', marginBottom: '1.25rem' }}>
-          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+          {/* Download Gauge */}
+          <div style={{ flex: '1 1 240px', maxWidth: '320px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <Gauge
               value={liveVal > 0 && liveSide === 'dl' ? liveVal : res.download}
               max={gaugeMax}
@@ -792,7 +777,57 @@ export function SpeedTestPage({ serverSpeedtest }) {
             />
             {stage === 'download' && <LiveBar value={liveVal} max={gaugeMax} color="#2563eb" />}
           </div>
-          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+
+          {/* Center Circular Speedtest GO Button */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', margin: '0.5rem 0' }}>
+            <button
+              type="button"
+              onClick={isTesting ? () => { abortRef.current?.abort(); setStage('idle') } : runTest}
+              style={{
+                width: '108px',
+                height: '108px',
+                borderRadius: '50%',
+                border: isTesting ? '3px solid #ef4444' : '3px solid #60a5fa',
+                background: isTesting 
+                  ? 'linear-gradient(135deg, #ef4444, #dc2626)' 
+                  : 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #4f46e5 100%)',
+                color: '#ffffff',
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: isTesting
+                  ? '0 0 25px rgba(239, 68, 68, 0.4), inset 0 2px 4px rgba(255,255,255,0.3)'
+                  : '0 0 25px rgba(37, 99, 235, 0.45), 0 8px 20px -4px rgba(30, 58, 138, 0.5), inset 0 2px 6px rgba(255,255,255,0.4)',
+                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                transform: 'scale(1)',
+                outline: 'none',
+                userSelect: 'none',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.08)' }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)' }}
+              title={isTesting ? 'Click to Cancel Test' : 'Click to Start Speed Test'}
+            >
+              {isTesting ? (
+                <>
+                  <Icon.RefreshCw width="22" height="22" style={{ animation: 'spin 0.8s linear infinite', marginBottom: '4px' }} />
+                  <span style={{ fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.05em' }}>CANCEL</span>
+                </>
+              ) : (
+                <>
+                  <span style={{ fontSize: '1.45rem', fontWeight: 900, letterSpacing: '0.08em', lineHeight: 1 }}>GO</span>
+                  <span style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.05em', opacity: 0.9, marginTop: '3px' }}>START</span>
+                </>
+              )}
+            </button>
+            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: isTesting ? '#ef4444' : '#64748b', marginTop: '0.45rem', textAlign: 'center' }}>
+              {isTesting ? 'Testing…' : 'Start Test'}
+            </div>
+          </div>
+
+          {/* Upload Gauge */}
+          <div style={{ flex: '1 1 240px', maxWidth: '320px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <Gauge
               value={liveVal > 0 && liveSide === 'ul' ? liveVal : res.upload}
               max={isLan ? 500 : 100}
