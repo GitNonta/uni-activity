@@ -184,32 +184,6 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down AI Server...")
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Helper: 512D ArcFace → 128D for JavaScript real-time processing
-# ─────────────────────────────────────────────────────────────────────────────
-def reduce_to_128d(embedding_512d: np.ndarray) -> np.ndarray:
-    """
-    Reduce a 512D ArcFace embedding to 128D.
-    Uses the globally fitted PCA reducer. Falls back to random
-    orthogonal projection (seed=42) if PCA is not yet initialized.
-    """
-    global pca_reducer
-    emb = np.array(embedding_512d, dtype=np.float32).reshape(1, -1)
-
-    if pca_reducer is not None:
-        reduced = pca_reducer.transform(emb)[0]
-    else:
-        rng = np.random.RandomState(42)
-        proj = rng.randn(512, 128).astype(np.float32)
-        proj, _ = np.linalg.qr(proj)
-        reduced = emb[0] @ proj[:, :128]
-
-    norm = np.linalg.norm(reduced)
-    if norm > 0:
-        reduced = reduced / norm
-    return reduced.astype(np.float32)
-
-
 app = FastAPI(
     title="Uni-Activity AI Server",
     version="2.0.0",
@@ -318,31 +292,35 @@ def get_detector_pipeline() -> str:
 
 def reduce_to_128d(embedding_512d: np.ndarray) -> np.ndarray:
     """
-    ลด embedding จาก 512D เป็น 128D โดยใช้ PCA
+    ลด embedding จาก 512D เป็น 128D โดยใช้ PCA พร้อม L2 Normalization
     สำหรับใช้ใน JavaScript real-time processing
     """
     global pca_reducer
     
-    if pca_reducer is None:
-        # Fallback: simple truncation if PCA not available
-        logger.warning("PCA reducer not available, using simple truncation")
-        return embedding_512d[:128].astype(np.float32)
-    
-    try:
-        # Reshape to 2D for PCA (single sample)
-        embedding_2d = embedding_512d.reshape(1, -1)
-        reduced = pca_reducer.transform(embedding_2d)
-        result = reduced.flatten().astype(np.float32)
-        
-        # Ensure exactly 128 dimensions
-        if len(result) != 128:
-            logger.warning(f"PCA returned {len(result)} dims, truncating to 128")
-            result = result[:128]
-            
-        return result
-    except Exception as e:
-        logger.warning(f"PCA reduction failed: {e}, using simple truncation")
-        return embedding_512d[:128].astype(np.float32)
+    emb = np.array(embedding_512d, dtype=np.float32).reshape(1, -1)
+
+    if pca_reducer is not None:
+        try:
+            reduced = pca_reducer.transform(emb)[0]
+        except Exception as e:
+            logger.warning(f"PCA reduction failed: {e}, using orthogonal projection fallback")
+            rng = np.random.RandomState(42)
+            proj, _ = np.linalg.qr(rng.randn(512, 128).astype(np.float32))
+            reduced = emb[0] @ proj[:, :128]
+    else:
+        rng = np.random.RandomState(42)
+        proj, _ = np.linalg.qr(rng.randn(512, 128).astype(np.float32))
+        reduced = emb[0] @ proj[:, :128]
+
+    # Ensure exactly 128 dimensions and L2-normalize
+    if len(reduced) != 128:
+        reduced = reduced[:128]
+
+    norm = np.linalg.norm(reduced)
+    if norm > 0:
+        reduced = reduced / norm
+
+    return reduced.astype(np.float32)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
