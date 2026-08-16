@@ -76,6 +76,14 @@ RUN pecl channel-update pecl.php.net \
     && (pecl install redis-6.0.2 || pecl install redis) \
     && docker-php-ext-enable mongodb redis
 
+# Install FrankenPHP binary for Laravel Octane high-performance execution
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "x86_64" ]; then \
+        curl -sL https://github.com/dunglas/frankenphp/releases/latest/download/frankenphp-linux-x86_64 -o /usr/local/bin/frankenphp; \
+    elif [ "$ARCH" = "aarch64" ]; then \
+        curl -sL https://github.com/dunglas/frankenphp/releases/latest/download/frankenphp-linux-aarch64 -o /usr/local/bin/frankenphp; \
+    fi && chmod +x /usr/local/bin/frankenphp || true
+
 # PHP configuration
 RUN echo "upload_max_filesize = 50M" > /usr/local/etc/php/conf.d/uploads.ini \
     && echo "post_max_size = 55M" >> /usr/local/etc/php/conf.d/uploads.ini \
