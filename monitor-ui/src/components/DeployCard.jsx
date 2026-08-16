@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0, scpSessions = 0, selectedEvent, onBack }) {
+export function DeployCard({ deployLog, deployChannels = {}, sshSessions = [], sftpSessions = 0, scpSessions = 0, selectedEvent, onBack }) {
   const consoleRef = useRef(null);
   const [logSearchText, setLogSearchText] = useState('');
   const [logFilter, setLogFilter] = useState('All logs');
   const [logOrder, setLogOrder] = useState('Ascending');
+  const [channelTab, setChannelTab] = useState('all'); // 'all' | 'scp' | 'sftp' | 'git'
   const [isAllLogsMenuOpen, setIsAllLogsMenuOpen] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   
@@ -423,16 +424,13 @@ export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0, scpS
         </div>
       ) : (
         <div className="card" style={{ padding: '1.5rem', background: '#0f172a', color: '#f8fafc', fontFamily: 'monospace', borderRadius: '8px', flex: 1, display: 'flex', flexDirection: 'column', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}>
-          {/* Terminal Log Console for SCP / SFTP / Git Deployments */}
-          <div style={{ borderBottom: '1px solid #334155', paddingBottom: '0.75rem', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+          {/* Terminal Log Console Header */}
+          <div style={{ borderBottom: '1px solid #334155', paddingBottom: '0.75rem', marginBottom: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <span style={{ display: 'flex', width: '10px', height: '10px', background: '#ef4444', borderRadius: '50%' }}></span>
               <span style={{ display: 'flex', width: '10px', height: '10px', background: '#f59e0b', borderRadius: '50%' }}></span>
               <span style={{ display: 'flex', width: '10px', height: '10px', background: '#10b981', borderRadius: '50%' }}></span>
               <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#f8fafc', marginLeft: '0.5rem' }}>Deployment Console (Real-Time)</span>
-              <span style={{ fontSize: '0.75rem', color: '#94a3b8', background: '#1e293b', padding: '0.2rem 0.5rem', borderRadius: '4px', border: '1px solid #334155' }}>
-                SCP · SFTP · Git Sync
-              </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               {scpSessions > 0 && (
@@ -454,16 +452,115 @@ export function DeployCard({ deployLog, sshSessions = [], sftpSessions = 0, scpS
                 </span>
               )}
               <span style={{ fontSize: '0.75rem', color: '#38bdf8', background: '#1e293b', padding: '0.25rem 0.5rem', borderRadius: '4px' }}>
-                storage/logs
+                Port 8022
               </span>
             </div>
           </div>
+
+          {/* Channel Selector Tab Bar */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'inline-flex', background: '#020617', padding: '0.2rem', borderRadius: '6px', border: '1px solid #1e293b', gap: '0.25rem' }}>
+              <button
+                onClick={() => setChannelTab('all')}
+                style={{
+                  background: channelTab === 'all' ? '#334155' : 'transparent',
+                  color: channelTab === 'all' ? '#f8fafc' : '#94a3b8',
+                  border: 'none',
+                  borderRadius: '4px',
+                  padding: '0.35rem 0.75rem',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem'
+                }}
+              >
+                <span>⚡ All Logs</span>
+              </button>
+              <button
+                onClick={() => setChannelTab('scp')}
+                style={{
+                  background: channelTab === 'scp' ? '#14532d' : 'transparent',
+                  color: channelTab === 'scp' ? '#86efac' : '#94a3b8',
+                  border: 'none',
+                  borderRadius: '4px',
+                  padding: '0.35rem 0.75rem',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem'
+                }}
+              >
+                <span style={{ width: '6px', height: '6px', background: scpSessions > 0 ? '#22c55e' : '#64748b', borderRadius: '50%' }}></span>
+                <span>SCP Transfers</span>
+                {scpSessions > 0 && <span style={{ background: '#22c55e', color: '#022c22', fontSize: '0.65rem', padding: '0.05rem 0.35rem', borderRadius: '10px', fontWeight: 700 }}>{scpSessions}</span>}
+              </button>
+              <button
+                onClick={() => setChannelTab('sftp')}
+                style={{
+                  background: channelTab === 'sftp' ? '#713f12' : 'transparent',
+                  color: channelTab === 'sftp' ? '#fde047' : '#94a3b8',
+                  border: 'none',
+                  borderRadius: '4px',
+                  padding: '0.35rem 0.75rem',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem'
+                }}
+              >
+                <span style={{ width: '6px', height: '6px', background: sftpSessions > 0 ? '#eab308' : '#64748b', borderRadius: '50%' }}></span>
+                <span>SFTP Subsystem</span>
+                {sftpSessions > 0 && <span style={{ background: '#eab308', color: '#422006', fontSize: '0.65rem', padding: '0.05rem 0.35rem', borderRadius: '10px', fontWeight: 700 }}>{sftpSessions}</span>}
+              </button>
+              <button
+                onClick={() => setChannelTab('git')}
+                style={{
+                  background: channelTab === 'git' ? '#1e3a8a' : 'transparent',
+                  color: channelTab === 'git' ? '#93c5fd' : '#94a3b8',
+                  border: 'none',
+                  borderRadius: '4px',
+                  padding: '0.35rem 0.75rem',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem'
+                }}
+              >
+                <span>📦 Git Sync</span>
+              </button>
+            </div>
+            <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+              Channel: <strong style={{ color: '#cbd5e1' }}>{channelTab === 'all' ? 'Combined Deploy Log' : (channelTab === 'scp' ? 'SCP Transfer Stream' : (channelTab === 'sftp' ? 'SFTP Subsystem' : 'git-sync.log'))}</strong>
+            </span>
+          </div>
+
           <div 
             ref={consoleRef}
             style={{ overflowY: 'auto', flex: 1, maxHeight: '500px', padding: '0.75rem', background: '#020617', borderRadius: '6px', border: '1px solid #1e293b' }}
           >
             <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all', fontSize: '0.85rem', lineHeight: '1.6', color: '#cbd5e1' }}>
-              {deployLog || 'No deployment log found. Deploy via SCP, SFTP, or Git Sync to generate logs.'}
+              {channelTab === 'scp' 
+                ? (deployChannels?.scp || 'No active SCP transfer logs.')
+                : (channelTab === 'sftp'
+                    ? (deployChannels?.sftp || 'No active SFTP subsystem logs.')
+                    : (channelTab === 'git'
+                        ? (deployChannels?.git || 'No Git sync logs found.')
+                        : (deployLog || deployChannels?.deploy || deployChannels?.git || 'No deployment log found. Deploy via SCP, SFTP, or Git Sync to generate logs.')
+                      )
+                  )
+              }
             </pre>
           </div>
         </div>

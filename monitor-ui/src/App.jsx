@@ -129,6 +129,7 @@ export default function App() {
                     ? data?.github_deploy_logs?.latest 
                     : '')
               }
+              deployChannels={data?.deploy_channels}
               sshSessions={data?.ssh_sessions}
               sftpSessions={data?.sftp_sessions}
               scpSessions={data?.scp_sessions}
@@ -158,6 +159,7 @@ export default function App() {
         {activeTab === 'deploy'    && (
           <DeployCard
             deployLog={data?.deploy_log}
+            deployChannels={data?.deploy_channels}
             sshSessions={data?.ssh_sessions}
             sftpSessions={data?.sftp_sessions}
             scpSessions={data?.scp_sessions}

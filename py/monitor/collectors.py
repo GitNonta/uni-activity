@@ -240,6 +240,99 @@ def get_deploy_logs():
 
     return "No deployment log found. Deploy via SCP, SFTP, or Git Sync to generate logs."
 
+def get_channel_logs():
+    import os, subprocess, time
+    from pathlib import Path
+    app_dir = "/data/data/com.termux/files/home/uni-activity"
+    if not os.path.exists(app_dir):
+        app_dir = str(Path(__file__).parent.parent)
+
+    result = {
+        "deploy": "",
+        "git": "",
+        "scp": "",
+        "sftp": ""
+    }
+
+    # 1. deploy.log
+    deploy_path = os.path.join(app_dir, "storage/logs/deploy.log")
+    if os.path.exists(deploy_path) and os.path.getsize(deploy_path) > 0:
+        try:
+            with open(deploy_path, "r", encoding="utf-8", errors="replace") as f:
+                result["deploy"] = "".join(f.readlines()[-250:])
+        except Exception:
+            pass
+
+    # 2. git-sync.log
+    git_path = os.path.join(app_dir, "storage/logs/git-sync.log")
+    if os.path.exists(git_path) and os.path.getsize(git_path) > 0:
+        try:
+            with open(git_path, "r", encoding="utf-8", errors="replace") as f:
+                result["git"] = "".join(f.readlines()[-250:])
+        except Exception:
+            pass
+
+    # 3. SCP Status & Log
+    scp_lines = []
+    scp_active = get_scp_active()
+    now_str = time.strftime('%Y-%m-%d %H:%M:%S')
+    scp_lines.append(f"[{now_str}] ─── SCP Transfer Monitor (Port 8022) ───")
+    scp_lines.append(f"Active SCP Sessions: {scp_active}")
+    if scp_active > 0:
+        try:
+            ps_res = subprocess.run(["ps", "-ef"], capture_output=True, text=True)
+            for line in ps_res.stdout.split('\n'):
+                if "scp" in line.lower() and "grep" not in line:
+                    scp_lines.append(f"[ACTIVE PROCESS] {line.strip()}")
+        except Exception:
+            pass
+    else:
+        scp_lines.append("[IDLE] No active SCP file copy processes currently running.")
+        scp_lines.append("")
+        scp_lines.append("📌 Quick SCP Transfer Command Example:")
+        scp_lines.append("   scp -P 8022 -r ./app/ u0_a175@192.168.1.222:/data/data/com.termux/files/home/uni-activity/app/")
+
+    # Check recently modified files in app/ and routes/
+    try:
+        recent_files = subprocess.run(
+            ["find", "app", "routes", "-type", "f", "-mmin", "-120"],
+            cwd=app_dir, capture_output=True, text=True
+        )
+        files = [f for f in recent_files.stdout.strip().split('\n') if f]
+        if files:
+            scp_lines.append("")
+            scp_lines.append(f"📁 Files updated in last 2 hours ({len(files)} files):")
+            for f in files[:20]:
+                scp_lines.append(f"   ✓ {f}")
+    except Exception:
+        pass
+
+    result["scp"] = "\n".join(scp_lines)
+
+    # 4. SFTP Status & Log
+    sftp_lines = []
+    sftp_active = get_sftp_active()
+    sftp_lines.append(f"[{now_str}] ─── SFTP Subsystem Monitor (Port 8022) ───")
+    sftp_lines.append(f"Active SFTP Sessions: {sftp_active}")
+    if sftp_active > 0:
+        try:
+            ps_res = subprocess.run(["ps", "-ef"], capture_output=True, text=True)
+            for line in ps_res.stdout.split('\n'):
+                if "sftp" in line.lower() and "grep" not in line:
+                    sftp_lines.append(f"[ACTIVE PROCESS] {line.strip()}")
+        except Exception:
+            pass
+    else:
+        sftp_lines.append("[IDLE] No active SFTP clients connected.")
+        sftp_lines.append("")
+        sftp_lines.append("📌 SFTP Connection Settings:")
+        sftp_lines.append("   Host: 192.168.1.222 | Port: 8022 | User: u0_a175")
+        sftp_lines.append("   Root Path: /data/data/com.termux/files/home/uni-activity")
+
+    result["sftp"] = "\n".join(sftp_lines)
+
+    return result
+
 def get_github_sync_logs_dict():
     from pathlib import Path
     import os, glob
