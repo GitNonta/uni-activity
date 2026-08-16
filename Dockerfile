@@ -70,11 +70,12 @@ RUN docker-php-ext-configure gd --with-freetype --with-webp --with-jpeg \
         opcache \
         intl
 
-# Install MongoDB and Redis via PECL with specific versions to avoid metadata issues
+# Install MongoDB, Redis, and Swoole via PECL for Real-time Octane in-memory tables
 RUN pecl channel-update pecl.php.net \
     && (pecl install mongodb-1.19.1 || pecl install mongodb) \
     && (pecl install redis-6.0.2 || pecl install redis) \
-    && docker-php-ext-enable mongodb redis
+    && (pecl install swoole || pecl install openswoole || true) \
+    && docker-php-ext-enable mongodb redis || true
 
 # Install FrankenPHP binary for Laravel Octane high-performance execution
 RUN ARCH=$(uname -m) && \

@@ -150,9 +150,22 @@ return [
     */
 
     'tables' => [
-        'example:1000' => [
-            'name' => 'string:1000',
-            'votes' => 'int',
+        'active_users:2000' => [
+            'user_id'   => 'string:50',
+            'name'      => 'string:100',
+            'role'      => 'string:20',
+            'channel'   => 'string:100',
+            'last_seen' => 'int',
+        ],
+        'realtime_counters:1000' => [
+            'key'        => 'string:100',
+            'count'      => 'int',
+            'updated_at' => 'int',
+        ],
+        'security_throttle:5000' => [
+            'identifier'    => 'string:100',
+            'attempts'      => 'int',
+            'blocked_until' => 'int',
         ],
     ],
 
