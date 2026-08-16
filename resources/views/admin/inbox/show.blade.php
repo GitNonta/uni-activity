@@ -72,7 +72,14 @@
                     @endphp
                     <div style="padding:{{$pad}};border-radius:{{ $isMine ? '16px 4px 16px 16px' : '4px 16px 16px 16px' }};background:{{$bg}};color:{{ $isMine ? '#fff' : '#1e293b' }};font-size:.875rem;box-shadow:{{$shadow}};word-break:break-word;">
                         @if($msg->body)
-                            <p style="margin:0;">{{ $msg->body }}</p>
+                            @php
+                                $linkified = preg_replace(
+                                    '~(https?://[^\s<]+[^<.,:;"\')\]\s])~i',
+                                    '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;word-break:break-all;font-weight:500;">$1</a>',
+                                    e($msg->body)
+                                );
+                            @endphp
+                            <p style="margin:0;">{!! $linkified !!}</p>
                         @endif
                         @foreach($msg->attachments ?? [] as $att)
                             @php $isImg = str_starts_with($att['mime_type'] ?? '', 'image/'); @endphp
@@ -188,6 +195,19 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    function linkifyText(text) {
+        if (!text) return '';
+        const safe = text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+        return safe.replace(/(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/gi, function(url) {
+            return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;word-break:break-all;font-weight:500;">${url}</a>`;
+        });
+    }
+
     // Render bubble helper
     function renderBubble(msg, isMine) {
         if (isMine === undefined) {
@@ -251,7 +271,7 @@ document.addEventListener('DOMContentLoaded', function () {
             '<div style="display:flex;flex-direction:column;align-items:' + align + ';max-width:72%;">' +
                 '<span style="font-size:.68rem;color:#94a3b8;margin-bottom:.15rem;">' + label + '</span>' +
                 '<div style="padding:' + (hasOnlyImages ? '0' : '.55rem .85rem') + ';border-radius:' + br + ';background:' + (hasOnlyImages ? 'transparent' : bg) + ';color:' + color + ';font-size:.875rem;box-shadow:' + (hasOnlyImages ? 'none' : '0 1px 3px rgba(0,0,0,.08)') + ';word-break:break-word;" id="msg-body-' + msg.id + '">' +
-                    (msg.message ? '<p style="margin:0;">' + msg.message.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</p>' : '') +
+                    (msg.message ? '<p style="margin:0;">' + linkifyText(msg.message) + '</p>' : '') +
                     (msg.is_edited ? '<span style="font-size:0.6rem;opacity:0.7;margin-left:5px;">(แก้ไขแล้ว)</span>' : '') +
                     attHtml +
                 '</div>' +
@@ -286,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (res.success) {
                     const bodyEl = document.getElementById('msg-body-' + window.currentAdminEditId);
                     if (bodyEl) {
-                        bodyEl.innerHTML = '<p style="margin:0;">' + text.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</p><span style="font-size:0.6rem;opacity:0.7;margin-left:5px;">(แก้ไขแล้ว)</span>';
+                        bodyEl.innerHTML = '<p style="margin:0;">' + linkifyText(text) + '</p><span style="font-size:0.6rem;opacity:0.7;margin-left:5px;">(แก้ไขแล้ว)</span>';
                     }
                     
                     window.currentAdminEditId = null;
@@ -361,7 +381,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 .listen('.MessageEdited', function (e) {
                     const bodyEl = document.getElementById('msg-body-' + e.id);
                     if (bodyEl) {
-                        bodyEl.innerHTML = '<p style="margin:0;">' + e.message.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</p><span style="font-size:0.6rem;opacity:0.7;margin-left:5px;">(แก้ไขแล้ว)</span>';
+                        bodyEl.innerHTML = '<p style="margin:0;">' + linkifyText(e.message) + '</p><span style="font-size:0.6rem;opacity:0.7;margin-left:5px;">(แก้ไขแล้ว)</span>';
                     }
                 })
                 .listenForWhisper('typing', function(e) {

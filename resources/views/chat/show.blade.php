@@ -174,6 +174,30 @@
         border: 1px solid var(--chat-border);
     }
 
+    .chat-link {
+        color: inherit;
+        text-decoration: underline;
+        word-break: break-all;
+        font-weight: 500;
+        transition: opacity 0.15s ease;
+    }
+
+    .message-mine .chat-link {
+        color: #ffffff;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+
+    .message-theirs .chat-link {
+        color: var(--chat-primary, #ea580c);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+
+    .chat-link:hover {
+        opacity: 0.85;
+    }
+
     .message-time {
         font-size: 0.65rem;
         color: var(--chat-text-muted);
@@ -363,7 +387,14 @@
                     <div class="message-info">{{ $senderLabel }}</div>
                     <div class="message-bubble">
                         @if($msg->body)
-                            <div>{{ $msg->body }}</div>
+                            @php
+                                $linkifiedMsg = preg_replace(
+                                    '~(https?://[^\s<]+[^<.,:;"\')\]\s])~i',
+                                    '<a href="$1" target="_blank" rel="noopener noreferrer" class="chat-link">$1</a>',
+                                    e($msg->body)
+                                );
+                            @endphp
+                            <div>{!! $linkifiedMsg !!}</div>
                         @endif
                         @foreach($msg->attachments ?? [] as $att)
                             @php $isImg = str_starts_with($att['mime_type'] ?? '', 'image/'); @endphp
@@ -503,9 +534,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const timeStr = new Date(msg.created_at).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
 
-        const safeMessage = msg.message 
-            ? msg.message.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;')
-            : '';
+        function linkify(text) {
+            if (!text) return '';
+            const safe = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+            const urlRegex = /(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/gi;
+            return safe.replace(urlRegex, function(url) {
+                return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="chat-link">${url}</a>`;
+            });
+        }
+
+        const safeMessage = linkify(msg.message || msg.body || '');
 
         let statusHtml = `<div class="message-time">${timeStr}</div>`;
         if (isMine) {
