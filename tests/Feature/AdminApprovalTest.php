@@ -25,7 +25,7 @@ class AdminApprovalTest extends TestCase
         return User::factory()->create(['role' => 'staff', 'email' => fake()->unique()->safeEmail()]);
     }
 
-    private function createActivity()
+    private function createActivity($attributes = [])
     {
         $category = ActivityCategory::firstOrCreate(
             ['id' => 1],
@@ -37,7 +37,7 @@ class AdminApprovalTest extends TestCase
             ['role' => 'admin', 'full_name' => 'Admin', 'password' => bcrypt('password')]
         );
 
-        return Activity::create([
+        return Activity::create(array_merge([
             'title' => 'Test Activity',
             'location' => 'Building 1',
             'activity_date' => now()->format('Y-m-d'),
@@ -55,14 +55,14 @@ class AdminApprovalTest extends TestCase
             'is_mandatory' => false,
             'created_by' => $creator->id,
             'qr_token' => Str::random(10),
-        ]);
+        ], $attributes));
     }
 
     public function test_staff_can_quick_approve_attendance()
     {
         $staff = $this->createStaff();
         $student = $this->createStudent();
-        $activity = $this->createActivity();
+        $activity = $this->createActivity(['created_by' => $staff->id]);
 
         $attendance = Attendance::create([
             'user_id' => $student->id,

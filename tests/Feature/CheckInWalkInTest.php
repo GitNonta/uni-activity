@@ -128,7 +128,7 @@ class CheckInWalkInTest extends TestCase
     {
         $staff = $this->createStaff();
         $student = $this->createStudent();
-        $activity = $this->createActivity();
+        $activity = $this->createActivity(['created_by' => $staff->id]);
 
         Registration::create([
             'user_id' => $student->id,

@@ -35,8 +35,8 @@ class ExportPermissionsTest extends TestCase
 
         $response = $this->actingAs($student)->get(route('admin.exports.index'));
 
-        // Middleware 'role:staff' returns 403 Forbidden
-        $response->assertForbidden();
+        // Non-staff user is redirected to student activities page
+        $response->assertRedirect(route('activities.index'));
     }
 
     public function test_guest_cannot_access_exports_page()
