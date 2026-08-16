@@ -62,24 +62,34 @@ class ActivityController extends Controller
 
         // จัดเรียงตามอัลกอริทึม
         if ($sort === 'closing_soon') {
-            $query->orderByRaw("CASE WHEN register_close_at IS NOT NULL AND register_close_at >= '{$nowStr}' THEN 0 ELSE 1 END ASC")
+            $query->orderByRaw("CASE WHEN register_close_at IS NOT NULL AND register_close_at >= ? THEN 0 ELSE 1 END ASC", [$nowStr])
                   ->orderBy('register_close_at', 'asc')
                   ->orderBy('activity_date', 'asc');
         } elseif ($sort === 'popular') {
             $query->orderBy('registered_count', 'desc')
                   ->orderBy('activity_date', 'asc');
         } elseif ($sort === 'upcoming') {
-            $query->orderByRaw("CASE WHEN activity_date >= '{$todayStr}' THEN 0 ELSE 1 END ASC")
+            $query->orderByRaw("CASE WHEN activity_date >= ? THEN 0 ELSE 1 END ASC", [$todayStr])
                   ->orderBy('activity_date', 'asc');
         } elseif ($sort === 'latest') {
             $query->orderBy('created_at', 'desc');
         } else {
             // 'recommended' (อัลกอริทึมอัจฉริยะ: สถานะเปิดรับ + บังคับ + คณะ/สาขา + ความเร่งด่วน)
-            $userFaculty = $user ? addslashes($user->faculty ?? '') : '';
-            $userDept = $user ? addslashes($user->department ?? '') : '';
+            $userFaculty = $user->faculty ?? '';
+            $userDept = $user->department ?? '';
 
-            $facultyScore = ($userFaculty !== '') ? "WHEN scope = 'faculty' AND faculty = '{$userFaculty}' THEN 35" : "";
-            $deptScore = ($userDept !== '') ? "WHEN scope = 'department' AND department = '{$userDept}' THEN 45" : "";
+            $scopeClauses = [];
+            $scopeBindings = [];
+
+            if ($userDept !== '') {
+                $scopeClauses[] = "WHEN scope = 'department' AND department = ? THEN 45";
+                $scopeBindings[] = $userDept;
+            }
+            if ($userFaculty !== '') {
+                $scopeClauses[] = "WHEN scope = 'faculty' AND faculty = ? THEN 35";
+                $scopeBindings[] = $userFaculty;
+            }
+            $scopeSqlPart = implode("\n", $scopeClauses);
 
             $scoreSql = "
                 (
@@ -91,18 +101,22 @@ class ActivityController extends Controller
                     END
                     + CASE WHEN is_mandatory = true THEN 50 ELSE 0 END
                     + CASE 
-                        {$deptScore}
-                        {$facultyScore}
+                        {$scopeSqlPart}
                         WHEN scope = 'university' THEN 25 
                         ELSE 0 
                     END
-                    + CASE WHEN register_close_at IS NOT NULL AND register_close_at >= '{$nowStr}' AND register_close_at <= '{$threeDaysLaterStr}' THEN 35 ELSE 0 END
-                    + CASE WHEN activity_date >= '{$todayStr}' AND activity_date <= '{$sevenDaysLaterStr}' THEN 25 ELSE 0 END
+                    + CASE WHEN register_close_at IS NOT NULL AND register_close_at >= ? AND register_close_at <= ? THEN 35 ELSE 0 END
+                    + CASE WHEN activity_date >= ? AND activity_date <= ? THEN 25 ELSE 0 END
                 )
             ";
 
-            $query->orderByRaw("{$scoreSql} DESC")
-                  ->orderByRaw("CASE WHEN activity_date >= '{$todayStr}' THEN 0 ELSE 1 END ASC")
+            $scoreBindings = array_merge(
+                $scopeBindings,
+                [$nowStr, $threeDaysLaterStr, $todayStr, $sevenDaysLaterStr]
+            );
+
+            $query->orderByRaw("{$scoreSql} DESC", $scoreBindings)
+                  ->orderByRaw("CASE WHEN activity_date >= ? THEN 0 ELSE 1 END ASC", [$todayStr])
                   ->orderBy('activity_date', 'asc');
         }
 

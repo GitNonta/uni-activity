@@ -80,7 +80,12 @@ class ActivityAdminController extends Controller
                     $u->where('users.id', $userId);
                 });
             })->where('user_id', '!=', $userId)
-              ->whereColumn('created_at', '>', DB::raw('(SELECT last_read_at FROM room_user WHERE room_user.room_id = messages.room_id AND room_user.user_id = ' . $userId . ')'))
+              ->where('created_at', '>', function ($subQuery) use ($userId) {
+                  $subQuery->select('last_read_at')
+                      ->from('room_user')
+                      ->whereColumn('room_user.room_id', 'messages.room_id')
+                      ->where('room_user.user_id', $userId);
+              })
               ->count();
         });
 

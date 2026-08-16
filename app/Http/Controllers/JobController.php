@@ -70,12 +70,15 @@ class JobController extends Controller
                 if ($driver === 'pgsql') {
                     $query->orderByRaw("CASE WHEN NULLIF(REGEXP_REPLACE(compensation, '[^0-9]', '', 'g'), '') IS NOT NULL THEN CAST(NULLIF(REGEXP_REPLACE(compensation, '[^0-9]', '', 'g'), '') AS BIGINT) ELSE 0 END DESC")
                           ->orderBy('created_at', 'desc');
+                } elseif ($driver === 'sqlite') {
+                    $query->orderBy('compensation', 'desc')
+                          ->orderBy('created_at', 'desc');
                 } else {
                     $query->orderByRaw("CAST(REGEXP_REPLACE(compensation, '[^0-9]', '') AS UNSIGNED) DESC")
                           ->orderBy('created_at', 'desc');
                 }
             } elseif ($sort === 'starting_soon') {
-                $query->orderByRaw("CASE WHEN start_date >= '{$todayStr}' THEN 0 ELSE 1 END ASC")
+                $query->orderByRaw("CASE WHEN start_date >= ? THEN 0 ELSE 1 END ASC", [$todayStr])
                       ->orderBy('start_date', 'asc');
             } elseif ($sort === 'popular') {
                 $query->orderBy('applications_count', 'desc')
@@ -84,8 +87,9 @@ class JobController extends Controller
                 $query->orderBy('created_at', 'desc');
             } else {
                 // 'recommended' (อัลกอริทึมอัจฉริยะ: เปิดรับ + เพศตรง + เริ่มงานเร็วๆ นี้ + ประกาศใหม่)
-                $userGender = $user ? addslashes($user->gender ?? '') : '';
-                $genderScore = ($userGender !== '') ? "WHEN gender = '{$userGender}' THEN 35" : "";
+                $userGender = $user->gender ?? '';
+                $genderScore = ($userGender !== '') ? "WHEN gender = ? THEN 35" : "";
+                $genderBindings = ($userGender !== '') ? [$userGender] : [];
 
                 $scoreSql = "
                     (
@@ -99,13 +103,18 @@ class JobController extends Controller
                             WHEN gender = 'any' THEN 25 
                             ELSE 0 
                         END
-                        + CASE WHEN start_date >= '{$todayStr}' AND start_date <= '{$fourteenDaysLaterStr}' THEN 30 ELSE 0 END
-                        + CASE WHEN created_at >= '{$sevenDaysAgoStr}' THEN 25 ELSE 0 END
+                        + CASE WHEN start_date >= ? AND start_date <= ? THEN 30 ELSE 0 END
+                        + CASE WHEN created_at >= ? THEN 25 ELSE 0 END
                     )
                 ";
 
-                $query->orderByRaw("{$scoreSql} DESC")
-                      ->orderByRaw("CASE WHEN start_date >= '{$todayStr}' THEN 0 ELSE 1 END ASC")
+                $scoreBindings = array_merge(
+                    $genderBindings,
+                    [$todayStr, $fourteenDaysLaterStr, $sevenDaysAgoStr]
+                );
+
+                $query->orderByRaw("{$scoreSql} DESC", $scoreBindings)
+                      ->orderByRaw("CASE WHEN start_date >= ? THEN 0 ELSE 1 END ASC", [$todayStr])
                       ->orderBy('start_date', 'asc')
                       ->orderBy('created_at', 'desc');
             }

@@ -339,7 +339,7 @@
                         })
                         ->where('messages.user_id', '!=', $adminId)
                         ->where(function($q) {
-                            $q->whereRaw('messages.created_at > room_user.last_read_at')
+                            $q->whereColumn('messages.created_at', '>', 'room_user.last_read_at')
                               ->orWhereNull('room_user.last_read_at');
                         });
 
