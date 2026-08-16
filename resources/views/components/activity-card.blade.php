@@ -23,7 +23,7 @@
     </div>
     <div class="card-body">
         <div class="act-card-top">
-            <div class="flex items-center justify-between mb-2" style="flex-wrap:wrap;gap:4px;min-height:24px;">
+            <div class="flex items-center justify-between act-card-badges">
                 <div class="flex items-center gap-1" style="flex-wrap:wrap;">
                     @include('components.status-badge', ['status' => $activity->computed_status])
                     @if($activity->is_mandatory)<span class="badge badge-red">บังคับ</span>@endif
@@ -34,7 +34,7 @@
                     <span class="badge" style="background:#ffedd5;color:#5b21b6;font-size:.65rem;">{{ $activity->department }}</span>
                 @endif
             </div>
-            <h3 class="font-semi line-clamp-2" style="font-size:.95rem;line-height:1.35;min-height:2.7em;margin-bottom:0.4rem;">{{ $activity->title }}</h3>
+            <h3 class="font-semi line-clamp-2 act-card-title">{{ $activity->title }}</h3>
             <div class="act-card-meta">
                 <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                 <span class="line-clamp-1">{{ $activity->activity_date->format('d/m/Y') }}</span>

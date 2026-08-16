@@ -26,7 +26,7 @@
     <div class="card-body">
         <div class="act-card-top">
             {{-- Badges --}}
-            <div class="flex items-center gap-2 mb-2" style="flex-wrap:wrap;min-height:24px;">
+            <div class="flex items-center gap-2 act-card-badges">
                 <span class="badge {{ $job->job_type === 'parttime' ? 'job-badge-parttime' : 'job-badge-general' }}">
                     {{ $job->job_type === 'parttime' ? 'Part-time' : 'งานทั่วไป' }}
                 </span>
@@ -40,7 +40,7 @@
             </div>
 
             {{-- ชื่องาน --}}
-            <h3 class="font-semi line-clamp-2" style="font-size:.95rem;line-height:1.35;min-height:2.7em;margin-bottom:0.4rem;">{{ $job->title }}</h3>
+            <h3 class="font-semi line-clamp-2 act-card-title">{{ $job->title }}</h3>
 
             {{-- ข้อมูลย่อ --}}
             <div class="act-card-meta">
