@@ -459,10 +459,15 @@ def get_services():
     if _services_cache and (_time.time() - _services_cache_time) < 15:
         return _services_cache
 
+    # Check active web worker
+    is_octane = bool(subprocess.run(["pgrep", "-f", "octane:start"], capture_output=True, text=True).stdout.strip())
+    is_fpm = bool(subprocess.run(["pgrep", "-f", "php-fpm"], capture_output=True, text=True).stdout.strip())
+    is_dragonfly = bool(subprocess.run(["pgrep", "-f", "dragonfly|redis-server"], capture_output=True, text=True).stdout.strip())
+
     services = {
         "Nginx (Edge Proxy)": ("nginx", 8080),
-        "Laravel Octane (Swoole / OpenSwoole)": ("octane:start|swoole|frankenphp", 8000),
-        "PHP-FPM (Fallback Worker)": ("php-fpm", None),
+        "Laravel Web Engine": ("octane:start|php-fpm", 8080 if is_fpm else 8000),
+        "Real-time State Engine": ("swoole|dragonfly|redis-server", 6379),
         "Laravel Reverb (WebSocket)": ("reverb:start", 8082),
         "Datastore (Dragonfly / Redis)": ("dragonfly|redis-server", 6379),
         "PostgreSQL 16 Database": ("postgres", 5432),
@@ -477,7 +482,6 @@ def get_services():
     status = {}
     for name, (proc_pattern, default_port) in services.items():
         try:
-            # Support multiple pattern check separated by |
             patterns = proc_pattern.split('|')
             is_running = False
             for pat in patterns:
@@ -487,7 +491,12 @@ def get_services():
                     break
 
             if is_running:
-                if default_port and default_port in listening:
+                if name == "Laravel Web Engine":
+                    engine_name = "Octane (Swoole)" if is_octane else "PHP-FPM (Unix Socket)"
+                    status[name] = f"Running ({engine_name})"
+                elif name == "Real-time State Engine":
+                    status[name] = "Active (Swoole / Dragonfly Shared RAM)"
+                elif default_port and default_port in listening:
                     status[name] = f"Running (Port {default_port})"
                 else:
                     status[name] = "Running"
