@@ -617,7 +617,7 @@ nav[role="navigation"] span[aria-current="page"] span { background: #ea580c; col
     /* Cards: full orange gradient in dark mode, white text for readability */
     .act-card { background: linear-gradient(160deg, #c2410c 0%, #9a3412 100%) !important; border-color: #7c2d12 !important; color: #fff !important; }
     .act-card .act-card-img { background: linear-gradient(145deg, #ea580c, #c2410c) !important; }
-    .act-card .card-body { background: transparent !important; }
+    .act-card .card-body { background: #9a3412 !important; }
     .act-card h3 { color: #fff !important; }
     .act-card .act-card-meta { color: rgba(255, 255, 255, 0.85) !important; }
     .act-card .act-card-meta svg { color: rgba(255, 255, 255, 0.85) !important; stroke: rgba(255, 255, 255, 0.85) !important; }
