@@ -20,7 +20,7 @@ export function ServicesCard({ services, listeningPorts }) {
         )}
         
         {Object.entries(srv).map(([name, status]) => {
-          const isRunning = typeof status === 'string' && status.startsWith('Running');
+          const isRunning = typeof status === 'string' && (status.startsWith('Running') || status.startsWith('Active') || status.startsWith('Online'));
           return (
             <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f3f4f6', paddingBottom: '0.5rem' }}>
               <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151' }}>{name}</span>

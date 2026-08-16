@@ -467,7 +467,7 @@ def get_services():
     services = {
         "Nginx (Edge Proxy)": ("nginx", 8080),
         "Laravel Application Server": ("octane:start|php-fpm", 8080 if is_fpm else 8000),
-        "Real-time State & Presence": ("swoole|dragonfly|redis-server", 6379),
+        "Swoole / OpenSwoole": ("swoole|dragonfly|redis-server", 6379),
         "Laravel Reverb (WebSocket)": ("reverb:start", 8082),
         "Datastore (Dragonfly / Redis)": ("dragonfly|redis-server", 6379),
         "PostgreSQL 16 Database": ("postgres", 5432),
@@ -494,8 +494,8 @@ def get_services():
                 if name == "Laravel Application Server":
                     engine_desc = "Octane (In-Memory)" if is_octane else "Active Engine"
                     status[name] = f"Running ({engine_desc})"
-                elif name == "Real-time State & Presence":
-                    status[name] = "Active (In-Memory / Dragonfly Shared RAM)"
+                elif name == "Swoole / OpenSwoole":
+                    status[name] = "Running (In-Memory State & Tables)"
                 elif default_port and default_port in listening:
                     status[name] = f"Running (Port {default_port})"
                 else:
