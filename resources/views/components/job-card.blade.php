@@ -23,7 +23,7 @@
         </div>
     @endif
 
-    <div class="card-body" style="padding:1rem;">
+    <div class="card-body">
         {{-- Badges --}}
         <div class="flex items-center gap-2 mb-2" style="flex-wrap:wrap;">
             <span class="badge {{ $job->job_type === 'parttime' ? 'job-badge-parttime' : 'job-badge-general' }}">
