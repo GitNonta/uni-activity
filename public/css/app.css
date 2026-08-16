@@ -96,7 +96,7 @@ table th { font-weight: 600; color: #475569; background: #f8fafc; }
     .grid-4 { grid-template-columns: 1fr; gap: 1rem; }
     .grid-5 { grid-template-columns: 1fr; gap: 1rem; }
     
-    .act-card-img { height: 160px; }
+    .act-card-img { height: 150px; }
 }
 @media (max-width: 480px) {
     /* Mobile Compact Screens: Single card (1 column) */
@@ -105,9 +105,10 @@ table th { font-weight: 600; color: #475569; background: #f8fafc; }
     .grid-4 { grid-template-columns: 1fr; gap: 0.875rem; }
     .grid-5 { grid-template-columns: 1fr; gap: 0.875rem; }
     
-    .act-card-img { height: 180px; }
+    .act-card-img { height: 140px; }
 }
 .line-clamp-1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; max-height: 2.8em; }
 
 /* ── การ์ด: กล่องสีขาวมุมมนใช้แสดงเนื้อหาทั่วไป ──────
 * การ์ดที่มีสีขาวและมุมมน ใช้สำหรับแสดงเนื้อหาทั่วไป
