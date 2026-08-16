@@ -1,5 +1,5 @@
 {{-- การ์ดแสดงงาน: badge ประเภท, สถานะ, ข้อมูลย่อ, progress --}}
-<a href="{{ route('jobs.show', $job->id) }}" class="card act-card job-card no-linkify">
+<div class="card act-card job-card no-linkify" onclick="if(!event.target.closest('a, button')) window.location.href='{{ route('jobs.show', $job->id) }}'" style="cursor:pointer;">
     {{-- รูปภาพ / gradient + badge ต้องอยู่ใน .act-card-img เพื่อให้ position:absolute ทำงาน --}}
     @if($job->image_path)
         <div class="act-card-img">
@@ -40,7 +40,9 @@
             </div>
 
             {{-- ชื่องาน --}}
-            <h3 class="font-semi line-clamp-2 act-card-title">{{ $job->title }}</h3>
+            <h3 class="font-semi line-clamp-2 act-card-title">
+                <a href="{{ route('jobs.show', $job->id) }}" style="color:inherit;text-decoration:none;">{{ $job->title }}</a>
+            </h3>
 
             {{-- ข้อมูลย่อ --}}
             <div class="act-card-meta">
@@ -84,4 +86,4 @@
             @endif
         </div>
     </div>
-</a>
+</div>
