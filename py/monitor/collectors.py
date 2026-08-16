@@ -460,25 +460,31 @@ def get_services():
         return _services_cache
 
     services = {
-        "Nginx": ("nginx", 8080),
-        "PHP-FPM": ("php-fpm", None),
-        "PostgreSQL": ("postgres", 5432),
-        "Redis": ("redis-server", 6379),
-        "Cloudflared": ("cloudflared", None),
-        "Reverb": ("reverb:start", 8082),
+        "Nginx (Edge Proxy)": ("nginx", 8080),
+        "Web Engine (Octane/FPM)": ("octane:start|php-fpm", 8000),
+        "PostgreSQL 16": ("postgres", 5432),
+        "Datastore (Dragonfly/Redis)": ("dragonfly|redis-server", 6379),
+        "Laravel Reverb (WS)": ("reverb:start", 8082),
         "Queue Worker": ("artisan queue:work", None),
-        "AI Scan Service": ("python server.py", 8001),
-        "SSH": ("sshd", 8022),
-        "SFTP": ("sshd", 8022)
+        "AI Face Service": ("server.py", 8000),
+        "Cloudflared Tunnel": ("cloudflared", None),
+        "SSH / SFTP": ("sshd", 8022)
     }
 
     listening = get_listening_ports()
 
     status = {}
-    for name, (proc, default_port) in services.items():
+    for name, (proc_pattern, default_port) in services.items():
         try:
-            res = subprocess.run(["pgrep", "-f", proc], capture_output=True, text=True)
-            is_running = bool(res.stdout.strip())
+            # Support multiple pattern check separated by |
+            patterns = proc_pattern.split('|')
+            is_running = False
+            for pat in patterns:
+                res = subprocess.run(["pgrep", "-f", pat], capture_output=True, text=True)
+                if bool(res.stdout.strip()):
+                    is_running = True
+                    break
+
             if is_running:
                 if default_port and default_port in listening:
                     status[name] = f"Running (Port {default_port})"
