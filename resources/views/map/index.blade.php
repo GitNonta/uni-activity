@@ -173,13 +173,16 @@
                 {{-- External Navigation Apps --}}
                 <div class="flex gap-2 mt-2">
                     <a id="bs-gmaps-btn" href="#" target="_blank" rel="noopener noreferrer" class="bs-app-btn flex-1">
-                        <span>🗺️ Google Maps</span>
+                        <svg style="width:13px;height:13px;flex-shrink:0;color:#ea580c;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon><line x1="9" y1="3" x2="9" y2="18"></line><line x1="15" y1="6" x2="15" y2="21"></line></svg>
+                        <span>Google Maps</span>
                     </a>
                     <a id="bs-applemaps-btn" href="#" target="_blank" rel="noopener noreferrer" class="bs-app-btn flex-1">
-                        <span>🍏 Apple Maps</span>
+                        <svg style="width:13px;height:13px;flex-shrink:0;color:#0284c7;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+                        <span>Apple Maps</span>
                     </a>
                     <a id="bs-waze-btn" href="#" target="_blank" rel="noopener noreferrer" class="bs-app-btn flex-1">
-                        <span>🚙 Waze</span>
+                        <svg style="width:13px;height:13px;flex-shrink:0;color:#059669;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"></path></svg>
+                        <span>Waze</span>
                     </a>
                 </div>
             </div>
@@ -880,9 +883,9 @@
         const isAndroid = /Android/.test(navigator.userAgent);
         const nativeText = document.getElementById('bs-native-text');
         if (nativeText) {
-            if (isIOS) nativeText.textContent = '🍏 เปิดใน Apple Maps';
-            else if (isAndroid) nativeText.textContent = '🗺️ เปิดใน Google Maps (แอป)';
-            else nativeText.textContent = '📱 เปิดแอปแผนที่ในเครื่อง';
+            if (isIOS) nativeText.textContent = 'เปิดใน Apple Maps';
+            else if (isAndroid) nativeText.textContent = 'เปิดใน Google Maps (แอป)';
+            else nativeText.textContent = 'เปิดแอปแผนที่ในเครื่อง';
         }
 
         // Navigation Apps Links
