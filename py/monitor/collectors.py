@@ -461,14 +461,15 @@ def get_services():
 
     services = {
         "Nginx (Edge Proxy)": ("nginx", 8080),
-        "Web Engine (Octane/FPM)": ("octane:start|php-fpm", 8000),
-        "PostgreSQL 16": ("postgres", 5432),
-        "Datastore (Dragonfly/Redis)": ("dragonfly|redis-server", 6379),
-        "Laravel Reverb (WS)": ("reverb:start", 8082),
-        "Queue Worker": ("artisan queue:work", None),
-        "AI Face Service": ("server.py", 8000),
+        "Laravel Octane (Swoole / OpenSwoole)": ("octane:start|swoole|frankenphp", 8000),
+        "PHP-FPM (Fallback Worker)": ("php-fpm", None),
+        "Laravel Reverb (WebSocket)": ("reverb:start", 8082),
+        "Datastore (Dragonfly / Redis)": ("dragonfly|redis-server", 6379),
+        "PostgreSQL 16 Database": ("postgres", 5432),
+        "Redis Queue Worker": ("artisan queue:work", None),
+        "AI Biometrics Face Service": ("server.py", 8000),
         "Cloudflared Tunnel": ("cloudflared", None),
-        "SSH / SFTP": ("sshd", 8022)
+        "SSH / SFTP Server": ("sshd", 8022)
     }
 
     listening = get_listening_ports()
