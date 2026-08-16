@@ -89,5 +89,5 @@ mkdir -p /var/log/supervisor
 
 echo "=== Application ready ==="
 
-# ── Start Supervisor (php-fpm + nginx) ──
+# ── Start Supervisor (Octane + Nginx Edge + Reverb + Queue Worker) ──
 exec /usr/bin/supervisord -c /etc/supervisord.conf

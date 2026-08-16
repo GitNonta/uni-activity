@@ -55,6 +55,10 @@ def is_phpfpm_ok():
     out, _ = shell("pgrep -f 'php-fpm: master'")
     return bool(out)
 
+def is_octane_ok():
+    out, _ = shell("pgrep -f 'octane:start' || netstat -tlnp 2>/dev/null | grep ':8000 '")
+    return bool(out)
+
 def is_queue_ok():
     out, _ = shell("pgrep -f 'artisan queue:work'")
     return bool(out)
@@ -140,10 +144,22 @@ def restart_cloudflared():
     return is_cloudflared_ok()
 
 
+def is_web_engine_ok():
+    return is_octane_ok() or is_phpfpm_ok()
+
+def restart_web_engine():
+    if is_octane_ok() or os.path.exists(f'{APP}/frankenphp'):
+        log.warning('RESTART: Octane Web Engine')
+        shell("pkill -9 -f 'octane:start' ; sleep 1")
+        shell(f"cd {APP} && nohup php artisan octane:start --host=0.0.0.0 --port=8000 </dev/null >{APP}/storage/logs/octane.log 2>&1 &")
+        time.sleep(4)
+        return is_octane_ok()
+    return restart_phpfpm()
+
 SERVICES = [
     {'name': 'Redis',       'check': is_redis_ok,       'restart': restart_redis,       'cascade': ['Queue', 'Reverb']},
     {'name': 'Nginx',       'check': is_nginx_ok,        'restart': restart_nginx,       'cascade': []},
-    {'name': 'PHP-FPM',     'check': is_phpfpm_ok,       'restart': restart_phpfpm,      'cascade': []},
+    {'name': 'WebEngine',   'check': is_web_engine_ok,   'restart': restart_web_engine,  'cascade': []},
     {'name': 'Queue',       'check': is_queue_ok,        'restart': restart_queue,       'cascade': []},
     {'name': 'Reverb',      'check': is_reverb_ok,       'restart': restart_reverb,      'cascade': []},
     {'name': 'Cloudflared', 'check': is_cloudflared_ok,  'restart': restart_cloudflared, 'cascade': []},
