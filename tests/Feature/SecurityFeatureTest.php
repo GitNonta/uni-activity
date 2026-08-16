@@ -113,7 +113,7 @@ class SecurityFeatureTest extends TestCase
         $userA = User::factory()->create(['role' => 'student']);
         $userB = User::factory()->create(['role' => 'student']);
 
-        $fingerprint = 'abc123fingerprint000000000000000000000000000000000000000000000000';
+        $fingerprint = hash('sha256', 'device_fingerprint_shared_123');
 
         // UserA เช็คอินก่อน
         Attendance::factory()->create([

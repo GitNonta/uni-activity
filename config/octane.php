@@ -132,6 +132,10 @@ return [
 
     'warm' => [
         ...Octane::defaultServicesToWarm(),
+        App\Services\RealtimeStateService::class,
+        App\Services\LineService::class,
+        App\Repositories\ActivityRepository::class,
+        App\Repositories\UserRepository::class,
     ],
 
     'flush' => [
