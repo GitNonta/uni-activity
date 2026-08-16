@@ -327,7 +327,17 @@ select.form-control { appearance: auto; }
 .sb-sidebar { width: 240px; background: #1e293b; color: #e2e8f0; padding: 1.25rem 0; flex-shrink: 0; }
 .sidebar-brand { font-size: 1rem; font-weight: 700; color: #fff; padding: 0 1.25rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: .75rem; }
 .sb-sidebar a { display: flex; align-items: center; gap: .5rem; padding: .625rem 1.25rem; color: #94a3b8; font-size: .875rem; transition: background .15s; }
-.sb-sidebar a:hover, .sb-sidebar a.active { background: rgba(255,255,255,0.05); color: #fff; text-decoration: none; }
+.sb-sidebar a:hover { background: rgba(255,255,255,0.05); color: #fff; text-decoration: none; }
+.sb-sidebar a.sb-link.active, .sb-sidebar a.active, .sb-link.active { 
+    background: #ea580c !important; 
+    color: #ffffff !important; 
+    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.45) !important;
+    border: none !important;
+}
+.sb-sidebar a.sb-link.active svg, .sb-sidebar a.active svg, .sb-link.active svg {
+    color: #ffffff !important;
+    stroke: #ffffff !important;
+}
 .sb-sidebar a .icon { width: 18px; height: 18px; opacity: .7; }
 .admin-main { flex: 1; padding: 1.5rem 2rem; overflow-x: auto; min-width: 0; }
 /* ── Admin Bottom Nav: Mobile App Style ──────── */

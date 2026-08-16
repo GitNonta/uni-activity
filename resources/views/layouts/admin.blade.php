@@ -102,10 +102,16 @@
     color: #f97316; 
 }
 
-.sb-link.active { 
-    background: #ea580c;
-    color: #ffffff; 
-    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);
+.sb-link.active, .sb-sidebar .sb-link.active, .sb-sidebar a.sb-link.active, .sb-sidebar a.active { 
+    background: #ea580c !important;
+    color: #ffffff !important; 
+    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.45) !important;
+    border: none !important;
+}
+
+.sb-link.active svg, .sb-sidebar .sb-link.active svg, .sb-sidebar a.active svg {
+    color: #ffffff !important;
+    stroke: #ffffff !important;
 }
 
 .sb-link svg { 

@@ -108,9 +108,11 @@
   color: white;
 }
 
-.sidebar a.active {
-  background: #475569;
-  color: white;
+.sidebar a.active, .sb-link.active {
+  background: #ea580c !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(234, 88, 12, 0.45) !important;
+  border: none !important;
 }
 
 .sidebar.collapsed a {
