@@ -21,6 +21,8 @@ class RouteModelBindingTest extends TestCase
 
     public function test_activity_show_resolves_route_model_binding(): void
     {
+        $admin = User::factory()->create(['role' => 'admin']);
+
         $category = ActivityCategory::create([
             'name'           => 'Academic',
             'required_hours' => 10,
@@ -31,6 +33,7 @@ class RouteModelBindingTest extends TestCase
             'title'             => 'AI Workshop',
             'description'       => 'Test AI Workshop',
             'category_id'       => $category->id,
+            'created_by'        => $admin->id,
             'activity_date'     => now()->addDays(5)->toDateString(),
             'start_time'        => '09:00',
             'end_time'          => '12:00',
@@ -52,6 +55,8 @@ class RouteModelBindingTest extends TestCase
 
     public function test_registration_store_and_destroy_with_route_model_binding(): void
     {
+        $admin = User::factory()->create(['role' => 'admin']);
+
         $student = User::factory()->create([
             'role'       => 'student',
             'student_id' => '65111111',
@@ -67,6 +72,7 @@ class RouteModelBindingTest extends TestCase
             'title'             => 'Tech Seminar',
             'description'       => 'Seminar details',
             'category_id'       => $category->id,
+            'created_by'        => $admin->id,
             'activity_date'     => now()->addDays(10)->toDateString(),
             'start_time'        => '13:00',
             'end_time'          => '16:00',
