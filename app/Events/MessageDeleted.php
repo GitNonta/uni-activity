@@ -1,19 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class MessageDeleted implements ShouldBroadcastNow
+class MessageDeleted implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(public string $messageId, public string $roomId, public ?int $studentId = null) {}
+
+    public function broadcastQueue(): string
+    {
+        return 'high';
+    }
 
     public function broadcastOn(): array
     {
@@ -24,7 +31,7 @@ class MessageDeleted implements ShouldBroadcastNow
         if ($this->studentId) {
             $channels[] = new PrivateChannel('chat.student.' . $this->studentId);
         }
-        
+
         $channels[] = new PrivateChannel('admin.inbox');
 
         return $channels;
@@ -38,7 +45,7 @@ class MessageDeleted implements ShouldBroadcastNow
     public function broadcastWith(): array
     {
         return [
-            'id' => $this->messageId,
+            'id'      => $this->messageId,
             'room_id' => $this->roomId,
         ];
     }
