@@ -230,6 +230,9 @@ Route::middleware(['auth', 'role:staff'])->prefix('admin')->name('admin.')->grou
     Route::get('students', [StudentAdminController::class, 'index'])->name('students.index');
     Route::get('students/{student}', [StudentAdminController::class, 'show'])->name('students.show');
     Route::post('students/{student}/send-message', [StudentAdminController::class, 'sendMessage'])->name('students.send-message');
+    Route::post('students/{student}/attendances', [StudentAdminController::class, 'addAttendance'])->name('students.attendances.add');
+    Route::patch('students/{student}/attendances/{aid}', [StudentAdminController::class, 'updateAttendance'])->name('students.attendances.update');
+    Route::delete('students/{student}/attendances/{aid}', [StudentAdminController::class, 'deleteAttendance'])->name('students.attendances.delete');
 
     // ── ส่งออกรายงาน Excel ──
     Route::get('exports', [ExcelExportController::class, 'index'])->name('exports.index');
@@ -266,11 +269,6 @@ Route::middleware(['auth', 'role:admin,super-admin'])->prefix('admin')->name('ad
     Route::patch('users/{user}', [UserAdminController::class, 'update'])->name('users.update');
     Route::delete('users/{user}', [UserAdminController::class, 'destroy'])->name('users.destroy');
     Route::patch('users/{user}/toggle-active', [UserAdminController::class, 'toggleActive'])->name('users.toggle-active');
-
-    // ── จัดการบันทึกนักศึกษา ──
-    Route::post('students/{student}/attendances', [StudentAdminController::class, 'addAttendance'])->name('students.attendances.add');
-    Route::patch('students/{student}/attendances/{aid}', [StudentAdminController::class, 'updateAttendance'])->name('students.attendances.update');
-    Route::delete('students/{student}/attendances/{aid}', [StudentAdminController::class, 'deleteAttendance'])->name('students.attendances.delete');
 
     // ── Audit Log ──
     Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
