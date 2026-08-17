@@ -11,6 +11,7 @@ use App\Models\Registration;
 use App\Traits\LogsAdminActivity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
 class AdminQuickApprovalController extends Controller
@@ -18,21 +19,23 @@ class AdminQuickApprovalController extends Controller
     use LogsAdminActivity;
 
     /**
-     * AJAX: อนุมัติรายการ (registration หรือ attendance) จาก Dashboard
+     * AJAX: อนุมัติรายการ (registration หรือ attendance) จาก Dashboard ภายใต้ Transaction
      */
     public function approve(QuickApprovalRequest $request): JsonResponse
     {
         $user = Auth::user();
         $isStaff = $user->isStaff();
 
-        if ($request->validated('type') === 'registration') {
-            $item = Registration::with(['user', 'activity'])->findOrFail($request->validated('id'));
-            Gate::authorize('approve', $item);
+        $label = DB::transaction(function () use ($request, $user): string {
+            if ($request->validated('type') === 'registration') {
+                $item = Registration::with(['user', 'activity'])->findOrFail($request->validated('id'));
+                Gate::authorize('approve', $item);
 
-            $item->update(['status' => 'approved']);
-            $this->auditApprove($item, "อนุมัติการลงทะเบียน #{$item->id} (Dashboard)");
-            $label = 'ลงทะเบียน';
-        } else {
+                $item->update(['status' => 'approved']);
+                $this->auditApprove($item, "อนุมัติการลงทะเบียน #{$item->id} (Dashboard)");
+                return 'ลงทะเบียน';
+            }
+
             $item = Attendance::with(['user', 'activity'])->findOrFail($request->validated('id'));
             Gate::authorize('approve', $item);
 
@@ -43,15 +46,15 @@ class AdminQuickApprovalController extends Controller
             ]);
             $this->auditApprove($item, "อนุมัติการเข้าร่วม #{$item->id} (Dashboard)");
 
-            // อัปเดต registration เป็น completed ถ้ามี
+            // อัปเดต registration เป็น completed ถ้ามี (Atomic)
             $reg = Registration::where('user_id', $item->user_id)
                 ->where('activity_id', $item->activity_id)
                 ->first();
             if ($reg && $reg->status === 'approved') {
                 $reg->markAsCompleted();
             }
-            $label = 'เช็คอิน';
-        }
+            return 'เช็คอิน';
+        });
 
         // นับ pending ใหม่หลัง approve (เช็ค role)
         if ($isStaff) {
@@ -70,21 +73,23 @@ class AdminQuickApprovalController extends Controller
     }
 
     /**
-     * AJAX: ปฏิเสธรายการ (registration หรือ attendance) จาก Dashboard
+     * AJAX: ปฏิเสธรายการ (registration หรือ attendance) จาก Dashboard ภายใต้ Transaction
      */
     public function reject(QuickApprovalRequest $request): JsonResponse
     {
         $user = Auth::user();
         $isStaff = $user->isStaff();
 
-        if ($request->validated('type') === 'registration') {
-            $item = Registration::with(['user', 'activity'])->findOrFail($request->validated('id'));
-            Gate::authorize('reject', $item);
+        $label = DB::transaction(function () use ($request, $user): string {
+            if ($request->validated('type') === 'registration') {
+                $item = Registration::with(['user', 'activity'])->findOrFail($request->validated('id'));
+                Gate::authorize('reject', $item);
 
-            $item->update(['status' => 'rejected']);
-            $this->auditReject($item, "ปฏิเสธการลงทะเบียน #{$item->id} (Dashboard)");
-            $label = 'ลงทะเบียน';
-        } else {
+                $item->update(['status' => 'rejected']);
+                $this->auditReject($item, "ปฏิเสธการลงทะเบียน #{$item->id} (Dashboard)");
+                return 'ลงทะเบียน';
+            }
+
             $item = Attendance::with(['user', 'activity'])->findOrFail($request->validated('id'));
             Gate::authorize('reject', $item);
 
@@ -93,8 +98,8 @@ class AdminQuickApprovalController extends Controller
                 'verified_by' => $user->id,
             ]);
             $this->auditReject($item, "ปฏิเสธการเข้าร่วม #{$item->id} (Dashboard)");
-            $label = 'เช็คอิน';
-        }
+            return 'เช็คอิน';
+        });
 
         // นับ pending ใหม่หลัง reject
         if ($isStaff) {

@@ -154,59 +154,53 @@ class CheckInController extends Controller
             }
         }
 
-        // ── ดำเนินการบันทึก Check-in ผ่าน CheckInService ──
+        // ── จัดเตรียมไฟล์รูปถ่ายเซลฟี่ (ถ้ามี) ก่อนเข้า Transaction ──
+        $metaData = [];
+        if ($request->filled('selfie')) {
+            $imageData = (string) $request->selfie;
+            $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $imageData);
+            $imageDecoded = base64_decode(str_replace(' ', '+', $imageData));
+            $tempFilename = 'selfies/' . ($isCheckoutToken ? 'checkout_' : '') . $user->id . '_' . time() . '.jpg';
+            Storage::disk('public')->put($tempFilename, $imageDecoded);
+
+            if ($isCheckoutToken) {
+                $metaData['checkout_selfie_photo_path'] = $tempFilename;
+                $metaData['checkout_face_match_score']  = $score;
+                $metaData['checkout_face_match_passed'] = $passed;
+            } else {
+                $metaData['selfie_photo_path'] = $tempFilename;
+                $metaData['face_match_score']  = $score;
+                $metaData['face_match_passed'] = $passed;
+                $metaData['liveness_score']    = (float) ($faceResult['liveness_score'] ?? ($faceResult['liveness']['score'] ?? 1.0));
+                $metaData['liveness_passed']   = $livenessPassed;
+            }
+        }
+
+        // ── ดำเนินการบันทึก Check-in ผ่าน CheckInService ภายใต้ Transaction เดียว ──
         $result = $this->checkInService->processCheckIn(
             $token,
             $user,
             'qr_scan',
             $request->filled('latitude') ? (float) $request->latitude : null,
             $request->filled('longitude') ? (float) $request->longitude : null,
+            $metaData,
         );
 
         if ($result['success']) {
-            if ($request->filled('selfie') && !empty($result['attendance_id'])) {
+            // เมื่อเช็คเอาท์ผ่านแล้ว ลบรูปชั่วคราวทิ้งตามหลักความเป็นส่วนตัว (PDPA Privacy)
+            if ($isCheckoutToken && $passed && !empty($result['attendance_id'])) {
                 $att = Attendance::find($result['attendance_id']);
                 if ($att) {
-                    $imageData = (string) $request->selfie;
-                    $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $imageData);
-                    $imageDecoded = base64_decode(str_replace(' ', '+', $imageData));
-
-                    $isCheckout = in_array($result['status'], ['approved', 'pending'], true) && $result['status'] !== 'checked_in';
-                    
-                    if ($isCheckout) {
-                        $savedSelfieFilename = 'selfies/checkout_' . $att->id . '_' . time() . '.jpg';
-                    } else {
-                        $savedSelfieFilename = 'selfies/' . $att->id . '_' . time() . '.jpg';
+                    if ($att->selfie_photo_path && Storage::disk('public')->exists($att->selfie_photo_path)) {
+                        Storage::disk('public')->delete($att->selfie_photo_path);
                     }
-                    Storage::disk('public')->put($savedSelfieFilename, $imageDecoded);
-
-                    if ($isCheckout) {
-                        $att->update([
-                            'checkout_selfie_photo_path' => $savedSelfieFilename,
-                            'checkout_face_match_score'  => $score,
-                            'checkout_face_match_passed' => $passed,
-                        ]);
-
-                        // ลบรูปเซลฟี่ทั้งเข้าและออกทิ้งเมื่อจบกิจกรรมและ AI ตรวจผ่าน (PDPA / Privacy)
-                        if ($passed) {
-                            if ($att->selfie_photo_path && Storage::disk('public')->exists($att->selfie_photo_path)) {
-                                Storage::disk('public')->delete($att->selfie_photo_path);
-                            }
-                            if ($att->checkout_selfie_photo_path && Storage::disk('public')->exists($att->checkout_selfie_photo_path)) {
-                                Storage::disk('public')->delete($att->checkout_selfie_photo_path);
-                            }
-                            $att->update([
-                                'selfie_photo_path'          => null,
-                                'checkout_selfie_photo_path' => null,
-                            ]);
-                        }
-                    } else {
-                        $att->update([
-                            'selfie_photo_path' => $savedSelfieFilename,
-                            'face_match_score'  => $score,
-                            'face_match_passed' => $passed,
-                        ]);
+                    if ($att->checkout_selfie_photo_path && Storage::disk('public')->exists($att->checkout_selfie_photo_path)) {
+                        Storage::disk('public')->delete($att->checkout_selfie_photo_path);
                     }
+                    $att->update([
+                        'selfie_photo_path'          => null,
+                        'checkout_selfie_photo_path' => null,
+                    ]);
                 }
             }
 

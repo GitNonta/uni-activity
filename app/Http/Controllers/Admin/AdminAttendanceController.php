@@ -16,6 +16,7 @@ use App\Traits\LogsAdminActivity;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
 class AdminAttendanceController extends Controller
@@ -70,15 +71,17 @@ class AdminAttendanceController extends Controller
             return back()->with('error', 'นักศึกษาเช็คอินไปแล้ว');
         }
 
-        $att = $activity->attendances()->create([
-            'user_id'     => $user->id,
-            'method'      => 'manual',
-            'status'      => 'approved',
-            'verified_by' => Auth::id(),
-            'is_verified' => true,
-            'ip_address'  => $request->ip(),
-        ]);
-        $this->auditCreate($att, "เช็คอิน manual: {$user->full_name} ในกิจกรรม \"{$activity->title}\"");
+        DB::transaction(function () use ($activity, $user, $request) {
+            $att = $activity->attendances()->create([
+                'user_id'     => $user->id,
+                'method'      => 'manual',
+                'status'      => 'approved',
+                'verified_by' => Auth::id(),
+                'is_verified' => true,
+                'ip_address'  => $request->ip(),
+            ]);
+            $this->auditCreate($att, "เช็คอิน manual: {$user->full_name} ในกิจกรรม \"{$activity->title}\"");
+        });
 
         return back()->with('success', "เช็คอิน {$user->full_name} สำเร็จ");
     }
@@ -91,28 +94,30 @@ class AdminAttendanceController extends Controller
         $attendance->loadMissing('activity');
         Gate::authorize('approve', $attendance);
 
-        $attendance->update([
-            'status'      => 'approved',
-            'is_verified' => true,
-            'verified_by' => Auth::id(),
-        ]);
-        $this->auditApprove($attendance, "อนุมัติการเข้าร่วม #{$attendance->id}");
+        DB::transaction(function () use ($attendance) {
+            $attendance->update([
+                'status'      => 'approved',
+                'is_verified' => true,
+                'verified_by' => Auth::id(),
+            ]);
+            $this->auditApprove($attendance, "อนุมัติการเข้าร่วม #{$attendance->id}");
 
-        Notification::create([
-            'user_id' => $attendance->user_id,
-            'title'   => 'บันทึกกิจกรรมสำเร็จ',
-            'message' => "บันทึกการเข้าร่วมกิจกรรม \"{$attendance->activity->title}\" ได้รับการอนุมัติแล้ว คุณได้รับ {$attendance->activity->activity_hours} ชม.",
-            'type'    => 'attendance_approved',
-        ]);
+            Notification::create([
+                'user_id' => $attendance->user_id,
+                'title'   => 'บันทึกกิจกรรมสำเร็จ',
+                'message' => "บันทึกการเข้าร่วมกิจกรรม \"{$attendance->activity->title}\" ได้รับการอนุมัติแล้ว คุณได้รับ {$attendance->activity->activity_hours} ชม.",
+                'type'    => 'attendance_approved',
+            ]);
 
-        // เปลี่ยนสถานะการลงทะเบียนเป็น 'completed' เมื่ออนุมัติการเข้าร่วมแล้ว
-        $registration = Registration::where('user_id', $attendance->user_id)
-            ->where('activity_id', $attendance->activity_id)
-            ->first();
-        
-        if ($registration && $registration->status === 'approved') {
-            $registration->markAsCompleted();
-        }
+            // เปลี่ยนสถานะการลงทะเบียนเป็น 'completed' เมื่ออนุมัติการเข้าร่วมแล้ว
+            $registration = Registration::where('user_id', $attendance->user_id)
+                ->where('activity_id', $attendance->activity_id)
+                ->first();
+            
+            if ($registration && $registration->status === 'approved') {
+                $registration->markAsCompleted();
+            }
+        });
 
         return back()->with('success', 'อนุมัติการเข้าร่วมสำเร็จ');
     }
@@ -125,18 +130,20 @@ class AdminAttendanceController extends Controller
         $attendance->loadMissing('activity');
         Gate::authorize('reject', $attendance);
 
-        $attendance->update([
-            'status'      => 'rejected',
-            'verified_by' => Auth::id(),
-        ]);
-        $this->auditReject($attendance, "ปฏิเสธการเข้าร่วม #{$attendance->id}");
+        DB::transaction(function () use ($attendance) {
+            $attendance->update([
+                'status'      => 'rejected',
+                'verified_by' => Auth::id(),
+            ]);
+            $this->auditReject($attendance, "ปฏิเสธการเข้าร่วม #{$attendance->id}");
 
-        Notification::create([
-            'user_id' => $attendance->user_id,
-            'title'   => 'บันทึกกิจกรรมไม่สำเร็จ',
-            'message' => "บันทึกการเข้าร่วมกิจกรรม \"{$attendance->activity->title}\" ถูกปฏิเสธ กรุณาติดต่อผู้จัด",
-            'type'    => 'attendance_rejected',
-        ]);
+            Notification::create([
+                'user_id' => $attendance->user_id,
+                'title'   => 'บันทึกกิจกรรมไม่สำเร็จ',
+                'message' => "บันทึกการเข้าร่วมกิจกรรม \"{$attendance->activity->title}\" ถูกปฏิเสธ กรุณาติดต่อผู้จัด",
+                'type'    => 'attendance_rejected',
+            ]);
+        });
 
         return back()->with('success', 'ปฏิเสธการเข้าร่วมสำเร็จ');
     }

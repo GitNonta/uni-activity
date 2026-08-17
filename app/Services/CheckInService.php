@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * เซอร์วิสเช็คอิน / บันทึกกิจกรรม
- * ตรวจสอบเวลา, การลงทะเบียน, การเช็คอินซ้ำ และสร้างรายการ attendance พร้อมระบบป้องกัน Race Condition
+ * จัดการกระบวนการเช็คอินและออกงานภายใต้ ACID Database Transactions เพื่อความสอดคล้องของข้อมูล 100%
  */
 class CheckInService
 {
@@ -25,13 +25,14 @@ class CheckInService
     ) {}
 
     /**
-     * ดำเนินการเช็คอิน (เข้างาน) หรือ บันทึกกิจกรรม (เลิกงาน) แบบ Atomic & Thread-safe
+     * ดำเนินการเช็คอิน (เข้างาน) หรือ บันทึกกิจกรรม (เลิกงาน) ภายใต้ Database Transaction
      *
-     * @param  string      $token     QR token ของกิจกรรม
-     * @param  User        $user      ผู้ใช้ที่เช็คอิน
-     * @param  string      $method    วิธีเช็คอิน: qr_scan, self, walk_in
-     * @param  float|null  $latitude  ละติจูดจากอุปกรณ์ผู้ใช้
-     * @param  float|null  $longitude ลองจิจูดจากอุปกรณ์ผู้ใช้
+     * @param  string      $token      QR token ของกิจกรรม
+     * @param  User        $user       ผู้ใช้ที่เช็คอิน
+     * @param  string      $method     วิธีเช็คอิน: qr_scan, self, walk_in
+     * @param  float|null  $latitude   ละติจูดจากอุปกรณ์ผู้ใช้
+     * @param  float|null  $longitude  ลองจิจูดจากอุปกรณ์ผู้ใช้
+     * @param  array       $metaData   ข้อมูลเพิ่มเติม (เช่น selfie_photo_path, face_match_score, liveness_passed)
      * @return array{
      *     success: bool,
      *     message?: string,
@@ -47,7 +48,8 @@ class CheckInService
         User $user,
         string $method = 'qr_scan',
         ?float $latitude = null,
-        ?float $longitude = null
+        ?float $longitude = null,
+        array $metaData = []
     ): array {
         $activity = Activity::where('qr_token', $token)
             ->orWhere('qr_checkout_token', $token)
@@ -56,13 +58,13 @@ class CheckInService
         $isCheckoutToken = ($activity->qr_checkout_token === $token);
         $lockKey = "checkin_lock_{$user->id}_{$activity->id}";
 
-        // ── ป้องกัน Race Condition ด้วย Atomic Cache Lock ──
-        return Cache::lock($lockKey, 10)->block(5, function () use ($activity, $isCheckoutToken, $user, $method, $latitude, $longitude): array {
-            // ── ทำงานภายใต้ Database Transaction พร้อม Pessimistic Locking ──
-            return DB::transaction(function () use ($activity, $isCheckoutToken, $user, $method, $latitude, $longitude): array {
+        // ── 1. ป้องกัน Race Condition ด้วย Atomic Cache Lock ──
+        return Cache::lock($lockKey, 10)->block(5, function () use ($activity, $isCheckoutToken, $user, $method, $latitude, $longitude, $metaData): array {
+            // ── 2. ทำงานภายใต้ Database Transaction เพื่อความถูกต้องแบบ All-or-Nothing ──
+            return DB::transaction(function () use ($activity, $isCheckoutToken, $user, $method, $latitude, $longitude, $metaData): array {
                 $now = now();
 
-                // 1. ตรวจสอบการลงทะเบียน
+                // ตรวจสอบการลงทะเบียน
                 $registration = Registration::where('user_id', $user->id)
                     ->where('activity_id', $activity->id)
                     ->where('status', 'approved')
@@ -79,7 +81,7 @@ class CheckInService
                     $method = 'walk_in';
                 }
 
-                // 2. ค้นหารายการ Attendance เดิม พร้อม Lock Row (lockForUpdate)
+                // ค้นหารายการ Attendance เดิม พร้อม Lock Row (lockForUpdate)
                 $attendance = Attendance::where('user_id', $user->id)
                     ->where('activity_id', $activity->id)
                     ->lockForUpdate()
@@ -118,7 +120,7 @@ class CheckInService
                         }
                     }
 
-                    // บันทึกการเข้างาน (Check-in)
+                    // ตรวจสอบความปลอดภัยและคำนวณ Device Fingerprint
                     $fingerprint  = $this->fpService->generate(request());
                     $isSuspicious = $this->secService->checkAndLogSuspiciousCheckIn(
                         request:  request(),
@@ -140,9 +142,14 @@ class CheckInService
                             'checkin_latitude'   => $latitude,
                             'checkin_longitude'  => $longitude,
                             'distance_meters'    => $distance,
+                            'selfie_photo_path'  => $metaData['selfie_photo_path'] ?? null,
+                            'face_match_score'   => $metaData['face_match_score'] ?? null,
+                            'face_match_passed'  => $metaData['face_match_passed'] ?? null,
+                            'liveness_score'     => $metaData['liveness_score'] ?? null,
+                            'liveness_passed'    => $metaData['liveness_passed'] ?? null,
+                            'detector_pipeline'  => $metaData['detector_pipeline'] ?? null,
                         ]);
                     } catch (UniqueConstraintViolationException|QueryException $e) {
-                        // ดักจับ DB Unique violation เผื่อการชนกันระดับตาราง
                         return [
                             'success' => false,
                             'message' => 'คุณได้ทำการเช็คอินกิจกรรมนี้ไปแล้ว',
@@ -197,18 +204,22 @@ class CheckInService
                 // ตัดสินใจเรื่อง Auto Approve ท้ายกิจกรรม
                 $autoApproved = !$activity->require_attendance_approval;
                 
-                // บันทึกการออกงาน (Finalize)
+                // บันทึกการออกงาน (Finalize) ภายใน Transaction
                 $attendance->update([
-                    'checked_out_at'           => $now,
-                    'checkout_method'          => $method,
-                    'checkout_latitude'        => $latitude,
-                    'checkout_longitude'       => $longitude,
-                    'checkout_distance_meters' => $exitDistance,
-                    'status'                   => $autoApproved ? 'approved' : 'pending',
+                    'checked_out_at'             => $now,
+                    'checkout_method'            => $method,
+                    'checkout_latitude'          => $latitude,
+                    'checkout_longitude'         => $longitude,
+                    'checkout_distance_meters'   => $exitDistance,
+                    'checkout_selfie_photo_path' => $metaData['checkout_selfie_photo_path'] ?? null,
+                    'checkout_face_match_score'  => $metaData['checkout_face_match_score'] ?? null,
+                    'checkout_face_match_passed' => $metaData['checkout_face_match_passed'] ?? null,
+                    'status'                     => $autoApproved ? 'approved' : 'pending',
                 ]);
 
-                if ($autoApproved) {
-                    $registration?->markAsCompleted();
+                // ปรับสถานะการลงทะเบียนเป็น completed แบบ Atomic
+                if ($autoApproved && $registration) {
+                    $registration->markAsCompleted();
                 }
 
                 return [
