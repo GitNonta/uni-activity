@@ -6,7 +6,7 @@
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
-        "php": "^8.3",
+        "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",
         "laravel/breeze": "^2.4",
         "laravel/framework": "^13.25.0",
@@ -98,8 +98,7 @@
             "php-http/discovery": true
         },
         "platform": {
-            "php": "8.4.0",
-            "ext-mongodb": "2.0.0"
+            "php": "8.2.12"
         }
     },
     "minimum-stability": "stable",

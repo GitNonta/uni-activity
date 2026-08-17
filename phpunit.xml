@@ -33,5 +33,6 @@
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
         <env name="AUTH_OTP_BYPASS_IDS" value=""/>
+        <env name="APP_FAKER_LOCALE" value="en_US"/>
     </php>
 </phpunit>

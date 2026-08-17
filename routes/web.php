@@ -321,6 +321,13 @@ Route::middleware(['auth', 'role:admin,super-admin'])->prefix('admin')->name('ad
     Route::post('api-keys', [\App\Http\Controllers\Admin\ApiKeyController::class, 'store'])->name('api-keys.store');
     Route::delete('api-keys/{apiKey}', [\App\Http\Controllers\Admin\ApiKeyController::class, 'destroy'])->name('api-keys.destroy');
 
+    // ── สำรองและกู้คืนข้อมูลระบบ (Automated & Manual Backups) ──
+    Route::get('backups', [\App\Http\Controllers\Admin\BackupAdminController::class, 'index'])->name('backups.index');
+    Route::post('backups', [\App\Http\Controllers\Admin\BackupAdminController::class, 'store'])->name('backups.store');
+    Route::get('backups/{filename}/download', [\App\Http\Controllers\Admin\BackupAdminController::class, 'download'])->name('backups.download');
+    Route::delete('backups/{filename}', [\App\Http\Controllers\Admin\BackupAdminController::class, 'destroy'])->name('backups.destroy');
+    Route::post('backups/clean', [\App\Http\Controllers\Admin\BackupAdminController::class, 'clean'])->name('backups.clean');
+
     // ── Distributed Cluster Control & Observability ──
     Route::get('system/cluster', [\App\Http\Controllers\Admin\ClusterMonitoringController::class, 'index'])->name('system.cluster');
     Route::get('api/cluster/metrics', [\App\Http\Controllers\Admin\ClusterMonitoringController::class, 'metrics'])->name('api.cluster.metrics');

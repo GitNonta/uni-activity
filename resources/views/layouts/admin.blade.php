@@ -661,6 +661,10 @@ html[data-theme="light"] {
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
                 <span class="sb-link-text">คีย์ API & ความเป็นส่วนตัว</span>
             </a>
+            <a href="{{ route('admin.backups.index') }}" class="sb-link {{ request()->routeIs('admin.backups.*') ? 'active' : '' }}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+                <span class="sb-link-text">สำรองข้อมูลระบบ</span>
+            </a>
             @php
                 $monitorHost = request()->getHost();
                 $monitorUrl = (filter_var($monitorHost, FILTER_VALIDATE_IP) || $monitorHost === 'localhost')
