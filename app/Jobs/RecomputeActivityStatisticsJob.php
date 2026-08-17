@@ -24,13 +24,14 @@ class RecomputeActivityStatisticsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public string $queue = 'stats';
     public int $tries = 2;
     public int $backoff = 30;
 
     public function __construct(
         public readonly ?int $staffUserId = null
-    ) {}
+    ) {
+        $this->onQueue('stats');
+    }
 
     public function handle(): void
     {

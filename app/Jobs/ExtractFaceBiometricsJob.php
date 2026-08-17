@@ -20,7 +20,6 @@ class ExtractFaceBiometricsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public string $queue = 'ai';
     public int $tries = 3;
     public array $backoff = [10, 30, 60];
 
@@ -28,7 +27,9 @@ class ExtractFaceBiometricsJob implements ShouldQueue
         public readonly int $userId,
         public readonly ?string $photoPath = null,
         public readonly bool $force = false
-    ) {}
+    ) {
+        $this->onQueue('ai');
+    }
 
     public function handle(FaceVerificationService $faceService): void
     {

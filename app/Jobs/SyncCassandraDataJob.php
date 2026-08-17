@@ -17,7 +17,6 @@ class SyncCassandraDataJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public string $queue = 'sync';
     public int $tries = 5;
     public array $backoff = [15, 60, 300];
 
@@ -28,7 +27,9 @@ class SyncCassandraDataJob implements ShouldQueue
         public readonly string $tableName,
         public readonly array $payload,
         public readonly string $operation = 'insert'
-    ) {}
+    ) {
+        $this->onQueue('sync');
+    }
 
     public function handle(): void
     {

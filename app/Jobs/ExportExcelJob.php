@@ -21,7 +21,6 @@ class ExportExcelJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public string $queue = 'exports';
     public int $tries = 2;
     public int $backoff = 30;
 
@@ -35,7 +34,9 @@ class ExportExcelJob implements ShouldQueue
         public readonly array $fields = [],
         public readonly string $targetDisk = 'local',
         public readonly string $targetDirectory = 'exports'
-    ) {}
+    ) {
+        $this->onQueue('exports');
+    }
 
     public function handle(): string
     {

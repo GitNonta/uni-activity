@@ -17,7 +17,6 @@ class ProcessImageOptimizationJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public string $queue = 'images';
     public int $tries = 2;
     public int $backoff = 15;
 
@@ -25,7 +24,9 @@ class ProcessImageOptimizationJob implements ShouldQueue
         public readonly string $relativeStoragePath,
         public readonly int $maxWidth = 1600,
         public readonly int $quality = 82
-    ) {}
+    ) {
+        $this->onQueue('images');
+    }
 
     public function handle(): void
     {

@@ -19,14 +19,15 @@ class SendActivityReminderJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public string $queue = 'notifications';
     public int $tries = 3;
     public int $backoff = 60;
 
     public function __construct(
         public readonly int $userId,
         public readonly int $activityId
-    ) {}
+    ) {
+        $this->onQueue('notifications');
+    }
 
     public function handle(LineService $lineService): void
     {

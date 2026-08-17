@@ -19,7 +19,6 @@ class GeneratePdfTranscriptJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public string $queue = 'exports';
     public int $tries = 2;
     public int $backoff = 30;
 
@@ -27,7 +26,9 @@ class GeneratePdfTranscriptJob implements ShouldQueue
         public readonly int $userId,
         public readonly ?string $targetDisk = 'local',
         public readonly ?string $targetDirectory = 'transcripts'
-    ) {}
+    ) {
+        $this->onQueue('exports');
+    }
 
     public function handle(ActivitySummaryService $summaryService): string
     {

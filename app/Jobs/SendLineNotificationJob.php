@@ -18,7 +18,6 @@ class SendLineNotificationJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public string $queue = 'notifications';
     public int $tries = 3;
     public int $backoff = 30;
 
@@ -30,7 +29,9 @@ class SendLineNotificationJob implements ShouldQueue
         public readonly array $messages,
         public readonly ?array $targetLineUserIds = null,
         public readonly ?string $lockKey = null
-    ) {}
+    ) {
+        $this->onQueue('notifications');
+    }
 
     public function handle(LineService $lineService): void
     {
