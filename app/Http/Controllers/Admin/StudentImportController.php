@@ -45,11 +45,11 @@ class StudentImportController extends Controller
         $file = $request->file('file');
         $result = $this->importService->importFile($file);
 
-        $this->auditAction(
+        $this->auditLog(
             'import_students',
-            'users',
-            null,
-            "นำเข้านักศึกษาสำเร็จ: สร้างใหม่ {$result['created_count']} คน, อัปเดต {$result['updated_count']} คน, ข้าม {$result['skipped_count']} คน"
+            "นำเข้านักศึกษาสำเร็จ: สร้างใหม่ {$result['created_count']} คน, อัปเดต {$result['updated_count']} คน, ข้าม {$result['skipped_count']} คน",
+            User::class,
+            null
         );
 
         if ($result['created_count'] === 0 && $result['updated_count'] === 0 && !empty($result['errors'])) {
