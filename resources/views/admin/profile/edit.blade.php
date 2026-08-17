@@ -32,16 +32,6 @@
                         <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>
                     </label>
 
-                    {{-- Delete Trash Badge on Top-Right Edge (if photo exists) --}}
-                    @if($user->profile_photo)
-                        <form method="POST" action="{{ route('profile.photo.destroy') }}" style="position: absolute; top: -2px; right: -2px; z-index: 2; margin: 0;" onsubmit="return confirm('คุณแน่ใจหรือไม่ว่าต้องการลบรูปโปรไฟล์นี้?');">
-                            @csrf @method('DELETE')
-                            <button type="submit" style="width: 24px; height: 24px; background: #ef4444; border: 2px solid #1e293b; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.3); padding: 0; transition: transform 0.15s, background 0.15s;" title="ลบรูปโปรไฟล์" onmouseenter="this.style.transform='scale(1.15)'; this.style.background='#b91c1c';" onmouseleave="this.style.transform='scale(1)'; this.style.background='#ef4444';">
-                                <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                            </button>
-                        </form>
-                    @endif
-
                     <form id="profilePhotoForm" method="POST" action="{{ route('profile.photo.upload') }}" enctype="multipart/form-data" style="display: none;">
                         @csrf
                         <input type="file" id="profilePhotoInput" name="profile_photo" accept="image/jpeg,image/png,image/webp" onchange="document.getElementById('profilePhotoForm').submit();">
