@@ -723,17 +723,21 @@
             
             if (!mine) {
                 var avatarDiv = document.createElement('div');
-                avatarDiv.style.cssText = 'width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#94a3b8;color:#fff;font-size:0.65rem;font-weight:700;overflow:hidden;';
+                avatarDiv.style.cssText = 'width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#94a3b8;color:#fff;font-size:0.65rem;font-weight:700;position:relative;';
                 var photo = msg.user && msg.user.photo ? msg.user.photo : null;
                 var label = msg.user && msg.user.name ? msg.user.name : 'ผู้ดูแล';
                 if (photo) {
                     var img = document.createElement('img');
                     img.src = photo;
-                    img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+                    img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
                     avatarDiv.appendChild(img);
                 } else {
                     avatarDiv.textContent = label.charAt(0).toUpperCase();
                 }
+                var dotSpan = document.createElement('span');
+                dotSpan.className = 'cf-avatar-online-dot';
+                dotSpan.style.cssText = 'display:' + (window.isStaffOnline ? 'block' : 'none') + ';position:absolute;bottom:-1px;right:-1px;width:7px;height:7px;background:#10b981;border:1.5px solid #fff;border-radius:50%;box-shadow:0 0 3px #10b981;';
+                avatarDiv.appendChild(dotSpan);
                 row.appendChild(avatarDiv);
             }
 
@@ -1095,9 +1099,14 @@
                     }
                 });
 
+            window.isStaffOnline = false;
             function updateFloatingOnlineStatus(isOnline) {
+                window.isStaffOnline = isOnline;
                 var el = document.getElementById('cfAdminOnlineStatus');
                 if (el) el.style.display = isOnline ? 'inline-flex' : 'none';
+                document.querySelectorAll('.cf-avatar-online-dot').forEach(function(dot) {
+                    dot.style.display = isOnline ? 'block' : 'none';
+                });
             }
         })();
 

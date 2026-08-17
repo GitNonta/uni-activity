@@ -222,6 +222,7 @@
                     @else
                         <div style="width:30px;height:30px;border-radius:50%;background:{{ $avatarBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;">{{ $initial }}</div>
                     @endif
+                    <span class="user-avatar-online-dot" style="display:none;position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="กำลังใช้งาน"></span>
                 </div>
                 @endif
 
@@ -492,10 +493,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         let avatarHtml = '';
         if (!isMine) {
+            const dotDisplay = window.isStudentOnline ? 'block' : 'none';
             if (photo) {
-                avatarHtml = `<img src="${photo}" alt="" style="width:30px;height:30px;border-radius:50%;object-fit:cover;">`;
+                avatarHtml = `<img src="${photo}" alt="" style="width:30px;height:30px;border-radius:50%;object-fit:cover;"><span class="user-avatar-online-dot" style="display:${dotDisplay};position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="กำลังใช้งาน"></span>`;
             } else {
-                avatarHtml = `<div style="width:30px;height:30px;border-radius:50%;background:#64748b;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;">${label.charAt(0).toUpperCase()}</div>`;
+                avatarHtml = `<div style="width:30px;height:30px;border-radius:50%;background:#64748b;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;">${label.charAt(0).toUpperCase()}</div><span class="user-avatar-online-dot" style="display:${dotDisplay};position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="กำลังใช้งาน"></span>`;
             }
         }
         
@@ -784,7 +786,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (String(user.id) === String(studentId)) toggleStudentOnline(false);
                 });
 
+            window.isStudentOnline = false;
             function toggleStudentOnline(isOnline) {
+                window.isStudentOnline = isOnline;
                 const headerDot = document.getElementById('adminOnlineDot');
                 const label = document.getElementById('studentOnlineLabel');
                 if (headerDot) headerDot.style.display = isOnline ? 'inline-block' : 'none';
@@ -793,6 +797,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 8px #10b981;margin-right:5px;"></span><span style="color:#10b981;font-weight:600;">กำลังใช้งาน</span>' 
                         : '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>ออฟไลน์';
                 }
+                document.querySelectorAll('.user-avatar-online-dot').forEach(el => {
+                    el.style.display = isOnline ? 'block' : 'none';
+                });
             }
 
         } else {

@@ -438,12 +438,13 @@
 
             <div id="cm-{{ $msg->id }}" class="message-wrapper {{ $isMine ? 'message-mine' : 'message-theirs' }}">
                 @if(!$isMine)
-                <div class="message-avatar">
+                <div class="message-avatar" style="position:relative;">
                     @if($msg->user?->profile_photo)
                         <img src="{{ asset('storage/' . $msg->user->profile_photo) }}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
                     @else
                         {{ mb_strtoupper(mb_substr($senderLabel, 0, 1)) }}
                     @endif
+                    <span class="staff-avatar-online-dot" style="display:none;position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="กำลังใช้งาน"></span>
                 </div>
                 @endif
 
@@ -711,11 +712,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let avatarHtml = '';
         if (!isMine) {
+            const dotDisplay = window.isStaffOnline ? 'block' : 'none';
             if (photo) {
                 avatarHtml = `<img src="${photo}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
             } else {
                 avatarHtml = label.charAt(0).toUpperCase();
             }
+            avatarHtml += `<span class="staff-avatar-online-dot" style="display:${dotDisplay};position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="กำลังใช้งาน"></span>`;
         }
         
         let attachmentsHtml = '';
@@ -1010,7 +1013,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
 
+            window.isStaffOnline = false;
             function updateOnlineStatus(isOnline) {
+                window.isStaffOnline = isOnline;
                 const dot = document.getElementById('staffOnlineDot');
                 const label = document.getElementById('onlineStatusLabel');
                 if (dot) dot.style.display = isOnline ? 'inline-block' : 'none';
@@ -1019,6 +1024,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 8px #10b981;margin-right:5px;"></span><span style="color:#10b981;font-weight:600;">กำลังใช้งาน</span>' 
                         : '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>ออฟไลน์';
                 }
+                document.querySelectorAll('.staff-avatar-online-dot').forEach(el => {
+                    el.style.display = isOnline ? 'block' : 'none';
+                });
             }
         } else {
             setTimeout(initEcho, 200);

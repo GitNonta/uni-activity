@@ -40,14 +40,17 @@
        style="display:flex;align-items:center;gap:1rem;padding:.9rem 1.25rem;border-bottom:1px solid #f1f5f9;text-decoration:none;color:inherit;">
 
         {{-- Avatar --}}
-        @if(!empty($thread['student_photo']))
-            <img src="{{ $thread['student_photo'] }}" alt="{{ $thread['student_name'] }}"
-                 style="width:42px;height:42px;border-radius:50%;object-fit:cover;flex-shrink:0;">
-        @else
-            <div style="width:42px;height:42px;border-radius:50%;background:#ea580c;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;flex-shrink:0;">
-                {{ strtoupper(mb_substr($thread['student_name'], 0, 1)) }}
-            </div>
-        @endif
+        <div style="position:relative;flex-shrink:0;">
+            @if(!empty($thread['student_photo']))
+                <img src="{{ $thread['student_photo'] }}" alt="{{ $thread['student_name'] }}"
+                     style="width:42px;height:42px;border-radius:50%;object-fit:cover;">
+            @else
+                <div style="width:42px;height:42px;border-radius:50%;background:#ea580c;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;">
+                    {{ strtoupper(mb_substr($thread['student_name'], 0, 1)) }}
+                </div>
+            @endif
+            <span class="student-online-dot student-online-dot-{{ $thread['student_id'] }}" style="display:none;position:absolute;bottom:0;right:0;width:11px;height:11px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="กำลังใช้งาน"></span>
+        </div>
 
         {{-- Info --}}
         <div style="flex:1;min-width:0;">
@@ -102,6 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const oldCard = document.querySelector('.card');
                 if (newCard && oldCard) {
                     oldCard.innerHTML = newCard.innerHTML;
+                    if (window.updateStudentOnlineDots) window.updateStudentOnlineDots();
                 }
             })
             .catch(() => {});
@@ -113,10 +117,36 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // admin.inbox จะ fire ทั้งเมื่อนักศึกษาส่ง และเมื่อ admin ส่ง (ดู MessageSent.broadcastOn())
+        // admin.inbox จะ fire ทั้งเมื่อนักศึกษาส่ง และเมื่อ admin ส่ง
         window.Echo.private('admin.inbox')
             .listen('.MessageSent', function(e) {
                 window.refreshInboxList();
+            });
+
+        window.onlineStudentIds = new Set();
+        window.updateStudentOnlineDots = function() {
+            document.querySelectorAll('.student-online-dot').forEach(function(el) {
+                var match = el.className.match(/student-online-dot-(\d+)/);
+                if (match && window.onlineStudentIds.has(match[1])) {
+                    el.style.display = 'block';
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+        };
+
+        window.Echo.join('online')
+            .here(function(users) {
+                window.onlineStudentIds = new Set(users.map(function(u) { return String(u.id); }));
+                window.updateStudentOnlineDots();
+            })
+            .joining(function(user) {
+                window.onlineStudentIds.add(String(user.id));
+                window.updateStudentOnlineDots();
+            })
+            .leaving(function(user) {
+                window.onlineStudentIds.delete(String(user.id));
+                window.updateStudentOnlineDots();
             });
     })();
 });
