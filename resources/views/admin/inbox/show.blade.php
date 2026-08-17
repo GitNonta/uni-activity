@@ -214,19 +214,19 @@
                 $initial  = mb_strtoupper(mb_substr($label, 0, 1));
                 $avatarBg = $isMine ? '#ea580c' : '#64748b';
 
-                $readStatusText = '✓ ส่งแล้ว';
+                $readStatusText = 'ส่งแล้ว';
                 if ($isMine && $studentReadAt && $msg->created_at && $studentReadAt->gte($msg->created_at)) {
                     $diffSec = max(0, now()->diffInSeconds($studentReadAt));
                     $diffMin = max(0, now()->diffInMinutes($studentReadAt));
                     $diffHours = max(0, now()->diffInHours($studentReadAt));
                     if ($diffSec < 60) {
-                        $readStatusText = '✓✓ เพิ่งอ่าน';
+                        $readStatusText = 'เพิ่งอ่าน';
                     } elseif ($diffMin < 60) {
-                        $readStatusText = "✓✓ เห็นเมื่อ {$diffMin} นาทีที่แล้ว";
+                        $readStatusText = "อ่านเมื่อ {$diffMin} นาทีที่แล้ว";
                     } elseif ($diffHours < 24) {
-                        $readStatusText = "✓✓ เห็นเมื่อ {$diffHours} ชม. ที่แล้ว";
+                        $readStatusText = "อ่านเมื่อ {$diffHours} ชม. ที่แล้ว";
                     } else {
-                        $readStatusText = "✓✓ เห็นเมื่อ " . $studentReadAt->format('d/m H:i');
+                        $readStatusText = "อ่านเมื่อ " . $studentReadAt->format('d/m H:i');
                     }
                 }
             @endphp
@@ -463,11 +463,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function formatReadStatus(readAt, isRead) {
-        if (!readAt && !isRead) return '✓ ส่งแล้ว';
-        if (!readAt) return '✓ ส่งแล้ว';
+        if (!readAt && !isRead) return 'ส่งแล้ว';
+        if (!readAt) return 'ส่งแล้ว';
 
         const readTime = new Date(readAt);
-        if (isNaN(readTime.getTime())) return '✓ ส่งแล้ว';
+        if (isNaN(readTime.getTime())) return 'ส่งแล้ว';
 
         const now = new Date();
         const diffSec = Math.max(0, Math.floor((now.getTime() - readTime.getTime()) / 1000));
@@ -475,13 +475,13 @@ document.addEventListener('DOMContentLoaded', function () {
         const diffHours = Math.floor(diffMin / 60);
 
         if (diffSec < 60) {
-            return '✓✓ เพิ่งอ่าน';
+            return 'เพิ่งอ่าน';
         } else if (diffMin < 60) {
-            return `✓✓ เห็นเมื่อ ${diffMin} นาทีที่แล้ว`;
+            return `อ่านเมื่อ ${diffMin} นาทีที่แล้ว`;
         } else if (diffHours < 24) {
-            return `✓✓ เห็นเมื่อ ${diffHours} ชม. ที่แล้ว`;
+            return `อ่านเมื่อ ${diffHours} ชม. ที่แล้ว`;
         } else {
-            return `✓✓ เห็นเมื่อ ${readTime.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}`;
+            return `อ่านเมื่อ ${readTime.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}`;
         }
     }
 

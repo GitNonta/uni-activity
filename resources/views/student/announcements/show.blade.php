@@ -14,7 +14,7 @@
     <div class="card-body p-5">
         <div class="flex flex-wrap items-center gap-2 mb-3">
              <span class="text-xs font-semi {{ $announcement->type==='danger'?'text-red-700':($announcement->type==='warning'?'text-yellow-700':($announcement->type==='success'?'text-green-700':'text-blue-700')) }}">
-                ★ {{ ucfirst($announcement->type) }}
+                {{ ucfirst($announcement->type) }}
             </span>
             <span class="text-xs text-muted">|</span>
             <span class="text-xs text-muted">{{ $announcement->created_at->format('d/m/Y H:i') }}</span>

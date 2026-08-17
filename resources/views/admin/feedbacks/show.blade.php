@@ -273,12 +273,16 @@
                             <div class="gform-text-answer-top">
                                 <div class="gform-text-author">
                                     @if($tf->is_anonymous)
-                                        <span class="gform-anon-badge">ไม่ระบุตัวตน</span>
+                                        <span class="gform-anon-badge">
+                                            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                            ไม่เปิดเผยตัวตน
+                                        </span>
                                     @else
                                         <span class="gform-user-name">{{ $tf->user->full_name ?? 'ผู้เข้าร่วม' }}</span>
                                     @endif
                                     <span class="gform-rating-pill" style="color: {{ $ratingColor }}; border-color: {{ $ratingColor }}40;">
-                                        ★ {{ $tf->rating }}/5
+                                        <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                        {{ $tf->rating }} / 5 คะแนน
                                     </span>
                                 </div>
                                 <span class="gform-text-time">{{ $tf->created_at->translatedFormat('d M Y H:i น.') }}</span>
@@ -302,7 +306,7 @@
     {{-- ══════════════════════════════════════════════════════════════════════ --}}
     <div id="tab-questions" class="gform-tab-pane">
         <div class="gform-card">
-            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; padding: 16px 20px 0;">
                 <label for="gformQuestionSelect" style="font-weight: 700; color: #f4f4f5; font-size: 0.95rem;">
                     เลือกคำถามที่ต้องการดูคำตอบ:
                 </label>
@@ -324,7 +328,7 @@
                             <tr>
                                 <th style="width: 60px;">#</th>
                                 <th style="width: 220px;">ผู้ตอบ</th>
-                                <th>คำตอบ / คะแนนที่ให้</th>
+                                <th>คำตอบ / ผลการประเมิน</th>
                                 <th style="width: 160px;">เวลาที่ส่ง</th>
                             </tr>
                         </thead>
@@ -377,14 +381,14 @@
                             <span id="indRole" class="gform-ind-meta">นักศึกษา</span>
                         </div>
                     </div>
-                    <div id="indRatingBadge" class="gform-ind-score-badge">5 / 5 ★</div>
+                    <div id="indRatingBadge" class="gform-ind-score-badge">5.0 / 5.0 คะแนน</div>
                 </div>
 
                 <div class="gform-ind-body">
                     {{-- Q1 --}}
                     <div class="gform-ind-item">
                         <div class="gform-ind-label">1. ความพึงพอใจภาพรวมต่อกิจกรรม</div>
-                        <div class="gform-ind-value" id="indQ1">5 ดาว</div>
+                        <div class="gform-ind-value" id="indQ1">5 คะแนน</div>
                     </div>
 
                     {{-- Q2 --}}
@@ -414,7 +418,7 @@
                     {{-- Q6 --}}
                     <div class="gform-ind-item">
                         <div class="gform-ind-label">6. สถานะการเปิดเผยตัวตน</div>
-                        <div class="gform-ind-value" id="indQ6">ระบุตัวตน</div>
+                        <div class="gform-ind-value" id="indQ6">เปิดเผยตัวตน</div>
                     </div>
 
                     {{-- Q7 --}}
@@ -468,23 +472,23 @@ function showQuestionView(qKey) {
     FEEDBACKS_DATA.forEach((fb, idx) => {
         let answerText = '-';
         if (qKey === 'q1') {
-            answerText = getStarBadges(fb.rating) + ` (${fb.rating} ดาว / 5)`;
+            answerText = getScorePill(fb.rating);
         } else if (qKey === 'q2') {
             const v = fb.ratings?.content || '-';
-            answerText = v !== '-' ? getStarBadges(v) + ` (${v} ดาว)` : '<span class="text-muted">ไม่ได้ตอบ</span>';
+            answerText = v !== '-' ? getScorePill(v) : '<span class="text-muted">ไม่ได้ระบุ</span>';
         } else if (qKey === 'q3') {
             const v = fb.ratings?.speaker || '-';
-            answerText = v !== '-' ? getStarBadges(v) + ` (${v} ดาว)` : '<span class="text-muted">ไม่ได้ตอบ</span>';
+            answerText = v !== '-' ? getScorePill(v) : '<span class="text-muted">ไม่ได้ระบุ</span>';
         } else if (qKey === 'q4') {
             const v = fb.ratings?.location || '-';
-            answerText = v !== '-' ? getStarBadges(v) + ` (${v} ดาว)` : '<span class="text-muted">ไม่ได้ตอบ</span>';
+            answerText = v !== '-' ? getScorePill(v) : '<span class="text-muted">ไม่ได้ระบุ</span>';
         } else if (qKey === 'q5') {
             const v = fb.ratings?.organization || '-';
-            answerText = v !== '-' ? getStarBadges(v) + ` (${v} ดาว)` : '<span class="text-muted">ไม่ได้ตอบ</span>';
+            answerText = v !== '-' ? getScorePill(v) : '<span class="text-muted">ไม่ได้ระบุ</span>';
         } else if (qKey === 'q6') {
             answerText = fb.is_anonymous 
-                ? '<span style="color:#a855f7;font-weight:600;">🔒 ไม่ระบุตัวตน</span>' 
-                : '<span style="color:#3b82f6;font-weight:600;">👤 ระบุตัวตน (' + escapeHtml(fb.user_name) + ')</span>';
+                ? '<span class="gform-anon-badge"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg> ไม่เปิดเผยตัวตน</span>' 
+                : '<span class="gform-user-badge"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg> เปิดเผยตัวตน</span>';
         } else if (qKey === 'q7') {
             answerText = fb.comment 
                 ? `<div style="background:#141416;padding:8px 12px;border-radius:6px;border:1px solid #27272a;color:#f4f4f5;">${escapeHtml(fb.comment)}</div>` 
@@ -505,13 +509,15 @@ function showQuestionView(qKey) {
     });
 }
 
-function getStarBadges(score) {
-    let s = '';
-    const num = parseInt(score, 10) || 0;
+function getScorePill(score) {
+    const s = parseInt(score, 10) || 0;
+    const color = s >= 4 ? '#10b981' : (s === 3 ? '#eab308' : '#ef4444');
+    let stars = '';
     for (let i = 1; i <= 5; i++) {
-        s += i <= num ? '★' : '☆';
+        const fill = i <= s ? '#fbbf24' : '#3f3f46';
+        stars += `<svg width="13" height="13" fill="${fill}" viewBox="0 0 20 20" style="display:inline-block;vertical-align:middle;margin-right:1px;"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>`;
     }
-    return `<span style="color:#fbbf24;font-size:1.05rem;letter-spacing:1px;">${s}</span>`;
+    return `<span style="display:inline-flex;align-items:center;gap:4px;">${stars} <strong style="color:${color};margin-left:4px;">(${s}/5)</strong></span>`;
 }
 
 function escapeHtml(str) {
@@ -545,25 +551,25 @@ function renderIndividual(idx) {
     document.getElementById('indAvatar').textContent = initial;
 
     const badge = document.getElementById('indRatingBadge');
-    badge.textContent = `${fb.rating} / 5 ★`;
+    badge.textContent = `${fb.rating}.0 / 5.0 คะแนน`;
 
-    document.getElementById('indQ1').innerHTML = getStarBadges(fb.rating) + ` <strong>(${fb.rating} จาก 5 ดาว)</strong>`;
+    document.getElementById('indQ1').innerHTML = getScorePill(fb.rating);
     
     const q2Val = fb.ratings?.content;
-    document.getElementById('indQ2').innerHTML = q2Val ? getStarBadges(q2Val) + ` (${q2Val}/5)` : '<span class="text-muted">ไม่ได้ระบุ</span>';
+    document.getElementById('indQ2').innerHTML = q2Val ? getScorePill(q2Val) : '<span class="text-muted">ไม่ได้ระบุ</span>';
     
     const q3Val = fb.ratings?.speaker;
-    document.getElementById('indQ3').innerHTML = q3Val ? getStarBadges(q3Val) + ` (${q3Val}/5)` : '<span class="text-muted">ไม่ได้ระบุ</span>';
+    document.getElementById('indQ3').innerHTML = q3Val ? getScorePill(q3Val) : '<span class="text-muted">ไม่ได้ระบุ</span>';
     
     const q4Val = fb.ratings?.location;
-    document.getElementById('indQ4').innerHTML = q4Val ? getStarBadges(q4Val) + ` (${q4Val}/5)` : '<span class="text-muted">ไม่ได้ระบุ</span>';
+    document.getElementById('indQ4').innerHTML = q4Val ? getScorePill(q4Val) : '<span class="text-muted">ไม่ได้ระบุ</span>';
     
     const q5Val = fb.ratings?.organization;
-    document.getElementById('indQ5').innerHTML = q5Val ? getStarBadges(q5Val) + ` (${q5Val}/5)` : '<span class="text-muted">ไม่ได้ระบุ</span>';
+    document.getElementById('indQ5').innerHTML = q5Val ? getScorePill(q5Val) : '<span class="text-muted">ไม่ได้ระบุ</span>';
 
     document.getElementById('indQ6').innerHTML = fb.is_anonymous 
-        ? '<span style="color:#a855f7;font-weight:700;">🔒 ไม่ระบุตัวตน (Anonymous)</span>' 
-        : '<span style="color:#3b82f6;font-weight:700;">👤 เปิดเผยตัวตน</span>';
+        ? '<span class="gform-anon-badge"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg> ไม่เปิดเผยตัวตน</span>' 
+        : '<span class="gform-user-badge"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg> เปิดเผยตัวตน</span>';
 
     document.getElementById('indQ7').textContent = fb.comment || '(ไม่มีข้อความเสนอแนะเพิ่มเติม)';
 }
@@ -887,6 +893,9 @@ document.addEventListener('DOMContentLoaded', function() {
     font-size: 0.875rem;
 }
 .gform-anon-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     background: rgba(168, 85, 247, 0.15);
     color: #c084fc;
     border: 1px solid rgba(168, 85, 247, 0.3);
@@ -895,10 +904,25 @@ document.addEventListener('DOMContentLoaded', function() {
     padding: 2px 8px;
     border-radius: 4px;
 }
+.gform-user-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    font-size: 0.725rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
 .gform-rating-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     font-size: 0.75rem;
     font-weight: 700;
-    padding: 1px 6px;
+    padding: 2px 8px;
     border-radius: 4px;
     border: 1px solid;
 }

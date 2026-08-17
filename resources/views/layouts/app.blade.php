@@ -541,7 +541,7 @@
             var supportLastSeen = (supportThread && supportThread.staff_last_seen) ? supportThread.staff_last_seen : (threads.length > 0 && threads[0].staff_last_seen ? threads[0].staff_last_seen : null);
             var isSupOnline = isStaffMemberOnline(0);
             var supportStatusHtml = isSupOnline 
-                ? '<span style="color:#10b981;font-weight:600;">🟢 กำลังใช้งาน</span>' 
+                ? '<span style="color:#10b981;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#10b981;display:inline-block;"></span> กำลังใช้งาน</span>' 
                 : '<span style="color:#94a3b8;">' + formatLastSeen(supportLastSeen) + '</span>';
             
             var supportChatHtml = '<div onclick="showChatView(0, \'ติดต่อสอบถามเจ้าหน้าที่\')" style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;cursor:pointer;" class="chat-list-item ' + (isSupportUnread ? 'unread' : '') + '">'
@@ -572,7 +572,7 @@
                 var threadLastSeen = t.staff_last_seen || null;
                 var isJobOnline = isStaffMemberOnline(t.staff_id);
                 var threadStatusHtml = isJobOnline 
-                    ? '<span style="color:#10b981;font-weight:600;">🟢 กำลังใช้งาน</span>' 
+                    ? '<span style="color:#10b981;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#10b981;display:inline-block;"></span> กำลังใช้งาน</span>' 
                     : '<span style="color:#94a3b8;">' + formatLastSeen(threadLastSeen) + '</span>';
                 
                 var avatarHtml = '';
@@ -602,11 +602,11 @@
         window.showChatView = showChatView;
 
         function formatReadStatus(readAt, isRead) {
-            if (!readAt && !isRead) return '✓ ส่งแล้ว';
-            if (!readAt) return '✓ ส่งแล้ว';
+            if (!readAt && !isRead) return 'ส่งแล้ว';
+            if (!readAt) return 'ส่งแล้ว';
 
             var readTime = new Date(readAt);
-            if (isNaN(readTime.getTime())) return '✓ ส่งแล้ว';
+            if (isNaN(readTime.getTime())) return 'ส่งแล้ว';
 
             var now = new Date();
             var diffSec = Math.max(0, Math.floor((now.getTime() - readTime.getTime()) / 1000));
@@ -614,13 +614,13 @@
             var diffHours = Math.floor(diffMin / 60);
 
             if (diffSec < 60) {
-                return '✓✓ เพิ่งอ่าน';
+                return 'เพิ่งอ่าน';
             } else if (diffMin < 60) {
-                return '✓✓ เห็นเมื่อ ' + diffMin + ' นาทีที่แล้ว';
+                return 'อ่านเมื่อ ' + diffMin + ' นาทีที่แล้ว';
             } else if (diffHours < 24) {
-                return '✓✓ เห็นเมื่อ ' + diffHours + ' ชม. ที่แล้ว';
+                return 'อ่านเมื่อ ' + diffHours + ' ชม. ที่แล้ว';
             } else {
-                return '✓✓ เห็นเมื่อ ' + readTime.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                return 'อ่านเมื่อ ' + readTime.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
             }
         }
 
@@ -1164,7 +1164,7 @@
                     var jobId = st.getAttribute('data-job-id');
                     var online = isStaffMemberOnline(jobId === '0' ? 0 : staffId);
                     if (online) {
-                        st.innerHTML = '<span style="color:#10b981;font-weight:600;">🟢 กำลังใช้งาน</span>';
+                        st.innerHTML = '<span style="color:#10b981;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#10b981;display:inline-block;"></span> กำลังใช้งาน</span>';
                     } else {
                         var lastSeen = st.getAttribute('data-last-seen');
                         st.innerHTML = '<span style="color:#94a3b8;">' + formatLastSeen(lastSeen) + '</span>';

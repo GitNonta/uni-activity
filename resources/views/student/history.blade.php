@@ -33,7 +33,10 @@
                             $hasFeedback = $att->activity->feedbacks()->where('user_id', auth()->id())->exists();
                         @endphp
                         @if($hasFeedback)
-                            <span class="badge" style="background:#dcfce7;color:#166534;font-size:.7rem;margin-top:.25rem;">ประเมินแล้ว ✓</span>
+                            <span class="badge" style="background:#dcfce7;color:#166534;font-size:.7rem;margin-top:.25rem;display:inline-flex;align-items:center;gap:3px;">
+                                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                ประเมินแล้ว
+                            </span>
                         @else
                             <a href="{{ route('feedback.create', $att->activity_id) }}" class="btn btn-sm btn-primary" style="font-size:.7rem;padding:4px 10px;margin-top:.25rem;">ประเมิน</a>
                         @endif

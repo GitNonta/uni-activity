@@ -125,11 +125,17 @@
                 <div class="card-body" style="padding:1.5rem;">
                     @if(session('new_token'))
                         <div style="background:#ecfdf5; border:1px solid #a7f3d0; border-radius:8px; padding:1rem; margin-bottom:1.25rem;">
-                            <div style="font-weight:700; color:#065f46; font-size:0.9rem; margin-bottom:0.35rem;">🔑 Token ใหม่ถูกสร้างเรียบร้อยแล้ว:</div>
+                            <div style="font-weight:700; color:#065f46; font-size:0.9rem; margin-bottom:0.35rem; display:flex; align-items:center; gap:6px;">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                                <span>Token ใหม่ถูกสร้างเรียบร้อยแล้ว:</span>
+                            </div>
                             <div style="font-family:monospace; background:#ffffff; padding:0.6rem 0.8rem; border-radius:6px; border:1px solid #6ee7b7; color:#047857; font-size:0.85rem; word-break:break-all;">
                                 {{ session('new_token') }}
                             </div>
-                            <p style="font-size:0.75rem; color:#047857; margin-top:0.35rem; font-weight:500;">⚠️ กรุณาคัดลอก Token นี้เก็บไว้ทันที เพราะระบบจะแสดงเพียงครั้งเดียวเพื่อความปลอดภัย</p>
+                            <p style="font-size:0.75rem; color:#047857; margin-top:0.35rem; font-weight:500; display:flex; align-items:center; gap:4px;">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                <span>กรุณาคัดลอก Token นี้เก็บไว้ทันที เนื่องจากระบบจะแสดงเพียงครั้งเดียวเพื่อความปลอดภัย</span>
+                            </p>
                         </div>
                     @endif
 

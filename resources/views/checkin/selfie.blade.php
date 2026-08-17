@@ -240,8 +240,11 @@
 
     @if(!$profilePhotoUrl)
     <div style="position:absolute; top:20%; left:5%; right:5%; background:rgba(254,243,199,0.95); color:#92400e; padding:15px; border-radius:15px; border:1px solid #fde68a; z-index: 50; text-align: center;">
-        <strong style="display:block;margin-bottom:5px;">⚠️ ไม่มีรูปโปรไฟล์</strong>
-        <span style="font-size:0.9rem;">ระบบจะบันทึก Selfie ไว้แต่ไม่สามารถเปรียบเทียบใบหน้าได้ กรุณาอัปโหลดรูปโปรไฟล์ภายหลัง</span>
+        <div style="display:inline-flex;align-items:center;gap:6px;font-weight:bold;margin-bottom:5px;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            ยังไม่มีภาพถ่ายโปรไฟล์ในระบบ
+        </div>
+        <span style="font-size:0.9rem;display:block;">ระบบจะบันทึก Selfie ไว้แต่ไม่สามารถเปรียบเทียบใบหน้าได้ กรุณาอัปโหลดรูปโปรไฟล์ภายหลัง</span>
     </div>
     @endif
 
@@ -561,7 +564,7 @@
                 const instructionEl = document.getElementById('scanInstructions');
                 setTimeout(() => {
                     if (instructionEl && scanAttempts <= 2) {
-                        instructionEl.innerHTML = '💡 จอใหญ่: นั่งให้ห่างจากกล้องประมาณ 60-80 ซม. เพื่อผลลัพธ์ที่ดีที่สุด';
+                        instructionEl.innerHTML = 'คำแนะนำ: กรุณานั่งหรือยืนให้ห่างจากกล้องประมาณ 60-80 ซม. เพื่อผลการตรวจสอบที่แม่นยำ';
                         setTimeout(() => {
                             if (instructionEl && !stopScanning) {
                                 instructionEl.textContent = 'กำลังสแกนใบหน้าแบบเรียลไทม์... กรุณามองกล้อง';
@@ -574,7 +577,7 @@
                 const instructionEl = document.getElementById('scanInstructions');
                 setTimeout(() => {
                     if (instructionEl && scanAttempts <= 2) {
-                        instructionEl.innerHTML = '📱 มุมมองใหม่: แสดงภาพกว้างขึ้น ไม่โดนตัด ถือมือถือให้มั่นคง';
+                        instructionEl.innerHTML = 'คำแนะนำ: กรุณาถืออุปกรณ์ให้มั่นคงและมองตรงมายังกล้อง';
                         setTimeout(() => {
                             if (instructionEl && !stopScanning) {
                                 instructionEl.textContent = 'กำลังสแกนใบหน้าแบบเรียลไทม์... กรุณามองกล้อง';
@@ -979,7 +982,7 @@
 
                 // Show hint
                 if (infoEl && !stopScanning) {
-                    infoEl.textContent = '🔆 แสงน้อยเกินไป — กำลังเพิ่มความสว่าง...';
+                    infoEl.textContent = 'สภาวะแสงน้อยเกินไป — กำลังปรับความสว่างกล้องอัตโนมัติ...';
                 }
             } else {
                 if (video) video.style.filter = '';   // reset video filter

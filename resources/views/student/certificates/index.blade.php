@@ -25,14 +25,16 @@
     </div>
 
     @if(session('success'))
-        <div style="background:#dcfce7; border:1px solid #86efac; color:#15803d; padding:0.875rem 1.25rem; border-radius:10px; margin-bottom:1.5rem;">
-            ✓ {{ session('success') }}
+        <div style="background:#dcfce7; border:1px solid #86efac; color:#15803d; padding:0.875rem 1.25rem; border-radius:10px; margin-bottom:1.5rem; display:flex; align-items:center; gap:8px;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <span>{{ session('success') }}</span>
         </div>
     @endif
 
     @if(session('error'))
-        <div style="background:#fee2e2; border:1px solid #fca5a5; color:#b91c1c; padding:0.875rem 1.25rem; border-radius:10px; margin-bottom:1.5rem;">
-            ✕ {{ session('error') }}
+        <div style="background:#fee2e2; border:1px solid #fca5a5; color:#b91c1c; padding:0.875rem 1.25rem; border-radius:10px; margin-bottom:1.5rem; display:flex; align-items:center; gap:8px;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            <span>{{ session('error') }}</span>
         </div>
     @endif
 

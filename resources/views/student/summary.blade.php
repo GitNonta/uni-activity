@@ -35,7 +35,10 @@
             </div>
             <div class="flex justify-between items-center">
                 @if($p >= 100)
-                    <p class="text-xs font-semi" style="color:#16a34a;">✓ ผ่านเกณฑ์ขั้นต่ำ</p>
+                    <p class="text-xs font-semi" style="color:#16a34a;display:inline-flex;align-items:center;gap:4px;">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        ผ่านเกณฑ์ขั้นต่ำ
+                    </p>
                 @else
                     <p class="text-xs text-muted">ต้องการอีก <span style="font-weight:600; color:#ef4444;">{{ number_format($cat['required'] - $cat['hours'], 1) }}</span> ชม.</p>
                 @endif

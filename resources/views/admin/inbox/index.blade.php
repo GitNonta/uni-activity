@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.student-status-text').forEach(function(el) {
                 var match = el.className.match(/student-status-text-(\d+)/);
                 if (match && window.onlineStudentIds.has(String(match[1]))) {
-                    el.innerHTML = '<span style="color:#10b981;font-weight:600;">🟢 กำลังใช้งาน</span>';
+                    el.innerHTML = '<span style="color:#10b981;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#10b981;display:inline-block;"></span> ใช้งานอยู่</span>';
                 } else {
                     el.innerHTML = '';
                 }

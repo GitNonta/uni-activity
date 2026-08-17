@@ -76,7 +76,10 @@
     <div class="detail-grid">
         {{-- Event Info --}}
         <div class="detail-card">
-            <h3>🔍 ข้อมูลเหตุการณ์</h3>
+            <h3 style="display:flex;align-items:center;gap:6px;">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                ข้อมูลเหตุการณ์
+            </h3>
             <div class="detail-row">
                 <span class="detail-label">ประเภท</span>
                 <span class="detail-value">{{ $securityLog->event_type_label }}</span>
@@ -97,7 +100,10 @@
 
         {{-- User Info --}}
         <div class="detail-card">
-            <h3>👤 นักศึกษาที่เกี่ยวข้อง</h3>
+            <h3 style="display:flex;align-items:center;gap:6px;">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                นักศึกษาที่เกี่ยวข้อง
+            </h3>
             @if($securityLog->user)
             <div class="detail-row">
                 <span class="detail-label">ชื่อ</span>
@@ -113,7 +119,7 @@
             </div>
             <div style="margin-top:12px;">
                 <a href="{{ route('admin.students.show', $securityLog->user->id) }}" style="color:#f97316; font-size:.875rem; text-decoration:none; font-weight:600;">
-                    → ดูโปรไฟล์นักศึกษา
+                    ดูโปรไฟล์นักศึกษา →
                 </a>
             </div>
             @else
@@ -125,7 +131,10 @@
     {{-- Related Users --}}
     @if($relatedUsers->isNotEmpty())
     <div class="related-card">
-        <h3>🔗 Accounts อื่นที่เกี่ยวข้อง (จาก Device/IP เดียวกัน)</h3>
+        <h3 style="display:flex;align-items:center;gap:6px;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+            บัญชีอื่นที่เกี่ยวข้อง (จากอุปกรณ์หรือ IP เดียวกัน)
+        </h3>
         @foreach($relatedUsers as $ru)
         <div class="related-user">
             <div class="related-user-avatar">{{ mb_substr($ru->full_name, 0, 1) }}</div>
@@ -142,14 +151,20 @@
     {{-- Details JSON --}}
     @if($securityLog->details)
     <div class="detail-card" style="margin-bottom:20px;">
-        <h3>📋 ข้อมูลเพิ่มเติม (Details)</h3>
+        <h3 style="display:flex;align-items:center;gap:6px;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            ข้อมูลเพิ่มเติม
+        </h3>
         <div class="json-wrap">{{ json_encode($securityLog->details, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</div>
     </div>
     @endif
 
     {{-- Review Section --}}
     <div class="review-section">
-        <h3>✅ สถานะการตรวจสอบ</h3>
+        <h3 style="display:flex;align-items:center;gap:6px;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            สถานะการตรวจสอบ
+        </h3>
         @if($securityLog->is_reviewed)
             <div class="reviewed-indicator">
                 <svg style="width:20px" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -158,8 +173,9 @@
             </div>
         @else
             <p style="color:#6b7280; font-size:.875rem; margin:0 0 14px;">เหตุการณ์นี้ยังไม่ได้รับการตรวจสอบ</p>
-            <button class="btn-mark-reviewed" onclick="markReviewed({{ $securityLog->id }})">
-                ✅ ทำเครื่องหมายว่าตรวจสอบแล้ว
+            <button class="btn-mark-reviewed" onclick="markReviewed({{ $securityLog->id }})" style="display:inline-flex;align-items:center;gap:6px;">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                ทำเครื่องหมายว่าตรวจสอบแล้ว
             </button>
         @endif
     </div>

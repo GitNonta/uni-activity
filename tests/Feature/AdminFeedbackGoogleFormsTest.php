@@ -52,7 +52,7 @@ class AdminFeedbackGoogleFormsTest extends TestCase
             ->get(route('admin.feedbacks.index'));
 
         $response->assertStatus(200);
-        $response->assertSee('การประเมินกิจกรรม');
+        $response->assertSee('รายงานการประเมินความพึงพอใจกิจกรรม');
         $response->assertSee('กิจกรรมยอดเยี่ยมมาก');
     }
 

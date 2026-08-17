@@ -53,7 +53,7 @@
             </div>
             <p class="font-semi text-sm" style="margin-bottom:.35rem;color:#1e293b;line-height:1.3;">{{ $todo['activity']->title }}</p>
             <p class="text-xs text-muted" style="margin-bottom:.6rem;">
-                📅 {{ $todo['activity']->activity_date->format('d/m/Y') }}
+                <svg style="width:14px;height:14px;display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> {{ $todo['activity']->activity_date->format('d/m/Y') }}
                 · <svg style="width:14px;height:14px;display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> {{ $todo['activity']->location }}
             </p>
             <a href="{{ $todo['action_url'] }}" class="btn btn-sm" style="background:{{ $todo['color'] }};color:#fff;width:100%;justify-content:center;font-size:.8rem;padding:.4rem .75rem;border-radius:8px;">
