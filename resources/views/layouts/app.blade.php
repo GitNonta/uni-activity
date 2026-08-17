@@ -499,6 +499,25 @@
                 });
         }
 
+        function formatLastSeen(lastSeenAt) {
+            if (!lastSeenAt) return 'ออฟไลน์';
+            var date = new Date(lastSeenAt);
+            if (isNaN(date.getTime())) return 'ออฟไลน์';
+            var now = new Date();
+            var diffSec = Math.max(0, Math.floor((now - date) / 1000));
+            var diffMin = Math.floor(diffSec / 60);
+            var diffHours = Math.floor(diffMin / 60);
+            if (diffSec < 60) {
+                return 'ออนไลน์เมื่อสักครู่';
+            } else if (diffMin < 60) {
+                return 'ออนไลน์เมื่อ ' + diffMin + ' นาทีที่แล้ว';
+            } else if (diffHours < 24) {
+                return 'ออนไลน์เมื่อ ' + diffHours + ' ชม. ที่แล้ว';
+            } else {
+                return 'ออนไลน์เมื่อ ' + date.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' }) + ' ' + date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            }
+        }
+
         function renderThreads() {
             var el = document.getElementById('cfListContent');
             
@@ -508,6 +527,10 @@
             
             var isSupportUnread = supportThread && (supportThread.unread || 0) > 0;
             var supportPreview = supportThread && supportThread.last_message ? (supportThread.last_message.length > 32 ? supportThread.last_message.slice(0,32)+'…' : supportThread.last_message) : 'สอบถามปัญหาการใช้งาน';
+            var supportLastSeen = (supportThread && supportThread.staff_last_seen) ? supportThread.staff_last_seen : (threads.length > 0 && threads[0].staff_last_seen ? threads[0].staff_last_seen : null);
+            var supportStatusHtml = window.isStaffOnline 
+                ? '<span style="color:#10b981;font-weight:600;">🟢 กำลังใช้งาน</span>' 
+                : '<span style="color:#94a3b8;">' + formatLastSeen(supportLastSeen) + '</span>';
             
             var supportChatHtml = '<div onclick="showChatView(0, \'ติดต่อสอบถามเจ้าหน้าที่\')" style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;cursor:pointer;" class="chat-list-item ' + (isSupportUnread ? 'unread' : '') + '">'
                 + '<div style="position:relative;flex-shrink:0;">'
@@ -517,7 +540,10 @@
                 + '<span class="cf-staff-online-dot" style="display:' + (window.isStaffOnline ? 'block' : 'none') + ';position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="กำลังใช้งาน"></span>'
                 + '</div>'
                 + '<div style="flex:1;min-width:0;">'
+                + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;">'
                 + '<div class="chat-title" style="font-size:.82rem;font-weight:' + (isSupportUnread?'700':'500') + ';color:#1e293b;">ติดต่อสอบถามเจ้าหน้าที่</div>'
+                + '<div class="cf-thread-status" data-last-seen="' + (supportLastSeen || '') + '" style="font-size:.65rem;flex-shrink:0;">' + supportStatusHtml + '</div>'
+                + '</div>'
                 + '<div class="chat-preview" style="font-size:.7rem;color:' + (isSupportUnread?'#1e293b':'#64748b') + ';font-weight:' + (isSupportUnread?'700':'400') + ';">' + supportPreview + '</div>'
                 + '</div>'
                 + (isSupportUnread ? '<div style="min-width:18px;height:18px;border-radius:9px;background:#ef4444;color:#fff;font-size:.6rem;font-weight:700;line-height:18px;text-align:center;padding:0 4px;">' + supportThread.unread + '</div>' : '')
@@ -531,6 +557,10 @@
                 var isUnread = (t.unread || 0) > 0;
                 var preview = t.last_message ? (t.last_message.length > 32 ? t.last_message.slice(0,32)+'…' : t.last_message) : '<svg style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> ไฟล์แนบ';
                 var safeTitle = (t.job_title || 'งานกิจกรรม').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                var threadLastSeen = t.staff_last_seen || supportLastSeen || null;
+                var threadStatusHtml = window.isStaffOnline 
+                    ? '<span style="color:#10b981;font-weight:600;">🟢 กำลังใช้งาน</span>' 
+                    : '<span style="color:#94a3b8;">' + formatLastSeen(threadLastSeen) + '</span>';
                 
                 var avatarHtml = '';
                 if (t.avatar) {
@@ -546,7 +576,10 @@
                     + '<span class="cf-staff-online-dot" style="display:' + (window.isStaffOnline ? 'block' : 'none') + ';position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="กำลังใช้งาน"></span>'
                     + '</div>'
                     + '<div style="flex:1;min-width:0;">'
-                    + '<div class="chat-title" style="font-size:.82rem;font-weight:' + (isUnread?'700':'500') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#1e293b;">' + safeTitle + '</div>'
+                    + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;">'
+                    + '<div class="chat-title" style="font-size:.82rem;font-weight:' + (isUnread?'700':'500') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#1e293b;max-width:150px;">' + safeTitle + '</div>'
+                    + '<div class="cf-thread-status" data-last-seen="' + (threadLastSeen || '') + '" style="font-size:.65rem;flex-shrink:0;">' + threadStatusHtml + '</div>'
+                    + '</div>'
                     + '<div class="chat-preview" style="font-size:.7rem;color:' + (isUnread?'#1e293b':'#64748b') + ';font-weight:' + (isUnread?'700':'400') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + preview + '</div>'
                     + '</div>'
                     + (isUnread ? '<div style="min-width:18px;height:18px;border-radius:9px;background:#ef4444;color:#fff;font-size:.6rem;font-weight:700;line-height:18px;text-align:center;padding:0 4px;">' + t.unread + '</div>' : '')
@@ -1101,6 +1134,12 @@
                 })
                 .leaving(function(u) {
                     if ((u.role === 'admin' || u.role === 'staff' || u.is_staff) && String(u.id) !== String(USER_ID)) {
+                        var el = document.getElementById('cfAdminOnlineStatus');
+                        var nowIso = new Date().toISOString();
+                        if (el) el.setAttribute('data-last-seen', nowIso);
+                        document.querySelectorAll('.cf-thread-status').forEach(function(st) {
+                            st.setAttribute('data-last-seen', nowIso);
+                        });
                         updateFloatingOnlineStatus(false);
                     }
                 });
@@ -1109,9 +1148,25 @@
             function updateFloatingOnlineStatus(isOnline) {
                 window.isStaffOnline = isOnline;
                 var el = document.getElementById('cfAdminOnlineStatus');
-                if (el) el.style.display = isOnline ? 'inline-flex' : 'none';
+                if (el) {
+                    el.style.display = 'inline-flex';
+                    if (isOnline) {
+                        el.innerHTML = '<span style="width:7px;height:7px;border-radius:50%;background:#10b981;box-shadow:0 0 6px #10b981;display:inline-block;margin-right:4px;"></span>กำลังใช้งาน';
+                    } else {
+                        var lastSeen = el.getAttribute('data-last-seen');
+                        el.innerHTML = '<span style="width:6px;height:6px;border-radius:50%;background:#cbd5e1;display:inline-block;margin-right:4px;"></span>' + formatLastSeen(lastSeen);
+                    }
+                }
                 document.querySelectorAll('.cf-avatar-online-dot, .cf-staff-online-dot').forEach(function(dot) {
                     dot.style.display = isOnline ? 'block' : 'none';
+                });
+                document.querySelectorAll('.cf-thread-status').forEach(function(st) {
+                    if (isOnline) {
+                        st.innerHTML = '<span style="color:#10b981;font-weight:600;">🟢 กำลังใช้งาน</span>';
+                    } else {
+                        var lastSeen = st.getAttribute('data-last-seen');
+                        st.innerHTML = '<span style="color:#94a3b8;">' + formatLastSeen(lastSeen) + '</span>';
+                    }
                 });
                 var btn = document.getElementById('chatFloatBtn');
                 if (btn) {
@@ -1122,6 +1177,20 @@
                     }
                 }
             }
+
+            setInterval(function() {
+                if (!window.isStaffOnline) {
+                    document.querySelectorAll('.cf-thread-status').forEach(function(st) {
+                        var lastSeen = st.getAttribute('data-last-seen');
+                        st.innerHTML = '<span style="color:#94a3b8;">' + formatLastSeen(lastSeen) + '</span>';
+                    });
+                    var el = document.getElementById('cfAdminOnlineStatus');
+                    if (el) {
+                        var lastSeen = el.getAttribute('data-last-seen');
+                        el.innerHTML = '<span style="width:6px;height:6px;border-radius:50%;background:#cbd5e1;display:inline-block;margin-right:4px;"></span>' + formatLastSeen(lastSeen);
+                    }
+                }
+            }, 15000);
 
             window.addEventListener('beforeunload', function() {
                 if (window.Echo) {

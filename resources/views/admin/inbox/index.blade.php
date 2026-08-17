@@ -54,12 +54,29 @@
 
         {{-- Info --}}
         <div style="flex:1;min-width:0;">
-            <div style="display:flex;align-items:baseline;gap:.5rem;margin-bottom:.2rem;">
-                <span class="{{ $unread > 0 ? 'inbox-unread-text' : '' }}" style="font-weight:{{ $unread > 0 ? '700' : '600' }};font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;">
-                    {{ $thread['student_name'] }}
-                </span>
-                <span class="inbox-job-title" style="font-size:.8rem;color:#f97316;font-weight:500;flex-shrink:0;">
-                    [{{ $thread['job_title'] }}]
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:.5rem;margin-bottom:.2rem;">
+                <div style="display:flex;align-items:baseline;gap:.5rem;min-width:0;">
+                    <span class="{{ $unread > 0 ? 'inbox-unread-text' : '' }}" style="font-weight:{{ $unread > 0 ? '700' : '600' }};font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;">
+                        {{ $thread['student_name'] }}
+                    </span>
+                    <span class="inbox-job-title" style="font-size:.8rem;color:#f97316;font-weight:500;flex-shrink:0;">
+                        [{{ $thread['job_title'] }}]
+                    </span>
+                </div>
+                <span class="student-status-text student-status-text-{{ $thread['student_id'] }}" data-last-seen="{{ $thread['student_last_seen'] ?? '' }}" style="font-size:0.72rem;color:#94a3b8;flex-shrink:0;">
+                    @php
+                        $stLastSeen = !empty($thread['student_last_seen']) ? \Carbon\Carbon::parse($thread['student_last_seen']) : null;
+                        $stDiffMin = $stLastSeen ? max(1, $stLastSeen->diffInMinutes(now())) : null;
+                    @endphp
+                    @if($stLastSeen)
+                        @if($stDiffMin < 60)
+                            ออนไลน์เมื่อ {{ $stDiffMin }} นาทีที่แล้ว
+                        @elseif($stLastSeen->diffInHours(now()) < 24)
+                            ออนไลน์เมื่อ {{ $stLastSeen->diffInHours(now()) }} ชม. ที่แล้ว
+                        @else
+                            ออนไลน์เมื่อ {{ $stLastSeen->format('d/m H:i') }}
+                        @endif
+                    @endif
                 </span>
             </div>
             <p class="{{ $unread > 0 ? 'inbox-unread-text' : 'inbox-read-text' }}" style="margin:0;font-size:.82rem;color:{{ $unread > 0 ? '#1e293b' : '#64748b' }};font-weight:{{ $unread > 0 ? '700' : '400' }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
@@ -123,6 +140,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.refreshInboxList();
             });
 
+        function formatLastSeen(lastSeenAt) {
+            if (!lastSeenAt) return '';
+            var date = new Date(lastSeenAt);
+            if (isNaN(date.getTime())) return '';
+            var now = new Date();
+            var diffSec = Math.max(0, Math.floor((now - date) / 1000));
+            var diffMin = Math.floor(diffSec / 60);
+            var diffHours = Math.floor(diffMin / 60);
+            if (diffSec < 60) {
+                return 'ออนไลน์เมื่อสักครู่';
+            } else if (diffMin < 60) {
+                return 'ออนไลน์เมื่อ ' + diffMin + ' นาทีที่แล้ว';
+            } else if (diffHours < 24) {
+                return 'ออนไลน์เมื่อ ' + diffHours + ' ชม. ที่แล้ว';
+            } else {
+                return 'ออนไลน์เมื่อ ' + date.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' }) + ' ' + date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            }
+        }
+
         window.onlineStudentIds = new Set();
         window.updateStudentOnlineDots = function() {
             document.querySelectorAll('.student-online-dot').forEach(function(el) {
@@ -131,6 +167,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     el.style.display = 'block';
                 } else {
                     el.style.display = 'none';
+                }
+            });
+            document.querySelectorAll('.student-status-text').forEach(function(el) {
+                var match = el.className.match(/student-status-text-(\d+)/);
+                if (match && window.onlineStudentIds.has(String(match[1]))) {
+                    el.innerHTML = '<span style="color:#10b981;font-weight:600;">🟢 กำลังใช้งาน</span>';
+                } else {
+                    var lastSeen = el.getAttribute('data-last-seen');
+                    el.innerHTML = '<span style="color:#94a3b8;">' + formatLastSeen(lastSeen) + '</span>';
                 }
             });
         };
@@ -154,8 +199,15 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .leaving(function(user) {
                 window.onlineStudentIds.delete(String(user.id));
+                document.querySelectorAll('.student-status-text-' + user.id).forEach(function(el) {
+                    el.setAttribute('data-last-seen', new Date().toISOString());
+                });
                 window.updateStudentOnlineDots();
             });
+
+        setInterval(function() {
+            window.updateStudentOnlineDots();
+        }, 15000);
 
         window.addEventListener('beforeunload', function() {
             if (window.Echo) {

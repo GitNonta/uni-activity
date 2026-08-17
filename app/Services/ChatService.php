@@ -209,10 +209,13 @@ class ChatService
                 }
             }
 
+            $staffUser = $otherUser ?? $job?->creator ?? User::where('role', 'admin')->orderBy('id')->first();
+
             return [
                 'job_id'           => $jobId,
                 'job_title'        => $jobTitle,
                 'avatar'           => $avatarUrl,
+                'staff_last_seen'  => $staffUser?->last_seen_at?->toISOString(),
                 'last_message'     => $lastMsg?->body ?? '',
                 'last_sender_role' => $lastMsg?->user_id === $userId ? 'self' : 'other',
                 'last_time'        => $lastMsg?->created_at?->toISOString(),
