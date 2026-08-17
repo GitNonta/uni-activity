@@ -285,16 +285,18 @@
     background: rgba(255,255,255,0.06); 
 }
 .sb-avatar { 
-    width: 36px; height: 36px; 
-    background: linear-gradient(135deg, #f97316, #f87171); 
-    border-radius: 10px; 
+    width: 38px; height: 38px; 
+    background: linear-gradient(135deg, #ea580c, #f97316); 
+    border-radius: 50%; 
     display: flex; 
     align-items: center; 
     justify-content: center; 
     color: #fff; 
     font-size: 14px; 
     font-weight: 700;
-    box-shadow: 0 4px 12px rgba(249,115,22,0.3);
+    box-shadow: 0 4px 12px rgba(234,88,12,0.3);
+    border: 2px solid rgba(255,255,255,0.15);
+    flex-shrink: 0;
 }
 .sb-user-info { flex: 1; min-width: 0; }
 .sb-user-name { 
@@ -523,7 +525,7 @@
                 <a href="{{ route('admin.profile.edit') }}" class="sb-user" style="padding:0; background:none; flex:1;">
                     @if(auth()->user()->profile_photo)
                         <img src="{{ asset('storage/' . auth()->user()->profile_photo) }}" alt="profile"
-                            style="width: 36px; height: 36px; border-radius: 10px; object-fit: cover;">
+                            style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.15); flex-shrink: 0;">
                     @else
                         <div class="sb-avatar">
                             {{ strtoupper(substr(auth()->user()->full_name ?? 'A', 0, 1)) }}
