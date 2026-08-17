@@ -38,6 +38,7 @@ class AdminGlobalSearchTest extends TestCase
             'type'         => 'part_time',
             'compensation' => '500 บาท/วัน',
             'status'       => 'open',
+            'start_date'   => now()->format('Y-m-d'),
             'created_by'   => $admin->id,
         ]);
 

@@ -306,10 +306,10 @@ class ActivityAdminController extends Controller
     }
 
     /**
-     * คัดลอก/ทำซ้ำกิจกรรม — นำข้อมูลกิจกรรมเดิมมา pre-fill ในฟอร์มสร้างใหม่
-     * ไม่คัดลอก: วันเวลา, QR tokens, registrations, attendances
+     * คัดลอก/ทำซ้ำกิจกรรม — นำข้อมูลกิจกรรมเดิมมาสร้างเป็นรายการใหม่ (สถานะ draft)
+     * ไม่คัดลอก: registrations, attendances, feedback
      */
-    public function duplicate(Activity $activity): RedirectResponse
+    public function duplicate(Activity $activity, QrCodeService $qrService): RedirectResponse
     {
         Gate::authorize('view', $activity);
         Gate::authorize('create', Activity::class);
@@ -320,18 +320,21 @@ class ActivityAdminController extends Controller
             'is_mandatory', 'is_multiday', 'allow_walkin',
             'require_attendance_approval', 'require_selfie_verification',
             'require_face_scan', 'face_scan_method',
+            'activity_date', 'start_time', 'end_time',
+            'register_open_at', 'register_close_at',
+            'checkin_open_at', 'checkin_close_at',
         ]);
 
         $cloneData['title'] = '[สำเนา] ' . ($cloneData['title'] ?? '');
-        // The activity date and scheduling fields are intentionally omitted.  The
-        // activities table requires them, so creating a half-filled record would
-        // either fail or leave an invalid draft in the database.  Flashing the
-        // values into the create form gives the administrator a real draft while
-        // preserving the database invariant.
-        $this->auditAction('clone_activity', 'activities', $activity->id, "คัดลอกกิจกรรม #{$activity->id} \"{$activity->title}\"");
+        $cloneData['status'] = 'draft';
+        $cloneData['created_by'] = Auth::id();
+        $cloneData['qr_token'] = $qrService->generateToken();
+        $cloneData['qr_checkout_token'] = $qrService->generateToken();
 
-        return redirect()->route('admin.activities.create')
-            ->withInput($cloneData)
+        $newActivity = Activity::create($cloneData);
+        $this->auditLog('clone_activity', "คัดลอกกิจกรรม #{$activity->id} \"{$activity->title}\" เป็น #{$newActivity->id}", Activity::class, $newActivity->id);
+
+        return redirect()->route('admin.activities.edit', $newActivity)
             ->with('success', "คัดลอกกิจกรรม \"{$activity->title}\" สำเร็จ! กรุณาตั้งวันเวลาและตรวจสอบข้อมูลก่อนเผยแพร่");
     }
 }
