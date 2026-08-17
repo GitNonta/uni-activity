@@ -850,7 +850,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // 1. Private Room Channel
             window.Echo.private('chat.room.' + roomID)
                 .listen('.MessageSent', (data) => {
-                    if (data.user && data.user.id == USER_ID) return;
+                    if (data.user && String(data.user.id) === String(USER_ID)) return;
                     if (!document.getElementById('cm-' + data.id)) {
                         playChime();
                         renderMessage(data, false);
@@ -884,6 +884,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     typingIndicator.style.display = 'flex';
                     clearTimeout(window.typingTimer);
                     window.typingTimer = setTimeout(() => { typingIndicator.style.display = 'none'; }, 2800);
+                });
+
+            // 1.1 Personal Student Channel (Ironclad fallback)
+            window.Echo.private('chat.student.' + USER_ID)
+                .listen('.MessageSent', (data) => {
+                    if (data.user && String(data.user.id) === String(USER_ID)) return;
+                    if (String(data.room_id) === String(roomID) || (data.room && String(data.room.id) === String(roomID))) {
+                        if (!document.getElementById('cm-' + data.id)) {
+                            playChime();
+                            renderMessage(data, false);
+                            window.axios.post(readUrl);
+                        }
+                    }
                 });
 
             // Whisper typing emit

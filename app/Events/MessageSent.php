@@ -8,11 +8,11 @@ use App\Models\Message;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class MessageSent implements ShouldBroadcast
+class MessageSent implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -22,14 +22,6 @@ class MessageSent implements ShouldBroadcast
     public function __construct(public Message $message)
     {
         $this->message->loadMissing(['room', 'user']);
-    }
-
-    /**
-     * The name of the queue on which to place the broadcasting job.
-     */
-    public function broadcastQueue(): string
-    {
-        return 'high';
     }
 
     /**
