@@ -1,0 +1,54 @@
+
+[INFO] Thanks 'Yogesh Joshi' for advertising on the website: www.softwarecrackguru.com 
+
+[INFO] Bootloader status on: github.com/werasik2aa/UnlockedHuaweiBootloader 
+
+[INFO] Qualcomm Huawei Flash Tool + Diag (c) 
+
+[INFO] This tool can Flash Firmware 
+
+[INFO] Select Files 
+
+[INFO] Its free noo need to pay for that 
+
+[INFO] Author: moongamer 
+
+[INFO] This tool uses Board bootloader! 
+
+[INFO] Connect device via EDL (9008 mode) 
+
+[INFO] Connect device via HUAWEI USB COM 1.0 
+
+[INFO] Thanks 'Yogesh Joshi' for advertising on the website: www.softwarecrackguru.com 
+
+[INFO] Bootloader status on: github.com/werasik2aa/UnlockedHuaweiBootloader 
+
+[INFO] Qualcomm Huawei Flash Tool + Diag (c) 
+
+[INFO] This tool can Flash Firmware 
+
+[INFO] Select Files 
+
+[INFO] Its free noo need to pay for that 
+
+[INFO] Author: moongamer 
+
+[INFO] This tool uses Board bootloader! 
+
+[INFO] Connect device via EDL (9008 mode) 
+
+[INFO] Connect device via HUAWEI USB COM 1.0 
+
+[WARN] Select CPU 
+
+[ERROR] Failed to unloc FRP 
+
+[WARN] Select CPU 
+
+[ERROR] Failed to unloc FRP 
+
+[WARN] Select CPU 
+
+[ERROR] Failed to unloc FRP 
+
+[WARN] Select CPU 

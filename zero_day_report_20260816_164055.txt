@@ -1,0 +1,46 @@
+======================================================================
+ZERO-DAY VULNERABILITY REPORT
+Device: Huawei DUB-LX3
+Android: 8.1.0
+Kernel: 4.9.82
+Chipset: Qualcomm SDM450
+Security Patch: 2020-02-01
+Scan Date: 2026-08-16 16:40:55
+======================================================================
+
+SUMMARY:
+Total Vulnerabilities: 5
+  CRITICAL: 2
+  HIGH: 3
+  MEDIUM: 0
+  Exploitable: 5
+
+======================================================================
+DETAILED VULNERABILITIES
+======================================================================
+
+CVE-2019-2215: Android Binder Use-After-Free
+  Severity: CRITICAL
+  Type: kernel
+  Exploitable: True
+
+CVE-2019-2025: Binder Transaction Buffer Overflow
+  Severity: HIGH
+  Type: kernel
+  Exploitable: True
+
+CVE-2020-0041: Binder Driver UAF
+  Severity: CRITICAL
+  Type: kernel
+  Exploitable: True
+
+CVE-2019-2101: Qualcomm Camera Driver
+  Severity: HIGH
+  Type: kernel
+  Exploitable: True
+
+CVE-2019-10567: Qualcomm WLAN Driver
+  Severity: HIGH
+  Type: kernel
+  Exploitable: True
+

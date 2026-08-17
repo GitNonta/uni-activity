@@ -1,0 +1,44 @@
+[
+  {
+    "path": "d:\\projects\\uni-activity\\zero_day_research\\firmware\\system_bin_app_process32",
+    "original": "/system/bin/app_process32",
+    "description": "App process (Zygote)",
+    "size": 29112
+  },
+  {
+    "path": "d:\\projects\\uni-activity\\zero_day_research\\firmware\\system_bin_app_process64",
+    "original": "/system/bin/app_process64",
+    "description": "App process 64-bit",
+    "size": 23976
+  },
+  {
+    "path": "d:\\projects\\uni-activity\\zero_day_research\\firmware\\system_lib_libbinder.so",
+    "original": "/system/lib/libbinder.so",
+    "description": "Binder library",
+    "size": 442676
+  },
+  {
+    "path": "d:\\projects\\uni-activity\\zero_day_research\\firmware\\system_lib64_libbinder.so",
+    "original": "/system/lib64/libbinder.so",
+    "description": "Binder library 64-bit",
+    "size": 556728
+  },
+  {
+    "path": "d:\\projects\\uni-activity\\zero_day_research\\firmware\\system_lib_libstagefright.so",
+    "original": "/system/lib/libstagefright.so",
+    "description": "Media framework",
+    "size": 1703508
+  },
+  {
+    "path": "d:\\projects\\uni-activity\\zero_day_research\\firmware\\system_lib_libcamera_client.so",
+    "original": "/system/lib/libcamera_client.so",
+    "description": "Camera client",
+    "size": 244920
+  },
+  {
+    "path": "d:\\projects\\uni-activity\\zero_day_research\\firmware\\system_lib_libmediaplayerservice.so",
+    "original": "/system/lib/libmediaplayerservice.so",
+    "description": "Media player service",
+    "size": 704640
+  }
+]

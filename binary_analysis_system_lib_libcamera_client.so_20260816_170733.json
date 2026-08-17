@@ -1,0 +1,19 @@
+{
+  "binary": "system_lib_libcamera_client.so",
+  "path": "d:\\projects\\uni-activity\\zero_day_research\\firmware\\system_lib_libcamera_client.so",
+  "findings": [
+    {
+      "type": "Missing Security Feature",
+      "feature": "Stack Canary",
+      "severity": "MEDIUM",
+      "impact": "Easier to exploit memory corruption"
+    },
+    {
+      "type": "Missing Security Feature",
+      "feature": "FORTIFY",
+      "severity": "MEDIUM",
+      "impact": "Easier to exploit memory corruption"
+    }
+  ],
+  "analysis_date": "2026-08-16T17:07:33.576324"
+}

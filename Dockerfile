@@ -111,7 +111,6 @@ RUN echo "opcache.memory_consumption=256" > /usr/local/etc/php/conf.d/opcache.in
 
 # Copy configuration files
 COPY docker/nginx.conf /etc/nginx/nginx.conf
-COPY docker/php-fpm-pool.conf /usr/local/etc/php-fpm.d/www.conf
 COPY docker/supervisord.conf /etc/supervisord.conf
 
 # Ensure directory structure and set permissions
