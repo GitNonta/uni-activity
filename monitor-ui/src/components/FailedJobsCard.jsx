@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export function FailedJobsCard() {
   const [data, setData] = useState(null);
@@ -17,7 +17,7 @@ export function FailedJobsCard() {
     setTimeout(() => setMessage(null), 4000);
   };
 
-  const fetchFailedJobs = async (targetPage = page, isManual = false) => {
+  const fetchFailedJobs = async (targetPage = page) => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -176,10 +176,18 @@ export function FailedJobsCard() {
           fontWeight: 600,
           display: 'flex',
           alignItems: 'center',
-          gap: '0.5rem',
+          gap: '0.6rem',
           animation: 'fadeIn 0.2s ease'
         }}>
-          <span>{message.type === 'error' ? '⚠️' : '✅'}</span>
+          {message.type === 'error' ? (
+            <svg width="18" height="18" fill="none" stroke="#dc2626" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          ) : (
+            <svg width="18" height="18" fill="none" stroke="#16a34a" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+            </svg>
+          )}
           <span>{message.text}</span>
         </div>
       )}
@@ -225,7 +233,7 @@ export function FailedJobsCard() {
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.35rem',
+                  gap: '0.4rem',
                   background: '#ea580c',
                   color: '#fff',
                   border: 'none',
@@ -237,7 +245,10 @@ export function FailedJobsCard() {
                   boxShadow: '0 2px 6px rgba(234, 88, 12, 0.3)'
                 }}
               >
-                🔄 ลองใหม่ทั้งหมด ({totalFailed})
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span>ลองใหม่ทั้งหมด ({totalFailed})</span>
               </button>
 
               <button
@@ -246,7 +257,7 @@ export function FailedJobsCard() {
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.35rem',
+                  gap: '0.4rem',
                   background: '#fff',
                   color: '#ef4444',
                   border: '1px solid #fca5a5',
@@ -257,7 +268,10 @@ export function FailedJobsCard() {
                   cursor: 'pointer'
                 }}
               >
-                🗑️ ล้างทั้งหมด
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                <span>ล้างทั้งหมด</span>
               </button>
             </>
           )}
@@ -274,7 +288,7 @@ export function FailedJobsCard() {
           </div>
 
           <button
-            onClick={() => fetchFailedJobs(page, true)}
+            onClick={() => fetchFailedJobs(page)}
             disabled={loading}
             style={{
               display: 'inline-flex',
@@ -312,9 +326,13 @@ export function FailedJobsCard() {
         boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: 260 }}>
-          {/* Search Input */}
+          {/* Search Input with SVG Icon */}
           <div style={{ position: 'relative', flex: 1 }}>
-            <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '0.85rem' }}>🔍</span>
+            <div style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', pointerEvents: 'none' }}>
+              <svg width="15" height="15" fill="none" stroke="#94a3b8" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
             <input
               type="text"
               placeholder="ค้นหาตามชื่อ Job, Exception, หรือ UUID..."
@@ -322,7 +340,7 @@ export function FailedJobsCard() {
               onChange={(e) => setSearch(e.target.value)}
               style={{
                 width: '100%',
-                padding: '0.45rem 0.75rem 0.45rem 2rem',
+                padding: '0.45rem 0.75rem 0.45rem 2.1rem',
                 border: '1px solid #cbd5e1',
                 borderRadius: 8,
                 fontSize: '0.85rem',
@@ -429,6 +447,9 @@ export function FailedJobsCard() {
                           <button
                             onClick={() => setSelectedJob(job)}
                             style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.35rem',
                               background: '#f1f5f9',
                               color: '#334155',
                               border: '1px solid #cbd5e1',
@@ -440,13 +461,20 @@ export function FailedJobsCard() {
                             }}
                             title="ดู Stack Trace & Payload"
                           >
-                            👁️ ดูข้อมูล
+                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            <span>ดูข้อมูล</span>
                           </button>
 
                           <button
                             onClick={() => handleRetry(job.id)}
                             disabled={isRetrying}
                             style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.35rem',
                               background: '#ea580c',
                               color: '#fff',
                               border: 'none',
@@ -458,17 +486,23 @@ export function FailedJobsCard() {
                             }}
                             title="ส่งกลับเข้าคิวใหม่"
                           >
-                            {isRetrying ? '...' : '🔄 ลองใหม่'}
+                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ animation: isRetrying ? 'spin 1s linear infinite' : 'none' }}>
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            <span>{isRetrying ? 'กำลังส่ง...' : 'ลองใหม่'}</span>
                           </button>
 
                           <button
                             onClick={() => handleDelete(job.id)}
                             disabled={isDeleting}
                             style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
                               background: '#fee2e2',
                               color: '#b91c1c',
                               border: '1px solid #fecaca',
-                              padding: '0.3rem 0.6rem',
+                              padding: '0.3rem 0.55rem',
                               borderRadius: 6,
                               fontSize: '0.75rem',
                               fontWeight: 600,
@@ -476,7 +510,9 @@ export function FailedJobsCard() {
                             }}
                             title="ลบทิ้ง"
                           >
-                            {isDeleting ? '...' : '🗑️'}
+                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
                           </button>
                         </div>
                       </td>
@@ -488,9 +524,24 @@ export function FailedJobsCard() {
           </div>
         ) : (
           <div style={{ padding: '3.5rem 1.5rem', textAlign: 'center' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🎉</div>
+            <div style={{
+              width: 56,
+              height: 56,
+              borderRadius: '50%',
+              background: '#ecfdf5',
+              border: '1.5px solid #a7f3d0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 1rem auto',
+              color: '#10b981'
+            }}>
+              <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
             <h4 style={{ margin: '0 0 0.35rem 0', fontSize: '1.1rem', fontWeight: 700, color: '#0f172a' }}>
-              ไม่มีรายการงานที่ล้มเหลว
+              ไม่มีรายการงานที่ล้มเหลว (Queue Operational)
             </h4>
             <p style={{ margin: 0, color: '#64748b', fontSize: '0.875rem' }}>
               คิวงานทั้งหมด (InsightFace AI, LINE Notification, Exports) ทำงานผ่านได้อย่างสมบูรณ์
@@ -595,13 +646,18 @@ export function FailedJobsCard() {
                 style={{
                   background: 'none',
                   border: 'none',
-                  fontSize: '1.25rem',
                   color: '#94a3b8',
                   cursor: 'pointer',
-                  padding: '0.25rem'
+                  padding: '0.35rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}
+                title="ปิด"
               >
-                ✕
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
 
@@ -659,6 +715,9 @@ export function FailedJobsCard() {
               <button
                 onClick={() => handleDelete(selectedJob.id)}
                 style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
                   background: '#fee2e2',
                   color: '#b91c1c',
                   border: '1px solid #fecaca',
@@ -669,7 +728,10 @@ export function FailedJobsCard() {
                   cursor: 'pointer'
                 }}
               >
-                🗑️ ลบงานนี้
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                <span>ลบงานนี้</span>
               </button>
 
               <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -690,6 +752,9 @@ export function FailedJobsCard() {
                 <button
                   onClick={() => handleRetry(selectedJob.id)}
                   style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
                     background: '#ea580c',
                     color: '#fff',
                     border: 'none',
@@ -700,7 +765,10 @@ export function FailedJobsCard() {
                     cursor: 'pointer'
                   }}
                 >
-                  🔄 ส่งกลับเข้าคิวลองใหม่
+                  <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <span>ส่งกลับเข้าคิวลองใหม่</span>
                 </button>
               </div>
             </div>

@@ -398,7 +398,9 @@ export function ClusterControlCard({ initialData }) {
             <div style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 600 }}>● HTTPS / WSS</div>
           </div>
 
-          <div style={{ color: '#cbd5e1', fontSize: '1.2rem', flexShrink: 0 }}>➔</div>
+          <svg width="18" height="18" fill="none" stroke="#94a3b8" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
 
           <div style={{ flex: 1, minWidth: 140, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: '0.85rem', textAlign: 'center', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}>
             <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>2. Reverse Proxy</div>
@@ -406,7 +408,9 @@ export function ClusterControlCard({ initialData }) {
             <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Port 80/443 SSL</div>
           </div>
 
-          <div style={{ color: '#cbd5e1', fontSize: '1.2rem', flexShrink: 0 }}>➔</div>
+          <svg width="18" height="18" fill="none" stroke="#94a3b8" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
 
           <div style={{ flex: 1, minWidth: 140, background: '#f5f7ff', border: '1px solid #c7d2fe', borderRadius: 12, padding: '0.85rem', textAlign: 'center', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}>
             <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#4338ca', textTransform: 'uppercase' }}>3. Runtime Engine</div>
@@ -414,7 +418,9 @@ export function ClusterControlCard({ initialData }) {
             <div style={{ fontSize: '0.75rem', color: '#4f46e5', fontWeight: 600 }}>Swoole Workers</div>
           </div>
 
-          <div style={{ color: '#cbd5e1', fontSize: '1.2rem', flexShrink: 0 }}>➔</div>
+          <svg width="18" height="18" fill="none" stroke="#94a3b8" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
 
           <div style={{ flex: 1, minWidth: 140, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 12, padding: '0.85rem', textAlign: 'center', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}>
             <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#15803d', textTransform: 'uppercase' }}>4. Microservices</div>
