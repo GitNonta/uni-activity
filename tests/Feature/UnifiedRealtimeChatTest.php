@@ -131,7 +131,7 @@ class UnifiedRealtimeChatTest extends TestCase
         Event::fake([MessageEdited::class]);
 
         // Create room and message
-        $room = Room::create(['type' => 'direct', 'job_id' => $this->job->id]);
+        $room = Room::create(['type' => 'direct', 'job_id' => $this->job->id, 'created_by' => $this->student->id]);
         $room->users()->attach([$this->student->id, $this->admin->id]);
 
         $message = Message::create([
@@ -159,7 +159,7 @@ class UnifiedRealtimeChatTest extends TestCase
     {
         Event::fake([MessageDeleted::class]);
 
-        $room = Room::create(['type' => 'direct', 'job_id' => $this->job->id]);
+        $room = Room::create(['type' => 'direct', 'job_id' => $this->job->id, 'created_by' => $this->student->id]);
         $room->users()->attach([$this->student->id, $this->admin->id]);
 
         $message = Message::create([
@@ -178,7 +178,7 @@ class UnifiedRealtimeChatTest extends TestCase
 
     public function test_other_student_cannot_edit_or_delete_different_user_message(): void
     {
-        $room = Room::create(['type' => 'direct', 'job_id' => $this->job->id]);
+        $room = Room::create(['type' => 'direct', 'job_id' => $this->job->id, 'created_by' => $this->student->id]);
         $room->users()->attach([$this->student->id, $this->admin->id]);
 
         $message = Message::create([

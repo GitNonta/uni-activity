@@ -384,7 +384,26 @@ class ChatService
         } else {
             $roomQuery->where('job_id', $jobId);
         }
-        $room = $roomQuery->firstOrFail();
+        $room = $roomQuery->first();
+
+        if (!$room) {
+            if ($jobId === 0) {
+                $room = $this->chatRepository->createRoom(
+                    [$studentId, $admin->id],
+                    'direct',
+                    'ติดต่อสอบถามเจ้าหน้าที่',
+                    null
+                );
+            } else {
+                $job = JobListing::findOrFail($jobId);
+                $room = $this->chatRepository->createRoom(
+                    [$studentId, $admin->id],
+                    'direct',
+                    $job->title,
+                    $jobId
+                );
+            }
+        }
 
         $room->loadMissing(['users', 'job']);
         $isOwnJob = $room->job_id && ($room->job->created_by === $admin->id || $admin->isAdmin());
