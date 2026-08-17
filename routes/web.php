@@ -302,6 +302,10 @@ Route::middleware(['auth', 'role:admin,super-admin'])->prefix('admin')->name('ad
     Route::post('api-keys', [\App\Http\Controllers\Admin\ApiKeyController::class, 'store'])->name('api-keys.store');
     Route::delete('api-keys/{apiKey}', [\App\Http\Controllers\Admin\ApiKeyController::class, 'destroy'])->name('api-keys.destroy');
 
+    // ── Distributed Cluster Control & Observability ──
+    Route::get('system/cluster', [\App\Http\Controllers\Admin\ClusterMonitoringController::class, 'index'])->name('system.cluster');
+    Route::get('api/cluster/metrics', [\App\Http\Controllers\Admin\ClusterMonitoringController::class, 'metrics'])->name('api.cluster.metrics');
+
     // ── Diagnostic / IP Debug (เฉพาะ Admin และ Super-Admin ภายใต้สิทธิ์จัดการ) ──
     Route::get('diagnostics/ip', function () {
         return response()->json([
