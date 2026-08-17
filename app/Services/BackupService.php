@@ -274,7 +274,7 @@ class BackupService
     {
         // 1. Fetch users with biometric descriptors
         $users = User::select([
-            'id', 'student_id', 'full_name', 'email', 'role', 'faculty', 'major',
+            'id', 'student_id', 'full_name', 'email', 'role', 'faculty', 'department',
             'face_descriptor', 'face_descriptor_js', 'profile_photo', 'created_at'
         ])->get();
 
@@ -299,7 +299,7 @@ class BackupService
                 'email'              => $user->email,
                 'role'               => $user->role,
                 'faculty'            => $user->faculty,
-                'major'              => $user->major,
+                'department'         => $user->department,
                 'profile_photo'      => $user->profile_photo,
                 'face_descriptor'    => $user->face_descriptor,
                 'face_descriptor_js' => $user->face_descriptor_js,
