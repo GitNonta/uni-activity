@@ -46,11 +46,12 @@ class FaceVerificationService
             return $this->createErrorResponse('User has no registered face profile', $startTime);
         }
 
-        // 2. ตรวจสอบว่ามี Node พร้อมใช้งานหรือไม่
-        $nodes = $this->loadBalancer->getHealthyNodes();
-        if (empty($nodes)) {
-            return $this->createErrorResponse('AI Server cluster unavailable', $startTime, [
-                'error_type' => 'server_unavailable',
+        // 2. ตรวจสอบสถานะความพร้อมของ AI Cluster (Health Check)
+        $health = $this->checkServerHealth();
+        if (!$health['available']) {
+            return $this->createErrorResponse('AI Server unavailable', $startTime, [
+                'health_status' => $health,
+                'error_type'    => 'server_unavailable',
             ]);
         }
 
@@ -97,6 +98,7 @@ class FaceVerificationService
             $livenessPassed = (bool) ($result['liveness_passed'] ?? ($result['liveness']['passed'] ?? true));
 
             return array_merge($result, [
+                'status'           => 'success',
                 'success'          => true,
                 'is_match'         => $isMatch,
                 'score_percentage' => $score,
@@ -125,7 +127,7 @@ class FaceVerificationService
     public function checkServerHealth(): array
     {
         $allHealth = $this->loadBalancer->checkAllNodesHealth();
-        $availableNodes = array_filter($allHealth, fn(array $n) => $n['available'] === true);
+        $availableNodes = array_filter($allHealth, fn(array $n) => ($n['available'] ?? false) === true);
 
         if (!empty($availableNodes)) {
             $first = reset($availableNodes);
@@ -261,6 +263,7 @@ class FaceVerificationService
     private function createErrorResponse(string $message, float $startTime, array $additional = []): array
     {
         return array_merge([
+            'status'           => 'error',
             'success'          => false,
             'is_match'         => false,
             'score_percentage' => 0.0,

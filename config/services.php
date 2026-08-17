@@ -46,7 +46,7 @@ return [
     
     'ai_server' => [
         'url'                       => env('AI_SERVER_URL', 'http://127.0.0.1:8001'),
-        'urls'                      => array_values(array_filter(array_map('trim', explode(',', (string) env('AI_SERVERS', env('AI_SERVER_URL', 'http://127.0.0.1:8001')))))),
+        'urls'                      => env('AI_SERVERS') ? array_values(array_filter(array_map('trim', explode(',', (string) env('AI_SERVERS'))))) : null,
         'key'                       => env('AI_SERVER_KEY', env('AI_SERVICE_API_KEY', 'uni-activity-ai-secret-key-2026')),
         'timeout'                   => (int) env('AI_SERVER_TIMEOUT', 6),
         'retry'                     => (int) env('AI_SERVER_RETRIES', 2),

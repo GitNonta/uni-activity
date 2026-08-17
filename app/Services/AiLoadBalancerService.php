@@ -16,39 +16,45 @@ use Throwable;
  */
 class AiLoadBalancerService
 {
-    /** @var array<int, string> */
-    protected array $nodes;
-    protected string $apiKey;
-    protected int $timeout;
-    protected int $maxRetries;
-    protected int $circuitBreakerThreshold;
-    protected int $circuitBreakerCooldown;
-
-    public function __construct()
-    {
-        $configuredUrls = config('services.ai_server.urls');
-        if (is_array($configuredUrls) && !empty($configuredUrls)) {
-            $this->nodes = array_values(array_filter(array_map('trim', $configuredUrls)));
-        } else {
-            $singleUrl = (string) config('services.ai_server.url', 'http://127.0.0.1:8001');
-            $this->nodes = !empty($singleUrl) ? [$singleUrl] : [];
-        }
-
-        $this->apiKey                  = (string) config('services.ai_server.key', '');
-        $this->timeout                 = (int) config('services.ai_server.timeout', 6);
-        $this->maxRetries              = (int) config('services.ai_server.retry', 2);
-        $this->circuitBreakerThreshold = (int) config('services.ai_server.circuit_breaker_threshold', 3);
-        $this->circuitBreakerCooldown  = (int) config('services.ai_server.circuit_breaker_cooldown', 30);
-    }
-
     /**
-     * ดึงรายการ Node ทั้งหมดที่ตั้งค่าไว้
+     * ดึงรายการ Node ทั้งหมดที่ตั้งค่าไว้ (ไดนามิกตาม config ปัจจุบัน)
      *
      * @return array<int, string>
      */
     public function getNodes(): array
     {
-        return $this->nodes;
+        $configuredUrls = config('services.ai_server.urls');
+        if (is_array($configuredUrls) && !empty($configuredUrls)) {
+            return array_values(array_filter(array_map('trim', $configuredUrls)));
+        }
+
+        $singleUrl = (string) config('services.ai_server.url', '');
+        return !empty($singleUrl) ? [$singleUrl] : ['http://127.0.0.1:8001'];
+    }
+
+    public function getApiKey(): string
+    {
+        return (string) config('services.ai_server.key', '');
+    }
+
+    public function getTimeout(): int
+    {
+        return (int) config('services.ai_server.timeout', 6);
+    }
+
+    public function getRetries(): int
+    {
+        return (int) config('services.ai_server.retry', 2);
+    }
+
+    public function getCircuitBreakerThreshold(): int
+    {
+        return (int) config('services.ai_server.circuit_breaker_threshold', 3);
+    }
+
+    public function getCircuitBreakerCooldown(): int
+    {
+        return (int) config('services.ai_server.circuit_breaker_cooldown', 30);
     }
 
     /**
@@ -58,14 +64,15 @@ class AiLoadBalancerService
      */
     public function getHealthyNodes(): array
     {
-        if (empty($this->nodes)) {
+        $nodes = $this->getNodes();
+        if (empty($nodes)) {
             return [];
         }
 
-        $healthy = array_values(array_filter($this->nodes, fn(string $node) => !$this->isCircuitOpen($node)));
+        $healthy = array_values(array_filter($nodes, fn(string $node) => !$this->isCircuitOpen($node)));
 
         // หากทุก Node ติด Circuit Breaker ให้ fallback คืน Node ทั้งหมดเพื่อลองใหม่อัตโนมัติ (Half-Open)
-        return !empty($healthy) ? $healthy : $this->nodes;
+        return !empty($healthy) ? $healthy : $nodes;
     }
 
     /**
@@ -99,14 +106,16 @@ class AiLoadBalancerService
      */
     public function executeWithFailover(callable $callback, ?int $maxAttempts = null): array
     {
-        $nodes = $this->getHealthyNodes();
-        if (empty($nodes)) {
+        $allNodes = $this->getNodes();
+        $healthyNodes = $this->getHealthyNodes();
+
+        if (empty($allNodes)) {
             throw new RuntimeException('No AI Server nodes configured or available');
         }
 
         $attempts = 0;
         $failovers = 0;
-        $limit = $maxAttempts ?? min(count($this->nodes), max(2, $this->maxRetries));
+        $limit = $maxAttempts ?? min(count($allNodes), max(2, $this->getRetries()));
         $triedNodes = [];
         $lastException = null;
 
@@ -114,12 +123,12 @@ class AiLoadBalancerService
             $attempts++;
 
             // เลือก node ที่ยังไม่เคยลองใน request นี้
-            $available = array_values(array_diff($nodes, $triedNodes));
+            $available = array_values(array_diff($healthyNodes, $triedNodes));
             if (empty($available)) {
-                $available = array_values(array_diff($this->nodes, $triedNodes));
+                $available = array_values(array_diff($allNodes, $triedNodes));
             }
             if (empty($available)) {
-                $available = $this->nodes;
+                $available = $allNodes;
             }
 
             $rrIdx = (int) Cache::increment('ai_lb_rr_index');
@@ -127,7 +136,7 @@ class AiLoadBalancerService
             $triedNodes[] = $nodeUrl;
 
             try {
-                $result = $callback($nodeUrl, $this->apiKey, $this->timeout);
+                $result = $callback($nodeUrl, $this->getApiKey(), $this->getTimeout());
 
                 // หากสำเร็จ รีเซ็ต Circuit Breaker และตัวนับข้อผิดพลาดของ Node นี้
                 $this->recordSuccess($nodeUrl);
@@ -186,9 +195,9 @@ class AiLoadBalancerService
         $failures = (int) Cache::increment($failKey);
         Cache::put($failKey, $failures, 120);
 
-        if ($failures >= $this->circuitBreakerThreshold) {
-            Cache::put($circuitKey, time(), $this->circuitBreakerCooldown);
-            Log::alert("🚨 AI Circuit Breaker TRIPPED for Node: {$nodeUrl} after {$failures} consecutive failures. Cooldown: {$this->circuitBreakerCooldown}s. Reason: {$reason}");
+        if ($failures >= $this->getCircuitBreakerThreshold()) {
+            Cache::put($circuitKey, time(), $this->getCircuitBreakerCooldown());
+            Log::alert("🚨 AI Circuit Breaker TRIPPED for Node: {$nodeUrl} after {$failures} consecutive failures. Cooldown: {$this->getCircuitBreakerCooldown()}s. Reason: {$reason}");
         }
     }
 
@@ -204,8 +213,9 @@ class AiLoadBalancerService
 
         try {
             $httpReq = Http::timeout(3);
-            if (!empty($this->apiKey)) {
-                $httpReq = $httpReq->withHeaders(['X-API-Key' => $this->apiKey]);
+            $key = $this->getApiKey();
+            if (!empty($key)) {
+                $httpReq = $httpReq->withHeaders(['X-API-Key' => $key]);
             }
 
             $response = $httpReq->get(rtrim($nodeUrl, '/') . '/health');
@@ -261,7 +271,7 @@ class AiLoadBalancerService
     {
         return Cache::remember('ai_lb_all_nodes_health', 10, function (): array {
             $results = [];
-            foreach ($this->nodes as $node) {
+            foreach ($this->getNodes() as $node) {
                 $results[] = $this->checkNodeHealth($node);
             }
             return $results;
