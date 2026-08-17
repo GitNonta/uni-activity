@@ -769,13 +769,13 @@ document.addEventListener('DOMContentLoaded', function() {
     transition: all .2s;
 }
 .gform-tab:hover {
-    color: #f4f4f5;
-    background: rgba(255, 255, 255, 0.02);
+    color: #ffffff;
+    background: #27272a;
 }
 .gform-tab.active {
-    color: #ea580c;
+    color: #fb923c;
     border-bottom-color: #ea580c;
-    background: rgba(234, 88, 12, 0.04);
+    background: rgba(234, 88, 12, 0.15);
 }
 
 /* ── Tab Panes ── */

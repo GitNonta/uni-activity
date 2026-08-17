@@ -1,5 +1,7 @@
 /* ── รีเซ็ตและสไตล์พื้นฐาน: box-sizing, ฟอนต์, สีพื้นหลัง ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+::selection { background: #ea580c; color: #ffffff; }
+::-moz-selection { background: #ea580c; color: #ffffff; }
 html { font-size: 16px; -webkit-text-size-adjust: 100%; }
 body { font-family: 'Sarabun', 'Segoe UI', sans-serif; color: #1e293b; background: #f1f5f9; line-height: 1.5; min-height: 100vh; overflow-x: hidden; max-width: 100%; word-wrap: break-word; overflow-wrap: break-word; }
 html { overflow-x: hidden; width: 100%; -webkit-overflow-scrolling: touch; }

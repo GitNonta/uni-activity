@@ -72,8 +72,9 @@
     --adm-section-label: #a1a1aa;
     --adm-link-text: #e4e4e7;
     --adm-link-icon: #a1a1aa;
-    --adm-link-hover-bg: rgba(234, 88, 12, 0.2);
-    --adm-link-hover-text: #fb923c;
+    --adm-link-hover-bg: #27272a;
+    --adm-link-hover-text: #ffffff;
+    --adm-link-hover-icon: #fb923c;
     --adm-link-active-bg: #ea580c;
     --adm-link-active-text: #ffffff;
     --adm-btn-bg: #27272a;
@@ -84,11 +85,15 @@
     --adm-search-bg: #27272a;
     --adm-search-border: #3f3f46;
     --adm-search-text: #a1a1aa;
+    --adm-search-hover-bg: #27272a;
+    --adm-search-hover-border: #ea580c;
     --adm-search-kbd-bg: #18181b;
     --adm-search-kbd-text: #d4d4d8;
     --adm-footer-bg: #141416;
     --adm-footer-border: #27272a;
     --adm-user-bg: #1c1c1f;
+    --adm-user-hover-bg: #27272a;
+    --adm-user-hover-border: #3f3f46;
     --adm-user-name: #f4f4f5;
     --adm-user-role: #a1a1aa;
     --adm-content-bg: #121214;
@@ -103,28 +108,42 @@ html[data-theme="light"] {
     --adm-sidebar-bg: #ffffff;
     --adm-sidebar-border: #e2e8f0;
     --adm-section-label: #64748b;
-    --adm-link-text: #334155;
-    --adm-link-icon: #64748b;
-    --adm-link-hover-bg: #fff7ed;
+    --adm-link-text: #1e293b;
+    --adm-link-icon: #475569;
+    --adm-link-hover-bg: #f1f5f9;
     --adm-link-hover-text: #ea580c;
+    --adm-link-hover-icon: #ea580c;
     --adm-link-active-bg: #ea580c;
     --adm-link-active-text: #ffffff;
     --adm-btn-bg: #f8fafc;
     --adm-btn-border: #cbd5e1;
-    --adm-btn-text: #475569;
+    --adm-btn-text: #334155;
     --adm-btn-hover-bg: #ea580c;
     --adm-btn-hover-text: #ffffff;
     --adm-search-bg: #f8fafc;
     --adm-search-border: #cbd5e1;
-    --adm-search-text: #64748b;
+    --adm-search-text: #475569;
+    --adm-search-hover-bg: #ffffff;
+    --adm-search-hover-border: #ea580c;
     --adm-search-kbd-bg: #e2e8f0;
-    --adm-search-kbd-text: #334155;
+    --adm-search-kbd-text: #1e293b;
     --adm-footer-bg: #f8fafc;
     --adm-footer-border: #e2e8f0;
     --adm-user-bg: #ffffff;
+    --adm-user-hover-bg: #f1f5f9;
+    --adm-user-hover-border: #cbd5e1;
     --adm-user-name: #0f172a;
     --adm-user-role: #64748b;
     --adm-content-bg: #f8fafc;
+}
+
+::selection {
+    background: #ea580c;
+    color: #ffffff;
+}
+::-moz-selection {
+    background: #ea580c;
+    color: #ffffff;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -251,7 +270,8 @@ html[data-theme="light"] {
     justify-content: space-between;
 }
 .sb-search-btn:hover {
-    border-color: #ea580c;
+    background: var(--adm-search-hover-bg);
+    border-color: var(--adm-search-hover-border);
     color: var(--adm-page-title);
 }
 .sb-search-btn kbd {
@@ -344,8 +364,8 @@ html[data-theme="light"] {
     color: var(--adm-link-hover-text); 
 }
 .sb-link:hover svg { 
-    color: var(--adm-link-hover-text);
-    stroke: var(--adm-link-hover-text);
+    color: var(--adm-link-hover-icon);
+    stroke: var(--adm-link-hover-icon);
     transform: translateX(2px); 
 }
 
@@ -393,7 +413,8 @@ html[data-theme="light"] {
     text-decoration: none; 
 }
 .sb-user:hover { 
-    background: var(--adm-link-hover-bg); 
+    background: var(--adm-user-hover-bg); 
+    border-color: var(--adm-user-hover-border);
 }
 .sb-avatar { 
     width: 38px; height: 38px; 
