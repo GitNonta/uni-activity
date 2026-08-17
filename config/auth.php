@@ -120,4 +120,15 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | OTP Bypass Settings (Development Only)
+    |--------------------------------------------------------------------------
+    |
+    | Strict fail-safe: By default false. Only allowed when explicitly enabled
+    | AND running on local environment with APP_DEBUG=true.
+    |
+    */
+    'otp_bypass_enabled' => (bool) env('AUTH_OTP_BYPASS_ENABLED', false),
+
 ];
