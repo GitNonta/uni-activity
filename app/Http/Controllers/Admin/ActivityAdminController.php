@@ -326,7 +326,7 @@ class ActivityAdminController extends Controller
         ]);
 
         $cloneData['title'] = '[สำเนา] ' . ($cloneData['title'] ?? '');
-        $cloneData['status'] = 'draft';
+        $cloneData['status'] = 'upcoming';
         $cloneData['created_by'] = Auth::id();
         $cloneData['qr_token'] = $qrService->generateToken();
         $cloneData['qr_checkout_token'] = $qrService->generateToken();
