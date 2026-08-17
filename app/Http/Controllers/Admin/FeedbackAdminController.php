@@ -76,42 +76,88 @@ class FeedbackAdminController extends Controller
         return view('admin.feedbacks.index', compact('feedbacks', 'activities', 'stats'));
     }
 
-    /** แสดง feedback ของกิจกรรมเฉพาะ */
+    /** แสดง feedback ของกิจกรรมเฉพาะแบบ Google Forms Analytics */
     public function show(Activity $activity): View
     {
         if (auth()->user()->isStaff() && $activity->created_by !== auth()->id()) {
             abort(403, 'คุณไม่มีสิทธิ์เข้าถึงผลประเมินนี้');
         }
 
-        $activity->loadMissing(['feedbacks.user', 'category']);
+        $activity->loadMissing('category');
+        $feedbacks = $activity->feedbacks()->with('user')->orderBy('created_at', 'asc')->get();
+        $totalFeedbacks = $feedbacks->count();
 
-        // สถิติของกิจกรรมนี้
-        $stats = [
-            'total'    => $activity->feedbacks->count(),
-            'average'  => $activity->average_rating,
-            'rating_5' => $activity->feedbacks->where('rating', 5)->count(),
-            'rating_4' => $activity->feedbacks->where('rating', 4)->count(),
-            'rating_3' => $activity->feedbacks->where('rating', 3)->count(),
-            'rating_2' => $activity->feedbacks->where('rating', 2)->count(),
-            'rating_1' => $activity->feedbacks->where('rating', 1)->count(),
-        ];
+        $totalAttended = \App\Models\Attendance::where('activity_id', $activity->id)
+            ->where('status', 'approved')
+            ->count();
 
-        // คะแนนเฉลี่ยแยกตามหัวข้อ
-        $detailedAvg = [
-            'content'      => 0,
-            'speaker'      => 0,
-            'location'     => 0,
-            'organization' => 0,
-        ];
-
-        $feedbacksWithRatings = $activity->feedbacks->filter(fn($f) => !empty($f->ratings));
-        if ($feedbacksWithRatings->count() > 0) {
-            foreach (['content', 'speaker', 'location', 'organization'] as $key) {
-                $values = $feedbacksWithRatings->pluck('ratings')->pluck($key)->filter();
-                $detailedAvg[$key] = $values->count() > 0 ? round((float) $values->avg(), 1) : 0;
+        // Ratings breakdown for overall
+        $ratingsList = $feedbacks->pluck('rating')->filter()->values();
+        $avgRating = $ratingsList->count() > 0 ? round((float) $ratingsList->avg(), 2) : 0.0;
+        
+        // Median calculation
+        $median = 0.0;
+        if ($ratingsList->count() > 0) {
+            $sorted = $ratingsList->sort()->values();
+            $count = $sorted->count();
+            $middle = (int) floor($count / 2);
+            if ($count % 2 === 0) {
+                $median = round(($sorted[$middle - 1] + $sorted[$middle]) / 2, 1);
+            } else {
+                $median = (float) $sorted[$middle];
             }
         }
 
-        return view('admin.feedbacks.show', compact('activity', 'stats', 'detailedAvg'));
+        $stats = [
+            'total'         => $totalFeedbacks,
+            'totalAttended' => $totalAttended,
+            'responseRate'  => $totalAttended > 0 ? round(($totalFeedbacks / $totalAttended) * 100, 1) : ($totalFeedbacks > 0 ? 100 : 0),
+            'average'       => $avgRating,
+            'median'        => $median,
+            'rating_5'      => $feedbacks->where('rating', 5)->count(),
+            'rating_4'      => $feedbacks->where('rating', 4)->count(),
+            'rating_3'      => $feedbacks->where('rating', 3)->count(),
+            'rating_2'      => $feedbacks->where('rating', 2)->count(),
+            'rating_1'      => $feedbacks->where('rating', 1)->count(),
+            'anonymous'     => $feedbacks->where('is_anonymous', true)->count(),
+            'identified'    => $feedbacks->where('is_anonymous', false)->count(),
+        ];
+
+        // Detailed Topics Breakdown (Counts for 5, 4, 3, 2, 1 and average)
+        $topics = [
+            'content'      => 'เนื้อหากิจกรรมและประโยชน์ที่ได้รับ',
+            'speaker'      => 'วิทยากร / ผู้บรรยาย / ผู้ดำเนินกิจกรรม',
+            'location'     => 'สถานที่ / โสตทัศนูปกรณ์ / ระบบดิจิทัล',
+            'organization' => 'การบริหารจัดการและการประสานงาน',
+        ];
+
+        $topicStats = [];
+        foreach ($topics as $key => $label) {
+            $vals = $feedbacks->pluck('ratings')->pluck($key)->filter()->map(fn($v) => (int)$v);
+            $c = $vals->count();
+            $topicStats[$key] = [
+                'label'    => $label,
+                'count'    => $c,
+                'average'  => $c > 0 ? round((float) $vals->avg(), 2) : 0.0,
+                'rating_5' => $vals->filter(fn($v) => $v === 5)->count(),
+                'rating_4' => $vals->filter(fn($v) => $v === 4)->count(),
+                'rating_3' => $vals->filter(fn($v) => $v === 3)->count(),
+                'rating_2' => $vals->filter(fn($v) => $v === 2)->count(),
+                'rating_1' => $vals->filter(fn($v) => $v === 1)->count(),
+            ];
+        }
+
+        $clientFeedbacks = $feedbacks->map(fn($f) => [
+            'id'           => $f->id,
+            'user_name'    => $f->is_anonymous ? 'ไม่ระบุตัวตน (Anonymous)' : ($f->user->full_name ?? 'ผู้เข้าร่วม'),
+            'student_code' => $f->is_anonymous ? '-' : ($f->user->student_code ?? $f->user->email ?? '-'),
+            'is_anonymous' => (bool) $f->is_anonymous,
+            'rating'       => (int) $f->rating,
+            'ratings'      => $f->ratings ?? [],
+            'comment'      => $f->comment ?? '',
+            'time_thai'    => $f->created_at->translatedFormat('d M Y H:i น.'),
+        ])->values()->all();
+
+        return view('admin.feedbacks.show', compact('activity', 'feedbacks', 'clientFeedbacks', 'stats', 'topicStats'));
     }
 }
