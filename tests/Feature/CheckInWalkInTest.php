@@ -52,6 +52,7 @@ class CheckInWalkInTest extends TestCase
             'scope' => 'university',
             'status' => 'open',
             'is_mandatory' => false,
+            'require_face_scan' => false,
             'created_by' => $creator->id,
             'qr_token' => Str::random(10),
         ], $attributes));

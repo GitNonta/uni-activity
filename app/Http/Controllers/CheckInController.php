@@ -1,14 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Activity;
 use App\Models\Attendance;
 use App\Models\User;
 use App\Services\CheckInService;
+use App\Services\FaceVerificationService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 
 /**
  * คอนโทรลเลอร์เช็คอิน / บันทึกกิจกรรม
@@ -16,13 +24,14 @@ use Illuminate\Support\Facades\Storage;
  */
 class CheckInController extends Controller
 {
-    /** รับ service เช็คอินผ่าน dependency injection */
-    public function __construct(private CheckInService $checkInService)
-    {
-    }
+    /** รับ service เช็คอิน และ service ตรวจสอบใบหน้าผ่าน dependency injection */
+    public function __construct(
+        private readonly CheckInService $checkInService,
+        private readonly FaceVerificationService $faceVerificationService
+    ) {}
 
     /** แสดงหน้าเช็คอิน/ออกงานจาก QR Code (ใช้ token จาก URL) */
-    public function show(string $token)
+    public function show(string $token): View|RedirectResponse
     {
         $activity = Activity::where('qr_token', $token)
             ->orWhere('qr_checkout_token', $token)
@@ -41,11 +50,16 @@ class CheckInController extends Controller
             if ((!$user->face_descriptor || !$user->face_descriptor_js) && $user->profile_photo) {
                 $photoPath = storage_path('app/public/' . $user->profile_photo);
                 $aiServerUrl = config('services.ai_server.url');
+                $aiKey = config('services.ai_server.key');
                 if (file_exists($photoPath) && !empty($aiServerUrl)) {
                     try {
-                        \Log::info("Auto-extracting missing face encodings for user {$user->id} on check-in page visit");
+                        Log::info("Auto-extracting missing face encodings for user {$user->id} on check-in page visit");
                         
-                        $response = \Illuminate\Support\Facades\Http::timeout(10)
+                        $httpReq = Http::timeout(10);
+                        if (!empty($aiKey)) {
+                            $httpReq = $httpReq->withHeaders(['X-API-Key' => $aiKey]);
+                        }
+                        $response = $httpReq
                             ->attach('image', file_get_contents($photoPath), basename($photoPath))
                             ->post(rtrim($aiServerUrl, '/') . '/extract');
                         
@@ -54,7 +68,7 @@ class CheckInController extends Controller
                             $updateData = [];
                             $extracted = [];
                             
-                            // Update only missing encodings - รองรับ API ใหม่
+                            // Update only missing encodings
                             if (!$user->face_descriptor && !empty($aiResult['embedding_512d'])) {
                                 $updateData['face_descriptor'] = $aiResult['embedding_512d'];
                                 $extracted[] = '512D';
@@ -64,7 +78,6 @@ class CheckInController extends Controller
                                 $extracted[] = '128D';
                             }
                             
-                            // รองรับ API เก่าที่ยังส่ง 'embedding' มา
                             if (!$user->face_descriptor && empty($updateData['face_descriptor']) && !empty($aiResult['embedding'])) {
                                 $updateData['face_descriptor'] = $aiResult['embedding'];
                                 $extracted[] = '512D (legacy)';
@@ -72,11 +85,11 @@ class CheckInController extends Controller
                             
                             if (!empty($updateData)) {
                                 $user->update($updateData);
-                                \Log::info("Auto-extracted " . implode(' + ', $extracted) . " for user {$user->id}");
+                                Log::info("Auto-extracted " . implode(' + ', $extracted) . " for user {$user->id}");
                             }
                         }
-                    } catch (\Exception $e) {
-                        \Log::warning("Auto-extraction failed for user {$user->id}: " . $e->getMessage());
+                    } catch (\Throwable $e) {
+                        Log::warning("Auto-extraction failed for user {$user->id}: " . $e->getMessage());
                     }
                 }
             }
@@ -93,8 +106,10 @@ class CheckInController extends Controller
         return view('checkin.scan', compact('activity', 'token', 'isCheckoutToken'));
     }
 
-    /** ดำเนินการเช็คอิน/ออกงานผ่าน QR Code → เรียก CheckInService พร้อมพิกัด GPS */
-    public function store(Request $request, string $token)
+    /**
+     * ดำเนินการเช็คอิน/ออกงานผ่าน QR Code พร้อมการตรวจสอบใบหน้าบน Server เท่านั้น (Server-Authoritative)
+     */
+    public function store(Request $request, string $token): View|RedirectResponse
     {
         $activity = Activity::where('qr_token', $token)
             ->orWhere('qr_checkout_token', $token)
@@ -103,77 +118,76 @@ class CheckInController extends Controller
         if ($activity->qr_expires_at && now()->gt($activity->qr_expires_at)) {
             return back()->with('error', 'QR Code หมดอายุแล้ว');
         }
+
+        $user = $request->user();
+        $isCheckoutToken = ($activity->qr_checkout_token === $token);
+        
+        $score = null;
+        $passed = null;
+        $livenessPassed = null;
+        $savedSelfieFilename = null;
+
+        // ── ตรวจสอบ Face Verification บน Server เมื่อกิจกรรมกำหนดให้ต้องสแกนใบหน้า ──
+        if ($activity->require_face_scan) {
+            if (!$request->filled('selfie')) {
+                return back()->with('error', 'กิจกรรมนี้กำหนดให้ต้องสแกนใบหน้า กรุณาถ่ายภาพเซลฟี่เพื่อยืนยันตัวตน');
+            }
+
+            // ส่งรูปเซลฟี่ไปตรวจสอบบน Python AI Server โดยตรง (ห้ามเชื่อถือ Client-side Score)
+            $faceResult = $this->faceVerificationService->verifyFace($user, (string) $request->selfie, [
+                'mode' => 'python',
+            ]);
+
+            $passed         = (bool) ($faceResult['is_match'] ?? false);
+            $score          = (float) ($faceResult['score_percentage'] ?? 0);
+            $livenessPassed = (bool) ($faceResult['liveness_passed'] ?? ($faceResult['liveness']['passed'] ?? true));
+
+            // หากผู้ใช้มี Face Descriptor ลงทะเบียนไว้และ Server ตรวจไม่ผ่าน หรือติด Liveness Anti-Spoofing -> ปฏิเสธทันที
+            if ($user->face_descriptor && (!$passed || !$livenessPassed)) {
+                $reason = !$passed 
+                    ? "ใบหน้าไม่ตรงกับข้อมูลในระบบ (คะแนนความคล้ายคลึง: " . round($score, 1) . "%)" 
+                    : "การตรวจสอบ Liveness ไม่ผ่าน (ตรวจพบรูปถ่าย/ภาพปลอม)";
+
+                Log::warning("Face Verification Rejected for user {$user->id} on activity {$activity->id}: {$reason}");
+
+                return back()->with('error', "การยืนยันใบหน้าไม่ผ่าน: {$reason} กรุณาสแกนใบหน้าจริงใหม่อีกครั้ง");
+            }
+        }
+
+        // ── ดำเนินการบันทึก Check-in ผ่าน CheckInService ──
         $result = $this->checkInService->processCheckIn(
             $token,
-            $request->user(),
+            $user,
             'qr_scan',
             $request->filled('latitude') ? (float) $request->latitude : null,
             $request->filled('longitude') ? (float) $request->longitude : null,
         );
 
         if ($result['success']) {
-            // หากมีการส่งข้อมูล selfie มาด้วย (จากหน้า selfie.blade.php) ให้บันทึกรูปเลย
             if ($request->filled('selfie') && !empty($result['attendance_id'])) {
                 $att = Attendance::find($result['attendance_id']);
                 if ($att) {
-                    $imageData = $request->selfie;
-                    $imageData = str_replace('data:image/jpeg;base64,', '', $imageData);
-                    $imageData = str_replace(' ', '+', $imageData);
-                    $imageDecoded = base64_decode($imageData);
+                    $imageData = (string) $request->selfie;
+                    $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $imageData);
+                    $imageDecoded = base64_decode(str_replace(' ', '+', $imageData));
 
-                    $isCheckout = in_array($result['status'], ['approved', 'pending']) && $result['status'] !== 'checked_in';
+                    $isCheckout = in_array($result['status'], ['approved', 'pending'], true) && $result['status'] !== 'checked_in';
                     
                     if ($isCheckout) {
-                        $filename = 'selfies/checkout_' . $att->id . '_' . time() . '.jpg';
+                        $savedSelfieFilename = 'selfies/checkout_' . $att->id . '_' . time() . '.jpg';
                     } else {
-                        $filename = 'selfies/' . $att->id . '_' . time() . '.jpg';
+                        $savedSelfieFilename = 'selfies/' . $att->id . '_' . time() . '.jpg';
                     }
-                    Storage::disk('public')->put($filename, $imageDecoded);
-
-                    $score = null;
-                    $passed = null;
-                    
-                    if ($request->filled('js_face_match_score')) {
-                        // Trust client-side JS evaluation (Auto-Failover or JS primary)
-                        $score = $request->input('js_face_match_score');
-                        $passed = $request->boolean('js_face_match_passed');
-                    } else {
-                        // Use Python AI Server
-                        $user = auth()->user();
-                        $storedDescriptor = $user->face_descriptor;
-                        
-                        if ($storedDescriptor) {
-                            $aiServerUrl = config('services.ai_server.url');
-                            if (!empty($aiServerUrl)) {
-                                try {
-                                    $response = \Illuminate\Support\Facades\Http::timeout(15)
-                                        ->attach('image', $imageDecoded, 'selfie.jpg')
-                                        ->post(rtrim($aiServerUrl, '/') . '/verify', [
-                                            'known_embedding' => json_encode($storedDescriptor)
-                                        ]);
-                                        
-                                    if ($response->successful()) {
-                                        $aiResult = $response->json();
-                                        $score = $aiResult['score_percentage'] ?? 0;
-                                        $passed = $aiResult['is_match'] ?? false;
-                                    } else {
-                                        \Log::warning('AI Server selfie verification failed: ' . $response->body());
-                                    }
-                                } catch (\Exception $e) {
-                                    \Log::error('AI Server selfie verification error: ' . $e->getMessage());
-                                }
-                            }
-                        }
-                    }
+                    Storage::disk('public')->put($savedSelfieFilename, $imageDecoded);
 
                     if ($isCheckout) {
                         $att->update([
-                            'checkout_selfie_photo_path' => $filename,
+                            'checkout_selfie_photo_path' => $savedSelfieFilename,
                             'checkout_face_match_score'  => $score,
                             'checkout_face_match_passed' => $passed,
                         ]);
 
-                        // ลบรูปเซลฟี่ทั้งเข้าและออกทิ้งเมื่อจบกิจกรรมและ AI ตรวจผ่าน
+                        // ลบรูปเซลฟี่ทั้งเข้าและออกทิ้งเมื่อจบกิจกรรมและ AI ตรวจผ่าน (PDPA / Privacy)
                         if ($passed) {
                             if ($att->selfie_photo_path && Storage::disk('public')->exists($att->selfie_photo_path)) {
                                 Storage::disk('public')->delete($att->selfie_photo_path);
@@ -182,13 +196,13 @@ class CheckInController extends Controller
                                 Storage::disk('public')->delete($att->checkout_selfie_photo_path);
                             }
                             $att->update([
-                                'selfie_photo_path' => null,
+                                'selfie_photo_path'          => null,
                                 'checkout_selfie_photo_path' => null,
                             ]);
                         }
                     } else {
                         $att->update([
-                            'selfie_photo_path' => $filename,
+                            'selfie_photo_path' => $savedSelfieFilename,
                             'face_match_score'  => $score,
                             'face_match_passed' => $passed,
                         ]);
@@ -206,111 +220,42 @@ class CheckInController extends Controller
         return back()->with('error', $result['message']);
     }
 
-    /** ตรวจสอบภาพเรียวไทม์จากหน้าจอเซลฟี่ (Optimized) */
-    public function verifyFrame(Request $request, string $token)
+    /** ตรวจสอบภาพเรียวไทม์จากหน้าจอเซลฟี่ผ่าน FaceVerificationService กลาง */
+    public function verifyFrame(Request $request, string $token): JsonResponse
     {
         $request->validate(['image' => 'required|string']);
         
-        $startTime = microtime(true);
         $user = auth()->user();
-        $storedDescriptor = $user->face_descriptor;
-        
-        if (!$storedDescriptor) {
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
+        }
+
+        if (!$user->face_descriptor) {
             return response()->json([
                 'success' => false, 
                 'message' => 'No profile descriptor',
-                'processing_ms' => round((microtime(true) - $startTime) * 1000)
             ]);
         }
 
-        // Optimize image processing
-        $base64 = $request->input('image');
-        $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $base64);
-        $imageDecoded = base64_decode(str_replace(' ', '+', $imageData));
-
-        // Quick validation
-        if (strlen($imageDecoded) > 2000000) { // 2MB limit
-            return response()->json([
-                'success' => false, 
-                'message' => 'Image too large',
-                'processing_ms' => round((microtime(true) - $startTime) * 1000)
-            ]);
-        }
-
-        $aiServerUrl = config('services.ai_server.url');
-        if (empty($aiServerUrl)) {
-            return response()->json([
-                'success' => false, 
-                'message' => 'AI Server not configured',
-                'processing_ms' => round((microtime(true) - $startTime) * 1000)
-            ]);
-        }
-
-        // Rate limiting per user
+        // Rate limiting per user: 1 request per second
         $cacheKey = 'face_verify_' . $user->id;
         if (Cache::has($cacheKey)) {
             return response()->json([
                 'success' => false, 
                 'message' => 'Too many requests',
-                'processing_ms' => round((microtime(true) - $startTime) * 1000)
             ]);
         }
-        Cache::put($cacheKey, true, 1); // 1 second cooldown
+        Cache::put($cacheKey, true, 1);
 
-        try {
-            $httpReq = \Illuminate\Support\Facades\Http::timeout(8);
-            $aiKey = config('services.ai_server.key');
-            if (!empty($aiKey)) {
-                $httpReq = $httpReq->withHeaders(['X-API-Key' => $aiKey]);
-            }
-            $response = $httpReq
-                ->attach('image', $imageDecoded, 'frame.jpg')
-                ->post(rtrim($aiServerUrl, '/') . '/verify', [
-                    'known_embedding' => json_encode($storedDescriptor),
-                    'check_liveness'  => 'true',
-                ]);
+        $result = $this->faceVerificationService->verifyFace($user, (string) $request->input('image'), [
+            'mode' => 'python',
+        ]);
 
-            $processingTime = round((microtime(true) - $startTime) * 1000);
-
-            if ($response->successful()) {
-                $result = $response->json();
-                
-                // Add performance metrics
-                $result['processing_ms'] = $processingTime;
-                $result['server_ms'] = $result['processing_ms'] ?? 0;
-                $result['network_ms'] = $processingTime - ($result['server_ms'] ?? 0);
-                $result['timestamp'] = time();
-                
-                // Log slow requests
-                if ($processingTime > 3000) {
-                    \Log::warning("Slow face verification: {$processingTime}ms for user {$user->id}");
-                }
-                
-                return response()->json($result);
-            }
-            
-            return response()->json([
-                'success' => false, 
-                'message' => 'AI Server error: ' . $response->status(),
-                'processing_ms' => $processingTime
-            ]);
-            
-        } catch (\Exception $e) {
-            $processingTime = round((microtime(true) - $startTime) * 1000);
-            
-            \Log::error("Face verification error for user {$user->id}: " . $e->getMessage());
-            
-            return response()->json([
-                'success' => false, 
-                'message' => 'Verification timeout or error',
-                'processing_ms' => $processingTime,
-                'error_type' => get_class($e)
-            ]);
-        }
+        return response()->json($result);
     }
 
     /** แสดงหน้าถ่าย selfie เพื่อยืนยันตัวตน */
-    public function selfiePage(string $token, int $attendance)
+    public function selfiePage(string $token, int $attendance): View|RedirectResponse
     {
         $activity = Activity::where('qr_token', $token)
             ->orWhere('qr_checkout_token', $token)
@@ -328,64 +273,34 @@ class CheckInController extends Controller
         return view('checkin.selfie', compact('activity', 'token', 'att', 'profilePhotoUrl'));
     }
 
-    /** บันทึก selfie + คะแนนเปรียบเทียบใบหน้า + liveness */
-    public function storeSelfie(Request $request, string $token, int $attendance)
+    /** บันทึก selfie + คะแนนเปรียบเทียบใบหน้า + liveness ด้วย Server-Side Evaluation */
+    public function storeSelfie(Request $request, string $token, int $attendance): View|RedirectResponse
     {
         $request->validate([
-            'selfie'           => 'required|string',
-            'face_match_score' => 'nullable|numeric|min:0|max:100',
+            'selfie' => 'required|string',
         ]);
 
         $att = Attendance::where('id', $attendance)
             ->where('user_id', auth()->id())
             ->firstOrFail();
 
-        $base64    = $request->input('selfie');
+        $user = auth()->user();
+        $base64 = (string) $request->input('selfie');
         $imageData = base64_decode(preg_replace('/^data:image\/\w+;base64,/', '', $base64));
 
         $filename = 'selfies/' . auth()->id() . '_' . time() . '.jpg';
         Storage::disk('public')->put($filename, $imageData);
 
-        $score            = null;
-        $passed           = null;
-        $livenessScore    = null;
-        $livenessPassed   = null;
-        $detectorPipeline = null;
+        // ตรวจสอบผ่าน FaceVerificationService
+        $faceResult = $this->faceVerificationService->verifyFace($user, $base64, [
+            'mode' => 'python',
+        ]);
 
-        $user             = auth()->user();
-        $storedDescriptor = $user->face_descriptor;
-
-        if ($storedDescriptor) {
-            $aiServerUrl = config('services.ai_server.url');
-            if (!empty($aiServerUrl)) {
-                try {
-                    $httpReq = \Illuminate\Support\Facades\Http::timeout(15);
-                    $aiKey = config('services.ai_server.key');
-                    if (!empty($aiKey)) {
-                        $httpReq = $httpReq->withHeaders(['X-API-Key' => $aiKey]);
-                    }
-                    $response = $httpReq
-                        ->attach('image', $imageData, 'selfie.jpg')
-                        ->post(rtrim($aiServerUrl, '/') . '/verify', [
-                            'known_embedding' => json_encode($storedDescriptor),
-                            'check_liveness'  => 'true',
-                        ]);
-
-                    if ($response->successful()) {
-                        $result           = $response->json();
-                        $score            = $result['score_percentage']   ?? 0;
-                        $passed           = $result['is_match']           ?? false;
-                        $livenessScore    = $result['liveness_score']     ?? null;
-                        $livenessPassed   = $result['liveness_passed']    ?? null;
-                        $detectorPipeline = $result['detector_used']      ?? null;
-                    } else {
-                        \Log::warning('AI Server selfie verification failed: ' . $response->body());
-                    }
-                } catch (\Exception $e) {
-                    \Log::error('AI Server selfie verification error: ' . $e->getMessage());
-                }
-            }
-        }
+        $score            = (float) ($faceResult['score_percentage'] ?? 0);
+        $passed           = (bool) ($faceResult['is_match'] ?? false);
+        $livenessScore    = $faceResult['liveness_score'] ?? ($faceResult['liveness']['score'] ?? null);
+        $livenessPassed   = $faceResult['liveness_passed'] ?? ($faceResult['liveness']['passed'] ?? null);
+        $detectorPipeline = $faceResult['detector_used'] ?? ($faceResult['pipeline'] ?? null);
 
         $att->update([
             'selfie_photo_path' => $filename,
@@ -411,7 +326,7 @@ class CheckInController extends Controller
     }
 
     /** บันทึกกิจกรรมด้วยตัวเอง (ไม่ต้องสแกน QR) → ส่งพิกัด GPS เพื่อตรวจสอบอัตโนมัติ */
-    public function selfCheckIn(Request $request, $activityId)
+    public function selfCheckIn(Request $request, int|string $activityId): RedirectResponse
     {
         Activity::findOrFail($activityId);
 
@@ -419,7 +334,7 @@ class CheckInController extends Controller
     }
 
     /** แสดงหน้า Walk-in Check-in สำหรับ staff/admin หน้างาน */
-    public function walkInPage(string $token)
+    public function walkInPage(string $token): View
     {
         $activity = Activity::where('qr_token', $token)->firstOrFail();
 
@@ -436,7 +351,7 @@ class CheckInController extends Controller
     }
 
     /** ดำเนินการ Walk-in Check-in: staff/admin ค้นหานักศึกษาจากรหัส → บันทึก attendance อัตโนมัติ */
-    public function walkInStore(Request $request, string $token)
+    public function walkInStore(Request $request, string $token): RedirectResponse
     {
         $request->validate([
             'student_id' => 'required|string',
@@ -469,13 +384,13 @@ class CheckInController extends Controller
         }
 
         Attendance::create([
-            'user_id'      => $user->id,
-            'activity_id'  => $activity->id,
-            'method'       => 'walk_in',
-            'status'       => 'approved',
-            'is_verified'  => true,
+            'user_id'       => $user->id,
+            'activity_id'   => $activity->id,
+            'method'        => 'walk_in',
+            'status'        => 'approved',
+            'is_verified'   => true,
             'checked_in_at' => now(),
-            'ip_address'   => $request->ip(),
+            'ip_address'    => $request->ip(),
         ]);
 
         broadcast(new \App\Events\AttendeeCheckedIn($token, $user))->toOthers();
@@ -483,16 +398,16 @@ class CheckInController extends Controller
         return back()
             ->with('success', 'บันทึกการเข้าร่วมของ ' . $user->full_name . ' (' . $user->student_id . ') สำเร็จ')
             ->with('checked_in_student', [
-                'id' => $user->id,
-                'name' => $user->full_name,
-                'student_id' => $user->student_id,
-                'activity_id' => $activity->id,
+                'id'             => $user->id,
+                'name'           => $user->full_name,
+                'student_id'     => $user->student_id,
+                'activity_id'    => $activity->id,
                 'activity_title' => $activity->title
             ]);
     }
 
     /** API: ดึงรายชื่อผู้เข้าร่วมกิจกรรม walk-in แบบ real-time (JSON) */
-    public function walkInAttendees(string $token)
+    public function walkInAttendees(string $token): JsonResponse
     {
         if (!auth()->check() || (!auth()->user()->isStaff() && !auth()->user()->isAdmin())) {
             return response()->json(['error' => 'Unauthorized'], 403);
@@ -518,4 +433,3 @@ class CheckInController extends Controller
         ]);
     }
 }
-

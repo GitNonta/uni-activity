@@ -891,21 +891,7 @@
             
             playSuccessSound();
             
-            // Prepare form data
-            if (result.source.includes('js')) {
-                let jsScoreInput = document.createElement('input');
-                jsScoreInput.type = 'hidden';
-                jsScoreInput.name = 'js_face_match_score';
-                jsScoreInput.value = result.score;
-                document.getElementById('selfieForm').appendChild(jsScoreInput);
-                
-                let jsPassedInput = document.createElement('input');
-                jsPassedInput.type = 'hidden';
-                jsPassedInput.name = 'js_face_match_passed';
-                jsPassedInput.value = '1';
-                document.getElementById('selfieForm').appendChild(jsPassedInput);
-            }
-            
+            // Trigger photo capture for server-side verification
             capturePhoto(true);
         }
     }

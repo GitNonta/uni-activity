@@ -205,6 +205,7 @@ class AiServiceIntegrationTest extends TestCase
     public function test_checkin_realtime_verify_frame_endpoint(): void
     {
         Http::fake([
+            'http://127.0.0.1:8001/health' => Http::response(['status' => 'healthy', 'models' => ['retinaface', 'arcface']], 200),
             'http://127.0.0.1:8001/verify' => Http::response([
                 'status'           => 'success',
                 'is_match'         => true,
