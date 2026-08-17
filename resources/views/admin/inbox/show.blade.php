@@ -186,7 +186,8 @@
             $studentPivot = $room->users->firstWhere('id', $student->id);
             $studentReadAtStr = $studentPivot?->pivot?->last_read_at ?? null;
             $studentReadAt = $studentReadAtStr ? \Carbon\Carbon::parse($studentReadAtStr) : null;
-            $lastMineMsgId = $messages->where('user_id', auth()->id())->last()?->id;
+            $lastMsg = $messages->last();
+            $lastMineMsgId = ($lastMsg && $lastMsg->user_id == auth()->id()) ? $lastMsg->id : null;
         @endphp
         @forelse($messages as $msg)
             @php
@@ -532,9 +533,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const isTemp = String(msg.id).startsWith('tmp-');
         const readStatusText = isTemp ? 'กำลังส่ง...' : formatReadStatus(msg.read_at, msg.is_read);
 
-        if (isMine) {
-            document.querySelectorAll('.admin-msg-read-status').forEach(el => el.remove());
-        }
+        // Always clear previous read receipt so it disappears when other user replies
+        document.querySelectorAll('.admin-msg-read-status').forEach(el => el.remove());
 
         const dataReadAtAttr = msg.read_at ? `data-read-at="${msg.read_at}"` : '';
 

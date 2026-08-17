@@ -696,11 +696,11 @@
                     if (!Array.isArray(msgs)) msgs = Object.values(msgs);
                     
                     var lastMineId = null;
-                    for (var i = msgs.length - 1; i >= 0; i--) {
-                        var m = msgs[i];
-                        if (m.user_id == USER_ID || (m.user && m.user.id == USER_ID)) {
-                            lastMineId = m.id;
-                            break;
+                    if (msgs.length > 0) {
+                        var lastMsg = msgs[msgs.length - 1];
+                        var isLastMine = lastMsg.user_id == USER_ID || (lastMsg.user && lastMsg.user.id == USER_ID);
+                        if (isLastMine) {
+                            lastMineId = lastMsg.id;
                         }
                     }
                     msgs.forEach(function(m) { win.appendChild(buildBubble(m, m.id === lastMineId)); });
@@ -713,9 +713,8 @@
             var isTemp = String(msg.id).startsWith('tmp-');
             if (isLastMine === undefined) isLastMine = mine;
 
-            if (mine && isLastMine) {
-                document.querySelectorAll('.cf-read-status').forEach(function(el){ el.remove(); });
-            }
+            // Always remove previous read status so it disappears when other user replies
+            document.querySelectorAll('.cf-read-status').forEach(function(el){ el.remove(); });
 
             var row = document.createElement('div');
             row.id = 'cf-msg-' + msg.id;

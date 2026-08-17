@@ -400,7 +400,8 @@
             $otherUserObj = $room->users->firstWhere('id', '!=', auth()->id());
             $otherReadAtStr = $otherUserObj?->pivot?->last_read_at ?? null;
             $otherReadAt = $otherReadAtStr ? \Carbon\Carbon::parse($otherReadAtStr) : null;
-            $lastMineMsgId = $messages->where('user_id', auth()->id())->last()?->id;
+            $lastMsg = $messages->last();
+            $lastMineMsgId = ($lastMsg && $lastMsg->user_id == auth()->id()) ? $lastMsg->id : null;
         @endphp
         @forelse($messages as $msg)
             @php
@@ -751,9 +752,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const isTemp = String(msg.id).startsWith('tmp-');
         const readStatusText = isTemp ? 'กำลังส่ง...' : formatReadStatus(msg.read_at, msg.is_read);
 
-        if (isMine) {
-            document.querySelectorAll('.msg-read-status').forEach(el => el.remove());
-        }
+        // Always clear previous read receipt so it disappears when other user replies
+        document.querySelectorAll('.msg-read-status').forEach(el => el.remove());
 
         const dataReadAtAttr = msg.read_at ? `data-read-at="${msg.read_at}"` : '';
 
