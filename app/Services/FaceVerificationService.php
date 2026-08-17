@@ -46,16 +46,7 @@ class FaceVerificationService
             return $this->createErrorResponse('User has no registered face profile', $startTime);
         }
 
-        // 2. ตรวจสอบสถานะความพร้อมของ AI Cluster (Health Check)
-        $health = $this->checkServerHealth();
-        if (!$health['available']) {
-            return $this->createErrorResponse('AI Server unavailable', $startTime, [
-                'health_status' => $health,
-                'error_type'    => 'server_unavailable',
-            ]);
-        }
-
-        // 3. แปลงและตรวจสอบขนาดไฟล์ภาพ (จำกัดไม่เกิน 2MB)
+        // 2. แปลงและตรวจสอบขนาดไฟล์ภาพ (จำกัดไม่เกิน 2MB)
         $imageDecoded = $this->decodeBase64Image($imageData);
         if (!$imageDecoded) {
             return $this->createErrorResponse('Invalid image data or file too large', $startTime);
@@ -113,7 +104,7 @@ class FaceVerificationService
             Log::error("Python Face Verification cluster error for user {$user->id}: " . $e->getMessage());
 
             return $this->createErrorResponse('AI Server cluster connection failed: ' . $e->getMessage(), $startTime, [
-                'error_type' => get_class($e),
+                'error_type' => 'server_unavailable',
                 'exception'  => true,
             ]);
         }

@@ -171,7 +171,7 @@ class AiServiceIntegrationTest extends TestCase
     public function test_face_verification_service_handles_server_down_gracefully(): void
     {
         Http::fake([
-            'http://127.0.0.1:8001/health' => Http::response(null, 500),
+            'http://127.0.0.1:8001/*' => Http::response(null, 500),
         ]);
 
         $user = $this->createStudent();
