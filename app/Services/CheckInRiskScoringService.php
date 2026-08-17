@@ -11,7 +11,7 @@ namespace App\Services;
  */
 class CheckInRiskScoringService
 {
-    public const THRESHOLD_LOW    = 30;
+    public const THRESHOLD_LOW    = 15;
     public const THRESHOLD_MEDIUM = 70;
 
     /**
@@ -91,7 +91,7 @@ class CheckInRiskScoringService
         if ($isSharedDevice) {
             if ($otherAccounts <= 2) {
                 // กรณีอุปกรณ์แชร์กัน 2-3 คน (เช่น เพื่อนแชร์แท็บเล็ต/ฮอตสปอต) -> Risk signal ปานกลาง
-                $breakdown['device_risk'] = 12;
+                $breakdown['device_risk'] = 20;
                 $reasons[] = "ตรวจพบการเข้าสู่ระบบ/เช็คอินหลายบัญชีบนอุปกรณ์หรือ IP เดียวกัน ({$otherAccounts} บัญชี)";
             } else {
                 // กรณีอุปกรณ์มีหลายบัญชีผิดปกติ (4+ บัญชี) -> Risk signal สูง

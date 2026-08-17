@@ -152,6 +152,8 @@ class CheckInRiskScoringTest extends TestCase
             'status'      => 'approved',
         ]);
 
+        $fp = app(\App\Services\DeviceFingerprintService::class)->generate(request());
+
         // Student 1 checks in first from this device
         Attendance::create([
             'user_id'            => $student1->id,
@@ -160,7 +162,7 @@ class CheckInRiskScoringTest extends TestCase
             'method'             => 'qr_scan',
             'status'             => 'pending',
             'is_verified'        => true,
-            'device_fingerprint' => 'shared_tablet_fingerprint_hash',
+            'device_fingerprint' => $fp,
         ]);
 
         // Student 2 checks in from the same device / IP
