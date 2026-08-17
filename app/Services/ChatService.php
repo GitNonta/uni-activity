@@ -499,6 +499,14 @@ class ChatService
         $message->delete();
 
         broadcast(new MessageDeleted((string) $id, (string) $roomId, $senderId));
+
+        try {
+            app(DragonflyPubSubService::class)->publishChatEvent(
+                $roomId,
+                'MessageDeleted',
+                ['id' => (string) $id, 'room_id' => (string) $roomId]
+            );
+        } catch (\Throwable $e) {}
     }
 
     /**
@@ -510,6 +518,14 @@ class ChatService
         $message->save();
 
         broadcast(new MessageEdited($message));
+
+        try {
+            app(DragonflyPubSubService::class)->publishChatEvent(
+                $message->room_id,
+                'MessageEdited',
+                ['id' => $message->id, 'room_id' => $message->room_id, 'message' => $newBody, 'is_edited' => true]
+            );
+        } catch (\Throwable $e) {}
 
         return $this->formatMessage($message);
     }

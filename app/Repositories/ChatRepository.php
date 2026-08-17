@@ -45,8 +45,25 @@ class ChatRepository
                 'attachments' => $attachments,
             ]);
 
-            // Broadcast ไปยังคนอื่นในห้อง
+            // Broadcast ไปยังคนอื่นในห้องผ่าน Reverb WebSocket ทันที
             broadcast(new MessageSent($message->load('user:id,full_name,profile_photo')))->toOthers();
+
+            // Publish เข้าสู่ Dragonfly PubSub Backbone สำหรับ Microservices / Event Stream
+            try {
+                app(\App\Services\DragonflyPubSubService::class)->publishChatEvent(
+                    $room->id,
+                    'MessageSent',
+                    [
+                        'id'          => $message->id,
+                        'room_id'     => $room->id,
+                        'user_id'     => $user->id,
+                        'user_name'   => $user->full_name,
+                        'message'     => $body,
+                        'attachments' => $attachments,
+                        'created_at'  => $message->created_at?->toISOString(),
+                    ]
+                );
+            } catch (\Throwable $e) {}
 
             return $message;
         });
