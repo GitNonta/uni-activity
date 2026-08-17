@@ -12,6 +12,17 @@
     <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=1">
     @vite(['resources/js/app.js'])
     <script>
+        (function() {
+            var saved = localStorage.getItem('app-theme');
+            var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            var theme = saved || (prefersDark ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
         // ป้องกันปัญหา 419 Page Expired จาก BFCache (การกดปุ่ม Back)
         window.addEventListener('pageshow', function(event) {
             if (event.persisted) {
@@ -390,7 +401,7 @@
         </div>
     </div>
 
-    <div class="admin-topbar-right">
+    <div class="admin-topbar-right" style="display:flex; align-items:center; gap:10px;">
         <!-- Global Search Trigger (Ctrl+K) -->
         <button onclick="openGlobalSearch()" class="sb-search-btn" title="ค้นหาด่วน (Ctrl + K)">
             <span style="display:flex; align-items:center; gap:6px;">
@@ -398,6 +409,18 @@
                 <span>ค้นหาข้อมูลระบบ...</span>
             </span>
             <kbd>Ctrl K</kbd>
+        </button>
+
+        <!-- Theme Mode Toggle Button (SVG Sun / Moon) -->
+        <button id="adminThemeToggleBtn" onclick="toggleThemeMode()" class="sb-theme-toggle-btn" title="สลับโหมดมืด / สว่าง (Dark / Light Mode)">
+            <!-- Sun SVG Icon (shown in Dark Mode) -->
+            <svg class="theme-icon-sun" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+            <!-- Moon SVG Icon (shown in Light Mode) -->
+            <svg class="theme-icon-moon" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display:none;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+            </svg>
         </button>
     </div>
 </header>
@@ -998,6 +1021,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
+    });
+
+    // ── Theme Mode Controller ──
+    function toggleThemeMode() {
+        var current = document.documentElement.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        var next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        if (next === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        localStorage.setItem('app-theme', next);
+        updateThemeToggleIcons(next);
+    }
+
+    function updateThemeToggleIcons(theme) {
+        var isDark = theme === 'dark';
+        document.querySelectorAll('.theme-icon-sun').forEach(function(el) {
+            el.style.display = isDark ? 'block' : 'none';
+        });
+        document.querySelectorAll('.theme-icon-moon').forEach(function(el) {
+            el.style.display = isDark ? 'none' : 'block';
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var current = document.documentElement.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        updateThemeToggleIcons(current);
     });
 
     window.addEventListener('beforeunload', function() {
