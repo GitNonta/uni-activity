@@ -18,18 +18,11 @@ class ClusterOrchestrationTest extends TestCase
         parent::setUp();
 
         Http::fake([
-            'http://127.0.0.1:8001/health' => Http::response([
+            '*/health' => Http::response([
                 'status' => 'healthy',
                 'models' => ['retinaface', 'arcface'],
             ], 200),
-            'http://192.168.1.222:8001/health' => Http::response([
-                'status' => 'healthy',
-                'models' => ['retinaface', 'arcface'],
-            ], 200),
-            'http://192.168.1.223:8001/health' => Http::response([
-                'status' => 'healthy',
-                'models' => ['retinaface', 'arcface'],
-            ], 200),
+            '*' => Http::response(['status' => 'ok'], 200),
         ]);
     }
 
