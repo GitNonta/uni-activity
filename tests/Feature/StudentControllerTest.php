@@ -154,7 +154,7 @@ class StudentControllerTest extends TestCase
         ]);
 
         // Unread notifications must be marked read
-        $this->assertDatabaseHas('notifications', [
+        $this->assertDatabaseHas(Notification::class, [
             'user_id' => $student->id,
             'is_read' => true,
         ]);
