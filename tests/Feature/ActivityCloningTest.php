@@ -20,7 +20,10 @@ class ActivityCloningTest extends TestCase
     {
         $staff = User::factory()->create(['role' => 'staff']);
         $student = User::factory()->create(['role' => 'student']);
-        $category = ActivityCategory::factory()->create(['name' => 'กิจกรรมวิชาการ']);
+        $category = ActivityCategory::create([
+            'name'           => 'กิจกรรมวิชาการ',
+            'required_hours' => 6,
+        ]);
 
         $originalActivity = Activity::factory()->create([
             'title'            => 'อบรมการเขียนโปรแกรม Python ประจำเดือน',

@@ -19,7 +19,7 @@ class CertificateGenerationAndVerificationTest extends TestCase
     public function test_student_can_claim_category_certificate_when_hours_requirement_is_met(): void
     {
         $student = User::factory()->create(['role' => 'student']);
-        $category = ActivityCategory::factory()->create([
+        $category = ActivityCategory::create([
             'name'           => 'กิจกรรมบำเพ็ญประโยชน์',
             'required_hours' => 6.0,
         ]);
@@ -70,7 +70,7 @@ class CertificateGenerationAndVerificationTest extends TestCase
     public function test_student_cannot_claim_certificate_if_hours_requirement_is_not_met(): void
     {
         $student = User::factory()->create(['role' => 'student']);
-        $category = ActivityCategory::factory()->create([
+        $category = ActivityCategory::create([
             'name'           => 'กิจกรรมวิชาการ',
             'required_hours' => 12.0,
         ]);

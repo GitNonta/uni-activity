@@ -29,15 +29,22 @@ class AdminGlobalSearchTest extends TestCase
             'title' => 'กิจกรรมศึกษาดูงานเทคโนโลยีสารสนเทศ',
         ]);
 
-        $job = JobListing::factory()->create([
+        $job = JobListing::create([
             'title'        => 'ผู้ช่วยนักพัฒนาระบบสารสนเทศ',
             'company_name' => 'Tech Corp',
+            'description'  => 'รายละเอียดงานพัฒนาระบบ',
+            'location'     => 'ภูเก็ต',
+            'type'         => 'part_time',
+            'compensation' => '500 บาท/วัน',
+            'status'       => 'published',
+            'created_by'   => $admin->id,
         ]);
 
         $announcement = Announcement::create([
-            'title'   => 'ประกาศรับสมัครนักศึกษาช่วยงานสารสนเทศ',
-            'content' => 'รายละเอียดการรับสมัคร',
-            'type'    => 'info',
+            'title'      => 'ประกาศรับสมัครนักศึกษาช่วยงานสารสนเทศ',
+            'content'    => 'รายละเอียดการรับสมัคร',
+            'type'       => 'info',
+            'created_by' => $admin->id,
         ]);
 
         // Search query "สารสนเทศ" matches activity, job, and announcement

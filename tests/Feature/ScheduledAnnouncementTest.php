@@ -20,6 +20,8 @@ class ScheduledAnnouncementTest extends TestCase
             'faculty' => 'คณะวิทยาศาสตร์และเทคโนโลยี',
         ]);
 
+        $admin = User::factory()->create(['role' => 'admin']);
+
         // 1. เผยแพร่ทันที (published_at is null)
         $ann1 = Announcement::create([
             'title'        => 'ประกาศรับสมัครทุนการศึกษา',
@@ -27,6 +29,7 @@ class ScheduledAnnouncementTest extends TestCase
             'type'         => 'info',
             'is_active'    => true,
             'published_at' => null,
+            'created_by'   => $admin->id,
         ]);
 
         // 2. ตั้งเวลาในอดีต (published_at <= now())
@@ -36,6 +39,7 @@ class ScheduledAnnouncementTest extends TestCase
             'type'         => 'warning',
             'is_active'    => true,
             'published_at' => now()->subHour(),
+            'created_by'   => $admin->id,
         ]);
 
         // 3. ตั้งเวลาในอนาคต (published_at > now()) -> นักศึกษาต้องยังไม่เห็น
@@ -45,6 +49,7 @@ class ScheduledAnnouncementTest extends TestCase
             'type'         => 'success',
             'is_active'    => true,
             'published_at' => now()->addDays(2),
+            'created_by'   => $admin->id,
         ]);
 
         $visibleAnnouncements = Announcement::forAudience($student)->get();
