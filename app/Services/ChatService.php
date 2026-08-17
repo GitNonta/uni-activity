@@ -268,15 +268,16 @@ class ChatService
             $me = $room->users->where('id', $currentUserId)->first();
 
             return [
-                'job_id'        => $room->job_id ?? 0,
-                'room_id'       => $room->id,
-                'student_id'    => $student?->id,
-                'job_title'     => $room->job_id ? ($room->job?->title ?? "งาน #{$room->job_id}") : 'ติดต่อสอบถามเจ้าหน้าที่',
-                'student_name'  => $student?->full_name ?? 'นักศึกษา',
-                'student_photo' => $student?->profile_photo ? '/storage/' . $student->profile_photo : null,
-                'last_message'  => $lastMsg?->body ?? '',
-                'last_time'     => $lastMsg?->created_at,
-                'unread'        => $room->messages()
+                'job_id'            => $room->job_id ?? 0,
+                'room_id'           => $room->id,
+                'student_id'        => $student?->id,
+                'job_title'         => $room->job_id ? ($room->job?->title ?? "งาน #{$room->job_id}") : 'ติดต่อสอบถามเจ้าหน้าที่',
+                'student_name'      => $student?->full_name ?? 'นักศึกษา',
+                'student_photo'     => $student?->profile_photo ? '/storage/' . $student->profile_photo : null,
+                'student_last_seen' => $student?->last_seen_at?->toISOString(),
+                'last_message'      => $lastMsg?->body ?? '',
+                'last_time'         => $lastMsg?->created_at,
+                'unread'            => $room->messages()
                     ->where('user_id', '!=', $currentUserId)
                     ->where('created_at', '>', $me?->pivot?->last_read_at ?? '1970-01-01')
                     ->count(),

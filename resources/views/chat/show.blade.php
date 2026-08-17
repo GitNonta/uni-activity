@@ -386,9 +386,26 @@
                 <p style="margin:0;font-size:0.8rem;color:var(--chat-text-muted);">{{ $job->title ?? 'สอบถามข้อมูลเจ้าหน้าที่' }}</p>
             </div>
         </div>
+        @php
+            $staffLastSeen = $staffUser?->last_seen_at;
+            $offlineText = 'ออฟไลน์';
+            if ($staffLastSeen) {
+                $diffMin = max(1, $staffLastSeen->diffInMinutes(now()));
+                $diffHours = $staffLastSeen->diffInHours(now());
+                if ($diffMin < 60) {
+                    $offlineText = "ออนไลน์เมื่อ {$diffMin} นาทีที่แล้ว";
+                } elseif ($diffHours < 24) {
+                    $offlineText = "ออนไลน์เมื่อ {$diffHours} ชม. ที่แล้ว";
+                } elseif ($staffLastSeen->isYesterday()) {
+                    $offlineText = "ออนไลน์เมื่อวานนี้ " . $staffLastSeen->format('H:i');
+                } else {
+                    $offlineText = "ออนไลน์เมื่อ " . $staffLastSeen->format('d/m H:i');
+                }
+            }
+        @endphp
         <div style="display:flex;align-items:center;gap:0.5rem;">
-            <span id="onlineStatusLabel" style="font-size:0.75rem;color:var(--chat-text-muted);font-weight:500;">
-                <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>ออฟไลน์
+            <span id="onlineStatusLabel" data-last-seen="{{ $staffLastSeen?->toISOString() }}" style="font-size:0.75rem;color:var(--chat-text-muted);font-weight:500;">
+                <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>{{ $offlineText }}
             </span>
         </div>
     </header>
@@ -1009,9 +1026,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
                 .leaving((u) => {
                     if ((u.role === 'admin' || u.role === 'staff' || u.is_staff) && String(u.id) !== String(USER_ID)) {
+                        const label = document.getElementById('onlineStatusLabel');
+                        if (label) label.setAttribute('data-last-seen', new Date().toISOString());
                         updateOnlineStatus(false);
                     }
                 });
+
+            function formatLastSeen(lastSeenAt) {
+                if (!lastSeenAt) return 'ออฟไลน์';
+                const date = new Date(lastSeenAt);
+                if (isNaN(date.getTime())) return 'ออฟไลน์';
+                const now = new Date();
+                const diffSec = Math.max(0, Math.floor((now - date) / 1000));
+                const diffMin = Math.floor(diffSec / 60);
+                const diffHours = Math.floor(diffMin / 60);
+                if (diffSec < 60) {
+                    return 'ออนไลน์เมื่อสักครู่';
+                } else if (diffMin < 60) {
+                    return `ออนไลน์เมื่อ ${diffMin} นาทีที่แล้ว`;
+                } else if (diffHours < 24) {
+                    return `ออนไลน์เมื่อ ${diffHours} ชม. ที่แล้ว`;
+                } else {
+                    return `ออนไลน์เมื่อ ${date.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' })} ${date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}`;
+                }
+            }
 
             window.isStaffOnline = false;
             function updateOnlineStatus(isOnline) {
@@ -1020,14 +1058,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 const label = document.getElementById('onlineStatusLabel');
                 if (dot) dot.style.display = isOnline ? 'inline-block' : 'none';
                 if (label) {
-                    label.innerHTML = isOnline 
-                        ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 8px #10b981;margin-right:5px;"></span><span style="color:#10b981;font-weight:600;">กำลังใช้งาน</span>' 
-                        : '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>ออฟไลน์';
+                    if (isOnline) {
+                        label.innerHTML = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 8px #10b981;margin-right:5px;"></span><span style="color:#10b981;font-weight:600;">กำลังใช้งาน</span>';
+                    } else {
+                        const lastSeen = label.getAttribute('data-last-seen');
+                        label.innerHTML = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>${formatLastSeen(lastSeen)}`;
+                    }
                 }
                 document.querySelectorAll('.staff-avatar-online-dot').forEach(el => {
                     el.style.display = isOnline ? 'block' : 'none';
                 });
             }
+
+            setInterval(() => {
+                if (!window.isStaffOnline) {
+                    const label = document.getElementById('onlineStatusLabel');
+                    if (label) {
+                        const lastSeen = label.getAttribute('data-last-seen');
+                        if (lastSeen) {
+                            label.innerHTML = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>${formatLastSeen(lastSeen)}`;
+                        }
+                    }
+                }
+            }, 15000);
 
             window.addEventListener('beforeunload', () => {
                 if (window.Echo) {

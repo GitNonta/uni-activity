@@ -170,9 +170,26 @@
             </div>
         </div>
 
+        @php
+            $studentLastSeen = $student->last_seen_at;
+            $offlineText = 'ออฟไลน์';
+            if ($studentLastSeen) {
+                $diffMin = max(1, $studentLastSeen->diffInMinutes(now()));
+                $diffHours = $studentLastSeen->diffInHours(now());
+                if ($diffMin < 60) {
+                    $offlineText = "ออนไลน์เมื่อ {$diffMin} นาทีที่แล้ว";
+                } elseif ($diffHours < 24) {
+                    $offlineText = "ออนไลน์เมื่อ {$diffHours} ชม. ที่แล้ว";
+                } elseif ($studentLastSeen->isYesterday()) {
+                    $offlineText = "ออนไลน์เมื่อวานนี้ " . $studentLastSeen->format('H:i');
+                } else {
+                    $offlineText = "ออนไลน์เมื่อ " . $studentLastSeen->format('d/m H:i');
+                }
+            }
+        @endphp
         <div style="display:flex;align-items:center;gap:0.5rem;">
-            <span id="studentOnlineLabel" style="font-size:0.75rem;color:#64748b;font-weight:500;">
-                <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>ออฟไลน์
+            <span id="studentOnlineLabel" data-last-seen="{{ $studentLastSeen?->toISOString() }}" style="font-size:0.75rem;color:#64748b;font-weight:500;">
+                <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>{{ $offlineText }}
             </span>
             <button onclick="deleteChat()" style="background:none;border:none;color:#ef4444;cursor:pointer;padding:0.4rem;border-radius:8px;display:flex;align-items:center;justify-content:center;" title="ลบการสนทนานี้">
                 <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -773,6 +790,25 @@ document.addEventListener('DOMContentLoaded', function () {
                     .whisper('typing', { userId: myId, name: 'ผู้ดูแล' });
             });
 
+            function formatLastSeen(lastSeenAt) {
+                if (!lastSeenAt) return 'ออฟไลน์';
+                const date = new Date(lastSeenAt);
+                if (isNaN(date.getTime())) return 'ออฟไลน์';
+                const now = new Date();
+                const diffSec = Math.max(0, Math.floor((now - date) / 1000));
+                const diffMin = Math.floor(diffSec / 60);
+                const diffHours = Math.floor(diffMin / 60);
+                if (diffSec < 60) {
+                    return 'ออนไลน์เมื่อสักครู่';
+                } else if (diffMin < 60) {
+                    return `ออนไลน์เมื่อ ${diffMin} นาทีที่แล้ว`;
+                } else if (diffHours < 24) {
+                    return `ออนไลน์เมื่อ ${diffHours} ชม. ที่แล้ว`;
+                } else {
+                    return `ออนไลน์เมื่อ ${date.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' })} ${date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}`;
+                }
+            }
+
             // Presence channel — student online status
             window.isStudentOnline = false;
             function toggleStudentOnline(isOnline) {
@@ -781,9 +817,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 const label = document.getElementById('studentOnlineLabel');
                 if (headerDot) headerDot.style.display = isOnline ? 'inline-block' : 'none';
                 if (label) {
-                    label.innerHTML = isOnline 
-                        ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 8px #10b981;margin-right:5px;"></span><span style="color:#10b981;font-weight:600;">กำลังใช้งาน</span>' 
-                        : '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>ออฟไลน์';
+                    if (isOnline) {
+                        label.innerHTML = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 8px #10b981;margin-right:5px;"></span><span style="color:#10b981;font-weight:600;">กำลังใช้งาน</span>';
+                    } else {
+                        const lastSeen = label.getAttribute('data-last-seen');
+                        label.innerHTML = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>${formatLastSeen(lastSeen)}`;
+                    }
                 }
                 document.querySelectorAll('.user-avatar-online-dot').forEach(el => {
                     el.style.display = isOnline ? 'block' : 'none';
@@ -799,8 +838,24 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (String(user.id) === String(studentId) && String(user.id) !== String(myId)) toggleStudentOnline(true);
                 })
                 .leaving((user) => {
-                    if (String(user.id) === String(studentId)) toggleStudentOnline(false);
+                    if (String(user.id) === String(studentId)) {
+                        const label = document.getElementById('studentOnlineLabel');
+                        if (label) label.setAttribute('data-last-seen', new Date().toISOString());
+                        toggleStudentOnline(false);
+                    }
                 });
+
+            setInterval(() => {
+                if (!window.isStudentOnline) {
+                    const label = document.getElementById('studentOnlineLabel');
+                    if (label) {
+                        const lastSeen = label.getAttribute('data-last-seen');
+                        if (lastSeen) {
+                            label.innerHTML = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>${formatLastSeen(lastSeen)}`;
+                        }
+                    }
+                }
+            }, 15000);
 
             window.addEventListener('beforeunload', () => {
                 if (window.Echo) {

@@ -29,11 +29,13 @@ class ChatController extends Controller
     public function show(int $jobId): View
     {
         $data = $this->chatService->getOrCreateRoomForJob(Auth::user(), $jobId);
+        $staffUser = $data['room']->users->firstWhere('role', 'admin') ?? User::where('role', 'admin')->orderBy('id')->first();
 
         return view('chat.show', [
-            'job'      => $data['job'],
-            'messages' => $data['messages'],
-            'room'     => $data['room'],
+            'job'       => $data['job'],
+            'messages'  => $data['messages'],
+            'room'      => $data['room'],
+            'staffUser' => $staffUser,
         ]);
     }
 
