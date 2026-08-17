@@ -87,10 +87,10 @@ return [
         'pgsql' => [
             'driver' => 'pgsql',
             'read' => [
-                'host' => [env('DB_REPLICA_HOST', 'postgres-replica')],
+                'host' => [env('DB_REPLICA_HOST', env('DB_HOST', '127.0.0.1'))],
             ],
             'write' => [
-                'host' => [env('DB_HOST', '127.0.0.1')],
+                'host' => [env('DB_WRITE_HOST', env('DB_HOST', '127.0.0.1'))],
             ],
             'sticky' => true,
             'url' => env('DB_URL'),
