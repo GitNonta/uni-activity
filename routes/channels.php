@@ -1,28 +1,21 @@
 <?php
 
 use Illuminate\Support\Facades\Broadcast;
-use Illuminate\Support\Facades\Log;
-
-Log::info("Loading routes/channels.php");
+use Illuminate\Support\Facades\DB;
+use App\Models\Room;
 
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
-    $matched = (string) $user->id === (string) $id;
-    Log::info("Broadcast Auth App.Models.User", ['user_id' => $user->id, 'id_param' => $id, 'matched' => $matched]);
-    return $matched;
+    return (string) $user->id === (string) $id;
 });
 
 // Channel แจ้งเตือนทั่วไป (Notification)
 Broadcast::channel('notifications.{userId}', function ($user, $userId) {
-    $matched = (string) $user->id === (string) $userId;
-    Log::info("Broadcast Auth notifications", ['user_id' => $user->id, 'userId_param' => $userId, 'matched' => $matched]);
-    return $matched;
+    return (string) $user->id === (string) $userId;
 });
 
 // Channel แชทส่วนตัวของนักศึกษา
 Broadcast::channel('chat.student.{userId}', function ($user, $userId) {
-    $matched = (string) $user->id === (string) $userId;
-    Log::info("Broadcast Auth chat.student", ['user_id' => $user->id, 'userId_param' => $userId, 'matched' => $matched]);
-    return $matched;
+    return (string) $user->id === (string) $userId;
 });
 
 // Channel แจ้งเตือนแอดมินเวลามีข้อความใหม่ (สำหรับหน้า Inbox List)
@@ -41,21 +34,19 @@ Broadcast::channel('online', function ($user) {
 
 // Channel เฉพาะห้องสนทนา
 Broadcast::channel('chat.room.{roomId}', function ($user, $roomId) {
-    $room = \App\Models\Room::find($roomId);
+    $room = Room::find($roomId);
     if (!$room) {
-        \Illuminate\Support\Facades\Log::info("Broadcast Auth Failed: Room not found", ['user_id' => $user->id, 'room_id' => $roomId]);
         return false;
     }
 
     if ($room->type === 'direct') {
-        $isParticipant = \Illuminate\Support\Facades\DB::table('room_user')
+        $isParticipant = DB::table('room_user')
             ->where('room_id', $roomId)
             ->where('user_id', $user->id)
             ->exists();
         return $isParticipant || $user->isStaffOrAdmin();
     }
 
-    $hasAccess = $room->users()->where('users.id', $user->id)->exists() || $user->isStaffOrAdmin();
-    \Illuminate\Support\Facades\Log::info("Broadcast Auth", ['user_id' => $user->id, 'room_id' => $roomId, 'has_access' => $hasAccess]);
-    return $hasAccess;
+    return $room->users()->where('users.id', $user->id)->exists() || $user->isStaffOrAdmin();
 });
+
