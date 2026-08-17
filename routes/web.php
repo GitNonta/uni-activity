@@ -45,11 +45,22 @@ if (app()->environment('local', 'testing')) {
         ]);
     })->name('debug.ip');
 }
+// ── Health Check Endpoints สำหรับ Load Balancer, Nginx & Monitoring (ไม่มี CORS) ──
+Route::get('/health', function () {
+    return response()->json([
+        'status'    => 'ok',
+        'timestamp' => time(),
+        'service'   => 'uni-activity',
+    ]);
+})->name('health');
+
 Route::get('/up', function () {
-    return response()->json(['status' => 'ok', 'timestamp' => time()])
-        ->header('Access-Control-Allow-Origin', '*')
-        ->header('Access-Control-Allow-Methods', 'GET, OPTIONS');
-});
+    return response()->json([
+        'status'    => 'ok',
+        'timestamp' => time(),
+        'service'   => 'uni-activity',
+    ]);
+})->name('up');
 
 // ── เส้นทางนักศึกษา: เข้าสู่ระบบ / ลงทะเบียนบัญชี / ออกจากระบบ ──
 Route::get('/', function () {
