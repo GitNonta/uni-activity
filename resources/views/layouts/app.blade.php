@@ -108,7 +108,7 @@
                     โปรไฟล์
                 </a>
             </nav>
-            <div class="navbar-right navbar-desktop" style="display:flex; align-items:center; gap:8px;">
+            <div class="navbar-right navbar-desktop">
                 <span class="navbar-user">
                     <svg class="icon-sm" style="display:inline;margin-right:.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                     {{ auth()->user()->full_name }}
@@ -130,7 +130,7 @@
                 </form>
             </div>
             {{-- Mobile: แสดงชื่อ + ปุ่มออก --}}
-            <div class="navbar-mobile-right" style="display:flex; align-items:center; gap:4px;">
+            <div class="navbar-mobile-right">
                 <!-- SVG Theme Toggle Button (Mobile Auth) -->
                 <button onclick="toggleThemeMode()" class="navbar-theme-toggle-btn" style="width:32px; height:32px;" title="สลับโหมดมืด / สว่าง">
                     <svg class="theme-icon-sun" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -174,7 +174,7 @@
                     ข่าวประกาศ
                 </a>
             </nav>
-            <div class="navbar-right navbar-desktop" style="display:flex; align-items:center; gap:8px;">
+            <div class="navbar-right navbar-desktop">
                 <!-- SVG Theme Toggle Button (Desktop Guest) -->
                 <button onclick="toggleThemeMode()" class="navbar-theme-toggle-btn" title="สลับโหมดมืด / สว่าง (Dark / Light Mode)">
                     <svg class="theme-icon-sun" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -194,7 +194,7 @@
                 </a>
             </div>
             {{-- Guest Mobile Header Right --}}
-            <div class="navbar-mobile-right" style="display:flex; align-items:center; gap:4px;">
+            <div class="navbar-mobile-right">
                 <!-- SVG Theme Toggle Button (Mobile Guest) -->
                 <button onclick="toggleThemeMode()" class="navbar-theme-toggle-btn" style="width:32px; height:32px;" title="สลับโหมดมืด / สว่าง">
                     <svg class="theme-icon-sun" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">

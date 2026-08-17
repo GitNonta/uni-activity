@@ -192,8 +192,9 @@ select.form-control { appearance: auto; }
 .navbar-center a:hover, .navbar-center a.active { color: #ea580c; text-decoration: none; }
 .navbar-center a .icon { width: 18px; height: 18px; }
 .navbar-right { display: flex; align-items: center; flex: 1; justify-content: flex-end; gap: 0.5rem; }
+.navbar-desktop { display: flex !important; align-items: center; gap: 8px; }
 .navbar-user { display: inline-flex; align-items: center; padding: .5rem .75rem; font-size: .875rem; font-weight: 500; color: #64748b; border-left: 1px solid #e2e8f0; margin-left: .5rem; }
-.navbar-mobile-right { display: none; align-items: center; gap: .5rem; }
+.navbar-mobile-right { display: none !important; align-items: center; gap: 4px; }
 .navbar-user-mobile { font-size: .8rem; font-weight: 500; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
 
 /* ── Bottom Navigation Bar ──────── */
