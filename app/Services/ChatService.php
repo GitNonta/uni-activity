@@ -500,20 +500,49 @@ class ChatService
      */
     public function formatMessage(Message $msg): array
     {
+        $msg->loadMissing(['user', 'room']);
         $user = $msg->user;
 
+        $attachments = [];
+        if (!empty($msg->attachments)) {
+            foreach ($msg->attachments as $att) {
+                $path = $att['path'] ?? $att['file_path'] ?? '';
+                $url = !empty($path) ? asset('storage/' . $path) : ($att['url'] ?? '#');
+                $mime = $att['mime_type'] ?? '';
+
+                $attachments[] = [
+                    'original_name' => $att['original_name'] ?? basename($path),
+                    'path'          => $path,
+                    'url'           => $url,
+                    'mime_type'     => $mime,
+                    'size'          => $att['size'] ?? 0,
+                    'is_image'      => str_starts_with($mime, 'image/'),
+                ];
+            }
+        }
+
         return [
-            'id'      => $msg->id,
-            'room_id' => $msg->room_id,
-            'message' => $msg->body,
-            'user'    => [
-                'id'    => $msg->user_id,
-                'name'  => $user?->full_name ?? 'ผู้ใช้',
-                'role'  => $user?->role ?? 'system',
-                'photo' => $user?->profile_photo ? '/storage/' . $user->profile_photo : null,
+            'id'          => $msg->id,
+            'room_id'     => $msg->room_id,
+            'user_id'     => $msg->user_id,
+            'message'     => $msg->body,
+            'body'        => $msg->body,
+            'is_edited'   => (bool) ($msg->is_edited ?? false),
+            'user'        => [
+                'id'        => $msg->user_id,
+                'name'      => $user?->full_name ?? $user?->name ?? 'ผู้ใช้',
+                'role'      => $user?->role ?? 'student',
+                'photo'     => $user?->profile_photo ? asset('storage/' . $user->profile_photo) : null,
+                'faculty'   => $user?->faculty,
+                'department'=> $user?->department,
             ],
-            'attachments' => $msg->attachments ?? [],
-            'created_at'  => $msg->created_at?->toISOString(),
+            'room'        => [
+                'id'     => $msg->room_id,
+                'job_id' => $msg->room?->job_id,
+            ],
+            'attachments' => $attachments,
+            'created_at'  => $msg->created_at?->toISOString() ?? now()->toISOString(),
+            'time_formatted' => $msg->created_at ? $msg->created_at->format('H:i') : date('H:i'),
         ];
     }
 

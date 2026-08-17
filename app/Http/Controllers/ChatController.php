@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\EditMessageRequest;
+use App\Http\Requests\SendMessageRequest;
 use App\Models\Message;
 use App\Services\ChatService;
 use Illuminate\Http\JsonResponse;
@@ -38,14 +40,8 @@ class ChatController extends Controller
     /**
      * นักศึกษาส่งข้อความ + ไฟล์แนบ
      */
-    public function send(Request $request, int $jobId): JsonResponse
+    public function send(SendMessageRequest $request, int $jobId): JsonResponse
     {
-        $request->validate([
-            'message'       => 'nullable|string|max:2000',
-            'attachments'   => 'nullable|array|max:5',
-            'attachments.*' => 'file|max:10240|mimes:jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,zip,txt',
-        ]);
-
         if (empty($request->message) && empty($request->file('attachments'))) {
             return response()->json(['error' => 'กรุณาพิมพ์ข้อความหรือแนบไฟล์'], 422);
         }
@@ -53,7 +49,7 @@ class ChatController extends Controller
         $formatted = $this->chatService->sendMessage(
             Auth::user(),
             $jobId,
-            $request->message ? (string) $request->message : null,
+            $request->filled('message') ? (string) $request->input('message') : null,
             $request->file('attachments') ?? []
         );
 
@@ -121,13 +117,11 @@ class ChatController extends Controller
     /**
      * แก้ไขข้อความของนักศึกษา
      */
-    public function editMessage(Request $request, Message $message): JsonResponse
+    public function editMessage(EditMessageRequest $request, Message $message): JsonResponse
     {
-        $request->validate(['message' => 'required|string|max:2000']);
-
         Gate::authorize('update', $message);
 
-        $formatted = $this->chatService->editMessage($message, (string) $request->message);
+        $formatted = $this->chatService->editMessage($message, (string) $request->input('message'));
 
         return response()->json(['success' => true, 'message' => $formatted]);
     }

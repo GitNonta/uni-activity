@@ -61,14 +61,8 @@ class AdminInboxController extends Controller
     /**
      * Admin/Staff ส่งข้อความถึง Student
      */
-    public function send(Request $request, int $jobId, int $studentId): JsonResponse
+    public function send(\App\Http\Requests\SendMessageRequest $request, int $jobId, int $studentId): JsonResponse
     {
-        $request->validate([
-            'message'       => 'nullable|string|max:2000',
-            'attachments'   => 'nullable|array|max:5',
-            'attachments.*' => 'file|max:10240|mimes:jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,zip,txt',
-        ]);
-
         if (empty($request->message) && empty($request->file('attachments'))) {
             return response()->json(['error' => 'กรุณาพิมพ์ข้อความหรือแนบไฟล์'], 422);
         }
@@ -77,7 +71,7 @@ class AdminInboxController extends Controller
             Auth::user(),
             $jobId,
             $studentId,
-            $request->message ? (string) $request->message : null,
+            $request->filled('message') ? (string) $request->input('message') : null,
             $request->file('attachments') ?? []
         );
 
@@ -111,13 +105,12 @@ class AdminInboxController extends Controller
     /**
      * แก้ไขข้อความในห้องแชท
      */
-    public function editMessage(Request $request, Message $message): JsonResponse
+    public function editMessage(\App\Http\Requests\EditMessageRequest $request, Message $message): JsonResponse
     {
-        $request->validate(['message' => 'required|string|max:2000']);
         $message->loadMissing(['room.job', 'room.users']);
         Gate::authorize('update', $message);
 
-        $formatted = $this->chatService->editMessage($message, (string) $request->message);
+        $formatted = $this->chatService->editMessage($message, (string) $request->input('message'));
 
         return response()->json(['success' => true, 'message' => $formatted]);
     }

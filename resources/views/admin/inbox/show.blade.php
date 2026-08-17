@@ -1,6 +1,6 @@
 {{-- Admin: หน้าแชทกับนักศึกษาคนหนึ่ง (จาก Inbox) --}}
 @extends('layouts.admin')
-@section('title', $student->full_name . ' — ' . $job->title)
+@section('title', ($student->full_name ?? 'นักศึกษา') . ' — ' . ($job->title ?? 'กล่องข้อความ'))
 
 @section('content')
     @if(request('widget'))
@@ -19,6 +19,25 @@
     @endif
 
     <style>
+        :root {
+            --chat-primary: #ea580c;
+            --chat-primary-hover: #c2410c;
+        }
+
+        .chat-header-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+
         .chat-link {
             color: #dc2626 !important;
             text-decoration: underline !important;
@@ -26,10 +45,9 @@
             word-break: break-all;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
         }
         .chat-link-mine {
-            color: #ef4444 !important;
+            color: #ea580c !important;
             background: #ffffff;
             padding: 1px 6px;
             border-radius: 6px;
@@ -37,29 +55,133 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.1);
             text-decoration: underline !important;
         }
-        .chat-link:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
+
+        .msg-bubble-container {
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-end;
+            position: relative;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .msg-bubble-mine {
+            flex-direction: row-reverse;
+        }
+
+        .msg-actions {
+            display: none;
+            align-items: center;
+            gap: 0.25rem;
+            position: absolute;
+            top: -12px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 2px 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+            z-index: 10;
+        }
+        .msg-bubble-mine .msg-actions { right: 8px; }
+        .msg-bubble-theirs .msg-actions { left: 36px; }
+        .msg-bubble-container:hover .msg-actions { display: flex; }
+
+        .msg-action-btn {
+            background: none;
+            border: none;
+            padding: 2px 4px;
+            cursor: pointer;
+            color: #64748b;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .msg-action-btn:hover { color: #ea580c; background: #f1f5f9; }
+
+        .attachment-img {
+            max-width: 100%;
+            max-height: 260px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-top: 0.35rem;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        .attachment-img:hover { transform: scale(1.02); }
+
+        .attachment-file {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-top: 0.35rem;
+            padding: 0.4rem 0.65rem;
+            background: rgba(0,0,0,0.06);
+            border-radius: 6px;
+            text-decoration: none;
+            color: inherit;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .scroll-bottom-badge {
+            position: absolute;
+            bottom: 16px;
+            right: 24px;
+            background: #ea580c;
+            color: #fff;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(234, 88, 12, 0.3);
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            gap: 4px;
+            z-index: 20;
+            animation: bounce 1.5s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
         }
     </style>
 
     {{-- Header --}}
-    <div class="chat-header-container" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;flex-wrap:wrap;gap:.5rem;">
-        <a href="{{ route('admin.inbox.index') }}" style="color:#f97316;font-size:.85rem;">← กล่องข้อความ</a>
-        <div>
-            <h2 style="margin:0;font-size:1.05rem;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:.4rem;">
-                {{ $student->full_name }}
-                <span id="adminOnlineDot" style="display:none;width:8px;height:8px;background:#10b981;border-radius:50%;vertical-align:middle;box-shadow:0 0 0 2px #fff;" title="ออนไลน์"></span>
-                <span style="font-size:.85rem;color:#f97316;font-weight:500;">[{{ $job->title }}]</span>
-            </h2>
+    <div class="chat-header-card chat-header-container">
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+            <a href="{{ route('admin.inbox.index') }}" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:#f1f5f9;color:#64748b;text-decoration:none;" title="กลับไปกล่องข้อความ">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </a>
+            <div>
+                <h2 style="margin:0;font-size:1.05rem;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:.4rem;">
+                    <span>{{ $student->full_name }}</span>
+                    <span id="adminOnlineDot" style="display:none;width:8px;height:8px;background:#10b981;border-radius:50%;box-shadow:0 0 0 2px #fff;" title="ออนไลน์"></span>
+                    <span style="font-size:.85rem;color:#ea580c;font-weight:500;">[{{ $job->title }}]</span>
+                </h2>
+                <div style="font-size:0.75rem;color:#64748b;">
+                    รหัสนักศึกษา: {{ $student->student_id ?? '-' }} | คณะ: {{ $student->faculty ?? '-' }}
+                </div>
+            </div>
         </div>
-        <button onclick="deleteChat()" style="background:none;border:none;color:#ef4444;cursor:pointer;padding:0.4rem;border-radius:50%;margin-left:auto;display:flex;align-items:center;justify-content:center;" title="ลบแชท">
-            <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-        </button>
+
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+            <span id="studentOnlineLabel" style="font-size:0.75rem;color:#64748b;font-weight:500;">
+                <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>ออฟไลน์
+            </span>
+            <button onclick="deleteChat()" style="background:none;border:none;color:#ef4444;cursor:pointer;padding:0.4rem;border-radius:8px;display:flex;align-items:center;justify-content:center;" title="ลบการสนทนานี้">
+                <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+        </div>
     </div>
 
     {{-- Chat window --}}
-    <div id="chatWindow" style="height:460px;overflow-y:auto;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:1rem;display:flex;flex-direction:column;gap:.6rem;margin-bottom:.75rem;">
+    <div id="chatWindow" style="height:480px;overflow-y:auto;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:1.25rem;display:flex;flex-direction:column;gap:.65rem;margin-bottom:.75rem;position:relative;">
         @forelse($messages as $msg)
             @php
                 $isMine   = $msg->user_id == auth()->id();
@@ -68,160 +190,225 @@
                 $initial  = mb_strtoupper(mb_substr($label, 0, 1));
                 $avatarBg = $isMine ? '#ea580c' : '#64748b';
             @endphp
-            <div id="cm-{{ $msg->id }}"
-                 class="msg-bubble-container"
-                 style="display:flex;flex-direction:{{ $isMine ? 'row-reverse' : 'row' }};align-items:flex-end;gap:.4rem;position:relative;"
-                 onmouseover="const a=this.querySelector('.msg-actions');if(a)a.style.display='flex'"
-                 onmouseout="const a=this.querySelector('.msg-actions');if(a)a.style.display='none'">
-                {{-- Avatar with online dot --}}
+            <div id="cm-{{ $msg->id }}" class="msg-bubble-container {{ $isMine ? 'msg-bubble-mine' : 'msg-bubble-theirs' }}">
+                {{-- Avatar --}}
                 @if(!$isMine)
                 <div style="position:relative;flex-shrink:0;">
                     @if($photoUrl)
-                        <img src="{{ $photoUrl }}" alt="{{ $label }}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;">
+                        <img src="{{ $photoUrl }}" alt="{{ $label }}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;">
                     @else
-                        <div style="width:28px;height:28px;border-radius:50%;background:{{ $avatarBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;">{{ $initial }}</div>
+                        <div style="width:30px;height:30px;border-radius:50%;background:{{ $avatarBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;">{{ $initial }}</div>
                     @endif
-                    {{-- Online dot for student --}}
-                    <span id="avatar-dot-{{ $msg->id }}" class="student-online-dot" style="display:none;position:absolute;bottom:0;right:0;width:10px;height:10px;background:#10b981;border-radius:50%;border:2px solid #f8fafc;"></span>
                 </div>
                 @endif
+
+                {{-- Actions --}}
+                @if($isMine)
+                <div class="msg-actions">
+                    <button class="msg-action-btn" onclick="editAdminMessage('{{ $msg->id }}')" title="แก้ไข">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    </button>
+                    <button class="msg-action-btn" onclick="deleteAdminMessage('{{ $msg->id }}')" title="ลบ">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                </div>
+                @endif
+
                 {{-- Bubble column --}}
                 <div style="display:flex;flex-direction:column;align-items:{{ $isMine ? 'flex-end' : 'flex-start' }};max-width:72%;">
                     <span style="font-size:.68rem;color:#94a3b8;margin-bottom:.15rem;">{{ $label }}</span>
                     @php
                         $hasText = !empty($msg->body);
-                        $hasOnlyImages = !$hasText && count($msg->attachments ?? []) > 0 && collect($msg->attachments)->every(fn($a) => str_starts_with($a['mime_type'] ?? '', 'image/'));
-                        $bg = $hasOnlyImages ? 'transparent' : ($isMine ? '#ea580c' : '#fff');
-                        $pad = $hasOnlyImages ? '0' : '.55rem .85rem';
-                        $shadow = $hasOnlyImages ? 'none' : '0 1px 3px rgba(0,0,0,.08)';
+                        $bg = $isMine ? '#ea580c' : '#ffffff';
+                        $pad = '.55rem .85rem';
+                        $shadow = '0 1px 3px rgba(0,0,0,.04)';
                     @endphp
-                    <div style="padding:{{$pad}};border-radius:{{ $isMine ? '16px 4px 16px 16px' : '4px 16px 16px 16px' }};background:{{$bg}};color:{{ $isMine ? '#fff' : '#1e293b' }};font-size:.875rem;box-shadow:{{$shadow}};word-break:break-word;">
+                    <div id="bubble-{{ $msg->id }}" style="padding:{{$pad}};border-radius:{{ $isMine ? '16px 4px 16px 16px' : '4px 16px 16px 16px' }};background:{{$bg}};color:{{ $isMine ? '#fff' : '#1e293b' }};font-size:.9rem;box-shadow:{{$shadow}};word-break:break-word;border:{{ $isMine ? 'none' : '1px solid #e2e8f0' }};">
                         @if($msg->body)
                             @php
                                 $linkClass = $isMine ? 'chat-link chat-link-mine' : 'chat-link';
-                                $linkified = preg_replace(
-                                    '~(https?://[^\s<]+[^<.,:;"\')\]\s])~i',
-                                    '<a href="$1" target="_blank" rel="noopener noreferrer" class="' . $linkClass . '">$1</a>',
-                                    e($msg->body)
-                                );
+                                $formattedBody = preg_replace('~(https?://[^\s<]+[^<.,:;"\')\]\s])~i', '<a href="$1" target="_blank" rel="noopener noreferrer" class="' . $linkClass . '">$1</a>', e($msg->body));
                             @endphp
-                            <p style="margin:0;">{!! $linkified !!}</p>
+                            <div class="msg-text-body">{!! $formattedBody !!}</div>
+                            @if($msg->is_edited)
+                                <span class="edit-badge" style="font-size:0.65rem;opacity:0.8;margin-left:4px;">(แก้ไขแล้ว)</span>
+                            @endif
                         @endif
+
                         @foreach($msg->attachments ?? [] as $att)
-                            @php $isImg = str_starts_with($att['mime_type'] ?? '', 'image/'); @endphp
+                            @php
+                                $path = $att['path'] ?? $att['file_path'] ?? '';
+                                $url = !empty($path) ? asset('storage/' . $path) : ($att['url'] ?? '#');
+                                $isImg = str_starts_with($att['mime_type'] ?? '', 'image/');
+                            @endphp
                             @if($isImg)
-                                <img src="{{ $att['url'] }}" alt="{{ $att['original_name'] }}"
-                                     style="max-width:110px;max-height:110px;object-fit:cover;border-radius:8px;margin-top:{{ $hasOnlyImages ? '0' : '.35rem' }};display:block;cursor:pointer;box-shadow:{{ $hasOnlyImages ? 'none' : '0 1px 3px rgba(0,0,0,0.1)' }};"
-                                     onclick="window.openLightbox('{{ $att['url'] }}')">
+                                <img src="{{ $url }}" alt="image" class="attachment-img" onclick="openLightbox('{{ $url }}')">
                             @else
-                                <a href="{{ $att['url'] }}" target="_blank" download="{{ $att['original_name'] }}"
-                                   style="display:flex;align-items:center;gap:.4rem;margin-top:.35rem;color:{{ $isMine ? '#fed7aa' : '#ea580c' }};font-size:.8rem;text-decoration:none;">
-                                    <svg style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> {{ $att['original_name'] }}
+                                <a href="{{ $url }}" target="_blank" download="{{ $att['original_name'] ?? 'file' }}" class="attachment-file">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                                    {{ $att['original_name'] ?? 'ไฟล์แนบ' }}
                                 </a>
                             @endif
                         @endforeach
                     </div>
-                    <span style="font-size:.65rem;color:#94a3b8;margin-top:.15rem;">{{ $msg->created_at?->format('H:i') }}</span>
-                </div>
-                
-                {{-- Actions --}}
-                @if($isMine)
-                <div class="msg-actions" style="display:flex; position:relative; flex-direction:row; z-index: 20; align-items:center; margin-bottom:18px;" onmouseleave="const m=this.querySelector('.msg-dropdown');if(m)m.style.display='none';">
-                    <button onclick="var m=this.nextElementSibling; document.querySelectorAll('.msg-dropdown').forEach(function(el){if(el!==m)el.style.display='none';}); m.style.display=m.style.display==='flex'?'none' : 'flex';" style="background:transparent; border:none; cursor:pointer; padding:4px; color:#94a3b8; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:all .2s; margin:0 4px;">
-                        <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>
-                    </button>
-                    <div class="msg-dropdown" style="display:none; position:absolute; right:34px; bottom:-4px; background:#2d2d2d; color:#f8fafc; border-radius:12px; padding:6px 0; min-width:130px; box-shadow:0 4px 12px rgba(0,0,0,0.25); flex-direction:column; z-index:30;">
-                        <div style="position:absolute; right:-4px; bottom:12px; width:10px; height:10px; background:#2d2d2d; transform:rotate(45deg); z-index:-1; border-radius:1px;"></div>
-                        <div onclick="editMessageBtn('{{$msg->id}}')" style="padding:8px 16px; font-size:0.85rem; cursor:pointer; transition:background .15s; font-weight:500;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">แก้ไข</div>
-                        <div onclick="deleteMessageBtn('{{$msg->id}}')" style="padding:8px 16px; font-size:0.85rem; cursor:pointer; transition:background .15s; font-weight:500;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">ยกเลิกการส่ง</div>
+
+                    <div style="display:flex;align-items:center;gap:0.35rem;margin-top:0.25rem;">
+                        <span style="font-size:.65rem;color:#94a3b8;">{{ $msg->created_at?->format('H:i') }}</span>
+                        @if($isMine)
+                            <span id="status-{{ $msg->id }}" style="font-size:0.65rem;color:#ea580c;">✓ ส่งแล้ว</span>
+                        @endif
                     </div>
                 </div>
-                @endif
             </div>
         @empty
-            <p id="noMsg" style="margin:auto;font-size:.875rem;color:#94a3b8;">ยังไม่มีข้อความ</p>
+            <div id="noMsg" style="margin:auto;text-align:center;color:#94a3b8;font-size:.9rem;">
+                <svg style="width:40px;height:40px;margin:0 auto .5rem;color:#cbd5e1;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                ยังไม่มีประวัติการสนทนา เริ่มคุยกับนักศึกษาได้ทันที
+            </div>
         @endforelse
+
+        {{-- Floating new message indicator --}}
+        <div id="scrollBottomBtn" class="scroll-bottom-badge" onclick="scrollBottom(true)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            ข้อความใหม่
+        </div>
     </div>
 
-    {{-- Typing indicator bar --}}
-    <div id="adminTypingBar" style="display:none;align-items:center;padding:.4rem .75rem;background:#f8fafc;font-size:.72rem;color:#f97316;">
-        <svg style="width:12px;height:12px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-        {{ $student->full_name }} กำลังพิมพ์...
+    {{-- Typing bar --}}
+    <div id="adminTypingBar" style="display:none;font-size:.75rem;color:#ea580c;padding:0 .5rem;margin-bottom:.4rem;font-style:italic;">
+        <span>{{ $student->full_name }} กำลังพิมพ์...</span>
     </div>
-    {{-- Input form --}}
-    <form id="chatForm" enctype="multipart/form-data">
+
+    {{-- Form --}}
+    <form id="chatForm" enctype="multipart/form-data" style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:0.75rem 1rem;box-shadow:0 2px 6px rgba(0,0,0,0.03);">
         @csrf
-        <div id="attachPreview" style="display:none;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem;"></div>
-        <div style="display:flex;gap:.5rem;align-items:flex-end;">
-            <label for="fileInput" style="cursor:pointer;padding:.5rem .6rem;background:#f1f5f9;border-radius:8px;font-size:1.1rem;line-height:1;flex-shrink:0;display:flex;align-items:center;" title="แนบไฟล์">
-                <svg style="width:18px;height:18px;color:#64748b;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+        <div id="attachPreview" style="display:none;gap:.4rem;flex-wrap:wrap;margin-bottom:.5rem;"></div>
+        
+        <div style="display:flex;align-items:flex-end;gap:.5rem;">
+            <label style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;cursor:pointer;color:#64748b;" title="แนบไฟล์ (หรือวางภาพ Ctrl+V)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                <input type="file" id="fileInput" name="attachments[]" multiple style="display:none;">
             </label>
-            <input type="file" id="fileInput" name="attachments[]" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.txt" style="display:none;">
-            <textarea id="msgInput" name="message" rows="1"
-                placeholder="พิมพ์ข้อความ..."
-                style="flex:1;resize:none;border:1px solid #e2e8f0;border-radius:10px;padding:.55rem .8rem;font-size:.875rem;line-height:1.5;outline:none;font-family:inherit;max-height:100px;overflow-y:auto;"
-                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();document.getElementById('sendBtn').click();}"></textarea>
-            <button id="sendBtn" type="submit"
-                style="background:#ea580c;color:#fff;border:none;border-radius:10px;padding:.55rem 1.1rem;font-size:.875rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
-                <svg style="width:16px;height:16px;transform:rotate(45deg);margin-left:-2px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+
+            <textarea id="msgInput" name="message" rows="1" style="flex:1;border:1px solid #e2e8f0;border-radius:10px;padding:.65rem .85rem;font-size:.92rem;resize:none;outline:none;max-height:120px;line-height:1.4;" placeholder="พิมพ์ข้อความถึงนักศึกษา... (กด Enter เพื่อส่ง, วางภาพด้วย Ctrl+V)"></textarea>
+
+            <button type="submit" id="sendBtn" style="width:40px;height:40px;background:#ea580c;color:#fff;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;" title="ส่งข้อความ">
+                <svg style="width:18px;height:18px;transform:rotate(45deg);margin-left:-2px;" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
             </button>
         </div>
     </form>
-@endsection
 
-@section('scripts')
+    {{-- Lightbox Modal --}}
+    <div id="chatLightbox" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out;" onclick="this.style.display='none'">
+        <img id="lightboxImg" src="" style="max-width:90%;max-height:90%;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+    </div>
+
 <script>
-window.openLightbox = function(url) {
-    var lb = document.getElementById('imageLightbox');
-    if(!lb) {
-        lb = document.createElement('div');
-        lb.id = 'imageLightbox';
-        lb.style.cssText = 'display:flex; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; align-items:center; justify-content:center; cursor:pointer; opacity:0; transition:opacity 0.2s;';
-        lb.onclick = function() { lb.style.opacity = '0'; setTimeout(function(){lb.style.display='none';}, 200); };
-        var lbImg = document.createElement('img');
-        lbImg.id = 'lightboxImg';
-        lbImg.style.cssText = 'max-width:90%; max-height:90%; object-fit:contain; border-radius:8px; box-shadow:0 4px 24px rgba(0,0,0,0.5); transform:scale(0.95); transition:transform 0.2s;';
-        lb.appendChild(lbImg);
-        document.body.appendChild(lb);
-    }
-    var lImg = document.getElementById('lightboxImg');
-    lImg.src = url;
-    lb.style.display = 'flex';
-    setTimeout(function(){ lb.style.opacity = '1'; lImg.style.transform = 'scale(1)'; }, 10);
-};
-
 document.addEventListener('DOMContentLoaded', function () {
-    const win        = document.getElementById('chatWindow');
-    const form       = document.getElementById('chatForm');
-    const input      = document.getElementById('msgInput');
-    const fileInput  = document.getElementById('fileInput');
-    const preview    = document.getElementById('attachPreview');
-    const sendUrl    = '{{ route('admin.inbox.send', [$job->id, $student->id]) }}';
-    const readUrl    = '{{ route('admin.inbox.read', [$job->id, $student->id]) }}';
-    const csrfToken  = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    const myId       = '{{ Auth::id() }}';
-    const studentId  = '{{ $student->id }}';
+    const win          = document.getElementById('chatWindow');
+    const form         = document.getElementById('chatForm');
+    const input        = document.getElementById('msgInput');
+    const fileIn       = document.getElementById('fileInput');
+    const prev         = document.getElementById('attachPreview');
+    const btn          = document.getElementById('sendBtn');
+    const scrollBtn    = document.getElementById('scrollBottomBtn');
 
-    // Scroll to bottom
-    win.scrollTop = win.scrollHeight;
+    const myId         = {{ (int) auth()->id() }};
+    const studentId    = {{ (int) $student->id }};
+    const roomID       = '{{ $room->id }}';
+    const sendUrl      = '{{ route("admin.inbox.send", [$job->id, $student->id]) }}';
+    const readUrl      = '{{ route("admin.inbox.read", [$job->id, $student->id]) }}';
 
-    // Mark messages as read
-    fetch(readUrl, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken } });
+    let isEditingId    = null;
 
-    // File preview
-    fileInput.addEventListener('change', function () {
-        preview.innerHTML = '';
-        if (!fileInput.files.length) { preview.style.display = 'none'; return; }
-        preview.style.display = 'flex';
-        Array.from(fileInput.files).forEach(f => {
-            const chip = document.createElement('span');
-            chip.style.cssText = 'background:#ffedd5;color:#9a3412;border-radius:6px;padding:.2rem .55rem;font-size:.78rem;';
-            chip.textContent = f.name;
-            preview.appendChild(chip);
-        });
+    // Web Audio soft chime
+    function playChime() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.08, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.3);
+        } catch(e) {}
+    }
+
+    function scrollBottom(smooth = false) {
+        if (smooth) {
+            win.scrollTo({ top: win.scrollHeight, behavior: 'smooth' });
+        } else {
+            win.scrollTop = win.scrollHeight;
+        }
+        scrollBtn.style.display = 'none';
+    }
+
+    win.addEventListener('scroll', () => {
+        const isNearBottom = win.scrollHeight - win.scrollTop - win.clientHeight < 80;
+        if (isNearBottom) scrollBtn.style.display = 'none';
     });
 
-    function linkifyText(text, isMine) {
+    scrollBottom();
+
+    // Auto-expand textarea
+    input.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            form.dispatchEvent(new Event('submit'));
+        }
+    });
+
+    // Paste image
+    document.addEventListener('paste', (e) => {
+        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+        for (let item of items) {
+            if (item.type.indexOf('image') === 0) {
+                const blob = item.getAsFile();
+                const dataTransfer = new DataTransfer();
+                if (fileIn.files.length > 0) {
+                    Array.from(fileIn.files).forEach(f => dataTransfer.items.add(f));
+                }
+                dataTransfer.items.add(blob);
+                fileIn.files = dataTransfer.files;
+                fileIn.dispatchEvent(new Event('change'));
+            }
+        }
+    });
+
+    fileIn.addEventListener('change', () => {
+        prev.innerHTML = '';
+        if (fileIn.files.length > 0) {
+            prev.style.display = 'flex';
+            Array.from(fileIn.files).forEach(f => {
+                const item = document.createElement('div');
+                item.style.cssText = 'padding:0.3rem 0.65rem; background:#fff7ed; border:1px solid #fed7aa; border-radius:16px; font-size:0.75rem; color:#ea580c; display:flex; align-items:center; gap:4px;';
+                item.innerHTML = `
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                    ${f.name.length > 18 ? f.name.substring(0, 18) + '...' : f.name}
+                `;
+                prev.appendChild(item);
+            });
+        } else {
+            prev.style.display = 'none';
+        }
+    });
+
+    window.openLightbox = function(url) {
+        document.getElementById('lightboxImg').src = url;
+        document.getElementById('chatLightbox').style.display = 'flex';
+    };
+
+    function linkify(text, isMine) {
         if (!text) return '';
         const safe = text
             .replace(/&/g, '&amp;')
@@ -230,185 +417,251 @@ document.addEventListener('DOMContentLoaded', function () {
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#039;');
         const cls = isMine ? 'chat-link chat-link-mine' : 'chat-link';
-        return safe.replace(/(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/gi, function(url) {
-            return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="${cls}">${url}</a>`;
-        });
+        const urlRegex = /(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/gi;
+        return safe.replace(urlRegex, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="${cls}">${url}</a>`);
     }
 
-    // Render bubble helper
-    function renderBubble(msg, isMine) {
-        if (isMine === undefined) {
-            isMine = msg.user?.id == myId || (msg.sender_role === 'admin' && !msg.user);
-        }
+    function renderMessage(msg, isMine) {
+        const noMsg = document.getElementById('noMsg');
+        if (noMsg) noMsg.remove();
 
-        const dir   = isMine ? 'row-reverse' : 'row';
-        const align = isMine ? 'flex-end' : 'flex-start';
-        const bg    = isMine ? '#ea580c' : '#fff';
-        const color = isMine ? '#fff'    : '#1e293b';
-        const br    = isMine ? '16px 4px 16px 16px' : '4px 16px 16px 16px';
-        const linkC = isMine ? '#fed7aa' : '#ea580c';
         const label = isMine ? 'คุณ' : (msg.user?.name || '{{ $student->full_name }}');
-        const photo = msg.user?.photo || msg.sender_photo || null;
-        const avatarBg = isMine ? '#ea580c' : '#64748b';
-        const initial  = label.charAt(0).toUpperCase();
-        
-        var avatarHtml = '';
+        const photo = msg.user?.photo || null;
+
+        const wrapper = document.createElement('div');
+        wrapper.id = 'cm-' + msg.id;
+        wrapper.className = `msg-bubble-container ${isMine ? 'msg-bubble-mine' : 'msg-bubble-theirs'}`;
+
+        let avatarHtml = '';
         if (!isMine) {
             if (photo) {
-                avatarHtml = '<div style="position:relative;flex-shrink:0;"><img src="' + photo + '" alt="' + label + '" style="width:28px;height:28px;border-radius:50%;object-fit:cover;"><span id="avatar-dot-' + msg.id + '" class="student-online-dot" style="display:none;position:absolute;bottom:0;right:0;width:10px;height:10px;background:#10b981;border-radius:50%;border:2px solid #f8fafc;"></span></div>';
+                avatarHtml = `<img src="${photo}" alt="" style="width:30px;height:30px;border-radius:50%;object-fit:cover;">`;
             } else {
-                avatarHtml = '<div style="position:relative;flex-shrink:0;"><div style="width:28px;height:28px;border-radius:50%;background:' + avatarBg + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;">' + initial + '</div><span id="avatar-dot-' + msg.id + '" class="student-online-dot" style="display:none;position:absolute;bottom:0;right:0;width:10px;height:10px;background:#10b981;border-radius:50%;border:2px solid #f8fafc;"></span></div>';
+                avatarHtml = `<div style="width:30px;height:30px;border-radius:50%;background:#64748b;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;">${label.charAt(0).toUpperCase()}</div>`;
             }
         }
-
-        var hasOnlyImages = !msg.message && msg.attachments && msg.attachments.length > 0 && msg.attachments.every(a => (a.mime_type || '').startsWith('image/'));
-        var attHtml = '';
-        (msg.attachments || []).forEach(function(a) {
-            if ((a.mime_type || '').startsWith('image/')) {
-                attHtml += '<img src="' + a.url + '" style="max-width:110px;max-height:110px;object-fit:cover;border-radius:8px;margin-top:' + (hasOnlyImages ? '0' : '.35rem') + ';display:block;cursor:pointer;box-shadow:' + (hasOnlyImages ? 'none' : '0 1px 3px rgba(0,0,0,0.1)') + ';" onclick="window.openLightbox(\'' + a.url + '\')">';
+        
+        let attachmentsHtml = '';
+        (msg.attachments || []).forEach(att => {
+            const url = att.url || (att.file_path ? '/storage/' + att.file_path : '#');
+            const isImg = att.is_image || att.mime_type?.startsWith('image/');
+            if (isImg) {
+                attachmentsHtml += `<img src="${url}" alt="" class="attachment-img" onclick="openLightbox('${url}')">`;
             } else {
-                attHtml += '<a href="' + a.url + '" target="_blank" style="display:flex;align-items:center;gap:.4rem;margin-top:.35rem;color:' + linkC + ';font-size:.8rem;text-decoration:none;"><svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> ' + a.original_name + '</a>';
+                attachmentsHtml += `
+                    <a href="${url}" target="_blank" download="${att.original_name}" class="attachment-file">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                        ${att.original_name}
+                    </a>`;
             }
         });
 
-        const time = msg.created_at ? new Date(msg.created_at).toLocaleTimeString('th-TH', {hour:'2-digit',minute:'2-digit'}) : '';
-        var status = '';
-        if (isMine && msg.read_at) {
-            status = '<span id="admin-read-' + msg.id + '" style="font-size:.6rem;color:#f97316;">✓✓ เห็นเมื่อ ' + new Date(msg.read_at).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}) + '</span>';
-        } else if (isMine) {
-            status = '<span id="admin-read-' + msg.id + '" style="font-size:.6rem;color:#94a3b8;">✓ ส่งแล้ว</span>';
+        const timeStr = msg.time_formatted || new Date(msg.created_at).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+        const safeMessage = linkify(msg.message || msg.body || '', isMine);
+
+        let actionsHtml = '';
+        if (isMine && !String(msg.id).startsWith('tmp-')) {
+            actionsHtml = `
+                <div class="msg-actions">
+                    <button class="msg-action-btn" onclick="editAdminMessage('${msg.id}')" title="แก้ไข">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    </button>
+                    <button class="msg-action-btn" onclick="deleteAdminMessage('${msg.id}')" title="ลบ">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                </div>`;
         }
 
-        var actionsHtml = '';
-        if (msg.id && !msg.id.toString().startsWith('tmp-')) {
-            var mBtn = '<button onclick="var m=this.nextElementSibling; document.querySelectorAll(\'.msg-dropdown\').forEach(function(el){if(el!==m)el.style.display=\'none\';}); m.style.display=m.style.display===\'flex\'?\'none\' : \'flex\';" style="background:transparent; border:none; cursor:pointer; padding:4px; color:#94a3b8; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:all .2s; margin:0 4px;"><svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg></button>';
-            var mMenu = '<div class="msg-dropdown" style="display:none; position:absolute; ' + (isMine ? 'right:34px;' : 'left:34px;') + ' bottom:-4px; background:#2d2d2d; color:#f8fafc; border-radius:12px; padding:6px 0; min-width:130px; box-shadow:0 4px 12px rgba(0,0,0,0.25); flex-direction:column; z-index:30;">' +
-                '<div style="position:absolute; ' + (isMine ? 'right:-4px;' : 'left:-4px;') + ' bottom:12px; width:10px; height:10px; background:#2d2d2d; transform:rotate(45deg); z-index:-1; border-radius:1px;"></div>' +
-                (isMine ? '<div onclick="editMessageBtn(\'' + msg.id + '\')" style="padding:8px 16px; font-size:0.85rem; cursor:pointer; transition:background .15s; font-weight:500;" onmouseover="this.style.background=\'rgba(255,255,255,0.1)\'" onmouseout="this.style.background=\'transparent\'">แก้ไข</div>' : '') +
-                (isMine ? '<div onclick="deleteMessageBtn(\'' + msg.id + '\')" style="padding:8px 16px; font-size:0.85rem; cursor:pointer; transition:background .15s; font-weight:500;" onmouseover="this.style.background=\'rgba(255,255,255,0.1)\'" onmouseout="this.style.background=\'transparent\'">ยกเลิกการส่ง</div>' : '') +
-            '</div>';
+        wrapper.innerHTML = `
+            ${!isMine ? `<div style="position:relative;flex-shrink:0;">${avatarHtml}</div>` : ''}
+            ${actionsHtml}
+            <div style="display:flex;flex-direction:column;align-items:${isMine ? 'flex-end' : 'flex-start'};max-width:72%;">
+                <span style="font-size:.68rem;color:#94a3b8;margin-bottom:.15rem;">${label}</span>
+                <div id="bubble-${msg.id}" style="padding:.55rem .85rem;border-radius:${isMine ? '16px 4px 16px 16px' : '4px 16px 16px 16px'};background:${isMine ? '#ea580c' : '#ffffff'};color:${isMine ? '#fff' : '#1e293b'};font-size:.9rem;box-shadow:0 1px 3px rgba(0,0,0,.04);word-break:break-word;border:${isMine ? 'none' : '1px solid #e2e8f0'};">
+                    ${safeMessage ? `<div class="msg-text-body">${safeMessage}</div>` : ''}
+                    ${msg.is_edited ? '<span class="edit-badge" style="font-size:0.65rem;opacity:0.8;margin-left:4px;">(แก้ไขแล้ว)</span>' : ''}
+                    ${attachmentsHtml}
+                </div>
+                <div style="display:flex;align-items:center;gap:0.35rem;margin-top:0.25rem;">
+                    <span style="font-size:.65rem;color:#94a3b8;">${timeStr}</span>
+                    ${isMine ? `<span id="status-${msg.id}" style="font-size:0.65rem;color:${String(msg.id).startsWith('tmp-') ? '#94a3b8' : '#ea580c'};">${String(msg.id).startsWith('tmp-') ? 'กำลังส่ง...' : '✓ ส่งแล้ว'}</span>` : ''}
+                </div>
+            </div>
+        `;
 
-            actionsHtml = '<div class="msg-actions" style="display:flex; position:relative; flex-direction:' + (isMine?'row':'row-reverse') + '; z-index: 20; align-items:center; margin-bottom:18px;" onmouseleave="const m=this.querySelector(\'.msg-dropdown\');if(m)m.style.display=\'none\';">' +
-                mBtn + mMenu +
-            '</div>';
+        const isNearBottom = win.scrollHeight - win.scrollTop - win.clientHeight < 120;
+        win.appendChild(wrapper);
+
+        if (isNearBottom || isMine) {
+            scrollBottom(true);
+        } else {
+            scrollBtn.style.display = 'flex';
         }
-
-        return '<div id="cm-' + msg.id + '" class="msg-bubble-container" style="display:flex;flex-direction:' + dir + ';align-items:flex-end;gap:.4rem;">' +
-            avatarHtml +
-            '<div style="display:flex;flex-direction:column;align-items:' + align + ';max-width:72%;">' +
-                '<span style="font-size:.68rem;color:#94a3b8;margin-bottom:.15rem;">' + label + '</span>' +
-                '<div style="padding:' + (hasOnlyImages ? '0' : '.55rem .85rem') + ';border-radius:' + br + ';background:' + (hasOnlyImages ? 'transparent' : bg) + ';color:' + color + ';font-size:.875rem;box-shadow:' + (hasOnlyImages ? 'none' : '0 1px 3px rgba(0,0,0,.08)') + ';word-break:break-word;" id="msg-body-' + msg.id + '">' +
-                    (msg.message ? '<p style="margin:0;">' + linkifyText(msg.message, isMine) + '</p>' : '') +
-                    (msg.is_edited ? '<span style="font-size:0.6rem;opacity:0.7;margin-left:5px;">(แก้ไขแล้ว)</span>' : '') +
-                    attHtml +
-                '</div>' +
-                (status || '<span style="font-size:.65rem;color:#94a3b8;margin-top:.15rem;">' + time + '</span>') +
-            '</div>' +
-            actionsHtml +
-        '</div>';
     }
 
-    // Send message
-    form.addEventListener('submit', function (e) {
+    // Submit Handler
+    form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const text  = input.value.trim();
-        const files = fileInput.files;
-        if (!text && !files.length) return;
+        const text = input.value.trim();
 
-        const fd = new FormData(form);
-        const btn = document.getElementById('sendBtn');
-        btn.disabled = true;
-
-        if (window.currentAdminEditId) {
-            fetch('/admin/inbox/messages/' + window.currentAdminEditId, {
-                method: 'PUT',
-                headers: { 
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({ message: text })
-            }).then(r => r.json()).then(res => {
-                btn.disabled = false;
-                if (res.success) {
-                    const bodyEl = document.getElementById('msg-body-' + window.currentAdminEditId);
-                    if (bodyEl) {
-                        bodyEl.innerHTML = '<p style="margin:0;">' + linkifyText(text, true) + '</p><span style="font-size:0.6rem;opacity:0.7;margin-left:5px;">(แก้ไขแล้ว)</span>';
+        if (isEditingId) {
+            if (!text) return;
+            try {
+                const res = await window.axios.put('/admin/inbox/messages/' + isEditingId, { message: text });
+                if (res.data.success) {
+                    const bubble = document.getElementById('bubble-' + isEditingId);
+                    if (bubble) {
+                        const bodyEl = bubble.querySelector('.msg-text-body');
+                        if (bodyEl) bodyEl.innerHTML = linkify(text, true);
+                        if (!bubble.querySelector('.edit-badge')) {
+                            bubble.insertAdjacentHTML('beforeend', '<span class="edit-badge" style="font-size:0.65rem;opacity:0.8;margin-left:4px;">(แก้ไขแล้ว)</span>');
+                        }
                     }
-                    
-                    window.currentAdminEditId = null;
-                    input.value = '';
-                    btn.innerHTML = '<svg style="width:16px;height:16px;transform:rotate(45deg);margin-left:-2px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';
-                    btn.style.background = '#ea580c';
-                    var cancelBtn = document.getElementById('adminCancelEditBtn');
-                    if (cancelBtn) cancelBtn.remove();
-                    
-                } else if (res.message) {
-                    alert(res.message);
                 }
-            }).catch(() => { btn.disabled = false; });
+            } catch(err) {
+                alert('ไม่สามารถแก้ไขข้อความได้');
+            } finally {
+                cancelEditMode();
+            }
             return;
         }
 
-        // Optimistic bubble
-        const noMsg = document.getElementById('noMsg');
-        if (noMsg) noMsg.remove();
-        const ADMIN_PHOTO = '{{ Auth::user()->profile_photo ? asset('storage/' . Auth::user()->profile_photo) : '' }}';
-        const optimistic = { 
-            id: 'tmp-' + Date.now(), 
-            sender_role: 'admin', 
-            sender_name: 'คุณ', 
-            sender_photo: ADMIN_PHOTO || null, 
-            message: text, 
-            attachments: [], 
-            created_at: new Date().toISOString() 
-        };
-        win.insertAdjacentHTML('beforeend', renderBubble(optimistic, true));
-        win.scrollTop = win.scrollHeight;
-        input.value = '';
-        fileInput.value = '';
-        preview.innerHTML = '';
-        preview.style.display = 'none';
+        if (!text && fileIn.files.length === 0) return;
 
-        fetch(sendUrl, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken }, body: fd })
-            .then(r => r.json())
-            .then(data => {
-                const tmp = document.getElementById('cm-' + optimistic.id);
-                if (tmp && data.message) {
-                    tmp.outerHTML = renderBubble(data.message, true);
-                } else if (tmp && data.error) {
-                    tmp.style.opacity = '0.5';
-                    tmp.style.border = '1px solid red';
-                    alert(data.error);
-                }
-                btn.disabled = false;
-            })
-            .catch(() => { btn.disabled = false; });
+        btn.disabled = true;
+        const formData = new FormData(form);
+
+        // Optimistic UI
+        const tempId = 'tmp-' + Date.now();
+        const optimisticMsg = {
+            id: tempId,
+            message: text,
+            user_id: myId,
+            attachments: [],
+            created_at: new Date().toISOString(),
+            user: { id: myId, name: 'คุณ' }
+        };
+
+        if (fileIn.files.length > 0) {
+            Array.from(fileIn.files).forEach(f => {
+                optimisticMsg.attachments.push({
+                    original_name: f.name,
+                    url: URL.createObjectURL(f),
+                    is_image: f.type.startsWith('image/'),
+                    mime_type: f.type
+                });
+            });
+        }
+
+        renderMessage(optimisticMsg, true);
+        const optEl = document.getElementById('cm-' + tempId);
+        if (optEl) optEl.style.opacity = '0.7';
+
+        input.value = '';
+        input.style.height = 'auto';
+        fileIn.value = '';
+        prev.innerHTML = '';
+        prev.style.display = 'none';
+
+        try {
+            const response = await window.axios.post(sendUrl, formData, {
+                headers: { 'Accept': 'application/json' }
+            });
+            if (response.data.success) {
+                if (optEl) optEl.remove();
+                renderMessage(response.data.message, true);
+            }
+        } catch (err) {
+            if (optEl) {
+                optEl.style.opacity = '1';
+                const statusSpan = document.getElementById('status-' + tempId);
+                if (statusSpan) { statusSpan.textContent = 'ส่งไม่สำเร็จ'; statusSpan.style.color = '#ef4444'; }
+            }
+            alert('ไม่สามารถส่งข้อความได้ กรุณาลองใหม่อีกครั้ง');
+        } finally {
+            btn.disabled = false;
+        }
     });
 
-    // Laravel Echo — receive messages
+    // Delete message
+    window.deleteAdminMessage = async function(id) {
+        if (!confirm('ต้องการลบข้อความนี้ใช่หรือไม่?')) return;
+        try {
+            const res = await window.axios.delete('/admin/inbox/messages/' + id);
+            if (res.data.success) {
+                const el = document.getElementById('cm-' + id);
+                if (el) {
+                    el.style.transition = 'all 0.2s ease-out';
+                    el.style.opacity = '0';
+                    setTimeout(() => el.remove(), 200);
+                }
+            }
+        } catch(e) {
+            alert('ไม่สามารถลบข้อความได้');
+        }
+    };
+
+    // Edit message
+    window.editAdminMessage = function(id) {
+        const bubble = document.getElementById('bubble-' + id);
+        if (!bubble) return;
+        const textEl = bubble.querySelector('.msg-text-body');
+        if (!textEl) return;
+
+        isEditingId = id;
+        input.value = textEl.textContent.trim();
+        input.focus();
+        btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        btn.style.background = '#10b981';
+    };
+
+    function cancelEditMode() {
+        isEditingId = null;
+        input.value = '';
+        input.style.height = 'auto';
+        btn.innerHTML = '<svg style="width:18px;height:18px;transform:rotate(45deg);margin-left:-2px;" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';
+        btn.style.background = '#ea580c';
+    }
+
+    // Delete chat room
+    window.deleteChat = function() {
+        if (!confirm('ยืนยันลบห้องแชทนี้และข้อความทั้งหมด? (นักศึกษาจะมองไม่เห็นแชทนี้อีก)')) return;
+        window.axios.delete('{{ route("admin.inbox.delete", [$job->id, $student->id]) }}')
+            .then(res => {
+                if (res.data.success) {
+                    window.location.href = '{{ route("admin.inbox.index") }}';
+                }
+            });
+    };
+
+    // Real-time Laravel Echo + Reverb
     const initEcho = () => {
         if (window.Echo) {
-            window.Echo.private('chat.room.' + '{{ $room->id }}')
+            window.Echo.private('chat.room.' + roomID)
                 .listen('.MessageSent', function (msg) {
                     if (msg.user && msg.user.id == myId) return;
-                    const noMsg = document.getElementById('noMsg');
-                    if (noMsg) noMsg.remove();
                     if (!document.getElementById('cm-' + msg.id)) {
-                        win.insertAdjacentHTML('beforeend', renderBubble(msg, false));
-                        win.scrollTop = win.scrollHeight;
+                        playChime();
+                        renderMessage(msg, false);
+                        window.axios.post(readUrl);
                     }
-                    // Auto mark-read
-                    window.axios.post(readUrl);
                 })
                 .listen('.MessageDeleted', function (e) {
                     const el = document.getElementById('cm-' + e.id);
-                    if (el) el.remove();
+                    if (el) {
+                        el.style.transition = 'all 0.2s';
+                        el.style.opacity = '0';
+                        setTimeout(() => el.remove(), 200);
+                    }
                 })
                 .listen('.MessageEdited', function (e) {
-                    const bodyEl = document.getElementById('msg-body-' + e.id);
-                    if (bodyEl) {
-                        bodyEl.innerHTML = '<p style="margin:0;">' + linkifyText(e.message, false) + '</p><span style="font-size:0.6rem;opacity:0.7;margin-left:5px;">(แก้ไขแล้ว)</span>';
+                    const bubble = document.getElementById('bubble-' + e.id);
+                    if (bubble) {
+                        const bodyEl = bubble.querySelector('.msg-text-body');
+                        if (bodyEl) bodyEl.innerHTML = linkify(e.message, false);
+                        if (!bubble.querySelector('.edit-badge')) {
+                            bubble.insertAdjacentHTML('beforeend', '<span class="edit-badge" style="font-size:0.65rem;opacity:0.8;margin-left:4px;">(แก้ไขแล้ว)</span>');
+                        }
                     }
                 })
                 .listenForWhisper('typing', function(e) {
@@ -417,27 +670,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (bar) {
                         bar.style.display = 'block';
                         clearTimeout(window.adminTypingTimer);
-                        window.adminTypingTimer = setTimeout(() => bar.style.display='none', 3000);
+                        window.adminTypingTimer = setTimeout(() => bar.style.display = 'none', 2800);
                     }
                 });
 
             // Typing emit
             input.addEventListener('input', function() {
-                window.Echo.private('chat.room.' + '{{ $room->id }}')
+                window.Echo.private('chat.room.' + roomID)
                     .whisper('typing', { userId: myId, name: 'ผู้ดูแล' });
             });
-
-            // Admin inbox channel (chat deleted notification)
-            window.Echo.private('admin.inbox')
-                .listen('.ChatDeleted', function (e) {
-                    if (e.room_id === '{{ $room->id }}') {
-                        if (window.AdminChatManager) {
-                            window.AdminChatManager.closeChat('{{ $room->job_id }}_{{ $room->users->where("role","student")->first()?->id }}');
-                        } else {
-                            window.location.href = '{{ route("admin.inbox.index") }}';
-                        }
-                    }
-                });
 
             // Presence channel — student online status
             window.Echo.join('online')
@@ -452,112 +693,22 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (user.id == studentId) toggleStudentOnline(false);
                 });
 
+            function toggleStudentOnline(isOnline) {
+                const headerDot = document.getElementById('adminOnlineDot');
+                const label = document.getElementById('studentOnlineLabel');
+                if (headerDot) headerDot.style.display = isOnline ? 'inline-block' : 'none';
+                if (label) {
+                    label.innerHTML = isOnline 
+                        ? '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#10b981;margin-right:4px;"></span>ออนไลน์' 
+                        : '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>ออฟไลน์';
+                }
+            }
+
         } else {
             setTimeout(initEcho, 200);
         }
     };
     initEcho();
-
-    // Backup polling (every 4 seconds) to guarantee 100% real-time delivery
-    // NOTE: อยู่นอก initEcho() เพื่อให้ทำงานแม้ Echo ยังไม่ได้เชื่อมต่อ
-    setInterval(function() {
-        fetch(window.location.href, { headers: { 'Accept': 'text/html', 'X-Requested-With': 'XMLHttpRequest' } })
-            .then(r => r.text())
-            .then(html => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const newWin = doc.getElementById('chatWindow');
-                if (newWin) {
-                    const newBubbles = newWin.querySelectorAll('.msg-bubble-container');
-                    let added = false;
-                    newBubbles.forEach(b => {
-                        if (b.id && !document.getElementById(b.id)) {
-                            win.insertAdjacentHTML('beforeend', b.outerHTML);
-                            added = true;
-                        }
-                    });
-                    if (added) {
-                        win.scrollTop = win.scrollHeight;
-                        window.axios.post(readUrl).catch(() => {});
-                    }
-                }
-            }).catch(() => {});
-    }, 4000);
-
-    function toggleStudentOnline(isOnline) {
-        const headerDot = document.getElementById('adminOnlineDot');
-        if (headerDot) headerDot.style.display = isOnline ? 'inline-block' : 'none';
-        document.querySelectorAll('.student-online-dot').forEach(dot => {
-            dot.style.display = isOnline ? 'inline-block' : 'none';
-        });
-    }
-
 });
-
-window.deleteChat = function() {
-    if (!confirm('ยืนยันลบห้องแชทนี้และข้อความทั้งหมด? (นักศึกษาจะมองไม่เห็นแชทนี้อีก)')) return;
-    fetch('{{ route("admin.inbox.delete", [$job->id, $student->id]) }}', {
-        method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') }
-    }).then(r => r.json()).then(res => {
-        if (res.success) {
-            if (window.AdminChatManager) {
-                window.AdminChatManager.closeChat('{{ $job->id }}_{{ $student->id }}');
-            } else {
-                window.location.href = '{{ route("admin.inbox.index") }}';
-            }
-        }
-    });
-};
-
-window.deleteMessageBtn = function(id) {
-    if (!confirm('ต้องการลบข้อความนี้ใช่หรือไม่?')) return;
-    fetch('/admin/inbox/messages/' + id, {
-        method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') }
-    }).then(r => r.json()).then(res => {
-        if (res.success) {
-            const el = document.getElementById('cm-' + id);
-            if (el) el.remove();
-        }
-    });
-};
-
-window.currentAdminEditId = null;
-
-window.editMessageBtn = function(id) {
-    const bodyEl = document.getElementById('msg-body-' + id);
-    if (!bodyEl) return;
-    const p = bodyEl.querySelector('p');
-    if (!p) return;
-    
-    let currentText = p.textContent.replace('(แก้ไขแล้ว)', '').trim();
-    
-    const input = document.getElementById('msgInput');
-    input.value = currentText;
-    input.focus();
-    
-    window.currentAdminEditId = id;
-    
-    const btn = document.getElementById('sendBtn');
-    btn.innerHTML = '<svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> บันทึก';
-    btn.style.background = '#10b981';
-    
-    if (!document.getElementById('adminCancelEditBtn')) {
-        const cancelBtn = document.createElement('button');
-        cancelBtn.id = 'adminCancelEditBtn';
-        cancelBtn.type = 'button';
-        cancelBtn.innerHTML = 'ยกเลิก';
-        cancelBtn.style.cssText = 'background:#ef4444; color:#fff; border:none; border-radius:12px; padding:0 1rem; font-weight:500; font-size:.95rem; cursor:pointer; height:42px; margin-right:4px; margin-left:4px;';
-        cancelBtn.onclick = function() {
-            window.currentAdminEditId = null;
-            input.value = '';
-            btn.innerHTML = '<svg style="width:16px;height:16px;transform:rotate(45deg);margin-left:-2px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';
-            btn.style.background = '#ea580c';
-            this.remove();
-        };
-        btn.parentNode.insertBefore(cancelBtn, btn);
-    }
-};
 </script>
 @endsection
