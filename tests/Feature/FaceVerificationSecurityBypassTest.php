@@ -17,13 +17,15 @@ use Tests\TestCase;
 
 class FaceVerificationSecurityBypassTest extends TestCase
 {
-    use RefreshDatabase;
-
     protected function setUp(): void
     {
-        Config::set('services.ai_server.urls', null);
-        Config::set('services.ai_server.url', 'http://127.0.0.1:8082');
-        Config::set('services.ai_server.key', 'test-secret-key-12345');
+        parent::setUp();
+
+        config([
+            'services.ai_server.urls' => null,
+            'services.ai_server.url'  => 'http://127.0.0.1:8082',
+            'services.ai_server.key'  => 'test-secret-key-12345',
+        ]);
         Cache::flush();
     }
 
