@@ -226,22 +226,22 @@ faceScanMethod = 'js'
 
 ## 🔒 ความปลอดภัย
 
-### InsightFace 512D
+### InsightFace 512D & Passive Liveness
 ```
-✅ ตรวจจับการปลอมแปลง:
-   ├─ ใช้รูปถ่าย
-   ├─ ใช้วิดีโอ
-   └─ ใช้หน้ากาก (บางส่วน)
+✅ Passive Liveness Heuristic:
+   ├─ LBP Texture Analysis (วัด micro-texture ของผิว)
+   ├─ FFT Frequency Analysis (ตรวจ pattern การพิมพ์/moiré)
+   ├─ Eye Landmarks / Openness (คัดกรองภาพนิ่ง)
+   └─ Color Variance (ตรวจความสมดุลของช่องสี)
 
-✅ ทนต่อการเปลี่ยนแปลง:
+   ⚠️ หมายเหตุ: เป็นการคัดกรองเบื้องต้นแบบ Lightweight Heuristic
+   (CPU-friendly / Low-latency) ไม่ใช่งานโมเดล Deep Learning Anti-Spoofing ระดับ Production
+
+✅ ทนต่อการเปลี่ยนแปลง (ArcFace 512D):
    ├─ แสงต่างๆ
    ├─ มุมต่างๆ
    ├─ อุปกรณ์เสริม (แว่น, หมวก)
    └─ อายุ, สีหน้า
-
-✅ ขนาด 512 มิติ:
-   └─ เก็บรายละเอียดมากกว่า 128D
-   └─ ยากต่อการหลอก
 ```
 
 ---

@@ -36,10 +36,10 @@
 
 ## คุณสมบัติหลักของระบบ (Core Features)
 
-### 1. ระบบยืนยันตัวตนด้วยใบหน้า (AI Face Verification & Liveness Detection)
-- **Face Landmark & 3D Mesh Detection:** ตรวจจับโครงหน้าและจุดสำคัญบนใบหน้าแบบ 3D ผ่านเบราว์เซอร์
-- **Anti-Spoofing & Liveness Verification:** ระบบป้องกันการปลอมแปลงใบหน้า (รูปถ่าย/วิดีโอ) เพื่อความถูกต้อง 100%
-- **InsightFace AI Service:** ประมวลผลและเปรียบเทียบ Face Encodings ความแม่นยำสูงกับฐานข้อมูล
+### 1. ระบบยืนยันตัวตนด้วยใบหน้า (AI Face Verification & Passive Liveness)
+- **Face Landmark & Alignment:** ตรวจจับโครงหน้าและจุดสำคัญบนใบหน้าเพื่อจัดตำแหน่งก่อนส่งประมวลผล
+- **Passive Liveness Heuristic:** ระบบตรวจจับความเป็นบุคคลจริงเบื้องต้นผ่านการวิเคราะห์ Texture (LBP), Frequency Domain (FFT), Eye Landmarks และ Color Variance เพื่อคัดกรองภาพถ่ายและหน้าจอมือถือ
+- **InsightFace AI Service (ArcFace 512D):** ประมวลผลและเปรียบเทียบ Face Embedding ความแม่นยำสูงบนเซิร์ฟเวอร์แบบ Server-Authoritative
 
 ### 2. ระบบสื่อสารและแจ้งเตือน Real-Time (Real-Time Engine)
 - **Laravel Reverb WebSockets:** อัปเดตสถานะการเช็คชื่อ จำนวนผู้เข้าร่วม และการแชตสดทันทีโดยไม่ต้อง Refresh หน้าจอ
