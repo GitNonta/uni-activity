@@ -41,15 +41,23 @@ class ProfileAdminController extends Controller
 
         // สถิติการใช้งาน
         $stats = [
-            'activities_count'     => Activity::where('created_by', $user->id)->count(),
-            'announcements_count'  => Announcement::where('created_by', $user->id)->count(),
-            'joined_at'            => $user->created_at,
+            'activities_count'    => Activity::where('created_by', $user->id)->count(),
+            'announcements_count' => Announcement::where('created_by', $user->id)->count(),
+            'audit_logs_count'    => \App\Models\AdminAuditLog::where('user_id', $user->id)->count(),
+            'joined_at'           => $user->created_at,
+            'last_login_at'       => $user->last_login_at,
+            'last_login_ip'       => $user->last_login_ip,
         ];
+
+        $recentLogs = \App\Models\AdminAuditLog::where('user_id', $user->id)
+            ->latest()
+            ->take(6)
+            ->get();
 
         // API Tokens สำหรับ Personal Access Tokens / Privacy settings
         $tokens = $user->tokens()->latest()->get();
 
-        return view('admin.profile.edit', compact('user', 'stats', 'tokens'));
+        return view('admin.profile.edit', compact('user', 'stats', 'tokens', 'recentLogs'));
     }
 
     /**
