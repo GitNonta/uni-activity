@@ -303,9 +303,9 @@ class CheckInService
         $lockKey = "checkin_lock_{$user->id}_{$activity->id}";
 
         // ── 1. ป้องกัน Race Condition ด้วย Atomic Cache Lock ──
-        return Cache::lock($lockKey, 10)->block(5, function () use ($activity, $isCheckoutToken, $user, $method, $latitude, $longitude, $metaData): array {
+        return Cache::lock($lockKey, 10)->block(5, function () use ($token, $activity, $isCheckoutToken, $user, $method, $latitude, $longitude, $metaData): array {
             // ── 2. ทำงานภายใต้ Database Transaction เพื่อความถูกต้องแบบ All-or-Nothing ──
-            return DB::transaction(function () use ($activity, $isCheckoutToken, $user, $method, $latitude, $longitude, $metaData): array {
+            return DB::transaction(function () use ($token, $activity, $isCheckoutToken, $user, $method, $latitude, $longitude, $metaData): array {
                 $now = now();
 
                 // ตรวจสอบการลงทะเบียน
