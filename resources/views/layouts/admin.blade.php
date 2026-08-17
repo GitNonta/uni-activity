@@ -26,37 +26,145 @@
 *, *::before, *::after { box-sizing: border-box; }
 
 /* ════════════════════════════
-   SIDEBAR LAYOUT
+   UNIFIED SEAMLESS TOP HEADER (Full Width)
    ════════════════════════════ */
-.sb-shell { display: flex; min-height: 100vh; background: #f8fafc; }
+.admin-topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: #111827;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    z-index: 500;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    box-sizing: border-box;
+}
+
+.admin-topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.admin-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    width: 220px;
+    flex-shrink: 0;
+    transition: opacity 0.2s;
+}
+.admin-brand:hover { opacity: 0.9; }
+
+.admin-brand-text {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.025em;
+}
+
+.admin-topbar-divider {
+    width: 1px;
+    height: 22px;
+    background: rgba(255, 255, 255, 0.12);
+    flex-shrink: 0;
+}
+
+.admin-page-title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #f8fafc;
+    letter-spacing: -0.015em;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.sb-toggle-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    cursor: pointer;
+    color: #cbd5e1;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all .2s;
+    flex-shrink: 0;
+}
+.sb-toggle-btn:hover {
+    background: #ea580c;
+    border-color: #ea580c;
+    color: #ffffff;
+    transform: scale(1.05);
+}
+
+.sb-search-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    height: 36px;
+    padding: 0 14px;
+    font-size: 0.825rem;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all .2s;
+    min-width: 220px;
+    justify-content: space-between;
+}
+.sb-search-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.22);
+    color: #f1f5f9;
+}
+.sb-search-btn kbd {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 0.725rem;
+    font-family: monospace;
+    color: #cbd5e1;
+}
+
+/* ════════════════════════════
+   SIDEBAR & CONTENT
+   ════════════════════════════ */
+.sb-shell { 
+    padding-top: 64px;
+    display: flex; 
+    min-height: 100vh; 
+    background: #f8fafc; 
+}
+
 .sb-sidebar { 
     width: 260px; 
-    background: #111827; /* Darker, more modern navy */
+    background: #111827; 
     display: flex; 
     flex-direction: column; 
     position: fixed; 
-    top: 0; left: 0; bottom: 0; 
+    top: 64px; 
+    left: 0; 
+    bottom: 0; 
     z-index: 300; 
     transition: all .3s cubic-bezier(.4,0,.2,1); 
     overflow: hidden;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 4px 0 24px rgba(0,0,0,0.05);
 }
 .sb-sidebar.collapsed { width: 80px; }
-
-.sidebar-brand { 
-    height: 64px; 
-    display: flex; 
-    align-items: center; 
-    padding: 0 20px; 
-    color: #fff; 
-    font-weight: 800; 
-    font-size: 1.1rem;
-    letter-spacing: -0.025em;
-    white-space: nowrap; 
-    overflow: hidden;
-    background: rgba(255,255,255,0.02);
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-}
 
 /* Custom Slim Scrollbar */
 .sb-nav::-webkit-scrollbar { width: 5px; }
@@ -138,15 +246,6 @@
     display: none !important; 
 }
 
-.sb-sidebar.collapsed .sidebar-brand {
-    padding: 0;
-    justify-content: center;
-}
-
-.sb-sidebar.collapsed .sidebar-brand {
-    font-size: 0; 
-}
-
 /* ── Sidebar Footer ── */
 .sb-footer { 
     padding: 14px 12px; 
@@ -203,139 +302,47 @@
 .sidebar-overlay.open { display: block; }
 
 /* ── Content ── */
-.sb-content { flex: 1; min-width: 0; margin-left: 260px; min-height: 100vh; transition: margin-left .3s ease; }
+.sb-content { flex: 1; min-width: 0; margin-left: 260px; min-height: calc(100vh - 64px); transition: margin-left .3s ease; }
 .sb-content.collapsed { margin-left: 80px; }
-.sb-topbar { 
-    height: 64px; 
-    background: #ffffff; 
-    border-bottom: 1px solid #e2e8f0; 
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between;
-    padding: 0 20px; 
-    gap: 16px; 
-    position: sticky; top: 0; z-index: 100; 
-    box-sizing: border-box;
-}
 
-.sb-toggle-btn {
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
-    cursor: pointer;
-    color: #475569;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    transition: all .2s;
-    flex-shrink: 0;
-}
-.sb-toggle-btn:hover {
-    background: #ea580c;
-    border-color: #ea580c;
-    color: #ffffff;
-    transform: scale(1.05);
-}
-
-.sb-page-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #0f172a;
-    letter-spacing: -0.02em;
-    display: flex;
-    align-items: center;
-    line-height: 1;
-}
-
-.sb-search-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: #f8fafc;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    height: 36px;
-    padding: 0 12px;
-    font-size: 0.825rem;
-    color: #64748b;
-    cursor: pointer;
-    transition: all .2s;
-    min-width: 220px;
-    justify-content: space-between;
-}
-.sb-search-btn:hover {
-    border-color: #94a3b8;
-    background: #f1f5f9;
-}
-
-@media (prefers-color-scheme: dark) {
-    .sb-topbar {
-        background: #111827 !important;
-        border-bottom-color: rgba(255, 255, 255, 0.08) !important;
-    }
-    .sb-toggle-btn {
-        background: rgba(255, 255, 255, 0.06) !important;
-        border-color: rgba(255, 255, 255, 0.12) !important;
-        color: #cbd5e1 !important;
-    }
-    .sb-toggle-btn:hover {
-        background: #ea580c !important;
-        border-color: #ea580c !important;
-        color: #ffffff !important;
-    }
-    .sb-page-title {
-        color: #f8fafc !important;
-    }
-    .sb-search-btn {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border-color: rgba(255, 255, 255, 0.12) !important;
-        color: #94a3b8 !important;
-    }
-    .sb-search-btn:hover {
-        background: rgba(255, 255, 255, 0.08) !important;
-        border-color: rgba(255, 255, 255, 0.2) !important;
-    }
-    .sb-search-btn kbd {
-        background: rgba(255, 255, 255, 0.08) !important;
-        border-color: rgba(255, 255, 255, 0.15) !important;
-        color: #cbd5e1 !important;
-    }
-}
-
-.sb-main { padding: 32px; max-width: 1400px; margin: 0 auto; }
+.sb-main { padding: 28px 32px; max-width: 1400px; margin: 0 auto; }
 
 /* Tablet Auto-Collapse (769px - 1024px) */
 @media (min-width: 769px) and (max-width: 1024px) {
+    .admin-brand { width: 60px; }
+    .admin-brand-text { display: none; }
     .sb-sidebar { width: 80px; }
     .sb-content { margin-left: 80px; }
     .sb-sidebar .sb-link { justify-content: center; padding: 12px 0; }
     .sb-sidebar .sb-link svg { margin: 0; }
     .sb-sidebar .sb-link-text, 
     .sb-sidebar .sb-section-label { display: none !important; }
-    .sb-sidebar .sidebar-brand { padding: 0; justify-content: center; font-size: 0; gap: 0; }
     .sb-sidebar .sb-user-info, 
     .sb-sidebar .sb-logout-btn { display: none; }
-    .sb-sidebar .sb-user { justify-content: center; padding: 10px 0; }
+    .sb-sidebar .sb-user { justify-content: center; padding: 8px 0; }
     .sb-main { padding: 24px; }
 }
 
 /* Mobile */
 @media (max-width: 768px) {
+    .admin-brand { width: auto; }
+    .admin-brand-text { font-size: 1rem; }
+    .admin-topbar-divider { display: none; }
+    .admin-page-title { display: none; }
     .sb-sidebar { left: -260px; transition: left 0.3s ease; }
     .sb-sidebar.mobile-open { left: 0; }
     .sb-content { margin-left: 0 !important; }
-    .sb-main { padding: 20px; }
-    .admin-mobile-header { display: flex; align-items: center; justify-content: space-between; background: #111827; color: #fff; padding: 0 1.25rem; height: 64px; }
-    .sb-topbar { display: none; }
+    .sb-main { padding: 16px; }
+    .sb-search-btn { min-width: auto; padding: 0 10px; }
+    .sb-search-btn span span { display: none; }
 }
 </style>
 
     @if(request('widget'))
     <style>
         html, body { background: #fff !important; overflow: hidden !important; height: 100vh !important; margin: 0 !important; padding: 0 !important; }
-        .sb-sidebar, .sb-topbar, .admin-mobile-header, .admin-bottom-nav, .sb-footer, .chat-header-container { display: none !important; }
+        .admin-topbar, .sb-sidebar, .admin-mobile-header, .admin-bottom-nav, .sb-footer, .chat-header-container { display: none !important; }
+        .sb-shell { padding-top: 0 !important; }
         .sb-content { margin-left: 0 !important; padding-top: 0 !important; height: 100vh !important; width: 100% !important; }
         .sb-main { padding: 0 !important; height: 100vh !important; max-width: 100% !important; display: flex !important; flex-direction: column !important; margin: 0 !important; }
         @media (prefers-color-scheme: dark) {
@@ -346,16 +353,32 @@
 </head>
 <body>
 
-{{-- 1. Mobile Header (Premium Style) --}}
-<header class="admin-mobile-header">
-    <div class="flex items-center gap-3">
-        <button onclick="toggleMobileSidebar()" class="btn btn-outline" style="padding:.5rem;border-color:rgba(255,255,255,0.2);color:#fff;">
-            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-        </button>
-        <a href="{{ route('admin.dashboard') }}" class="admin-mobile-brand" style="display:flex; align-items:center; gap:8px;">
-            <img src="{{ asset('logo.svg') }}" alt="Logo" style="height: 28px; width: 28px;">
-            UniActivity
+{{-- ── 1. Unified Seamless Top Header (100% Full-Width) ───────────────── --}}
+<header class="admin-topbar">
+    <div class="admin-topbar-left">
+        <a href="{{ route('admin.dashboard') }}" class="admin-brand">
+            <img src="{{ asset('logo.svg') }}" alt="Logo" style="height: 32px; width: 32px;">
+            <span class="admin-brand-text">Uni-Activity</span>
         </a>
+
+        <div class="admin-topbar-divider"></div>
+
+        <button onclick="toggleSidebar()" class="sb-toggle-btn" title="ย่อ/ขยาย เมนูด้านข้าง">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+
+        <h1 class="admin-page-title">@yield('title', 'Dashboard')</h1>
+    </div>
+
+    <div class="admin-topbar-right">
+        <!-- Global Search Trigger (Ctrl+K) -->
+        <button onclick="openGlobalSearch()" class="sb-search-btn" title="ค้นหาด่วน (Ctrl + K)">
+            <span style="display:flex; align-items:center; gap:6px;">
+                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <span>ค้นหาข้อมูลระบบ...</span>
+            </span>
+            <kbd>Ctrl K</kbd>
+        </button>
     </div>
 </header>
 
@@ -363,11 +386,6 @@
 
 <div class="sb-shell">
     <aside class="sb-sidebar" id="mainSidebar">
-        <div class="sidebar-brand" style="display:flex; align-items:center; gap:10px;">
-            <img src="{{ asset('logo.svg') }}" alt="Logo" style="height: 36px; width: 36px;">
-            Uni-Activity
-        </div>
-        
         <nav class="sb-nav">
             <div class="sb-section-label">เมนูหลัก</div>
             <a href="{{ route('admin.dashboard') }}" class="sb-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
@@ -508,24 +526,7 @@
         </div>
     </aside>
 
-    <div class="sb-content" id="sbContent">
-        <div class="sb-topbar">
-            <div style="display:flex; align-items:center; gap:14px;">
-                <button onclick="toggleSidebar()" class="sb-toggle-btn" title="ย่อ/ขยาย เมนูด้านข้าง">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                </button>
-                <span class="sb-page-title">@yield('title', 'Dashboard')</span>
-            </div>
-
-            <!-- Global Search Trigger (Ctrl+K) -->
-            <button onclick="openGlobalSearch()" class="sb-search-btn" title="ค้นหาด่วน (Ctrl + K)">
-                <span style="display:flex; align-items:center; gap:6px;">
-                    <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    <span>ค้นหาข้อมูลระบบ...</span>
-                </span>
-                <kbd style="background:#e2e8f0; border:1px solid #cbd5e1; border-radius:4px; padding:1px 5px; font-size:0.75rem; font-family:monospace; color:#475569;">Ctrl K</kbd>
-            </button>
-        </div>
+    <main class="sb-content" id="sbContent">
         <div class="sb-main">
             @if(session('success'))
                 <div style="background-color: #dcfce7; color: #166534; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #bbf7d0;">
