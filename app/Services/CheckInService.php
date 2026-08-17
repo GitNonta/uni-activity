@@ -395,7 +395,7 @@ class CheckInService
                     }
 
                     // ตรวจจับพฤติกรรมผิดปกติผ่าน Security Service
-                    $this->secService->checkSuspiciousCheckIn($user, $att, request());
+                    $this->secService->checkAndLogSuspiciousCheckIn(request(), $user->id, $activity);
 
                     return [
                         'success'         => true,
