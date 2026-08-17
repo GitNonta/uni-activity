@@ -51,13 +51,23 @@ class ProfileAdminController extends Controller
 
         $recentLogs = \App\Models\AdminAuditLog::where('user_id', $user->id)
             ->latest()
-            ->take(6)
+            ->take(8)
+            ->get();
+
+        $recentActivities = Activity::where('created_by', $user->id)
+            ->latest()
+            ->take(4)
+            ->get();
+
+        $recentAnnouncements = Announcement::where('created_by', $user->id)
+            ->latest()
+            ->take(4)
             ->get();
 
         // API Tokens สำหรับ Personal Access Tokens / Privacy settings
         $tokens = $user->tokens()->latest()->get();
 
-        return view('admin.profile.edit', compact('user', 'stats', 'tokens', 'recentLogs'));
+        return view('admin.profile.edit', compact('user', 'stats', 'tokens', 'recentLogs', 'recentActivities', 'recentAnnouncements'));
     }
 
     /**

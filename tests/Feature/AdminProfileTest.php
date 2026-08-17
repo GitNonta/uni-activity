@@ -24,7 +24,7 @@ class AdminProfileTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Admin User');
-        $response->assertSee('ข้อมูลส่วนตัวและสังกัดหน่วยงาน');
+        $response->assertSee('ข้อมูลสังกัดและข้อมูลติดต่อ');
     }
 
     public function test_admin_can_update_profile(): void
