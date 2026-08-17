@@ -311,7 +311,7 @@
             <div class="sb-section-label">เมนูหลัก</div>
             <a href="{{ route('admin.dashboard') }}" class="sb-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                <span class="sb-link-text">Dashboard</span>
+                <span class="sb-link-text">ภาพรวมระบบ</span>
             </a>
             <a href="{{ route('admin.activities.index') }}" class="sb-link {{ request()->routeIs('admin.activities.*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -360,16 +360,16 @@
             </a>
 
             @if(auth()->check() && (auth()->user()->isAdmin() || auth()->user()->role === 'super-admin'))
-            <div class="sb-section-label">จัดการระบบ (Admin)</div>
+            <div class="sb-section-label">จัดการระบบ</div>
             <a href="{{ route('admin.audit-logs.index') }}" class="sb-link {{ request()->routeIs('admin.audit-logs.*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2-2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01"/></svg>
-                <span class="sb-link-text">Audit Logs (ประวัติ)</span>
+                <span class="sb-link-text">ประวัติกิจกรรมระบบ</span>
             </a>
             @php $unreviewedSec = \App\Models\SecurityLog::where('is_reviewed', false)->count(); @endphp
             <a href="{{ route('admin.security-logs.index') }}" class="sb-link {{ request()->routeIs('admin.security-logs.*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                 <span class="sb-link-text">
-                    Security Logs
+                    บันทึกความปลอดภัย
                     @if($unreviewedSec > 0)
                         <span style="background:#ef4444;color:#fff;font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:999px;margin-left:4px;">{{ $unreviewedSec }}</span>
                     @endif
@@ -389,17 +389,17 @@
             </a>
             <a href="{{ route('admin.settings.index', ['tab' => 'api-keys']) }}" class="sb-link {{ request()->routeIs('admin.settings.*') && request()->get('tab') === 'api-keys' ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
-                <span class="sb-link-text">API Keys & ความเป็นส่วนตัว</span>
+                <span class="sb-link-text">คีย์ API & ความเป็นส่วนตัว</span>
             </a>
             <a href="{{ route('admin.system.cluster') }}" class="sb-link {{ request()->routeIs('admin.system.cluster*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                <span class="sb-link-text">Cluster Control Center</span>
+                <span class="sb-link-text">ศูนย์ควบคุมเซิร์ฟเวอร์</span>
             </a>
             @php $failedJobsCount = \Illuminate\Support\Facades\DB::table('failed_jobs')->count(); @endphp
             <a href="{{ route('admin.system.failed-jobs.index') }}" class="sb-link {{ request()->routeIs('admin.system.failed-jobs.*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <span class="sb-link-text">
-                    Failed Queue Jobs
+                    คิวงานที่ล้มเหลว
                     @if($failedJobsCount > 0)
                         <span style="background:#ef4444;color:#fff;font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:999px;margin-left:4px;">{{ $failedJobsCount }}</span>
                     @endif
@@ -435,8 +435,8 @@
                         </div>
                     @endif
                     <div class="sb-user-info sb-link-text">
-                        <div class="sb-user-name">{{ auth()->user()->full_name ?? 'User' }}</div>
-                        <div class="sb-user-role">{{ auth()->user()->isAdmin() ? 'Administrator' : 'Staff' }}</div>
+                        <div class="sb-user-name">{{ auth()->user()->full_name ?? 'ผู้ใช้' }}</div>
+                        <div class="sb-user-role">{{ auth()->user()->isAdmin() ? 'ผู้ดูแลระบบ' : 'เจ้าหน้าที่' }}</div>
                     </div>
                 </a>
                 <form method="POST" action="{{ route('admin.logout') }}" class="sb-logout-btn">

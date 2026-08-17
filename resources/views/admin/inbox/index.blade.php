@@ -92,7 +92,27 @@
         {{-- Time + Unread --}}
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.3rem;flex-shrink:0;">
             <span class="inbox-time" style="font-size:.72rem;color:#94a3b8;">
-                {{ $time ? $time->diffForHumans() : '' }}
+                @if($time)
+                    @php
+                        $msgSec = max(0, $time->diffInSeconds(now()));
+                        $msgMin = $time->diffInMinutes(now());
+                        $msgHrs = $time->diffInHours(now());
+                        $msgDays = $time->diffInDays(now());
+                    @endphp
+                    @if($msgSec < 60)
+                        เมื่อสักครู่
+                    @elseif($msgMin < 60)
+                        {{ $msgMin }} นาทีที่แล้ว
+                    @elseif($msgHrs < 24)
+                        {{ $msgHrs }} ชม. ที่แล้ว
+                    @elseif($time->isYesterday())
+                        เมื่อวานนี้ {{ $time->format('H:i') }}
+                    @elseif($msgDays < 7)
+                        {{ $msgDays }} วันที่แล้ว
+                    @else
+                        {{ $time->format('d/m/Y') }}
+                    @endif
+                @endif
             </span>
             @if($unread > 0)
             <span style="background:#ea580c;color:#fff;border-radius:999px;font-size:.7rem;font-weight:700;padding:.1rem .45rem;min-width:20px;text-align:center;">

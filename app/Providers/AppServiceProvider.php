@@ -36,6 +36,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \Carbon\Carbon::setLocale('th');
+
         if (file_exists(app_path('Helpers/TextHelper.php'))) {
             require_once app_path('Helpers/TextHelper.php');
         }

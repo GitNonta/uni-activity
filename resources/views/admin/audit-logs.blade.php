@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>Audit Log – Admin Panel</title>
+    <title>บันทึกประวัติการใช้งาน (Audit Logs)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,14 +28,14 @@
 </head>
 <body>
 <div class="container">
-    <h1>Audit Log</h1>
-    <a href="{{ route('admin.dashboard') }}" class="btn" style="background:#5a67d8;color:#fff;padding:0.5rem 1rem;border-radius:6px;margin-bottom:1rem;display:inline-block;">Dashboard</a>
+    <h1>บันทึกกิจกรรมระบบ (Audit Logs)</h1>
+    <a href="{{ route('admin.dashboard') }}" class="btn" style="background:#5a67d8;color:#fff;padding:0.5rem 1rem;border-radius:6px;margin-bottom:1rem;display:inline-block;">กลับหน้าภาพรวม</a>
     <form method="GET" class="filter-form" action="{{ route('admin.audit-logs.index') }}">
-        <input type="number" name="user_id" placeholder="User ID" value="{{ request('user_id') }}" min="1" />
-        <input type="text" name="action" placeholder="Action" value="{{ request('action') }}" />
+        <input type="number" name="user_id" placeholder="รหัสผู้ใช้ (User ID)" value="{{ request('user_id') }}" min="1" />
+        <input type="text" name="action" placeholder="การกระทำ (Action)" value="{{ request('action') }}" />
         <input type="date" name="date_from" value="{{ request('date_from') }}" />
         <input type="date" name="date_to" value="{{ request('date_to') }}" />
-        <button type="submit">Filter</button>
+        <button type="submit">ค้นหา / กรองข้อมูล</button>
     </form>
     <div style="overflow-x: auto; width: 100%; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 1rem; background: #fff;">
         <table style="margin-top: 0;">

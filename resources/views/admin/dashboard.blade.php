@@ -1,10 +1,10 @@
 {{-- หน้า Dashboard ผู้ดูแล: สถิติ + Unified Approval Queue + Quick Actions --}}
 @extends('layouts.admin')
-@section('title', 'Dashboard')
+@section('title', 'ภาพรวมระบบ')
 
 @section('content')
 <div class="flex items-center justify-between mb-6">
-    <h1 class="font-bold" style="font-size:1.5rem;">Dashboard</h1>
+    <h1 class="font-bold" style="font-size:1.5rem;">ภาพรวมระบบ</h1>
     <button onclick="document.getElementById('quickModal').classList.add('open')" class="btn btn-success btn-sm">
         <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
         บันทึกกิจกรรมด่วน
