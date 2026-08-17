@@ -906,6 +906,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 resultsContainer.innerHTML = `<div style="padding:2rem 1rem; text-align:center; color:#ef4444; font-size:0.875rem;">เกิดข้อผิดพลาดในการค้นหา</div>`;
             }
         }, 200);
+
+        // Immediate Socket Teardown on Logout / Unload
+        document.querySelectorAll('form[action*="logout"], a[href*="logout"]').forEach(function(el) {
+            el.addEventListener('click', function() {
+                if (window.Echo) {
+                    try { window.Echo.leave('online'); window.Echo.disconnect(); } catch(e) {}
+                }
+            });
+        });
+    });
+
+    window.addEventListener('beforeunload', function() {
+        if (window.Echo) {
+            try { window.Echo.leave('online'); window.Echo.disconnect(); } catch(e) {}
+        }
     });
 </script>
 </body>

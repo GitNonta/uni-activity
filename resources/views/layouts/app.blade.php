@@ -1122,6 +1122,12 @@
                     }
                 }
             }
+
+            window.addEventListener('beforeunload', function() {
+                if (window.Echo) {
+                    try { window.Echo.leave('online'); } catch(e) {}
+                }
+            });
         })();
 
         window.deleteStudentMessage = function(id) {
@@ -1269,6 +1275,15 @@
         }
         
         document.querySelectorAll('.desc-content, .prose, .comment-body, .user-content').forEach(linkifyTextNodes);
+
+        // Immediate Socket Teardown on Logout / Unload
+        document.querySelectorAll('form[action*="logout"], a[href*="logout"]').forEach(function(el) {
+            el.addEventListener('click', function() {
+                if (window.Echo) {
+                    try { window.Echo.leave('online'); window.Echo.disconnect(); } catch(e) {}
+                }
+            });
+        });
     });
     </script>
 

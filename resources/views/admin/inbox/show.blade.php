@@ -774,18 +774,6 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             // Presence channel — student online status
-            window.Echo.join('online')
-                .here((users) => {
-                    const isOnline = users.some(u => String(u.id) === String(studentId));
-                    toggleStudentOnline(isOnline);
-                })
-                .joining((user) => {
-                    if (String(user.id) === String(studentId)) toggleStudentOnline(true);
-                })
-                .leaving((user) => {
-                    if (String(user.id) === String(studentId)) toggleStudentOnline(false);
-                });
-
             window.isStudentOnline = false;
             function toggleStudentOnline(isOnline) {
                 window.isStudentOnline = isOnline;
@@ -801,6 +789,24 @@ document.addEventListener('DOMContentLoaded', function () {
                     el.style.display = isOnline ? 'block' : 'none';
                 });
             }
+
+            window.Echo.join('online')
+                .here((users) => {
+                    const isOnline = users.some(u => String(u.id) === String(studentId) && String(u.id) !== String(myId));
+                    toggleStudentOnline(isOnline);
+                })
+                .joining((user) => {
+                    if (String(user.id) === String(studentId) && String(user.id) !== String(myId)) toggleStudentOnline(true);
+                })
+                .leaving((user) => {
+                    if (String(user.id) === String(studentId)) toggleStudentOnline(false);
+                });
+
+            window.addEventListener('beforeunload', () => {
+                if (window.Echo) {
+                    try { window.Echo.leave('online'); } catch(e) {}
+                }
+            });
 
         } else {
             setTimeout(initEcho, 200);

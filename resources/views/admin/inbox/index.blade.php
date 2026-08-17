@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
         window.updateStudentOnlineDots = function() {
             document.querySelectorAll('.student-online-dot').forEach(function(el) {
                 var match = el.className.match(/student-online-dot-(\d+)/);
-                if (match && window.onlineStudentIds.has(match[1])) {
+                if (match && window.onlineStudentIds.has(String(match[1]))) {
                     el.style.display = 'block';
                 } else {
                     el.style.display = 'none';
@@ -137,17 +137,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
         window.Echo.join('online')
             .here(function(users) {
-                window.onlineStudentIds = new Set(users.map(function(u) { return String(u.id); }));
+                var myAdminId = '{{ auth()->id() }}';
+                window.onlineStudentIds = new Set(
+                    users
+                        .filter(function(u) { return String(u.id) !== String(myAdminId) && !u.is_staff && u.role !== 'admin' && u.role !== 'staff'; })
+                        .map(function(u) { return String(u.id); })
+                );
                 window.updateStudentOnlineDots();
             })
             .joining(function(user) {
-                window.onlineStudentIds.add(String(user.id));
-                window.updateStudentOnlineDots();
+                var myAdminId = '{{ auth()->id() }}';
+                if (String(user.id) !== String(myAdminId) && !user.is_staff && user.role !== 'admin' && user.role !== 'staff') {
+                    window.onlineStudentIds.add(String(user.id));
+                    window.updateStudentOnlineDots();
+                }
             })
             .leaving(function(user) {
                 window.onlineStudentIds.delete(String(user.id));
                 window.updateStudentOnlineDots();
             });
+
+        window.addEventListener('beforeunload', function() {
+            if (window.Echo) {
+                try { window.Echo.leave('online'); } catch(e) {}
+            }
+        });
     })();
 });
 </script>

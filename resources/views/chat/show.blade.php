@@ -1028,6 +1028,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     el.style.display = isOnline ? 'block' : 'none';
                 });
             }
+
+            window.addEventListener('beforeunload', () => {
+                if (window.Echo) {
+                    try { window.Echo.leave('online'); } catch(e) {}
+                }
+            });
         } else {
             setTimeout(initEcho, 200);
         }
