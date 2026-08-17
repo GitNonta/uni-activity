@@ -43,7 +43,14 @@ class ActivityAdminController extends Controller
                 'registrations as pending_registrations_count' => fn ($q) => $q->where('status', 'pending'),
                 'attendances as pending_attendances_count'     => fn ($q) => $q->where('status', 'pending'),
             ])
-            ->when($user->isStaff(), fn ($q) => $q->where('created_by', $user->id))
+            ->when($user->isStaff(), function ($q) use ($user): void {
+                $q->where(function ($sub) use ($user): void {
+                    $sub->where('created_by', $user->id);
+                    if ($user->faculty) {
+                        $sub->orWhere('faculty', $user->faculty);
+                    }
+                });
+            })
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
             ->when($request->search, fn ($q) => $q->where('title', 'like', "%{$request->search}%"))
             ->orderByDesc('created_at')
@@ -296,5 +303,35 @@ class ActivityAdminController extends Controller
         $this->auditUpdate($activity, ['qr_checkout_token' => $oldToken], "สร้าง QR Code ออกงานใหม่สำหรับกิจกรรม \"{$activity->title}\"");
 
         return back()->with('success', 'สร้าง QR Code ออกงานใหม่สำเร็จแล้ว');
+    }
+
+    /**
+     * คัดลอก/ทำซ้ำกิจกรรม — นำข้อมูลกิจกรรมเดิมมา pre-fill ในฟอร์มสร้างใหม่
+     * ไม่คัดลอก: วันเวลา, QR tokens, registrations, attendances
+     */
+    public function duplicate(Activity $activity): RedirectResponse
+    {
+        Gate::authorize('view', $activity);
+        Gate::authorize('create', Activity::class);
+
+        $cloneData = $activity->only([
+            'title', 'description', 'category_id', 'location',
+            'activity_hours', 'max_participants', 'scope', 'faculty', 'department',
+            'is_mandatory', 'is_multiday', 'allow_walkin',
+            'require_attendance_approval', 'require_selfie_verification',
+            'require_face_scan', 'face_scan_method',
+        ]);
+
+        $cloneData['title'] = '[สำเนา] ' . ($cloneData['title'] ?? '');
+        // The activity date and scheduling fields are intentionally omitted.  The
+        // activities table requires them, so creating a half-filled record would
+        // either fail or leave an invalid draft in the database.  Flashing the
+        // values into the create form gives the administrator a real draft while
+        // preserving the database invariant.
+        $this->auditAction('clone_activity', 'activities', $activity->id, "คัดลอกกิจกรรม #{$activity->id} \"{$activity->title}\"");
+
+        return redirect()->route('admin.activities.create')
+            ->withInput($cloneData)
+            ->with('success', "คัดลอกกิจกรรม \"{$activity->title}\" สำเร็จ! กรุณาตั้งวันเวลาและตรวจสอบข้อมูลก่อนเผยแพร่");
     }
 }

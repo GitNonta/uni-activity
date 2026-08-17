@@ -34,7 +34,7 @@ class AttendancePolicy
             return true;
         }
 
-        return $user->isStaff() && $attendance->activity?->created_by === $user->id;
+        return $this->canManageActivity($user, $attendance->activity);
     }
 
     /**
@@ -46,7 +46,7 @@ class AttendancePolicy
             return true;
         }
 
-        return $user->isStaff() && $attendance->activity?->created_by === $user->id;
+        return $this->canManageActivity($user, $attendance->activity);
     }
 
     /**
@@ -58,7 +58,7 @@ class AttendancePolicy
             return true;
         }
 
-        return $user->isStaff() && $attendance->activity?->created_by === $user->id;
+        return $this->canManageActivity($user, $attendance->activity);
     }
 
     /**
@@ -70,7 +70,7 @@ class AttendancePolicy
             return true;
         }
 
-        return $user->isStaff() && $attendance->activity?->created_by === $user->id;
+        return $this->canManageActivity($user, $attendance->activity);
     }
 
     /**
@@ -82,7 +82,7 @@ class AttendancePolicy
             return true;
         }
 
-        return $user->isStaff() && $attendance->activity?->created_by === $user->id;
+        return $this->canManageActivity($user, $attendance->activity);
     }
 
     /**
@@ -94,7 +94,7 @@ class AttendancePolicy
             return true;
         }
 
-        return $user->isStaff() && $activity->created_by === $user->id;
+        return $this->canManageActivity($user, $activity);
     }
 
     /**
@@ -106,6 +106,16 @@ class AttendancePolicy
             return true;
         }
 
-        return $user->isStaff() && $attendance->activity?->created_by === $user->id;
+        return $this->canManageActivity($user, $attendance->activity);
+    }
+
+    private function canManageActivity(User $user, ?Activity $activity): bool
+    {
+        if (!$user->isStaff() || $activity === null) {
+            return false;
+        }
+
+        return $activity->created_by === $user->id
+            || ($user->faculty !== null && $activity->faculty === $user->faculty);
     }
 }

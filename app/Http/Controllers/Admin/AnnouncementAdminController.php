@@ -60,6 +60,7 @@ class AnnouncementAdminController extends Controller
             'type'           => 'required|in:info,warning,danger,success',
             'is_active'      => 'boolean',
             'image'          => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+            'published_at'   => 'nullable|date',
         ]);
 
         if ($request->hasFile('image')) {
@@ -68,12 +69,16 @@ class AnnouncementAdminController extends Controller
 
         $data['created_by'] = auth()->id();
         $data['is_active'] = $request->has('is_active');
+        $data['published_at'] = $request->filled('published_at') ? $request->input('published_at') : null;
+        $data['published_at'] = $request->filled('published_at') ? $request->input('published_at') : null;
 
         $announcement = Announcement::create($data);
         $this->auditCreate($announcement, "สร้างประกาศ \"{$announcement->title}\"");
 
-        // ยิง event เพื่อส่ง LINE notification แบบ async
-        AnnouncementPublished::dispatch($announcement);
+        // ยิง event เพื่อส่ง LINE notification แบบ async (เฉพาะกรณีเผยแพร่ทันที)
+        if ($announcement->published_at === null || $announcement->published_at->isPast()) {
+            AnnouncementPublished::dispatch($announcement);
+        }
 
         return redirect()->route('admin.announcements.index')->with('success', 'สร้างประกาศสำเร็จ!');
     }
@@ -97,6 +102,7 @@ class AnnouncementAdminController extends Controller
             'content'        => 'required|string',
             'target_faculty' => 'nullable|string',
             'type'           => 'required|in:info,warning,danger,success',
+            'published_at'   => 'nullable|date',
         ]);
 
         $data['is_active'] = $request->has('is_active');

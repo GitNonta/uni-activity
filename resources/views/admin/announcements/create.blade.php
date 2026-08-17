@@ -53,6 +53,13 @@
                 </div>
             </div>
 
+            <div class="mb-4">
+                <label class="form-label">กำหนดเวลาเผยแพร่ (ไม่บังคับ)</label>
+                <input type="datetime-local" name="published_at" value="{{ old('published_at') }}" class="form-control">
+                <div class="text-xs text-muted mt-1">เว้นว่างไว้เพื่อเผยแพร่ทันทีเมื่อเปิดใช้งาน</div>
+                @error('published_at') <div class="text-xs text-danger mt-1">{{ $message }}</div> @enderror
+            </div>
+
             <div class="mb-5">
                 <label class="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }} style="width:18px;height:18px;">

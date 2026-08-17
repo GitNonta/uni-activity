@@ -12,21 +12,28 @@
             @endif
         </p>
     </div>
-    {{-- Quick Export Button --}}
-    <form method="POST" action="{{ route('admin.exports.students') }}" style="display:inline;">
-        @csrf
-        <input type="hidden" name="faculty"    value="{{ request('faculty') }}">
-        <input type="hidden" name="year"       value="{{ request('year') }}">
-        <input type="hidden" name="program"    value="{{ request('program') }}">
-        <input type="hidden" name="status"     value="">
-        <input type="hidden" name="completion" value="{{ request('completion') }}">
-        <button type="submit" class="btn btn-outline btn-sm" style="color:#16a34a;border-color:#86efac;">
-            <svg style="width:14px;height:14px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            Export Excel
-        </button>
-    </form>
+    <div style="display:flex; align-items:center; gap:0.5rem;">
+        <a href="{{ route('admin.students.import') }}" class="btn btn-primary btn-sm" style="background:#4f46e5; border-color:#4f46e5; display:inline-flex; align-items:center; gap:4px;">
+            <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+            นำเข้านักศึกษา (Import)
+        </a>
+
+        {{-- Quick Export Button --}}
+        <form method="POST" action="{{ route('admin.exports.students') }}" style="display:inline;">
+            @csrf
+            <input type="hidden" name="faculty"    value="{{ request('faculty') }}">
+            <input type="hidden" name="year"       value="{{ request('year') }}">
+            <input type="hidden" name="program"    value="{{ request('program') }}">
+            <input type="hidden" name="status"     value="">
+            <input type="hidden" name="completion" value="{{ request('completion') }}">
+            <button type="submit" class="btn btn-outline btn-sm" style="color:#16a34a;border-color:#86efac; display:inline-flex; align-items:center; gap:4px;">
+                <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Export Excel
+            </button>
+        </form>
+    </div>
 </div>
 
 {{-- Active Filter Badges --}}

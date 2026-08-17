@@ -29,7 +29,13 @@ class ActivityPolicy
             return true;
         }
 
-        return $user->isStaff() && $activity->created_by === $user->id;
+        if (!$user->isStaff()) {
+            return false;
+        }
+
+        // Own activity or same faculty scoped activity
+        return $activity->created_by === $user->id
+            || ($user->faculty !== null && $activity->faculty === $user->faculty);
     }
 
     /**
@@ -49,7 +55,12 @@ class ActivityPolicy
             return true;
         }
 
-        return $user->isStaff() && $activity->created_by === $user->id;
+        if (!$user->isStaff()) {
+            return false;
+        }
+
+        return $activity->created_by === $user->id
+            || ($user->faculty !== null && $activity->faculty === $user->faculty);
     }
 
     /**
@@ -61,7 +72,12 @@ class ActivityPolicy
             return true;
         }
 
-        return $user->isStaff() && $activity->created_by === $user->id;
+        if (!$user->isStaff()) {
+            return false;
+        }
+
+        return $activity->created_by === $user->id
+            || ($user->faculty !== null && $activity->faculty === $user->faculty);
     }
 
     /**
@@ -73,6 +89,11 @@ class ActivityPolicy
             return true;
         }
 
-        return $user->isStaff() && $activity->created_by === $user->id;
+        if (!$user->isStaff()) {
+            return false;
+        }
+
+        return $activity->created_by === $user->id
+            || ($user->faculty !== null && $activity->faculty === $user->faculty);
     }
 }

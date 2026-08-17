@@ -69,6 +69,11 @@
                     </td>
                     <td data-label="ผู้สร้าง" class="text-xs text-muted">{{ $item->creator->full_name ?? '-' }}</td>
                     <td data-label="สถานะ" class="text-center">
+                        @if($item->published_at?->isFuture())
+                            <div class="text-xs text-muted" style="margin-bottom:.35rem;">ตั้งเวลา {{ $item->published_at->format('d/m/Y H:i') }}</div>
+                        @elseif($item->published_at)
+                            <div class="text-xs text-muted" style="margin-bottom:.35rem;">เผยแพร่แล้ว</div>
+                        @endif
                         <form method="POST" action="{{ route('admin.announcements.toggle-active', $item->id) }}" style="margin:0;">
                             @csrf @method('PATCH')
                             <button type="submit" class="badge {{ $item->is_active ? 'badge-green' : 'badge-gray' }}" style="cursor:pointer;border:none;">

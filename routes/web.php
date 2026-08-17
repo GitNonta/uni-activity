@@ -184,12 +184,20 @@ Route::middleware('auth')->group(function () {
     Route::middleware('auth')->post('/user/ping', [UserStatusController::class, 'ping'])->middleware('throttle:status')->name('user.ping');
     Route::get('/users/{user}/status', [UserStatusController::class, 'status'])->middleware('throttle:status')->name('user.status');
 
+    // ── ใบรับรองชั่วโมงกิจกรรม (Certificates) ──
+    Route::get('/student/certificates', [\App\Http\Controllers\Student\CertificateController::class, 'index'])->name('student.certificates.index');
+    Route::post('/student/certificates/claim', [\App\Http\Controllers\Student\CertificateController::class, 'claim'])->name('student.certificates.claim');
+    Route::get('/student/certificates/{certificate}/download', [\App\Http\Controllers\Student\CertificateController::class, 'download'])->name('student.certificates.download');
+
     // ── LINE OAuth ──
     Route::get('/line/redirect', [LineController::class, 'redirect'])->name('line.redirect');
     Route::get('/line/callback', [LineController::class, 'callback'])->name('line.callback');
     Route::post('/line/unlink', [LineController::class, 'unlink'])->name('line.unlink');
     Route::post('/line/toggle-notify', [LineController::class, 'toggleNotify'])->name('line.toggle-notify');
 });
+
+// ── ตรวจสอบใบรับรองกิจกรรมออนไลน์ (Public Verification, ไม่ต้อง Auth) ──
+Route::get('/certificates/verify/{code}', [\App\Http\Controllers\Public\CertificateVerificationController::class, 'verify'])->name('certificates.verify');
 
 // ── LINE Webhook (ไม่ต้อง auth) ──
 Route::match(['get', 'post'], '/line/webhook', [LineController::class, 'webhook'])->name('line.webhook');
@@ -219,6 +227,14 @@ Route::middleware(['auth', 'role:staff'])->prefix('admin')->name('admin.')->grou
     // ── QR Code ──
     Route::post('activities/{activity}/regenerate-qr', [ActivityAdminController::class, 'regenerateQr'])->name('activities.regenerate-qr');
     Route::post('activities/{activity}/regenerate-checkout-qr', [ActivityAdminController::class, 'regenerateCheckoutQr'])->name('activities.regenerate-checkout-qr');
+
+    // ── Clone / Duplicate Activity ──
+    Route::post('activities/{activity}/clone', [ActivityAdminController::class, 'duplicate'])->name('activities.clone');
+
+    // ── Bulk Student Import ──
+    Route::get('students/import', [\App\Http\Controllers\Admin\StudentImportController::class, 'index'])->name('students.import');
+    Route::post('students/import', [\App\Http\Controllers\Admin\StudentImportController::class, 'import'])->name('students.import.upload');
+    Route::get('students/import/template', [\App\Http\Controllers\Admin\StudentImportController::class, 'downloadTemplate'])->name('students.import.template');
 
 
     // ── ประกาศ ──
@@ -263,6 +279,9 @@ Route::middleware(['auth', 'role:staff'])->prefix('admin')->name('admin.')->grou
     // ── โปรไฟล์ส่วนตัว ──
     Route::get('profile', [ProfileAdminController::class, 'edit'])->name('profile.edit');
     Route::patch('profile', [ProfileAdminController::class, 'update'])->name('profile.update');
+
+    // ── Global Omnisearch (Ctrl+K) ──
+    Route::get('api/search', [\App\Http\Controllers\Admin\GlobalSearchController::class, 'search'])->name('global.search');
 });
 
 // ── เส้นทางเฉพาะ admin เท่านั้น ───────────

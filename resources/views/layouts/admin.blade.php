@@ -450,11 +450,22 @@
     </aside>
 
     <div class="sb-content" id="sbContent">
-        <div class="sb-topbar">
-            <button onclick="toggleSidebar()" class="sb-toggle-btn">
-                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <div class="sb-topbar" style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:16px;">
+                <button onclick="toggleSidebar()" class="sb-toggle-btn">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+                <span class="sb-page-title">@yield('title', 'Dashboard')</span>
+            </div>
+
+            <!-- Global Search Trigger (Ctrl+K) -->
+            <button onclick="openGlobalSearch()" style="display:flex; align-items:center; gap:10px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:10px; padding:6px 14px; font-size:0.85rem; color:#64748b; cursor:pointer; transition:all .2s; min-width:240px; justify-content:space-between;" onmouseover="this.style.borderColor='#94a3b8'; this.style.background='#f1f5f9';" onmouseout="this.style.borderColor='#cbd5e1'; this.style.background='#f8fafc';">
+                <span style="display:flex; align-items:center; gap:6px;">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <span>ค้นหาข้อมูลระบบ...</span>
+                </span>
+                <kbd style="background:#e2e8f0; border:1px solid #cbd5e1; border-radius:4px; padding:1px 5px; font-size:0.75rem; font-family:monospace; color:#475569;">Ctrl K</kbd>
             </button>
-            <span class="sb-page-title">@yield('title', 'Dashboard')</span>
         </div>
         <div class="sb-main">
             @if(session('success'))
@@ -789,6 +800,113 @@ document.addEventListener('DOMContentLoaded', function() {
     
     document.querySelectorAll('.desc-content, .prose, .comment-body, .user-content').forEach(linkifyTextNodes);
 });
+</script>
+
+<!-- Global Omnisearch Modal (Ctrl+K) -->
+<div id="globalSearchModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(15,23,42,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:flex-start; justify-content:center; padding:10vh 1rem 2rem 1rem;">
+    <div style="background:#fff; border-radius:16px; max-width:640px; width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); overflow:hidden; border:1px solid #cbd5e1; animation:fadeInDown .2s ease;">
+        <div style="padding:1rem 1.25rem; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; gap:12px;">
+            <svg width="20" height="20" fill="none" stroke="#64748b" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" id="globalSearchInput" placeholder="พิมพ์ค้นหานักศึกษา, กิจกรรม, ตำแหน่งงาน, หรือประกาศ..." style="flex:1; border:none; outline:none; font-size:1rem; color:#0f172a; background:transparent;" autocomplete="off">
+            <kbd onclick="closeGlobalSearch()" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; padding:2px 8px; font-size:0.75rem; color:#64748b; cursor:pointer;">ESC</kbd>
+        </div>
+        <div id="globalSearchResults" style="max-height:420px; overflow-y:auto; padding:0.5rem;">
+            <div style="padding:2rem 1rem; text-align:center; color:#94a3b8; font-size:0.875rem;">
+                พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหาข้อมูลข้ามระบบ
+            </div>
+        </div>
+        <div style="padding:0.75rem 1.25rem; background:#f8fafc; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:#64748b;">
+            <span>กด <strong>&uarr;</strong> <strong>&darr;</strong> เพื่อเลื่อน, <strong>Enter</strong> เพื่อเปิด</span>
+            <span>Uni-Activity Omnisearch</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    let searchDebounceTimer = null;
+
+    function escapeSearchHtml(value) {
+        const element = document.createElement('span');
+        element.textContent = String(value ?? '');
+        return element.innerHTML;
+    }
+
+    function openGlobalSearch() {
+        const modal = document.getElementById('globalSearchModal');
+        modal.style.display = 'flex';
+        const input = document.getElementById('globalSearchInput');
+        input.value = '';
+        input.focus();
+        document.getElementById('globalSearchResults').innerHTML = '<div style="padding:2rem 1rem; text-align:center; color:#94a3b8; font-size:0.875rem;">พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหาข้อมูลข้ามระบบ</div>';
+    }
+
+    function closeGlobalSearch() {
+        const modal = document.getElementById('globalSearchModal');
+        modal.style.display = 'none';
+    }
+
+    // Keyboard shortcut (Ctrl+K or Cmd+K) and Escape
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+            e.preventDefault();
+            const modal = document.getElementById('globalSearchModal');
+            if (modal.style.display === 'flex') {
+                closeGlobalSearch();
+            } else {
+                openGlobalSearch();
+            }
+        } else if (e.key === 'Escape') {
+            closeGlobalSearch();
+        }
+    });
+
+    document.getElementById('globalSearchModal').addEventListener('click', function(e) {
+        if (e.target === this) closeGlobalSearch();
+    });
+
+    document.getElementById('globalSearchInput').addEventListener('input', function(e) {
+        clearTimeout(searchDebounceTimer);
+        const query = e.target.value.trim();
+        const resultsContainer = document.getElementById('globalSearchResults');
+
+        if (query.length < 2) {
+            resultsContainer.innerHTML = '<div style="padding:2rem 1rem; text-align:center; color:#94a3b8; font-size:0.875rem;">พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหาข้อมูลข้ามระบบ</div>';
+            return;
+        }
+
+        resultsContainer.innerHTML = '<div style="padding:2rem 1rem; text-align:center; color:#64748b; font-size:0.875rem;">กำลังค้นหา...</div>';
+
+        searchDebounceTimer = setTimeout(async () => {
+            try {
+                const res = await fetch(`{{ route('admin.global.search') }}?q=${encodeURIComponent(query)}`);
+                const data = await res.json();
+
+                if (!data.results || data.results.length === 0) {
+                    resultsContainer.innerHTML = `<div style="padding:2rem 1rem; text-align:center; color:#64748b; font-size:0.875rem;">ไม่พบข้อมูลที่ตรงกับ "${query}"</div>`;
+                    return;
+                }
+
+                let html = '';
+                data.results.forEach((item, index) => {
+                    html += `
+                        <a href="${item.url}" style="display:flex; align-items:center; justify-content:space-between; padding:0.75rem 1rem; border-radius:10px; text-decoration:none; color:inherit; margin-bottom:4px; transition:background .15s;" onmouseover="this.style.background='#f1f5f9';" onmouseout="this.style.background='transparent';">
+                            <div>
+                                <div style="font-weight:600; font-size:0.9rem; color:#0f172a; display:flex; align-items:center; gap:8px;">
+                                    <span>${escapeSearchHtml(item.title)}</span>
+                                    <span style="font-size:0.7rem; font-weight:700; background:${item.badge_color}15; color:${item.badge_color}; padding:2px 8px; border-radius:6px;">${escapeSearchHtml(item.type_label)}</span>
+                                </div>
+                                <div style="font-size:0.8rem; color:#64748b; margin-top:2px;">${escapeSearchHtml(item.subtitle)}</div>
+                            </div>
+                            <svg width="16" height="16" fill="none" stroke="#94a3b8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </a>
+                    `;
+                });
+                resultsContainer.innerHTML = html;
+            } catch (err) {
+                resultsContainer.innerHTML = `<div style="padding:2rem 1rem; text-align:center; color:#ef4444; font-size:0.875rem;">เกิดข้อผิดพลาดในการค้นหา</div>`;
+            }
+        }, 200);
+    });
 </script>
 </body>
 </html>
