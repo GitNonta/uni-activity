@@ -171,7 +171,7 @@ class UnifiedRealtimeChatTest extends TestCase
         $response = $this->actingAs($this->student)->delete(route('chat.messages.delete', $message->id));
 
         $response->assertOk();
-        $this->assertDatabaseMissing('messages', ['id' => $message->id]);
+        $this->assertSoftDeleted('messages', ['id' => $message->id]);
 
         Event::assertDispatched(MessageDeleted::class);
     }
