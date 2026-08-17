@@ -6,7 +6,7 @@
 <div class="auth-container" style="max-width: 400px; margin: 4rem auto; padding: 2rem; background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
     <div style="text-align: center; margin-bottom: 2rem;">
         <div style="width: 64px; height: 64px; background: #fff7ed; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
-            <svg style="width: 32px; height: 32px; color: #ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 00-2 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            <svg style="width: 32px; height: 32px; color: #ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
         </div>
         <h1 style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">ยืนยันรหัส OTP</h1>
         <p style="color: #64748b; font-size: 0.875rem; margin-top: 0.5rem;">
@@ -21,7 +21,7 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('login.otp.verify') }}" id="otp-form">
+    <form method="POST" action="{{ route('login.otp.verify') }}" id="otp-form" onsubmit="handleOtpSubmit(this)">
         @csrf
         <div class="form-group" style="margin-bottom: 1.5rem;">
             <div class="otp-container" style="display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1rem;">
@@ -39,16 +39,19 @@
             @enderror
         </div>
 
-        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem; background: #ea580c; color: #fff; border: none; border-radius: 12px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 12px rgba(234,88,12,0.3);">
-            เข้าสู่ระบบ
+        <button type="submit" id="verifySubmitBtn" class="btn btn-primary" style="width: 100%; padding: 0.85rem; background: #ea580c; color: #fff; border: none; border-radius: 12px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 12px rgba(234,88,12,0.3); display:inline-flex; align-items:center; justify-content:center; gap:0.5rem;">
+            <span>เข้าสู่ระบบ</span>
         </button>
     </form>
 
-    <form id="resend-form" method="POST" action="{{ route('login.otp.resend') }}" style="text-align: center; margin-top: 2rem;">
+    <form id="resend-form" method="POST" action="{{ route('login.otp.resend') }}" style="text-align: center; margin-top: 2rem;" onsubmit="handleResendSubmit(this)">
         @csrf
         <p style="font-size: 0.8125rem; color: #64748b;">
             หากไม่ได้รับรหัส? 
-            <button type="submit" style="background: none; border: none; color: #ea580c; text-decoration: none; font-weight: 600; cursor: pointer; padding: 0; font-family: inherit;">ส่งใหม่อีกครั้ง</button>
+            <button type="submit" id="resendBtn" style="background: none; border: none; color: #ea580c; text-decoration: none; font-weight: 600; cursor: pointer; padding: 0; font-family: inherit;">
+                ส่งใหม่อีกครั้ง
+            </button>
+            <span id="countdownText" style="display:none; color:#94a3b8; margin-left:4px;">(ใน <span id="secondsLeft">60</span>s)</span>
         </p>
     </form>
 
@@ -62,6 +65,38 @@
     const otpParts = document.querySelectorAll('input[name="otp_part[]"]');
     const hiddenOtp = document.getElementById('otp_combined');
     const otpForm = document.getElementById('otp-form');
+    let isSubmitting = false;
+
+    window.handleOtpSubmit = function(form) {
+        if (isSubmitting) return false;
+        isSubmitting = true;
+        const btn = form.querySelector('#verifySubmitBtn');
+        if (btn) {
+            btn.disabled = true;
+            btn.style.opacity = '0.75';
+            btn.style.cursor = 'not-allowed';
+            btn.innerHTML = '<svg style="width:16px;height:16px;animation:spin 1s linear infinite;display:inline-block;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> กำลังตรวจสอบ...';
+        }
+        return true;
+    };
+
+    window.handleResendSubmit = function(form) {
+        const resendBtn = document.getElementById('resendBtn');
+        if (resendBtn && resendBtn.disabled) {
+            return false;
+        }
+        if (resendBtn) {
+            resendBtn.disabled = true;
+            resendBtn.style.opacity = '0.5';
+            resendBtn.style.cursor = 'not-allowed';
+        }
+        return true;
+    };
+
+    // Auto-focus first box
+    if (otpParts.length > 0) {
+        otpParts[0].focus();
+    }
 
     otpParts.forEach((input, idx) => {
         input.addEventListener('paste', (e) => {
@@ -77,8 +112,12 @@
                 otpParts[lastIdx].focus();
                 
                 hiddenOtp.value = Array.from(otpParts).map(i => i.value).join('');
-                if (hiddenOtp.value.length === 6) {
-                    otpForm.submit();
+                if (hiddenOtp.value.length === 6 && !isSubmitting) {
+                    if (otpForm.requestSubmit) {
+                        otpForm.requestSubmit();
+                    } else {
+                        otpForm.submit();
+                    }
                 }
             }
         });
@@ -93,8 +132,12 @@
             const otpValue = Array.from(otpParts).map(i => i.value).join('');
             hiddenOtp.value = otpValue;
 
-            if (otpValue.length === 6) {
-                otpForm.submit();
+            if (otpValue.length === 6 && !isSubmitting) {
+                if (otpForm.requestSubmit) {
+                    otpForm.requestSubmit();
+                } else {
+                    otpForm.submit();
+                }
             }
         });
 
@@ -104,6 +147,48 @@
             }
         });
     });
+
+    // 60-second cooldown timer for resend
+    const resendBtn = document.getElementById('resendBtn');
+    const countdownText = document.getElementById('countdownText');
+    const secondsLeftSpan = document.getElementById('secondsLeft');
+
+    let cooldownSeconds = 60;
+    const cooldownKey = 'otp_resend_cooldown_expiry';
+    const savedExpiry = sessionStorage.getItem(cooldownKey);
+    const now = Date.now();
+
+    if (!savedExpiry || now > parseInt(savedExpiry, 10)) {
+        sessionStorage.setItem(cooldownKey, String(now + 60000));
+    }
+
+    function updateCooldown() {
+        const expiry = parseInt(sessionStorage.getItem(cooldownKey) || '0', 10);
+        const remaining = Math.max(0, Math.ceil((expiry - Date.now()) / 1000));
+
+        if (remaining > 0) {
+            if (resendBtn) {
+                resendBtn.disabled = true;
+                resendBtn.style.opacity = '0.5';
+                resendBtn.style.cursor = 'not-allowed';
+            }
+            if (countdownText) countdownText.style.display = 'inline';
+            if (secondsLeftSpan) secondsLeftSpan.textContent = remaining;
+            setTimeout(updateCooldown, 1000);
+        } else {
+            if (resendBtn) {
+                resendBtn.disabled = false;
+                resendBtn.style.opacity = '1';
+                resendBtn.style.cursor = 'pointer';
+            }
+            if (countdownText) countdownText.style.display = 'none';
+        }
+    }
+
+    updateCooldown();
 }
 </script>
+<style>
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+</style>
 @endsection

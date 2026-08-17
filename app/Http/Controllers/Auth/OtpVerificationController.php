@@ -1,18 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
 
 class OtpVerificationController extends Controller
 {
     /** แสดงหน้ากรอก OTP */
-    public function showVerifyForm(Request $request)
+    public function showVerifyForm(Request $request): View|RedirectResponse
     {
-        $email = $request->query('email');
+        $email = (string) $request->query('email');
         if (!$email) {
             return redirect()->route('admin.password.request');
         }
@@ -20,7 +30,7 @@ class OtpVerificationController extends Controller
     }
 
     /** ตรวจสอบ OTP และดำเนินการเปลี่ยนรหัสผ่านจริง */
-    public function verify(Request $request)
+    public function verify(Request $request): RedirectResponse
     {
         $request->validate([
             'email' => ['required', 'email'],
@@ -43,7 +53,7 @@ class OtpVerificationController extends Controller
             ]);
         }
 
-        if (\Carbon\Carbon::parse($otpRecord->expires_at)->isPast()) {
+        if (Carbon::parse($otpRecord->expires_at)->isPast()) {
             throw ValidationException::withMessages([
                 'otp' => 'รหัส OTP หมดอายุแล้ว (เมื่อ ' . $otpRecord->expires_at . ' เวลาปัจจุบัน ' . now() . ')',
             ]);
@@ -58,24 +68,24 @@ class OtpVerificationController extends Controller
         }
 
         // --- ดำเนินการเปลี่ยนรหัสผ่านด้วยระบบมาตรฐานของ Laravel ---
-        $status = \Illuminate\Support\Facades\Password::broker('staff')->reset(
+        $status = Password::broker('staff')->reset(
             [
-                'email' => $resetData['email'],
-                'password' => $resetData['password'],
+                'email'                 => $resetData['email'],
+                'password'              => $resetData['password'],
                 'password_confirmation' => $resetData['password'], // ยืนยันซ้ำจาก session
-                'token' => $resetData['token'],
+                'token'                 => $resetData['token'],
             ],
-            function (\App\Models\User $user, string $password) {
+            function (User $user, string $password): void {
                 $user->forceFill([
-                    'password' => \Illuminate\Support\Facades\Hash::make($password),
-                    'remember_token' => \Illuminate\Support\Str::random(60),
+                    'password'       => Hash::make($password),
+                    'remember_token' => Str::random(60),
                 ])->save();
 
-                event(new \Illuminate\Auth\Events\PasswordReset($user));
+                event(new PasswordReset($user));
             }
         );
 
-        if ($status === \Illuminate\Support\Facades\Password::PASSWORD_RESET) {
+        if ($status === Password::PASSWORD_RESET) {
             // ล้างข้อมูลหลังสำเร็จ
             DB::table('password_reset_otps')->where('id', $otpRecord->id)->delete();
             session()->forget('pending_password_reset');

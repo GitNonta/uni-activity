@@ -1,12 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\View\View;
 
 /**
  * คอนโทรลเลอร์การยืนยันตัวตนเจ้าหน้าที่ (Admin)
@@ -15,7 +19,7 @@ use Illuminate\Support\Facades\Hash;
 class StaffAuthController extends Controller
 {
     /** แสดงหน้าเข้าสู่ระบบเจ้าหน้าที่ */
-    public function showLogin()
+    public function showLogin(): View|RedirectResponse
     {
         if (auth()->check()) {
             return redirect('/');
@@ -27,7 +31,7 @@ class StaffAuthController extends Controller
      * ดำเนินการเข้าสู่ระบบเจ้าหน้าที่
      * ตรวจสอบ email + password → ส่ง OTP → ไปหน้ายืนยัน
      */
-    public function login(Request $request, LoginOtpController $otpController)
+    public function login(Request $request, LoginOtpController $otpController): RedirectResponse
     {
         $request->validate([
             'email'    => 'required|email',
@@ -67,7 +71,7 @@ class StaffAuthController extends Controller
     }
 
     /** ออกจากระบบเจ้าหน้าที่ → ลบ session → กลับหน้า admin login */
-    public function logout(Request $request)
+    public function logout(Request $request): RedirectResponse
     {
         Auth::logout();
         $request->session()->invalidate();

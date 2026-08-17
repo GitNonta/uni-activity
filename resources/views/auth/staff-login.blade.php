@@ -7,6 +7,9 @@
     <title>เข้าสู่ระบบผู้จัดกิจกรรม</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <style>
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    </style>
 </head>
 <body>
     <div class="container-sm" style="padding-top:6rem;">
@@ -19,7 +22,7 @@
         {{-- ฟอร์มกรอกอีเมลและรหัสผ่าน --}}
         <div class="card">
             <div class="card-body">
-                <form method="POST" action="{{ route('admin.login') }}">
+                <form method="POST" action="{{ route('admin.login') }}" id="staffLoginForm" onsubmit="handleStaffLoginSubmit(this)">
                     @csrf
                     <div class="form-group">
                         <label for="email" class="form-label">อีเมล</label>
@@ -38,7 +41,9 @@
                             <input type="checkbox" name="remember"> จดจำฉันไว้
                         </label>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-block btn-lg">เข้าสู่ระบบ</button>
+                    <button type="submit" id="staffSubmitBtn" class="btn btn-primary btn-block btn-lg" style="display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;">
+                        <span>เข้าสู่ระบบ</span>
+                    </button>
                 </form>
             </div>
         </div>
@@ -50,5 +55,17 @@
             <a href="{{ route('login') }}">กลับหน้าเข้าสู่ระบบนักศึกษา</a>
         </p>
     </div>
+
+    <script>
+    function handleStaffLoginSubmit(form) {
+        const btn = form.querySelector('#staffSubmitBtn');
+        if (btn && !btn.disabled) {
+            btn.disabled = true;
+            btn.style.opacity = '0.75';
+            btn.style.cursor = 'not-allowed';
+            btn.innerHTML = '<svg style="width:16px;height:16px;animation:spin 1s linear infinite;display:inline-block;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> กำลังส่งรหัส OTP...';
+        }
+    }
+    </script>
 </body>
 </html>

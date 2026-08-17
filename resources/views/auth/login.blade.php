@@ -12,7 +12,7 @@
     {{-- ฟอร์มกรอกรหัสนักศึกษา --}}
     <div class="card">
         <div class="card-body">
-            <form method="POST" action="{{ route('login') }}">
+            <form method="POST" action="{{ route('login') }}" id="loginForm" onsubmit="handleFormSubmit(this)">
                 @csrf
                 <div class="form-group">
                     <label for="student_id" class="form-label">รหัสนักศึกษา</label>
@@ -26,7 +26,9 @@
                         <input type="checkbox" name="remember"> จดจำฉันไว้
                     </label>
                 </div>
-                <button type="submit" class="btn btn-primary btn-block btn-lg">เข้าสู่ระบบ</button>
+                <button type="submit" id="submitBtn" class="btn btn-primary btn-block btn-lg" style="display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;">
+                    <span>เข้าสู่ระบบ</span>
+                </button>
             </form>
         </div>
     </div>
@@ -38,4 +40,19 @@
         <a href="{{ route('admin.login') }}">เข้าสู่ระบบสำหรับผู้จัดกิจกรรม</a>
     </p>
 </div>
+
+<script>
+function handleFormSubmit(form) {
+    const btn = form.querySelector('#submitBtn');
+    if (btn && !btn.disabled) {
+        btn.disabled = true;
+        btn.style.opacity = '0.75';
+        btn.style.cursor = 'not-allowed';
+        btn.innerHTML = '<svg style="width:16px;height:16px;animation:spin 1s linear infinite;display:inline-block;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> กำลังส่งรหัส OTP...';
+    }
+}
+</script>
+<style>
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+</style>
 @endsection

@@ -1,11 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 /**
  * คอนโทรลเลอร์การยืนยันตัวตนนักศึกษา
@@ -14,7 +18,7 @@ use Illuminate\Support\Facades\Auth;
 class StudentAuthController extends Controller
 {
     /** แสดงหน้าเข้าสู่ระบบนักศึกษา */
-    public function showLogin()
+    public function showLogin(): View|RedirectResponse
     {
         if (auth()->check()) {
             return redirect('/');
@@ -26,7 +30,7 @@ class StudentAuthController extends Controller
      * ดำเนินการเข้าสู่ระบบนักศึกษา
      * ตรวจสอบรหัสนักศึกษา → ส่ง OTP → ไปหน้ายืนยัน
      */
-    public function login(Request $request, LoginOtpController $otpController)
+    public function login(Request $request, LoginOtpController $otpController): RedirectResponse
     {
         $request->validate(['student_id' => 'required|string']);
 
@@ -66,7 +70,7 @@ class StudentAuthController extends Controller
     }
 
     /** แสดงหน้าลงทะเบียนบัญชีนักศึกษาใหม่ */
-    public function showRegister()
+    public function showRegister(): View|RedirectResponse
     {
         if (auth()->check()) {
             return redirect('/');
@@ -78,7 +82,7 @@ class StudentAuthController extends Controller
      * ลงทะเบียนบัญชีนักศึกษาใหม่
      * ตรวจสอบข้อมูล → สร้างผู้ใช้ → ล็อกอินอัตโนมัติ
      */
-    public function register(Request $request)
+    public function register(Request $request): RedirectResponse
     {
         $request->validate([
             'student_id' => 'required|string|max:20|unique:users,student_id',
@@ -97,8 +101,8 @@ class StudentAuthController extends Controller
             'program.required'    => 'กรุณาเลือกภาคเรียน',
         ]);
 
-        $prefix = \App\Models\Setting::get('student_email_prefix', 's');
-        $domain = \App\Models\Setting::get('student_email_domain', '@pkru.ac.th');
+        $prefix = (string) \App\Models\Setting::get('student_email_prefix', 's');
+        $domain = (string) \App\Models\Setting::get('student_email_domain', '@pkru.ac.th');
 
         $user = User::create([
             'student_id' => $request->student_id,
@@ -117,7 +121,7 @@ class StudentAuthController extends Controller
     }
 
     /** ออกจากระบบนักศึกษา → ลบ session → กลับหน้า login */
-    public function logout(Request $request)
+    public function logout(Request $request): RedirectResponse
     {
         Auth::logout();
         $request->session()->invalidate();

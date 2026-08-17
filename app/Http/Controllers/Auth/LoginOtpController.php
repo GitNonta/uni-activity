@@ -1,50 +1,63 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\DeviceFingerprintService;
 use App\Services\SecurityService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use function App\Helpers\log_action;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
+use function App\Helpers\log_action;
 
 class LoginOtpController extends Controller
 {
     /** แสดงหน้ากรอก OTP สำหรับ Login */
-    public function showVerifyForm(Request $request)
+    public function showVerifyForm(Request $request): View|RedirectResponse
     {
         if (!session()->has('login_otp_user_id')) {
             return redirect()->route('login');
         }
 
-        $email = session('login_otp_email');
+        $email = (string) session('login_otp_email');
         return view('auth.verify-login-otp', compact('email'));
     }
 
-    /** ส่ง OTP ใหม่ */
-    public function resend(Request $request)
+    /** ส่ง OTP ใหม่ พร้อมตรวจสอบ Cooldown */
+    public function resend(Request $request): RedirectResponse
     {
         if (!session()->has('login_otp_user_id')) {
-            return response()->json(['success' => false], 403);
+            return redirect()->route('login');
         }
 
-        $user = User::find(session('login_otp_user_id'));
+        $userId = (int) session('login_otp_user_id');
+        $cooldownKey = "otp_cooldown_{$userId}";
+
+        // ตรวจสอบว่าอยู่ในช่วง Cooldown หรือไม่
+        if (Cache::has($cooldownKey)) {
+            return back()->with('status', 'รหัส OTP ถูกส่งไปแล้ว กรุณารอสักครู่ (60 วินาที) ก่อนขอรหัสใหม่');
+        }
+
+        $user = User::find($userId);
         if ($user) {
-            $this->sendOtp($user, $request);
+            $this->sendOtp($user, $request, force: true);
             return back()->with('status', 'ส่งรหัส OTP ใหม่เรียบร้อยแล้ว');
         }
 
-        return back()->withErrors(['otp' => 'เกิดข้อผิดพลาด']);
+        return back()->withErrors(['otp' => 'เกิดข้อผิดพลาดในการส่งรหัส OTP']);
     }
 
     /** ยืนยัน OTP และ Log in */
-    public function verify(Request $request)
+    public function verify(Request $request): RedirectResponse
     {
         $request->validate([
             'otp' => ['required', 'string', 'size:6'],
@@ -69,16 +82,21 @@ class LoginOtpController extends Controller
             ]);
         }
 
-        // ลบ OTP
+        // ลบ OTP และล้าง Cooldown หลังใช้งานสำเร็จ
         DB::table('password_reset_otps')->where('id', $otpRecord->id)->delete();
+        Cache::forget("otp_cooldown_{$userId}");
 
         // ล็อกอิน
-        $user     = User::find($userId);
-        $remember = session('login_otp_remember', false);
+        $user = User::find($userId);
+        if (!$user) {
+            return redirect()->route('login');
+        }
 
+        $remember = (bool) session('login_otp_remember', false);
         Auth::login($user, $remember);
-        // Record audit log for login action
-        log_action('login', null, null, 'User logged in');
+
+        // บันทึก audit log
+        log_action('login', null, null, 'User logged in via OTP');
 
         // --- บันทึก Device Fingerprint + ตรวจ Multi-Account ---
         /** @var DeviceFingerprintService $fpService */
@@ -90,9 +108,9 @@ class LoginOtpController extends Controller
 
         // บันทึก login metadata
         $user->update([
-            'last_login_ip'          => $request->ip(),
-            'last_login_at'          => now(),
-            'last_device_fingerprint'=> $fingerprint,
+            'last_login_ip'           => $request->ip(),
+            'last_login_at'           => now(),
+            'last_device_fingerprint' => $fingerprint,
         ]);
 
         // ตรวจจับ multi-account บนเครื่องเดียวกัน
@@ -107,39 +125,72 @@ class LoginOtpController extends Controller
         return redirect()->intended(route('activities.index'));
     }
 
-    /** ฟังก์ชันช่วยส่ง OTP */
-    public function sendOtp(User $user, Request $request)
+    /**
+     * ฟังก์ชันช่วยส่ง OTP พร้อม Atomic Lock และ Deduplication ป้องกันการส่งซ้ำ
+     */
+    public function sendOtp(User $user, Request $request, bool $force = false): bool
     {
-        $otp = (string) rand(100000, 999999);
-        $ip = $request->ip();
-        
-        // ดึงพิกัดจาก IP (ใช้ API ภายนอกฟรี)
-        $location = 'ไม่ทราบตำแหน่ง';
-        try {
-            $response = Http::timeout(3)->get("http://ip-api.com/json/{$ip}?fields=status,city,regionName,country");
-            if ($response->successful() && $response->json('status') === 'success') {
-                $data = $response->json();
-                $location = "{$data['city']}, {$data['regionName']}, {$data['country']}";
+        $lockKey     = "otp_send_lock_{$user->id}";
+        $cooldownKey = "otp_cooldown_{$user->id}";
+
+        // ใช้ Atomic Lock ป้องกัน Race Condition เมื่อมีการ Submit ฟอร์มพร้อมกัน
+        return (bool) Cache::lock($lockKey, 10)->block(5, function () use ($user, $request, $cooldownKey, $force): bool {
+            // หากไม่ได้เป็นการกดขอใหม่โดยตรง (force) และเพิ่งส่งไปภายใน 60 วินาที
+            if (!$force && Cache::has($cooldownKey)) {
+                $existing = DB::table('password_reset_otps')
+                    ->where('email', $user->email)
+                    ->where('expires_at', '>', now())
+                    ->first();
+
+                // มี OTP ที่ยังไม่หมดอายุและเพิ่งส่งไปแล้ว ให้ข้ามการส่งซ้ำ
+                if ($existing) {
+                    return true;
+                }
             }
-        } catch (\Exception $e) {}
 
-        // บันทึก OTP
-        DB::table('password_reset_otps')->updateOrInsert(
-            ['email' => $user->email],
-            [
-                'otp' => $otp,
-                'expires_at' => now()->addMinutes(10),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]
-        );
+            $otp = (string) rand(100000, 999999);
+            $ip  = (string) $request->ip();
 
-        // ส่งเมล
-        Mail::to($user->email)->send(new \App\Mail\LoginOtpMail(
-            $otp, 
-            $user->full_name, 
-            $ip, 
-            $location
-        ));
+            // ดึงพิกัดจาก IP โดยใช้ Cache 24 ชม. เพื่อลด Latency จาก API ภายนอก
+            $location = Cache::remember("geoip_loc_{$ip}", 86400, function () use ($ip): string {
+                if (in_array($ip, ['127.0.0.1', '::1'], true) || str_starts_with($ip, '192.168.')) {
+                    return 'Local Network (LAN)';
+                }
+
+                try {
+                    $response = Http::timeout(2)->get("http://ip-api.com/json/{$ip}?fields=status,city,regionName,country");
+                    if ($response->successful() && $response->json('status') === 'success') {
+                        $data = $response->json();
+                        return "{$data['city']}, {$data['regionName']}, {$data['country']}";
+                    }
+                } catch (\Throwable) {}
+
+                return 'ไม่ทราบตำแหน่ง';
+            });
+
+            // บันทึก OTP ลงฐานข้อมูล
+            DB::table('password_reset_otps')->updateOrInsert(
+                ['email' => $user->email],
+                [
+                    'otp'        => $otp,
+                    'expires_at' => now()->addMinutes(10),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+
+            // บันทึก Cooldown 60 วินาที
+            Cache::put($cooldownKey, true, now()->addSeconds(60));
+
+            // ส่งอีเมล OTP
+            Mail::to($user->email)->send(new \App\Mail\LoginOtpMail(
+                $otp,
+                $user->full_name,
+                $ip,
+                $location
+            ));
+
+            return true;
+        });
     }
 }
