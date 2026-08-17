@@ -51,6 +51,8 @@ class ActivityCloningTest extends TestCase
             'check_in_at' => now(),
         ]);
 
+        $this->withoutExceptionHandling();
+
         // Action: Clone activity
         $response = $this->actingAs($staff)->post(route('admin.activities.clone', $originalActivity->id));
         dump([
