@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Events\ChatDeleted;
 use App\Events\MessageDeleted;
 use App\Events\MessageEdited;
+use App\Events\MessagesRead;
 use App\Models\JobListing;
 use App\Models\Message;
 use App\Models\Room;

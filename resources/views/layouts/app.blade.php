@@ -601,6 +601,7 @@
         function appendMessageToChat(e) {
             // Prevent duplicate if already rendered
             if (document.getElementById('cf-msg-' + e.id)) return;
+            if (e.user && String(e.user.id) === String(USER_ID)) return;
             var win = document.getElementById('cfChatWindow');
             if (!win) return;
             // Build a msg-compatible object from broadcast payload
@@ -1031,6 +1032,10 @@
             window.Echo.private('chat.student.' + USER_ID)
                 .listen('.MessageSent', function(e) {
                     console.log('chat.student MessageSent received', e);
+                    if (e.user && String(e.user.id) === String(USER_ID)) {
+                        loadThreads();
+                        return;
+                    }
                     // ถ้ากำลังเปิดหน้าแชทอยู่ และตรงกับห้องนี้ ให้ render ทันที
                     if (panelOpen && currentJobId !== null && currentJobId !== undefined) {
                         var eJobId = e.room ? e.room.job_id : null;

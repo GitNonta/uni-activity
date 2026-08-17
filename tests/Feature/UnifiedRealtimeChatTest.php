@@ -197,4 +197,17 @@ class UnifiedRealtimeChatTest extends TestCase
         $response = $this->actingAs($this->otherStudent)->delete(route('chat.messages.delete', $message->id));
         $response->assertForbidden();
     }
+
+    public function test_student_can_mark_read_on_general_inquiry_room_zero(): void
+    {
+        Event::fake();
+
+        $room = Room::create(['type' => 'direct', 'job_id' => null, 'created_by' => $this->student->id]);
+        $room->users()->attach([$this->student->id, $this->admin->id]);
+
+        $response = $this->actingAs($this->student)->post(route('chat.read', 0));
+
+        $response->assertOk();
+        $response->assertJson(['success' => true]);
+    }
 }
