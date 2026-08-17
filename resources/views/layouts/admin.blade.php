@@ -329,26 +329,7 @@
             @php
                 $adminUnreadCount = 0;
                 if (auth()->check() && auth()->user()->isStaffOrAdmin()) {
-                    $adminId = auth()->id();
-                    $isStaff = auth()->user()->isStaff();
-                    $query = \Illuminate\Support\Facades\DB::table('messages')
-                        ->join('rooms', 'messages.room_id', '=', 'rooms.id')
-                        ->leftJoin('room_user', function($join) use ($adminId) {
-                            $join->on('rooms.id', '=', 'room_user.room_id')
-                                 ->where('room_user.user_id', '=', $adminId);
-                        })
-                        ->where('messages.user_id', '!=', $adminId)
-                        ->where(function($q) {
-                            $q->whereColumn('messages.created_at', '>', 'room_user.last_read_at')
-                              ->orWhereNull('room_user.last_read_at');
-                        });
-
-                    if ($isStaff) {
-                        $query->join('job_listings', 'rooms.job_id', '=', 'job_listings.id')
-                              ->where('job_listings.created_by', '=', $adminId);
-                    }
-
-                    $adminUnreadCount = $query->count();
+                    $adminUnreadCount = app(\App\Services\ChatService::class)->getAdminUnreadCount(auth()->user());
                 }
             @endphp
             <a href="{{ route('admin.inbox.index') }}" class="sb-link {{ request()->routeIs('admin.inbox.*') ? 'active' : '' }}">

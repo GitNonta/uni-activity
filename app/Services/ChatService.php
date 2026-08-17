@@ -295,29 +295,7 @@ class ChatService
      */
     public function getAdminUnreadCount(User $admin): int
     {
-        $currentUserId = $admin->id;
-
-        $rooms = Room::with(['messages' => fn($q) => $q->latest()->limit(1), 'users'])
-            ->where(function ($q) use ($admin, $currentUserId) {
-                $q->where(function ($sub) use ($admin, $currentUserId) {
-                    $sub->whereNotNull('job_id')
-                        ->when($admin->isStaff(), function ($inner) use ($currentUserId) {
-                            $inner->whereHas('job', fn($jq) => $jq->where('created_by', $currentUserId));
-                        });
-                })->orWhere(function ($sub) use ($currentUserId) {
-                    $sub->whereNull('job_id')
-                        ->whereHas('users', fn($uq) => $uq->where('users.id', $currentUserId));
-                });
-            })
-            ->get();
-
-        return (int) $rooms->sum(function (Room $room) use ($currentUserId) {
-            $me = $room->users->where('id', $currentUserId)->first();
-            return $room->messages()
-                ->where('user_id', '!=', $currentUserId)
-                ->where('created_at', '>', $me?->pivot?->last_read_at ?? '1970-01-01')
-                ->count();
-        });
+        return (int) $this->getAdminThreads($admin)->sum('unread');
     }
 
     /**
