@@ -14,9 +14,9 @@ class UpdateLastSeen
         if (Auth::check()) {
             $user = Auth::user();
             
-            // อัปเดตเฉพาะเมื่อผ่านไปแล้วอย่างน้อย 5 นาที เพื่อลดภาระฐานข้อมูล
+            // อัปเดตเฉพาะเมื่อผ่านไปแล้วอย่างน้อย 1 นาที เพื่อความแม่นยำของสถานะออนไลน์
             $lastSeen = $user->last_seen_at;
-            if (!$lastSeen || $lastSeen->diffInMinutes(now()) >= 5) {
+            if (!$lastSeen || $lastSeen->diffInSeconds(now()) >= 60) {
                 DB::table('users')->where('id', $user->id)
                     ->update(['last_seen_at' => now()]);
             }

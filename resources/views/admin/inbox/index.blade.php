@@ -63,16 +63,21 @@
                         [{{ $thread['job_title'] }}]
                     </span>
                 </div>
-                <span class="student-status-text student-status-text-{{ $thread['student_id'] }}" data-last-seen="{{ $thread['student_last_seen'] ?? '' }}" style="font-size:0.72rem;color:#94a3b8;flex-shrink:0;">
+                <span class="student-status-text student-status-text-{{ $thread['student_id'] }}" data-last-seen="{{ $thread['student_last_seen'] ?? ($time ? $time->toISOString() : '') }}" style="font-size:0.72rem;color:#94a3b8;flex-shrink:0;">
                     @php
-                        $stLastSeen = !empty($thread['student_last_seen']) ? \Carbon\Carbon::parse($thread['student_last_seen']) : null;
-                        $stDiffMin = $stLastSeen ? max(1, $stLastSeen->diffInMinutes(now())) : null;
+                        $stLastSeen = !empty($thread['student_last_seen']) ? \Carbon\Carbon::parse($thread['student_last_seen']) : ($time ?? null);
+                        $stDiffMin = $stLastSeen ? max(0, $stLastSeen->diffInMinutes(now())) : null;
+                        $stDiffSec = $stLastSeen ? max(0, $stLastSeen->diffInSeconds(now())) : null;
                     @endphp
                     @if($stLastSeen)
-                        @if($stDiffMin < 60)
+                        @if($stDiffSec < 60)
+                            ออนไลน์เมื่อสักครู่
+                        @elseif($stDiffMin < 60)
                             ออนไลน์เมื่อ {{ $stDiffMin }} นาทีที่แล้ว
                         @elseif($stLastSeen->diffInHours(now()) < 24)
                             ออนไลน์เมื่อ {{ $stLastSeen->diffInHours(now()) }} ชม. ที่แล้ว
+                        @elseif($stLastSeen->isYesterday())
+                            ออนไลน์เมื่อวานนี้ {{ $stLastSeen->format('H:i') }}
                         @else
                             ออนไลน์เมื่อ {{ $stLastSeen->format('d/m H:i') }}
                         @endif
@@ -179,6 +184,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         };
+        window.updateStudentOnlineDots();
 
         window.Echo.join('online')
             .here(function(users) {

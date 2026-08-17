@@ -125,6 +125,9 @@ class StudentAuthController extends Controller
     /** ออกจากระบบนักศึกษา → ลบ session → กลับหน้า login */
     public function logout(Request $request): RedirectResponse
     {
+        if ($user = Auth::user()) {
+            \Illuminate\Support\Facades\DB::table('users')->where('id', $user->id)->update(['last_seen_at' => now()]);
+        }
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
