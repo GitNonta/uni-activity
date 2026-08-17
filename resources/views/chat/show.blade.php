@@ -996,16 +996,16 @@ document.addEventListener('DOMContentLoaded', () => {
             // 2. Presence Channel 'online'
             window.Echo.join('online')
                 .here((users) => {
-                    const hasStaff = users.some(u => (u.role === 'admin' || u.role === 'staff') && String(u.id) !== String(USER_ID));
+                    const hasStaff = users.some(u => (u.role === 'admin' || u.role === 'staff' || u.is_staff) && String(u.id) !== String(USER_ID));
                     updateOnlineStatus(hasStaff);
                 })
                 .joining((u) => {
-                    if ((u.role === 'admin' || u.role === 'staff') && String(u.id) !== String(USER_ID)) {
+                    if ((u.role === 'admin' || u.role === 'staff' || u.is_staff) && String(u.id) !== String(USER_ID)) {
                         updateOnlineStatus(true);
                     }
                 })
                 .leaving((u) => {
-                    if ((u.role === 'admin' || u.role === 'staff') && String(u.id) !== String(USER_ID)) {
+                    if ((u.role === 'admin' || u.role === 'staff' || u.is_staff) && String(u.id) !== String(USER_ID)) {
                         updateOnlineStatus(false);
                     }
                 });
@@ -1016,8 +1016,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (dot) dot.style.display = isOnline ? 'inline-block' : 'none';
                 if (label) {
                     label.innerHTML = isOnline 
-                        ? '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#10b981;margin-right:4px;"></span>ออนไลน์' 
-                        : '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>เพิ่งออนไลน์';
+                        ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 8px #10b981;margin-right:5px;"></span><span style="color:#10b981;font-weight:600;">กำลังใช้งาน</span>' 
+                        : '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>ออฟไลน์';
                 }
             }
         } else {

@@ -27,8 +27,10 @@ Broadcast::channel('admin.inbox', function ($user) {
 Broadcast::channel('online', function ($user) {
     if (!$user) return false;
     return [
-        'id'   => (string) $user->id,
-        'name' => $user->full_name ?? $user->name ?? 'User',
+        'id'       => (string) $user->id,
+        'name'     => $user->full_name ?? $user->name ?? 'User',
+        'role'     => $user->role ?? 'student',
+        'is_staff' => $user->isStaffOrAdmin(),
     ];
 });
 

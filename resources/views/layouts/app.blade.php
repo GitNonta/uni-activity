@@ -397,6 +397,7 @@
             <div id="cfHeader" style="background:#ea580c;padding:.7rem 1rem;display:flex;align-items:center;gap:.5rem;flex-shrink:0;">
                 <button id="cfBackBtn" onclick="cfBackToList()" style="display:none;background:none;border:none;color:#fff;font-size:1rem;cursor:pointer;padding:.1rem .3rem;line-height:1;opacity:.85;">←</button>
                 <span id="cfHeaderTitle" style="color:#fff;font-weight:700;font-size:.88rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><svg style="width:16px;height:16px;display:inline;vertical-align:-3px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg> ข้อความของฉัน</span>
+                <span id="cfAdminOnlineStatus" style="font-size:0.72rem;color:#fff;font-weight:600;display:none;align-items:center;background:rgba(0,0,0,0.15);padding:2px 8px;border-radius:12px;"><span style="width:7px;height:7px;border-radius:50%;background:#10b981;box-shadow:0 0 6px #10b981;display:inline-block;margin-right:4px;"></span>กำลังใช้งาน</span>
                 <button onclick="closeChatWidget()" style="background:none;border:none;color:#fff;font-size:1.1rem;cursor:pointer;line-height:1;padding:.1rem .3rem;opacity:.85;">✕</button>
             </div>
             <div id="cfViewList" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;">
@@ -1077,6 +1078,27 @@
                 .listen('.ChatDeleted', function(e) {
                     loadThreads();
                 });
+
+            window.Echo.join('online')
+                .here(function(users) {
+                    var hasStaff = users.some(function(u) { return (u.role === 'admin' || u.role === 'staff' || u.is_staff) && String(u.id) !== String(USER_ID); });
+                    updateFloatingOnlineStatus(hasStaff);
+                })
+                .joining(function(u) {
+                    if ((u.role === 'admin' || u.role === 'staff' || u.is_staff) && String(u.id) !== String(USER_ID)) {
+                        updateFloatingOnlineStatus(true);
+                    }
+                })
+                .leaving(function(u) {
+                    if ((u.role === 'admin' || u.role === 'staff' || u.is_staff) && String(u.id) !== String(USER_ID)) {
+                        updateFloatingOnlineStatus(false);
+                    }
+                });
+
+            function updateFloatingOnlineStatus(isOnline) {
+                var el = document.getElementById('cfAdminOnlineStatus');
+                if (el) el.style.display = isOnline ? 'inline-flex' : 'none';
+            }
         })();
 
         window.deleteStudentMessage = function(id) {

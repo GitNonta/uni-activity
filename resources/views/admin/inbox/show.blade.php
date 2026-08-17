@@ -790,8 +790,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (headerDot) headerDot.style.display = isOnline ? 'inline-block' : 'none';
                 if (label) {
                     label.innerHTML = isOnline 
-                        ? '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#10b981;margin-right:4px;"></span>ออนไลน์' 
-                        : '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>เพิ่งออนไลน์';
+                        ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 8px #10b981;margin-right:5px;"></span><span style="color:#10b981;font-weight:600;">กำลังใช้งาน</span>' 
+                        : '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>ออฟไลน์';
                 }
             }
 
