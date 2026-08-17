@@ -213,4 +213,37 @@ class FaceVerificationSecurityBypassTest extends TestCase
             'face_match_score'  => 91.5,
         ]);
     }
+
+    public function test_student_without_registered_face_profile_cannot_checkin_to_face_required_activity(): void
+    {
+        $student = User::factory()->create([
+            'student_id'      => '6599999999',
+            'face_descriptor' => null, // No registered face descriptor
+            'role'            => 'student',
+            'is_active'       => true,
+        ]);
+
+        $activity = $this->createTestActivity();
+
+        Registration::create([
+            'user_id'     => $student->id,
+            'activity_id' => $activity->id,
+            'status'      => 'approved',
+        ]);
+
+        $selfieBase64 = 'data:image/jpeg;base64,' . base64_encode('any-face-bytes');
+
+        $response = $this->actingAs($student)->post(route('checkin.store', ['token' => $activity->qr_token]), [
+            'selfie'    => $selfieBase64,
+            'latitude'  => 7.890,
+            'longitude' => 98.390,
+        ]);
+
+        $response->assertSessionHas('error');
+
+        $this->assertDatabaseMissing('attendances', [
+            'user_id'     => $student->id,
+            'activity_id' => $activity->id,
+        ]);
+    }
 }

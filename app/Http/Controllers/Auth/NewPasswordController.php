@@ -51,7 +51,7 @@ class NewPasswordController extends Controller
                 }
             }
 
-            $otp = (string) rand(100000, 999999);
+            $otp = (string) random_int(100000, 999999);
             $expiryMinutes = 10;
 
             // บันทึก OTP ลงฐานข้อมูล

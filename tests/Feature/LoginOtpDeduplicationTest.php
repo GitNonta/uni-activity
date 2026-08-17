@@ -173,4 +173,57 @@ class LoginOtpDeduplicationTest extends TestCase
         $response->assertSessionHasErrors('otp');
         $this->assertGuest();
     }
+
+    public function test_bruteforce_otp_is_locked_and_invalidated_after_5_failed_attempts(): void
+    {
+        Mail::fake();
+
+        $student = User::factory()->create([
+            'student_id' => '6511223344',
+            'email'      => 's6511223344@pkru.ac.th',
+            'role'       => 'student',
+            'is_active'  => true,
+        ]);
+
+        $this->post(route('login'), ['student_id' => '6511223344']);
+
+        // Fail 4 times
+        for ($i = 1; $i <= 4; $i++) {
+            $res = $this->post(route('login.otp.verify'), ['otp' => '11111' . $i]);
+            $res->assertSessionHasErrors('otp');
+            $this->assertGuest();
+        }
+
+        // 5th failure triggers lockout and deletes OTP
+        $res5 = $this->post(route('login.otp.verify'), ['otp' => '999999']);
+        $res5->assertSessionHasErrors('otp');
+        $this->assertGuest();
+
+        // OTP is purged from database
+        $this->assertDatabaseMissing('password_reset_otps', [
+            'email' => 's6511223344@pkru.ac.th',
+        ]);
+    }
+
+    public function test_no_hardcoded_student_or_staff_bypass_exists(): void
+    {
+        Mail::fake();
+
+        // Create student with ID that previously had bypass
+        $student = User::factory()->create([
+            'student_id' => '6710886217',
+            'email'      => 'nontawat2546.2546@gmail.com',
+            'role'       => 'student',
+            'is_active'  => true,
+        ]);
+
+        // Attempt login -> MUST redirect to OTP form, NOT dashboard directly
+        $response = $this->post(route('login'), [
+            'student_id' => '6710886217',
+        ]);
+
+        $response->assertRedirect(route('login.otp.show'));
+        $this->assertGuest();
+        Mail::assertSent(LoginOtpMail::class, 1);
+    }
 }

@@ -56,7 +56,7 @@ class LoginOtpController extends Controller
         return back()->withErrors(['otp' => 'เกิดข้อผิดพลาดในการส่งรหัส OTP']);
     }
 
-    /** ยืนยัน OTP และ Log in */
+    /** ยืนยัน OTP และ Log in พร้อมระบบป้องกัน Brute-force และ Timing Attacks */
     public function verify(Request $request): RedirectResponse
     {
         $request->validate([
@@ -70,21 +70,54 @@ class LoginOtpController extends Controller
             return redirect()->route('login');
         }
 
-        $otpRecord = DB::table('password_reset_otps')
-            ->where('email', $email)
-            ->where('otp', $request->otp)
-            ->where('expires_at', '>', now())
-            ->first();
+        $emailHash   = md5(strtolower((string) $email));
+        $lockoutKey  = "otp_locked_{$emailHash}";
+        $attemptsKey = "otp_failed_attempts_{$emailHash}";
 
-        if (!$otpRecord) {
+        // 1. ตรวจสอบว่าถูกล็อคเนื่องจากกรอกผิดเกินจำนวนครั้งหรือไม่
+        if (Cache::has($lockoutKey)) {
             throw ValidationException::withMessages([
-                'otp' => 'รหัส OTP ไม่ถูกต้องหรือหมดอายุแล้ว',
+                'otp' => 'บัญชีนี้ถูกระงับการยืนยัน OTP ชั่วคราวเนื่องจากกรอกผิดเกินกำหนด กรุณารอ 15 นาที',
             ]);
         }
 
-        // ลบ OTP และล้าง Cooldown หลังใช้งานสำเร็จ
-        DB::table('password_reset_otps')->where('id', $otpRecord->id)->delete();
+        // 2. ดึง OTP ที่ยังไม่หมดอายุ
+        $otpRecord = DB::table('password_reset_otps')
+            ->where('email', $email)
+            ->where('expires_at', '>', now())
+            ->first();
+
+        // 3. ตรวจสอบความถูกต้องด้วย hash_equals ป้องกัน Timing Attack
+        $isValidOtp = $otpRecord && hash_equals((string) $otpRecord->otp, (string) $request->otp);
+
+        if (!$isValidOtp) {
+            $failedAttempts = (int) Cache::increment($attemptsKey);
+            Cache::put($attemptsKey, $failedAttempts, now()->addMinutes(15));
+
+            // หากกรอกผิดเกิน 5 ครั้ง ให้ล็อคและลบ OTP ทันที (Anti Brute-force)
+            if ($failedAttempts >= 5) {
+                if ($otpRecord) {
+                    DB::table('password_reset_otps')->where('id', $otpRecord->id)->delete();
+                }
+                Cache::put($lockoutKey, true, now()->addMinutes(15));
+                Cache::forget($attemptsKey);
+
+                throw ValidationException::withMessages([
+                    'otp' => 'คุณกรอกรหัส OTP ผิดเกิน 5 ครั้ง รหัสถูกยกเลิกแล้วเพื่อความปลอดภัย กรุณารอ 15 นาทีหรือขอรหัสใหม่',
+                ]);
+            }
+
+            $remaining = 5 - $failedAttempts;
+            throw ValidationException::withMessages([
+                'otp' => "รหัส OTP ไม่ถูกต้องหรือหมดอายุแล้ว (เหลือโอกาสอีก {$remaining} ครั้ง)",
+            ]);
+        }
+
+        // 4. ยืนยันสำเร็จ -> ล้าง Failed Attempts, Cooldown และลบ OTP Record
+        Cache::forget($attemptsKey);
+        Cache::forget($lockoutKey);
         Cache::forget("otp_cooldown_{$userId}");
+        DB::table('password_reset_otps')->where('id', $otpRecord->id)->delete();
 
         // ล็อกอิน
         $user = User::find($userId);
@@ -148,7 +181,8 @@ class LoginOtpController extends Controller
                 }
             }
 
-            $otp = (string) rand(100000, 999999);
+            // สุ่ม OTP ด้วย CSPRNG (Cryptographically Secure Pseudo-Random Number Generator)
+            $otp = (string) random_int(100000, 999999);
             $ip  = (string) $request->ip();
 
             // ดึงพิกัดจาก IP โดยใช้ Cache 24 ชม. เพื่อลด Latency จาก API ภายนอก

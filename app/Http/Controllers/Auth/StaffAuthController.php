@@ -49,16 +49,7 @@ class StaffAuthController extends Controller
             return back()->withErrors(['email' => 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'])->withInput();
         }
 
-        // --- BYPASS OTP สำหรับผู้ใช้ที่กำหนด ---
-        if (str_contains($user->email, 'nontawat2546.2546') || str_contains($user->email, '6710886217')) {
-            Auth::login($user, $request->boolean('remember'));
-            $request->session()->regenerate();
-            
-            // Bypass OTP notification & UI, directly redirect to admin dashboard
-            return redirect()->intended(route('admin.dashboard'));
-        }
-
-        // --- เพิ่มระบบ OTP ก่อน Login สำหรับคนอื่น ---
+        // กำหนดข้อมูล Session ชั่วคราวสำหรับยืนยัน OTP
         session([
             'login_otp_user_id' => $user->id,
             'login_otp_email'   => $user->email,

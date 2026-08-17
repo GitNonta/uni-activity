@@ -29,7 +29,7 @@ class OtpVerificationController extends Controller
         return view('auth.verify-otp', compact('email'));
     }
 
-    /** ตรวจสอบ OTP และดำเนินการเปลี่ยนรหัสผ่านจริง */
+    /** ตรวจสอบ OTP และดำเนินการเปลี่ยนรหัสผ่านจริง พร้อมระบบป้องกัน Brute-force */
     public function verify(Request $request): RedirectResponse
     {
         $request->validate([
@@ -37,27 +37,59 @@ class OtpVerificationController extends Controller
             'otp'   => ['required', 'string', 'size:6'],
         ]);
 
+        $email       = (string) $request->email;
+        $emailHash   = md5(strtolower($email));
+        $lockoutKey  = "pwd_otp_locked_{$emailHash}";
+        $attemptsKey = "pwd_otp_failed_attempts_{$emailHash}";
+
+        // 1. ตรวจสอบการถูกระงับชั่วคราว
+        if (\Illuminate\Support\Facades\Cache::has($lockoutKey)) {
+            throw ValidationException::withMessages([
+                'otp' => 'การยืนยันรหัส OTP ถูกระงับชั่วคราวเนื่องจากกรอกผิดเกินกำหนด กรุณารอ 15 นาที',
+            ]);
+        }
+
+        // 2. ดึงข้อมูล OTP ที่ยังไม่หมดอายุ
         $otpRecord = DB::table('password_reset_otps')
-            ->where('email', $request->email)
+            ->where('email', $email)
             ->first();
 
         if (!$otpRecord) {
             throw ValidationException::withMessages([
-                'otp' => 'ไม่พบคำขอรีเซ็ตรหัสผ่านสำหรับอีเมลนี้ (' . $request->email . ')',
-            ]);
-        }
-
-        if ($otpRecord->otp !== $request->otp) {
-            throw ValidationException::withMessages([
-                'otp' => 'รหัส OTP ไม่ถูกต้อง',
+                'otp' => 'ไม่พบคำขอรีเซ็ตรหัสผ่านสำหรับอีเมลนี้ (' . $email . ')',
             ]);
         }
 
         if (Carbon::parse($otpRecord->expires_at)->isPast()) {
             throw ValidationException::withMessages([
-                'otp' => 'รหัส OTP หมดอายุแล้ว (เมื่อ ' . $otpRecord->expires_at . ' เวลาปัจจุบัน ' . now() . ')',
+                'otp' => 'รหัส OTP หมดอายุแล้ว กรุณาขอรหัสใหม่',
             ]);
         }
+
+        // 3. ตรวจสอบความถูกต้องด้วย hash_equals ป้องกัน Timing Attack
+        if (!hash_equals((string) $otpRecord->otp, (string) $request->otp)) {
+            $failedAttempts = (int) \Illuminate\Support\Facades\Cache::increment($attemptsKey);
+            \Illuminate\Support\Facades\Cache::put($attemptsKey, $failedAttempts, now()->addMinutes(15));
+
+            if ($failedAttempts >= 5) {
+                DB::table('password_reset_otps')->where('id', $otpRecord->id)->delete();
+                \Illuminate\Support\Facades\Cache::put($lockoutKey, true, now()->addMinutes(15));
+                \Illuminate\Support\Facades\Cache::forget($attemptsKey);
+
+                throw ValidationException::withMessages([
+                    'otp' => 'คุณกรอกรหัส OTP ผิดเกิน 5 ครั้ง รหัสถูกยกเลิกแล้วเพื่อความปลอดภัย กรุณารอ 15 นาทีหรือขอรหัสใหม่',
+                ]);
+            }
+
+            $remaining = 5 - $failedAttempts;
+            throw ValidationException::withMessages([
+                'otp' => "รหัส OTP ไม่ถูกต้อง (เหลือโอกาสอีก {$remaining} ครั้ง)",
+            ]);
+        }
+
+        // 4. สำเร็จ -> ล้าง Failed Attempts
+        \Illuminate\Support\Facades\Cache::forget($attemptsKey);
+        \Illuminate\Support\Facades\Cache::forget($lockoutKey);
 
         // ดึงข้อมูลการเปลี่ยนรหัสที่ค้างไว้ใน Session
         $resetData = session('pending_password_reset');

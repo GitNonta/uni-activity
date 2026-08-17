@@ -57,20 +57,27 @@ class CheckInService
                 ];
             }
 
-            // ส่งรูปเซลฟี่ไปตรวจสอบบน Python AI Server โดยตรง (ห้ามเชื่อถือ Client-side Score)
+            if (empty($user->face_descriptor)) {
+                return [
+                    'success' => false,
+                    'message' => 'คุณยังไม่ได้ลงทะเบียนข้อมูลใบหน้าในระบบ กรุณาอัปโหลดรูปโปรไฟล์ที่เห็นใบหน้าชัดเจนก่อนเช็คอินกิจกรรมนี้',
+                ];
+            }
+
+            // ส่งรูปเซลฟี่ไปตรวจสอบบน Python AI Server โดยตรง (Server-Authoritative Decision)
             $faceResult = $this->faceVerificationService->verifyFace($user, (string) $selfieBase64, [
                 'mode' => 'python',
             ]);
 
             $passed         = (bool) ($faceResult['is_match'] ?? false);
             $score          = (float) ($faceResult['score_percentage'] ?? 0);
-            $livenessPassed = (bool) ($faceResult['liveness_passed'] ?? ($faceResult['liveness']['passed'] ?? true));
+            $livenessPassed = (bool) ($faceResult['liveness_passed'] ?? ($faceResult['liveness']['passed'] ?? false));
 
-            // หากผู้ใช้มี Face Descriptor ลงทะเบียนไว้และ Server ตรวจไม่ผ่าน หรือติด Liveness Anti-Spoofing -> ปฏิเสธทันที
-            if ($user->face_descriptor && (!$passed || !$livenessPassed)) {
+            // หาก Server ตรวจไม่ผ่าน หรือติด Liveness Anti-Spoofing -> ปฏิเสธทันที
+            if (!$passed || !$livenessPassed) {
                 $reason = !$passed 
                     ? "ใบหน้าไม่ตรงกับข้อมูลในระบบ (คะแนนความคล้ายคลึง: " . round($score, 1) . "%)" 
-                    : "การตรวจสอบ Liveness ไม่ผ่าน (ตรวจพบรูปถ่าย/ภาพปลอม)";
+                    : "การตรวจสอบ Liveness ไม่ผ่าน (ตรวจพบรูปถ่าย/ภาพปลอมบนหน้าจอ)";
 
                 Log::warning("Face Verification Rejected for user {$user->id} on activity {$activity->id}: {$reason}");
 
