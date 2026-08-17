@@ -78,8 +78,8 @@ class ChatService
 
         $messages = $this->chatRepository->getRecentMessages($room);
 
-        // ทำเครื่องหมายว่าอ่านแล้ว
-        $room->users()->updateExistingPivot($userId, ['last_read_at' => now()]);
+        // ทำเครื่องหมายว่าอ่านแล้ว (เฉพาะเมื่อมีข้อความใหม่ที่ยังไม่ได้อ่าน)
+        $this->markAsRead($user, $jobId);
 
         return [
             'room'     => $room,
@@ -459,6 +459,24 @@ class ChatService
         $room = $this->findRoom($user->id, $jobId, $defaultAdminId);
 
         if ($room) {
+            $userPivot = DB::table('room_user')
+                ->where('room_id', $room->id)
+                ->where('user_id', $user->id)
+                ->first();
+
+            $prevReadAt = $userPivot?->last_read_at;
+
+            // ตรวจสอบว่ามีข้อความของอีกฝ่ายที่ยังไม่ได้อ่านหรือไม่
+            $hasUnread = Message::where('room_id', $room->id)
+                ->where('user_id', '!=', $user->id)
+                ->when($prevReadAt, fn($q) => $q->where('created_at', '>', $prevReadAt))
+                ->exists();
+
+            // ถ้าไม่มีข้อความใหม่ที่ยังไม่ได้อ่าน และเคยบันทึกเวลาอ่านแล้ว ให้ข้าม (ไม่รีเซ็ตเวลาเป็น "เพิ่งอ่าน" ตอนรีเฟรช)
+            if (!$hasUnread && $prevReadAt !== null) {
+                return;
+            }
+
             $now = now();
             $room->users()->updateExistingPivot($user->id, ['last_read_at' => $now]);
 

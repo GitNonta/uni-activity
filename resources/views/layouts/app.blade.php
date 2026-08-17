@@ -550,10 +550,10 @@
 
         function formatReadStatus(readAt, isRead) {
             if (!readAt && !isRead) return '✓ ส่งแล้ว';
-            if (!readAt) return '✓✓ เพิ่งอ่าน';
+            if (!readAt) return '✓ ส่งแล้ว';
 
             var readTime = new Date(readAt);
-            if (isNaN(readTime.getTime())) return '✓✓ เพิ่งอ่าน';
+            if (isNaN(readTime.getTime())) return '✓ ส่งแล้ว';
 
             var now = new Date();
             var diffSec = Math.max(0, Math.floor((now.getTime() - readTime.getTime()) / 1000));
