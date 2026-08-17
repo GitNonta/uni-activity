@@ -252,6 +252,60 @@ class FaceVerificationService
     }
 
     /**
+     * ตรวจสอบและดึงข้อมูล Face Encodings (512D + 128D) อัตโนมัติจากภาพโปรไฟล์หากยังไม่มีในระบบ
+     */
+    public function ensureFaceEncodings(User $user): void
+    {
+        if (($user->face_descriptor && $user->face_descriptor_js) || empty($user->profile_photo)) {
+            return;
+        }
+
+        $photoPath = storage_path('app/public/' . $user->profile_photo);
+        if (!file_exists($photoPath) || empty($this->aiServerUrl)) {
+            return;
+        }
+
+        try {
+            Log::info("Auto-extracting missing face encodings for user {$user->id}");
+
+            $httpReq = Http::timeout(10);
+            if (!empty($this->aiServerKey)) {
+                $httpReq = $httpReq->withHeaders(['X-API-Key' => $this->aiServerKey]);
+            }
+
+            $response = $httpReq
+                ->attach('image', file_get_contents($photoPath), basename($photoPath))
+                ->post(rtrim($this->aiServerUrl, '/') . '/extract');
+
+            if ($response->successful()) {
+                $aiResult = $response->json();
+                $updateData = [];
+                $extracted = [];
+
+                if (!$user->face_descriptor && !empty($aiResult['embedding_512d'])) {
+                    $updateData['face_descriptor'] = $aiResult['embedding_512d'];
+                    $extracted[] = '512D';
+                }
+                if (!$user->face_descriptor_js && !empty($aiResult['embedding_128d'])) {
+                    $updateData['face_descriptor_js'] = $aiResult['embedding_128d'];
+                    $extracted[] = '128D';
+                }
+                if (!$user->face_descriptor && empty($updateData['face_descriptor']) && !empty($aiResult['embedding'])) {
+                    $updateData['face_descriptor'] = $aiResult['embedding'];
+                    $extracted[] = '512D (legacy)';
+                }
+
+                if (!empty($updateData)) {
+                    $user->update($updateData);
+                    Log::info("Auto-extracted " . implode(' + ', $extracted) . " for user {$user->id}");
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning("Auto-extraction failed for user {$user->id}: " . $e->getMessage());
+        }
+    }
+
+    /**
      * ดึงข้อมูล Metrics และประสิทธิภาพของระบบ AI
      */
     public function getMetrics(): array
