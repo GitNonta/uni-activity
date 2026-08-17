@@ -43,10 +43,12 @@ class CheckInController extends Controller
         if ($activity->require_face_scan) {
             $user = auth()->user();
 
-            // Auto-extract face encodings if missing via FaceVerificationService
-            $this->faceVerificationService->ensureFaceEncodings($user);
+            // If face descriptors are missing and profile photo exists, trigger async extraction without blocking GET request
+            if ($user && empty($user->face_descriptor) && !empty($user->profile_photo)) {
+                \App\Jobs\ExtractFaceBiometricsJob::dispatch($user->id, $user->profile_photo)->onQueue('ai');
+            }
 
-            $profilePhotoUrl = $user->profile_photo ? asset('storage/' . $user->profile_photo) : null;
+            $profilePhotoUrl = $user?->profile_photo ? asset('storage/' . $user->profile_photo) : null;
             $faceScanMethod  = $activity->face_scan_method ?? 'python';
 
             return view('checkin.selfie', compact('activity', 'token', 'isCheckoutToken', 'profilePhotoUrl', 'faceScanMethod'));

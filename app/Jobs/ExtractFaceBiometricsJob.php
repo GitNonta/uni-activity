@@ -95,10 +95,16 @@ class ExtractFaceBiometricsJob implements ShouldQueue
         if (!empty($data['embedding_512d']) && is_array($data['embedding_512d'])) {
             $user->face_descriptor = $data['embedding_512d'];
             $updated = true;
+        } elseif (!empty($data['embedding']) && is_array($data['embedding'])) {
+            $user->face_descriptor = $data['embedding'];
+            $updated = true;
         }
 
         if (!empty($data['embedding_128d']) && is_array($data['embedding_128d'])) {
             $user->face_descriptor_js = $data['embedding_128d'];
+            $updated = true;
+        } elseif (!empty($user->face_descriptor) && empty($user->face_descriptor_js) && count($user->face_descriptor) >= 128) {
+            $user->face_descriptor_js = array_slice($user->face_descriptor, 0, 128);
             $updated = true;
         }
 
