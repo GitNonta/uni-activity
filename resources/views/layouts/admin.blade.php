@@ -61,12 +61,76 @@
     </script>
     @yield('styles')
 <style>
+:root {
+    /* Dark Theme Default (Neutral Zinc Palette) */
+    --adm-topbar-bg: #18181b;
+    --adm-topbar-border: #27272a;
+    --adm-brand-text: #ffffff;
+    --adm-page-title: #f4f4f5;
+    --adm-sidebar-bg: #18181b;
+    --adm-sidebar-border: #27272a;
+    --adm-section-label: #a1a1aa;
+    --adm-link-text: #e4e4e7;
+    --adm-link-icon: #a1a1aa;
+    --adm-link-hover-bg: rgba(234, 88, 12, 0.2);
+    --adm-link-hover-text: #fb923c;
+    --adm-link-active-bg: #ea580c;
+    --adm-link-active-text: #ffffff;
+    --adm-btn-bg: #27272a;
+    --adm-btn-border: #3f3f46;
+    --adm-btn-text: #d4d4d8;
+    --adm-btn-hover-bg: #ea580c;
+    --adm-btn-hover-text: #ffffff;
+    --adm-search-bg: #27272a;
+    --adm-search-border: #3f3f46;
+    --adm-search-text: #a1a1aa;
+    --adm-search-kbd-bg: #18181b;
+    --adm-search-kbd-text: #d4d4d8;
+    --adm-footer-bg: #141416;
+    --adm-footer-border: #27272a;
+    --adm-user-bg: #1c1c1f;
+    --adm-user-name: #f4f4f5;
+    --adm-user-role: #a1a1aa;
+    --adm-content-bg: #121214;
+}
 
+html[data-theme="light"] {
+    /* Light Theme (Clean Crisp Slate / High Contrast) */
+    --adm-topbar-bg: #ffffff;
+    --adm-topbar-border: #e2e8f0;
+    --adm-brand-text: #0f172a;
+    --adm-page-title: #0f172a;
+    --adm-sidebar-bg: #ffffff;
+    --adm-sidebar-border: #e2e8f0;
+    --adm-section-label: #64748b;
+    --adm-link-text: #334155;
+    --adm-link-icon: #64748b;
+    --adm-link-hover-bg: #fff7ed;
+    --adm-link-hover-text: #ea580c;
+    --adm-link-active-bg: #ea580c;
+    --adm-link-active-text: #ffffff;
+    --adm-btn-bg: #f8fafc;
+    --adm-btn-border: #cbd5e1;
+    --adm-btn-text: #475569;
+    --adm-btn-hover-bg: #ea580c;
+    --adm-btn-hover-text: #ffffff;
+    --adm-search-bg: #f8fafc;
+    --adm-search-border: #cbd5e1;
+    --adm-search-text: #64748b;
+    --adm-search-kbd-bg: #e2e8f0;
+    --adm-search-kbd-text: #334155;
+    --adm-footer-bg: #f8fafc;
+    --adm-footer-border: #e2e8f0;
+    --adm-user-bg: #ffffff;
+    --adm-user-name: #0f172a;
+    --adm-user-role: #64748b;
+    --adm-content-bg: #f8fafc;
+}
 
 *, *::before, *::after { box-sizing: border-box; }
 
 /* ════════════════════════════
-   UNIFIED SEAMLESS TOP HEADER (Full Width - Neutral Dark Zinc)
+   UNIFIED SEAMLESS TOP HEADER
    ════════════════════════════ */
 .admin-topbar {
     position: fixed;
@@ -74,15 +138,16 @@
     left: 0;
     right: 0;
     height: 64px;
-    background: #18181b !important;
-    border-bottom: 1px solid #27272a !important;
+    background: var(--adm-topbar-bg) !important;
+    border-bottom: 1px solid var(--adm-topbar-border) !important;
     display: flex;
     align-items: stretch;
     justify-content: space-between;
     padding: 0 20px 0 0;
     z-index: 500;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
     box-sizing: border-box;
+    transition: background .2s, border-color .2s;
 }
 
 .admin-topbar-left {
@@ -98,9 +163,9 @@
     gap: 12px;
     padding: 0 20px;
     text-decoration: none;
-    background: #18181b !important;
-    border-right: 1px solid #27272a;
-    transition: width .3s cubic-bezier(.4,0,.2,1);
+    background: var(--adm-topbar-bg) !important;
+    border-right: 1px solid var(--adm-topbar-border);
+    transition: width .3s cubic-bezier(.4,0,.2,1), background .2s, border-color .2s;
     flex-shrink: 0;
     box-sizing: border-box;
 }
@@ -118,9 +183,10 @@
 .admin-brand-text {
     font-size: 1.15rem;
     font-weight: 800;
-    color: #ffffff;
+    color: var(--adm-brand-text);
     letter-spacing: -0.025em;
     white-space: nowrap;
+    transition: color .2s;
 }
 
 .admin-topbar-action-group {
@@ -134,11 +200,12 @@
     margin: 0;
     font-size: 1.05rem;
     font-weight: 700;
-    color: #f4f4f5;
+    color: var(--adm-page-title);
     letter-spacing: -0.015em;
     display: flex;
     align-items: center;
     white-space: nowrap;
+    transition: color .2s;
 }
 
 .admin-topbar-right {
@@ -147,10 +214,10 @@
 }
 
 .sb-toggle-btn {
-    background: #27272a;
-    border: 1px solid #3f3f46;
+    background: var(--adm-btn-bg);
+    border: 1px solid var(--adm-btn-border);
     cursor: pointer;
-    color: #d4d4d8;
+    color: var(--adm-btn-text);
     width: 36px;
     height: 36px;
     display: flex;
@@ -161,9 +228,9 @@
     flex-shrink: 0;
 }
 .sb-toggle-btn:hover {
-    background: #ea580c;
-    border-color: #ea580c;
-    color: #ffffff;
+    background: var(--adm-btn-hover-bg);
+    border-color: var(--adm-btn-hover-bg);
+    color: var(--adm-btn-hover-text);
     transform: scale(1.05);
 }
 
@@ -171,46 +238,46 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background: #27272a;
-    border: 1px solid #3f3f46;
+    background: var(--adm-search-bg);
+    border: 1px solid var(--adm-search-border);
     border-radius: 8px;
     height: 36px;
     padding: 0 14px;
     font-size: 0.825rem;
-    color: #a1a1aa;
+    color: var(--adm-search-text);
     cursor: pointer;
     transition: all .2s;
     min-width: 220px;
     justify-content: space-between;
 }
 .sb-search-btn:hover {
-    background: #3f3f46;
-    border-color: #52525b;
-    color: #f4f4f5;
+    border-color: #ea580c;
+    color: var(--adm-page-title);
 }
 .sb-search-btn kbd {
-    background: #18181b;
-    border: 1px solid #3f3f46;
+    background: var(--adm-search-kbd-bg);
+    border: 1px solid var(--adm-search-border);
     border-radius: 4px;
     padding: 1px 5px;
     font-size: 0.725rem;
     font-family: monospace;
-    color: #d4d4d8;
+    color: var(--adm-search-kbd-text);
 }
 
 /* ════════════════════════════
-   SIDEBAR & CONTENT (Neutral Dark Zinc)
+   SIDEBAR & CONTENT
    ════════════════════════════ */
 .sb-shell { 
     padding-top: 64px;
     display: flex; 
     min-height: 100vh; 
-    background: #121214; 
+    background: var(--adm-content-bg); 
+    transition: background .2s;
 }
 
 .sb-sidebar { 
     width: 260px; 
-    background: #18181b !important; 
+    background: var(--adm-sidebar-bg) !important; 
     display: flex; 
     flex-direction: column; 
     position: fixed; 
@@ -218,18 +285,18 @@
     left: 0; 
     bottom: 0; 
     z-index: 300; 
-    transition: all .3s cubic-bezier(.4,0,.2,1); 
+    transition: width .3s cubic-bezier(.4,0,.2,1), left .3s ease, background .2s, border-color .2s; 
     overflow: hidden;
-    border-right: 1px solid #27272a !important;
-    box-shadow: 4px 0 24px rgba(0,0,0,0.2);
+    border-right: 1px solid var(--adm-sidebar-border) !important;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.06);
 }
 .sb-sidebar.collapsed { width: 80px; }
 
 /* Custom Slim Scrollbar */
 .sb-nav::-webkit-scrollbar { width: 5px; }
 .sb-nav::-webkit-scrollbar-track { background: transparent; }
-.sb-nav::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
-.sb-nav::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+.sb-nav::-webkit-scrollbar-thumb { background: var(--adm-btn-border); border-radius: 10px; }
+.sb-nav::-webkit-scrollbar-thumb:hover { background: #ea580c; }
 
 .sb-nav { 
     flex: 1; 
@@ -244,7 +311,7 @@
 .sb-section-label { 
     font-size: 10px; 
     font-weight: 700; 
-    color: #71717a; 
+    color: var(--adm-section-label); 
     text-transform: uppercase; 
     letter-spacing: 0.1em;
     padding: 12px 12px 6px; 
@@ -256,22 +323,35 @@
     gap: 12px; 
     padding: 11px 14px; 
     border-radius: 10px; 
-    color: #a1a1aa; 
+    color: var(--adm-link-text); 
     font-size: 14px; 
-    font-weight: 500; 
+    font-weight: 600; 
     text-decoration: none; 
     transition: all .2s; 
     white-space: nowrap; 
 }
+.sb-link svg { 
+    width: 20px; 
+    height: 20px; 
+    flex-shrink: 0; 
+    color: var(--adm-link-icon);
+    stroke: var(--adm-link-icon);
+    transition: transform .2s, color .2s, stroke .2s;
+}
 
 .sb-link:hover { 
-    background: rgba(234, 88, 12, 0.25); 
-    color: #f97316; 
+    background: var(--adm-link-hover-bg); 
+    color: var(--adm-link-hover-text); 
+}
+.sb-link:hover svg { 
+    color: var(--adm-link-hover-text);
+    stroke: var(--adm-link-hover-text);
+    transform: translateX(2px); 
 }
 
 .sb-link.active, .sb-sidebar .sb-link.active, .sb-sidebar a.sb-link.active, .sb-sidebar a.active { 
-    background: #ea580c !important;
-    color: #ffffff !important; 
+    background: var(--adm-link-active-bg) !important;
+    color: var(--adm-link-active-text) !important; 
     box-shadow: 0 4px 14px rgba(234, 88, 12, 0.45) !important;
     border: none !important;
 }
@@ -281,25 +361,14 @@
     stroke: #ffffff !important;
 }
 
-.sb-link svg { 
-    width: 20px; 
-    height: 20px; 
-    flex-shrink: 0; 
-    transition: transform .2s;
-}
-
-.sb-link:hover svg { transform: translateX(2px); }
-
 /* Fix Collapsed State UI */
 .sb-sidebar.collapsed .sb-link {
     justify-content: center;
     padding: 12px 0;
 }
-
 .sb-sidebar.collapsed .sb-link svg {
     margin: 0;
 }
-
 .sb-sidebar.collapsed .sb-link-text, 
 .sb-sidebar.collapsed .sb-section-label { 
     display: none !important; 
@@ -308,8 +377,9 @@
 /* ── Sidebar Footer ── */
 .sb-footer { 
     padding: 14px 12px; 
-    border-top: 1px solid rgba(255,255,255,0.08);
-    background: rgba(0,0,0,0.15);
+    border-top: 1px solid var(--adm-footer-border);
+    background: var(--adm-footer-bg);
+    transition: background .2s, border-color .2s;
 }
 .sb-user { 
     display: flex; 
@@ -318,11 +388,12 @@
     padding: 8px 10px; 
     border-radius: 10px; 
     transition: all .2s; 
-    background: rgba(255,255,255,0.03); 
+    background: var(--adm-user-bg); 
+    border: 1px solid var(--adm-footer-border);
     text-decoration: none; 
 }
 .sb-user:hover { 
-    background: rgba(255,255,255,0.06); 
+    background: var(--adm-link-hover-bg); 
 }
 .sb-avatar { 
     width: 38px; height: 38px; 
@@ -335,18 +406,18 @@
     font-size: 14px; 
     font-weight: 700;
     box-shadow: 0 4px 12px rgba(234,88,12,0.3);
-    border: 2px solid rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.25);
     flex-shrink: 0;
 }
 .sb-user-info { flex: 1; min-width: 0; }
 .sb-user-name { 
-    font-size: 13px; font-weight: 600; color: #f3f4f6; 
+    font-size: 13px; font-weight: 700; color: var(--adm-user-name); 
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
 }
-.sb-user-role { font-size: 11px; color: #6b7280; }
+.sb-user-role { font-size: 11px; font-weight: 500; color: var(--adm-user-role); }
 
 .sb-logout-btn { 
-    background: none; border: none; cursor: pointer; color: #6b7280; 
+    background: none; border: none; cursor: pointer; color: var(--adm-user-role); 
     padding: 6px; display: flex; align-items: center; justify-content: center; 
     border-radius: 8px; transition: all .2s; 
 }
@@ -361,6 +432,52 @@
 /* Mobile Sidebar Overlay */
 .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 250; display: none; }
 .sidebar-overlay.open { display: block; }
+
+/* ── Global Omnisearch Modal ── */
+.adm-search-modal-box {
+    background: var(--adm-topbar-bg) !important;
+    border-radius: 16px;
+    max-width: 640px;
+    width: 100%;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35);
+    overflow: hidden;
+    border: 1px solid var(--adm-topbar-border) !important;
+    animation: fadeInDown .2s ease;
+}
+.adm-search-modal-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--adm-topbar-border) !important;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.adm-search-modal-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    color: var(--adm-brand-text) !important;
+    background: transparent;
+}
+.adm-search-modal-kbd {
+    background: var(--adm-search-kbd-bg) !important;
+    border: 1px solid var(--adm-search-border) !important;
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    color: var(--adm-search-kbd-text) !important;
+    cursor: pointer;
+}
+.adm-search-modal-footer {
+    padding: 0.75rem 1.25rem;
+    background: var(--adm-footer-bg) !important;
+    border-top: 1px solid var(--adm-footer-border) !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    color: var(--adm-section-label) !important;
+}
 
 /* ── Content ── */
 .sb-content { flex: 1; min-width: 0; margin-left: 260px; min-height: calc(100vh - 64px); transition: margin-left .3s ease; }
@@ -938,19 +1055,19 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <!-- Global Omnisearch Modal (Ctrl+K) -->
-<div id="globalSearchModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(15,23,42,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:flex-start; justify-content:center; padding:10vh 1rem 2rem 1rem;">
-    <div style="background:#fff; border-radius:16px; max-width:640px; width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); overflow:hidden; border:1px solid #cbd5e1; animation:fadeInDown .2s ease;">
-        <div style="padding:1rem 1.25rem; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; gap:12px;">
-            <svg width="20" height="20" fill="none" stroke="#64748b" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            <input type="text" id="globalSearchInput" placeholder="พิมพ์ค้นหานักศึกษา, กิจกรรม, ตำแหน่งงาน, หรือประกาศ..." style="flex:1; border:none; outline:none; font-size:1rem; color:#0f172a; background:transparent;" autocomplete="off">
-            <kbd onclick="closeGlobalSearch()" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; padding:2px 8px; font-size:0.75rem; color:#64748b; cursor:pointer;">ESC</kbd>
+<div id="globalSearchModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:flex-start; justify-content:center; padding:10vh 1rem 2rem 1rem;">
+    <div class="adm-search-modal-box">
+        <div class="adm-search-modal-header">
+            <svg width="20" height="20" fill="none" stroke="currentColor" style="color:var(--adm-link-icon);" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" id="globalSearchInput" class="adm-search-modal-input" placeholder="พิมพ์ค้นหานักศึกษา, กิจกรรม, ตำแหน่งงาน, หรือประกาศ..." autocomplete="off">
+            <kbd onclick="closeGlobalSearch()" class="adm-search-modal-kbd">ESC</kbd>
         </div>
         <div id="globalSearchResults" style="max-height:420px; overflow-y:auto; padding:0.5rem;">
-            <div style="padding:2rem 1rem; text-align:center; color:#94a3b8; font-size:0.875rem;">
+            <div style="padding:2rem 1rem; text-align:center; color:var(--adm-section-label); font-size:0.875rem;">
                 พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหาข้อมูลข้ามระบบ
             </div>
         </div>
-        <div style="padding:0.75rem 1.25rem; background:#f8fafc; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:#64748b;">
+        <div class="adm-search-modal-footer">
             <span>กด <strong>&uarr;</strong> <strong>&darr;</strong> เพื่อเลื่อน, <strong>Enter</strong> เพื่อเปิด</span>
             <span>Uni-Activity Omnisearch</span>
         </div>
