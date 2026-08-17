@@ -49,6 +49,14 @@ class StaffAuthController extends Controller
             return back()->withErrors(['email' => 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'])->withInput();
         }
 
+        // โหมด OTP สำหรับบัญชีที่ระบุใน AUTH_OTP_BYPASS_IDS (.env) — ไม่มี ID ฝังในโค้ด
+        $bypassIds = config('auth.otp_bypass_ids', []);
+        if (!empty($bypassIds) && in_array($user->email, $bypassIds, true)) {
+            Auth::login($user, $request->boolean('remember'));
+            $request->session()->regenerate();
+            return redirect()->intended(route('admin.dashboard'));
+        }
+
         // กำหนดข้อมูล Session ชั่วคราวสำหรับยืนยัน OTP
         session([
             'login_otp_user_id' => $user->id,

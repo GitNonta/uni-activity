@@ -122,13 +122,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | OTP Bypass Settings (Development Only)
+    | OTP Bypass Settings
     |--------------------------------------------------------------------------
     |
-    | Strict fail-safe: By default false. Only allowed when explicitly enabled
-    | AND running on local environment with APP_DEBUG=true.
+    | AUTH_OTP_BYPASS_IDS  — comma-separated list of student_id OR email values
+    |                        that skip the OTP step. Leave blank in production.
+    |                        Example (in .env, never in source code):
+    |                          AUTH_OTP_BYPASS_IDS=6710886217,admin@pkru.ac.th
+    |
+    | ไม่ควรเปิดใน Production (ค่า default เป็น array ว่าง)
     |
     */
-    'otp_bypass_enabled' => (bool) env('AUTH_OTP_BYPASS_ENABLED', false),
+    'otp_bypass_ids' => array_values(array_filter(
+        array_map('trim', explode(',', (string) env('AUTH_OTP_BYPASS_IDS', '')))
+    )),
 
 ];
