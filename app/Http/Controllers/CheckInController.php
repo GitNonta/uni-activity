@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -378,31 +379,41 @@ class CheckInController extends Controller
             return back()->with('error', 'ไม่พบรหัสนักศึกษา "' . $request->student_id . '" ในระบบ')->withInput();
         }
 
-        if (Attendance::where('user_id', $user->id)->where('activity_id', $activity->id)->exists()) {
-            return back()->with('error', 'นักศึกษา ' . $user->full_name . ' (' . $user->student_id . ') เช็คอินไปแล้ว')->withInput();
-        }
+        $lockKey = "walkin_lock_{$user->id}_{$activity->id}";
 
-        Attendance::create([
-            'user_id'       => $user->id,
-            'activity_id'   => $activity->id,
-            'method'        => 'walk_in',
-            'status'        => 'approved',
-            'is_verified'   => true,
-            'checked_in_at' => now(),
-            'ip_address'    => $request->ip(),
-        ]);
+        return Cache::lock($lockKey, 10)->block(5, function () use ($request, $activity, $user, $token): RedirectResponse {
+            return DB::transaction(function () use ($request, $activity, $user, $token): RedirectResponse {
+                if (Attendance::where('user_id', $user->id)->where('activity_id', $activity->id)->lockForUpdate()->exists()) {
+                    return back()->with('error', 'นักศึกษา ' . $user->full_name . ' (' . $user->student_id . ') เช็คอินไปแล้ว')->withInput();
+                }
 
-        broadcast(new \App\Events\AttendeeCheckedIn($token, $user))->toOthers();
+                try {
+                    Attendance::create([
+                        'user_id'       => $user->id,
+                        'activity_id'   => $activity->id,
+                        'method'        => 'walk_in',
+                        'status'        => 'approved',
+                        'is_verified'   => true,
+                        'checked_in_at' => now(),
+                        'ip_address'    => $request->ip(),
+                    ]);
+                } catch (\Illuminate\Database\UniqueConstraintViolationException|\Illuminate\Database\QueryException $e) {
+                    return back()->with('error', 'นักศึกษา ' . $user->full_name . ' (' . $user->student_id . ') เช็คอินไปแล้ว')->withInput();
+                }
 
-        return back()
-            ->with('success', 'บันทึกการเข้าร่วมของ ' . $user->full_name . ' (' . $user->student_id . ') สำเร็จ')
-            ->with('checked_in_student', [
-                'id'             => $user->id,
-                'name'           => $user->full_name,
-                'student_id'     => $user->student_id,
-                'activity_id'    => $activity->id,
-                'activity_title' => $activity->title
-            ]);
+                broadcast(new \App\Events\AttendeeCheckedIn($token, $user))->toOthers();
+
+                return back()
+                    ->with('success', 'บันทึกการเข้าร่วมของ ' . $user->full_name . ' (' . $user->student_id . ') สำเร็จ')
+                    ->with('checked_in_student', [
+                        'id'             => $user->id,
+                        'name'           => $user->full_name,
+                        'student_id'     => $user->student_id,
+                        'activity_id'    => $activity->id,
+                        'activity_title' => $activity->title
+                    ]);
+            });
+        });
     }
 
     /** API: ดึงรายชื่อผู้เข้าร่วมกิจกรรม walk-in แบบ real-time (JSON) */
