@@ -122,8 +122,8 @@ services:
         aliases:
           - redis
           - dragonfly
-    ports:
-      - "6379:6379"
+    expose:
+      - "6379"
 
   postgres:
     image: postgres:16-alpine
@@ -139,8 +139,8 @@ services:
       - postgres-data:/var/lib/postgresql/data
     networks:
       - laravel-network
-    ports:
-      - "5432:5432"
+    expose:
+      - "5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-root} -d ${DB_DATABASE:-uni_activity}"]
       interval: 10s
@@ -161,8 +161,6 @@ services:
       - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN:-}
     networks:
       - laravel-network
-    ports:
-      - "4040:4040"
     depends_on:
       - load-balancer
 
