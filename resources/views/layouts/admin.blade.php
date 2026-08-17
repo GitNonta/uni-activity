@@ -34,46 +34,60 @@
     left: 0;
     right: 0;
     height: 64px;
-    background: #111827;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: #111827 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: space-between;
-    padding: 0 20px;
+    padding: 0 20px 0 0;
     z-index: 500;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     box-sizing: border-box;
 }
 
 .admin-topbar-left {
     display: flex;
-    align-items: center;
-    gap: 16px;
+    align-items: stretch;
+    height: 100%;
 }
 
-.admin-brand {
+.admin-brand-box {
+    width: 260px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    padding: 0 20px;
     text-decoration: none;
-    width: 220px;
+    background: #111827 !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    transition: width .3s cubic-bezier(.4,0,.2,1);
     flex-shrink: 0;
-    transition: opacity 0.2s;
+    box-sizing: border-box;
 }
-.admin-brand:hover { opacity: 0.9; }
+.admin-brand-box:hover { opacity: 0.95; }
+
+.admin-brand-box.collapsed {
+    width: 80px;
+    padding: 0;
+    justify-content: center;
+}
+.admin-brand-box.collapsed .admin-brand-text {
+    display: none;
+}
 
 .admin-brand-text {
     font-size: 1.15rem;
     font-weight: 800;
     color: #ffffff;
     letter-spacing: -0.025em;
+    white-space: nowrap;
 }
 
-.admin-topbar-divider {
-    width: 1px;
-    height: 22px;
-    background: rgba(255, 255, 255, 0.12);
-    flex-shrink: 0;
+.admin-topbar-action-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-left: 20px;
 }
 
 .admin-page-title {
@@ -85,6 +99,11 @@
     display: flex;
     align-items: center;
     white-space: nowrap;
+}
+
+.admin-topbar-right {
+    display: flex;
+    align-items: center;
 }
 
 .sb-toggle-btn {
@@ -151,7 +170,7 @@
 
 .sb-sidebar { 
     width: 260px; 
-    background: #111827; 
+    background: #111827 !important; 
     display: flex; 
     flex-direction: column; 
     position: fixed; 
@@ -161,7 +180,7 @@
     z-index: 300; 
     transition: all .3s cubic-bezier(.4,0,.2,1); 
     overflow: hidden;
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
     box-shadow: 4px 0 24px rgba(0,0,0,0.05);
 }
 .sb-sidebar.collapsed { width: 80px; }
@@ -309,7 +328,7 @@
 
 /* Tablet Auto-Collapse (769px - 1024px) */
 @media (min-width: 769px) and (max-width: 1024px) {
-    .admin-brand { width: 60px; }
+    .admin-brand-box { width: 80px; padding: 0; justify-content: center; }
     .admin-brand-text { display: none; }
     .sb-sidebar { width: 80px; }
     .sb-content { margin-left: 80px; }
@@ -325,9 +344,8 @@
 
 /* Mobile */
 @media (max-width: 768px) {
-    .admin-brand { width: auto; }
+    .admin-brand-box { width: auto; border-right: none; padding: 0 12px; }
     .admin-brand-text { font-size: 1rem; }
-    .admin-topbar-divider { display: none; }
     .admin-page-title { display: none; }
     .sb-sidebar { left: -260px; transition: left 0.3s ease; }
     .sb-sidebar.mobile-open { left: 0; }
@@ -356,18 +374,18 @@
 {{-- ── 1. Unified Seamless Top Header (100% Full-Width) ───────────────── --}}
 <header class="admin-topbar">
     <div class="admin-topbar-left">
-        <a href="{{ route('admin.dashboard') }}" class="admin-brand">
-            <img src="{{ asset('logo.svg') }}" alt="Logo" style="height: 32px; width: 32px;">
+        <a href="{{ route('admin.dashboard') }}" class="admin-brand-box" id="adminBrandBox">
+            <img src="{{ asset('logo.svg') }}" alt="Logo" style="height: 32px; width: 32px; flex-shrink: 0;">
             <span class="admin-brand-text">Uni-Activity</span>
         </a>
 
-        <div class="admin-topbar-divider"></div>
+        <div class="admin-topbar-action-group">
+            <button onclick="toggleSidebar()" class="sb-toggle-btn" title="ย่อ/ขยาย เมนูด้านข้าง">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
 
-        <button onclick="toggleSidebar()" class="sb-toggle-btn" title="ย่อ/ขยาย เมนูด้านข้าง">
-            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-        </button>
-
-        <h1 class="admin-page-title">@yield('title', 'Dashboard')</h1>
+            <h1 class="admin-page-title">@yield('title', 'Dashboard')</h1>
+        </div>
     </div>
 
     <div class="admin-topbar-right">
@@ -552,14 +570,17 @@
 
             @yield('content')
         </div>
-    </div>
+    </main>
 </div>
 
 <script>
     function toggleSidebar() {
         const sidebar = document.getElementById('mainSidebar');
-        sidebar.classList.toggle('collapsed');
-        document.getElementById('sbContent').classList.toggle('collapsed');
+        const brandBox = document.getElementById('adminBrandBox');
+        const content = document.getElementById('sbContent');
+        if (sidebar) sidebar.classList.toggle('collapsed');
+        if (brandBox) brandBox.classList.toggle('collapsed');
+        if (content) content.classList.toggle('collapsed');
     }
 
     function toggleSubmenu(el) {

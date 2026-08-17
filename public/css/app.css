@@ -665,7 +665,7 @@ nav[role="navigation"] span[aria-current="page"] span { background: #ea580c; col
 /* ── Auto Dark Mode (Responsive to System/Browser Theme) ── */
 @media (prefers-color-scheme: dark) {
     body { background: #202124 !important; color: #f1f5f9 !important; }
-    .card, .navbar, .bottom-nav, .sb-sidebar, .sb-topbar, .admin-mobile-header { background: #36383a !important; border-color: #4a4d50 !important; color: #f1f5f9 !important; }
+    .card, .navbar, .bottom-nav, .admin-mobile-header { background: #36383a !important; border-color: #4a4d50 !important; color: #f1f5f9 !important; }
     .card-header { border-bottom-color: #4a4d50 !important; color: #f8fafc !important; }
     .text-muted { color: #9aa0a6 !important; }
     .form-control, .form-control:focus { background: #202124 !important; border-color: #5f6368 !important; color: #f1f5f9 !important; }
@@ -681,7 +681,8 @@ nav[role="navigation"] span[aria-current="page"] span { background: #ea580c; col
     .bottom-nav { background: #36383a !important; border-top-color: #4a4d50 !important; }
     .bottom-nav-item { color: #9aa0a6 !important; }
     .bottom-nav-item:hover, .bottom-nav-item.active { color: #ea580c !important; }
-    .sb-shell { background: #202124 !important; }
+    .sb-shell { background: #0f172a !important; }
+    .admin-topbar, .sb-sidebar { background: #111827 !important; border-color: rgba(255, 255, 255, 0.08) !important; color: #f8fafc !important; }
     /* Specific overrides for hardcoded styles */
     [style*="color:#1e293b"], [style*="color: #1e293b"], [style*="color:#334155"], [style*="color: #334155"] { color: #e8eaed !important; }
     [style*="background:#fff"], [style*="background: #fff"], [style*="background:#ffffff"], [style*="background: #ffffff"], [style*="background-color:#fff"], [style*="background-color: #fff"] { background: #36383a !important; }
