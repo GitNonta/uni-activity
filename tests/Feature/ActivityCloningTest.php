@@ -33,7 +33,7 @@ class ActivityCloningTest extends TestCase
             'activity_hours'   => 3.0,
             'max_participants' => 50,
             'created_by'       => $staff->id,
-            'status'           => 'published',
+            'status'           => 'open',
         ]);
 
         // Attach registrations and attendances to original activity

@@ -32,11 +32,12 @@ class AdminGlobalSearchTest extends TestCase
         $job = JobListing::create([
             'title'        => 'ผู้ช่วยนักพัฒนาระบบสารสนเทศ',
             'company_name' => 'Tech Corp',
+            'position'     => 'Programmer Assistant',
             'description'  => 'รายละเอียดงานพัฒนาระบบ',
             'location'     => 'ภูเก็ต',
             'type'         => 'part_time',
             'compensation' => '500 บาท/วัน',
-            'status'       => 'published',
+            'status'       => 'open',
             'created_by'   => $admin->id,
         ]);
 
