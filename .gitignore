@@ -76,6 +76,7 @@ __pycache__/
 /edl/
 /edl_extracted_data/
 /scripts/
+!/scripts/*.sh
 /watchdog_logs/
 /socketserver/
 py/test_*.py
