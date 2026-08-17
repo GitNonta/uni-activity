@@ -80,6 +80,8 @@ class AiLoadBalancerTest extends TestCase
             ], 200),
         ]);
 
+        Cache::put('ai_lb_rr_index', -1);
+
         $lb = new AiLoadBalancerService();
 
         $response = $lb->executeWithFailover(function (string $nodeUrl, string $apiKey, int $timeout) {
