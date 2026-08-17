@@ -27,3 +27,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/v1/activities', [ActivityController::class, 'index']);
 
 });
+
+// Cluster Telemetry Metrics for Monitor UI & Dashboard
+Route::get('/cluster/metrics', [\App\Http\Controllers\Admin\ClusterMonitoringController::class, 'metrics']);

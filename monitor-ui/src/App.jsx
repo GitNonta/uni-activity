@@ -16,10 +16,12 @@ import { Documentation } from './components/Documentation'
 import { AdvancedStatus } from './components/AdvancedStatus'
 import { AiScanner } from './components/AiScanner'
 import { EventsCard } from './components/EventsCard'
+import { ClusterControlCard } from './components/ClusterControlCard'
 import './App.css'
 
 const NAV_TABS = [
   { id: 'dashboard',     label: 'Dashboard' },
+  { id: 'cluster',       label: 'Cluster Control Center' },
   { id: 'status',        label: 'System Status' },
   { id: 'events',        label: 'Deployment Events' },
   { id: 'deploy',        label: 'Deploy Logs' },
@@ -149,6 +151,9 @@ export default function App() {
             />
           )
         )}
+
+        {/* Cluster Control Center */}
+        {activeTab === 'cluster' && <ClusterControlCard initialData={data} />}
 
         {/* Speed Test — dedicated page */}
         {activeTab === 'speedtest' && (
