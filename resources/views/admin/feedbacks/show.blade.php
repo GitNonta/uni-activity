@@ -1079,6 +1079,94 @@ document.addEventListener('DOMContentLoaded', function() {
     color: #f4f4f5;
 }
 
+/* ── Explicit Light Theme Overrides ── */
+html[data-theme="light"] .gform-card {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+html[data-theme="light"] .gform-tabs,
+html[data-theme="light"] .gform-q-header,
+html[data-theme="light"] .gform-individual-nav {
+    background: #ffffff;
+    border-color: #f1f5f9;
+}
+html[data-theme="light"] .gform-title,
+html[data-theme="light"] .gform-q-title,
+html[data-theme="light"] .gform-meta-val,
+html[data-theme="light"] .gform-bar-stats,
+html[data-theme="light"] .gform-ind-name,
+html[data-theme="light"] .gform-ind-value,
+html[data-theme="light"] .gform-pager-info,
+html[data-theme="light"] .gform-table td {
+    color: #0f172a;
+}
+html[data-theme="light"] .gform-subtitle,
+html[data-theme="light"] .gform-q-count,
+html[data-theme="light"] .gform-meta-label,
+html[data-theme="light"] .gform-tab,
+html[data-theme="light"] .gform-bar-pct,
+html[data-theme="light"] .gform-ind-label,
+html[data-theme="light"] .gform-ind-meta {
+    color: #64748b;
+}
+html[data-theme="light"] .gform-bar-label,
+html[data-theme="light"] .gform-text-body {
+    color: #334155;
+}
+html[data-theme="light"] .gform-user-name {
+    color: #0f172a;
+}
+html[data-theme="light"] .gform-meta-strip,
+html[data-theme="light"] .gform-text-answer-item,
+html[data-theme="light"] .gform-ind-item {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+html[data-theme="light"] .gform-bar-track {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+}
+html[data-theme="light"] .gform-tab:hover {
+    color: #0f172a;
+    background: #f8fafc;
+}
+html[data-theme="light"] .gform-tab.active {
+    color: #ea580c;
+    border-bottom-color: #ea580c;
+    background: #fff7ed;
+}
+html[data-theme="light"] .gform-table th {
+    background: #f8fafc;
+    color: #475569;
+    border-color: #e2e8f0;
+}
+html[data-theme="light"] .gform-table td {
+    border-color: #f1f5f9;
+}
+html[data-theme="light"] .gform-table tr:hover td {
+    background: #f8fafc;
+}
+html[data-theme="light"] .gform-btn-secondary {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    color: #475569;
+}
+html[data-theme="light"] .gform-btn-secondary:hover {
+    background: #f8fafc;
+    color: #0f172a;
+}
+html[data-theme="light"] .gform-pager-btn {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    color: #334155;
+}
+html[data-theme="light"] .gform-pager-btn:hover:not(:disabled) {
+    background: #ea580c;
+    border-color: #ea580c;
+    color: #ffffff;
+}
+
 /* ── Print Optimization ── */
 @media print {
     .admin-topbar, .sb-sidebar, .gform-nav-bar, .gform-tabs {

@@ -24,6 +24,35 @@
                 document.documentElement.classList.remove('dark');
             }
         })();
+
+        window.toggleThemeMode = function() {
+            var current = document.documentElement.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            var next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            if (next === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            localStorage.setItem('app-theme', next);
+            window.updateThemeToggleIcons(next);
+        };
+
+        window.updateThemeToggleIcons = function(theme) {
+            var isDark = theme === 'dark';
+            document.querySelectorAll('.theme-icon-sun').forEach(function(el) {
+                el.style.display = isDark ? 'block' : 'none';
+            });
+            document.querySelectorAll('.theme-icon-moon').forEach(function(el) {
+                el.style.display = isDark ? 'none' : 'block';
+            });
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var current = document.documentElement.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            window.updateThemeToggleIcons(current);
+        });
+
         // ป้องกันปัญหา 419 Page Expired จาก BFCache (การกดปุ่ม Back)
         window.addEventListener('pageshow', function(event) {
             if (event.persisted) {
