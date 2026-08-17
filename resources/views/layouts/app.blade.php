@@ -510,8 +510,11 @@
             var supportPreview = supportThread && supportThread.last_message ? (supportThread.last_message.length > 32 ? supportThread.last_message.slice(0,32)+'…' : supportThread.last_message) : 'สอบถามปัญหาการใช้งาน';
             
             var supportChatHtml = '<div onclick="showChatView(0, \'ติดต่อสอบถามเจ้าหน้าที่\')" style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;cursor:pointer;" class="chat-list-item ' + (isSupportUnread ? 'unread' : '') + '">'
-                + '<div style="width:34px;height:34px;border-radius:50%;background:#ffedd5;color:#ea580c;display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+                + '<div style="position:relative;flex-shrink:0;">'
+                + '<div style="width:34px;height:34px;border-radius:50%;background:#ffedd5;color:#ea580c;display:flex;align-items:center;justify-content:center;">'
                 + '<svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.05 2a9 9 0 0 1 8 7.94"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.05 6A5 5 0 0 1 18 10"/></svg>'
+                + '</div>'
+                + '<span class="cf-staff-online-dot" style="display:' + (window.isStaffOnline ? 'block' : 'none') + ';position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="กำลังใช้งาน"></span>'
                 + '</div>'
                 + '<div style="flex:1;min-width:0;">'
                 + '<div class="chat-title" style="font-size:.82rem;font-weight:' + (isSupportUnread?'700':'500') + ';color:#1e293b;">ติดต่อสอบถามเจ้าหน้าที่</div>'
@@ -538,7 +541,10 @@
 
                 return '<div onclick="showChatView(' + t.job_id + ',\'' + safeTitle + '\')" '
                     + 'style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;cursor:pointer;" class="chat-list-item ' + (isUnread ? 'unread' : '') + '">'
+                    + '<div style="position:relative;flex-shrink:0;">'
                     + avatarHtml
+                    + '<span class="cf-staff-online-dot" style="display:' + (window.isStaffOnline ? 'block' : 'none') + ';position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="กำลังใช้งาน"></span>'
+                    + '</div>'
                     + '<div style="flex:1;min-width:0;">'
                     + '<div class="chat-title" style="font-size:.82rem;font-weight:' + (isUnread?'700':'500') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#1e293b;">' + safeTitle + '</div>'
                     + '<div class="chat-preview" style="font-size:.7rem;color:' + (isUnread?'#1e293b':'#64748b') + ';font-weight:' + (isUnread?'700':'400') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + preview + '</div>'
@@ -1104,9 +1110,17 @@
                 window.isStaffOnline = isOnline;
                 var el = document.getElementById('cfAdminOnlineStatus');
                 if (el) el.style.display = isOnline ? 'inline-flex' : 'none';
-                document.querySelectorAll('.cf-avatar-online-dot').forEach(function(dot) {
+                document.querySelectorAll('.cf-avatar-online-dot, .cf-staff-online-dot').forEach(function(dot) {
                     dot.style.display = isOnline ? 'block' : 'none';
                 });
+                var btn = document.getElementById('chatFloatBtn');
+                if (btn) {
+                    if (isOnline) {
+                        btn.style.boxShadow = '0 4px 18px rgba(16,185,129,.5), 0 0 0 2px #10b981';
+                    } else {
+                        btn.style.boxShadow = '0 4px 18px rgba(234,88,12,.45)';
+                    }
+                }
             }
         })();
 
