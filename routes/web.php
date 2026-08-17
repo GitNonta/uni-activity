@@ -108,18 +108,18 @@ Route::middleware(['auth', 'role:staff'])->group(function () {
 
 // ── เส้นทางนักศึกษาที่เข้าดูได้โดยไม่ต้องเข้าสู่ระบบ ──
 Route::get('/activities', [ActivityController::class, 'index'])->name('activities.index');
-Route::get('/activities/{id}', [ActivityController::class, 'show'])->name('activities.show');
+Route::get('/activities/{activity}', [ActivityController::class, 'show'])->name('activities.show');
 Route::get('/announcements', [StudentAnnouncementController::class, 'index'])->name('announcements.index');
-Route::get('/announcements/{id}', [StudentAnnouncementController::class, 'show'])->name('announcements.show');
+Route::get('/announcements/{announcement}', [StudentAnnouncementController::class, 'show'])->name('announcements.show');
 Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
-Route::get('/jobs/{id}', [JobController::class, 'show'])->name('jobs.show');
+Route::get('/jobs/{job}', [JobController::class, 'show'])->name('jobs.show');
 Route::get('/map', [MapController::class, 'index'])->name('map.index');
 Route::get('/api/map/locations', [MapController::class, 'locationsApi'])->name('api.map.locations');
 
 // ── เส้นทางนักศึกษา (ต้อง login ก่อน) ──────────────────
 Route::middleware('auth')->group(function () {
-    Route::post('/activities/{id}/register', [RegistrationController::class, 'store'])->name('activities.register'); // ลงทะเบียนกิจกรรม
-    Route::delete('/registrations/{id}', [RegistrationController::class, 'destroy'])->name('registrations.destroy'); // ยกเลิกการลงทะเบียน
+    Route::post('/activities/{activity}/register', [RegistrationController::class, 'store'])->name('activities.register'); // ลงทะเบียนกิจกรรม
+    Route::delete('/registrations/{registration}', [RegistrationController::class, 'destroy'])->name('registrations.destroy'); // ยกเลิกการลงทะเบียน
     Route::get('/check-in/{token}', [CheckInController::class, 'show'])->name('checkin.show');                       // หน้าเช็คอินจาก QR
     Route::post('/check-in/{token}', [CheckInController::class, 'store'])->name('checkin.store');                    // ดำเนินการเช็คอิน QR
     Route::post('/check-in/{token}/verify-frame', [CheckInController::class, 'verifyFrame'])->name('checkin.verify_frame'); // สแกนหน้าแบบเรียวไทม์
@@ -148,15 +148,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/save-js-descriptor', [ProfilePhotoController::class, 'saveJsDescriptor'])->name('profile.save_js_descriptor');
 
     // ── ประเมินกิจกรรม ──
-    Route::get('activities/{id}/feedback', [FeedbackController::class, 'create'])->name('feedback.create');
-    Route::post('activities/{id}/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
+    Route::get('activities/{activity}/feedback', [FeedbackController::class, 'create'])->name('feedback.create');
+    Route::post('activities/{activity}/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
     
     Route::delete('/profile/photo', [ProfilePhotoController::class, 'destroy'])->name('profile.photo.destroy');        // ลบรูปโปรไฟล์
 
     // ── ประกาศรับสมัครงาน (นักศึกษา) ──
-    Route::post('/jobs/{id}/apply', [JobController::class, 'apply'])->name('jobs.apply');                                 // สมัครงาน
-    Route::post('/jobs/{id}/comment', [JobController::class, 'comment'])->name('jobs.comment');                           // เพิ่มคอมเมนต์
-    Route::delete('/jobs/comments/{id}', [JobController::class, 'deleteComment'])->name('jobs.comment.delete');           // ลบคอมเมนต์
+    Route::post('/jobs/{job}/apply', [JobController::class, 'apply'])->name('jobs.apply');                                 // สมัครงาน
+    Route::post('/jobs/{job}/comment', [JobController::class, 'comment'])->name('jobs.comment');                           // เพิ่มคอมเมนต์
+    Route::delete('/jobs/comments/{comment}', [JobController::class, 'deleteComment'])->name('jobs.comment.delete');           // ลบคอมเมนต์
     // ── ระบบแชทสด (MongoDB) ──
     Route::get('/chat/threads', [ChatController::class, 'myThreads'])->name('chat.threads');
     Route::get('/jobs/{id}/chat/messages', [ChatController::class, 'messages'])->name('chat.messages');
@@ -164,11 +164,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/jobs/{id}/chat', [ChatController::class, 'send'])->middleware('throttle:chat-send')->name('chat.send');
     Route::post('/jobs/{id}/chat/read', [ChatController::class, 'markRead'])->name('chat.read');
     Route::get('/jobs/{id}/admin-online', [ChatController::class, 'adminOnlineStatus'])->middleware('throttle:status')->name('chat.admin-online');
-    Route::delete('/chat/messages/{id}', [ChatController::class, 'deleteMessage'])->name('chat.messages.delete');
-    Route::put('/chat/messages/{id}', [ChatController::class, 'editMessage'])->name('chat.messages.edit');
+    Route::delete('/chat/messages/{message}', [ChatController::class, 'deleteMessage'])->name('chat.messages.delete');
+    Route::put('/chat/messages/{message}', [ChatController::class, 'editMessage'])->name('chat.messages.edit');
     // ── User status (online/last seen) ──
     Route::middleware('auth')->post('/user/ping', [UserStatusController::class, 'ping'])->middleware('throttle:status')->name('user.ping');
-    Route::get('/users/{id}/status', [UserStatusController::class, 'status'])->middleware('throttle:status')->name('user.status');
+    Route::get('/users/{user}/status', [UserStatusController::class, 'status'])->middleware('throttle:status')->name('user.status');
 
     // ── LINE OAuth ──
     Route::get('/line/redirect', [LineController::class, 'redirect'])->name('line.redirect');
@@ -209,14 +209,14 @@ Route::middleware(['auth', 'role:staff'])->prefix('admin')->name('admin.')->grou
 
     // ── ประกาศ ──
     Route::resource('announcements', AnnouncementAdminController::class);
-    Route::patch('announcements/{id}/toggle-active', [AnnouncementAdminController::class, 'toggleActive'])->name('announcements.toggle-active');
+    Route::patch('announcements/{announcement}/toggle-active', [AnnouncementAdminController::class, 'toggleActive'])->name('announcements.toggle-active');
 
     // ── ประกาศรับสมัครงาน ──
     Route::resource('jobs', JobAdminController::class);
-    Route::patch('jobs/{id}/status', [JobAdminController::class, 'updateStatus'])->name('jobs.update-status');
-    Route::patch('jobs/{id}/applicants/{aid}', [JobAdminController::class, 'updateApplicant'])->name('jobs.update-applicant');
+    Route::patch('jobs/{job}/status', [JobAdminController::class, 'updateStatus'])->name('jobs.update-status');
+    Route::patch('jobs/{job}/applicants/{aid}', [JobAdminController::class, 'updateApplicant'])->name('jobs.update-applicant');
     Route::delete('jobs/comments/{cid}', [JobAdminController::class, 'deleteComment'])->name('jobs.admin-comment-delete');
-    Route::get('jobs/{id}/export-applicants', [JobAdminController::class, 'exportApplicants'])->name('jobs.export-applicants');
+    Route::get('jobs/{job}/export-applicants', [JobAdminController::class, 'exportApplicants'])->name('jobs.export-applicants');
 
     // ── กล่องข้อความ (Inbox) ──
     Route::get('inbox', [AdminInboxController::class, 'index'])->name('inbox.index');
@@ -224,12 +224,12 @@ Route::middleware(['auth', 'role:staff'])->prefix('admin')->name('admin.')->grou
     Route::get('inbox/{jobId}/{userId}', [AdminInboxController::class, 'show'])->name('inbox.show');
     Route::post('inbox/{jobId}/{userId}', [AdminInboxController::class, 'send'])->middleware('throttle:chat-send')->name('inbox.send');
     Route::post('inbox/{jobId}/{userId}/read', [AdminInboxController::class, 'markRead'])->name('inbox.read');
-    Route::delete('inbox/messages/{id}', [AdminInboxController::class, 'deleteMessage'])->name('inbox.messages.delete');
-    Route::put('inbox/messages/{id}', [AdminInboxController::class, 'editMessage'])->name('inbox.messages.edit');
+    Route::delete('inbox/messages/{message}', [AdminInboxController::class, 'deleteMessage'])->name('inbox.messages.delete');
+    Route::put('inbox/messages/{message}', [AdminInboxController::class, 'editMessage'])->name('inbox.messages.edit');
     Route::delete('inbox/{jobId}/{userId}', [AdminInboxController::class, 'deleteChat'])->name('inbox.delete');
     Route::get('students', [StudentAdminController::class, 'index'])->name('students.index');
-    Route::get('students/{id}', [StudentAdminController::class, 'show'])->name('students.show');
-    Route::post('students/{id}/send-message', [StudentAdminController::class, 'sendMessage'])->name('students.send-message');
+    Route::get('students/{student}', [StudentAdminController::class, 'show'])->name('students.show');
+    Route::post('students/{student}/send-message', [StudentAdminController::class, 'sendMessage'])->name('students.send-message');
 
     // ── ส่งออกรายงาน Excel ──
     Route::get('exports', [ExcelExportController::class, 'index'])->name('exports.index');
@@ -241,7 +241,7 @@ Route::middleware(['auth', 'role:staff'])->prefix('admin')->name('admin.')->grou
 
     // ── ผลการประเมิน ──
     Route::get('feedbacks', [FeedbackAdminController::class, 'index'])->name('feedbacks.index');
-    Route::get('feedbacks/activity/{id}', [FeedbackAdminController::class, 'show'])->name('feedbacks.show');
+    Route::get('feedbacks/activity/{activity}', [FeedbackAdminController::class, 'show'])->name('feedbacks.show');
 
     // ── โปรไฟล์ส่วนตัว ──
     Route::get('profile', [ProfileAdminController::class, 'edit'])->name('profile.edit');
@@ -253,8 +253,8 @@ Route::middleware(['auth', 'role:admin,super-admin'])->prefix('admin')->name('ad
     // ── จัดการหมวดหมู่กิจกรรม + เกณฑ์ชั่วโมง ──
     Route::get('categories', [CategoryAdminController::class, 'index'])->name('categories.index');
     Route::post('categories', [CategoryAdminController::class, 'store'])->name('categories.store');
-    Route::patch('categories/{id}', [CategoryAdminController::class, 'update'])->name('categories.update');
-    Route::delete('categories/{id}', [CategoryAdminController::class, 'destroy'])->name('categories.destroy');
+    Route::patch('categories/{category}', [CategoryAdminController::class, 'update'])->name('categories.update');
+    Route::delete('categories/{category}', [CategoryAdminController::class, 'destroy'])->name('categories.destroy');
     Route::post('categories/required-hours', [CategoryAdminController::class, 'saveRequiredHours'])->name('categories.required-hours');
     Route::delete('categories/required-hours/reset', [CategoryAdminController::class, 'resetRequiredHours'])->name('categories.required-hours.reset');
 
@@ -262,19 +262,19 @@ Route::middleware(['auth', 'role:admin,super-admin'])->prefix('admin')->name('ad
     Route::get('users', [UserAdminController::class, 'index'])->name('users.index');
     Route::get('users/create', [UserAdminController::class, 'create'])->name('users.create');
     Route::post('users', [UserAdminController::class, 'store'])->name('users.store');
-    Route::get('users/{id}/edit', [UserAdminController::class, 'edit'])->name('users.edit');
-    Route::patch('users/{id}', [UserAdminController::class, 'update'])->name('users.update');
-    Route::delete('users/{id}', [UserAdminController::class, 'destroy'])->name('users.destroy');
-    Route::patch('users/{id}/toggle-active', [UserAdminController::class, 'toggleActive'])->name('users.toggle-active');
+    Route::get('users/{user}/edit', [UserAdminController::class, 'edit'])->name('users.edit');
+    Route::patch('users/{user}', [UserAdminController::class, 'update'])->name('users.update');
+    Route::delete('users/{user}', [UserAdminController::class, 'destroy'])->name('users.destroy');
+    Route::patch('users/{user}/toggle-active', [UserAdminController::class, 'toggleActive'])->name('users.toggle-active');
 
     // ── จัดการบันทึกนักศึกษา ──
-    Route::post('students/{id}/attendances', [StudentAdminController::class, 'addAttendance'])->name('students.attendances.add');
-    Route::patch('students/{id}/attendances/{aid}', [StudentAdminController::class, 'updateAttendance'])->name('students.attendances.update');
-    Route::delete('students/{id}/attendances/{aid}', [StudentAdminController::class, 'deleteAttendance'])->name('students.attendances.delete');
+    Route::post('students/{student}/attendances', [StudentAdminController::class, 'addAttendance'])->name('students.attendances.add');
+    Route::patch('students/{student}/attendances/{aid}', [StudentAdminController::class, 'updateAttendance'])->name('students.attendances.update');
+    Route::delete('students/{student}/attendances/{aid}', [StudentAdminController::class, 'deleteAttendance'])->name('students.attendances.delete');
 
     // ── Audit Log ──
     Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
-    Route::get('audit-logs/{id}', [AuditLogController::class, 'show'])->name('audit-logs.show');
+    Route::get('audit-logs/{auditLog}', [AuditLogController::class, 'show'])->name('audit-logs.show');
 
     // ── Security Logs (ตรวจจับ multi-account / suspicious check-in) ──
     Route::get('security-logs', [\App\Http\Controllers\Admin\SecurityLogController::class, 'index'])->name('security-logs.index');
@@ -289,7 +289,7 @@ Route::middleware(['auth', 'role:admin,super-admin'])->prefix('admin')->name('ad
     // ── API Keys ──
     Route::get('api-keys', [\App\Http\Controllers\Admin\ApiKeyController::class, 'index'])->name('api-keys.index');
     Route::post('api-keys', [\App\Http\Controllers\Admin\ApiKeyController::class, 'store'])->name('api-keys.store');
-    Route::delete('api-keys/{id}', [\App\Http\Controllers\Admin\ApiKeyController::class, 'destroy'])->name('api-keys.destroy');
+    Route::delete('api-keys/{apiKey}', [\App\Http\Controllers\Admin\ApiKeyController::class, 'destroy'])->name('api-keys.destroy');
 
     // API routes for optimized face verification
     Route::prefix('api')->middleware('auth:sanctum')->group(function () {

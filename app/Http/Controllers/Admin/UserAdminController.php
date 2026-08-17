@@ -1,13 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Traits\LogsAdminActivity;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
-use App\Traits\LogsAdminActivity;
+use Illuminate\View\View;
 
 /**
  * คอนโทรลเลอร์จัดการผู้ใช้งาน (ฝั่ง Admin)
@@ -16,19 +20,20 @@ use App\Traits\LogsAdminActivity;
 class UserAdminController extends Controller
 {
     use LogsAdminActivity;
+
     /** แสดงรายชื่อผู้ใช้ทั้งหมด รองรับกรองตาม role และค้นหา */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $users = User::query()
             ->when($request->role, fn($q) => $q->where('role', $request->role))
-            ->when($request->search, function ($q) use ($request) {
-                $q->where(function ($sub) use ($request) {
+            ->when($request->search, function ($q) use ($request): void {
+                $q->where(function ($sub) use ($request): void {
                     $sub->where('full_name', 'like', "%{$request->search}%")
                         ->orWhere('student_id', 'like', "%{$request->search}%")
                         ->orWhere('email', 'like', "%{$request->search}%");
                 });
             })
-            ->when($request->status !== null && $request->status !== '', function ($q) use ($request) {
+            ->when($request->status !== null && $request->status !== '', function ($q) use ($request): void {
                 $q->where('is_active', $request->status);
             })
             ->orderByDesc('created_at')
@@ -45,14 +50,14 @@ class UserAdminController extends Controller
     }
 
     /** แสดงฟอร์มสร้างผู้ใช้ใหม่ */
-    public function create(Request $request)
+    public function create(Request $request): View
     {
         $type = $request->get('type', 'student');
         return view('admin.users.create', compact('type'));
     }
 
     /** บันทึกผู้ใช้ใหม่ */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $rules = [
             'role'      => 'required|in:student,staff,admin',
@@ -60,7 +65,7 @@ class UserAdminController extends Controller
             'is_active' => 'boolean',
         ];
 
-        if (in_array($request->role, ['staff', 'admin'])) {
+        if (in_array($request->role, ['staff', 'admin'], true)) {
             $rules['email'] = 'required|email|unique:users,email';
             $rules['password'] = 'required|string|min:6|confirmed';
         } else {
@@ -107,17 +112,14 @@ class UserAdminController extends Controller
     }
 
     /** แสดงฟอร์มแก้ไขผู้ใช้ */
-    public function edit(int $id)
+    public function edit(User $user): View
     {
-        $user = User::findOrFail($id);
         return view('admin.users.edit', compact('user'));
     }
 
     /** อัปเดตข้อมูลผู้ใช้ */
-    public function update(Request $request, int $id)
+    public function update(Request $request, User $user): RedirectResponse
     {
-        $user = User::findOrFail($id);
-
         $rules = [
             'full_name' => 'required|string|max:255',
             'email'     => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
@@ -145,7 +147,7 @@ class UserAdminController extends Controller
             $user->department = $data['department'] ?? null;
             $user->year       = $data['year'] ?? null;
             $user->program    = $data['program'] ?? null;
-        } elseif (in_array($user->role, ['staff', 'admin'])) {
+        } elseif (in_array($user->role, ['staff', 'admin'], true)) {
             $user->email      = $data['email'];
         }
 
@@ -163,10 +165,8 @@ class UserAdminController extends Controller
     }
 
     /** ลบผู้ใช้ */
-    public function destroy(int $id)
+    public function destroy(User $user): RedirectResponse
     {
-        $user = User::findOrFail($id);
-
         if ($user->id === auth()->id()) {
             return back()->with('error', 'ไม่สามารถลบบัญชีของตัวเองได้');
         }
@@ -180,10 +180,8 @@ class UserAdminController extends Controller
     }
 
     /** สลับสถานะเปิด/ปิดการใช้งาน */
-    public function toggleActive(int $id)
+    public function toggleActive(User $user): RedirectResponse
     {
-        $user = User::findOrFail($id);
-
         if ($user->id === auth()->id()) {
             return back()->with('error', 'ไม่สามารถปิดการใช้งานบัญชีของตัวเองได้');
         }

@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\ActivityFeedback;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 /**
  * คอนโทรลเลอร์จัดการดูการประเมินกิจกรรม (ฝั่ง Admin)
@@ -13,11 +16,11 @@ use Illuminate\Http\Request;
 class FeedbackAdminController extends Controller
 {
     /** แสดงรายการ feedback ทั้งหมด */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $query = ActivityFeedback::with(['activity', 'user'])
-            ->when(auth()->user()->isStaff(), function ($q) {
-                $q->whereHas('activity', function ($aq) {
+            ->when(auth()->user()->isStaff(), function ($q): void {
+                $q->whereHas('activity', function ($aq): void {
                     $aq->where('created_by', auth()->id());
                 });
             });
@@ -50,8 +53,8 @@ class FeedbackAdminController extends Controller
         if (auth()->user()->isStaff()) {
             $baseStatsQuery = ActivityFeedback::whereHas('activity', fn($q) => $q->where('created_by', auth()->id()));
             $stats = [
-                'total' => (clone $baseStatsQuery)->count(),
-                'average' => round((float)(clone $baseStatsQuery)->avg('rating'), 1),
+                'total'    => (clone $baseStatsQuery)->count(),
+                'average'  => round((float) (clone $baseStatsQuery)->avg('rating'), 1),
                 'rating_5' => (clone $baseStatsQuery)->where('rating', 5)->count(),
                 'rating_4' => (clone $baseStatsQuery)->where('rating', 4)->count(),
                 'rating_3' => (clone $baseStatsQuery)->where('rating', 3)->count(),
@@ -60,8 +63,8 @@ class FeedbackAdminController extends Controller
             ];
         } else {
             $stats = [
-                'total' => ActivityFeedback::count(),
-                'average' => round((float)ActivityFeedback::avg('rating'), 1),
+                'total'    => ActivityFeedback::count(),
+                'average'  => round((float) ActivityFeedback::avg('rating'), 1),
                 'rating_5' => ActivityFeedback::where('rating', 5)->count(),
                 'rating_4' => ActivityFeedback::where('rating', 4)->count(),
                 'rating_3' => ActivityFeedback::where('rating', 3)->count(),
@@ -74,17 +77,18 @@ class FeedbackAdminController extends Controller
     }
 
     /** แสดง feedback ของกิจกรรมเฉพาะ */
-    public function show($activityId)
+    public function show(Activity $activity): View
     {
-        $activity = Activity::with(['feedbacks.user', 'category'])->findOrFail($activityId);
         if (auth()->user()->isStaff() && $activity->created_by !== auth()->id()) {
             abort(403, 'คุณไม่มีสิทธิ์เข้าถึงผลประเมินนี้');
         }
 
+        $activity->loadMissing(['feedbacks.user', 'category']);
+
         // สถิติของกิจกรรมนี้
         $stats = [
-            'total' => $activity->feedbacks->count(),
-            'average' => $activity->average_rating,
+            'total'    => $activity->feedbacks->count(),
+            'average'  => $activity->average_rating,
             'rating_5' => $activity->feedbacks->where('rating', 5)->count(),
             'rating_4' => $activity->feedbacks->where('rating', 4)->count(),
             'rating_3' => $activity->feedbacks->where('rating', 3)->count(),
@@ -94,9 +98,9 @@ class FeedbackAdminController extends Controller
 
         // คะแนนเฉลี่ยแยกตามหัวข้อ
         $detailedAvg = [
-            'content' => 0,
-            'speaker' => 0,
-            'location' => 0,
+            'content'      => 0,
+            'speaker'      => 0,
+            'location'     => 0,
             'organization' => 0,
         ];
 
@@ -104,7 +108,7 @@ class FeedbackAdminController extends Controller
         if ($feedbacksWithRatings->count() > 0) {
             foreach (['content', 'speaker', 'location', 'organization'] as $key) {
                 $values = $feedbacksWithRatings->pluck('ratings')->pluck($key)->filter();
-                $detailedAvg[$key] = $values->count() > 0 ? round($values->avg(), 1) : 0;
+                $detailedAvg[$key] = $values->count() > 0 ? round((float) $values->avg(), 1) : 0;
             }
         }
 

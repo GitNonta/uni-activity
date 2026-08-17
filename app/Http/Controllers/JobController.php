@@ -155,17 +155,17 @@ class JobController extends Controller
     }
 
     /** แสดงรายละเอียดงาน */
-    public function show($id)
+    public function show(JobListing $job): \Illuminate\View\View
     {
-        $job = JobListing::with(['creator:id,full_name,profile_photo'])->findOrFail($id);
+        $job->loadMissing(['creator:id,full_name,profile_photo']);
         $comments = JobComment::with(['user:id,full_name,profile_photo', 'replies.user:id,full_name,profile_photo'])
-            ->where('job_listing_id', $id)
+            ->where('job_listing_id', $job->id)
             ->whereNull('parent_id')
             ->orderBy('created_at', 'desc')
             ->get();
         $userApplication = null;
         if (auth()->check()) {
-            $userApplication = JobApplication::where('job_listing_id', $id)
+            $userApplication = JobApplication::where('job_listing_id', $job->id)
                 ->where('user_id', auth()->id())
                 ->first();
         }
@@ -173,7 +173,7 @@ class JobController extends Controller
         $chatMessages = [];
         if (auth()->check()) {
             $userId = auth()->id();
-            $room = Room::where('job_id', $id)
+            $room = Room::where('job_id', $job->id)
                 ->whereHas('users', function ($q) use ($userId) {
                     $q->where('users.id', $userId);
                 })
@@ -188,16 +188,14 @@ class JobController extends Controller
     }
 
     /** สมัครงาน */
-    public function apply(Request $request, $id)
+    public function apply(Request $request, JobListing $job): \Illuminate\Http\RedirectResponse
     {
-        $job = JobListing::findOrFail($id);
-
         if (!$job->isOpen()) {
             return back()->with('error', 'ประกาศงานนี้ปิดรับสมัครแล้ว');
         }
 
         // ตรวจสอบว่าสมัครแล้วหรือยัง
-        $existing = JobApplication::where('job_listing_id', $id)
+        $existing = JobApplication::where('job_listing_id', $job->id)
             ->where('user_id', auth()->id())
             ->first();
 
@@ -211,25 +209,25 @@ class JobController extends Controller
         }
 
         JobApplication::create([
-            'job_listing_id' => $id,
-            'user_id' => auth()->id(),
-            'status' => 'pending',
+            'job_listing_id' => $job->id,
+            'user_id'        => auth()->id(),
+            'status'         => 'pending',
         ]);
 
         return back()->with('success', 'สมัครงานเรียบร้อย รอการพิจารณาจากผู้ดูแล');
     }
 
     /** เพิ่มคอมเมนต์ */
-    public function comment(Request $request, $id)
+    public function comment(Request $request, JobListing $job): \Illuminate\Http\RedirectResponse
     {
         $data = $request->validate([
-            'body' => 'required|string|max:1000',
+            'body'      => 'required|string|max:1000',
             'parent_id' => 'nullable|exists:job_comments,id',
         ]);
 
         if (!empty($data['parent_id'])) {
             $validParent = JobComment::where('id', $data['parent_id'])
-                ->where('job_listing_id', $id)
+                ->where('job_listing_id', $job->id)
                 ->whereNull('parent_id')
                 ->exists();
 
@@ -241,26 +239,23 @@ class JobController extends Controller
         }
 
         JobComment::create([
-            'job_listing_id' => $id,
-            'user_id' => auth()->id(),
-            'parent_id' => $data['parent_id'] ?? null,
-            'body' => $data['body'],
+            'job_listing_id' => $job->id,
+            'user_id'        => auth()->id(),
+            'parent_id'      => $data['parent_id'] ?? null,
+            'body'           => $data['body'],
         ]);
 
         return back()->with('success', 'แสดงความคิดเห็นเรียบร้อย');
     }
 
     /** ลบคอมเมนต์ (เจ้าของเท่านั้น) */
-    public function deleteComment($id)
+    public function deleteComment(JobComment $comment): \Illuminate\Http\RedirectResponse
     {
-        $comment = JobComment::findOrFail($id);
-
-        if ($comment->user_id !== auth()->id()) {
+        if ($comment->user_id !== auth()->id() && !auth()->user()->isAdmin()) {
             return back()->with('error', 'คุณไม่มีสิทธิ์ลบคอมเมนต์นี้');
         }
 
         $comment->delete();
         return back()->with('success', 'ลบคอมเมนต์เรียบร้อย');
     }
-
 }

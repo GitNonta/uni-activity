@@ -1,11 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Activity;
 use App\Models\ActivityFeedback;
 use App\Models\Attendance;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 /**
  * คอนโทรลเลอร์จัดการการประเมินกิจกรรม (ฝั่งนักศึกษา)
@@ -13,13 +17,13 @@ use Illuminate\Http\Request;
 class FeedbackController extends Controller
 {
     /** แสดงฟอร์มประเมินกิจกรรม */
-    public function create($activityId)
+    public function create(Activity $activity): View|RedirectResponse
     {
-        $activity = Activity::with('category')->findOrFail($activityId);
+        $activity->loadMissing('category');
         $user = auth()->user();
 
         // ตรวจสอบว่าเข้าร่วมกิจกรรมแล้วหรือไม่
-        $attendance = Attendance::where('activity_id', $activityId)
+        $attendance = Attendance::where('activity_id', $activity->id)
             ->where('user_id', $user->id)
             ->where('status', 'approved')
             ->first();
@@ -30,7 +34,7 @@ class FeedbackController extends Controller
         }
 
         // ตรวจสอบว่าประเมินไปแล้วหรือไม่
-        $existingFeedback = ActivityFeedback::where('activity_id', $activityId)
+        $existingFeedback = ActivityFeedback::where('activity_id', $activity->id)
             ->where('user_id', $user->id)
             ->first();
 
@@ -43,13 +47,12 @@ class FeedbackController extends Controller
     }
 
     /** บันทึกการประเมิน */
-    public function store(Request $request, $activityId)
+    public function store(Request $request, Activity $activity): RedirectResponse
     {
-        $activity = Activity::findOrFail($activityId);
         $user = auth()->user();
 
         // ตรวจสอบว่าเข้าร่วมกิจกรรมแล้วหรือไม่
-        $attendance = Attendance::where('activity_id', $activityId)
+        $attendance = Attendance::where('activity_id', $activity->id)
             ->where('user_id', $user->id)
             ->where('status', 'approved')
             ->first();
@@ -59,7 +62,7 @@ class FeedbackController extends Controller
         }
 
         // ตรวจสอบว่าประเมินไปแล้วหรือไม่
-        $existingFeedback = ActivityFeedback::where('activity_id', $activityId)
+        $existingFeedback = ActivityFeedback::where('activity_id', $activity->id)
             ->where('user_id', $user->id)
             ->exists();
 
@@ -68,36 +71,36 @@ class FeedbackController extends Controller
         }
 
         $data = $request->validate([
-            'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'nullable|string|max:1000',
-            'is_anonymous' => 'boolean',
-            'rating_content' => 'nullable|integer|min:1|max:5',
-            'rating_speaker' => 'nullable|integer|min:1|max:5',
-            'rating_location' => 'nullable|integer|min:1|max:5',
+            'rating'              => 'required|integer|min:1|max:5',
+            'comment'             => 'nullable|string|max:1000',
+            'is_anonymous'        => 'boolean',
+            'rating_content'      => 'nullable|integer|min:1|max:5',
+            'rating_speaker'      => 'nullable|integer|min:1|max:5',
+            'rating_location'     => 'nullable|integer|min:1|max:5',
             'rating_organization' => 'nullable|integer|min:1|max:5',
         ]);
 
         // รวมคะแนนแยกตามหัวข้อ
         $detailedRatings = [];
         if ($request->filled('rating_content')) {
-            $detailedRatings['content'] = $request->rating_content;
+            $detailedRatings['content'] = (int) $request->rating_content;
         }
         if ($request->filled('rating_speaker')) {
-            $detailedRatings['speaker'] = $request->rating_speaker;
+            $detailedRatings['speaker'] = (int) $request->rating_speaker;
         }
         if ($request->filled('rating_location')) {
-            $detailedRatings['location'] = $request->rating_location;
+            $detailedRatings['location'] = (int) $request->rating_location;
         }
         if ($request->filled('rating_organization')) {
-            $detailedRatings['organization'] = $request->rating_organization;
+            $detailedRatings['organization'] = (int) $request->rating_organization;
         }
 
         ActivityFeedback::create([
-            'activity_id' => $activityId,
-            'user_id' => $user->id,
-            'rating' => $data['rating'],
-            'comment' => $data['comment'] ?? null,
-            'ratings' => !empty($detailedRatings) ? $detailedRatings : null,
+            'activity_id'  => $activity->id,
+            'user_id'      => $user->id,
+            'rating'       => (int) $data['rating'],
+            'comment'      => $data['comment'] ?? null,
+            'ratings'      => !empty($detailedRatings) ? $detailedRatings : null,
             'is_anonymous' => $request->boolean('is_anonymous', false),
         ]);
 

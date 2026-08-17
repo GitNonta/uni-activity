@@ -340,14 +340,13 @@ class ChatController extends Controller
         return response()->json(['is_online' => $online]);
     }
 
-    public function deleteMessage($id)
+    public function deleteMessage(Message $message): \Illuminate\Http\JsonResponse
     {
-        $message = Message::findOrFail($id);
-        
-        if ($message->user_id !== Auth::id()) {
+        if ($message->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
+        $id = $message->id;
         $roomId = $message->room_id;
         $message->delete();
         
@@ -357,16 +356,15 @@ class ChatController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function editMessage(Request $request, $id)
+    public function editMessage(Request $request, Message $message): \Illuminate\Http\JsonResponse
     {
         $request->validate(['message' => 'required|string|max:2000']);
-        $message = Message::findOrFail($id);
         
-        if ($message->user_id !== Auth::id()) {
+        if ($message->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $message->body = $request->message;
+        $message->body = (string) $request->message;
         $message->save();
 
         broadcast(new \App\Events\MessageEdited($message));

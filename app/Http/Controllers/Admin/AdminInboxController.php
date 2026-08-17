@@ -242,9 +242,9 @@ class AdminInboxController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function deleteMessage($id)
+    public function deleteMessage(Message $message): \Illuminate\Http\JsonResponse
     {
-        $message = Message::with(['room.job', 'room.users'])->findOrFail($id);
+        $message->loadMissing(['room.job', 'room.users']);
         $room = $message->room;
         if (!$room) {
             return response()->json(['error' => 'Unauthorized'], 403);
@@ -255,6 +255,7 @@ class AdminInboxController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
+        $id = $message->id;
         $roomId = $message->room_id;
         $message->delete();
         
@@ -264,10 +265,10 @@ class AdminInboxController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function editMessage(Request $request, $id)
+    public function editMessage(Request $request, Message $message): \Illuminate\Http\JsonResponse
     {
         $request->validate(['message' => 'required|string|max:2000']);
-        $message = Message::with(['room.job', 'room.users'])->findOrFail($id);
+        $message->loadMissing(['room.job', 'room.users']);
         $room = $message->room;
         if (!$room) {
             return response()->json(['error' => 'Unauthorized'], 403);
@@ -278,7 +279,7 @@ class AdminInboxController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $message->body = $request->message;
+        $message->body = (string) $request->message;
         $message->save();
 
         broadcast(new \App\Events\MessageEdited($message));

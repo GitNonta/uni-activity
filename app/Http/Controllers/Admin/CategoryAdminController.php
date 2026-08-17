@@ -1,12 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityCategory;
 use App\Models\Setting;
 use App\Traits\LogsAdminActivity;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 /**
  * คอนโทรลเลอร์จัดการหมวดหมู่กิจกรรม (ฝั่ง Admin)
@@ -15,8 +19,9 @@ use Illuminate\Http\Request;
 class CategoryAdminController extends Controller
 {
     use LogsAdminActivity;
+
     /** แสดงรายการหมวดหมู่ทั้งหมด */
-    public function index()
+    public function index(): View
     {
         $categories     = ActivityCategory::withCount('activities')->orderBy('name')->get();
         $categorySum    = (float) $categories->sum('required_hours');
@@ -28,7 +33,7 @@ class CategoryAdminController extends Controller
     }
 
     /** บันทึกเกณฑ์ชั่วโมงรวมทั้งระบบ (override) */
-    public function saveRequiredHours(Request $request)
+    public function saveRequiredHours(Request $request): RedirectResponse
     {
         $request->validate([
             'total_required_hours' => 'required|numeric|min:1|max:9999',
@@ -36,18 +41,18 @@ class CategoryAdminController extends Controller
 
         Setting::set('total_required_hours', $request->total_required_hours);
 
-        return back()->with('success', 'บันทึกเกณฑ์ชั่วโมงรวม ' . number_format((float)$request->total_required_hours, 1) . ' ชม. เรียบร้อยแล้ว');
+        return back()->with('success', 'บันทึกเกณฑ์ชั่วโมงรวม ' . number_format((float) $request->total_required_hours, 1) . ' ชม. เรียบร้อยแล้ว');
     }
 
     /** รีเซ็ตเกณฑ์ชั่วโมงรวมกลับไปใช้ผลรวมจากหมวดหมู่ */
-    public function resetRequiredHours()
+    public function resetRequiredHours(): RedirectResponse
     {
         Setting::where('key', 'total_required_hours')->delete();
         return back()->with('success', 'รีเซ็ตเกณฑ์ชั่วโมงรวมกลับไปใช้ผลรวมจากหมวดหมู่แล้ว');
     }
 
     /** บันทึกหมวดหมู่ใหม่ */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $request->validate([
             'name'           => 'required|string|max:100|unique:activity_categories,name',
@@ -80,12 +85,10 @@ class CategoryAdminController extends Controller
     }
 
     /** อัปเดตข้อมูลหมวดหมู่ (ชื่อ, คำอธิบาย, เกณฑ์ชั่วโมง, สี, ตัวเลือกเพิ่มเติม) */
-    public function update(Request $request, int $id)
+    public function update(Request $request, ActivityCategory $category): RedirectResponse
     {
-        $category = ActivityCategory::findOrFail($id);
-
         $request->validate([
-            'name'           => 'required|string|max:100|unique:activity_categories,name,' . $id,
+            'name'           => 'required|string|max:100|unique:activity_categories,name,' . $category->id,
             'description'    => 'nullable|string',
             'required_hours' => 'required|numeric|min:0|max:999',
             'color'          => 'nullable|string|max:20',
@@ -116,9 +119,9 @@ class CategoryAdminController extends Controller
     }
 
     /** ลบหมวดหมู่ (ถ้าไม่มีกิจกรรมอยู่) */
-    public function destroy(int $id)
+    public function destroy(ActivityCategory $category): RedirectResponse
     {
-        $category = ActivityCategory::withCount('activities')->findOrFail($id);
+        $category->loadCount('activities');
 
         if ($category->activities_count > 0) {
             return back()->with('error', 'ไม่สามารถลบได้ เนื่องจากมีกิจกรรม ' . $category->activities_count . ' รายการอยู่ในหมวดหมู่นี้');

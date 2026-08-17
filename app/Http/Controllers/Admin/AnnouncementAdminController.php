@@ -1,26 +1,31 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
+use App\Events\AnnouncementPublished;
 use App\Http\Controllers\Controller;
 use App\Models\Announcement;
 use App\Models\User;
-use App\Events\AnnouncementPublished;
+use App\Services\ImageOptimizationService;
 use App\Traits\LogsAdminActivity;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 
 class AnnouncementAdminController extends Controller
 {
     use LogsAdminActivity;
 
     /** รายการประกาศทั้งหมด */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $announcements = Announcement::with('creator')
             ->when(auth()->user()->isStaff(), fn($q) => $q->where('created_by', auth()->id()))
-            ->when($request->search, function ($q) use ($request) {
-                $q->where(function ($inner) use ($request) {
+            ->when($request->search, function ($q) use ($request): void {
+                $q->where(function ($inner) use ($request): void {
                     $inner->where('title', 'like', "%{$request->search}%")
                           ->orWhere('content', 'like', "%{$request->search}%");
                 });
@@ -32,14 +37,14 @@ class AnnouncementAdminController extends Controller
     }
 
     /** ฟอร์มสร้างประกาศ */
-    public function create()
+    public function create(): View
     {
         $faculties = User::whereNotNull('faculty')->distinct()->pluck('faculty')->sort();
         return view('admin.announcements.create', compact('faculties'));
     }
 
     /** บันทึกประกาศใหม่ */
-    public function store(Request $request, \App\Services\ImageOptimizationService $imageOptimizer)
+    public function store(Request $request, ImageOptimizationService $imageOptimizer): RedirectResponse
     {
         $data = $request->validate([
             'title'          => 'required|string|max:255',
@@ -67,9 +72,8 @@ class AnnouncementAdminController extends Controller
     }
 
     /** ฟอร์มแก้ไขประกาศ */
-    public function edit($id)
+    public function edit(Announcement $announcement): View
     {
-        $announcement = Announcement::findOrFail($id);
         if (auth()->user()->isStaff() && $announcement->created_by !== auth()->id()) {
             abort(403, 'คุณไม่มีสิทธิ์เข้าถึงประกาศนี้');
         }
@@ -78,9 +82,8 @@ class AnnouncementAdminController extends Controller
     }
 
     /** อัปเดตประกาศ */
-    public function update(Request $request, $id, \App\Services\ImageOptimizationService $imageOptimizer)
+    public function update(Request $request, Announcement $announcement, ImageOptimizationService $imageOptimizer): RedirectResponse
     {
-        $announcement = Announcement::findOrFail($id);
         if (auth()->user()->isStaff() && $announcement->created_by !== auth()->id()) {
             abort(403, 'คุณไม่มีสิทธิ์เข้าถึงประกาศนี้');
         }
@@ -110,9 +113,8 @@ class AnnouncementAdminController extends Controller
     }
 
     /** ลบประกาศ */
-    public function destroy($id)
+    public function destroy(Announcement $announcement): RedirectResponse
     {
-        $announcement = Announcement::findOrFail($id);
         if (auth()->user()->isStaff() && $announcement->created_by !== auth()->id()) {
             abort(403, 'คุณไม่มีสิทธิ์เข้าถึงประกาศนี้');
         }
@@ -123,9 +125,8 @@ class AnnouncementAdminController extends Controller
     }
 
     /** สลับสถานะการเปิดใช้งาน */
-    public function toggleActive($id)
+    public function toggleActive(Announcement $announcement): RedirectResponse
     {
-        $announcement = Announcement::findOrFail($id);
         if (auth()->user()->isStaff() && $announcement->created_by !== auth()->id()) {
             abort(403, 'คุณไม่มีสิทธิ์จัดการประกาศนี้');
         }

@@ -1,16 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Services\SocketService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class UserStatusController extends Controller
 {
     /** Student pings to keep last_seen_at fresh (called every 60s) */
-    public function ping()
+    public function ping(): JsonResponse
     {
         DB::table('users')->where('id', Auth::id())
             ->update(['last_seen_at' => now()]);
@@ -23,14 +26,12 @@ class UserStatusController extends Controller
     }
 
     /** Return online/last-seen status for a given user */
-    public function status(int $userId)
+    public function status(User $user): JsonResponse
     {
         $viewer = Auth::user();
-        if (!$viewer || ($viewer->id !== $userId && !$viewer->isStaffOrAdmin())) {
+        if (!$viewer || ($viewer->id !== $user->id && !$viewer->isStaffOrAdmin())) {
             abort(403, 'คุณไม่มีสิทธิ์ดูสถานะผู้ใช้นี้');
         }
-
-        $user = User::select('id', 'full_name', 'last_seen_at')->findOrFail($userId);
 
         $lastSeen   = $user->last_seen_at;
         $isOnline   = $lastSeen && $lastSeen->diffInMinutes(now()) < 2;

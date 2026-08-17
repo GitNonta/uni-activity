@@ -1,14 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
+use App\Events\JobPublished;
+use App\Exports\JobApplicantExport;
 use App\Http\Controllers\Controller;
-use App\Models\JobListing;
 use App\Models\JobApplication;
 use App\Models\JobComment;
-use App\Events\JobPublished;
+use App\Models\JobListing;
+use App\Services\ImageOptimizationService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * ตัวควบคุมฝั่ง Admin: จัดการประกาศงาน, ผู้สมัคร, คำถาม, คอมเมนต์
@@ -16,13 +24,13 @@ use Illuminate\Support\Facades\Storage;
 class JobAdminController extends Controller
 {
     /** แสดงรายการประกาศงานทั้งหมด */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $query = JobListing::withCount(['applications', 'comments'])
             ->when(auth()->user()->isStaff(), fn($q) => $q->where('created_by', auth()->id()));
 
         if ($search = $request->input('search')) {
-            $query->where(function ($q) use ($search) {
+            $query->where(function ($q) use ($search): void {
                 $q->where('title', 'like', "%{$search}%")
                   ->orWhere('position', 'like', "%{$search}%");
             });
@@ -38,13 +46,13 @@ class JobAdminController extends Controller
     }
 
     /** ฟอร์มสร้างประกาศงานใหม่ */
-    public function create()
+    public function create(): View
     {
         return view('admin.jobs.create');
     }
 
     /** บันทึกประกาศงานใหม่ */
-    public function store(Request $request, \App\Services\ImageOptimizationService $imageOptimizer)
+    public function store(Request $request, ImageOptimizationService $imageOptimizer): RedirectResponse
     {
         $validated = $request->validate([
             'title'        => 'required|string|max:255',
@@ -82,17 +90,17 @@ class JobAdminController extends Controller
     }
 
     /** แสดงรายละเอียดงาน + ผู้สมัคร + คำถาม */
-    public function show($id)
+    public function show(JobListing $job): View
     {
-        $job = JobListing::with([
-            'creator',
-            'applications.user',
-            'comments.user',
-        ])->findOrFail($id);
-
         if (auth()->user()->isStaff() && $job->created_by !== auth()->id()) {
             abort(403, 'คุณไม่มีสิทธิ์เข้าถึงประกาศงานนี้');
         }
+
+        $job->loadMissing([
+            'creator',
+            'applications.user',
+            'comments.user',
+        ]);
 
         $pendingCount = $job->applications->where('status', 'pending')->count();
         $confirmedCount = $job->applications->where('status', 'confirmed')->count();
@@ -102,9 +110,8 @@ class JobAdminController extends Controller
     }
 
     /** ฟอร์มแก้ไขประกาศงาน */
-    public function edit($id)
+    public function edit(JobListing $job): View
     {
-        $job = JobListing::findOrFail($id);
         if (auth()->user()->isStaff() && $job->created_by !== auth()->id()) {
             abort(403, 'คุณไม่มีสิทธิ์เข้าถึงประกาศงานนี้');
         }
@@ -112,9 +119,8 @@ class JobAdminController extends Controller
     }
 
     /** อัปเดตประกาศงาน */
-    public function update(Request $request, $id, \App\Services\ImageOptimizationService $imageOptimizer)
+    public function update(Request $request, JobListing $job, ImageOptimizationService $imageOptimizer): RedirectResponse
     {
-        $job = JobListing::findOrFail($id);
         if (auth()->user()->isStaff() && $job->created_by !== auth()->id()) {
             abort(403, 'คุณไม่มีสิทธิ์จัดการข้อมูลนี้');
         }
@@ -150,13 +156,12 @@ class JobAdminController extends Controller
 
         $job->update($validated);
 
-        return redirect()->route('admin.jobs.show', $id)->with('success', 'อัปเดตประกาศงานเรียบร้อย');
+        return redirect()->route('admin.jobs.show', $job->id)->with('success', 'อัปเดตประกาศงานเรียบร้อย');
     }
 
     /** ลบประกาศงาน */
-    public function destroy($id)
+    public function destroy(JobListing $job): RedirectResponse
     {
-        $job = JobListing::findOrFail($id);
         if (auth()->user()->isStaff() && $job->created_by !== auth()->id()) {
             abort(403, 'คุณไม่มีสิทธิ์จัดการข้อมูลนี้');
         }
@@ -171,10 +176,9 @@ class JobAdminController extends Controller
     }
 
     /** เปลี่ยนสถานะประกาศงาน */
-    public function updateStatus(Request $request, $id)
+    public function updateStatus(Request $request, JobListing $job): RedirectResponse
     {
         $request->validate(['status' => 'required|in:open,closed,completed']);
-        $job = JobListing::findOrFail($id);
         if (auth()->user()->isStaff() && $job->created_by !== auth()->id()) {
             abort(403, 'คุณไม่มีสิทธิ์จัดการข้อมูลนี้');
         }
@@ -185,15 +189,14 @@ class JobAdminController extends Controller
     }
 
     /** Confirm / Reject ผู้สมัคร */
-    public function updateApplicant(Request $request, $id, $applicationId)
+    public function updateApplicant(Request $request, JobListing $job, int $applicationId): RedirectResponse
     {
         $request->validate(['status' => 'required|in:confirmed,rejected']);
-        $job = JobListing::findOrFail($id);
         if (auth()->user()->isStaff() && $job->created_by !== auth()->id()) {
             abort(403, 'คุณไม่มีสิทธิ์จัดการข้อมูลนี้');
         }
         
-        $application = JobApplication::where('job_listing_id', $id)->findOrFail($applicationId);
+        $application = JobApplication::where('job_listing_id', $job->id)->findOrFail($applicationId);
 
         // ตรวจสอบ quota ถ้า confirm
         if ($request->status === 'confirmed') {
@@ -209,9 +212,9 @@ class JobAdminController extends Controller
     }
 
     /** ลบคอมเมนต์ (Admin) */
-    public function deleteComment($id)
+    public function deleteComment(int $cid): RedirectResponse
     {
-        $comment = JobComment::with('jobListing')->findOrFail($id);
+        $comment = JobComment::with('jobListing')->findOrFail($cid);
         if (auth()->user()->isStaff() && $comment->jobListing->created_by !== auth()->id()) {
             abort(403, 'คุณไม่มีสิทธิ์ลบคอมเมนต์นี้');
         }
@@ -221,34 +224,33 @@ class JobAdminController extends Controller
     }
 
     /** ส่งออกรายชื่อผู้สมัคร (CSV/Excel) */
-    public function exportApplicants(Request $request, $id)
+    public function exportApplicants(Request $request, JobListing $job): \Symfony\Component\HttpFoundation\BinaryFileResponse|StreamedResponse
     {
-        $job = JobListing::findOrFail($id);
         if (auth()->user()->isStaff() && $job->created_by !== auth()->id()) {
             abort(403, 'คุณไม่มีสิทธิ์จัดการข้อมูลนี้');
         }
         $format = $request->input('format', 'csv'); // csv or xlsx
 
         $applications = JobApplication::with('user')
-            ->where('job_listing_id', $id)
+            ->where('job_listing_id', $job->id)
             ->get();
 
         $filename = 'applicants_' . $job->id . '_' . now()->format('Y-m-d');
 
         if ($format === 'xlsx') {
-            return \Maatwebsite\Excel\Facades\Excel::download(
-                new \App\Exports\JobApplicantExport($applications, $job),
+            return Excel::download(
+                new JobApplicantExport($applications, $job),
                 $filename . '.xlsx'
             );
         }
 
         // CSV export
         $headers = [
-            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Type'        => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$filename}.csv\"",
         ];
 
-        $callback = function () use ($applications) {
+        $callback = function () use ($applications): void {
             $file = fopen('php://output', 'w');
             // BOM for Excel UTF-8
             fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
@@ -263,10 +265,10 @@ class JobAdminController extends Controller
                     $app->user->department ?? '-',
                     $app->user->phone ?? '-',
                     match ($app->status) {
-                        'pending' => 'รอการพิจารณา',
+                        'pending'   => 'รอการพิจารณา',
                         'confirmed' => 'ยืนยันแล้ว',
-                        'rejected' => 'ไม่ผ่าน',
-                        default => $app->status,
+                        'rejected'  => 'ไม่ผ่าน',
+                        default     => $app->status,
                     },
                     $app->created_at->format('d/m/Y H:i'),
                 ]);
@@ -276,5 +278,4 @@ class JobAdminController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
-
 }

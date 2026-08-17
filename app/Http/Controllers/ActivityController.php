@@ -179,13 +179,12 @@ class ActivityController extends Controller
      * แสดงรายละเอียดกิจกรรม
      * อัปเดตสถานะ + ดึงข้อมูลการลงทะเบียน/เข้าร่วมของผู้ใช้ปัจจุบัน
      */
-    public function show(int $id): View
+    public function show(Activity $activity): View
     {
-        $activity = Activity::with(['category', 'creator'])
-            ->withCount([
+        $activity->loadMissing(['category', 'creator'])
+            ->loadCount([
                 'registrations as registered_count' => fn($query) => $query->whereIn('status', ['pending', 'approved']),
-            ])
-            ->findOrFail($id);
+            ]);
         $this->statusService->updateStatus($activity);
 
         $user = auth()->user();

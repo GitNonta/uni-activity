@@ -1,11 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Activity;
-use App\Models\Registration;
 use App\Models\Notification;
+use App\Models\Registration;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -16,26 +20,26 @@ class RegistrationController extends Controller
 {
     /**
      * ลงทะเบียนกิจกรรม
-     * ตรวจสอบซ้ำ → ตรวจช่วงเวลา → ตรวจที่ว่าง → สร้างการลงทะเบียน + แจ้งเตือน
+     * ตรวจสอบซ้ำ → ตรวจช่วงเวลา → ตรวจที่ว่าง → สร้างการลงทะเบียน + แจ้งเตือน ภายใต้ Transaction
      */
-    public function store(Request $request, $id)
+    public function store(Request $request, Activity $activity): RedirectResponse
     {
         $user = auth()->user();
 
         // ตรวจสอบจำนวนที่ว่าง (ใช้ transaction ป้องกัน race condition)
         try {
-            DB::transaction(function () use ($id, $user) {
-                // ล็อค Activity record เพื่อป้องกัน concurrency แทนการล็อคตอน count()
-                $activity = Activity::where('id', $id)->lockForUpdate()->firstOrFail();
+            DB::transaction(function () use ($activity, $user): void {
+                // ล็อค Activity record เพื่อป้องกัน concurrency
+                $activityLocked = Activity::where('id', $activity->id)->lockForUpdate()->firstOrFail();
 
                 // ตรวจสอบช่วงเวลาลงทะเบียน
                 $now = now();
-                if ($now < $activity->register_open_at || $now > $activity->register_close_at) {
+                if ($now < $activityLocked->register_open_at || $now > $activityLocked->register_close_at) {
                     throw new \Exception('ไม่อยู่ในช่วงเวลาลงทะเบียน');
                 }
 
                 $existing = Registration::where('user_id', $user->id)
-                    ->where('activity_id', $activity->id)
+                    ->where('activity_id', $activityLocked->id)
                     ->first();
 
                 if ($existing && in_array($existing->status, ['pending', 'approved', 'completed', 'waitlisted'], true)) {
@@ -45,14 +49,14 @@ class RegistrationController extends Controller
                 // ตรวจสอบเวลาซ้อนทับ (Overlap check)
                 $overlapping = Registration::where('user_id', $user->id)
                     ->whereIn('status', ['pending', 'approved', 'completed'])
-                    ->whereHas('activity', function($q) use ($activity) {
-                        $q->where('activity_date', $activity->activity_date)
-                          ->where(function($q2) use ($activity) {
-                              $q2->whereBetween('start_time', [$activity->start_time, $activity->end_time])
-                                 ->orWhereBetween('end_time', [$activity->start_time, $activity->end_time])
-                                 ->orWhere(function($q3) use ($activity) {
-                                     $q3->where('start_time', '<=', $activity->start_time)
-                                        ->where('end_time', '>=', $activity->end_time);
+                    ->whereHas('activity', function ($q) use ($activityLocked): void {
+                        $q->where('activity_date', $activityLocked->activity_date)
+                          ->where(function ($q2) use ($activityLocked): void {
+                              $q2->whereBetween('start_time', [$activityLocked->start_time, $activityLocked->end_time])
+                                 ->orWhereBetween('end_time', [$activityLocked->start_time, $activityLocked->end_time])
+                                 ->orWhere(function ($q3) use ($activityLocked): void {
+                                     $q3->where('start_time', '<=', $activityLocked->start_time)
+                                        ->where('end_time', '>=', $activityLocked->end_time);
                                  });
                           });
                     })
@@ -62,29 +66,29 @@ class RegistrationController extends Controller
                     throw new \Exception('คุณมีกิจกรรมอื่นในช่วงเวลานี้แล้ว ไม่สามารถลงทะเบียนเวลาชนกันได้');
                 }
 
-                $count = Registration::where('activity_id', $activity->id)
+                $count = Registration::where('activity_id', $activityLocked->id)
                     ->whereIn('status', ['pending', 'approved'])
                     ->count();
 
                 $statusToSet = 'approved';
-                $messageToSet = "คุณลงทะเบียนกิจกรรม \"{$activity->title}\" เรียบร้อยแล้ว";
+                $messageToSet = "คุณลงทะเบียนกิจกรรม \"{$activityLocked->title}\" เรียบร้อยแล้ว";
 
-                if ($activity->max_participants > 0 && $count >= $activity->max_participants) {
+                if ($activityLocked->max_participants > 0 && $count >= $activityLocked->max_participants) {
                     $statusToSet = 'waitlisted';
-                    $messageToSet = "กิจกรรม \"{$activity->title}\" เต็มแล้ว คุณถูกจัดให้อยู่ใน Waitlist";
+                    $messageToSet = "กิจกรรม \"{$activityLocked->title}\" เต็มแล้ว คุณถูกจัดให้อยู่ใน Waitlist";
                 }
 
                 if ($existing) {
                     $existing->update([
-                        'status' => $statusToSet,
+                        'status'        => $statusToSet,
                         'registered_at' => now(),
-                        'cancelled_at' => null,
-                        'note' => null,
+                        'cancelled_at'  => null,
+                        'note'          => null,
                     ]);
                 } else {
                     Registration::create([
                         'user_id'     => $user->id,
-                        'activity_id' => $activity->id,
+                        'activity_id' => $activityLocked->id,
                         'status'      => $statusToSet,
                     ]);
                 }
@@ -97,7 +101,7 @@ class RegistrationController extends Controller
                 ]);
 
                 // Clear notification cache
-                \Illuminate\Support\Facades\Cache::forget("user_notifications_{$user->id}");
+                Cache::forget("user_notifications_{$user->id}");
             });
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
@@ -110,51 +114,55 @@ class RegistrationController extends Controller
      * ยกเลิกการลงทะเบียน
      * อนุญาตยกเลิกเฉพาะก่อนเวลาเช็คอินเปิด + สร้างแจ้งเตือน
      */
-    public function destroy($id)
+    public function destroy(Registration $registration): RedirectResponse
     {
-        $registration = Registration::where('id', $id)
-            ->where('user_id', auth()->id())
-            ->firstOrFail();
+        if ($registration->user_id !== auth()->id() && !auth()->user()->isAdmin()) {
+            abort(403, 'ไม่มีสิทธิ์ยกเลิกการลงทะเบียนนี้');
+        }
 
         $activity = $registration->activity;
 
         // อนุญาตยกเลิกเฉพาะก่อนกิจกรรมเริ่ม
-        if (now() > $activity->checkin_open_at) {
+        if ($activity->checkin_open_at && now() > $activity->checkin_open_at) {
             return back()->with('error', 'ไม่สามารถยกเลิกได้ กิจกรรมเริ่มแล้ว');
         }
 
-        $registration->update([
-            'status'       => 'cancelled',
-            'cancelled_at' => now(),
-        ]);
+        DB::transaction(function () use ($registration, $activity): void {
+            $prevStatus = $registration->status;
 
-        Notification::create([
-            'user_id' => auth()->id(),
-            'title'   => 'ยกเลิกการลงทะเบียน',
-            'message' => "คุณยกเลิกการลงทะเบียนกิจกรรม \"{$activity->title}\"",
-            'type'    => 'registration',
-        ]);
+            $registration->update([
+                'status'       => 'cancelled',
+                'cancelled_at' => now(),
+            ]);
 
-        // Clear notification cache
-        \Illuminate\Support\Facades\Cache::forget("user_notifications_" . auth()->id());
+            Notification::create([
+                'user_id' => auth()->id(),
+                'title'   => 'ยกเลิกการลงทะเบียน',
+                'message' => "คุณยกเลิกการลงทะเบียนกิจกรรม \"{$activity->title}\"",
+                'type'    => 'registration',
+            ]);
 
-        // Auto-promote first waitlisted user
-        if (in_array($registration->getOriginal('status'), ['approved', 'pending'])) {
-            $firstWaitlisted = Registration::where('activity_id', $activity->id)
-                ->where('status', 'waitlisted')
-                ->orderBy('registered_at', 'asc')
-                ->first();
+            // Clear notification cache
+            Cache::forget("user_notifications_" . auth()->id());
 
-            if ($firstWaitlisted) {
-                $firstWaitlisted->update(['status' => 'approved']);
-                Notification::create([
-                    'user_id' => $firstWaitlisted->user_id,
-                    'title'   => 'เลื่อนคิวสำเร็จ (Waitlist)',
-                    'message' => "คุณได้รับการเลื่อนคิวและลงทะเบียนกิจกรรม \"{$activity->title}\" สำเร็จแล้ว",
-                    'type'    => 'registration',
-                ]);
+            // Auto-promote first waitlisted user
+            if (in_array($prevStatus, ['approved', 'pending'], true)) {
+                $firstWaitlisted = Registration::where('activity_id', $activity->id)
+                    ->where('status', 'waitlisted')
+                    ->orderBy('registered_at', 'asc')
+                    ->first();
+
+                if ($firstWaitlisted) {
+                    $firstWaitlisted->update(['status' => 'approved']);
+                    Notification::create([
+                        'user_id' => $firstWaitlisted->user_id,
+                        'title'   => 'เลื่อนคิวสำเร็จ (Waitlist)',
+                        'message' => "คุณได้รับการเลื่อนคิวและลงทะเบียนกิจกรรม \"{$activity->title}\" สำเร็จแล้ว",
+                        'type'    => 'registration',
+                    ]);
+                }
             }
-        }
+        });
 
         return back()->with('success', 'ยกเลิกการลงทะเบียนสำเร็จ');
     }

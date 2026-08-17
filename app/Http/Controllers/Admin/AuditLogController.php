@@ -95,9 +95,10 @@ class AuditLogController extends Controller
     /**
      * Show a single audit log entry detail page.
      */
-    public function show(int $id): \Illuminate\View\View
+    public function show(AdminAuditLog $auditLog): \Illuminate\View\View
     {
-        $log = AdminAuditLog::with('user')->findOrFail($id);
+        $auditLog->loadMissing('user');
+        $log = $auditLog;
 
         return View::make('admin.audit-logs.show', compact('log'));
     }

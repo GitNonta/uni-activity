@@ -1,18 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\ActivityCategory;
 use App\Models\Attendance;
-use App\Models\Setting;
-use App\Models\User;
 use App\Models\JobListing;
 use App\Models\Room;
+use App\Models\Setting;
+use App\Models\User;
+use App\Repositories\ChatRepository;
 use App\Services\ActivitySummaryService;
 use App\Traits\LogsAdminActivity;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
 /**
  * คอนโทรลเลอร์จัดการโปรไฟล์และชั่วโมงกิจกรรมนักศึกษา (ฝั่ง Admin)
@@ -20,13 +27,14 @@ use Illuminate\Http\Request;
 class StudentAdminController extends Controller
 {
     use LogsAdminActivity;
+
     /** แสดงรายชื่อนักศึกษาทั้งหมด พร้อมสรุปชั่วโมง */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $query = User::where('role', 'student')
             ->withCount(['attendances as approved_count' => fn($q) => $q->where('status', 'approved')])
-            ->when($request->search, function ($q) use ($request) {
-                $q->where(function ($sub) use ($request) {
+            ->when($request->search, function ($q) use ($request): void {
+                $q->where(function ($sub) use ($request): void {
                     $sub->where('full_name', 'like', "%{$request->search}%")
                         ->orWhere('student_id', 'like', "%{$request->search}%")
                         ->orWhere('faculty', 'like', "%{$request->search}%")
@@ -56,7 +64,7 @@ class StudentAdminController extends Controller
         }
 
         $page = (int) $request->get('page', 1);
-        $students = new \Illuminate\Pagination\LengthAwarePaginator(
+        $students = new LengthAwarePaginator(
             $filteredStudents->forPage($page, 20)->values(),
             $filteredStudents->count(),
             20,
@@ -73,9 +81,11 @@ class StudentAdminController extends Controller
     }
 
     /** แสดงโปรไฟล์นักศึกษา + จัดการชั่วโมงกิจกรรม */
-    public function show(ActivitySummaryService $summaryService, int $id)
+    public function show(ActivitySummaryService $summaryService, User $student): View
     {
-        $student = User::where('role', 'student')->findOrFail($id);
+        if ($student->role !== 'student') {
+            abort(404);
+        }
 
         $summary = $summaryService->getSummary($student);
 
@@ -101,13 +111,15 @@ class StudentAdminController extends Controller
     }
 
     /** Admin เพิ่มการเข้าร่วมกิจกรรมให้นักศึกษา (manual) */
-    public function addAttendance(Request $request, int $id)
+    public function addAttendance(Request $request, User $student): RedirectResponse
     {
-        $student = User::where('role', 'student')->findOrFail($id);
+        if ($student->role !== 'student') {
+            abort(404);
+        }
 
         $request->validate([
-            'activity_id' => 'required|exists:activities,id',
-            'status'      => 'required|in:approved,pending',
+            'activity_id'   => 'required|exists:activities,id',
+            'status'        => 'required|in:approved,pending',
             'checked_in_at' => 'required|date',
         ]);
 
@@ -124,24 +136,25 @@ class StudentAdminController extends Controller
             return back()->with('error', 'นักศึกษาคนนี้มีบันทึกกิจกรรมนี้อยู่แล้ว');
         }
 
-        $att = Attendance::create([
-            'user_id'       => $student->id,
-            'activity_id'   => $request->activity_id,
-            'status'        => $request->status,
-            'method'        => 'manual',
-            'checked_in_at' => $request->checked_in_at,
-            'verified_by'   => auth()->id(),
-            'is_verified'   => $request->status === 'approved',
-        ]);
-        $this->auditCreate($att, "เพิ่มบันทึกกิจกรรมให้ \"{$student->full_name}\"");
+        DB::transaction(function () use ($student, $request): void {
+            $att = Attendance::create([
+                'user_id'       => $student->id,
+                'activity_id'   => $request->activity_id,
+                'status'        => $request->status,
+                'method'        => 'manual',
+                'checked_in_at' => $request->checked_in_at,
+                'verified_by'   => auth()->id(),
+                'is_verified'   => $request->status === 'approved',
+            ]);
+            $this->auditCreate($att, "เพิ่มบันทึกกิจกรรมให้ \"{$student->full_name}\"");
+        });
 
         return back()->with('success', 'เพิ่มบันทึกกิจกรรมเรียบร้อยแล้ว');
     }
 
     /** Admin แก้ไขสถานะ/เวลาของการเข้าร่วมกิจกรรม */
-    public function updateAttendance(Request $request, int $id, int $aid)
+    public function updateAttendance(Request $request, User $student, int $aid): RedirectResponse
     {
-        $student    = User::where('role', 'student')->findOrFail($id);
         $attendance = Attendance::with('activity')->where('user_id', $student->id)->findOrFail($aid);
 
         if (auth()->user()->isStaff() && (!$attendance->activity || $attendance->activity->created_by !== auth()->id())) {
@@ -153,39 +166,40 @@ class StudentAdminController extends Controller
             'checked_in_at' => 'required|date',
         ]);
 
-        $oldValues = $attendance->only(['status', 'checked_in_at']);
-        $attendance->update([
-            'status'        => $request->status,
-            'checked_in_at' => $request->checked_in_at,
-            'verified_by'   => auth()->id(),
-            'is_verified'   => $request->status === 'approved',
-        ]);
-        $this->auditUpdate($attendance, $oldValues, "แก้ไขบันทึกกิจกรรมของ \"{$student->full_name}\"");
+        DB::transaction(function () use ($attendance, $request, $student): void {
+            $oldValues = $attendance->only(['status', 'checked_in_at']);
+            $attendance->update([
+                'status'        => $request->status,
+                'checked_in_at' => $request->checked_in_at,
+                'verified_by'   => auth()->id(),
+                'is_verified'   => $request->status === 'approved',
+            ]);
+            $this->auditUpdate($attendance, $oldValues, "แก้ไขบันทึกกิจกรรมของ \"{$student->full_name}\"");
+        });
 
         return back()->with('success', 'อัปเดตบันทึกกิจกรรมเรียบร้อยแล้ว');
     }
 
     /** Admin ลบบันทึกการเข้าร่วมกิจกรรม */
-    public function deleteAttendance(int $id, int $aid)
+    public function deleteAttendance(User $student, int $aid): RedirectResponse
     {
-        $student    = User::where('role', 'student')->findOrFail($id);
         $attendance = Attendance::with('activity')->where('user_id', $student->id)->findOrFail($aid);
 
         if (auth()->user()->isStaff() && (!$attendance->activity || $attendance->activity->created_by !== auth()->id())) {
             abort(403, 'คุณไม่มีสิทธิ์ลบบันทึกกิจกรรมนี้');
         }
 
-        $this->auditDelete($attendance, "ลบบันทึกกิจกรรมของ \"{$student->full_name}\"");
-        $attendance->delete();
+        DB::transaction(function () use ($attendance, $student): void {
+            $this->auditDelete($attendance, "ลบบันทึกกิจกรรมของ \"{$student->full_name}\"");
+            $attendance->delete();
+        });
 
         return back()->with('success', 'ลบบันทึกกิจกรรมเรียบร้อยแล้ว');
     }
 
     /** ส่งข้อความแรกเริ่มแชทกับนักศึกษา */
-    public function sendMessage(Request $request, \App\Repositories\ChatRepository $chatRepository, int $id)
+    public function sendMessage(Request $request, ChatRepository $chatRepository, User $student): RedirectResponse
     {
-        $student = User::where('role', 'student')->findOrFail($id);
-
         $request->validate([
             'job_id'  => 'required|integer',
             'message' => 'required|string|max:2000',
@@ -204,16 +218,16 @@ class StudentAdminController extends Controller
                 $job = null;
             }
         } else {
-            $job = $jobId == 0 ? null : JobListing::findOrFail($jobId);
+            $job = $jobId === 0 ? null : JobListing::findOrFail($jobId);
         }
 
         // 1. Get or create room
-        $roomQuery = Room::whereHas('users', function ($q) use ($student) {
+        $roomQuery = Room::whereHas('users', function ($q) use ($student): void {
             $q->where('users.id', $student->id);
         });
-        if ($jobId == 0) {
+        if ($jobId === 0) {
             $roomQuery->whereNull('job_id')
-                ->whereHas('users', function ($q) {
+                ->whereHas('users', function ($q): void {
                     $q->where('users.id', auth()->id());
                 });
         } else {
@@ -222,7 +236,7 @@ class StudentAdminController extends Controller
         $room = $roomQuery->first();
 
         if (!$room) {
-            if ($jobId == 0) {
+            if ($jobId === 0) {
                 $room = $chatRepository->createRoom(
                     [$student->id, auth()->id()],
                     'direct',
@@ -233,14 +247,14 @@ class StudentAdminController extends Controller
                 $room = $chatRepository->createRoom(
                     [$student->id, auth()->id()],
                     'direct',
-                    $job->title,
+                    $job ? $job->title : 'งาน',
                     $jobId
                 );
             }
         }
 
         // 2. Send the message
-        $chatRepository->sendMessage($room, auth()->user(), $request->message);
+        $chatRepository->sendMessage($room, auth()->user(), (string) $request->message);
 
         // 3. Redirect to the inbox thread
         return redirect()->route('admin.inbox.show', [$jobId, $student->id])
