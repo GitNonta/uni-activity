@@ -672,14 +672,29 @@
                     if (currentRoomId) { subscribeRoomChannel(currentRoomId); }
                     var msgs = data.messages || [];
                     if (!Array.isArray(msgs)) msgs = Object.values(msgs);
-                    msgs.forEach(function(m) { win.appendChild(buildBubble(m)); });
+                    
+                    var lastMineId = null;
+                    for (var i = msgs.length - 1; i >= 0; i--) {
+                        var m = msgs[i];
+                        if (m.user_id == USER_ID || (m.user && m.user.id == USER_ID)) {
+                            lastMineId = m.id;
+                            break;
+                        }
+                    }
+                    msgs.forEach(function(m) { win.appendChild(buildBubble(m, m.id === lastMineId)); });
                     win.scrollTop = win.scrollHeight;
                 });
         }
 
-        function buildBubble(msg) {
+        function buildBubble(msg, isLastMine) {
             var mine = msg.user_id == USER_ID || (msg.user && msg.user.id == USER_ID);
             var isTemp = String(msg.id).startsWith('tmp-');
+            if (isLastMine === undefined) isLastMine = mine;
+
+            if (mine && isLastMine) {
+                document.querySelectorAll('.cf-read-status').forEach(function(el){ el.remove(); });
+            }
+
             var row = document.createElement('div');
             row.id = 'cf-msg-' + msg.id;
             row.style.cssText = 'display:flex;flex-direction:' + (mine?'row-reverse':'row') + ';align-items:flex-end;gap:.3rem;margin-bottom:.2rem;position:relative;';
@@ -819,10 +834,11 @@
             statusDiv.style.cssText = 'display:flex;align-items:center;gap:.25rem;margin-top:.1rem;';
             statusDiv.innerHTML = '<span style="font-size:.6rem;color:#94a3b8;">' + timeStr + '</span>';
             
-            if (mine) {
+            if (mine && isLastMine) {
                 var readText = isTemp ? 'กำลังส่ง...' : formatReadStatus(msg.read_at, msg.is_read, msg.read_status);
                 var statusText = document.createElement('span');
                 statusText.id = 'cf-status-' + msg.id;
+                statusText.className = 'cf-read-status';
                 statusText.style.cssText = 'font-size:.6rem;color:' + (isTemp ? '#94a3b8' : '#f97316') + ';';
                 statusText.textContent = readText;
                 statusDiv.appendChild(statusText);
