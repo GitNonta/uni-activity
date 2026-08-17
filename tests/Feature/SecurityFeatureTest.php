@@ -234,4 +234,39 @@ class SecurityFeatureTest extends TestCase
             "Student should not access security logs, got status: " . $response->status()
         );
     }
+
+    // ─── Diagnostic IP Endpoint Security ──────────────────────────────
+
+    public function test_admin_can_access_authenticated_diagnostics_ip_endpoint(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $response = $this->actingAs($admin)->get(route('admin.diagnostics.ip'));
+
+        $response->assertOk();
+        $response->assertJsonStructure([
+            'ip',
+            'all_ips',
+            'header_x_forwarded_for',
+            'header_x_real_ip',
+            'server_remote_addr',
+        ]);
+    }
+
+    public function test_student_and_guest_cannot_access_admin_diagnostics_ip_endpoint(): void
+    {
+        $student = User::factory()->create(['role' => 'student']);
+
+        // Student is denied
+        $responseStudent = $this->actingAs($student)->get(route('admin.diagnostics.ip'));
+        $this->assertTrue(
+            in_array($responseStudent->status(), [403, 302], true),
+            "Student should not access admin diagnostic endpoint"
+        );
+
+        // Guest is redirected to login
+        auth()->logout();
+        $responseGuest = $this->get(route('admin.diagnostics.ip'));
+        $responseGuest->assertRedirect(route('login'));
+    }
 }

@@ -33,15 +33,18 @@ use App\Http\Controllers\LineController;
 use App\Http\Controllers\MapController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/debug-ip', function() {
-    return [
-        'ip' => request()->ip(),
-        'all_ips' => request()->ips(),
-        'header_x_forwarded_for' => request()->header('X-Forwarded-For'),
-        'header_x_real_ip' => request()->header('X-Real-IP'),
-        'server_remote_addr' => $_SERVER['REMOTE_ADDR'] ?? 'N/A',
-    ];
-});
+// ── Diagnostic endpoint สำหรับ Local / Testing เท่านั้น (ห้ามเปิด Public บน Production) ──
+if (app()->environment('local', 'testing')) {
+    Route::get('/debug-ip', function () {
+        return response()->json([
+            'ip'                     => request()->ip(),
+            'all_ips'                => request()->ips(),
+            'header_x_forwarded_for' => request()->header('X-Forwarded-For'),
+            'header_x_real_ip'       => request()->header('X-Real-IP'),
+            'server_remote_addr'     => $_SERVER['REMOTE_ADDR'] ?? 'N/A',
+        ]);
+    })->name('debug.ip');
+}
 Route::get('/up', function () {
     return response()->json(['status' => 'ok', 'timestamp' => time()])
         ->header('Access-Control-Allow-Origin', '*')
@@ -283,11 +286,21 @@ Route::middleware(['auth', 'role:admin,super-admin'])->prefix('admin')->name('ad
     // ── ตั้งค่าระบบ ──
     Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
     Route::put('settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
-
     // ── API Keys ──
     Route::get('api-keys', [\App\Http\Controllers\Admin\ApiKeyController::class, 'index'])->name('api-keys.index');
     Route::post('api-keys', [\App\Http\Controllers\Admin\ApiKeyController::class, 'store'])->name('api-keys.store');
     Route::delete('api-keys/{apiKey}', [\App\Http\Controllers\Admin\ApiKeyController::class, 'destroy'])->name('api-keys.destroy');
+
+    // ── Diagnostic / IP Debug (เฉพาะ Admin และ Super-Admin ภายใต้สิทธิ์จัดการ) ──
+    Route::get('diagnostics/ip', function () {
+        return response()->json([
+            'ip'                     => request()->ip(),
+            'all_ips'                => request()->ips(),
+            'header_x_forwarded_for' => request()->header('X-Forwarded-For'),
+            'header_x_real_ip'       => request()->header('X-Real-IP'),
+            'server_remote_addr'     => $_SERVER['REMOTE_ADDR'] ?? 'N/A',
+        ]);
+    })->name('diagnostics.ip');
 
     // API routes for optimized face verification
     Route::prefix('api')->middleware('auth:sanctum')->group(function () {
