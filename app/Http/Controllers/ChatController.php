@@ -1,93 +1,44 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Message;
-use App\Models\Room;
-use App\Models\JobListing;
-use App\Models\User;
-use App\Repositories\ChatRepository;
+use App\Services\ChatService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\View\View;
 
+/**
+ * คอนโทรลเลอร์แชทสำหรับนักศึกษา (Thin Controller)
+ */
 class ChatController extends Controller
 {
-    public function __construct(protected ChatRepository $chatRepository) {}
-    /** แสดงหน้าแชทของนักศึกษาสำหรับประกาศงานนั้น */
-    public function show(int $jobId)
+    public function __construct(
+        protected readonly ChatService $chatService
+    ) {}
+
+    /**
+     * แสดงหน้าแชทของนักศึกษาสำหรับประกาศงานนั้น
+     */
+    public function show(int $jobId): View
     {
-        $userId = Auth::id();
-        $defaultAdminId = User::where('role', 'admin')->orderBy('id')->value('id') ?? 1;
+        $data = $this->chatService->getOrCreateRoomForJob(Auth::user(), $jobId);
 
-        if ($jobId < 0) {
-            $otherUserId = abs($jobId);
-            $otherUser = User::findOrFail($otherUserId);
-            $job = (object)['id' => $jobId, 'title' => $otherUser->full_name];
-        } else {
-            $job = $jobId == 0 ? (object)['id' => 0, 'title' => 'ติดต่อสอบถามเจ้าหน้าที่'] : JobListing::findOrFail($jobId);
-        }
-
-        // Get or create room for this student and job/otherUser
-        $roomQuery = Room::whereHas('users', function ($q) use ($userId) {
-                $q->where('users.id', $userId);
-            });
-
-        if ($jobId < 0) {
-            $otherUserId = abs($jobId);
-            $roomQuery->whereNull('job_id')
-                ->whereHas('users', function ($q) use ($otherUserId) {
-                    $q->where('users.id', $otherUserId);
-                });
-        } elseif ($jobId == 0) {
-            $roomQuery->whereNull('job_id')
-                ->whereHas('users', function ($q) use ($defaultAdminId) {
-                    $q->where('users.id', $defaultAdminId);
-                });
-        } else {
-            $roomQuery->where('job_id', $jobId);
-        }
-        
-        $room = $roomQuery->first();
-
-        if (!$room) {
-            if ($jobId < 0) {
-                $otherUserId = abs($jobId);
-                $room = $this->chatRepository->createRoom(
-                    [$userId, $otherUserId],
-                    'direct',
-                    'ติดต่อสอบถามเจ้าหน้าที่',
-                    null
-                );
-            } elseif ($jobId == 0) {
-                $room = $this->chatRepository->createRoom(
-                    [$userId, $defaultAdminId],
-                    'direct',
-                    'ติดต่อสอบถามเจ้าหน้าที่',
-                    null
-                );
-            } else {
-                $room = $this->chatRepository->createRoom(
-                    [$userId, $job->created_by],
-                    'direct',
-                    $job->title,
-                    $jobId
-                );
-            }
-        }
-
-        $messages = $this->chatRepository->getRecentMessages($room);
-
-        // Mark messages as read
-        $room->users()->updateExistingPivot($userId, ['last_read_at' => now()]);
-
-        return view('chat.show', compact('job', 'messages', 'room'));
+        return view('chat.show', [
+            'job'      => $data['job'],
+            'messages' => $data['messages'],
+            'room'     => $data['room'],
+        ]);
     }
 
-    /** นักศึกษาส่งข้อความ + ไฟล์แนบ */
-    public function send(Request $request, int $jobId)
+    /**
+     * นักศึกษาส่งข้อความ + ไฟล์แนบ
+     */
+    public function send(Request $request, int $jobId): JsonResponse
     {
         $request->validate([
             'message'       => 'nullable|string|max:2000',
@@ -99,292 +50,85 @@ class ChatController extends Controller
             return response()->json(['error' => 'กรุณาพิมพ์ข้อความหรือแนบไฟล์'], 422);
         }
 
-        $userId = Auth::id();
-        $defaultAdminId = User::where('role', 'admin')->orderBy('id')->value('id') ?? 1;
-        $roomQuery = Room::whereHas('users', function ($q) use ($userId) {
-                $q->where('users.id', $userId);
-            });
-        
-        if ($jobId < 0) {
-            $otherUserId = abs($jobId);
-            $roomQuery->whereNull('job_id')
-                ->whereHas('users', function ($q) use ($otherUserId) {
-                    $q->where('users.id', $otherUserId);
-                });
-        } elseif ($jobId == 0) {
-            $roomQuery->whereNull('job_id')
-                ->whereHas('users', function ($q) use ($defaultAdminId) {
-                    $q->where('users.id', $defaultAdminId);
-                });
-        } else {
-            $roomQuery->where('job_id', $jobId);
-        }
-        $room = $roomQuery->first();
-
-        if (!$room) {
-            if ($jobId < 0) {
-                $otherUserId = abs($jobId);
-                $room = $this->chatRepository->createRoom([$userId, $otherUserId], 'direct', 'ติดต่อสอบถามเจ้าหน้าที่', null);
-            } elseif ($jobId == 0) {
-                $room = $this->chatRepository->createRoom([$userId, $defaultAdminId], 'direct', 'ติดต่อสอบถามเจ้าหน้าที่', null);
-            } else {
-                $job = JobListing::findOrFail($jobId);
-                $room = $this->chatRepository->createRoom([$userId, $job->created_by], 'direct', $job->title, $jobId);
-            }
-        }
-
-        $attachments = [];
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $path = $file->store('chat/attachments', 'public');
-                $attachments[] = [
-                    'original_name' => $file->getClientOriginalName(),
-                    'path'          => $path,
-                    'url'           => '/storage/' . $path,
-                    'mime_type'     => $file->getMimeType(),
-                    'size'          => $file->getSize(),
-                ];
-            }
-        }
-
-        $body = $request->message ?? '';
-        $msg = $this->chatRepository->sendMessage(
-            $room, 
-            Auth::user(), 
-            $body, 
-            'text',
-            $attachments
+        $formatted = $this->chatService->sendMessage(
+            Auth::user(),
+            $jobId,
+            $request->message ? (string) $request->message : null,
+            $request->file('attachments') ?? []
         );
-
-        $formatted = $this->formatMessage($msg);
 
         return response()->json(['success' => true, 'message' => $formatted]);
     }
 
-    /** ประวัติข้อความสำหรับ floating widget (JSON) */
-    public function messages(int $jobId)
+    /**
+     * ประวัติข้อความสำหรับ floating widget (JSON)
+     */
+    public function messages(int $jobId): JsonResponse
     {
-        $userId = Auth::id();
-        $defaultAdminId = User::where('role', 'admin')->orderBy('id')->value('id') ?? 1;
-
-        $roomQuery = Room::whereHas('users', function ($q) use ($userId) {
-                $q->where('users.id', $userId);
-            });
-            
-        if ($jobId < 0) {
-            $otherUserId = abs($jobId);
-            $roomQuery->whereNull('job_id')
-                ->whereHas('users', function ($q) use ($otherUserId) {
-                    $q->where('users.id', $otherUserId);
-                });
-        } elseif ($jobId == 0) {
-            $roomQuery->whereNull('job_id')
-                ->whereHas('users', function ($q) use ($defaultAdminId) {
-                    $q->where('users.id', $defaultAdminId);
-                });
-        } else {
-            $roomQuery->where('job_id', $jobId);
-        }
-        $room = $roomQuery->first();
-
-        if (!$room) {
-            return response()->json(['messages' => []]);
-        }
-
-        $messages = $this->chatRepository->getRecentMessages($room)
-            ->map(fn($m) => $this->formatMessage($m));
+        $result = $this->chatService->getRecentMessagesForJob(Auth::user(), $jobId);
 
         return response()->json([
-            'messages' => $messages,
-            'room_id'  => $room->id
+            'messages' => $result['messages'],
+            'room_id'  => $result['room_id'],
         ]);
     }
 
-    /** รายการ threads ของนักศึกษา (สำหรับ floating widget) */
-    public function myThreads()
+    /**
+     * รายการ threads ของนักศึกษา (สำหรับ floating widget)
+     */
+    public function myThreads(): JsonResponse
     {
-        $userId = Auth::id();
-        $defaultAdminId = User::where('role', 'admin')->orderBy('id')->value('id') ?? 1;
+        $result = $this->chatService->getStudentThreads(Auth::user());
 
-        $rooms = Room::whereHas('users', function ($q) use ($userId) {
-                $q->where('users.id', $userId);
-            })
-            ->with(['messages' => function ($q) {
-                $q->latest()->limit(1);
-            }, 'users', 'job'])
-            ->get();
-
-        $threads = $rooms->map(function ($room) use ($userId, $defaultAdminId) {
-            $lastMsg = $room->messages->first();
-            $job = $room->job;
-            $me = $room->users->where('id', $userId)->first();
-            
-            // Calculate unread using eager loaded pivot
-            $unread = $room->messages()
-                ->where('user_id', '!=', $userId)
-                ->where('created_at', '>', $me->pivot->last_read_at ?? '1970-01-01')
-                ->count();
-
-            $otherUser = $room->users->where('id', '!=', $userId)->first();
-            $avatarUrl = null;
-            if ($otherUser && $otherUser->profile_photo) {
-                $avatarUrl = '/storage/' . $otherUser->profile_photo;
-            }
-
-            if ($room->job_id) {
-                $jobId = $room->job_id;
-                $jobTitle = $job?->title ?? "งาน #{$room->job_id}";
-            } else {
-                if ($otherUser && $otherUser->id != $defaultAdminId) {
-                    $jobId = -$otherUser->id;
-                    $jobTitle = $otherUser->full_name;
-                } else {
-                    $jobId = 0;
-                    $jobTitle = 'ติดต่อสอบถามเจ้าหน้าที่';
-                }
-            }
-
-            return [
-                'job_id'           => $jobId,
-                'job_title'        => $jobTitle,
-                'avatar'           => $avatarUrl,
-                'last_message'     => $lastMsg?->body ?? '',
-                'last_sender_role' => $lastMsg?->user_id === $userId ? 'self' : 'other',
-                'last_time'        => $lastMsg?->created_at?->toISOString(),
-                'last_time_human'  => $lastMsg?->created_at?->diffForHumans(),
-                'unread'           => $unread,
-                'thread_room'      => 'chat.room.' . $room->id,
-                'thread_token'     => null, // Tokens no longer needed for Reverb private channels
-            ];
-        })->sortByDesc('last_time')->values();
-
-        $totalUnread = $threads->sum('unread');
-
-        return response()->json(['threads' => $threads, 'total_unread' => $totalUnread]);
+        return response()->json([
+            'threads'      => $result['threads'],
+            'total_unread' => $result['total_unread'],
+        ]);
     }
 
-    /** Mark ข้อความทั้งหมดของ job นี้ว่าอ่านแล้ว (นักศึกษาเปิดหน้าแชท) */
-    public function markRead(int $jobId)
+    /**
+     * Mark ข้อความทั้งหมดของ job นี้ว่าอ่านแล้ว
+     */
+    public function markRead(int $jobId): JsonResponse
     {
-        $userId = Auth::id();
-        $defaultAdminId = User::where('role', 'admin')->orderBy('id')->value('id') ?? 1;
-        $roomQuery = Room::whereHas('users', function ($q) use ($userId) {
-                $q->where('users.id', $userId);
-            });
-            
-        if ($jobId < 0) {
-            $otherUserId = abs($jobId);
-            $roomQuery->whereNull('job_id')
-                ->whereHas('users', function ($q) use ($otherUserId) {
-                    $q->where('users.id', $otherUserId);
-                });
-        } elseif ($jobId == 0) {
-            $roomQuery->whereNull('job_id')
-                ->whereHas('users', function ($q) use ($defaultAdminId) {
-                    $q->where('users.id', $defaultAdminId);
-                });
-        } else {
-            $roomQuery->where('job_id', $jobId);
-        }
-        $room = $roomQuery->first();
-
-        if ($room) {
-            $room->users()->updateExistingPivot($userId, ['last_read_at' => now()]);
-        }
+        $this->chatService->markAsRead(Auth::user(), $jobId);
 
         return response()->json(['success' => true]);
     }
 
-    /** Check if any admin who replied to this job is currently online */
-    public function adminOnlineStatus(int $jobId)
+    /**
+     * ตรวจสอบว่ามี Admin online หรือไม่
+     */
+    public function adminOnlineStatus(int $jobId): JsonResponse
     {
-        $userId = Auth::id();
-        $defaultAdminId = User::where('role', 'admin')->orderBy('id')->value('id') ?? 1;
-
-        $roomQuery = Room::whereHas('users', function ($q) use ($userId) {
-                $q->where('users.id', $userId);
-            });
-            
-        if ($jobId < 0) {
-            $otherUserId = abs($jobId);
-            $roomQuery->whereNull('job_id')
-                ->whereHas('users', function ($q) use ($otherUserId) {
-                    $q->where('users.id', $otherUserId);
-                });
-        } elseif ($jobId == 0) {
-            $roomQuery->whereNull('job_id')
-                ->whereHas('users', function ($q) use ($defaultAdminId) {
-                    $q->where('users.id', $defaultAdminId);
-                });
-        } else {
-            $roomQuery->where('job_id', $jobId);
-        }
-        $room = $roomQuery->first();
-        if (!$room) return response()->json(['is_online' => false]);
-
-        $adminIds = $room->users()
-            ->whereIn('users.role', ['admin', 'staff'])
-            ->pluck('users.id')
-            ->all();
-
-        if (empty($adminIds)) {
-            return response()->json(['is_online' => false]);
-        }
-
-        // Check if any of these admins were active in last 2 minutes
-        $online = \App\Models\User::whereIn('id', $adminIds)
-            ->whereNotNull('last_seen_at')
-            ->where('last_seen_at', '>=', now()->subMinutes(2))
-            ->exists();
+        $online = $this->chatService->checkAdminOnlineStatus(Auth::user(), $jobId);
 
         return response()->json(['is_online' => $online]);
     }
 
-    public function deleteMessage(Message $message): \Illuminate\Http\JsonResponse
+    /**
+     * ลบข้อความของนักศึกษา
+     */
+    public function deleteMessage(Message $message): JsonResponse
     {
-        \Illuminate\Support\Facades\Gate::authorize('delete', $message);
+        Gate::authorize('delete', $message);
 
-        $id = $message->id;
-        $roomId = $message->room_id;
-        $message->delete();
-        
-        $studentId = Auth::id(); // since this is student side
-        broadcast(new \App\Events\MessageDeleted($id, $roomId, $studentId));
-        
+        $this->chatService->deleteMessage($message, (int) Auth::id());
+
         return response()->json(['success' => true]);
     }
 
-    public function editMessage(Request $request, Message $message): \Illuminate\Http\JsonResponse
+    /**
+     * แก้ไขข้อความของนักศึกษา
+     */
+    public function editMessage(Request $request, Message $message): JsonResponse
     {
         $request->validate(['message' => 'required|string|max:2000']);
-        
-        \Illuminate\Support\Facades\Gate::authorize('update', $message);
 
-        $message->body = (string) $request->message;
-        $message->save();
+        Gate::authorize('update', $message);
 
-        broadcast(new \App\Events\MessageEdited($message));
+        $formatted = $this->chatService->editMessage($message, (string) $request->message);
 
-        return response()->json(['success' => true, 'message' => $this->formatMessage($message)]);
-    }
-
-    /** Format สำหรับส่งไป Socket.io */
-    private function formatMessage(Message $msg): array
-    {
-        $user = $msg->user;
-        
-        return [
-            'id'      => $msg->id,
-            'room_id' => $msg->room_id,
-            'message' => $msg->body,
-            'user'    => [
-                'id'    => $msg->user_id,
-                'name'  => $user?->full_name ?? 'ผู้ใช้',
-                'role'  => $user?->role ?? 'system',
-                'photo' => $user?->profile_photo ? '/storage/' . $user->profile_photo : null,
-            ],
-            'attachments' => $msg->attachments ?? [],
-            'created_at'  => $msg->created_at?->toISOString(),
-        ];
+        return response()->json(['success' => true, 'message' => $formatted]);
     }
 }

@@ -1,160 +1,67 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Message;
 use App\Models\Room;
-use App\Models\JobListing;
-use App\Models\User;
-use App\Repositories\ChatRepository;
+use App\Services\ChatService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\View\View;
 
+/**
+ * คอนโทรลเลอร์กล่องข้อความ Admin/Staff (Thin Controller)
+ */
 class AdminInboxController extends Controller
 {
-    public function __construct(protected ChatRepository $chatRepository) {}
-    public function index()
+    public function __construct(
+        protected readonly ChatService $chatService
+    ) {}
+
+    /**
+     * แสดงรายการห้องสนทนาทั้งหมดของ Admin/Staff
+     */
+    public function index(): View
     {
-        $currentUserId = Auth::id();
-        $rooms = Room::with(['messages' => function($q) {
-                $q->latest()->limit(1);
-            }, 'users' => function($q) use ($currentUserId) {
-                // Load students AND the current admin in one query
-                $q->where(function($sub) use ($currentUserId) {
-                    $sub->where('users.role', 'student')->orWhere('users.id', $currentUserId);
-                });
-            }, 'job'])
-            ->where(function($q) use ($currentUserId) {
-                $q->where(function($sub) use ($currentUserId) {
-                    $sub->whereNotNull('job_id')
-                        ->when(auth()->user()->isStaff(), function($inner) use ($currentUserId) {
-                            $inner->whereHas('job', function($jq) use ($currentUserId) {
-                                $jq->where('created_by', $currentUserId);
-                            });
-                        });
-                })->orWhere(function($sub) use ($currentUserId) {
-                    $sub->whereNull('job_id')
-                        ->whereHas('users', function($uq) use ($currentUserId) {
-                            $uq->where('users.id', $currentUserId);
-                        });
-                });
-            })
-            ->orderByDesc(
-                Message::select('created_at')
-                    ->whereColumn('room_id', 'rooms.id')
-                    ->latest()
-                    ->limit(1)
-            )
-            ->get();
+        $threads = $this->chatService->getAdminThreads(Auth::user());
 
-        $result = $rooms->map(function ($room) use ($currentUserId) {
-            $lastMsg = $room->messages->first();
-            $student = $room->users->where('role', 'student')->first();
-            $me = $room->users->where('id', $currentUserId)->first();
-            
-            return [
-                'job_id'       => $room->job_id ?? 0,
-                'room_id'      => $room->id,
-                'student_id'   => $student?->id,
-                'job_title'    => $room->job_id ? ($room->job?->title ?? "งาน #{$room->job_id}") : 'ติดต่อสอบถามเจ้าหน้าที่',
-                'student_name'  => $student?->full_name ?? 'นักศึกษา',
-                'student_photo' => $student?->profile_photo ? '/storage/' . $student->profile_photo : null,
-                'last_message' => $lastMsg?->body ?? '',
-                'last_time'    => $lastMsg?->created_at,
-                'unread'       => $room->messages()
-                    ->where('user_id', '!=', $currentUserId)
-                    ->where('created_at', '>', $me?->pivot?->last_read_at ?? '1970-01-01')
-                    ->count(),
-            ];
-        })->filter(fn($t) => !empty($t['student_id']))->values();
-
-        return view('admin.inbox.index', ['threads' => $result]);
+        return view('admin.inbox.index', ['threads' => $threads]);
     }
 
-    /** JSON endpoint — จำนวนข้อความที่ยังไม่ได้อ่านของ admin/staff */
-    public function unreadCount(): \Illuminate\Http\JsonResponse
+    /**
+     * JSON endpoint — จำนวนข้อความที่ยังไม่ได้อ่านของ admin/staff
+     */
+    public function unreadCount(): JsonResponse
     {
-        $currentUserId = Auth::id();
-        $rooms = Room::with(['messages' => fn($q) => $q->latest()->limit(1), 'users'])
-            ->where(function($q) use ($currentUserId) {
-                $q->where(function($sub) use ($currentUserId) {
-                    $sub->whereNotNull('job_id')
-                        ->when(auth()->user()->isStaff(), function($inner) use ($currentUserId) {
-                            $inner->whereHas('job', fn($jq) => $jq->where('created_by', $currentUserId));
-                        });
-                })->orWhere(function($sub) use ($currentUserId) {
-                    $sub->whereNull('job_id')
-                        ->whereHas('users', fn($uq) => $uq->where('users.id', $currentUserId));
-                });
-            })
-            ->get();
-
-        $total = $rooms->sum(function ($room) use ($currentUserId) {
-            $me = $room->users->where('id', $currentUserId)->first();
-            return $room->messages()
-                ->where('user_id', '!=', $currentUserId)
-                ->where('created_at', '>', $me?->pivot?->last_read_at ?? '1970-01-01')
-                ->count();
-        });
+        $total = $this->chatService->getAdminUnreadCount(Auth::user());
 
         return response()->json(['unread' => $total]);
     }
 
-    public function show(int $jobId, int $studentId)
+    /**
+     * แสดงหน้าต่างสนทนาระหว่าง Admin/Staff กับ Student
+     */
+    public function show(int $jobId, int $studentId): View
     {
-        $job     = $jobId == 0 ? (object) ['id' => 0, 'title' => 'ติดต่อสอบถามเจ้าหน้าที่'] : JobListing::findOrFail($jobId);
-        $student = User::findOrFail($studentId);
+        $data = $this->chatService->getOrCreateRoomForAdmin(Auth::user(), $jobId, $studentId);
 
-        $roomQuery = Room::whereHas('users', function ($q) use ($studentId) {
-                $q->where('users.id', $studentId);
-            });
-        if ($jobId == 0) {
-            $roomQuery->whereNull('job_id')
-                ->whereHas('users', function ($q) {
-                    $q->where('users.id', auth()->id());
-                });
-        } else {
-            $roomQuery->where('job_id', $jobId);
-        }
-        $room = $roomQuery->first();
-
-        if (!$room) {
-            if ($jobId == 0) {
-                $room = $this->chatRepository->createRoom(
-                    [$studentId, auth()->id()],
-                    'direct',
-                    'ติดต่อสอบถามเจ้าหน้าที่',
-                    null
-                );
-            } else {
-                $room = $this->chatRepository->createRoom(
-                    [$studentId, auth()->id()],
-                    'direct',
-                    $job->title,
-                    $jobId
-                );
-            }
-        }
-
-        $room->loadMissing(['users', 'job']);
-        $isOwnJob = $room->job_id && ($room->job->created_by === auth()->id() || auth()->user()->isAdmin());
-        $isParticipant = !$room->job_id && $room->users->contains(auth()->id());
-        if (!$isOwnJob && !$isParticipant) {
-            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงแชทนี้');
-        }
-
-        $messages = $this->chatRepository->getRecentMessages($room);
-
-        // Mark messages as read for admin
-        $room->users()->updateExistingPivot(Auth::id(), ['last_read_at' => now()]);
-
-        return view('admin.inbox.show', compact('job', 'student', 'messages', 'room'));
+        return view('admin.inbox.show', [
+            'job'      => $data['job'],
+            'student'  => $data['student'],
+            'messages' => $data['messages'],
+            'room'     => $data['room'],
+        ]);
     }
 
-    public function send(Request $request, int $jobId, int $studentId)
+    /**
+     * Admin/Staff ส่งข้อความถึง Student
+     */
+    public function send(Request $request, int $jobId, int $studentId): JsonResponse
     {
         $request->validate([
             'message'       => 'nullable|string|max:2000',
@@ -166,154 +73,77 @@ class AdminInboxController extends Controller
             return response()->json(['error' => 'กรุณาพิมพ์ข้อความหรือแนบไฟล์'], 422);
         }
 
-        $roomQuery = Room::whereHas('users', function ($q) use ($studentId) {
-                $q->where('users.id', $studentId);
-            });
-        if ($jobId == 0) {
-            $roomQuery->whereNull('job_id')
-                ->whereHas('users', function ($q) {
-                    $q->where('users.id', auth()->id());
-                });
-        } else {
-            $roomQuery->where('job_id', $jobId);
-        }
-        $room = $roomQuery->firstOrFail();
-
-        $room->loadMissing(['users', 'job']);
-        $isOwnJob = $room->job_id && ($room->job->created_by === auth()->id() || auth()->user()->isAdmin());
-        $isParticipant = !$room->job_id && $room->users->contains(auth()->id());
-        if (!$isOwnJob && !$isParticipant) {
-            return response()->json(['error' => 'คุณไม่มีสิทธิ์ส่งข้อความในแชทนี้'], 403);
-        }
-
-        $attachments = [];
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $path = $file->store('chat/attachments', 'public');
-                $attachments[] = [
-                    'original_name' => $file->getClientOriginalName(),
-                    'path'          => $path,
-                    'url'           => '/storage/' . $path,
-                    'mime_type'     => $file->getMimeType(),
-                    'size'          => $file->getSize(),
-                ];
-            }
-        }
-
-        $msg = $this->chatRepository->sendMessage(
-            $room, 
-            Auth::user(), 
-            $request->message ?? '', 
-            'text',
-            $attachments
+        $formatted = $this->chatService->sendAdminMessage(
+            Auth::user(),
+            $jobId,
+            $studentId,
+            $request->message ? (string) $request->message : null,
+            $request->file('attachments') ?? []
         );
-
-        $formatted = $this->formatMessage($msg);
 
         return response()->json(['success' => true, 'message' => $formatted]);
     }
 
-    /** Mark ข้อความจาก student ว่าอ่านแล้ว */
-    public function markRead(int $jobId, int $studentId)
+    /**
+     * Mark ข้อความจาก student ว่าอ่านแล้ว
+     */
+    public function markRead(int $jobId, int $studentId): JsonResponse
     {
-        $roomQuery = Room::whereHas('users', function ($q) use ($studentId) {
-                $q->where('users.id', $studentId);
-            });
-        if ($jobId == 0) {
-            $roomQuery->whereNull('job_id')
-                ->whereHas('users', function ($q) {
-                    $q->where('users.id', auth()->id());
-                });
-        } else {
-            $roomQuery->where('job_id', $jobId);
-        }
-        $room = $roomQuery->first();
-
-        if ($room) {
-            $room->loadMissing(['users', 'job']);
-            $isOwnJob = $room->job_id && ($room->job->created_by === auth()->id() || auth()->user()->isAdmin());
-            $isParticipant = !$room->job_id && $room->users->contains(auth()->id());
-            if (!$isOwnJob && !$isParticipant) {
-                return response()->json(['error' => 'Unauthorized'], 403);
-            }
-            $room->users()->updateExistingPivot(Auth::id(), ['last_read_at' => now()]);
-        }
+        $this->chatService->markAsRead(Auth::user(), $jobId);
 
         return response()->json(['success' => true]);
     }
 
-    public function deleteMessage(Message $message): \Illuminate\Http\JsonResponse
+    /**
+     * ลบข้อความในห้องแชท
+     */
+    public function deleteMessage(Message $message): JsonResponse
     {
         $message->loadMissing(['room.job', 'room.users']);
-        \Illuminate\Support\Facades\Gate::authorize('delete', $message);
+        Gate::authorize('delete', $message);
 
-        $id = $message->id;
-        $roomId = $message->room_id;
-        $message->delete();
-        
         $student = $message->room?->users()->where('users.role', 'student')->first();
-        broadcast(new \App\Events\MessageDeleted($id, $roomId, $student?->id));
-        
+        $this->chatService->deleteMessage($message, (int) ($student?->id ?? 0));
+
         return response()->json(['success' => true]);
     }
 
-    public function editMessage(Request $request, Message $message): \Illuminate\Http\JsonResponse
+    /**
+     * แก้ไขข้อความในห้องแชท
+     */
+    public function editMessage(Request $request, Message $message): JsonResponse
     {
         $request->validate(['message' => 'required|string|max:2000']);
         $message->loadMissing(['room.job', 'room.users']);
-        \Illuminate\Support\Facades\Gate::authorize('update', $message);
+        Gate::authorize('update', $message);
 
-        $message->body = (string) $request->message;
-        $message->save();
+        $formatted = $this->chatService->editMessage($message, (string) $request->message);
 
-        broadcast(new \App\Events\MessageEdited($message));
-
-        return response()->json(['success' => true, 'message' => $this->formatMessage($message)]);
+        return response()->json(['success' => true, 'message' => $formatted]);
     }
 
-    public function deleteChat($jobId, $userId)
+    /**
+     * ลบห้องสนทนาทั้งหมด
+     */
+    public function deleteChat(int|string $jobId, int|string $userId): JsonResponse
     {
-        $roomQuery = Room::whereHas('users', function ($q) use ($userId): void {
-            $q->where('users.id', $userId);
-        });
-        if ($jobId == 0) {
+        $numericJobId = (int) $jobId;
+        $numericUserId = (int) $userId;
+
+        $roomQuery = Room::whereHas('users', fn($q) => $q->where('users.id', $numericUserId));
+        if ($numericJobId === 0) {
             $roomQuery->whereNull('job_id')
-                ->whereHas('users', function ($q): void {
-                    $q->where('users.id', auth()->id());
-                });
+                ->whereHas('users', fn($q) => $q->where('users.id', Auth::id()));
         } else {
-            $roomQuery->where('job_id', $jobId);
+            $roomQuery->where('job_id', $numericJobId);
         }
         $room = $roomQuery->firstOrFail();
 
         $room->loadMissing(['users', 'job']);
-        \Illuminate\Support\Facades\Gate::authorize('delete', $room);
+        Gate::authorize('delete', $room);
 
-        $roomId = $room->id;
-        Message::where('room_id', $roomId)->delete();
-        $room->delete();
-
-        broadcast(new \App\Events\ChatDeleted($roomId, (int) $userId));
+        $this->chatService->deleteRoom($room, $numericUserId);
 
         return response()->json(['success' => true]);
-    }
-
-    private function formatMessage(Message $msg): array
-    {
-        $user = $msg->user;
-
-        return [
-            'id'      => $msg->id,
-            'room_id' => $msg->room_id,
-            'message' => $msg->body,
-            'user'    => [
-                'id'    => $msg->user_id,
-                'name'  => $user?->full_name ?? 'ผู้ดูแล',
-                'role'  => $user?->role ?? 'system',
-                'photo' => $user?->profile_photo ? '/storage/' . $user->profile_photo : null,
-            ],
-            'attachments' => $msg->attachments ?? [],
-            'created_at'  => $msg->created_at?->toISOString(),
-        ];
     }
 }
