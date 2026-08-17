@@ -26,6 +26,8 @@ class CheckInService
         private readonly DeviceFingerprintService $fpService,
         private readonly SecurityService $secService,
         private readonly FaceVerificationService $faceVerificationService,
+        private readonly CheckInRiskScoringService $riskScoringService,
+        private readonly QrCodeService $qrCodeService,
     ) {}
 
     /**
@@ -371,6 +373,61 @@ class CheckInService
                         }
                     }
 
+                    // ตรวจสอบ Dynamic QR & Nonce Replay Guard
+                    $qrVerification = $this->qrCodeService->verifyDynamicPayload(
+                        $activity->id,
+                        $token,
+                        request()->all()
+                    );
+
+                    if ($qrVerification['is_dynamic'] && $qrVerification['is_expired']) {
+                        return [
+                            'success' => false,
+                            'message' => 'QR Code หมดอายุแล้ว กรุณาสแกนรหัสใหม่จากหน้าจอ',
+                        ];
+                    }
+
+                    // ตรวจสอบ Device Fingerprint & Multi-Account Signal
+                    $fp = $this->fpService->generate(request());
+                    $multiUsers = $this->fpService->detectSuspiciousCheckin($fp, $activity->id, $user->id, 10);
+                    $isSharedDevice = ($multiUsers !== null);
+                    $otherCount = $multiUsers ? count($multiUsers) : 0;
+
+                    // ประเมินคะแนนความเสี่ยง Multi-Factor Risk Assessment
+                    $riskAssessment = $this->riskScoringService->evaluate([
+                        'require_face_scan'    => (bool) $activity->require_face_scan,
+                        'face_match_passed'    => $metaData['face_match_passed'] ?? true,
+                        'face_match_score'     => (float) ($metaData['face_match_score'] ?? 100.0),
+                        'liveness_passed'      => $metaData['liveness_passed'] ?? true,
+                        'has_geolocation'      => $activity->hasGeolocation(),
+                        'distance_meters'      => $entryDistance,
+                        'radius_meters'        => (float) $activity->radius_meters,
+                        'is_shared_device'     => $isSharedDevice,
+                        'other_accounts_count' => $otherCount,
+                        'is_registered'        => (bool) $registration,
+                        'is_walkin'            => ($method === 'walk_in'),
+                        'is_dynamic_qr'        => $qrVerification['is_dynamic'],
+                        'is_qr_replay'         => $qrVerification['is_replay'],
+                    ]);
+
+                    // กรณีความเสี่ยงสูงมาก (Hard Reject)
+                    if ($riskAssessment['decision'] === 'rejected') {
+                        $this->secService->logEvent(
+                            eventType: 'high_risk_checkin_blocked',
+                            userId:    $user->id,
+                            request:   request(),
+                            details:   [
+                                'risk_score' => $riskAssessment['risk_score'],
+                                'reasons'    => $riskAssessment['reasons'],
+                            ]
+                        );
+
+                        return [
+                            'success' => false,
+                            'message' => 'ระบบปฏิเสธการเช็คอินเนื่องจากตรวจพบความเสี่ยงสูง: ' . implode(', ', $riskAssessment['reasons']),
+                        ];
+                    }
+
                     // สร้าง Attendance ใหม่แบบ Atomic
                     try {
                         $att = Attendance::create([
@@ -384,6 +441,8 @@ class CheckInService
                             'checked_in_at'       => $now,
                             'is_verified'         => true,
                             'ip_address'          => request()->ip(),
+                            'device_fingerprint'  => $fp,
+                            'is_suspicious'       => $riskAssessment['is_suspicious'],
                             'selfie_photo_path'   => $metaData['selfie_photo_path'] ?? null,
                             'face_match_score'    => $metaData['face_match_score'] ?? null,
                             'face_match_passed'   => $metaData['face_match_passed'] ?? null,
@@ -394,8 +453,10 @@ class CheckInService
                         return ['success' => false, 'message' => 'คุณเช็คอินไปแล้ว'];
                     }
 
-                    // ตรวจจับพฤติกรรมผิดปกติผ่าน Security Service
-                    $this->secService->checkAndLogSuspiciousCheckIn(request(), $user->id, $activity);
+                    // ตรวจจับพฤติกรรมผิดปกติผ่าน Security Service เมื่อมีความเสี่ยงปานกลาง
+                    if ($riskAssessment['is_suspicious']) {
+                        $this->secService->checkAndLogSuspiciousCheckIn(request(), $user->id, $activity);
+                    }
 
                     return [
                         'success'         => true,
@@ -405,6 +466,8 @@ class CheckInService
                         'distance'        => $entryDistance,
                         'selfie_required' => (bool) $activity->require_selfie,
                         'attendance_id'   => $att->id,
+                        'risk_score'      => $riskAssessment['risk_score'],
+                        'risk_level'      => $riskAssessment['risk_level'],
                     ];
                 }
 
