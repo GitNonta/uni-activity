@@ -5,7 +5,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    # container_name: laravel-app (Removed for scaling)
     deploy:
       replicas: 1
     restart: unless-stopped
@@ -18,11 +17,6 @@ services:
       - ./docker/supervisord.conf:/etc/supervisord.conf
     networks:
       - laravel-network
-    # depends_on:
-    #   postgres:
-    #     condition: service_healthy
-    #   redis:
-    #     condition: service_started
     environment:
       - APP_ENV=local
       - APP_DEBUG=true
@@ -39,11 +33,6 @@ services:
       - CACHE_STORE=redis
       - SESSION_DRIVER=redis
       - QUEUE_CONNECTION=redis
-      - MONGODB_HOST=${MONGODB_HOST:-mongodb}
-      - MONGODB_PORT=27017
-      - MONGODB_DATABASE=${MONGODB_DATABASE:-uni_chat}
-      - MONGODB_USERNAME=${MONGODB_USERNAME:-root}
-      - MONGODB_PASSWORD=${MONGODB_PASSWORD:-root}
       - CHOKIDAR_USEPOLLING=true
       - BROADCAST_CONNECTION=reverb
       - REVERB_APP_ID=uni-chat
@@ -51,11 +40,6 @@ services:
       - REVERB_APP_SECRET=uni-chat-secret
       - REVERB_HOST=0.0.0.0
       - REVERB_PORT=8080
-    # Ports moved to load-balancer
-    # ports:
-    #   - "8000:80"
-    #   - "8080:8080"
-    #   - "5173:5173"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 30s
@@ -93,62 +77,29 @@ services:
     ports:
       - "6379:6379"
 
-  mysql:
-    image: mysql:8.0
-    container_name: laravel-mysql
-    profiles: ["extra"]
+  postgres:
+    image: postgres:16-alpine
+    container_name: laravel-postgres
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE:-uni_activity}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
-    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+      POSTGRES_DB: ${DB_DATABASE:-uni_activity}
+      POSTGRES_USER: ${DB_USERNAME:-root}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-root}
+      LANG: en_US.utf8
+      LC_ALL: en_US.utf8
     volumes:
-      - mysql-data:/var/lib/mysql
-      - ./docker/mysql.cnf:/etc/mysql/conf.d/mysql.cnf
+      - postgres-data:/var/lib/postgresql/data
     networks:
       - laravel-network
     ports:
-      - "3306:3306"
+      - "5432:5432"
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_ROOT_PASSWORD}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-root} -d ${DB_DATABASE:-uni_activity}"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s
 
-  mongodb:
-    image: mongo:7
-    container_name: laravel-mongodb
-    profiles: ["extra"]
-    restart: unless-stopped
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME:-root}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD:-root}
-      MONGO_INITDB_DATABASE: ${MONGODB_DATABASE:-uni_chat}
-    volumes:
-      - mongodb-data:/data/db
-    #  - ./docker/mongod.conf:/etc/mongod.conf
-    networks:
-      - laravel-network
-    ports:
-      - "27017:27017"
-
-  # Optional: Redis Commander for monitoring
-  redis-commander:
-    image: rediscommander/redis-commander:latest
-    container_name: laravel-redis-ui
-    profiles: ["extra"]
-    restart: unless-stopped
-    environment:
-      REDIS_HOSTS: local:redis:6379
-    networks:
-      - laravel-network
-    ports:
-      - "8081:8081"
-    depends_on:
-      - redis
-
-  # Ngrok for HTTPS tunneling
+  # Ngrok for HTTPS tunneling (Optional)
   ngrok:
     image: ngrok/ngrok:latest
     container_name: laravel-ngrok
@@ -167,103 +118,14 @@ services:
     depends_on:
       - load-balancer
 
-  postgres:
-    image: postgres:16-alpine
-    container_name: laravel-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${DB_DATABASE:-uni_activity}
-      POSTGRES_USER: ${DB_USERNAME:-root}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-root}
-      LANG: en_US.utf8
-      LC_ALL: en_US.utf8
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    networks:
-      - laravel-network
-    ports:
-      - "5432:5432"
-    command: ["postgres", "-c", "wal_level=replica", "-c", "max_wal_senders=10", "-c", "max_replication_slots=10", "-c", "hot_standby=on"]
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-root} -d ${DB_DATABASE:-uni_activity}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  postgres-replica:
-    image: postgres:16-alpine
-    container_name: laravel-postgres-replica
-    restart: unless-stopped
-    user: postgres
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-root}
-    volumes:
-      - ./docker/setup-replica.sh:/usr/local/bin/setup-replica.sh
-      - postgres-replica-data:/var/lib/postgresql/data
-    entrypoint: ["/bin/sh", "-c", "cat /usr/local/bin/setup-replica.sh | tr -d '\\r' > /var/lib/postgresql/setup.sh && sh /var/lib/postgresql/setup.sh"]
-    networks:
-      - laravel-network
-
-  cassandra:
-    image: cassandra:4.1
-    container_name: laravel-cassandra
-    profiles: ["extra"]
-    restart: unless-stopped
-    environment:
-      - CASSANDRA_CLUSTER_NAME=uni_chat_cluster
-      - CASSANDRA_DC=dc1
-      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
-    volumes:
-      - cassandra-data:/var/lib/cassandra
-    networks:
-      - laravel-network
-    ports:
-      - "9042:9042"
-    healthcheck:
-      test: ["CMD-SHELL", "cqlsh -e 'describe cluster'"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  phpmyadmin:
-    image: phpmyadmin:latest
-    container_name: laravel-phpmyadmin
-    profiles: ["extra"]
-    restart: unless-stopped
-    environment:
-      - PMA_HOST=mysql
-      - PMA_PORT=3306
-      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD:-root}
-    networks:
-      - laravel-network
-    ports:
-      - "8082:80"
-    depends_on:
-      mysql:
-        condition: service_healthy
-
 networks:
   laravel-network:
     driver: bridge
 
 volumes:
-  mysql-data:
-    driver: local
-  redis-data:
-    driver: local
   dragonfly-data:
-    driver: local
-  mongodb-data:
     driver: local
   storage-framework:
     driver: local
   postgres-data:
     driver: local
-  postgres-replica-data:
-    driver: local
-  cassandra-data:
-    driver: local
-

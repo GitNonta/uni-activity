@@ -3,8 +3,10 @@
 
 ## Project Stack
 - **Backend:** Laravel 11, PHP 8.2+
-- **Database:** PostgreSQL (primary), Redis (cache/queue), Cassandra (archive)
+- **Database:** PostgreSQL (primary core database)
+- **Cache / Queue / Locks:** Redis / Dragonfly
 - **Real-time:** Laravel Reverb (WebSocket)
+- **AI Microservice:** Python FastAPI (InsightFace, OpenCV)
 - **Auth:** Laravel Sanctum
 - **Queue:** Redis
 
