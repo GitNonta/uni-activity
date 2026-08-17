@@ -45,8 +45,13 @@ return [
     ],
     
     'ai_server' => [
-        'url' => env('AI_SERVER_URL', 'http://127.0.0.1:8001'),
-        'key' => env('AI_SERVER_KEY', env('AI_SERVICE_API_KEY', 'uni-activity-ai-secret-key-2026')),
+        'url'                       => env('AI_SERVER_URL', 'http://127.0.0.1:8001'),
+        'urls'                      => array_values(array_filter(array_map('trim', explode(',', (string) env('AI_SERVERS', env('AI_SERVER_URL', 'http://127.0.0.1:8001')))))),
+        'key'                       => env('AI_SERVER_KEY', env('AI_SERVICE_API_KEY', 'uni-activity-ai-secret-key-2026')),
+        'timeout'                   => (int) env('AI_SERVER_TIMEOUT', 6),
+        'retry'                     => (int) env('AI_SERVER_RETRIES', 2),
+        'circuit_breaker_threshold' => (int) env('AI_CIRCUIT_BREAKER_THRESHOLD', 3),
+        'circuit_breaker_cooldown'  => (int) env('AI_CIRCUIT_BREAKER_COOLDOWN', 30),
     ],
 
 ];

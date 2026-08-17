@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Models\User;
+use App\Services\AiLoadBalancerService;
 use App\Services\FaceVerificationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -31,7 +32,7 @@ class ExtractFaceBiometricsJob implements ShouldQueue
         $this->onQueue('ai');
     }
 
-    public function handle(FaceVerificationService $faceService): void
+    public function handle(AiLoadBalancerService $loadBalancer): void
     {
         $user = User::find($this->userId);
         if (!$user) {
@@ -51,12 +52,6 @@ class ExtractFaceBiometricsJob implements ShouldQueue
             return;
         }
 
-        $aiServerUrl = (string) config('services.ai_server.url');
-        if (empty($aiServerUrl)) {
-            Log::warning("ExtractFaceBiometricsJob: AI Server URL not configured.");
-            return;
-        }
-
         $imageContents = null;
         if (Storage::disk('public')->exists($photoRelPath)) {
             $imageContents = Storage::disk('public')->get($photoRelPath);
@@ -71,25 +66,26 @@ class ExtractFaceBiometricsJob implements ShouldQueue
             return;
         }
 
-        $http = Http::timeout(20);
-        $aiKey = (string) config('services.ai_server.key');
-        if (!empty($aiKey)) {
-            $http = $http->withHeaders(['X-API-Key' => $aiKey]);
-        }
+        $lbResponse = $loadBalancer->executeWithFailover(
+            function (string $nodeUrl, string $apiKey, int $timeout) use ($imageContents, $photoRelPath): array {
+                $http = Http::timeout($timeout);
+                if (!empty($apiKey)) {
+                    $http = $http->withHeaders(['X-API-Key' => $apiKey]);
+                }
 
-        $response = $http
-            ->attach('image', $imageContents, basename($photoRelPath))
-            ->post(rtrim($aiServerUrl, '/') . '/extract');
+                $response = $http
+                    ->attach('image', $imageContents, basename($photoRelPath))
+                    ->post(rtrim($nodeUrl, '/') . '/extract');
 
-        if (!$response->successful()) {
-            Log::error("ExtractFaceBiometricsJob failed for User #{$this->userId}", [
-                'status' => $response->status(),
-                'body'   => $response->body(),
-            ]);
-            throw new \RuntimeException("AI Server extraction failed with status {$response->status()}");
-        }
+                if (!$response->successful()) {
+                    throw new \RuntimeException("Node {$nodeUrl} extract returned HTTP {$response->status()}: " . $response->body());
+                }
 
-        $data = $response->json();
+                return $response->json();
+            }
+        );
+
+        $data = $lbResponse['result'];
         $updated = false;
 
         if (!empty($data['embedding_512d']) && is_array($data['embedding_512d'])) {

@@ -8,10 +8,11 @@ use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
- * เซอร์วิสตรวจสอบใบหน้าและอัตลักษณ์ผ่าน Python AI Server (Server-Authoritative)
- * ทำหน้าที่เป็นศูนย์กลางการสื่อสารระหว่าง Laravel Gateway และ Python Neural Engine
+ * เซอร์วิสตรวจสอบใบหน้าและอัตลักษณ์ผ่าน Python AI Cluster (Server-Authoritative)
+ * ผสานระบบ AI Load Balancer, Circuit Breaker, Health Checking, และ Automatic Failover
  */
 class FaceVerificationService
 {
@@ -19,11 +20,13 @@ class FaceVerificationService
     protected ?string $aiServerKey;
     protected int $fallbackThreshold = 3;
     protected int $timeoutSeconds = 8;
+    protected AiLoadBalancerService $loadBalancer;
 
-    public function __construct()
+    public function __construct(?AiLoadBalancerService $loadBalancer = null)
     {
-        $this->aiServerUrl = config('services.ai_server.url');
-        $this->aiServerKey = config('services.ai_server.key');
+        $this->loadBalancer = $loadBalancer ?? app(AiLoadBalancerService::class);
+        $this->aiServerUrl  = (string) config('services.ai_server.url');
+        $this->aiServerKey  = (string) config('services.ai_server.key');
     }
 
     /**
@@ -31,19 +34,8 @@ class FaceVerificationService
      *
      * @param  User   $user       ผู้ใช้ที่ต้องการตรวจสอบอัตลักษณ์
      * @param  string $imageData  ภาพถ่าย Base64 จากกล้องของอุปกรณ์
-     * @param  array  $options    ตัวเลือกเพิ่มเติม (เช่น timeout, priority)
-     * @return array{
-     *     success: bool,
-     *     is_match: bool,
-     *     score_percentage: float,
-     *     similarity?: float,
-     *     distance?: float,
-     *     liveness_passed: bool,
-     *     liveness_score?: float,
-     *     detector_used?: string,
-     *     processing_ms: int,
-     *     message?: string
-     * }
+     * @param  array<string, mixed>  $options    ตัวเลือกเพิ่มเติม
+     * @return array<string, mixed>
      */
     public function verifyFace(User $user, string $imageData, array $options = []): array
     {
@@ -54,93 +46,71 @@ class FaceVerificationService
             return $this->createErrorResponse('User has no registered face profile', $startTime);
         }
 
-        // 2. ตรวจสอบการตั้งค่า AI Server
-        if (empty($this->aiServerUrl)) {
-            return $this->createErrorResponse('AI Server URL not configured', $startTime, [
-                'error_type' => 'configuration',
+        // 2. ตรวจสอบว่ามี Node พร้อมใช้งานหรือไม่
+        $nodes = $this->loadBalancer->getHealthyNodes();
+        if (empty($nodes)) {
+            return $this->createErrorResponse('AI Server cluster unavailable', $startTime, [
+                'error_type' => 'server_unavailable',
             ]);
         }
 
-        // 3. ตรวจสอบสถานะการทำงานของ AI Server (Health Check)
-        $health = $this->checkServerHealth();
-        if (!$health['available']) {
-            return $this->createErrorResponse('AI Server unavailable', $startTime, [
-                'health_status' => $health,
-                'error_type'    => 'server_unavailable',
-            ]);
-        }
-
-        // 4. ตรวจสอบจำนวนความล้มเหลวต่อเนื่อง (Circuit Breaker)
-        $failureKey = "ai_server_failures_{$user->id}";
-        $consecutiveFailures = (int) Cache::get($failureKey, 0);
-        
-        if ($consecutiveFailures >= $this->fallbackThreshold) {
-            return $this->createErrorResponse('Too many recent failures', $startTime, [
-                'consecutive_failures' => $consecutiveFailures,
-                'error_type'           => 'failure_threshold',
-            ]);
-        }
-
-        // 5. แปลงและตรวจสอบขนาดไฟล์ภาพ (จำกัดไม่เกิน 2MB)
+        // 3. แปลงและตรวจสอบขนาดไฟล์ภาพ (จำกัดไม่เกิน 2MB)
         $imageDecoded = $this->decodeBase64Image($imageData);
         if (!$imageDecoded) {
             return $this->createErrorResponse('Invalid image data or file too large', $startTime);
         }
 
         try {
-            $httpRequest = Http::timeout($this->timeoutSeconds);
-            if (!empty($this->aiServerKey)) {
-                $httpRequest = $httpRequest->withHeaders(['X-API-Key' => $this->aiServerKey]);
-            }
+            // 4. ส่งคำขอไปยัง AI Load Balancer พร้อมระบบกระจายโหลดและ Automatic Failover
+            $lbResponse = $this->loadBalancer->executeWithFailover(
+                function (string $nodeUrl, string $apiKey, int $timeout) use ($imageDecoded, $user): array {
+                    $httpRequest = Http::timeout($timeout);
+                    if (!empty($apiKey)) {
+                        $httpRequest = $httpRequest->withHeaders(['X-API-Key' => $apiKey]);
+                    }
 
-            // 6. ส่งรูปภาพไปยัง Python AI Server (/verify) เพื่อทำ Detection, Liveness, Embedding, Similarity
-            $response = $httpRequest
-                ->attach('image', $imageDecoded, 'frame.jpg')
-                ->post(rtrim($this->aiServerUrl, '/') . '/verify', [
-                    'known_embedding' => json_encode($user->face_descriptor),
-                    'check_liveness'  => 'true',
-                ]);
+                    $response = $httpRequest
+                        ->attach('image', $imageDecoded, 'frame.jpg')
+                        ->post(rtrim($nodeUrl, '/') . '/verify', [
+                            'known_embedding' => json_encode($user->face_descriptor),
+                            'check_liveness'  => 'true',
+                        ]);
 
+                    if (!$response->successful()) {
+                        throw new \RuntimeException("Node {$nodeUrl} returned HTTP {$response->status()}: " . $response->body());
+                    }
+
+                    return $response->json();
+                }
+            );
+
+            $result         = $lbResponse['result'];
+            $nodeUsed       = $lbResponse['node_used'];
             $processingTime = (int) round((microtime(true) - $startTime) * 1000);
 
-            if ($response->successful()) {
-                // รีเซ็ตตัวนับข้อผิดพลาดเมื่อสำเร็จ
-                Cache::forget($failureKey);
-                
-                $result = $response->json();
-                
-                if ($processingTime > 4000) {
-                    Log::warning("Slow Face Verification: {$processingTime}ms for user {$user->id}");
-                }
-
-                $isMatch        = (bool) ($result['is_match'] ?? false);
-                $score          = (float) ($result['score_percentage'] ?? 0.0);
-                $livenessPassed = (bool) ($result['liveness_passed'] ?? ($result['liveness']['passed'] ?? true));
-
-                return array_merge($result, [
-                    'success'          => true,
-                    'is_match'         => $isMatch,
-                    'score_percentage' => $score,
-                    'liveness_passed'  => $livenessPassed,
-                    'processing_ms'    => $processingTime,
-                    'server_ms'        => $result['processing_ms'] ?? 0,
-                    'network_ms'       => max(0, $processingTime - ((int) ($result['processing_ms'] ?? 0))),
-                ]);
+            if ($processingTime > 4000) {
+                Log::warning("Slow Face Verification: {$processingTime}ms for user {$user->id} on node {$nodeUsed}");
             }
 
-            $this->recordFailure($failureKey);
-            
-            return $this->createErrorResponse('AI Server processing error', $startTime, [
-                'http_status' => $response->status(),
-                'error_type'  => 'server_error',
+            $isMatch        = (bool) ($result['is_match'] ?? false);
+            $score          = (float) ($result['score_percentage'] ?? 0.0);
+            $livenessPassed = (bool) ($result['liveness_passed'] ?? ($result['liveness']['passed'] ?? true));
+
+            return array_merge($result, [
+                'success'          => true,
+                'is_match'         => $isMatch,
+                'score_percentage' => $score,
+                'liveness_passed'  => $livenessPassed,
+                'processing_ms'    => $processingTime,
+                'server_ms'        => $result['processing_ms'] ?? 0,
+                'network_ms'       => max(0, $processingTime - ((int) ($result['processing_ms'] ?? 0))),
+                'node_used'        => $nodeUsed,
+                'failovers'        => $lbResponse['failovers'],
             ]);
+        } catch (Throwable $e) {
+            Log::error("Python Face Verification cluster error for user {$user->id}: " . $e->getMessage());
 
-        } catch (\Throwable $e) {
-            $this->recordFailure($failureKey);
-            
-            Log::error("Python Face Verification error for user {$user->id}: " . $e->getMessage());
-
-            return $this->createErrorResponse('AI Server connection failed', $startTime, [
+            return $this->createErrorResponse('AI Server cluster connection failed: ' . $e->getMessage(), $startTime, [
                 'error_type' => get_class($e),
                 'exception'  => true,
             ]);
@@ -148,72 +118,120 @@ class FaceVerificationService
     }
 
     /**
-     * ตรวจสอบสถานะการเชื่อมต่อ AI Server พร้อมระบบแคช (30 วินาที)
+     * ตรวจสอบสถานะการเชื่อมต่อ AI Server Cluster (พร้อม Cache 10 วินาที)
+     *
+     * @return array<string, mixed>
      */
     public function checkServerHealth(): array
     {
-        $cacheKey = 'ai_server_health_status';
-        
-        $cached = Cache::get($cacheKey);
-        if (is_array($cached)) {
-            return $cached;
-        }
+        $allHealth = $this->loadBalancer->checkAllNodesHealth();
+        $availableNodes = array_filter($allHealth, fn(array $n) => $n['available'] === true);
 
-        if (empty($this->aiServerUrl)) {
-            $status = [
-                'available'  => false,
-                'error'      => 'AI Server URL not configured',
-                'checked_at' => time(),
+        if (!empty($availableNodes)) {
+            $first = reset($availableNodes);
+            return [
+                'available'        => true,
+                'status'           => 'healthy',
+                'nodes_healthy'    => count($availableNodes),
+                'total_nodes'      => count($allHealth),
+                'models'           => $first['models'] ?? ['insightface' => true, 'yolov8' => true, 'liveness' => true],
+                'pipeline'         => 'insightface+scrfd+yolov8',
+                'response_time_ms' => $first['latency_ms'] ?? 0,
+                'checked_at'       => time(),
+                'nodes'            => $allHealth,
             ];
-        } else {
-            try {
-                $httpHealth = Http::timeout(3);
-                if (!empty($this->aiServerKey)) {
-                    $httpHealth = $httpHealth->withHeaders(['X-API-Key' => $this->aiServerKey]);
-                }
-                $response = $httpHealth->get(rtrim($this->aiServerUrl, '/') . '/health');
-                
-                if ($response->successful()) {
-                    $healthData = $response->json();
-                    $status = [
-                        'available'        => true,
-                        'status'           => $healthData['status'] ?? 'healthy',
-                        'models'           => $healthData['models'] ?? [],
-                        'pipeline'         => $healthData['pipeline'] ?? 'unknown',
-                        'response_time_ms' => round(($response->transferStats?->getTransferTime() ?? 0) * 1000),
-                        'checked_at'       => time(),
-                    ];
-                } else {
-                    $status = [
-                        'available'  => false,
-                        'error'      => 'HTTP ' . $response->status(),
-                        'checked_at' => time(),
-                    ];
-                }
-            } catch (\Throwable $e) {
-                $status = [
-                    'available'      => false,
-                    'error'          => $e->getMessage(),
-                    'exception_type' => get_class($e),
-                    'checked_at'     => time(),
-                ];
-            }
         }
 
-        Cache::put($cacheKey, $status, 30);
-        
-        return $status;
+        return [
+            'available'     => false,
+            'status'        => 'unavailable',
+            'nodes_healthy' => 0,
+            'total_nodes'   => count($allHealth),
+            'checked_at'    => time(),
+            'nodes'         => $allHealth,
+        ];
     }
 
     /**
-     * บันทึกความล้มเหลวของการเรียกใช้ AI Server
+     * ตรวจสอบและดึงข้อมูล Face Encodings (512D + 128D) อัตโนมัติจากภาพโปรไฟล์ผ่าน Load Balancer
      */
-    private function recordFailure(string $failureKey): void
+    public function ensureFaceEncodings(User $user): void
     {
-        $failures = ((int) Cache::get($failureKey, 0)) + 1;
-        Cache::put($failureKey, $failures, 300);
-        
-        Log::warning("AI Server failure count for key {$failureKey}: {$failures}");
+        if (($user->face_descriptor && $user->face_descriptor_js) || empty($user->profile_photo)) {
+            return;
+        }
+
+        $photoPath = storage_path('app/public/' . $user->profile_photo);
+        if (!file_exists($photoPath)) {
+            return;
+        }
+
+        try {
+            $imageBytes = file_get_contents($photoPath);
+            if (!$imageBytes) {
+                return;
+            }
+
+            $lbResponse = $this->loadBalancer->executeWithFailover(
+                function (string $nodeUrl, string $apiKey, int $timeout) use ($imageBytes, $photoPath): array {
+                    $httpReq = Http::timeout($timeout);
+                    if (!empty($apiKey)) {
+                        $httpReq = $httpReq->withHeaders(['X-API-Key' => $apiKey]);
+                    }
+
+                    $response = $httpReq
+                        ->attach('image', $imageBytes, basename($photoPath))
+                        ->post(rtrim($nodeUrl, '/') . '/extract');
+
+                    if (!$response->successful()) {
+                        throw new \RuntimeException("Extract failed on {$nodeUrl} with HTTP {$response->status()}");
+                    }
+
+                    return $response->json();
+                }
+            );
+
+            $aiResult = $lbResponse['result'];
+            $updateData = [];
+
+            if (!$user->face_descriptor && !empty($aiResult['embedding_512d'])) {
+                $updateData['face_descriptor'] = $aiResult['embedding_512d'];
+            } elseif (!$user->face_descriptor && !empty($aiResult['embedding'])) {
+                $updateData['face_descriptor'] = $aiResult['embedding'];
+            }
+
+            if (!$user->face_descriptor_js && !empty($aiResult['embedding_128d'])) {
+                $updateData['face_descriptor_js'] = $aiResult['embedding_128d'];
+            }
+
+            if (!empty($updateData)) {
+                $user->update($updateData);
+                Log::info("FaceVerificationService: Encodings auto-extracted for user {$user->id} on {$lbResponse['node_used']}");
+            }
+        } catch (Throwable $e) {
+            Log::warning("Auto-extraction failed for user {$user->id}: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * ดึงข้อมูล Metrics และประสิทธิภาพของระบบ AI Cluster
+     *
+     * @return array<string, mixed>
+     */
+    public function getMetrics(): array
+    {
+        $health = $this->checkServerHealth();
+
+        return [
+            'ai_cluster'          => $health,
+            'system'              => [
+                'memory_usage' => memory_get_usage(true),
+                'peak_memory'  => memory_get_peak_usage(true),
+                'timestamp'    => time(),
+            ],
+            'timeout_seconds'     => $this->timeoutSeconds,
+            'fallback_threshold'  => $this->fallbackThreshold,
+        ];
     }
 
     /**
@@ -227,16 +245,18 @@ class FaceVerificationService
         }
 
         $decoded = base64_decode(str_replace(' ', '+', $imageData), true);
-        
         if ($decoded === false || strlen($decoded) > 2097152) { // 2MB limit
             return null;
         }
-        
+
         return $decoded;
     }
 
     /**
      * สร้างโครงสร้าง Error Response มาตรฐาน
+     *
+     * @param array<string, mixed> $additional
+     * @return array<string, mixed>
      */
     private function createErrorResponse(string $message, float $startTime, array $additional = []): array
     {
@@ -249,78 +269,5 @@ class FaceVerificationService
             'processing_ms'    => (int) round((microtime(true) - $startTime) * 1000),
             'timestamp'        => time(),
         ], $additional);
-    }
-
-    /**
-     * ตรวจสอบและดึงข้อมูล Face Encodings (512D + 128D) อัตโนมัติจากภาพโปรไฟล์หากยังไม่มีในระบบ
-     */
-    public function ensureFaceEncodings(User $user): void
-    {
-        if (($user->face_descriptor && $user->face_descriptor_js) || empty($user->profile_photo)) {
-            return;
-        }
-
-        $photoPath = storage_path('app/public/' . $user->profile_photo);
-        if (!file_exists($photoPath) || empty($this->aiServerUrl)) {
-            return;
-        }
-
-        try {
-            Log::info("Auto-extracting missing face encodings for user {$user->id}");
-
-            $httpReq = Http::timeout(10);
-            if (!empty($this->aiServerKey)) {
-                $httpReq = $httpReq->withHeaders(['X-API-Key' => $this->aiServerKey]);
-            }
-
-            $response = $httpReq
-                ->attach('image', file_get_contents($photoPath), basename($photoPath))
-                ->post(rtrim($this->aiServerUrl, '/') . '/extract');
-
-            if ($response->successful()) {
-                $aiResult = $response->json();
-                $updateData = [];
-                $extracted = [];
-
-                if (!$user->face_descriptor && !empty($aiResult['embedding_512d'])) {
-                    $updateData['face_descriptor'] = $aiResult['embedding_512d'];
-                    $extracted[] = '512D';
-                }
-                if (!$user->face_descriptor_js && !empty($aiResult['embedding_128d'])) {
-                    $updateData['face_descriptor_js'] = $aiResult['embedding_128d'];
-                    $extracted[] = '128D';
-                }
-                if (!$user->face_descriptor && empty($updateData['face_descriptor']) && !empty($aiResult['embedding'])) {
-                    $updateData['face_descriptor'] = $aiResult['embedding'];
-                    $extracted[] = '512D (legacy)';
-                }
-
-                if (!empty($updateData)) {
-                    $user->update($updateData);
-                    Log::info("Auto-extracted " . implode(' + ', $extracted) . " for user {$user->id}");
-                }
-            }
-        } catch (\Throwable $e) {
-            Log::warning("Auto-extraction failed for user {$user->id}: " . $e->getMessage());
-        }
-    }
-
-    /**
-     * ดึงข้อมูล Metrics และประสิทธิภาพของระบบ AI
-     */
-    public function getMetrics(): array
-    {
-        $health = $this->checkServerHealth();
-        
-        return [
-            'ai_server' => $health,
-            'system'    => [
-                'memory_usage' => memory_get_usage(true),
-                'peak_memory'  => memory_get_peak_usage(true),
-                'timestamp'    => time(),
-            ],
-            'timeout_seconds'    => $this->timeoutSeconds,
-            'fallback_threshold' => $this->fallbackThreshold,
-        ];
     }
 }
