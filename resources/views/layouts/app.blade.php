@@ -548,20 +548,19 @@
         }
         window.showChatView = showChatView;
 
-        function formatReadStatus(readAt, isRead, readStatus) {
-            if (readStatus && readStatus !== 'ส่งแล้ว') {
-                return readStatus.startsWith('✓') ? readStatus : '✓✓ ' + readStatus;
-            }
+        function formatReadStatus(readAt, isRead) {
             if (!readAt && !isRead) return '✓ ส่งแล้ว';
             if (!readAt) return '✓✓ เพิ่งอ่าน';
 
             var readTime = new Date(readAt);
+            if (isNaN(readTime.getTime())) return '✓✓ เพิ่งอ่าน';
+
             var now = new Date();
-            var diffSec = Math.max(0, Math.floor((now - readTime) / 1000));
+            var diffSec = Math.max(0, Math.floor((now.getTime() - readTime.getTime()) / 1000));
             var diffMin = Math.floor(diffSec / 60);
             var diffHours = Math.floor(diffMin / 60);
 
-            if (diffSec < 90) {
+            if (diffSec < 60) {
                 return '✓✓ เพิ่งอ่าน';
             } else if (diffMin < 60) {
                 return '✓✓ เห็นเมื่อ ' + diffMin + ' นาทีที่แล้ว';
@@ -571,6 +570,16 @@
                 return '✓✓ เห็นเมื่อ ' + readTime.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
             }
         }
+
+        // Live Dynamic Ticker - automatically updates minutes elapsed every 10s
+        setInterval(function() {
+            document.querySelectorAll('.cf-read-status[data-read-at]').forEach(function(el) {
+                var readAt = el.getAttribute('data-read-at');
+                if (readAt) {
+                    el.textContent = formatReadStatus(readAt, true);
+                }
+            });
+        }, 10000);
 
         function playChatChime() {
             try {
@@ -632,8 +641,10 @@
                 })
                 .listen('.MessagesRead', function(e) {
                     if (String(e.reader_id) === String(USER_ID)) return;
+                    var readAt = e.read_at || new Date().toISOString();
                     document.querySelectorAll('.cf-read-status').forEach(function(el) {
-                        el.textContent = '✓✓ เพิ่งอ่าน';
+                        el.setAttribute('data-read-at', readAt);
+                        el.textContent = formatReadStatus(readAt, true);
                         el.style.color = '#10b981';
                         setTimeout(function(){ el.style.color = '#f97316'; }, 2000);
                     });
@@ -843,10 +854,13 @@
             statusDiv.innerHTML = '<span style="font-size:.6rem;color:#94a3b8;">' + timeStr + '</span>';
             
             if (mine && isLastMine) {
-                var readText = isTemp ? 'กำลังส่ง...' : formatReadStatus(msg.read_at, msg.is_read, msg.read_status);
+                var readText = isTemp ? 'กำลังส่ง...' : formatReadStatus(msg.read_at, msg.is_read);
                 var statusText = document.createElement('span');
                 statusText.id = 'cf-status-' + msg.id;
                 statusText.className = 'cf-read-status';
+                if (msg.read_at) {
+                    statusText.setAttribute('data-read-at', msg.read_at);
+                }
                 statusText.style.cssText = 'font-size:.6rem;color:' + (isTemp ? '#94a3b8' : '#f97316') + ';';
                 statusText.textContent = readText;
                 statusDiv.appendChild(statusText);
@@ -1048,8 +1062,10 @@
                 })
                 .listen('.MessagesRead', function(e) {
                     if (String(e.reader_id) === String(USER_ID)) return;
+                    var readAt = e.read_at || new Date().toISOString();
                     document.querySelectorAll('.cf-read-status').forEach(function(el) {
-                        el.textContent = '✓✓ เพิ่งอ่าน';
+                        el.setAttribute('data-read-at', readAt);
+                        el.textContent = formatReadStatus(readAt, true);
                     });
                 })
                 .listen('.ChatDeleted', function(e) {

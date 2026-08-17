@@ -277,7 +277,7 @@
                     <div style="display:flex;align-items:center;gap:0.35rem;margin-top:0.25rem;">
                         <span style="font-size:.65rem;color:#94a3b8;">{{ $msg->created_at?->format('H:i') }}</span>
                         @if($isMine && $msg->id == $lastMineMsgId)
-                            <span id="status-{{ $msg->id }}" class="admin-msg-read-status" style="font-size:0.65rem;color:#ea580c;">{{ $readStatusText }}</span>
+                            <span id="status-{{ $msg->id }}" class="admin-msg-read-status" @if($studentReadAt) data-read-at="{{ $studentReadAt->toISOString() }}" @endif style="font-size:0.65rem;color:#ea580c;">{{ $readStatusText }}</span>
                         @endif
                     </div>
                 </div>
@@ -443,20 +443,19 @@ document.addEventListener('DOMContentLoaded', function () {
         return safe.replace(urlRegex, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="${cls}">${url}</a>`);
     }
 
-    function formatReadStatus(readAt, isRead, readStatus) {
-        if (readStatus && readStatus !== 'ส่งแล้ว') {
-            return readStatus.startsWith('✓') ? readStatus : '✓✓ ' + readStatus;
-        }
+    function formatReadStatus(readAt, isRead) {
         if (!readAt && !isRead) return '✓ ส่งแล้ว';
         if (!readAt) return '✓✓ เพิ่งอ่าน';
 
         const readTime = new Date(readAt);
+        if (isNaN(readTime.getTime())) return '✓✓ เพิ่งอ่าน';
+
         const now = new Date();
-        const diffSec = Math.max(0, Math.floor((now - readTime) / 1000));
+        const diffSec = Math.max(0, Math.floor((now.getTime() - readTime.getTime()) / 1000));
         const diffMin = Math.floor(diffSec / 60);
         const diffHours = Math.floor(diffMin / 60);
 
-        if (diffSec < 90) {
+        if (diffSec < 60) {
             return '✓✓ เพิ่งอ่าน';
         } else if (diffMin < 60) {
             return `✓✓ เห็นเมื่อ ${diffMin} นาทีที่แล้ว`;
@@ -466,6 +465,16 @@ document.addEventListener('DOMContentLoaded', function () {
             return `✓✓ เห็นเมื่อ ${readTime.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}`;
         }
     }
+
+    // Live Dynamic Ticker
+    setInterval(function() {
+        document.querySelectorAll('.admin-msg-read-status[data-read-at]').forEach(function(el) {
+            const readAt = el.getAttribute('data-read-at');
+            if (readAt) {
+                el.textContent = formatReadStatus(readAt, true);
+            }
+        });
+    }, 10000);
 
     function renderMessage(msg, isMine) {
         const noMsg = document.getElementById('noMsg');
@@ -519,11 +528,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const isTemp = String(msg.id).startsWith('tmp-');
-        const readStatusText = isTemp ? 'กำลังส่ง...' : formatReadStatus(msg.read_at, msg.is_read, msg.read_status);
+        const readStatusText = isTemp ? 'กำลังส่ง...' : formatReadStatus(msg.read_at, msg.is_read);
 
         if (isMine) {
             document.querySelectorAll('.admin-msg-read-status').forEach(el => el.remove());
         }
+
+        const dataReadAtAttr = msg.read_at ? `data-read-at="${msg.read_at}"` : '';
 
         wrapper.innerHTML = `
             ${!isMine ? `<div style="position:relative;flex-shrink:0;">${avatarHtml}</div>` : ''}
@@ -537,7 +548,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
                 <div style="display:flex;align-items:center;gap:0.35rem;margin-top:0.25rem;">
                     <span style="font-size:.65rem;color:#94a3b8;">${timeStr}</span>
-                    ${isMine ? `<span id="status-${msg.id}" class="admin-msg-read-status" style="font-size:0.65rem;color:${isTemp ? '#94a3b8' : '#ea580c'};">${readStatusText}</span>` : ''}
+                    ${isMine ? `<span id="status-${msg.id}" class="admin-msg-read-status" ${dataReadAtAttr} style="font-size:0.65rem;color:${isTemp ? '#94a3b8' : '#ea580c'};">${readStatusText}</span>` : ''}
                 </div>
             </div>
         `;
@@ -701,9 +712,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 })
                 .listen('.MessagesRead', function (data) {
                     if (String(data.reader_id) === String(myId)) return;
+                    const readAt = data.read_at || new Date().toISOString();
                     const statusEls = document.querySelectorAll('.admin-msg-read-status');
                     statusEls.forEach(el => {
-                        el.textContent = '✓✓ เพิ่งอ่าน';
+                        el.setAttribute('data-read-at', readAt);
+                        el.textContent = formatReadStatus(readAt, true);
                         el.style.color = '#10b981';
                         setTimeout(() => { el.style.color = '#ea580c'; }, 2000);
                     });
@@ -741,9 +754,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 .listen('.MessagesRead', function (data) {
                     if (String(data.reader_id) === String(myId)) return;
                     if (String(data.room_id) === String(roomID)) {
+                        const readAt = data.read_at || new Date().toISOString();
                         const statusEls = document.querySelectorAll('.admin-msg-read-status');
                         statusEls.forEach(el => {
-                            el.textContent = '✓✓ เพิ่งอ่าน';
+                            el.setAttribute('data-read-at', readAt);
+                            el.textContent = formatReadStatus(readAt, true);
                         });
                     }
                 });
