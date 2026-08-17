@@ -662,97 +662,97 @@ nav[role="navigation"] span[aria-current="page"] span { background: #ea580c; col
 .recommend-item.active { color: #ea580c; background: #fff7ed; }
 .recommend-item svg { color: #f97316; flex-shrink: 0; }
 
-/* ── Auto Dark Mode (Harmonious Slate/Navy Theme) ── */
+/* ── Auto Dark Mode (True Neutral Dark Zinc / Pure Charcoal Theme - 0% Blue) ── */
 @media (prefers-color-scheme: dark) {
-    body { background: #0f172a !important; color: #f8fafc !important; }
+    body { background: #121214 !important; color: #f4f4f5 !important; }
     .card, .navbar, .bottom-nav, .admin-mobile-header { 
-        background: #1e293b !important; 
-        border-color: rgba(255, 255, 255, 0.08) !important; 
-        color: #f8fafc !important; 
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
+        background: #1c1c1f !important; 
+        border-color: #27272a !important; 
+        color: #f4f4f5 !important; 
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
     }
     .card-header { 
-        background: #1e293b !important; 
-        border-bottom-color: rgba(255, 255, 255, 0.08) !important; 
-        color: #f8fafc !important; 
+        background: #1c1c1f !important; 
+        border-bottom-color: #27272a !important; 
+        color: #f4f4f5 !important; 
     }
     .card-body { 
         background: transparent !important; 
-        color: #f8fafc !important; 
+        color: #f4f4f5 !important; 
     }
-    .text-muted { color: #94a3b8 !important; }
+    .text-muted { color: #a1a1aa !important; }
     .form-control, .form-control:focus { 
-        background: #0f172a !important; 
-        border-color: #334155 !important; 
-        color: #f8fafc !important; 
+        background: #141416 !important; 
+        border-color: #27272a !important; 
+        color: #f4f4f5 !important; 
     }
     table th { 
-        background: #1e293b !important; 
-        color: #f8fafc !important; 
-        border-bottom-color: rgba(255, 255, 255, 0.08) !important; 
+        background: #1c1c1f !important; 
+        color: #f4f4f5 !important; 
+        border-bottom-color: #27272a !important; 
     }
     table td { 
-        border-bottom-color: rgba(255, 255, 255, 0.06) !important; 
-        color: #e2e8f0 !important; 
+        border-bottom-color: rgba(255, 255, 255, 0.05) !important; 
+        color: #e4e4e7 !important; 
     }
     .responsive-table tbody tr { 
-        background: #1e293b !important; 
-        border-color: rgba(255, 255, 255, 0.08) !important; 
+        background: #1c1c1f !important; 
+        border-color: #27272a !important; 
     }
     .responsive-table tbody tr:hover { 
-        background: #243248 !important; 
+        background: #242428 !important; 
     }
     .responsive-table td { 
-        border-bottom-color: rgba(255, 255, 255, 0.06) !important; 
+        border-bottom-color: rgba(255, 255, 255, 0.05) !important; 
     }
     .btn-outline { 
-        border-color: #334155 !important; 
-        color: #e2e8f0 !important; 
+        border-color: #27272a !important; 
+        color: #e4e4e7 !important; 
         background: rgba(255, 255, 255, 0.03) !important;
     }
     .btn-outline:hover { 
         background: rgba(255, 255, 255, 0.08) !important; 
-        border-color: #475569 !important;
+        border-color: #3f3f46 !important;
         color: #fff !important;
     }
     .badge-gray { 
-        background: #334155 !important; 
-        color: #cbd5e1 !important; 
+        background: #27272a !important; 
+        color: #d4d4d8 !important; 
     }
     .navbar-center a, .navbar-user { 
-        color: #94a3b8 !important; 
-        border-color: rgba(255, 255, 255, 0.08) !important; 
+        color: #a1a1aa !important; 
+        border-color: #27272a !important; 
     }
     .navbar-center a:hover, .navbar-center a.active { color: #ea580c !important; }
     .bottom-nav { 
-        background: #111827 !important; 
-        border-top-color: rgba(255, 255, 255, 0.08) !important; 
+        background: #18181b !important; 
+        border-top-color: #27272a !important; 
     }
-    .bottom-nav-item { color: #94a3b8 !important; }
+    .bottom-nav-item { color: #a1a1aa !important; }
     .bottom-nav-item:hover, .bottom-nav-item.active { color: #ea580c !important; }
     
-    .sb-shell { background: #0f172a !important; }
-    .admin-topbar, .sb-sidebar { 
-        background: #111827 !important; 
-        border-color: rgba(255, 255, 255, 0.08) !important; 
-        color: #f8fafc !important; 
+    .sb-shell { background: #121214 !important; }
+    .admin-topbar, .sb-sidebar, .admin-brand-box { 
+        background: #18181b !important; 
+        border-color: #27272a !important; 
+        color: #f4f4f5 !important; 
     }
 
-    /* Specific overrides for hardcoded styles to match Slate/Navy palette */
-    [style*="color:#1e293b"], [style*="color: #1e293b"], [style*="color:#334155"], [style*="color: #334155"], [style*="color:#0f172a"], [style*="color: #0f172a"] { color: #f8fafc !important; }
-    [style*="color:#64748b"], [style*="color: #64748b"], [style*="color:#475569"], [style*="color: #475569"] { color: #94a3b8 !important; }
+    /* Specific overrides for hardcoded styles to match Neutral Zinc palette */
+    [style*="color:#1e293b"], [style*="color: #1e293b"], [style*="color:#334155"], [style*="color: #334155"], [style*="color:#0f172a"], [style*="color: #0f172a"], [style*="color:#111827"] { color: #f4f4f5 !important; }
+    [style*="color:#64748b"], [style*="color: #64748b"], [style*="color:#475569"], [style*="color: #475569"], [style*="color:#94a3b8"] { color: #a1a1aa !important; }
     
     [style*="background:#fff"], [style*="background: #fff"], [style*="background:#ffffff"], [style*="background: #ffffff"], [style*="background-color:#fff"], [style*="background-color: #fff"] { 
-        background: #1e293b !important; 
+        background: #1c1c1f !important; 
     }
-    [style*="background:#fafbfc"], [style*="background: #fafbfc"], [style*="background:#f8fafc"], [style*="background: #f8fafc"], [style*="background:#f1f5f9"], [style*="background: #f1f5f9"] { 
-        background: #131c2e !important; 
+    [style*="background:#fafbfc"], [style*="background: #fafbfc"], [style*="background:#f8fafc"], [style*="background: #f8fafc"], [style*="background:#f1f5f9"], [style*="background: #f1f5f9"], [style*="background:#131c2e"] { 
+        background: #141416 !important; 
     }
     [style*="border:1px solid #e2e8f0"], [style*="border: 1px solid #e2e8f0"], [style*="border: 1px solid #cbd5e1"], [style*="border:1px solid #cbd5e1"], [style*="border-bottom:1px solid #e2e8f0"], [style*="border-bottom: 1px solid #e2e8f0"], [style*="border-bottom:1px solid #f1f5f9"], [style*="border-bottom: 1px solid #f1f5f9"] { 
-        border-color: rgba(255, 255, 255, 0.08) !important; 
+        border-color: #27272a !important; 
     }
     [style*="border: 1px solid #f1f5f9"], [style*="border:1px solid #f1f5f9"] {
-        border-color: rgba(255, 255, 255, 0.06) !important;
+        border-color: rgba(255, 255, 255, 0.05) !important; 
     }
 
     /* Cards: full orange gradient in dark mode, white text for readability */

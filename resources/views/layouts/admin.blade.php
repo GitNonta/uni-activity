@@ -26,7 +26,7 @@
 *, *::before, *::after { box-sizing: border-box; }
 
 /* ════════════════════════════
-   UNIFIED SEAMLESS TOP HEADER (Full Width)
+   UNIFIED SEAMLESS TOP HEADER (Full Width - Neutral Dark Zinc)
    ════════════════════════════ */
 .admin-topbar {
     position: fixed;
@@ -34,14 +34,14 @@
     left: 0;
     right: 0;
     height: 64px;
-    background: #111827 !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    background: #18181b !important;
+    border-bottom: 1px solid #27272a !important;
     display: flex;
     align-items: stretch;
     justify-content: space-between;
     padding: 0 20px 0 0;
     z-index: 500;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     box-sizing: border-box;
 }
 
@@ -58,8 +58,8 @@
     gap: 12px;
     padding: 0 20px;
     text-decoration: none;
-    background: #111827 !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    background: #18181b !important;
+    border-right: 1px solid #27272a;
     transition: width .3s cubic-bezier(.4,0,.2,1);
     flex-shrink: 0;
     box-sizing: border-box;
@@ -94,7 +94,7 @@
     margin: 0;
     font-size: 1.05rem;
     font-weight: 700;
-    color: #f8fafc;
+    color: #f4f4f5;
     letter-spacing: -0.015em;
     display: flex;
     align-items: center;
@@ -107,10 +107,10 @@
 }
 
 .sb-toggle-btn {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: #27272a;
+    border: 1px solid #3f3f46;
     cursor: pointer;
-    color: #cbd5e1;
+    color: #d4d4d8;
     width: 36px;
     height: 36px;
     display: flex;
@@ -131,46 +131,46 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: #27272a;
+    border: 1px solid #3f3f46;
     border-radius: 8px;
     height: 36px;
     padding: 0 14px;
     font-size: 0.825rem;
-    color: #94a3b8;
+    color: #a1a1aa;
     cursor: pointer;
     transition: all .2s;
     min-width: 220px;
     justify-content: space-between;
 }
 .sb-search-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.22);
-    color: #f1f5f9;
+    background: #3f3f46;
+    border-color: #52525b;
+    color: #f4f4f5;
 }
 .sb-search-btn kbd {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: #18181b;
+    border: 1px solid #3f3f46;
     border-radius: 4px;
     padding: 1px 5px;
     font-size: 0.725rem;
     font-family: monospace;
-    color: #cbd5e1;
+    color: #d4d4d8;
 }
 
 /* ════════════════════════════
-   SIDEBAR & CONTENT
+   SIDEBAR & CONTENT (Neutral Dark Zinc)
    ════════════════════════════ */
 .sb-shell { 
     padding-top: 64px;
     display: flex; 
     min-height: 100vh; 
-    background: #f8fafc; 
+    background: #121214; 
 }
 
 .sb-sidebar { 
     width: 260px; 
-    background: #111827 !important; 
+    background: #18181b !important; 
     display: flex; 
     flex-direction: column; 
     position: fixed; 
@@ -180,16 +180,16 @@
     z-index: 300; 
     transition: all .3s cubic-bezier(.4,0,.2,1); 
     overflow: hidden;
-    border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
-    box-shadow: 4px 0 24px rgba(0,0,0,0.05);
+    border-right: 1px solid #27272a !important;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.2);
 }
 .sb-sidebar.collapsed { width: 80px; }
 
 /* Custom Slim Scrollbar */
 .sb-nav::-webkit-scrollbar { width: 5px; }
 .sb-nav::-webkit-scrollbar-track { background: transparent; }
-.sb-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-.sb-nav::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+.sb-nav::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
+.sb-nav::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
 
 .sb-nav { 
     flex: 1; 
@@ -204,7 +204,7 @@
 .sb-section-label { 
     font-size: 10px; 
     font-weight: 700; 
-    color: #4b5563; 
+    color: #71717a; 
     text-transform: uppercase; 
     letter-spacing: 0.1em;
     padding: 12px 12px 6px; 
@@ -216,7 +216,7 @@
     gap: 12px; 
     padding: 11px 14px; 
     border-radius: 10px; 
-    color: #9ca3af; 
+    color: #a1a1aa; 
     font-size: 14px; 
     font-weight: 500; 
     text-decoration: none; 

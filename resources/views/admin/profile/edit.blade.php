@@ -5,10 +5,10 @@
 <div style="display: flex; flex-direction: column; gap: 1.5rem; width: 100%; max-width: 100%;">
 
     {{-- ── 1. Executive Identity Banner ────────────────────────────────── --}}
-    <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 16px; padding: 1.75rem 2rem; color: #fff; box-shadow: 0 4px 20px -4px rgba(15, 23, 42, 0.25); position: relative; overflow: hidden;">
+    <div style="background: linear-gradient(135deg, #27272a 0%, #18181b 100%); border-radius: 16px; padding: 1.75rem 2rem; color: #fff; box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.3); border: 1px solid #3f3f46; position: relative; overflow: hidden;">
         {{-- Background Geometric Accents --}}
         <div style="position: absolute; right: -20px; top: -20px; width: 240px; height: 240px; background: radial-gradient(circle, rgba(234, 88, 12, 0.18) 0%, rgba(234, 88, 12, 0) 70%); border-radius: 50%; pointer-events: none;"></div>
-        <div style="position: absolute; right: 220px; bottom: -50px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, rgba(99, 102, 241, 0) 70%); border-radius: 50%; pointer-events: none;"></div>
+        <div style="position: absolute; right: 220px; bottom: -50px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(249, 115, 22, 0.12) 0%, rgba(249, 115, 22, 0) 70%); border-radius: 50%; pointer-events: none;"></div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem; position: relative; z-index: 1;">
             <div style="display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;">
@@ -28,7 +28,7 @@
                     </label>
 
                     {{-- Camera Badge on Bottom-Right Edge --}}
-                    <label for="profilePhotoInput" style="position: absolute; bottom: -2px; right: -2px; width: 28px; height: 28px; background: #ea580c; border: 2.5px solid #1e293b; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: transform 0.15s, background 0.15s; z-index: 2;" title="เปลี่ยนรูปโปรไฟล์" onmouseenter="this.style.transform='scale(1.15)'; this.style.background='#c2410c';" onmouseleave="this.style.transform='scale(1)'; this.style.background='#ea580c';">
+                    <label for="profilePhotoInput" style="position: absolute; bottom: -2px; right: -2px; width: 28px; height: 28px; background: #ea580c; border: 2.5px solid #27272a; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: transform 0.15s, background 0.15s; z-index: 2;" title="เปลี่ยนรูปโปรไฟล์" onmouseenter="this.style.transform='scale(1.15)'; this.style.background='#c2410c';" onmouseleave="this.style.transform='scale(1)'; this.style.background='#ea580c';">
                         <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>
                     </label>
 
