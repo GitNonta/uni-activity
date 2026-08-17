@@ -208,8 +208,9 @@ class LoginOtpDeduplicationTest extends TestCase
     public function test_no_hardcoded_student_or_staff_bypass_exists(): void
     {
         Mail::fake();
+        config(['auth.otp_bypass_ids' => []]); // Ensure no bypass configured
 
-        // Create student with ID that previously had bypass
+        // Create student with ID that previously had hardcoded bypass
         $student = User::factory()->create([
             'student_id' => '6710886217',
             'email'      => 'nontawat2546.2546@gmail.com',
@@ -225,5 +226,27 @@ class LoginOtpDeduplicationTest extends TestCase
         $response->assertRedirect(route('login.otp.show'));
         $this->assertGuest();
         Mail::assertSent(LoginOtpMail::class, 1);
+    }
+
+    public function test_otp_bypass_works_dynamically_when_configured_in_env_config(): void
+    {
+        Mail::fake();
+        config(['auth.otp_bypass_ids' => ['6710886217', 'admin_bypass@pkru.ac.th']]);
+
+        $student = User::factory()->create([
+            'student_id' => '6710886217',
+            'email'      => 'bypass_student@pkru.ac.th',
+            'role'       => 'student',
+            'is_active'  => true,
+        ]);
+
+        // When ID is in config, login succeeds directly without OTP
+        $response = $this->post(route('login'), [
+            'student_id' => '6710886217',
+        ]);
+
+        $response->assertRedirect(route('activities.index'));
+        $this->assertAuthenticatedAs($student);
+        Mail::assertNothingSent();
     }
 }
