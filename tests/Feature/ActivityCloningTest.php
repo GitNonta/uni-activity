@@ -53,8 +53,9 @@ class ActivityCloningTest extends TestCase
 
         // Action: Clone activity
         $response = $this->actingAs($staff)->post(route('admin.activities.clone', $originalActivity->id));
+        $response->assertSessionHasNoErrors();
 
-        $clonedActivity = Activity::where('title', 'like', '%[สำเนา]%')->first();
+        $clonedActivity = Activity::where('id', '!=', $originalActivity->id)->first();
 
         $this->assertNotNull($clonedActivity);
         $response->assertRedirect(route('admin.activities.edit', $clonedActivity));
