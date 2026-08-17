@@ -1,0 +1,119 @@
+# =================================================================
+# PRODUCTION DOCKERFILE - UNI-ACTIVITY (PHP 8.3 + OCTANE / SWOOLE)
+# Multi-Stage Build with Maximum Performance & Minimal Footprint
+# =================================================================
+
+# ─── Stage 1: PHP Dependencies (Composer) ────────────────────────
+FROM composer:2.8 AS vendor
+WORKDIR /app
+COPY composer.json composer.lock ./
+RUN composer install \
+    --no-dev \
+    --no-scripts \
+    --no-autoloader \
+    --prefer-dist \
+    --optimize-autoloader \
+    --ignore-platform-reqs
+
+# Copy application source code for authoritative classmap generation
+COPY . .
+RUN composer dump-autoload --optimize --classmap-authoritative --no-scripts
+
+# ─── Stage 2: Frontend Assets (Node.js & Vite) ───────────────────
+FROM node:20-alpine AS frontend
+WORKDIR /app
+COPY package*.json vite.config.* ./
+RUN npm ci --prefer-offline --no-audit
+COPY resources/ resources/
+COPY public/ public/
+RUN npm run build
+
+# ─── Stage 3: Production Runtime (PHP 8.3 Alpine) ─────────────────
+FROM php:8.3-cli-alpine
+
+# Set environment
+ENV APP_ENV=production \
+    APP_DEBUG=false \
+    PHP_OPCACHE_VALIDATE_TIMESTAMPS=0 \
+    PHP_OPCACHE_MAX_ACCELERATED_FILES=20000 \
+    PHP_OPCACHE_MEMORY_CONSUMPTION=256 \
+    PHP_OPCACHE_MAX_WASTED_PERCENTAGE=10
+
+# Install production system dependencies
+RUN apk add --no-cache \
+    curl \
+    git \
+    libpng-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    libzip-dev \
+    libwebp-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    icu-dev \
+    postgresql-dev \
+    oniguruma-dev \
+    linux-headers \
+    openssl-dev \
+    brotli-dev \
+    autoconf \
+    build-base
+
+# Configure & Install PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-webp --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+        pdo_pgsql \
+        mbstring \
+        exif \
+        pcntl \
+        bcmath \
+        gd \
+        zip \
+        opcache \
+        intl
+
+# Install Redis & Swoole via PECL for High-Performance Octane & Async Queues
+RUN pecl channel-update pecl.php.net \
+    && pecl install redis-6.0.2 \
+    && pecl install swoole \
+    && docker-php-ext-enable redis swoole \
+    && apk del autoconf build-base
+
+# Production PHP & OPcache configuration
+RUN echo "memory_limit = 512M" > /usr/local/etc/php/conf.d/production.ini \
+    && echo "upload_max_filesize = 50M" >> /usr/local/etc/php/conf.d/production.ini \
+    && echo "post_max_size = 55M" >> /usr/local/etc/php/conf.d/production.ini \
+    && echo "max_execution_time = 60" >> /usr/local/etc/php/conf.d/production.ini \
+    && echo "expose_php = Off" >> /usr/local/etc/php/conf.d/production.ini \
+    && echo "opcache.enable = 1" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.enable_cli = 1" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.memory_consumption = 256" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.interned_strings_buffer = 16" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.max_accelerated_files = 20000" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.validate_timestamps = 0" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.save_comments = 1" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.fast_shutdown = 1" >> /usr/local/etc/php/conf.d/opcache.ini
+
+WORKDIR /var/www/html
+
+# Copy application files and vendor from builders
+COPY --from=vendor /app /var/www/html
+COPY --from=frontend /app/public/build /var/www/html/public/build
+
+# Create necessary directories and set secure permissions
+RUN mkdir -p \
+        storage/app/public \
+        storage/framework/cache/data \
+        storage/framework/sessions \
+        storage/framework/views \
+        storage/logs \
+        bootstrap/cache \
+    && chown -R www-data:www-data /var/www/html \
+    && chmod -R 775 storage bootstrap/cache
+
+USER www-data
+
+EXPOSE 8000 8080
+
+CMD ["php", "artisan", "octane:start", "--server=swoole", "--host=0.0.0.0", "--port=8000", "--workers=4"]
