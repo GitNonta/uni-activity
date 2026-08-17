@@ -49,13 +49,6 @@ class StaffAuthController extends Controller
             return back()->withErrors(['email' => 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'])->withInput();
         }
 
-        // อนุญาตให้ข้าม OTP เฉพาะเมื่อเปิด AUTH_OTP_BYPASS_ENABLED ใน Local Development (APP_DEBUG=true) เท่านั้น
-        if (config('auth.otp_bypass_enabled') && app()->environment('local') && config('app.debug')) {
-            Auth::login($user, $request->boolean('remember'));
-            $request->session()->regenerate();
-            return redirect()->intended(route('admin.dashboard'));
-        }
-
         // กำหนดข้อมูล Session ชั่วคราวสำหรับยืนยัน OTP
         session([
             'login_otp_user_id' => $user->id,
