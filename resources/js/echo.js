@@ -29,11 +29,6 @@ const wsHost  = isHttps ? pageHost : localIP;
 const wsPort  = isHttps ? 443      : localPort;
 const forceTLS = isHttps;
 
-console.log('🔌 Reverb Config:', {
-    wsHost, wsPort, forceTLS,
-    access: isHttps ? 'HTTPS/Tunnel→WSS' : 'HTTP/Local→WS',
-});
-
 window.Echo = new Echo({
     broadcaster: 'reverb',
     key: import.meta.env.VITE_REVERB_APP_KEY || 'uni-chat-key',

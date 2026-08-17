@@ -687,7 +687,6 @@
             if (!window.Echo) return;
             currentRoomEcho = window.Echo.private('chat.room.' + roomId)
                 .listen('.MessageSent', function(e) {
-                    console.log('chat.room MessageSent received', e);
                     if (e.user && String(e.user.id) === String(USER_ID)) return; // Skip own (optimistic)
                     appendMessageToChat(e);
                 })
@@ -718,7 +717,6 @@
                         }
                     }
                 });
-            console.log('Subscribed to chat.room.' + roomId);
         }
 
         function linkifyText(text, isMine) {
@@ -1089,7 +1087,6 @@
             if (!window.Echo) { setTimeout(initStudentEcho, 200); return; }
             window.Echo.private('chat.student.' + USER_ID)
                 .listen('.MessageSent', function(e) {
-                    console.log('chat.student MessageSent received', e);
                     if (e.user && String(e.user.id) === String(USER_ID)) {
                         loadThreads();
                         return;
