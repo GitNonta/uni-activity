@@ -182,6 +182,11 @@
 
     {{-- Chat window --}}
     <div id="chatWindow" style="height:480px;overflow-y:auto;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:1.25rem;display:flex;flex-direction:column;gap:.65rem;margin-bottom:.75rem;position:relative;">
+        @php
+            $studentPivot = $room->users->firstWhere('id', $student->id);
+            $studentReadAtStr = $studentPivot?->pivot?->last_read_at ?? null;
+            $studentReadAt = $studentReadAtStr ? \Carbon\Carbon::parse($studentReadAtStr) : null;
+        @endphp
         @forelse($messages as $msg)
             @php
                 $isMine   = $msg->user_id == auth()->id();
@@ -189,6 +194,22 @@
                 $photoUrl = $msg->user?->profile_photo ? asset('storage/' . $msg->user->profile_photo) : null;
                 $initial  = mb_strtoupper(mb_substr($label, 0, 1));
                 $avatarBg = $isMine ? '#ea580c' : '#64748b';
+
+                $readStatusText = '✓ ส่งแล้ว';
+                if ($isMine && $studentReadAt && $msg->created_at && $studentReadAt->gte($msg->created_at)) {
+                    $diffSec = max(0, now()->diffInSeconds($studentReadAt));
+                    $diffMin = max(0, now()->diffInMinutes($studentReadAt));
+                    $diffHours = max(0, now()->diffInHours($studentReadAt));
+                    if ($diffSec < 90) {
+                        $readStatusText = '✓✓ เพิ่งอ่าน';
+                    } elseif ($diffMin < 60) {
+                        $readStatusText = "✓✓ เห็นเมื่อ {$diffMin} นาทีที่แล้ว";
+                    } elseif ($diffHours < 24) {
+                        $readStatusText = "✓✓ เห็นเมื่อ {$diffHours} ชม. ที่แล้ว";
+                    } else {
+                        $readStatusText = "✓✓ เห็นเมื่อ " . $studentReadAt->format('d/m H:i');
+                    }
+                }
             @endphp
             <div id="cm-{{ $msg->id }}" class="msg-bubble-container {{ $isMine ? 'msg-bubble-mine' : 'msg-bubble-theirs' }}">
                 {{-- Avatar --}}
@@ -255,7 +276,7 @@
                     <div style="display:flex;align-items:center;gap:0.35rem;margin-top:0.25rem;">
                         <span style="font-size:.65rem;color:#94a3b8;">{{ $msg->created_at?->format('H:i') }}</span>
                         @if($isMine)
-                            <span id="status-{{ $msg->id }}" style="font-size:0.65rem;color:#ea580c;">✓ ส่งแล้ว</span>
+                            <span id="status-{{ $msg->id }}" style="font-size:0.65rem;color:#ea580c;">{{ $readStatusText }}</span>
                         @endif
                     </div>
                 </div>
@@ -421,6 +442,30 @@ document.addEventListener('DOMContentLoaded', function () {
         return safe.replace(urlRegex, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="${cls}">${url}</a>`);
     }
 
+    function formatReadStatus(readAt, isRead, readStatus) {
+        if (readStatus && readStatus !== 'ส่งแล้ว') {
+            return readStatus.startsWith('✓') ? readStatus : '✓✓ ' + readStatus;
+        }
+        if (!readAt && !isRead) return '✓ ส่งแล้ว';
+        if (!readAt) return '✓✓ เพิ่งอ่าน';
+
+        const readTime = new Date(readAt);
+        const now = new Date();
+        const diffSec = Math.max(0, Math.floor((now - readTime) / 1000));
+        const diffMin = Math.floor(diffSec / 60);
+        const diffHours = Math.floor(diffMin / 60);
+
+        if (diffSec < 90) {
+            return '✓✓ เพิ่งอ่าน';
+        } else if (diffMin < 60) {
+            return `✓✓ เห็นเมื่อ ${diffMin} นาทีที่แล้ว`;
+        } else if (diffHours < 24) {
+            return `✓✓ เห็นเมื่อ ${diffHours} ชม. ที่แล้ว`;
+        } else {
+            return `✓✓ เห็นเมื่อ ${readTime.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}`;
+        }
+    }
+
     function renderMessage(msg, isMine) {
         const noMsg = document.getElementById('noMsg');
         if (noMsg) noMsg.remove();
@@ -472,6 +517,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>`;
         }
 
+        const isTemp = String(msg.id).startsWith('tmp-');
+        const readStatusText = isTemp ? 'กำลังส่ง...' : formatReadStatus(msg.read_at, msg.is_read, msg.read_status);
+
         wrapper.innerHTML = `
             ${!isMine ? `<div style="position:relative;flex-shrink:0;">${avatarHtml}</div>` : ''}
             ${actionsHtml}
@@ -484,7 +532,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
                 <div style="display:flex;align-items:center;gap:0.35rem;margin-top:0.25rem;">
                     <span style="font-size:.65rem;color:#94a3b8;">${timeStr}</span>
-                    ${isMine ? `<span id="status-${msg.id}" style="font-size:0.65rem;color:${String(msg.id).startsWith('tmp-') ? '#94a3b8' : '#ea580c'};">${String(msg.id).startsWith('tmp-') ? 'กำลังส่ง...' : '✓ ส่งแล้ว'}</span>` : ''}
+                    ${isMine ? `<span id="status-${msg.id}" style="font-size:0.65rem;color:${isTemp ? '#94a3b8' : '#ea580c'};">${readStatusText}</span>` : ''}
                 </div>
             </div>
         `;

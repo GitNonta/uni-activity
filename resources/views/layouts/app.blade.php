@@ -796,9 +796,11 @@
             statusDiv.innerHTML = '<span style="font-size:.6rem;color:#94a3b8;">' + timeStr + '</span>';
             
             if (mine) {
+                var readText = isTemp ? 'กำลังส่ง...' : formatReadStatus(msg.read_at, msg.is_read, msg.read_status);
                 var statusText = document.createElement('span');
+                statusText.id = 'cf-status-' + msg.id;
                 statusText.style.cssText = 'font-size:.6rem;color:' + (isTemp ? '#94a3b8' : '#f97316') + ';';
-                statusText.textContent = isTemp ? 'กำลังส่ง...' : '✓ ส่งแล้ว';
+                statusText.textContent = readText;
                 statusDiv.appendChild(statusText);
             }
             col.appendChild(statusDiv);

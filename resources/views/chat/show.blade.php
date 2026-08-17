@@ -395,12 +395,33 @@
 
     {{-- Chat Window --}}
     <div id="chatWindow" class="chat-window">
-        @php $lastDate = null; @endphp
+        @php
+            $lastDate = null;
+            $otherUserObj = $room->users->firstWhere('id', '!=', auth()->id());
+            $otherReadAtStr = $otherUserObj?->pivot?->last_read_at ?? null;
+            $otherReadAt = $otherReadAtStr ? \Carbon\Carbon::parse($otherReadAtStr) : null;
+        @endphp
         @forelse($messages as $msg)
             @php
                 $msgDate = $msg->created_at?->format('Y-m-d');
                 $isMine = $msg->user_id == auth()->id();
                 $senderLabel = $isMine ? 'คุณ' : ($msg->user?->full_name ?? 'ผู้ดูแล');
+
+                $readStatusText = '✓ ส่งแล้ว';
+                if ($isMine && $otherReadAt && $msg->created_at && $otherReadAt->gte($msg->created_at)) {
+                    $diffSec = max(0, now()->diffInSeconds($otherReadAt));
+                    $diffMin = max(0, now()->diffInMinutes($otherReadAt));
+                    $diffHours = max(0, now()->diffInHours($otherReadAt));
+                    if ($diffSec < 90) {
+                        $readStatusText = '✓✓ เพิ่งอ่าน';
+                    } elseif ($diffMin < 60) {
+                        $readStatusText = "✓✓ เห็นเมื่อ {$diffMin} นาทีที่แล้ว";
+                    } elseif ($diffHours < 24) {
+                        $readStatusText = "✓✓ เห็นเมื่อ {$diffHours} ชม. ที่แล้ว";
+                    } else {
+                        $readStatusText = "✓✓ เห็นเมื่อ " . $otherReadAt->format('d/m H:i');
+                    }
+                }
             @endphp
 
             @if($msgDate !== $lastDate)
@@ -471,7 +492,7 @@
                     <div style="display:flex;align-items:center;gap:0.35rem;margin-top:0.25rem;">
                         <span class="message-time">{{ $msg->created_at?->format('H:i') }}</span>
                         @if($isMine)
-                            <span id="status-{{ $msg->id }}" style="font-size:0.65rem;color:#ea580c;">✓ ส่งแล้ว</span>
+                            <span id="status-{{ $msg->id }}" style="font-size:0.65rem;color:#ea580c;">{{ $readStatusText }}</span>
                         @endif
                     </div>
                 </div>
@@ -640,6 +661,30 @@ document.addEventListener('DOMContentLoaded', () => {
         return safe.replace(urlRegex, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="${cls}">${url}</a>`);
     }
 
+    function formatReadStatus(readAt, isRead, readStatus) {
+        if (readStatus && readStatus !== 'ส่งแล้ว') {
+            return readStatus.startsWith('✓') ? readStatus : '✓✓ ' + readStatus;
+        }
+        if (!readAt && !isRead) return '✓ ส่งแล้ว';
+        if (!readAt) return '✓✓ เพิ่งอ่าน';
+
+        const readTime = new Date(readAt);
+        const now = new Date();
+        const diffSec = Math.max(0, Math.floor((now - readTime) / 1000));
+        const diffMin = Math.floor(diffSec / 60);
+        const diffHours = Math.floor(diffMin / 60);
+
+        if (diffSec < 90) {
+            return '✓✓ เพิ่งอ่าน';
+        } else if (diffMin < 60) {
+            return `✓✓ เห็นเมื่อ ${diffMin} นาทีที่แล้ว`;
+        } else if (diffHours < 24) {
+            return `✓✓ เห็นเมื่อ ${diffHours} ชม. ที่แล้ว`;
+        } else {
+            return `✓✓ เห็นเมื่อ ${readTime.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}`;
+        }
+    }
+
     function renderMessage(msg, isMine) {
         const noMsg = document.getElementById('noMsg');
         if (noMsg) noMsg.remove();
@@ -691,6 +736,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>`;
         }
 
+        const isTemp = String(msg.id).startsWith('tmp-');
+        const readStatusText = isTemp ? 'กำลังส่ง...' : formatReadStatus(msg.read_at, msg.is_read, msg.read_status);
+
         wrapper.innerHTML = `
             ${!isMine ? `<div class="message-avatar">${avatarHtml}</div>` : ''}
             ${actionsHtml}
@@ -703,7 +751,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div style="display:flex;align-items:center;gap:0.35rem;margin-top:0.25rem;">
                     <span class="message-time">${timeStr}</span>
-                    ${isMine ? `<span id="status-${msg.id}" style="font-size:0.65rem;color:${String(msg.id).startsWith('tmp-') ? '#94a3b8' : '#ea580c'};">${String(msg.id).startsWith('tmp-') ? 'กำลังส่ง...' : '✓ ส่งแล้ว'}</span>` : ''}
+                    ${isMine ? `<span id="status-${msg.id}" style="font-size:0.65rem;color:${isTemp ? '#94a3b8' : '#ea580c'};">${readStatusText}</span>` : ''}
                 </div>
             </div>
         `;

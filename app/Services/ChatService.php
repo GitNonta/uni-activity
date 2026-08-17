@@ -556,6 +556,42 @@ class ChatService
             }
         }
 
+        $otherUserPivot = null;
+        if ($msg->relationLoaded('room') && $msg->room && $msg->room->relationLoaded('users')) {
+            $otherUserPivot = $msg->room->users->firstWhere('id', '!=', $msg->user_id);
+        } elseif ($msg->room_id) {
+            $otherUserPivot = \Illuminate\Support\Facades\DB::table('room_user')
+                ->where('room_id', $msg->room_id)
+                ->where('user_id', '!=', $msg->user_id)
+                ->first();
+        }
+
+        $readAt = null;
+        $readStatus = 'ส่งแล้ว';
+        $isRead = false;
+
+        $lastReadAtStr = $otherUserPivot?->pivot?->last_read_at ?? $otherUserPivot?->last_read_at ?? null;
+        if ($lastReadAtStr && $msg->created_at) {
+            $lastReadAt = \Carbon\Carbon::parse($lastReadAtStr);
+            if ($lastReadAt->gte($msg->created_at)) {
+                $isRead = true;
+                $readAt = $lastReadAt->toISOString();
+                $diffInSeconds = max(0, now()->diffInSeconds($lastReadAt));
+                $diffInMinutes = max(0, now()->diffInMinutes($lastReadAt));
+                $diffInHours   = max(0, now()->diffInHours($lastReadAt));
+
+                if ($diffInSeconds < 90) {
+                    $readStatus = 'เพิ่งอ่าน';
+                } elseif ($diffInMinutes < 60) {
+                    $readStatus = "เห็นเมื่อ {$diffInMinutes} นาทีที่แล้ว";
+                } elseif ($diffInHours < 24) {
+                    $readStatus = "เห็นเมื่อ {$diffInHours} ชม. ที่แล้ว";
+                } else {
+                    $readStatus = "เห็นเมื่อ " . $lastReadAt->format('d/m H:i');
+                }
+            }
+        }
+
         return [
             'id'          => $msg->id,
             'room_id'     => $msg->room_id,
@@ -563,6 +599,9 @@ class ChatService
             'message'     => $msg->body,
             'body'        => $msg->body,
             'is_edited'   => (bool) ($msg->is_edited ?? false),
+            'is_read'     => $isRead,
+            'read_at'     => $readAt,
+            'read_status' => $readStatus,
             'user'        => [
                 'id'        => $msg->user_id,
                 'name'      => $user?->full_name ?? $user?->name ?? 'ผู้ใช้',
