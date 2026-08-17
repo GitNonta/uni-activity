@@ -17,8 +17,8 @@ services:
     networks:
       - laravel-network
     environment:
-      - APP_ENV=local
-      - APP_DEBUG=true
+      - APP_ENV=${APP_ENV:-local}
+      - APP_DEBUG=${APP_DEBUG:-false}
       - APP_KEY=${APP_KEY}
       - APP_URL=${APP_URL:-http://localhost:8000}
       - NODE_ID=node-1
@@ -64,8 +64,8 @@ services:
     networks:
       - laravel-network
     environment:
-      - APP_ENV=local
-      - APP_DEBUG=true
+      - APP_ENV=${APP_ENV:-local}
+      - APP_DEBUG=${APP_DEBUG:-false}
       - APP_KEY=${APP_KEY}
       - APP_URL=${APP_URL:-http://localhost:8000}
       - NODE_ID=node-2
