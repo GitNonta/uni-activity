@@ -39,3 +39,34 @@ window.Echo = new Echo({
     enabledTransports: ['ws', 'wss'],
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Back-Forward Cache (bfcache) & Visibility Lifecycle Management
+// ─────────────────────────────────────────────────────────────────────────────
+
+window.addEventListener('pagehide', () => {
+    if (window.Echo && window.Echo.connector && window.Echo.connector.pusher) {
+        try {
+            window.Echo.disconnect();
+        } catch (e) {}
+    }
+});
+
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted && window.Echo && window.Echo.connector && window.Echo.connector.pusher) {
+        try {
+            window.Echo.connect();
+        } catch (e) {}
+    }
+});
+
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && window.Echo && window.Echo.connector && window.Echo.connector.pusher) {
+        const state = window.Echo.connector.pusher.connection.state;
+        if (state === 'disconnected' || state === 'unavailable' || state === 'failed') {
+            try {
+                window.Echo.connect();
+            } catch (e) {}
+        }
+    }
+});
+
