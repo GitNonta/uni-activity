@@ -30,6 +30,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-root}
       - REDIS_HOST=${REDIS_HOST:-redis}
       - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
       - CACHE_STORE=redis
       - SESSION_DRIVER=redis
       - QUEUE_CONNECTION=redis
@@ -76,6 +77,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-root}
       - REDIS_HOST=${REDIS_HOST:-redis}
       - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
       - CACHE_STORE=redis
       - SESSION_DRIVER=redis
       - QUEUE_CONNECTION=redis
@@ -114,7 +116,7 @@ services:
     image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
     container_name: laravel-dragonfly
     restart: unless-stopped
-    command: dragonfly --cache_mode=true --maxmemory=512mb
+    command: dragonfly --cache_mode=true --maxmemory=512mb --requirepass=${REDIS_PASSWORD:-}
     volumes:
       - dragonfly-data:/data
     networks:
