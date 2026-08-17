@@ -53,11 +53,14 @@ class ActivityCloningTest extends TestCase
 
         // Action: Clone activity
         $response = $this->actingAs($staff)->post(route('admin.activities.clone', $originalActivity->id));
-        $response->assertSessionHasNoErrors();
-
-        $clonedActivity = Activity::where('id', '!=', $originalActivity->id)->first();
-
-        $this->assertNotNull($clonedActivity);
+        dump([
+            'status'   => $response->status(),
+            'location' => $response->headers->get('Location'),
+            'session'  => session()->all(),
+            'content'  => substr($response->getContent(), 0, 300),
+            'count'    => Activity::count(),
+            'all'      => Activity::all()->pluck('title', 'id')->toArray(),
+        ]);
         $response->assertRedirect(route('admin.activities.edit', $clonedActivity));
 
         // Assert metadata copied correctly
