@@ -385,14 +385,22 @@
                     <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="opacity:0.6;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                 </span>
             </a>
-            @php $failedJobsCount = \Illuminate\Support\Facades\DB::table('failed_jobs')->count(); @endphp
-            <a href="{{ route('admin.system.failed-jobs.index') }}" class="sb-link {{ request()->routeIs('admin.system.failed-jobs.*') ? 'active' : '' }}">
+            @php
+                $failedJobsCount = \Illuminate\Support\Facades\DB::table('failed_jobs')->count();
+                $failedJobsMonitorUrl = (filter_var($monitorHost, FILTER_VALIDATE_IP) || $monitorHost === 'localhost')
+                    ? 'http://' . $monitorHost . ':9999/#failed-jobs'
+                    : 'http://192.168.1.222:9999/#failed-jobs';
+            @endphp
+            <a href="{{ $failedJobsMonitorUrl }}" target="_blank" rel="noopener noreferrer" class="sb-link" title="เปิดจัดการคิวงานที่ล้มเหลว (พอร์ต 9999)">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span class="sb-link-text">
-                    คิวงานที่ล้มเหลว
-                    @if($failedJobsCount > 0)
-                        <span style="background:#ef4444;color:#fff;font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:999px;margin-left:4px;">{{ $failedJobsCount }}</span>
-                    @endif
+                <span class="sb-link-text" style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+                    <span>คิวงานที่ล้มเหลว</span>
+                    <span style="display:flex;align-items:center;gap:4px;">
+                        @if($failedJobsCount > 0)
+                            <span style="background:#ef4444;color:#fff;font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:999px;">{{ $failedJobsCount }}</span>
+                        @endif
+                        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="opacity:0.6;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    </span>
                 </span>
             </a>
             @endif

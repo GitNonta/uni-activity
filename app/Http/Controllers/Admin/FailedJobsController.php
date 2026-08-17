@@ -16,9 +16,9 @@ use function App\Helpers\log_action;
 class FailedJobsController extends Controller
 {
     /**
-     * Display a listing of failed queue jobs.
+     * Display a listing of failed queue jobs or redirect to Monitor UI.
      */
-    public function index(Request $request): View
+    public function index(Request $request)
     {
         $query = DB::table('failed_jobs')->orderByDesc('failed_at');
 
@@ -35,7 +35,7 @@ class FailedJobsController extends Controller
             });
         }
 
-        $failedJobs = $query->paginate(15)->withQueryString();
+        $failedJobs = $query->paginate(25)->withQueryString();
 
         // Decode job display names
         $failedJobs->getCollection()->transform(function ($job) {
@@ -55,7 +55,29 @@ class FailedJobsController extends Controller
 
         $totalFailed = DB::table('failed_jobs')->count();
 
-        return view('admin.system.failed-jobs', compact('failedJobs', 'queues', 'totalFailed'));
+        // If requested via API or JSON header, return structured JSON
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'status' => 'ok',
+                'data'   => [
+                    'failed_jobs'  => $failedJobs->items(),
+                    'total'        => $failedJobs->total(),
+                    'current_page' => $failedJobs->currentPage(),
+                    'last_page'    => $failedJobs->lastPage(),
+                    'per_page'     => $failedJobs->perPage(),
+                    'queues'       => $queues,
+                    'total_failed' => $totalFailed,
+                ],
+            ]);
+        }
+
+        // Web access: redirect directly to Monitor Dashboard on port 9999
+        $host = $request->getHost();
+        $targetUrl = (filter_var($host, FILTER_VALIDATE_IP) || $host === 'localhost')
+            ? 'http://' . $host . ':9999/#failed-jobs'
+            : 'http://192.168.1.222:9999/#failed-jobs';
+
+        return redirect()->away($targetUrl);
     }
 
     /**
@@ -63,35 +85,41 @@ class FailedJobsController extends Controller
      */
     public function show(string $uuid): JsonResponse
     {
-        $job = DB::table('failed_jobs')->where('uuid', $uuid)->first();
+        $job = DB::table('failed_jobs')->where('uuid', $uuid)->orWhere('id', $uuid)->first();
 
         if (!$job) {
-            return response()->json(['error' => 'Failed job not found'], 404);
+            return response()->json(['status' => 'error', 'message' => 'Failed job not found'], 404);
         }
 
         $payload = json_decode((string) $job->payload, true) ?? [];
 
         return response()->json([
-            'id'           => $job->id,
-            'uuid'         => $job->uuid,
-            'connection'   => $job->connection,
-            'queue'        => $job->queue,
-            'display_name' => $payload['displayName'] ?? ($payload['data']['commandName'] ?? 'Unknown Job'),
-            'attempts'     => $payload['attempts'] ?? 1,
-            'failed_at'    => (string) $job->failed_at,
-            'exception'    => $job->exception,
-            'payload'      => $payload,
+            'status' => 'ok',
+            'data'   => [
+                'id'           => $job->id,
+                'uuid'         => $job->uuid,
+                'connection'   => $job->connection,
+                'queue'        => $job->queue,
+                'display_name' => $payload['displayName'] ?? ($payload['data']['commandName'] ?? 'Unknown Job'),
+                'attempts'     => $payload['attempts'] ?? 1,
+                'failed_at'    => (string) $job->failed_at,
+                'exception'    => $job->exception,
+                'payload'      => $payload,
+            ]
         ]);
     }
 
     /**
      * Retry a specific failed job.
      */
-    public function retry(string $id): RedirectResponse
+    public function retry(Request $request, string $id)
     {
         $job = DB::table('failed_jobs')->where('id', $id)->orWhere('uuid', $id)->first();
 
         if (!$job) {
+            if ($request->wantsJson() || $request->is('api/*')) {
+                return response()->json(['status' => 'error', 'message' => 'ไม่พบงานที่ล้มเหลวตามรหัสที่ระบุ'], 404);
+            }
             return back()->with('error', 'ไม่พบงานที่ล้มเหลวตามรหัสที่ระบุ');
         }
 
@@ -103,17 +131,27 @@ class FailedJobsController extends Controller
 
         log_action('retry_failed_job', 'failed_jobs', (int) $job->id, "Retried failed queue job UUID: {$job->uuid}");
 
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'status'  => 'ok',
+                'message' => "ส่งงาน '{$job->queue}' (ID: {$job->id}) กลับเข้าคิวเพื่อลองใหม่อีกครั้งเรียบร้อยแล้ว",
+            ]);
+        }
+
         return back()->with('success', "ส่งงาน '{$job->queue}' (ID: {$job->id}) กลับเข้าคิวเพื่อลองใหม่อีกครั้งเรียบร้อยแล้ว");
     }
 
     /**
      * Retry all failed jobs.
      */
-    public function retryAll(): RedirectResponse
+    public function retryAll(Request $request)
     {
         $count = DB::table('failed_jobs')->count();
 
         if ($count === 0) {
+            if ($request->wantsJson() || $request->is('api/*')) {
+                return response()->json(['status' => 'ok', 'message' => 'ไม่มีรายการงานที่ล้มเหลวค้างอยู่ในระบบ']);
+            }
             return back()->with('info', 'ไม่มีรายการงานที่ล้มเหลวค้างอยู่ในระบบ');
         }
 
@@ -123,17 +161,27 @@ class FailedJobsController extends Controller
 
         log_action('retry_all_failed_jobs', 'failed_jobs', null, "Retried all {$count} failed queue jobs");
 
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'status'  => 'ok',
+                'message' => "ส่งงานที่ล้มเหลวทั้งหมด ({$count} รายการ) กลับเข้าคิวเพื่อลองใหม่เรียบร้อยแล้ว",
+            ]);
+        }
+
         return back()->with('success', "ส่งงานที่ล้มเหลวทั้งหมด ({$count} รายการ) กลับเข้าคิวเพื่อลองใหม่เรียบร้อยแล้ว");
     }
 
     /**
      * Delete/forget a specific failed job.
      */
-    public function destroy(string $id): RedirectResponse
+    public function destroy(Request $request, string $id)
     {
         $job = DB::table('failed_jobs')->where('id', $id)->orWhere('uuid', $id)->first();
 
         if (!$job) {
+            if ($request->wantsJson() || $request->is('api/*')) {
+                return response()->json(['status' => 'error', 'message' => 'ไม่พบงานที่ล้มเหลวตามรหัสที่ระบุ'], 404);
+            }
             return back()->with('error', 'ไม่พบงานที่ล้มเหลวตามรหัสที่ระบุ');
         }
 
@@ -145,17 +193,27 @@ class FailedJobsController extends Controller
 
         log_action('delete_failed_job', 'failed_jobs', (int) $job->id, "Deleted failed job UUID: {$job->uuid}");
 
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'status'  => 'ok',
+                'message' => "ลบรายการงานที่ล้มเหลว ID: {$job->id} ออกจากระบบเรียบร้อยแล้ว",
+            ]);
+        }
+
         return back()->with('success', "ลบรายการงานที่ล้มเหลว ID: {$job->id} ออกจากระบบเรียบร้อยแล้ว");
     }
 
     /**
      * Delete/flush all failed jobs.
      */
-    public function flush(): RedirectResponse
+    public function flush(Request $request)
     {
         $count = DB::table('failed_jobs')->count();
 
         if ($count === 0) {
+            if ($request->wantsJson() || $request->is('api/*')) {
+                return response()->json(['status' => 'ok', 'message' => 'ไม่มีรายการงานที่ล้มเหลวค้างอยู่ในระบบ']);
+            }
             return back()->with('info', 'ไม่มีรายการงานที่ล้มเหลวค้างอยู่ในระบบ');
         }
 
@@ -166,6 +224,13 @@ class FailedJobsController extends Controller
         } catch (\Throwable) {}
 
         log_action('flush_failed_jobs', 'failed_jobs', null, "Flushed all {$count} failed queue jobs");
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'status'  => 'ok',
+                'message' => "ล้างรายการงานที่ล้มเหลวทั้งหมด ({$count} รายการ) เรียบร้อยแล้ว",
+            ]);
+        }
 
         return back()->with('success', "ล้างรายการงานที่ล้มเหลวทั้งหมด ({$count} รายการ) เรียบร้อยแล้ว");
     }

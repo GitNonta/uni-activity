@@ -293,6 +293,76 @@ class MonitorHandler(BaseHTTPRequestHandler):
             self.wfile.write(resp)
             return
 
+        # ── /api/failed-jobs (POST) ──
+        if self.path.startswith("/api/failed-jobs"):
+            import urllib.request as _ur
+            content_length = int(self.headers.get("Content-Length", 0))
+            body = self.rfile.read(content_length) if content_length > 0 else b""
+            data = None
+            for port in [8080, 8000]:
+                try:
+                    req = _ur.Request(f"http://127.0.0.1:{port}{self.path}", data=body, headers={"Accept": "application/json", "Content-Type": "application/json"}, method="POST")
+                    with _ur.urlopen(req, timeout=5) as resp:
+                        data = resp.read()
+                        if data:
+                            break
+                except Exception:
+                    continue
+
+            if data:
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(data)))
+                self._cors_headers()
+                self.end_headers()
+                self.wfile.write(data)
+                return
+            else:
+                err_data = json.dumps({"status": "error", "message": "Failed to execute failed-jobs action"}).encode("utf-8")
+                self.send_response(500)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(err_data)))
+                self._cors_headers()
+                self.end_headers()
+                self.wfile.write(err_data)
+                return
+
+        self.send_response(404)
+        self.end_headers()
+        self.wfile.write(b"Not Found")
+
+    def do_DELETE(self):
+        if self.path.startswith("/api/failed-jobs"):
+            import urllib.request as _ur
+            data = None
+            for port in [8080, 8000]:
+                try:
+                    req = _ur.Request(f"http://127.0.0.1:{port}{self.path}", headers={"Accept": "application/json"}, method="DELETE")
+                    with _ur.urlopen(req, timeout=5) as resp:
+                        data = resp.read()
+                        if data:
+                            break
+                except Exception:
+                    continue
+
+            if data:
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(data)))
+                self._cors_headers()
+                self.end_headers()
+                self.wfile.write(data)
+                return
+            else:
+                err_data = json.dumps({"status": "error", "message": "Failed to delete failed-jobs item"}).encode("utf-8")
+                self.send_response(500)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(err_data)))
+                self._cors_headers()
+                self.end_headers()
+                self.wfile.write(err_data)
+                return
+
         self.send_response(404)
         self.end_headers()
         self.wfile.write(b"Not Found")
@@ -428,6 +498,37 @@ class MonitorHandler(BaseHTTPRequestHandler):
             except Exception:
                 pass
             return
+
+        if self.path.startswith("/api/failed-jobs"):
+            import urllib.request as _ur
+            data = None
+            for port in [8080, 8000]:
+                try:
+                    req = _ur.Request(f"http://127.0.0.1:{port}{self.path}", headers={"Accept": "application/json"})
+                    with _ur.urlopen(req, timeout=4) as resp:
+                        data = resp.read()
+                        if data:
+                            break
+                except Exception:
+                    continue
+
+            if data:
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(data)))
+                self._cors_headers()
+                self.end_headers()
+                self.wfile.write(data)
+                return
+            else:
+                err_data = json.dumps({"status": "error", "message": "Failed jobs service unreachable"}).encode("utf-8")
+                self.send_response(500)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(err_data)))
+                self._cors_headers()
+                self.end_headers()
+                self.wfile.write(err_data)
+                return
 
         if self.path == "/api/cluster/metrics" or self.path.startswith("/api/cluster/metrics"):
             import urllib.request as _ur
