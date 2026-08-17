@@ -201,7 +201,7 @@
                     $diffSec = max(0, now()->diffInSeconds($studentReadAt));
                     $diffMin = max(0, now()->diffInMinutes($studentReadAt));
                     $diffHours = max(0, now()->diffInHours($studentReadAt));
-                    if ($diffSec < 90) {
+                    if ($diffSec < 60) {
                         $readStatusText = '✓✓ เพิ่งอ่าน';
                     } elseif ($diffMin < 60) {
                         $readStatusText = "✓✓ เห็นเมื่อ {$diffMin} นาทีที่แล้ว";
@@ -467,14 +467,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Live Dynamic Ticker
-    setInterval(function() {
+    function updateAllReadStatuses() {
         document.querySelectorAll('.admin-msg-read-status[data-read-at]').forEach(function(el) {
             const readAt = el.getAttribute('data-read-at');
             if (readAt) {
                 el.textContent = formatReadStatus(readAt, true);
             }
         });
-    }, 10000);
+    }
+    updateAllReadStatuses();
+    setInterval(updateAllReadStatuses, 10000);
 
     function renderMessage(msg, isMine) {
         const noMsg = document.getElementById('noMsg');

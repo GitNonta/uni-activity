@@ -620,7 +620,7 @@ class ChatService
                 $diffInMinutes = max(0, now()->diffInMinutes($lastReadAt));
                 $diffInHours   = max(0, now()->diffInHours($lastReadAt));
 
-                if ($diffInSeconds < 90) {
+                if ($diffInSeconds < 60) {
                     $readStatus = 'เพิ่งอ่าน';
                 } elseif ($diffInMinutes < 60) {
                     $readStatus = "เห็นเมื่อ {$diffInMinutes} นาทีที่แล้ว";

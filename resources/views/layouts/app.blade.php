@@ -571,15 +571,17 @@
             }
         }
 
-        // Live Dynamic Ticker - automatically updates minutes elapsed every 10s
-        setInterval(function() {
+        // Live Dynamic Ticker - automatically updates minutes elapsed
+        function updateAllFloatingReadStatuses() {
             document.querySelectorAll('.cf-read-status[data-read-at]').forEach(function(el) {
                 var readAt = el.getAttribute('data-read-at');
                 if (readAt) {
                     el.textContent = formatReadStatus(readAt, true);
                 }
             });
-        }, 10000);
+        }
+        updateAllFloatingReadStatuses();
+        setInterval(updateAllFloatingReadStatuses, 10000);
 
         function playChatChime() {
             try {
