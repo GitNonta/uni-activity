@@ -12,8 +12,8 @@
 
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem; position: relative; z-index: 1;">
             <div style="display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;">
-                {{-- Avatar with Upload Hover Overlay --}}
-                <div style="position: relative; width: 84px; height: 84px; flex-shrink: 0;">
+                {{-- Avatar Container with Floating Badges on Edge --}}
+                <div style="position: relative; width: 88px; height: 88px; flex-shrink: 0;">
                     <label for="profilePhotoInput" style="cursor: pointer; display: block; width: 100%; height: 100%; border-radius: 50%; position: relative; overflow: hidden; border: 3px solid rgba(255,255,255,0.25); box-shadow: 0 4px 14px rgba(0,0,0,0.35);" title="คลิกเพื่ออัปโหลดรูปโปรไฟล์ใหม่">
                         @if($user->profile_photo)
                             <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="{{ $user->full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
@@ -26,6 +26,21 @@
                             <svg width="22" height="22" fill="none" stroke="#fff" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>
                         </div>
                     </label>
+
+                    {{-- Camera Badge on Bottom-Right Edge --}}
+                    <label for="profilePhotoInput" style="position: absolute; bottom: -2px; right: -2px; width: 28px; height: 28px; background: #ea580c; border: 2.5px solid #1e293b; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: transform 0.15s, background 0.15s; z-index: 2;" title="เปลี่ยนรูปโปรไฟล์" onmouseenter="this.style.transform='scale(1.15)'; this.style.background='#c2410c';" onmouseleave="this.style.transform='scale(1)'; this.style.background='#ea580c';">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>
+                    </label>
+
+                    {{-- Delete Trash Badge on Top-Right Edge (if photo exists) --}}
+                    @if($user->profile_photo)
+                        <form method="POST" action="{{ route('profile.photo.destroy') }}" style="position: absolute; top: -2px; right: -2px; z-index: 2; margin: 0;" onsubmit="return confirm('คุณแน่ใจหรือไม่ว่าต้องการลบรูปโปรไฟล์นี้?');">
+                            @csrf @method('DELETE')
+                            <button type="submit" style="width: 24px; height: 24px; background: #ef4444; border: 2px solid #1e293b; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.3); padding: 0; transition: transform 0.15s, background 0.15s;" title="ลบรูปโปรไฟล์" onmouseenter="this.style.transform='scale(1.15)'; this.style.background='#b91c1c';" onmouseleave="this.style.transform='scale(1)'; this.style.background='#ef4444';">
+                                <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                        </form>
+                    @endif
 
                     <form id="profilePhotoForm" method="POST" action="{{ route('profile.photo.upload') }}" enctype="multipart/form-data" style="display: none;">
                         @csrf
@@ -66,20 +81,6 @@
                     <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                     <span>แก้ไขข้อมูลส่วนตัว & รหัสผ่าน</span>
                 </a>
-
-                <label for="profilePhotoInput" style="display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(255, 255, 255, 0.12); color: #fff; border: 1px solid rgba(255, 255, 255, 0.25); padding: 0.55rem 0.95rem; border-radius: 8px; font-size: 0.825rem; font-weight: 600; cursor: pointer; backdrop-filter: blur(4px); transition: all 0.2s;">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>
-                    <span>เปลี่ยนรูป</span>
-                </label>
-
-                @if($user->profile_photo)
-                    <form method="POST" action="{{ route('profile.photo.destroy') }}" style="display: inline;" onsubmit="return confirm('คุณแน่ใจหรือไม่ว่าต้องการลบรูปโปรไฟล์นี้?');">
-                        @csrf @method('DELETE')
-                        <button type="submit" style="display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35); padding: 0.55rem 0.85rem; border-radius: 8px; font-size: 0.825rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                        </button>
-                    </form>
-                @endif
             </div>
         </div>
     </div>
