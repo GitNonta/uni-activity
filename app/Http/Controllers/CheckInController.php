@@ -83,7 +83,8 @@ class CheckInController extends Controller
             return view('checkin.success', [
                 'activity' => $result['activity'],
                 'status'   => $result['status'],
-                'distance' => $result['distance'],
+                'distance' => $result['distance'] ?? null,
+                'token'    => $token,
             ]);
         }
 

@@ -21,10 +21,10 @@ class FaceVerificationSecurityBypassTest extends TestCase
 
     protected function setUp(): void
     {
-        parent::setUp();
+        Config::set('services.ai_server.urls', null);
         Config::set('services.ai_server.url', 'http://127.0.0.1:8082');
         Config::set('services.ai_server.key', 'test-secret-key-12345');
-        Cache::forget('ai_server_health_status');
+        Cache::flush();
     }
 
     private function createTestActivity(array $attributes = []): Activity
