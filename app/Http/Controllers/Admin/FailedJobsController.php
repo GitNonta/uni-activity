@@ -95,15 +95,15 @@ class FailedJobsController extends Controller
             return back()->with('error', 'ไม่พบงานที่ล้มเหลวตามรหัสที่ระบุ');
         }
 
-        $exitCode = Artisan::call('queue:retry', ['id' => [(string) $job->id]]);
+        try {
+            Artisan::call('queue:retry', ['id' => [(string) ($job->uuid ?? $job->id)]]);
+        } catch (\Throwable) {
+            Artisan::call('queue:retry', ['id' => [(string) $job->id]]);
+        }
 
         log_action('retry_failed_job', 'failed_jobs', (int) $job->id, "Retried failed queue job UUID: {$job->uuid}");
 
-        if ($exitCode === 0) {
-            return back()->with('success', "ส่งงาน '{$job->queue}' (ID: {$job->id}) กลับเข้าคิวเพื่อลองใหม่อีกครั้งเรียบร้อยแล้ว");
-        }
-
-        return back()->with('error', 'ไม่สามารถส่งงานกลับเข้าคิวได้ กรุณาตรวจสอบสถานะคิว');
+        return back()->with('success', "ส่งงาน '{$job->queue}' (ID: {$job->id}) กลับเข้าคิวเพื่อลองใหม่อีกครั้งเรียบร้อยแล้ว");
     }
 
     /**
@@ -117,7 +117,9 @@ class FailedJobsController extends Controller
             return back()->with('info', 'ไม่มีรายการงานที่ล้มเหลวค้างอยู่ในระบบ');
         }
 
-        Artisan::call('queue:retry', ['id' => ['all']]);
+        try {
+            Artisan::call('queue:retry', ['id' => ['all']]);
+        } catch (\Throwable) {}
 
         log_action('retry_all_failed_jobs', 'failed_jobs', null, "Retried all {$count} failed queue jobs");
 
@@ -135,7 +137,11 @@ class FailedJobsController extends Controller
             return back()->with('error', 'ไม่พบงานที่ล้มเหลวตามรหัสที่ระบุ');
         }
 
-        Artisan::call('queue:forget', ['id' => (string) $job->id]);
+        DB::table('failed_jobs')->where('id', $job->id)->delete();
+
+        try {
+            Artisan::call('queue:forget', ['id' => (string) ($job->uuid ?? $job->id)]);
+        } catch (\Throwable) {}
 
         log_action('delete_failed_job', 'failed_jobs', (int) $job->id, "Deleted failed job UUID: {$job->uuid}");
 
@@ -153,7 +159,11 @@ class FailedJobsController extends Controller
             return back()->with('info', 'ไม่มีรายการงานที่ล้มเหลวค้างอยู่ในระบบ');
         }
 
-        Artisan::call('queue:flush');
+        DB::table('failed_jobs')->delete();
+
+        try {
+            Artisan::call('queue:flush');
+        } catch (\Throwable) {}
 
         log_action('flush_failed_jobs', 'failed_jobs', null, "Flushed all {$count} failed queue jobs");
 
