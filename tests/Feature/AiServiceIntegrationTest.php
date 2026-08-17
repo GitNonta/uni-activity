@@ -178,28 +178,38 @@ class AiServiceIntegrationTest extends TestCase
         $service = new FaceVerificationService();
         $fakeBase64 = 'data:image/jpeg;base64,' . base64_encode('fake-face-data');
 
-        $result = $service->verifyFace($user, $fakeBase64, ['mode' => 'python']);
+        $result = $service->verifyFace($user, $fakeBase64);
 
         $this->assertFalse($result['success']);
         $this->assertArrayHasKey('message', $result);
-        $this->assertTrue($result['fallback_recommended']);
+        $this->assertEquals('server_unavailable', $result['error_type']);
     }
 
-    public function test_face_verification_service_client_js_mode(): void
+    public function test_face_verification_service_does_not_expose_biometric_descriptors_to_client(): void
     {
+        Http::fake([
+            'http://127.0.0.1:8001/health' => Http::response(['status' => 'healthy'], 200),
+            'http://127.0.0.1:8001/verify' => Http::response([
+                'status'           => 'success',
+                'is_match'         => true,
+                'score_percentage' => 95.0,
+                'liveness_passed'  => true,
+            ], 200),
+        ]);
+
         $user = $this->createStudent();
         $service = new FaceVerificationService();
         $fakeBase64 = 'data:image/jpeg;base64,' . base64_encode('fake-face-data');
 
-        $result = $service->verifyFace($user, $fakeBase64, [
-            'mode' => 'js',
-        ]);
+        $result = $service->verifyFace($user, $fakeBase64);
 
         $this->assertTrue($result['success']);
-        $this->assertEquals('js', $result['mode']);
-        $this->assertIsArray($result['descriptor_128d']);
-        $this->assertCount(128, $result['descriptor_128d']);
-        $this->assertArrayHasKey('thresholds', $result);
+        $this->assertTrue($result['is_match']);
+        $this->assertTrue($result['liveness_passed']);
+        // Verify biometric template vectors are NOT leaked in verification result
+        $this->assertArrayNotHasKey('descriptor_128d', $result);
+        $this->assertArrayNotHasKey('descriptor_512d', $result);
+        $this->assertArrayNotHasKey('known_embedding', $result);
     }
 
     public function test_checkin_realtime_verify_frame_endpoint(): void

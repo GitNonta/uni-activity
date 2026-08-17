@@ -1,22 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Centralized Face Verification Service
- * Manages the balance between Python AI Server and JavaScript processing
+ * เซอร์วิสตรวจสอบใบหน้าและอัตลักษณ์ผ่าน Python AI Server (Server-Authoritative)
+ * ทำหน้าที่เป็นศูนย์กลางการสื่อสารระหว่าง Laravel Gateway และ Python Neural Engine
  */
 class FaceVerificationService
 {
-    protected $aiServerUrl;
-    protected $aiServerKey;
-    protected $fallbackThreshold = 3;
-    protected $timeoutSeconds = 8;
+    protected ?string $aiServerUrl;
+    protected ?string $aiServerKey;
+    protected int $fallbackThreshold = 3;
+    protected int $timeoutSeconds = 8;
 
     public function __construct()
     {
@@ -25,71 +27,64 @@ class FaceVerificationService
     }
 
     /**
-     * Smart face verification with automatic fallback
+     * ดำเนินการตรวจสอบใบหน้าและ Liveness Anti-Spoofing บน Server (Authoritative Decision)
+     *
+     * @param  User   $user       ผู้ใช้ที่ต้องการตรวจสอบอัตลักษณ์
+     * @param  string $imageData  ภาพถ่าย Base64 จากกล้องของอุปกรณ์
+     * @param  array  $options    ตัวเลือกเพิ่มเติม (เช่น timeout, priority)
+     * @return array{
+     *     success: bool,
+     *     is_match: bool,
+     *     score_percentage: float,
+     *     similarity?: float,
+     *     distance?: float,
+     *     liveness_passed: bool,
+     *     liveness_score?: float,
+     *     detector_used?: string,
+     *     processing_ms: int,
+     *     message?: string
+     * }
      */
     public function verifyFace(User $user, string $imageData, array $options = []): array
     {
         $startTime = microtime(true);
-        $mode = $options['mode'] ?? 'hybrid';
-        $priority = $options['priority'] ?? 'speed';
 
-        // Check user has face descriptors
-        if (!$user->face_descriptor) {
-            return $this->createErrorResponse('User has no face profile', $startTime);
+        // 1. ตรวจสอบว่าผู้ใช้มีเวกเตอร์ใบหน้า (512D) ในระบบหรือไม่
+        if (empty($user->face_descriptor)) {
+            return $this->createErrorResponse('User has no registered face profile', $startTime);
         }
 
-        // Determine verification strategy
-        switch ($mode) {
-            case 'python':
-                return $this->pythonVerification($user, $imageData, $startTime);
-                
-            case 'js':
-                return $this->javascriptVerificationSupport($user, $startTime);
-                
-            case 'hybrid':
-            default:
-                return $this->hybridVerification($user, $imageData, $startTime, $priority);
-        }
-    }
-
-    /**
-     * Python AI Server verification
-     */
-    private function pythonVerification(User $user, string $imageData, float $startTime): array
-    {
+        // 2. ตรวจสอบการตั้งค่า AI Server
         if (empty($this->aiServerUrl)) {
-            return $this->createErrorResponse('AI Server not configured', $startTime, [
-                'fallback_recommended' => true,
-                'error_type' => 'configuration'
+            return $this->createErrorResponse('AI Server URL not configured', $startTime, [
+                'error_type' => 'configuration',
             ]);
         }
 
-        // Check server health first
+        // 3. ตรวจสอบสถานะการทำงานของ AI Server (Health Check)
         $health = $this->checkServerHealth();
         if (!$health['available']) {
             return $this->createErrorResponse('AI Server unavailable', $startTime, [
-                'fallback_recommended' => true,
                 'health_status' => $health,
-                'error_type' => 'server_unavailable'
+                'error_type'    => 'server_unavailable',
             ]);
         }
 
-        // Check consecutive failures
+        // 4. ตรวจสอบจำนวนความล้มเหลวต่อเนื่อง (Circuit Breaker)
         $failureKey = "ai_server_failures_{$user->id}";
-        $consecutiveFailures = Cache::get($failureKey, 0);
+        $consecutiveFailures = (int) Cache::get($failureKey, 0);
         
         if ($consecutiveFailures >= $this->fallbackThreshold) {
             return $this->createErrorResponse('Too many recent failures', $startTime, [
-                'fallback_recommended' => true,
                 'consecutive_failures' => $consecutiveFailures,
-                'error_type' => 'failure_threshold'
+                'error_type'           => 'failure_threshold',
             ]);
         }
 
-        // Process image
+        // 5. แปลงและตรวจสอบขนาดไฟล์ภาพ (จำกัดไม่เกิน 2MB)
         $imageDecoded = $this->decodeBase64Image($imageData);
         if (!$imageDecoded) {
-            return $this->createErrorResponse('Invalid image data', $startTime);
+            return $this->createErrorResponse('Invalid image data or file too large', $startTime);
         }
 
         try {
@@ -97,130 +92,78 @@ class FaceVerificationService
             if (!empty($this->aiServerKey)) {
                 $httpRequest = $httpRequest->withHeaders(['X-API-Key' => $this->aiServerKey]);
             }
+
+            // 6. ส่งรูปภาพไปยัง Python AI Server (/verify) เพื่อทำ Detection, Liveness, Embedding, Similarity
             $response = $httpRequest
                 ->attach('image', $imageDecoded, 'frame.jpg')
                 ->post(rtrim($this->aiServerUrl, '/') . '/verify', [
                     'known_embedding' => json_encode($user->face_descriptor),
-                    'check_liveness' => 'true',
+                    'check_liveness'  => 'true',
                 ]);
 
-            $processingTime = round((microtime(true) - $startTime) * 1000);
+            $processingTime = (int) round((microtime(true) - $startTime) * 1000);
 
             if ($response->successful()) {
-                // Reset failure count on success
+                // รีเซ็ตตัวนับข้อผิดพลาดเมื่อสำเร็จ
                 Cache::forget($failureKey);
                 
                 $result = $response->json();
                 
-                // Log slow requests
                 if ($processingTime > 4000) {
-                    Log::warning("Slow Python face verification: {$processingTime}ms for user {$user->id}");
+                    Log::warning("Slow Face Verification: {$processingTime}ms for user {$user->id}");
                 }
 
+                $isMatch        = (bool) ($result['is_match'] ?? false);
+                $score          = (float) ($result['score_percentage'] ?? 0.0);
+                $livenessPassed = (bool) ($result['liveness_passed'] ?? ($result['liveness']['passed'] ?? true));
+
                 return array_merge($result, [
-                    'success' => true,
-                    'mode' => 'python',
-                    'processing_ms' => $processingTime,
-                    'server_ms' => $result['processing_ms'] ?? 0,
-                    'network_ms' => $processingTime - ($result['processing_ms'] ?? 0),
-                    'health_status' => $health
-                ]);
-            } else {
-                // Record failure
-                $this->recordFailure($failureKey);
-                
-                return $this->createErrorResponse('AI Server processing error', $startTime, [
-                    'http_status' => $response->status(),
-                    'fallback_recommended' => true,
-                    'error_type' => 'server_error'
+                    'success'          => true,
+                    'is_match'         => $isMatch,
+                    'score_percentage' => $score,
+                    'liveness_passed'  => $livenessPassed,
+                    'processing_ms'    => $processingTime,
+                    'server_ms'        => $result['processing_ms'] ?? 0,
+                    'network_ms'       => max(0, $processingTime - ((int) ($result['processing_ms'] ?? 0))),
                 ]);
             }
 
-        } catch (\Exception $e) {
-            // Record failure
             $this->recordFailure($failureKey);
             
-            Log::error("Python face verification error for user {$user->id}: " . $e->getMessage());
+            return $this->createErrorResponse('AI Server processing error', $startTime, [
+                'http_status' => $response->status(),
+                'error_type'  => 'server_error',
+            ]);
+
+        } catch (\Throwable $e) {
+            $this->recordFailure($failureKey);
+            
+            Log::error("Python Face Verification error for user {$user->id}: " . $e->getMessage());
 
             return $this->createErrorResponse('AI Server connection failed', $startTime, [
                 'error_type' => get_class($e),
-                'fallback_recommended' => true,
-                'exception' => true
+                'exception'  => true,
             ]);
         }
     }
 
     /**
-     * JavaScript verification support (returns descriptor for client processing)
+     * ตรวจสอบสถานะการเชื่อมต่อ AI Server พร้อมระบบแคช (30 วินาที)
      */
-    private function javascriptVerificationSupport(User $user, float $startTime): array
-    {
-        $descriptor128d = $user->face_descriptor_js;
-
-        if (!$descriptor128d) {
-            // Try to generate from 512D
-            if ($user->face_descriptor && is_array($user->face_descriptor)) {
-                $descriptor128d = array_slice($user->face_descriptor, 0, 128);
-                
-                // Save for future use
-                $user->update(['face_descriptor_js' => $descriptor128d]);
-                
-                Log::info("Generated 128D descriptor for user {$user->id} from 512D");
-            } else {
-                return $this->createErrorResponse('No face descriptors available', $startTime);
-            }
-        }
-
-        return [
-            'success' => true,
-            'mode' => 'js',
-            'descriptor_128d' => $descriptor128d,
-            'processing_ms' => round((microtime(true) - $startTime) * 1000),
-            'thresholds' => [
-                'distance' => 0.5,
-                'confidence' => 0.7
-            ],
-            'instructions' => 'Use faceapi.euclideanDistance for comparison'
-        ];
-    }
-
-    /**
-     * Hybrid verification strategy
-     */
-    private function hybridVerification(User $user, string $imageData, float $startTime, string $priority): array
-    {
-        if ($priority === 'speed') {
-            // Try JS first, fallback to Python if needed
-            $jsResponse = $this->javascriptVerificationSupport($user, $startTime);
-            
-            if ($jsResponse['success']) {
-                $jsResponse['fallback_python_available'] = !empty($this->aiServerUrl);
-                return $jsResponse;
-            }
-        }
-
-        // Use Python (accuracy priority or JS failed)
-        return $this->pythonVerification($user, $imageData, $startTime);
-    }
-
-    /**
-     * Check AI Server health with caching
-     */
-    private function checkServerHealth(): array
+    public function checkServerHealth(): array
     {
         $cacheKey = 'ai_server_health_status';
         
-        // Return cached status if available
         $cached = Cache::get($cacheKey);
-        if ($cached) {
+        if (is_array($cached)) {
             return $cached;
         }
 
         if (empty($this->aiServerUrl)) {
             $status = [
-                'available' => false,
-                'error' => 'AI Server URL not configured',
-                'checked_at' => time()
+                'available'  => false,
+                'error'      => 'AI Server URL not configured',
+                'checked_at' => time(),
             ];
         } else {
             try {
@@ -233,60 +176,59 @@ class FaceVerificationService
                 if ($response->successful()) {
                     $healthData = $response->json();
                     $status = [
-                        'available' => true,
-                        'status' => $healthData['status'] ?? 'unknown',
-                        'models' => $healthData['models'] ?? [],
-                        'pipeline' => $healthData['pipeline'] ?? 'unknown',
+                        'available'        => true,
+                        'status'           => $healthData['status'] ?? 'healthy',
+                        'models'           => $healthData['models'] ?? [],
+                        'pipeline'         => $healthData['pipeline'] ?? 'unknown',
                         'response_time_ms' => round(($response->transferStats?->getTransferTime() ?? 0) * 1000),
-                        'checked_at' => time()
+                        'checked_at'       => time(),
                     ];
                 } else {
                     $status = [
-                        'available' => false,
-                        'error' => 'HTTP ' . $response->status(),
-                        'checked_at' => time()
+                        'available'  => false,
+                        'error'      => 'HTTP ' . $response->status(),
+                        'checked_at' => time(),
                     ];
                 }
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $status = [
-                    'available' => false,
-                    'error' => $e->getMessage(),
+                    'available'      => false,
+                    'error'          => $e->getMessage(),
                     'exception_type' => get_class($e),
-                    'checked_at' => time()
+                    'checked_at'     => time(),
                 ];
             }
         }
 
-        // Cache for 30 seconds
         Cache::put($cacheKey, $status, 30);
         
         return $status;
     }
 
     /**
-     * Record failure for tracking
+     * บันทึกความล้มเหลวของการเรียกใช้ AI Server
      */
     private function recordFailure(string $failureKey): void
     {
-        $failures = Cache::get($failureKey, 0) + 1;
-        Cache::put($failureKey, $failures, 300); // 5 minutes
+        $failures = ((int) Cache::get($failureKey, 0)) + 1;
+        Cache::put($failureKey, $failures, 300);
         
-        Log::warning("AI Server failure recorded. Count: {$failures}");
+        Log::warning("AI Server failure count for key {$failureKey}: {$failures}");
     }
 
     /**
-     * Decode base64 image data
+     * แปลงรูปภาพ Base64 เป็น Raw Binary Data พร้อมตรวจสอบขนาด
      */
     private function decodeBase64Image(string $imageData): ?string
     {
-        // Remove data URI prefix if present
         $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $imageData);
+        if ($imageData === null) {
+            return null;
+        }
+
+        $decoded = base64_decode(str_replace(' ', '+', $imageData), true);
         
-        // Decode
-        $decoded = base64_decode(str_replace(' ', '+', $imageData));
-        
-        // Validate size (max 2MB)
-        if (!$decoded || strlen($decoded) > 2000000) {
+        if ($decoded === false || strlen($decoded) > 2097152) { // 2MB limit
             return null;
         }
         
@@ -294,20 +236,23 @@ class FaceVerificationService
     }
 
     /**
-     * Create standardized error response
+     * สร้างโครงสร้าง Error Response มาตรฐาน
      */
     private function createErrorResponse(string $message, float $startTime, array $additional = []): array
     {
         return array_merge([
-            'success' => false,
-            'message' => $message,
-            'processing_ms' => round((microtime(true) - $startTime) * 1000),
-            'timestamp' => time()
+            'success'          => false,
+            'is_match'         => false,
+            'score_percentage' => 0.0,
+            'liveness_passed'  => false,
+            'message'          => $message,
+            'processing_ms'    => (int) round((microtime(true) - $startTime) * 1000),
+            'timestamp'        => time(),
         ], $additional);
     }
 
     /**
-     * Get performance metrics
+     * ดึงข้อมูล Metrics และประสิทธิภาพของระบบ AI
      */
     public function getMetrics(): array
     {
@@ -315,18 +260,13 @@ class FaceVerificationService
         
         return [
             'ai_server' => $health,
-            'system' => [
+            'system'    => [
                 'memory_usage' => memory_get_usage(true),
-                'peak_memory' => memory_get_peak_usage(true),
-                'timestamp' => time()
+                'peak_memory'  => memory_get_peak_usage(true),
+                'timestamp'    => time(),
             ],
-            'rate_limits' => [
-                'python' => 10,
-                'js' => 30,
-                'hybrid' => 20
-            ],
+            'timeout_seconds'    => $this->timeoutSeconds,
             'fallback_threshold' => $this->fallbackThreshold,
-            'timeout_seconds' => $this->timeoutSeconds
         ];
     }
 }

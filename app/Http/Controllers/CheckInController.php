@@ -98,9 +98,8 @@ class CheckInController extends Controller
                 ? asset('storage/' . $user->profile_photo)
                 : null;
             $faceScanMethod = $activity->face_scan_method ?? 'python';
-            $profileJsDescriptor = $user->face_descriptor_js ? json_encode($user->face_descriptor_js) : 'null';
             
-            return view('checkin.selfie', compact('activity', 'token', 'isCheckoutToken', 'profilePhotoUrl', 'faceScanMethod', 'profileJsDescriptor'));
+            return view('checkin.selfie', compact('activity', 'token', 'isCheckoutToken', 'profilePhotoUrl', 'faceScanMethod'));
         }
 
         return view('checkin.scan', compact('activity', 'token', 'isCheckoutToken'));
