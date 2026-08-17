@@ -215,6 +215,8 @@ class ChatService
                 'job_id'           => $jobId,
                 'job_title'        => $jobTitle,
                 'avatar'           => $avatarUrl,
+                'staff_id'         => $staffUser?->id,
+                'staff_role'       => $staffUser?->role,
                 'staff_last_seen'  => $staffUser?->last_seen_at?->toISOString(),
                 'last_message'     => $lastMsg?->body ?? '',
                 'last_sender_role' => $lastMsg?->user_id === $userId ? 'self' : 'other',

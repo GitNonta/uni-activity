@@ -29,7 +29,9 @@ class ChatController extends Controller
     public function show(int $jobId): View
     {
         $data = $this->chatService->getOrCreateRoomForJob(Auth::user(), $jobId);
-        $staffUser = $data['room']->users->firstWhere('role', 'admin') ?? User::where('role', 'admin')->orderBy('id')->first();
+        $staffUser = $jobId > 0 
+            ? ($data['job']?->creator ?? $data['room']->users->where('id', '!=', Auth::id())->first() ?? User::whereIn('role', ['admin', 'staff'])->orderBy('id')->first())
+            : ($data['room']->users->where('id', '!=', Auth::id())->first() ?? User::whereIn('role', ['admin', 'staff'])->orderBy('id')->first());
 
         return view('chat.show', [
             'job'       => $data['job'],

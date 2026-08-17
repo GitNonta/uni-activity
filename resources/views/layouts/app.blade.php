@@ -518,6 +518,18 @@
             }
         }
 
+        window.onlineUsersList = [];
+        function isStaffMemberOnline(staffId) {
+            if (!staffId || staffId === 0 || staffId === '0') {
+                return window.onlineUsersList.some(function(u) {
+                    return (u.role === 'admin' || u.role === 'staff' || u.is_staff) && String(u.id) !== String(USER_ID);
+                });
+            }
+            return window.onlineUsersList.some(function(u) {
+                return String(u.id) === String(staffId);
+            });
+        }
+
         function renderThreads() {
             var el = document.getElementById('cfListContent');
             
@@ -528,7 +540,8 @@
             var isSupportUnread = supportThread && (supportThread.unread || 0) > 0;
             var supportPreview = supportThread && supportThread.last_message ? (supportThread.last_message.length > 32 ? supportThread.last_message.slice(0,32)+'…' : supportThread.last_message) : 'สอบถามปัญหาการใช้งาน';
             var supportLastSeen = (supportThread && supportThread.staff_last_seen) ? supportThread.staff_last_seen : (threads.length > 0 && threads[0].staff_last_seen ? threads[0].staff_last_seen : null);
-            var supportStatusHtml = window.isStaffOnline 
+            var isSupOnline = isStaffMemberOnline(0);
+            var supportStatusHtml = isSupOnline 
                 ? '<span style="color:#10b981;font-weight:600;">🟢 กำลังใช้งาน</span>' 
                 : '<span style="color:#94a3b8;">' + formatLastSeen(supportLastSeen) + '</span>';
             
@@ -537,12 +550,12 @@
                 + '<div style="width:34px;height:34px;border-radius:50%;background:#ffedd5;color:#ea580c;display:flex;align-items:center;justify-content:center;">'
                 + '<svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.05 2a9 9 0 0 1 8 7.94"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.05 6A5 5 0 0 1 18 10"/></svg>'
                 + '</div>'
-                + '<span class="cf-staff-online-dot" style="display:' + (window.isStaffOnline ? 'block' : 'none') + ';position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="กำลังใช้งาน"></span>'
+                + '<span class="cf-staff-online-dot cf-staff-online-dot-0" data-job-id="0" data-staff-id="0" style="display:' + (isSupOnline ? 'block' : 'none') + ';position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="กำลังใช้งาน"></span>'
                 + '</div>'
                 + '<div style="flex:1;min-width:0;">'
                 + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;">'
                 + '<div class="chat-title" style="font-size:.82rem;font-weight:' + (isSupportUnread?'700':'500') + ';color:#1e293b;">ติดต่อสอบถามเจ้าหน้าที่</div>'
-                + '<div class="cf-thread-status" data-last-seen="' + (supportLastSeen || '') + '" style="font-size:.65rem;flex-shrink:0;">' + supportStatusHtml + '</div>'
+                + '<div class="cf-thread-status cf-thread-status-0" data-job-id="0" data-staff-id="0" data-last-seen="' + (supportLastSeen || '') + '" style="font-size:.65rem;flex-shrink:0;">' + supportStatusHtml + '</div>'
                 + '</div>'
                 + '<div class="chat-preview" style="font-size:.7rem;color:' + (isSupportUnread?'#1e293b':'#64748b') + ';font-weight:' + (isSupportUnread?'700':'400') + ';">' + supportPreview + '</div>'
                 + '</div>'
@@ -557,8 +570,9 @@
                 var isUnread = (t.unread || 0) > 0;
                 var preview = t.last_message ? (t.last_message.length > 32 ? t.last_message.slice(0,32)+'…' : t.last_message) : '<svg style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> ไฟล์แนบ';
                 var safeTitle = (t.job_title || 'งานกิจกรรม').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                var threadLastSeen = t.staff_last_seen || supportLastSeen || null;
-                var threadStatusHtml = window.isStaffOnline 
+                var threadLastSeen = t.staff_last_seen || null;
+                var isJobOnline = isStaffMemberOnline(t.staff_id);
+                var threadStatusHtml = isJobOnline 
                     ? '<span style="color:#10b981;font-weight:600;">🟢 กำลังใช้งาน</span>' 
                     : '<span style="color:#94a3b8;">' + formatLastSeen(threadLastSeen) + '</span>';
                 
@@ -573,12 +587,12 @@
                     + 'style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;cursor:pointer;" class="chat-list-item ' + (isUnread ? 'unread' : '') + '">'
                     + '<div style="position:relative;flex-shrink:0;">'
                     + avatarHtml
-                    + '<span class="cf-staff-online-dot" style="display:' + (window.isStaffOnline ? 'block' : 'none') + ';position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="กำลังใช้งาน"></span>'
+                    + '<span class="cf-staff-online-dot cf-staff-online-dot-' + t.job_id + '" data-job-id="' + t.job_id + '" data-staff-id="' + (t.staff_id || '') + '" style="display:' + (isJobOnline ? 'block' : 'none') + ';position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="กำลังใช้งาน"></span>'
                     + '</div>'
                     + '<div style="flex:1;min-width:0;">'
                     + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;">'
                     + '<div class="chat-title" style="font-size:.82rem;font-weight:' + (isUnread?'700':'500') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#1e293b;max-width:150px;">' + safeTitle + '</div>'
-                    + '<div class="cf-thread-status" data-last-seen="' + (threadLastSeen || '') + '" style="font-size:.65rem;flex-shrink:0;">' + threadStatusHtml + '</div>'
+                    + '<div class="cf-thread-status cf-thread-status-' + t.job_id + '" data-job-id="' + t.job_id + '" data-staff-id="' + (t.staff_id || '') + '" data-last-seen="' + (threadLastSeen || '') + '" style="font-size:.65rem;flex-shrink:0;">' + threadStatusHtml + '</div>'
                     + '</div>'
                     + '<div class="chat-preview" style="font-size:.7rem;color:' + (isUnread?'#1e293b':'#64748b') + ';font-weight:' + (isUnread?'700':'400') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + preview + '</div>'
                     + '</div>'
@@ -1124,53 +1138,67 @@
 
             window.Echo.join('online')
                 .here(function(users) {
-                    var hasStaff = users.some(function(u) { return (u.role === 'admin' || u.role === 'staff' || u.is_staff) && String(u.id) !== String(USER_ID); });
-                    updateFloatingOnlineStatus(hasStaff);
+                    window.onlineUsersList = users;
+                    updateFloatingOnlineStatus();
                 })
                 .joining(function(u) {
-                    if ((u.role === 'admin' || u.role === 'staff' || u.is_staff) && String(u.id) !== String(USER_ID)) {
-                        updateFloatingOnlineStatus(true);
-                    }
+                    window.onlineUsersList = window.onlineUsersList.filter(function(usr) { return String(usr.id) !== String(u.id); }).concat([u]);
+                    updateFloatingOnlineStatus();
                 })
                 .leaving(function(u) {
-                    if ((u.role === 'admin' || u.role === 'staff' || u.is_staff) && String(u.id) !== String(USER_ID)) {
-                        var el = document.getElementById('cfAdminOnlineStatus');
-                        var nowIso = new Date().toISOString();
-                        if (el) el.setAttribute('data-last-seen', nowIso);
-                        document.querySelectorAll('.cf-thread-status').forEach(function(st) {
-                            st.setAttribute('data-last-seen', nowIso);
-                        });
-                        updateFloatingOnlineStatus(false);
-                    }
+                    window.onlineUsersList = window.onlineUsersList.filter(function(usr) { return String(usr.id) !== String(u.id); });
+                    var nowIso = new Date().toISOString();
+                    document.querySelectorAll('[data-staff-id="' + u.id + '"]').forEach(function(el) {
+                        el.setAttribute('data-last-seen', nowIso);
+                    });
+                    updateFloatingOnlineStatus();
                 });
 
-            window.isStaffOnline = false;
-            function updateFloatingOnlineStatus(isOnline) {
-                window.isStaffOnline = isOnline;
-                var el = document.getElementById('cfAdminOnlineStatus');
-                if (el) {
-                    el.style.display = 'inline-flex';
-                    if (isOnline) {
-                        el.innerHTML = '<span style="width:7px;height:7px;border-radius:50%;background:#10b981;box-shadow:0 0 6px #10b981;display:inline-block;margin-right:4px;"></span>กำลังใช้งาน';
-                    } else {
-                        var lastSeen = el.getAttribute('data-last-seen');
-                        el.innerHTML = '<span style="width:6px;height:6px;border-radius:50%;background:#cbd5e1;display:inline-block;margin-right:4px;"></span>' + formatLastSeen(lastSeen);
-                    }
-                }
-                document.querySelectorAll('.cf-avatar-online-dot, .cf-staff-online-dot').forEach(function(dot) {
-                    dot.style.display = isOnline ? 'block' : 'none';
+            function updateFloatingOnlineStatus() {
+                // 1. Update each thread in thread list
+                document.querySelectorAll('.cf-staff-online-dot').forEach(function(dot) {
+                    var staffId = dot.getAttribute('data-staff-id');
+                    var jobId = dot.getAttribute('data-job-id');
+                    var online = isStaffMemberOnline(jobId === '0' ? 0 : staffId);
+                    dot.style.display = online ? 'block' : 'none';
                 });
+
                 document.querySelectorAll('.cf-thread-status').forEach(function(st) {
-                    if (isOnline) {
+                    var staffId = st.getAttribute('data-staff-id');
+                    var jobId = st.getAttribute('data-job-id');
+                    var online = isStaffMemberOnline(jobId === '0' ? 0 : staffId);
+                    if (online) {
                         st.innerHTML = '<span style="color:#10b981;font-weight:600;">🟢 กำลังใช้งาน</span>';
                     } else {
                         var lastSeen = st.getAttribute('data-last-seen');
                         st.innerHTML = '<span style="color:#94a3b8;">' + formatLastSeen(lastSeen) + '</span>';
                     }
                 });
+
+                // 2. Update header status in current chat view
+                var currentStaffId = (currentJobId && currentJobId !== 0) ? (threads.find(function(t){ return t.job_id == currentJobId; })?.staff_id) : 0;
+                var isCurrentChatOnline = isStaffMemberOnline(currentJobId === 0 ? 0 : currentStaffId);
+                var el = document.getElementById('cfAdminOnlineStatus');
+                if (el) {
+                    el.style.display = 'inline-flex';
+                    if (isCurrentChatOnline) {
+                        el.innerHTML = '<span style="width:7px;height:7px;border-radius:50%;background:#10b981;box-shadow:0 0 6px #10b981;display:inline-block;margin-right:4px;"></span>กำลังใช้งาน';
+                    } else {
+                        var lastSeen = el.getAttribute('data-last-seen');
+                        el.innerHTML = '<span style="width:6px;height:6px;border-radius:50%;background:#cbd5e1;display:inline-block;margin-right:4px;"></span>' + formatLastSeen(lastSeen);
+                    }
+                }
+
+                // 3. Update avatar online dots in current chat view
+                document.querySelectorAll('.cf-avatar-online-dot').forEach(function(dot) {
+                    dot.style.display = isCurrentChatOnline ? 'block' : 'none';
+                });
+
+                // 4. Update float button glow (any staff is online)
+                var anyStaffOnline = isStaffMemberOnline(0);
                 var btn = document.getElementById('chatFloatBtn');
                 if (btn) {
-                    if (isOnline) {
+                    if (anyStaffOnline) {
                         btn.style.boxShadow = '0 4px 18px rgba(16,185,129,.5), 0 0 0 2px #10b981';
                     } else {
                         btn.style.boxShadow = '0 4px 18px rgba(234,88,12,.45)';
@@ -1179,17 +1207,7 @@
             }
 
             setInterval(function() {
-                if (!window.isStaffOnline) {
-                    document.querySelectorAll('.cf-thread-status').forEach(function(st) {
-                        var lastSeen = st.getAttribute('data-last-seen');
-                        st.innerHTML = '<span style="color:#94a3b8;">' + formatLastSeen(lastSeen) + '</span>';
-                    });
-                    var el = document.getElementById('cfAdminOnlineStatus');
-                    if (el) {
-                        var lastSeen = el.getAttribute('data-last-seen');
-                        el.innerHTML = '<span style="width:6px;height:6px;border-radius:50%;background:#cbd5e1;display:inline-block;margin-right:4px;"></span>' + formatLastSeen(lastSeen);
-                    }
-                }
+                updateFloatingOnlineStatus();
             }, 15000);
 
             window.addEventListener('beforeunload', function() {

@@ -1013,23 +1013,35 @@ document.addEventListener('DOMContentLoaded', () => {
                     .whisper('typing', { userId: USER_ID, name: 'นักศึกษา' });
             });
 
+            const TARGET_STAFF_ID = '{{ $staffUser?->id }}';
+            const IS_GENERAL_SUPPORT = {{ empty($job->id) ? 'true' : 'false' }};
+            window.onlineUsersList = [];
+
+            function checkThisChatOnline() {
+                if (IS_GENERAL_SUPPORT) {
+                    return window.onlineUsersList.some(u => (u.role === 'admin' || u.role === 'staff' || u.is_staff) && String(u.id) !== String(USER_ID));
+                }
+                return TARGET_STAFF_ID ? window.onlineUsersList.some(u => String(u.id) === String(TARGET_STAFF_ID)) : false;
+            }
+
             // 2. Presence Channel 'online'
             window.Echo.join('online')
                 .here((users) => {
-                    const hasStaff = users.some(u => (u.role === 'admin' || u.role === 'staff' || u.is_staff) && String(u.id) !== String(USER_ID));
-                    updateOnlineStatus(hasStaff);
+                    window.onlineUsersList = users;
+                    updateOnlineStatus(checkThisChatOnline());
                 })
                 .joining((u) => {
-                    if ((u.role === 'admin' || u.role === 'staff' || u.is_staff) && String(u.id) !== String(USER_ID)) {
-                        updateOnlineStatus(true);
-                    }
+                    window.onlineUsersList = window.onlineUsersList.filter(usr => String(usr.id) !== String(u.id)).concat([u]);
+                    updateOnlineStatus(checkThisChatOnline());
                 })
                 .leaving((u) => {
-                    if ((u.role === 'admin' || u.role === 'staff' || u.is_staff) && String(u.id) !== String(USER_ID)) {
+                    window.onlineUsersList = window.onlineUsersList.filter(usr => String(usr.id) !== String(u.id));
+                    const isStillOnline = checkThisChatOnline();
+                    if (!isStillOnline) {
                         const label = document.getElementById('onlineStatusLabel');
                         if (label) label.setAttribute('data-last-seen', new Date().toISOString());
-                        updateOnlineStatus(false);
                     }
+                    updateOnlineStatus(isStillOnline);
                 });
 
             function formatLastSeen(lastSeenAt) {
