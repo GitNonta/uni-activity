@@ -63,26 +63,7 @@
                         [{{ $thread['job_title'] }}]
                     </span>
                 </div>
-                <span class="student-status-text student-status-text-{{ $thread['student_id'] }}" data-last-seen="{{ $thread['student_last_seen'] ?? ($time ? $time->toISOString() : '') }}" style="font-size:0.72rem;color:#94a3b8;flex-shrink:0;">
-                    @php
-                        $stLastSeen = !empty($thread['student_last_seen']) ? \Carbon\Carbon::parse($thread['student_last_seen']) : ($time ?? null);
-                        $stDiffMin = $stLastSeen ? max(0, $stLastSeen->diffInMinutes(now())) : null;
-                        $stDiffSec = $stLastSeen ? max(0, $stLastSeen->diffInSeconds(now())) : null;
-                    @endphp
-                    @if($stLastSeen)
-                        @if($stDiffSec < 60)
-                            ออนไลน์เมื่อสักครู่
-                        @elseif($stDiffMin < 60)
-                            ออนไลน์เมื่อ {{ $stDiffMin }} นาทีที่แล้ว
-                        @elseif($stLastSeen->diffInHours(now()) < 24)
-                            ออนไลน์เมื่อ {{ $stLastSeen->diffInHours(now()) }} ชม. ที่แล้ว
-                        @elseif($stLastSeen->isYesterday())
-                            ออนไลน์เมื่อวานนี้ {{ $stLastSeen->format('H:i') }}
-                        @else
-                            ออนไลน์เมื่อ {{ $stLastSeen->format('d/m H:i') }}
-                        @endif
-                    @endif
-                </span>
+                <span class="student-status-text student-status-text-{{ $thread['student_id'] }}" data-student-id="{{ $thread['student_id'] }}" style="font-size:0.72rem;color:#10b981;font-weight:600;flex-shrink:0;"></span>
             </div>
             <p class="{{ $unread > 0 ? 'inbox-unread-text' : 'inbox-read-text' }}" style="margin:0;font-size:.82rem;color:{{ $unread > 0 ? '#1e293b' : '#64748b' }};font-weight:{{ $unread > 0 ? '700' : '400' }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                 {!! $thread['last_message'] ? e($thread['last_message']) : '<svg style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> ไฟล์แนบ' !!}
@@ -94,10 +75,10 @@
             <span class="inbox-time" style="font-size:.72rem;color:#94a3b8;">
                 @if($time)
                     @php
-                        $msgSec = max(0, $time->diffInSeconds(now()));
-                        $msgMin = $time->diffInMinutes(now());
-                        $msgHrs = $time->diffInHours(now());
-                        $msgDays = $time->diffInDays(now());
+                        $msgSec  = (int) floor(max(0, $time->diffInSeconds(now())));
+                        $msgMin  = (int) floor(max(0, $time->diffInMinutes(now())));
+                        $msgHrs  = (int) floor(max(0, $time->diffInHours(now())));
+                        $msgDays = (int) floor(max(0, $time->diffInDays(now())));
                     @endphp
                     @if($msgSec < 60)
                         เมื่อสักครู่
@@ -199,8 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (match && window.onlineStudentIds.has(String(match[1]))) {
                     el.innerHTML = '<span style="color:#10b981;font-weight:600;">🟢 กำลังใช้งาน</span>';
                 } else {
-                    var lastSeen = el.getAttribute('data-last-seen');
-                    el.innerHTML = '<span style="color:#94a3b8;">' + formatLastSeen(lastSeen) + '</span>';
+                    el.innerHTML = '';
                 }
             });
         };
