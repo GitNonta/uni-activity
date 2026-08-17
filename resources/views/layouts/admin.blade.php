@@ -13,9 +13,11 @@
     @vite(['resources/js/app.js'])
     <script>
         (function() {
+            var urlParams = new URLSearchParams(window.location.search);
+            var themeFromUrl = urlParams.get('theme');
             var saved = localStorage.getItem('app-theme');
             var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            var theme = saved || (prefersDark ? 'dark' : 'light');
+            var theme = themeFromUrl || saved || (prefersDark ? 'dark' : 'light');
             document.documentElement.setAttribute('data-theme', theme);
             if (theme === 'dark') {
                 document.documentElement.classList.add('dark');
@@ -35,7 +37,27 @@
             }
             localStorage.setItem('app-theme', next);
             window.updateThemeToggleIcons(next);
+
+            // Broadcast theme change to all widget iframes
+            document.querySelectorAll('.acw-iframe, #chatWidgetIframe').forEach(function(iframe) {
+                try {
+                    iframe.contentWindow.postMessage({ type: 'THEME_CHANGE', theme: next }, '*');
+                } catch(e) {}
+            });
         };
+
+        // Listen for postMessage from parent window if inside widget iframe
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'THEME_CHANGE') {
+                var theme = event.data.theme;
+                document.documentElement.setAttribute('data-theme', theme);
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            }
+        });
 
         window.updateThemeToggleIcons = function(theme) {
             var isDark = theme === 'dark';
@@ -538,13 +560,19 @@ html[data-theme="light"] {
 
     @if(request('widget'))
     <style>
-        html, body { background: #fff !important; overflow: hidden !important; height: 100vh !important; margin: 0 !important; padding: 0 !important; }
+        html, body { overflow: hidden !important; height: 100vh !important; margin: 0 !important; padding: 0 !important; }
         .admin-topbar, .sb-sidebar, .admin-mobile-header, .admin-bottom-nav, .sb-footer, .chat-header-container { display: none !important; }
         .sb-shell { padding-top: 0 !important; }
         .sb-content { margin-left: 0 !important; padding-top: 0 !important; height: 100vh !important; width: 100% !important; }
         .sb-main { padding: 0 !important; height: 100vh !important; max-width: 100% !important; display: flex !important; flex-direction: column !important; margin: 0 !important; }
-        @media (prefers-color-scheme: dark) {
-            html, body { background: #202124 !important; }
+
+        html[data-theme="light"], html[data-theme="light"] body {
+            background: #ffffff !important;
+            color: #0f172a !important;
+        }
+        html[data-theme="dark"], html[data-theme="dark"] body {
+            background: #18181b !important;
+            color: #f4f4f5 !important;
         }
     </style>
     @endif
@@ -862,14 +890,27 @@ document.addEventListener('DOMContentLoaded', function() {
     width: 340px;
     height: 480px;
     background: #fff;
+    border: 1px solid #e2e8f0;
     border-radius: 16px;
     box-shadow: 0 8px 30px rgba(0,0,0,0.18);
     display: flex;
     flex-direction: column;
     overflow: hidden;
     pointer-events: auto;
-    transition: transform 0.2s, height 0.2s;
+    transition: transform 0.2s, height 0.2s, background 0.2s, border-color 0.2s;
     transform-origin: bottom center;
+}
+
+html[data-theme="light"] .admin-chat-widget {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12) !important;
+}
+
+html[data-theme="dark"] .admin-chat-widget {
+    background: #18181b !important;
+    border-color: #27272a !important;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.45) !important;
 }
 
 .admin-chat-widget.minimized {
@@ -915,7 +956,7 @@ document.addEventListener('DOMContentLoaded', function() {
     flex: 1;
     border: none;
     width: 100%;
-    background: #fff;
+    background: transparent;
 }
 </style>
 
@@ -971,9 +1012,10 @@ window.AdminChatManager = (function() {
             relativeUrl = urlObj.pathname + urlObj.search;
         } catch(e) {}
 
+        const currentTheme = document.documentElement.getAttribute('data-theme') || (localStorage.getItem('app-theme') || 'light');
         const iframe = document.createElement('iframe');
         iframe.className = 'acw-iframe';
-        iframe.src = relativeUrl + (relativeUrl.includes('?') ? '&' : '?') + 'widget=1';
+        iframe.src = relativeUrl + (relativeUrl.includes('?') ? '&' : '?') + 'widget=1&theme=' + currentTheme;
 
         widget.appendChild(header);
         widget.appendChild(iframe);

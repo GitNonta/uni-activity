@@ -443,31 +443,91 @@
         transform: translateY(-1px);
     }
 
-    @media (prefers-color-scheme: dark) {
-        #chatFloatPanel { background: #1e293b !important; }
-        .chat-list-item { border-color: #334155 !important; }
-        .chat-list-item:hover { background: #334155 !important; border-color: #475569 !important; }
-        .chat-list-item .chat-title { color: #f1f5f9 !important; }
-        .chat-list-item .chat-preview { color: #94a3b8 !important; }
-        .chat-list-item.unread { background: #ea580c !important; color: #fff !important; border-color: #ea580c !important; }
-        .chat-list-item.unread .chat-title, .chat-list-item.unread .chat-preview { color: #fff !important; }
-        .cf-chat-input-area {
-            background: #202124 !important;
-            border-top-color: #36383a !important;
-        }
-        .cf-input-field {
-            background: #36383a !important;
-            border-color: #5f6368 !important;
-            color: #f1f5f9 !important;
-        }
-        .cf-attach-label {
-            background: #36383a !important;
-            border-color: #5f6368 !important;
-            color: #e8eaed !important;
-        }
-        #cfChatWindow, #cfTypingBar {
-            background: #202124 !important;
-        }
+    /* Light Theme (Default & data-theme="light") */
+    html[data-theme="light"] #chatFloatPanel { 
+        background: #ffffff !important; 
+        box-shadow: 0 8px 40px rgba(0,0,0,0.15) !important;
+        border: 1px solid #e2e8f0;
+    }
+    html[data-theme="light"] .chat-list-item { 
+        background: transparent !important;
+        border-color: #f1f5f9 !important; 
+    }
+    html[data-theme="light"] .chat-list-item:hover { 
+        background: #f8fafc !important; 
+        border-color: #e2e8f0 !important; 
+    }
+    html[data-theme="light"] .chat-list-item .chat-title { 
+        color: #0f172a !important; 
+    }
+    html[data-theme="light"] .chat-list-item .chat-preview { 
+        color: #64748b !important; 
+    }
+    html[data-theme="light"] .cf-chat-input-area {
+        background: #ffffff !important;
+        border-top-color: #e2e8f0 !important;
+    }
+    html[data-theme="light"] .cf-input-field {
+        background: #ffffff !important;
+        border-color: #cbd5e1 !important;
+        color: #1e293b !important;
+    }
+    html[data-theme="light"] .cf-attach-label {
+        background: #f1f5f9 !important;
+        border-color: #cbd5e1 !important;
+        color: #475569 !important;
+    }
+    html[data-theme="light"] #cfChatWindow, 
+    html[data-theme="light"] #cfTypingBar {
+        background: #f8fafc !important;
+    }
+
+    /* Dark Theme (data-theme="dark") */
+    html[data-theme="dark"] #chatFloatPanel { 
+        background: #18181b !important; 
+        box-shadow: 0 8px 40px rgba(0,0,0,0.45) !important;
+        border: 1px solid #27272a;
+    }
+    html[data-theme="dark"] .chat-list-item { 
+        background: transparent !important;
+        border-color: #27272a !important; 
+    }
+    html[data-theme="dark"] .chat-list-item:hover { 
+        background: #27272a !important; 
+        border-color: #3f3f46 !important; 
+    }
+    html[data-theme="dark"] .chat-list-item .chat-title { 
+        color: #f4f4f5 !important; 
+    }
+    html[data-theme="dark"] .chat-list-item .chat-preview { 
+        color: #a1a1aa !important; 
+    }
+    html[data-theme="dark"] .chat-list-item.unread { 
+        background: #ea580c !important; 
+        color: #fff !important; 
+        border-color: #ea580c !important; 
+    }
+    html[data-theme="dark"] .chat-list-item.unread .chat-title, 
+    html[data-theme="dark"] .chat-list-item.unread .chat-preview { 
+        color: #fff !important; 
+    }
+    html[data-theme="dark"] .cf-chat-input-area {
+        background: #18181b !important;
+        border-top-color: #27272a !important;
+    }
+    html[data-theme="dark"] .cf-input-field {
+        background: #27272a !important;
+        border-color: #3f3f46 !important;
+        color: #f4f4f5 !important;
+    }
+    html[data-theme="dark"] .cf-attach-label {
+        background: #27272a !important;
+        border-color: #3f3f46 !important;
+        color: #d4d4d8 !important;
+    }
+    html[data-theme="dark"] #cfChatWindow, 
+    html[data-theme="dark"] #cfTypingBar {
+        background: #121214 !important;
     }
     </style>
     

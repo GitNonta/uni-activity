@@ -282,8 +282,41 @@
 .widget-animate-spin {
     animation: widget-spin 1s linear infinite;
 }
+#chatWidgetContainer {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 400px;
+    height: 600px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.15),0 8px 10px rgba(0,0,0,0.1);
+    z-index: 9999;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+html[data-theme="light"] #chatWidgetContainer {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.12) !important;
+}
+
+html[data-theme="dark"] #chatWidgetContainer {
+    background: #18181b !important;
+    border-color: #27272a !important;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.45) !important;
+}
+
+html[data-theme="dark"] #widgetLoader {
+    background: #18181b !important;
+    color: #a1a1aa !important;
+}
 </style>
-<div id="chatWidgetContainer" style="display:none;position:fixed;bottom:20px;right:20px;width:400px;height:600px;background:#fff;border-radius:16px;box-shadow:0 12px 28px rgba(0,0,0,0.15),0 8px 10px rgba(0,0,0,0.1);z-index:9999;flex-direction:column;overflow:hidden;border:1px solid #e2e8f0;">
+<div id="chatWidgetContainer">
     <!-- Widget Header -->
     <div style="background:linear-gradient(135deg,#ea580c,#f97316);padding:.75rem 1rem;color:#fff;display:flex;align-items:center;justify-content:space-between;cursor:pointer;flex-shrink:0;">
         <div style="display:flex;align-items:center;gap:.5rem;">
@@ -295,7 +328,7 @@
         </button>
     </div>
     <!-- Widget Body (IFrame) -->
-    <div style="flex:1;position:relative;background:#f8fafc;">
+    <div style="flex:1;position:relative;background:transparent;">
         <div id="widgetLoader" style="position:absolute;inset:0;background:#fff;display:flex;align-items:center;justify-content:center;font-size:.85rem;color:#64748b;gap:.5rem;flex-direction:column;">
             <svg class="widget-animate-spin" style="width:28px;height:28px;color:#ea580c;" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" style="opacity:0.25;"></circle>
@@ -354,7 +387,8 @@ function openChatWidget(jobId) {
     closeChatSelectionModal();
 
     var studentId = '{{ $student->id }}';
-    var iframeUrl = '/admin/inbox/' + jobId + '/' + studentId + '?widget=1';
+    var currentTheme = document.documentElement.getAttribute('data-theme') || (localStorage.getItem('app-theme') || 'light');
+    var iframeUrl = '/admin/inbox/' + jobId + '/' + studentId + '?widget=1&theme=' + currentTheme;
     
     document.getElementById('chatWidgetIframe').src = iframeUrl;
     document.getElementById('widgetLoader').style.display = 'flex';

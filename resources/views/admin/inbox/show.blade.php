@@ -5,15 +5,58 @@
 @section('content')
     @if(request('widget'))
     <style>
-        html, body { background: #fff !important; overflow: hidden !important; height: 100vh !important; margin: 0 !important; padding: 0 !important; }
-        .sb-sidebar, .sb-topbar, .admin-mobile-header, .admin-bottom-nav, .sb-footer, .chat-header-container { display: none !important; }
+        html, body { overflow: hidden !important; height: 100vh !important; margin: 0 !important; padding: 0 !important; }
+        .sb-sidebar, .sb-topbar, .admin-topbar, .admin-mobile-header, .admin-bottom-nav, .sb-footer, .chat-header-container { display: none !important; }
+        .sb-shell { padding-top: 0 !important; }
         .sb-content { margin-left: 0 !important; padding-top: 0 !important; height: 100vh !important; width: 100% !important; }
         .sb-main { padding: 0 !important; height: 100vh !important; max-width: 100% !important; display: flex !important; flex-direction: column !important; margin: 0 !important; }
         #chatWindow { flex: 1 !important; height: 0 !important; border: none !important; border-radius: 0 !important; margin: 0 !important; }
-        form#chatForm { padding: 0.6rem 0.75rem; background: #fff; border-top: 1px solid #e2e8f0; flex-shrink: 0; }
-        @media (prefers-color-scheme: dark) {
-            html, body, form#chatForm { background: #202124 !important; border-top-color: #36383a !important; }
-            #chatWindow { background: #202124 !important; }
+        form#chatForm { padding: 0.6rem 0.75rem; flex-shrink: 0; border-radius: 0 !important; border-left: none !important; border-right: none !important; border-bottom: none !important; }
+        
+        /* Light Theme widget */
+        html[data-theme="light"], html[data-theme="light"] body {
+            background: #ffffff !important;
+            color: #0f172a !important;
+        }
+        html[data-theme="light"] #chatWindow {
+            background: #f8fafc !important;
+        }
+        html[data-theme="light"] form#chatForm {
+            background: #ffffff !important;
+            border-top: 1px solid #e2e8f0 !important;
+        }
+        html[data-theme="light"] #msgInput {
+            background: #ffffff !important;
+            border-color: #cbd5e1 !important;
+            color: #0f172a !important;
+        }
+        html[data-theme="light"] label[title*="แนบไฟล์"] {
+            background: #f1f5f9 !important;
+            border-color: #cbd5e1 !important;
+            color: #475569 !important;
+        }
+
+        /* Dark Theme widget */
+        html[data-theme="dark"], html[data-theme="dark"] body {
+            background: #18181b !important;
+            color: #f4f4f5 !important;
+        }
+        html[data-theme="dark"] #chatWindow {
+            background: #121214 !important;
+        }
+        html[data-theme="dark"] form#chatForm {
+            background: #18181b !important;
+            border-top: 1px solid #27272a !important;
+        }
+        html[data-theme="dark"] #msgInput {
+            background: #27272a !important;
+            border-color: #3f3f46 !important;
+            color: #f4f4f5 !important;
+        }
+        html[data-theme="dark"] label[title*="แนบไฟล์"] {
+            background: #27272a !important;
+            border-color: #3f3f46 !important;
+            color: #a1a1aa !important;
         }
     </style>
     @endif
@@ -22,6 +65,80 @@
         :root {
             --chat-primary: #ea580c;
             --chat-primary-hover: #c2410c;
+        }
+
+        /* Light Theme Palette (data-theme="light") */
+        html[data-theme="light"] .chat-header-card {
+            background: #ffffff;
+            border-color: #e2e8f0;
+            color: #0f172a;
+        }
+        html[data-theme="light"] .chat-header-card h2 span:first-child {
+            color: #0f172a !important;
+        }
+        html[data-theme="light"] #chatWindow {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+        }
+        html[data-theme="light"] .msg-bubble-theirs div[id^="bubble-"] {
+            background: #ffffff !important;
+            color: #1e293b !important;
+            border: 1px solid #e2e8f0 !important;
+        }
+        html[data-theme="light"] .msg-actions {
+            background: #ffffff;
+            border-color: #e2e8f0;
+        }
+        html[data-theme="light"] form#chatForm {
+            background: #ffffff;
+            border-color: #e2e8f0;
+        }
+        html[data-theme="light"] #msgInput {
+            background: #ffffff;
+            border-color: #cbd5e1;
+            color: #0f172a;
+        }
+        html[data-theme="light"] label[title*="แนบไฟล์"] {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            color: #64748b;
+        }
+
+        /* Dark Theme Palette (data-theme="dark") */
+        html[data-theme="dark"] .chat-header-card {
+            background: #18181b;
+            border-color: #27272a;
+            color: #f4f4f5;
+        }
+        html[data-theme="dark"] .chat-header-card h2 span:first-child {
+            color: #f4f4f5 !important;
+        }
+        html[data-theme="dark"] #chatWindow {
+            background: #121214;
+            border-color: #27272a;
+        }
+        html[data-theme="dark"] .msg-bubble-theirs div[id^="bubble-"] {
+            background: #27272a !important;
+            color: #f4f4f5 !important;
+            border: 1px solid #3f3f46 !important;
+        }
+        html[data-theme="dark"] .msg-actions {
+            background: #27272a;
+            border-color: #3f3f46;
+        }
+        html[data-theme="dark"] form#chatForm {
+            background: #18181b;
+            border-color: #27272a;
+        }
+        html[data-theme="dark"] #msgInput {
+            background: #27272a;
+            border-color: #3f3f46;
+            color: #f4f4f5;
+        }
+        html[data-theme="dark"] label[title*="แนบไฟล์"] {
+            background: #27272a;
+            border-color: #3f3f46;
+            color: #a1a1aa;
         }
 
         .chat-header-card {

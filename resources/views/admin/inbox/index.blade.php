@@ -21,12 +21,15 @@
 .inbox-thread-item.unread .inbox-job-title { color: #431407 !important; font-weight: 600 !important; }
 .inbox-thread-item.unread .inbox-time { color: #431407 !important; font-weight: 500 !important; }
 
-@media (prefers-color-scheme: dark) {
-    .inbox-thread-item { border-bottom-color: #36383a !important; }
-    .inbox-thread-item:hover { background: #334155 !important; }
-    .inbox-read-text { color: #cbd5e1 !important; }
-    /* Unread keeps #FF9933 and black text in dark mode too, for visibility */
-}
+/* Light theme */
+html[data-theme="light"] .inbox-thread-item { border-bottom-color: #f1f5f9 !important; }
+html[data-theme="light"] .inbox-thread-item:hover { background: #f8fafc !important; }
+html[data-theme="light"] .inbox-read-text { color: #64748b !important; }
+
+/* Dark theme */
+html[data-theme="dark"] .inbox-thread-item { border-bottom-color: #27272a !important; }
+html[data-theme="dark"] .inbox-thread-item:hover { background: #27272a !important; }
+html[data-theme="dark"] .inbox-read-text { color: #a1a1aa !important; }
 </style>
 
 <div class="card" style="padding:0;overflow:hidden;">
