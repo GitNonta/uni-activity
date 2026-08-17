@@ -279,10 +279,6 @@
     </button>
     @endauth
 </div>
-        </div>
-    </div>
-</div>
-@endauth
 
 {{-- ═══ คอมเมนต์ Section ═══ --}}
 <div id="commentSection" class="card mt-2">
