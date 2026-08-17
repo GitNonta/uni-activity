@@ -548,14 +548,33 @@
         }
         window.showChatView = showChatView;
 
+        function playChatChime() {
+            try {
+                var ctx = new (window.AudioContext || window.webkitAudioContext)();
+                var osc = ctx.createOscillator();
+                var gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+                osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12); // A5
+                gain.gain.setValueAtTime(0.08, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.28);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.28);
+            } catch(e) {}
+        }
+
         function appendMessageToChat(e) {
             // Prevent duplicate if already rendered
             if (document.getElementById('cf-msg-' + e.id)) return;
             var win = document.getElementById('cfChatWindow');
+            if (!win) return;
             // Build a msg-compatible object from broadcast payload
             var msg = {
                 id: e.id,
                 user_id: e.user ? e.user.id : null,
+                user: e.user || null,
                 message: e.message,
                 is_edited: false,
                 attachments: e.attachments || [],
@@ -563,8 +582,11 @@
             };
             win.appendChild(buildBubble(msg));
             win.scrollTop = win.scrollHeight;
-            if (panelOpen) {
+            if (panelOpen && currentJobId !== null) {
                 fetch('/jobs/' + currentJobId + '/chat/read', { method: 'POST', headers: { 'X-CSRF-TOKEN': CSRF } });
+            }
+            if (e.user && String(e.user.id) !== String(USER_ID)) {
+                playChatChime();
             }
         }
 
@@ -945,9 +967,34 @@
             window.Echo.private('chat.student.' + USER_ID)
                 .listen('.MessageSent', function(e) {
                     console.log('chat.student MessageSent received', e);
-                    // ถ้ากำลังอยู่ใน room นั้น → chat.room channel จัดการ real-time แล้ว
-                    // แต่ยังต้อง loadThreads() เพื่ออัพเดต last message preview และ badge
+                    // ถ้ากำลังเปิดหน้าแชทอยู่ และตรงกับห้องนี้ ให้ render ทันที
+                    if (panelOpen && currentJobId !== null && currentJobId !== undefined) {
+                        var eJobId = e.room ? e.room.job_id : null;
+                        var isMatch = (String(currentJobId) === String(eJobId)) ||
+                                      (currentJobId === 0 && (!eJobId || eJobId === 0)) ||
+                                      (currentRoomId && String(currentRoomId) === String(e.room_id));
+                        if (isMatch) {
+                            appendMessageToChat(e);
+                        }
+                    }
                     loadThreads();
+                })
+                .listen('.MessageEdited', function(e) {
+                    var el = document.getElementById('cf-msg-' + e.id);
+                    if (el) {
+                        var p = el.querySelector('p');
+                        if (p) p.innerHTML = linkifyText(e.message, false);
+                        if (!el.textContent.includes('(แก้ไขแล้ว)')) {
+                            var editedSpan = document.createElement('span');
+                            editedSpan.style.cssText = 'font-size:0.6rem;opacity:0.7;margin-left:5px;';
+                            editedSpan.textContent = '(แก้ไขแล้ว)';
+                            p.parentNode.appendChild(editedSpan);
+                        }
+                    }
+                })
+                .listen('.MessageDeleted', function(e) {
+                    var el = document.getElementById('cf-msg-' + e.id);
+                    if (el) el.remove();
                 })
                 .listen('.ChatDeleted', function(e) {
                     loadThreads();
