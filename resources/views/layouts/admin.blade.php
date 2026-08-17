@@ -44,10 +44,10 @@
 .sb-sidebar.collapsed { width: 80px; }
 
 .sidebar-brand { 
-    height: 70px; 
+    height: 64px; 
     display: flex; 
     align-items: center; 
-    padding: 0 24px; 
+    padding: 0 20px; 
     color: #fff; 
     font-weight: 800; 
     font-size: 1.1rem;
@@ -55,7 +55,7 @@
     white-space: nowrap; 
     overflow: hidden;
     background: rgba(255,255,255,0.02);
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
 /* Custom Slim Scrollbar */
@@ -68,7 +68,7 @@
     flex: 1; 
     overflow-y: auto; 
     overflow-x: hidden; 
-    padding: 20px 12px; 
+    padding: 16px 12px; 
     display: flex; 
     flex-direction: column; 
     gap: 4px; 
@@ -87,8 +87,8 @@
     display: flex; 
     align-items: center; 
     gap: 12px; 
-    padding: 12px 16px; 
-    border-radius: 12px; 
+    padding: 11px 14px; 
+    border-radius: 10px; 
     color: #9ca3af; 
     font-size: 14px; 
     font-weight: 500; 
@@ -149,19 +149,19 @@
 
 /* ── Sidebar Footer ── */
 .sb-footer { 
-    padding: 16px 12px; 
-    border-top: 1px solid rgba(255,255,255,0.05);
-    background: rgba(0,0,0,0.1);
+    padding: 14px 12px; 
+    border-top: 1px solid rgba(255,255,255,0.08);
+    background: rgba(0,0,0,0.15);
 }
 .sb-user { 
     display: flex; 
     align-items: center; 
     gap: 12px; 
-    padding: 10px; 
-    border-radius: 12px; 
-    transition: all .2s;
-    background: rgba(255,255,255,0.03);
-    text-decoration: none;
+    padding: 8px 10px; 
+    border-radius: 10px; 
+    transition: all .2s; 
+    background: rgba(255,255,255,0.03); 
+    text-decoration: none; 
 }
 .sb-user:hover { 
     background: rgba(255,255,255,0.06); 
@@ -196,7 +196,7 @@
 .sb-sidebar.collapsed .sb-logout-btn { 
     display: none; 
 }
-.sb-sidebar.collapsed .sb-user { justify-content: center; padding: 10px 0; }
+.sb-sidebar.collapsed .sb-user { justify-content: center; padding: 8px 0; }
 
 /* Mobile Sidebar Overlay */
 .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 250; display: none; }
@@ -206,41 +206,102 @@
 .sb-content { flex: 1; min-width: 0; margin-left: 260px; min-height: 100vh; transition: margin-left .3s ease; }
 .sb-content.collapsed { margin-left: 80px; }
 .sb-topbar { 
-    height: 70px; 
-    background: rgba(255,255,255,0.8); 
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid #e5e7eb; 
+    height: 64px; 
+    background: #ffffff; 
+    border-bottom: 1px solid #e2e8f0; 
     display: flex; 
     align-items: center; 
-    padding: 0 24px; 
+    justify-content: space-between;
+    padding: 0 20px; 
     gap: 16px; 
     position: sticky; top: 0; z-index: 100; 
+    box-sizing: border-box;
 }
 
 .sb-toggle-btn {
-    background: #f3f4f6;
-    border: none;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
     cursor: pointer;
-    color: #4b5563;
-    width: 40px;
-    height: 40px;
+    color: #475569;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 10px;
+    border-radius: 8px;
     transition: all .2s;
+    flex-shrink: 0;
 }
 .sb-toggle-btn:hover {
-    background: #e5e7eb;
-    color: #111827;
+    background: #ea580c;
+    border-color: #ea580c;
+    color: #ffffff;
     transform: scale(1.05);
 }
 
 .sb-page-title {
     font-size: 1.1rem;
     font-weight: 700;
-    color: #111827;
-    letter-spacing: -0.025em;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    line-height: 1;
+}
+
+.sb-search-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    height: 36px;
+    padding: 0 12px;
+    font-size: 0.825rem;
+    color: #64748b;
+    cursor: pointer;
+    transition: all .2s;
+    min-width: 220px;
+    justify-content: space-between;
+}
+.sb-search-btn:hover {
+    border-color: #94a3b8;
+    background: #f1f5f9;
+}
+
+@media (prefers-color-scheme: dark) {
+    .sb-topbar {
+        background: #111827 !important;
+        border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    }
+    .sb-toggle-btn {
+        background: rgba(255, 255, 255, 0.06) !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+        color: #cbd5e1 !important;
+    }
+    .sb-toggle-btn:hover {
+        background: #ea580c !important;
+        border-color: #ea580c !important;
+        color: #ffffff !important;
+    }
+    .sb-page-title {
+        color: #f8fafc !important;
+    }
+    .sb-search-btn {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+        color: #94a3b8 !important;
+    }
+    .sb-search-btn:hover {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+    .sb-search-btn kbd {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border-color: rgba(255, 255, 255, 0.15) !important;
+        color: #cbd5e1 !important;
+    }
 }
 
 .sb-main { padding: 32px; max-width: 1400px; margin: 0 auto; }
@@ -448,18 +509,18 @@
     </aside>
 
     <div class="sb-content" id="sbContent">
-        <div class="sb-topbar" style="display:flex; justify-content:space-between; align-items:center;">
-            <div style="display:flex; align-items:center; gap:16px;">
-                <button onclick="toggleSidebar()" class="sb-toggle-btn">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <div class="sb-topbar">
+            <div style="display:flex; align-items:center; gap:14px;">
+                <button onclick="toggleSidebar()" class="sb-toggle-btn" title="ย่อ/ขยาย เมนูด้านข้าง">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                 </button>
                 <span class="sb-page-title">@yield('title', 'Dashboard')</span>
             </div>
 
             <!-- Global Search Trigger (Ctrl+K) -->
-            <button onclick="openGlobalSearch()" style="display:flex; align-items:center; gap:10px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:10px; padding:6px 14px; font-size:0.85rem; color:#64748b; cursor:pointer; transition:all .2s; min-width:240px; justify-content:space-between;" onmouseover="this.style.borderColor='#94a3b8'; this.style.background='#f1f5f9';" onmouseout="this.style.borderColor='#cbd5e1'; this.style.background='#f8fafc';">
+            <button onclick="openGlobalSearch()" class="sb-search-btn" title="ค้นหาด่วน (Ctrl + K)">
                 <span style="display:flex; align-items:center; gap:6px;">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     <span>ค้นหาข้อมูลระบบ...</span>
                 </span>
                 <kbd style="background:#e2e8f0; border:1px solid #cbd5e1; border-radius:4px; padding:1px 5px; font-size:0.75rem; font-family:monospace; color:#475569;">Ctrl K</kbd>
