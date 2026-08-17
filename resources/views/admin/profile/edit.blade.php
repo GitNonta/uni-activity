@@ -226,7 +226,7 @@
                     </div>
                 </div>
 
-                <form method="POST" action="{{ route('profile.update') }}">
+                <form method="POST" action="{{ route('admin.profile.update') }}">
                     @csrf
                     @method('PATCH')
 
@@ -345,7 +345,7 @@
                     </div>
                 </div>
 
-                <form method="POST" action="{{ route('profile.update') }}">
+                <form method="POST" action="{{ route('admin.profile.update') }}">
                     @csrf
                     @method('PATCH')
 
