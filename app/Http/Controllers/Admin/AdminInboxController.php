@@ -83,7 +83,7 @@ class AdminInboxController extends Controller
      */
     public function markRead(int $jobId, int $studentId): JsonResponse
     {
-        $this->chatService->markAsRead(Auth::user(), $jobId);
+        $this->chatService->markAsRead(Auth::user(), $jobId, $studentId);
 
         return response()->json(['success' => true]);
     }

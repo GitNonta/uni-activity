@@ -630,6 +630,14 @@
                     var el = document.getElementById('cf-msg-' + e.id);
                     if (el) el.remove();
                 })
+                .listen('.MessagesRead', function(e) {
+                    if (String(e.reader_id) === String(USER_ID)) return;
+                    document.querySelectorAll('.cf-read-status').forEach(function(el) {
+                        el.textContent = '✓✓ เพิ่งอ่าน';
+                        el.style.color = '#10b981';
+                        setTimeout(function(){ el.style.color = '#f97316'; }, 2000);
+                    });
+                })
                 .listen('.MessageEdited', function(e) {
                     var el = document.getElementById('cf-msg-' + e.id);
                     if (el) {
@@ -1037,6 +1045,12 @@
                 .listen('.MessageDeleted', function(e) {
                     var el = document.getElementById('cf-msg-' + e.id);
                     if (el) el.remove();
+                })
+                .listen('.MessagesRead', function(e) {
+                    if (String(e.reader_id) === String(USER_ID)) return;
+                    document.querySelectorAll('.cf-read-status').forEach(function(el) {
+                        el.textContent = '✓✓ เพิ่งอ่าน';
+                    });
                 })
                 .listen('.ChatDeleted', function(e) {
                     loadThreads();

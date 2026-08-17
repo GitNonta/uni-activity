@@ -699,6 +699,15 @@ document.addEventListener('DOMContentLoaded', function () {
                         window.axios.post(readUrl);
                     }
                 })
+                .listen('.MessagesRead', function (data) {
+                    if (String(data.reader_id) === String(myId)) return;
+                    const statusEls = document.querySelectorAll('.admin-msg-read-status');
+                    statusEls.forEach(el => {
+                        el.textContent = '✓✓ เพิ่งอ่าน';
+                        el.style.color = '#10b981';
+                        setTimeout(() => { el.style.color = '#ea580c'; }, 2000);
+                    });
+                })
                 .listen('.MessageDeleted', function (e) {
                     const el = document.getElementById('cm-' + e.id);
                     if (el) {
@@ -727,6 +736,18 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 });
 
+            // 1.1 Admin Inbox Channel for MessagesRead
+            window.Echo.private('admin.inbox')
+                .listen('.MessagesRead', function (data) {
+                    if (String(data.reader_id) === String(myId)) return;
+                    if (String(data.room_id) === String(roomID)) {
+                        const statusEls = document.querySelectorAll('.admin-msg-read-status');
+                        statusEls.forEach(el => {
+                            el.textContent = '✓✓ เพิ่งอ่าน';
+                        });
+                    }
+                });
+
             // Typing emit
             input.addEventListener('input', function() {
                 window.Echo.private('chat.room.' + roomID)
@@ -736,14 +757,14 @@ document.addEventListener('DOMContentLoaded', function () {
             // Presence channel — student online status
             window.Echo.join('online')
                 .here((users) => {
-                    const isOnline = users.some(u => u.id == studentId);
+                    const isOnline = users.some(u => String(u.id) === String(studentId));
                     toggleStudentOnline(isOnline);
                 })
                 .joining((user) => {
-                    if (user.id == studentId) toggleStudentOnline(true);
+                    if (String(user.id) === String(studentId)) toggleStudentOnline(true);
                 })
                 .leaving((user) => {
-                    if (user.id == studentId) toggleStudentOnline(false);
+                    if (String(user.id) === String(studentId)) toggleStudentOnline(false);
                 });
 
             function toggleStudentOnline(isOnline) {
@@ -753,7 +774,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (label) {
                     label.innerHTML = isOnline 
                         ? '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#10b981;margin-right:4px;"></span>ออนไลน์' 
-                        : '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>ออฟไลน์';
+                        : '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>เพิ่งออนไลน์';
                 }
             }
 

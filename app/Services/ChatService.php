@@ -450,15 +450,36 @@ class ChatService
     }
 
     /**
-     * ทำเครื่องหมายห้องแชทของ Job ว่าอ่านแล้ว
+     * ทำเครื่องหมายห้องแชทของ Job ว่าอ่านแล้ว พร้อม Broadcast MessagesRead ทันที (1ms Real-time)
      */
-    public function markAsRead(User $user, int $jobId): void
+    public function markAsRead(User $user, int $jobId, ?int $targetUserId = null): void
     {
-        $defaultAdminId = User::where('role', 'admin')->orderBy('id')->value('id') ?? 1;
+        $defaultAdminId = $targetUserId ?? (User::where('role', 'admin')->orderBy('id')->value('id') ?? 1);
         $room = $this->findRoom($user->id, $jobId, $defaultAdminId);
 
         if ($room) {
-            $room->users()->updateExistingPivot($user->id, ['last_read_at' => now()]);
+            $now = now();
+            $room->users()->updateExistingPivot($user->id, ['last_read_at' => $now]);
+
+            $otherUser = $room->users()->where('users.id', '!=', $user->id)->first();
+            $studentId = $otherUser && $otherUser->role === 'student' ? $otherUser->id : ($user->role === 'student' ? $user->id : null);
+
+            // 1ms Instant Real-time WebSocket Broadcast
+            broadcast(new MessagesRead((string) $room->id, $user->id, $now->toISOString(), $studentId));
+
+            // Publish เข้าสู่ Dragonfly PubSub Stream
+            try {
+                app(DragonflyPubSubService::class)->publishChatEvent(
+                    (string) $room->id,
+                    'MessagesRead',
+                    [
+                        'room_id'     => (string) $room->id,
+                        'reader_id'   => $user->id,
+                        'read_at'     => $now->toISOString(),
+                        'read_status' => 'เพิ่งอ่าน',
+                    ]
+                );
+            } catch (\Throwable $e) {}
         }
     }
 

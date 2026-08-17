@@ -910,6 +910,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         window.axios.post(readUrl);
                     }
                 })
+                .listen('.MessagesRead', (data) => {
+                    if (String(data.reader_id) === String(USER_ID)) return;
+                    const statusEls = document.querySelectorAll('.msg-read-status');
+                    statusEls.forEach(el => {
+                        el.textContent = '✓✓ เพิ่งอ่าน';
+                        el.style.color = '#10b981';
+                        setTimeout(() => { el.style.color = '#ea580c'; }, 2000);
+                    });
+                })
                 .listen('.MessageEdited', (data) => {
                     const bubble = document.getElementById('bubble-' + data.id);
                     if (bubble) {
@@ -950,6 +959,15 @@ document.addEventListener('DOMContentLoaded', () => {
                             window.axios.post(readUrl);
                         }
                     }
+                })
+                .listen('.MessagesRead', (data) => {
+                    if (String(data.reader_id) === String(USER_ID)) return;
+                    if (String(data.room_id) === String(roomID)) {
+                        const statusEls = document.querySelectorAll('.msg-read-status');
+                        statusEls.forEach(el => {
+                            el.textContent = '✓✓ เพิ่งอ่าน';
+                        });
+                    }
                 });
 
             // Whisper typing emit
@@ -961,14 +979,18 @@ document.addEventListener('DOMContentLoaded', () => {
             // 2. Presence Channel 'online'
             window.Echo.join('online')
                 .here((users) => {
-                    const hasStaff = users.some(u => u.role === 'admin' || u.role === 'staff');
+                    const hasStaff = users.some(u => (u.role === 'admin' || u.role === 'staff') && String(u.id) !== String(USER_ID));
                     updateOnlineStatus(hasStaff);
                 })
                 .joining((u) => {
-                    if (u.role === 'admin' || u.role === 'staff') updateOnlineStatus(true);
+                    if ((u.role === 'admin' || u.role === 'staff') && String(u.id) !== String(USER_ID)) {
+                        updateOnlineStatus(true);
+                    }
                 })
                 .leaving((u) => {
-                    // Check remaining
+                    if ((u.role === 'admin' || u.role === 'staff') && String(u.id) !== String(USER_ID)) {
+                        updateOnlineStatus(false);
+                    }
                 });
 
             function updateOnlineStatus(isOnline) {
@@ -978,7 +1000,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (label) {
                     label.innerHTML = isOnline 
                         ? '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#10b981;margin-right:4px;"></span>ออนไลน์' 
-                        : '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>ออฟไลน์';
+                        : '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>เพิ่งออนไลน์';
                 }
             }
         } else {
