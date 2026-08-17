@@ -342,9 +342,7 @@ class ChatController extends Controller
 
     public function deleteMessage(Message $message): \Illuminate\Http\JsonResponse
     {
-        if ($message->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+        \Illuminate\Support\Facades\Gate::authorize('delete', $message);
 
         $id = $message->id;
         $roomId = $message->room_id;
@@ -360,9 +358,7 @@ class ChatController extends Controller
     {
         $request->validate(['message' => 'required|string|max:2000']);
         
-        if ($message->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+        \Illuminate\Support\Facades\Gate::authorize('update', $message);
 
         $message->body = (string) $request->message;
         $message->save();

@@ -19,6 +19,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
@@ -31,6 +32,8 @@ class StudentAdminController extends Controller
     /** แสดงรายชื่อนักศึกษาทั้งหมด พร้อมสรุปชั่วโมง */
     public function index(Request $request): View
     {
+        Gate::authorize('viewAny', User::class);
+
         $query = User::where('role', 'student')
             ->withCount(['attendances as approved_count' => fn($q) => $q->where('status', 'approved')])
             ->when($request->search, function ($q) use ($request): void {
@@ -87,6 +90,8 @@ class StudentAdminController extends Controller
             abort(404);
         }
 
+        Gate::authorize('view', $student);
+
         $summary = $summaryService->getSummary($student);
 
         $attendances = Attendance::with('activity.category', 'verifier')
@@ -124,9 +129,7 @@ class StudentAdminController extends Controller
         ]);
 
         $activity = Activity::findOrFail($request->activity_id);
-        if (auth()->user()->isStaff() && $activity->created_by !== auth()->id()) {
-            abort(403, 'คุณไม่มีสิทธิ์จัดบันทึกในกิจกรรมนี้');
-        }
+        Gate::authorize('manualCheckIn', [Attendance::class, $activity]);
 
         $exists = Attendance::where('user_id', $student->id)
             ->where('activity_id', $request->activity_id)
@@ -156,10 +159,7 @@ class StudentAdminController extends Controller
     public function updateAttendance(Request $request, User $student, int $aid): RedirectResponse
     {
         $attendance = Attendance::with('activity')->where('user_id', $student->id)->findOrFail($aid);
-
-        if (auth()->user()->isStaff() && (!$attendance->activity || $attendance->activity->created_by !== auth()->id())) {
-            abort(403, 'คุณไม่มีสิทธิ์แก้ไขบันทึกกิจกรรมนี้');
-        }
+        Gate::authorize('update', $attendance);
 
         $request->validate([
             'status'        => 'required|in:approved,pending,rejected',
@@ -184,10 +184,7 @@ class StudentAdminController extends Controller
     public function deleteAttendance(User $student, int $aid): RedirectResponse
     {
         $attendance = Attendance::with('activity')->where('user_id', $student->id)->findOrFail($aid);
-
-        if (auth()->user()->isStaff() && (!$attendance->activity || $attendance->activity->created_by !== auth()->id())) {
-            abort(403, 'คุณไม่มีสิทธิ์ลบบันทึกกิจกรรมนี้');
-        }
+        Gate::authorize('delete', $attendance);
 
         DB::transaction(function () use ($attendance, $student): void {
             $this->auditDelete($attendance, "ลบบันทึกกิจกรรมของ \"{$student->full_name}\"");
@@ -200,6 +197,8 @@ class StudentAdminController extends Controller
     /** ส่งข้อความแรกเริ่มแชทกับนักศึกษา */
     public function sendMessage(Request $request, ChatRepository $chatRepository, User $student): RedirectResponse
     {
+        Gate::authorize('sendMessage', $student);
+
         $request->validate([
             'job_id'  => 'required|integer',
             'message' => 'required|string|max:2000',
@@ -211,9 +210,7 @@ class StudentAdminController extends Controller
         if (auth()->user()->isStaff()) {
             if ($jobId !== 0) {
                 $job = JobListing::findOrFail($jobId);
-                if ($job->created_by !== auth()->id()) {
-                    abort(403, 'คุณไม่มีสิทธิ์แชทสำหรับงานนี้');
-                }
+                Gate::authorize('manage', $job);
             } else {
                 $job = null;
             }

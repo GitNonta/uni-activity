@@ -245,15 +245,7 @@ class AdminInboxController extends Controller
     public function deleteMessage(Message $message): \Illuminate\Http\JsonResponse
     {
         $message->loadMissing(['room.job', 'room.users']);
-        $room = $message->room;
-        if (!$room) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-        $isOwnJob = $room->job_id && ($room->job->created_by === auth()->id() || auth()->user()->isAdmin());
-        $isParticipant = !$room->job_id && $room->users->contains(auth()->id());
-        if (!$isOwnJob && !$isParticipant) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+        \Illuminate\Support\Facades\Gate::authorize('delete', $message);
 
         $id = $message->id;
         $roomId = $message->room_id;
@@ -269,15 +261,7 @@ class AdminInboxController extends Controller
     {
         $request->validate(['message' => 'required|string|max:2000']);
         $message->loadMissing(['room.job', 'room.users']);
-        $room = $message->room;
-        if (!$room) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-        $isOwnJob = $room->job_id && ($room->job->created_by === auth()->id() || auth()->user()->isAdmin());
-        $isParticipant = !$room->job_id && $room->users->contains(auth()->id());
-        if (!$isOwnJob && !$isParticipant) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+        \Illuminate\Support\Facades\Gate::authorize('update', $message);
 
         $message->body = (string) $request->message;
         $message->save();
@@ -289,12 +273,12 @@ class AdminInboxController extends Controller
 
     public function deleteChat($jobId, $userId)
     {
-        $roomQuery = Room::whereHas('users', function ($q) use ($userId) {
-                $q->where('users.id', $userId);
-            });
+        $roomQuery = Room::whereHas('users', function ($q) use ($userId): void {
+            $q->where('users.id', $userId);
+        });
         if ($jobId == 0) {
             $roomQuery->whereNull('job_id')
-                ->whereHas('users', function ($q) {
+                ->whereHas('users', function ($q): void {
                     $q->where('users.id', auth()->id());
                 });
         } else {
@@ -303,17 +287,13 @@ class AdminInboxController extends Controller
         $room = $roomQuery->firstOrFail();
 
         $room->loadMissing(['users', 'job']);
-        $isOwnJob = $room->job_id && ($room->job->created_by === auth()->id() || auth()->user()->isAdmin());
-        $isParticipant = !$room->job_id && $room->users->contains(auth()->id());
-        if (!$isOwnJob && !$isParticipant) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+        \Illuminate\Support\Facades\Gate::authorize('delete', $room);
 
         $roomId = $room->id;
         Message::where('room_id', $roomId)->delete();
         $room->delete();
 
-        broadcast(new \App\Events\ChatDeleted($roomId, $userId));
+        broadcast(new \App\Events\ChatDeleted($roomId, (int) $userId));
 
         return response()->json(['success' => true]);
     }

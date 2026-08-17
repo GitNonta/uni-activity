@@ -37,6 +37,18 @@ class RegistrationPolicy
     }
 
     /**
+     * Determine whether the user can cancel/delete the registration.
+     */
+    public function delete(User $user, Registration $registration): bool
+    {
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $registration->user_id === $user->id;
+    }
+
+    /**
      * Determine whether the user can approve the registration.
      */
     public function approve(User $user, Registration $registration): bool

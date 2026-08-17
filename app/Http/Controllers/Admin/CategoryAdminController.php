@@ -10,6 +10,7 @@ use App\Models\Setting;
 use App\Traits\LogsAdminActivity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
@@ -23,6 +24,8 @@ class CategoryAdminController extends Controller
     /** แสดงรายการหมวดหมู่ทั้งหมด */
     public function index(): View
     {
+        Gate::authorize('viewAny', ActivityCategory::class);
+
         $categories     = ActivityCategory::withCount('activities')->orderBy('name')->get();
         $categorySum    = (float) $categories->sum('required_hours');
         $overrideHours  = Setting::get('total_required_hours');
@@ -35,6 +38,8 @@ class CategoryAdminController extends Controller
     /** บันทึกเกณฑ์ชั่วโมงรวมทั้งระบบ (override) */
     public function saveRequiredHours(Request $request): RedirectResponse
     {
+        Gate::authorize('manageRequiredHours', ActivityCategory::class);
+
         $request->validate([
             'total_required_hours' => 'required|numeric|min:1|max:9999',
         ]);
@@ -47,6 +52,8 @@ class CategoryAdminController extends Controller
     /** รีเซ็ตเกณฑ์ชั่วโมงรวมกลับไปใช้ผลรวมจากหมวดหมู่ */
     public function resetRequiredHours(): RedirectResponse
     {
+        Gate::authorize('manageRequiredHours', ActivityCategory::class);
+
         Setting::where('key', 'total_required_hours')->delete();
         return back()->with('success', 'รีเซ็ตเกณฑ์ชั่วโมงรวมกลับไปใช้ผลรวมจากหมวดหมู่แล้ว');
     }
@@ -54,6 +61,8 @@ class CategoryAdminController extends Controller
     /** บันทึกหมวดหมู่ใหม่ */
     public function store(Request $request): RedirectResponse
     {
+        Gate::authorize('create', ActivityCategory::class);
+
         $request->validate([
             'name'           => 'required|string|max:100|unique:activity_categories,name',
             'description'    => 'nullable|string',
@@ -87,6 +96,8 @@ class CategoryAdminController extends Controller
     /** อัปเดตข้อมูลหมวดหมู่ (ชื่อ, คำอธิบาย, เกณฑ์ชั่วโมง, สี, ตัวเลือกเพิ่มเติม) */
     public function update(Request $request, ActivityCategory $category): RedirectResponse
     {
+        Gate::authorize('update', $category);
+
         $request->validate([
             'name'           => 'required|string|max:100|unique:activity_categories,name,' . $category->id,
             'description'    => 'nullable|string',
@@ -121,6 +132,8 @@ class CategoryAdminController extends Controller
     /** ลบหมวดหมู่ (ถ้าไม่มีกิจกรรมอยู่) */
     public function destroy(ActivityCategory $category): RedirectResponse
     {
+        Gate::authorize('delete', $category);
+
         $category->loadCount('activities');
 
         if ($category->activities_count > 0) {

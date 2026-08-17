@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 /**
  * คอนโทรลเลอร์การลงทะเบียนกิจกรรม
@@ -116,9 +117,7 @@ class RegistrationController extends Controller
      */
     public function destroy(Registration $registration): RedirectResponse
     {
-        if ($registration->user_id !== auth()->id() && !auth()->user()->isAdmin()) {
-            abort(403, 'ไม่มีสิทธิ์ยกเลิกการลงทะเบียนนี้');
-        }
+        Gate::authorize('delete', $registration);
 
         $activity = $registration->activity;
 

@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Announcement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class StudentAnnouncementController extends Controller
@@ -47,17 +48,9 @@ class StudentAnnouncementController extends Controller
     /** แสดงรายละเอียดประกาศ */
     public function show(Announcement $announcement): View
     {
-        $user = auth()->user();
+        Gate::authorize('view', $announcement);
+
         $announcement->loadMissing('creator');
-
-        // ตรวจสอบว่าประกาศนี้เปิดให้ audience นี้ดูหรือไม่
-        $accessible = Announcement::where('id', $announcement->id)
-            ->forAudience($user)
-            ->exists();
-
-        if (!$accessible) {
-            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงประกาศนี้');
-        }
 
         return view('student.announcements.show', compact('announcement'));
     }

@@ -12,6 +12,7 @@ use App\Services\ImageOptimizationService;
 use App\Traits\LogsAdminActivity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -22,6 +23,8 @@ class AnnouncementAdminController extends Controller
     /** รายการประกาศทั้งหมด */
     public function index(Request $request): View
     {
+        Gate::authorize('viewAny', Announcement::class);
+
         $announcements = Announcement::with('creator')
             ->when(auth()->user()->isStaff(), fn($q) => $q->where('created_by', auth()->id()))
             ->when($request->search, function ($q) use ($request): void {
@@ -39,6 +42,8 @@ class AnnouncementAdminController extends Controller
     /** ฟอร์มสร้างประกาศ */
     public function create(): View
     {
+        Gate::authorize('create', Announcement::class);
+
         $faculties = User::whereNotNull('faculty')->distinct()->pluck('faculty')->sort();
         return view('admin.announcements.create', compact('faculties'));
     }
@@ -46,6 +51,8 @@ class AnnouncementAdminController extends Controller
     /** บันทึกประกาศใหม่ */
     public function store(Request $request, ImageOptimizationService $imageOptimizer): RedirectResponse
     {
+        Gate::authorize('create', Announcement::class);
+
         $data = $request->validate([
             'title'          => 'required|string|max:255',
             'content'        => 'required|string',
@@ -74,9 +81,8 @@ class AnnouncementAdminController extends Controller
     /** ฟอร์มแก้ไขประกาศ */
     public function edit(Announcement $announcement): View
     {
-        if (auth()->user()->isStaff() && $announcement->created_by !== auth()->id()) {
-            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงประกาศนี้');
-        }
+        Gate::authorize('update', $announcement);
+
         $faculties = User::whereNotNull('faculty')->distinct()->pluck('faculty')->sort();
         return view('admin.announcements.edit', compact('announcement', 'faculties'));
     }
@@ -84,9 +90,7 @@ class AnnouncementAdminController extends Controller
     /** อัปเดตประกาศ */
     public function update(Request $request, Announcement $announcement, ImageOptimizationService $imageOptimizer): RedirectResponse
     {
-        if (auth()->user()->isStaff() && $announcement->created_by !== auth()->id()) {
-            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงประกาศนี้');
-        }
+        Gate::authorize('update', $announcement);
 
         $data = $request->validate([
             'title'          => 'required|string|max:255',
@@ -115,9 +119,8 @@ class AnnouncementAdminController extends Controller
     /** ลบประกาศ */
     public function destroy(Announcement $announcement): RedirectResponse
     {
-        if (auth()->user()->isStaff() && $announcement->created_by !== auth()->id()) {
-            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงประกาศนี้');
-        }
+        Gate::authorize('delete', $announcement);
+
         $this->auditDelete($announcement, "ลบประกาศ \"{$announcement->title}\"");
         $announcement->delete();
 
@@ -127,9 +130,8 @@ class AnnouncementAdminController extends Controller
     /** สลับสถานะการเปิดใช้งาน */
     public function toggleActive(Announcement $announcement): RedirectResponse
     {
-        if (auth()->user()->isStaff() && $announcement->created_by !== auth()->id()) {
-            abort(403, 'คุณไม่มีสิทธิ์จัดการประกาศนี้');
-        }
+        Gate::authorize('toggle', $announcement);
+
         $announcement->update(['is_active' => !$announcement->is_active]);
         $status = $announcement->is_active ? 'เปิด' : 'ปิด';
         $this->auditToggle($announcement, "{$status}การใช้งานประกาศ \"{$announcement->title}\"");

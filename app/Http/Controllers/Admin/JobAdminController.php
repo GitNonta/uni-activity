@@ -13,6 +13,7 @@ use App\Models\JobListing;
 use App\Services\ImageOptimizationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
@@ -26,6 +27,8 @@ class JobAdminController extends Controller
     /** แสดงรายการประกาศงานทั้งหมด */
     public function index(Request $request): View
     {
+        Gate::authorize('viewAny', JobListing::class);
+
         $query = JobListing::withCount(['applications', 'comments'])
             ->when(auth()->user()->isStaff(), fn($q) => $q->where('created_by', auth()->id()));
 
@@ -48,12 +51,16 @@ class JobAdminController extends Controller
     /** ฟอร์มสร้างประกาศงานใหม่ */
     public function create(): View
     {
+        Gate::authorize('create', JobListing::class);
+
         return view('admin.jobs.create');
     }
 
     /** บันทึกประกาศงานใหม่ */
     public function store(Request $request, ImageOptimizationService $imageOptimizer): RedirectResponse
     {
+        Gate::authorize('create', JobListing::class);
+
         $validated = $request->validate([
             'title'        => 'required|string|max:255',
             'job_type'     => 'required|in:general,parttime',
@@ -92,9 +99,7 @@ class JobAdminController extends Controller
     /** แสดงรายละเอียดงาน + ผู้สมัคร + คำถาม */
     public function show(JobListing $job): View
     {
-        if (auth()->user()->isStaff() && $job->created_by !== auth()->id()) {
-            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงประกาศงานนี้');
-        }
+        Gate::authorize('view', $job);
 
         $job->loadMissing([
             'creator',
@@ -112,18 +117,15 @@ class JobAdminController extends Controller
     /** ฟอร์มแก้ไขประกาศงาน */
     public function edit(JobListing $job): View
     {
-        if (auth()->user()->isStaff() && $job->created_by !== auth()->id()) {
-            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงประกาศงานนี้');
-        }
+        Gate::authorize('update', $job);
+
         return view('admin.jobs.edit', compact('job'));
     }
 
     /** อัปเดตประกาศงาน */
     public function update(Request $request, JobListing $job, ImageOptimizationService $imageOptimizer): RedirectResponse
     {
-        if (auth()->user()->isStaff() && $job->created_by !== auth()->id()) {
-            abort(403, 'คุณไม่มีสิทธิ์จัดการข้อมูลนี้');
-        }
+        Gate::authorize('update', $job);
 
         $validated = $request->validate([
             'title'        => 'required|string|max:255',
@@ -162,9 +164,7 @@ class JobAdminController extends Controller
     /** ลบประกาศงาน */
     public function destroy(JobListing $job): RedirectResponse
     {
-        if (auth()->user()->isStaff() && $job->created_by !== auth()->id()) {
-            abort(403, 'คุณไม่มีสิทธิ์จัดการข้อมูลนี้');
-        }
+        Gate::authorize('delete', $job);
 
         if ($job->image_path) {
             Storage::disk('public')->delete($job->image_path);
@@ -178,10 +178,9 @@ class JobAdminController extends Controller
     /** เปลี่ยนสถานะประกาศงาน */
     public function updateStatus(Request $request, JobListing $job): RedirectResponse
     {
+        Gate::authorize('manage', $job);
+
         $request->validate(['status' => 'required|in:open,closed,completed']);
-        if (auth()->user()->isStaff() && $job->created_by !== auth()->id()) {
-            abort(403, 'คุณไม่มีสิทธิ์จัดการข้อมูลนี้');
-        }
         $job->update(['status' => $request->status]);
 
         $labels = ['open' => 'เปิดรับสมัคร', 'closed' => 'ปิดรับสมัคร', 'completed' => 'เสร็จสิ้น'];
@@ -191,11 +190,9 @@ class JobAdminController extends Controller
     /** Confirm / Reject ผู้สมัคร */
     public function updateApplicant(Request $request, JobListing $job, int $applicationId): RedirectResponse
     {
+        Gate::authorize('manage', $job);
+
         $request->validate(['status' => 'required|in:confirmed,rejected']);
-        if (auth()->user()->isStaff() && $job->created_by !== auth()->id()) {
-            abort(403, 'คุณไม่มีสิทธิ์จัดการข้อมูลนี้');
-        }
-        
         $application = JobApplication::where('job_listing_id', $job->id)->findOrFail($applicationId);
 
         // ตรวจสอบ quota ถ้า confirm
@@ -211,13 +208,12 @@ class JobAdminController extends Controller
         return back()->with('success', "{$label}ผู้สมัครเรียบร้อย");
     }
 
-    /** ลบคอมเมนต์ (Admin) */
+    /** ลบคอมเมนต์ (Admin/Staff Owner) */
     public function deleteComment(int $cid): RedirectResponse
     {
         $comment = JobComment::with('jobListing')->findOrFail($cid);
-        if (auth()->user()->isStaff() && $comment->jobListing->created_by !== auth()->id()) {
-            abort(403, 'คุณไม่มีสิทธิ์ลบคอมเมนต์นี้');
-        }
+        Gate::authorize('delete', $comment);
+
         $comment->delete();
 
         return back()->with('success', 'ลบคอมเมนต์เรียบร้อย');
@@ -226,9 +222,8 @@ class JobAdminController extends Controller
     /** ส่งออกรายชื่อผู้สมัคร (CSV/Excel) */
     public function exportApplicants(Request $request, JobListing $job): \Symfony\Component\HttpFoundation\BinaryFileResponse|StreamedResponse
     {
-        if (auth()->user()->isStaff() && $job->created_by !== auth()->id()) {
-            abort(403, 'คุณไม่มีสิทธิ์จัดการข้อมูลนี้');
-        }
+        Gate::authorize('manage', $job);
+
         $format = $request->input('format', 'csv'); // csv or xlsx
 
         $applications = JobApplication::with('user')

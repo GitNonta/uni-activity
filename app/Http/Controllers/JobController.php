@@ -248,12 +248,10 @@ class JobController extends Controller
         return back()->with('success', 'แสดงความคิดเห็นเรียบร้อย');
     }
 
-    /** ลบคอมเมนต์ (เจ้าของเท่านั้น) */
+    /** ลบคอมเมนต์ (เจ้าของหรือ Admin/Staff Owner เท่านั้น) */
     public function deleteComment(JobComment $comment): \Illuminate\Http\RedirectResponse
     {
-        if ($comment->user_id !== auth()->id() && !auth()->user()->isAdmin()) {
-            return back()->with('error', 'คุณไม่มีสิทธิ์ลบคอมเมนต์นี้');
-        }
+        \Illuminate\Support\Facades\Gate::authorize('delete', $comment);
 
         $comment->delete();
         return back()->with('success', 'ลบคอมเมนต์เรียบร้อย');

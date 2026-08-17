@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Traits\LogsAdminActivity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -24,6 +25,8 @@ class UserAdminController extends Controller
     /** แสดงรายชื่อผู้ใช้ทั้งหมด รองรับกรองตาม role และค้นหา */
     public function index(Request $request): View
     {
+        Gate::authorize('viewAny', User::class);
+
         $users = User::query()
             ->when($request->role, fn($q) => $q->where('role', $request->role))
             ->when($request->search, function ($q) use ($request): void {
@@ -52,6 +55,8 @@ class UserAdminController extends Controller
     /** แสดงฟอร์มสร้างผู้ใช้ใหม่ */
     public function create(Request $request): View
     {
+        Gate::authorize('create', User::class);
+
         $type = $request->get('type', 'student');
         return view('admin.users.create', compact('type'));
     }
@@ -59,6 +64,8 @@ class UserAdminController extends Controller
     /** บันทึกผู้ใช้ใหม่ */
     public function store(Request $request): RedirectResponse
     {
+        Gate::authorize('create', User::class);
+
         $rules = [
             'role'      => 'required|in:student,staff,admin',
             'full_name' => 'required|string|max:255',
@@ -114,12 +121,16 @@ class UserAdminController extends Controller
     /** แสดงฟอร์มแก้ไขผู้ใช้ */
     public function edit(User $user): View
     {
+        Gate::authorize('update', $user);
+
         return view('admin.users.edit', compact('user'));
     }
 
     /** อัปเดตข้อมูลผู้ใช้ */
     public function update(Request $request, User $user): RedirectResponse
     {
+        Gate::authorize('update', $user);
+
         $rules = [
             'full_name' => 'required|string|max:255',
             'email'     => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
@@ -167,6 +178,8 @@ class UserAdminController extends Controller
     /** ลบผู้ใช้ */
     public function destroy(User $user): RedirectResponse
     {
+        Gate::authorize('delete', $user);
+
         if ($user->id === auth()->id()) {
             return back()->with('error', 'ไม่สามารถลบบัญชีของตัวเองได้');
         }
@@ -182,6 +195,8 @@ class UserAdminController extends Controller
     /** สลับสถานะเปิด/ปิดการใช้งาน */
     public function toggleActive(User $user): RedirectResponse
     {
+        Gate::authorize('toggle', $user);
+
         if ($user->id === auth()->id()) {
             return back()->with('error', 'ไม่สามารถปิดการใช้งานบัญชีของตัวเองได้');
         }

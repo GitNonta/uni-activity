@@ -62,6 +62,30 @@ class AttendancePolicy
     }
 
     /**
+     * Determine whether the user can update the attendance.
+     */
+    public function update(User $user, Attendance $attendance): bool
+    {
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $user->isStaff() && $attendance->activity?->created_by === $user->id;
+    }
+
+    /**
+     * Determine whether the user can delete the attendance.
+     */
+    public function delete(User $user, Attendance $attendance): bool
+    {
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $user->isStaff() && $attendance->activity?->created_by === $user->id;
+    }
+
+    /**
      * Determine whether the user can perform manual check-in for an activity.
      */
     public function manualCheckIn(User $user, Activity $activity): bool
