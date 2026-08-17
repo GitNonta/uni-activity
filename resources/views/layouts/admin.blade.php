@@ -372,9 +372,18 @@
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
                 <span class="sb-link-text">คีย์ API & ความเป็นส่วนตัว</span>
             </a>
-            <a href="{{ route('admin.system.cluster') }}" class="sb-link {{ request()->routeIs('admin.system.cluster*') ? 'active' : '' }}">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                <span class="sb-link-text">ศูนย์ควบคุมเซิร์ฟเวอร์</span>
+            @php
+                $monitorHost = request()->getHost();
+                $monitorUrl = (filter_var($monitorHost, FILTER_VALIDATE_IP) || $monitorHost === 'localhost')
+                    ? 'http://' . $monitorHost . ':9999/#cluster'
+                    : 'http://192.168.1.222:9999/#cluster';
+            @endphp
+            <a href="{{ $monitorUrl }}" target="_blank" rel="noopener noreferrer" class="sb-link" title="เปิดแผงควบคุมมอนิเตอร์ (พอร์ต 9999)">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                <span class="sb-link-text" style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+                    <span>แผงควบคุมเซิร์ฟเวอร์</span>
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="opacity:0.6;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                </span>
             </a>
             @php $failedJobsCount = \Illuminate\Support\Facades\DB::table('failed_jobs')->count(); @endphp
             <a href="{{ route('admin.system.failed-jobs.index') }}" class="sb-link {{ request()->routeIs('admin.system.failed-jobs.*') ? 'active' : '' }}">

@@ -17,15 +17,16 @@ class ClusterMonitoringController extends Controller
     ) {}
 
     /**
-     * หน้าจอแดชบอร์ดศูนย์กลางแสดงสถานะของคลัสเตอร์ทั้งหมด
+     * นำทางไปยังแผงควบคุมศูนย์กลางบนพอร์ต 9999 (Monitor UI Dashboard)
      */
-    public function index(Request $request): View
+    public function index(Request $request)
     {
-        $status = $this->clusterHealthService->getFullClusterStatus();
+        $host = $request->getHost();
+        $targetUrl = (filter_var($host, FILTER_VALIDATE_IP) || $host === 'localhost')
+            ? 'http://' . $host . ':9999/#cluster'
+            : 'http://192.168.1.222:9999/#cluster';
 
-        return view('admin.system.cluster', [
-            'status' => $status,
-        ]);
+        return redirect()->away($targetUrl);
     }
 
     /**
