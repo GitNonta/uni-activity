@@ -548,6 +548,30 @@
         }
         window.showChatView = showChatView;
 
+        function formatReadStatus(readAt, isRead, readStatus) {
+            if (readStatus && readStatus !== 'ส่งแล้ว') {
+                return readStatus.startsWith('✓') ? readStatus : '✓✓ ' + readStatus;
+            }
+            if (!readAt && !isRead) return '✓ ส่งแล้ว';
+            if (!readAt) return '✓✓ เพิ่งอ่าน';
+
+            var readTime = new Date(readAt);
+            var now = new Date();
+            var diffSec = Math.max(0, Math.floor((now - readTime) / 1000));
+            var diffMin = Math.floor(diffSec / 60);
+            var diffHours = Math.floor(diffMin / 60);
+
+            if (diffSec < 90) {
+                return '✓✓ เพิ่งอ่าน';
+            } else if (diffMin < 60) {
+                return '✓✓ เห็นเมื่อ ' + diffMin + ' นาทีที่แล้ว';
+            } else if (diffHours < 24) {
+                return '✓✓ เห็นเมื่อ ' + diffHours + ' ชม. ที่แล้ว';
+            } else {
+                return '✓✓ เห็นเมื่อ ' + readTime.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            }
+        }
+
         function playChatChime() {
             try {
                 var ctx = new (window.AudioContext || window.webkitAudioContext)();
