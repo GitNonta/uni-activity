@@ -395,6 +395,16 @@
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 <span class="sb-link-text">Cluster Control Center</span>
             </a>
+            @php $failedJobsCount = \Illuminate\Support\Facades\DB::table('failed_jobs')->count(); @endphp
+            <a href="{{ route('admin.system.failed-jobs.index') }}" class="sb-link {{ request()->routeIs('admin.system.failed-jobs.*') ? 'active' : '' }}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span class="sb-link-text">
+                    Failed Queue Jobs
+                    @if($failedJobsCount > 0)
+                        <span style="background:#ef4444;color:#fff;font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:999px;margin-left:4px;">{{ $failedJobsCount }}</span>
+                    @endif
+                </span>
+            </a>
             @endif
 
             <div class="sb-section-label">รายงาน & ผลการเรียน</div>

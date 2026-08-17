@@ -306,6 +306,14 @@ Route::middleware(['auth', 'role:admin,super-admin'])->prefix('admin')->name('ad
     Route::get('system/cluster', [\App\Http\Controllers\Admin\ClusterMonitoringController::class, 'index'])->name('system.cluster');
     Route::get('api/cluster/metrics', [\App\Http\Controllers\Admin\ClusterMonitoringController::class, 'metrics'])->name('api.cluster.metrics');
 
+    // ── Failed Queue Jobs Management ──
+    Route::get('system/failed-jobs', [\App\Http\Controllers\Admin\FailedJobsController::class, 'index'])->name('system.failed-jobs.index');
+    Route::get('system/failed-jobs/{uuid}', [\App\Http\Controllers\Admin\FailedJobsController::class, 'show'])->name('system.failed-jobs.show');
+    Route::post('system/failed-jobs/retry-all', [\App\Http\Controllers\Admin\FailedJobsController::class, 'retryAll'])->name('system.failed-jobs.retry-all');
+    Route::post('system/failed-jobs/{id}/retry', [\App\Http\Controllers\Admin\FailedJobsController::class, 'retry'])->name('system.failed-jobs.retry');
+    Route::delete('system/failed-jobs/flush', [\App\Http\Controllers\Admin\FailedJobsController::class, 'flush'])->name('system.failed-jobs.flush');
+    Route::delete('system/failed-jobs/{id}', [\App\Http\Controllers\Admin\FailedJobsController::class, 'destroy'])->name('system.failed-jobs.destroy');
+
     // ── Diagnostic / IP Debug (เฉพาะ Admin และ Super-Admin ภายใต้สิทธิ์จัดการ) ──
     Route::get('diagnostics/ip', function () {
         return response()->json([
