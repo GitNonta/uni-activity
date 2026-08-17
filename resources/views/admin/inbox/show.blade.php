@@ -290,7 +290,7 @@
                 <input type="file" id="fileInput" name="attachments[]" multiple style="display:none;">
             </label>
 
-            <textarea id="msgInput" name="message" rows="1" style="flex:1;border:1px solid #e2e8f0;border-radius:10px;padding:.65rem .85rem;font-size:.92rem;resize:none;outline:none;max-height:120px;line-height:1.4;" placeholder="พิมพ์ข้อความถึงนักศึกษา... (กด Enter เพื่อส่ง, วางภาพด้วย Ctrl+V)"></textarea>
+            <textarea id="msgInput" name="message" rows="1" style="flex:1;border:1px solid #e2e8f0;border-radius:10px;padding:.65rem .85rem;font-size:.92rem;resize:none;outline:none;max-height:120px;line-height:1.4;" placeholder="พิมพ์ข้อความ..."></textarea>
 
             <button type="submit" id="sendBtn" style="width:40px;height:40px;background:#ea580c;color:#fff;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;" title="ส่งข้อความ">
                 <svg style="width:18px;height:18px;transform:rotate(45deg);margin-left:-2px;" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
