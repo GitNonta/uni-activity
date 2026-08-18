@@ -1634,6 +1634,30 @@ html[data-theme="dark"] .gmap-sheet-handle {
     background: #3f3f46;
 }
 
+/* ── Animated Road Route Navigation Line (Google Maps Style) ── */
+.nav-route-flow-line {
+    stroke-dasharray: 8, 14;
+    animation: navRouteFlow 1.2s linear infinite;
+    pointer-events: none;
+}
+@keyframes navRouteFlow {
+    from { stroke-dashoffset: 22; }
+    to { stroke-dashoffset: 0; }
+}
+
+.route-turn-marker {
+    background: #ffffff;
+    color: #10b981;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    border: 2px solid #10b981;
+}
+
 /* Hide default leaflet zoom controls */
 .leaflet-control-zoom {
     display: none !important;
@@ -2741,6 +2765,47 @@ html[data-theme="dark"] .gmap-sheet-handle {
         previewRoutesOnMap();
     };
 
+    function renderDualLayerRoadPolyline(points, isPrimary, isNavigating) {
+        const layers = [];
+        if (!points || points.length < 2) return layers;
+
+        // 1. Casing / Border line (High contrast against roads)
+        const casing = L.polyline(points, {
+            color: isPrimary ? '#065f46' : '#334155',
+            weight: isNavigating ? 11 : 9,
+            opacity: isPrimary ? 0.9 : 0.6,
+            lineCap: 'round',
+            lineJoin: 'round'
+        }).addTo(map);
+        layers.push(casing);
+
+        // 2. Core glowing road line
+        const core = L.polyline(points, {
+            color: isPrimary ? '#10b981' : '#94a3b8',
+            weight: isNavigating ? 7 : 5,
+            opacity: isPrimary ? 1 : 0.8,
+            lineCap: 'round',
+            lineJoin: 'round',
+            dashArray: (!isPrimary && !isNavigating) ? '6, 6' : null
+        }).addTo(map);
+        layers.push(core);
+
+        // 3. Directional animated flow line (only for primary active route)
+        if (isPrimary) {
+            const flow = L.polyline(points, {
+                className: 'nav-route-flow-line',
+                color: '#ffffff',
+                weight: 3,
+                opacity: 0.85,
+                lineCap: 'round',
+                lineJoin: 'round'
+            }).addTo(map);
+            layers.push(flow);
+        }
+
+        return layers;
+    }
+
     function previewRoutesOnMap() {
         clearAllRouteVisuals();
         if (!activeLocation || !map || currentRouteAlternatives.length === 0) return;
@@ -2749,31 +2814,19 @@ html[data-theme="dark"] .gmap-sheet-handle {
             const isR0Active = selectedRouteIndex === 0;
 
             // Line 1 (Main Real Road Route)
-            const line1 = L.polyline(currentRouteAlternatives[0].points, {
-                color: isR0Active ? '#10b981' : '#94a3b8',
-                weight: isR0Active ? 7 : 4.5,
-                opacity: isR0Active ? 0.95 : 0.6,
-                lineCap: 'round',
-                lineJoin: 'round',
-                dashArray: isR0Active ? null : '6, 6'
-            }).addTo(map);
-
-            line1.on('click', () => selectRouteCard(0));
-            alternativePolylines.push(line1);
+            const line1Layers = renderDualLayerRoadPolyline(currentRouteAlternatives[0].points, isR0Active, false);
+            line1Layers.forEach(l => {
+                l.on('click', () => selectRouteCard(0));
+                alternativePolylines.push(l);
+            });
 
             // Line 2 (Alternative Route)
             if (currentRouteAlternatives.length > 1) {
-                const line2 = L.polyline(currentRouteAlternatives[1].points, {
-                    color: !isR0Active ? '#10b981' : '#94a3b8',
-                    weight: !isR0Active ? 7 : 4.5,
-                    opacity: !isR0Active ? 0.95 : 0.6,
-                    lineCap: 'round',
-                    lineJoin: 'round',
-                    dashArray: !isR0Active ? null : '6, 6'
-                }).addTo(map);
-
-                line2.on('click', () => selectRouteCard(1));
-                alternativePolylines.push(line2);
+                const line2Layers = renderDualLayerRoadPolyline(currentRouteAlternatives[1].points, !isR0Active, false);
+                line2Layers.forEach(l => {
+                    l.on('click', () => selectRouteCard(1));
+                    alternativePolylines.push(l);
+                });
             }
 
             // Show origin marker (user's current position)
@@ -2844,7 +2897,11 @@ html[data-theme="dark"] .gmap-sheet-handle {
             routingControl = null;
         }
         if (activeNavPolyline) {
-            try { map.removeLayer(activeNavPolyline); } catch (e) {}
+            if (Array.isArray(activeNavPolyline)) {
+                activeNavPolyline.forEach(l => { try { map.removeLayer(l); } catch(e){} });
+            } else {
+                try { map.removeLayer(activeNavPolyline); } catch (e) {}
+            }
             activeNavPolyline = null;
         }
 
@@ -2882,15 +2939,9 @@ html[data-theme="dark"] .gmap-sheet-handle {
             ? `มุ่งหน้าไปยัง ${target.title} (แสดงระยะโดยประมาณ)`
             : `มุ่งหน้าไปยัง ${target.title} (${chosenRoute.name})`;
 
-        // 3. Draw active real road polyline with animated dash
+        // 3. Draw dual-layer glowing road polyline with animated flow
         const pathPoints = chosenRoute.points || [startPoint, [parseFloat(target.lat), parseFloat(target.lng)]];
-        activeNavPolyline = L.polyline(pathPoints, {
-            color: '#10b981',
-            weight: 8,
-            opacity: 0.95,
-            lineCap: 'round',
-            lineJoin: 'round'
-        }).addTo(map);
+        activeNavPolyline = renderDualLayerRoadPolyline(pathPoints, true, true);
 
         // 4. Show destination marker during navigation
         const navDestIcon = L.divIcon({
@@ -3002,13 +3053,18 @@ html[data-theme="dark"] .gmap-sheet-handle {
         const rerouted = await calculateAndRenderRouteOptions();
         activeLocation = savedLocation;
 
-        if (rerouted && activeNavTarget && activeNavPolyline) {
-            try { map.removeLayer(activeNavPolyline); } catch (e) {}
+        if (rerouted && activeNavTarget) {
+            if (activeNavPolyline) {
+                if (Array.isArray(activeNavPolyline)) {
+                    activeNavPolyline.forEach(l => { try { map.removeLayer(l); } catch(e){} });
+                } else {
+                    try { map.removeLayer(activeNavPolyline); } catch (e) {}
+                }
+                activeNavPolyline = null;
+            }
             clearAlternativePolylines();
             activeNavRoute = rerouted;
-            activeNavPolyline = L.polyline(rerouted.points, {
-                color: '#10b981', weight: 8, opacity: 0.95, lineCap: 'round', lineJoin: 'round'
-            }).addTo(map);
+            activeNavPolyline = renderDualLayerRoadPolyline(rerouted.points, true, true);
             updateNavigationPosition(position);
         }
         navigationReroutePending = false;
@@ -3020,7 +3076,11 @@ html[data-theme="dark"] .gmap-sheet-handle {
             routingControl = null;
         }
         if (activeNavPolyline) {
-            try { map.removeLayer(activeNavPolyline); } catch (e) {}
+            if (Array.isArray(activeNavPolyline)) {
+                activeNavPolyline.forEach(l => { try { map.removeLayer(l); } catch(e){} });
+            } else {
+                try { map.removeLayer(activeNavPolyline); } catch (e) {}
+            }
             activeNavPolyline = null;
         }
         activeNavTarget = null;
