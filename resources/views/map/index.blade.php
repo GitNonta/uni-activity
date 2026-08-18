@@ -1615,6 +1615,31 @@ html[data-theme="dark"] .gmap-sheet-handle {
         };
     }
 
+    // Format Duration into Thai Readable string (Minutes, Hours, Days)
+    function formatDurationThai(totalMinutes) {
+        if (!totalMinutes || totalMinutes <= 0) return '< 1 นาที';
+        const mins = Math.round(totalMinutes);
+        if (mins < 1) return '< 1 นาที';
+        if (mins < 60) return `${mins} นาที`;
+
+        const hours = Math.floor(mins / 60);
+        const remainMins = mins % 60;
+
+        if (hours < 24) {
+            if (remainMins === 0) {
+                return `${hours} ชม.`;
+            }
+            return `${hours} ชม. ${remainMins} นาที`;
+        }
+
+        const days = Math.floor(hours / 24);
+        const remainHours = hours % 24;
+        if (remainHours === 0) {
+            return `${days} วัน`;
+        }
+        return `${days} วัน ${remainHours} ชม.`;
+    }
+
     // BottomSheet Handlers
     function showBottomSheet(loc) {
         activeLocation = loc;
@@ -1643,7 +1668,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
         if (loc.type === 'landmark') badgeColorClass = 'badge-green';
         badge.className = 'gmap-badge-tag ' + badgeColorClass;
 
-        // Distance & Smart ETAs
+        // Distance & Smart ETAs (Minutes / Hours formatted)
         let distText = '-';
         let walkText = '-';
         let driveText = '-';
@@ -1660,11 +1685,11 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 walkText = '< 1 นาที';
             } else {
                 const walkMins = Math.max(1, Math.round((distKm / 4.8) * 60));
-                walkText = '~' + walkMins + ' นาที';
+                walkText = '~' + formatDurationThai(walkMins);
             }
 
             const driveMins = Math.max(1, Math.round((distKm / 35) * 60));
-            driveText = '~' + driveMins + ' นาที';
+            driveText = '~' + formatDurationThai(driveMins);
         }
 
         document.getElementById('bs-dist-val').textContent = distText;
@@ -1888,7 +1913,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
             const totalDistKm = (summary.totalDistance / 1000).toFixed(1);
             const totalTimeMin = Math.round(summary.totalTime / 60);
 
-            nextDist.textContent = `${totalDistKm} กม. (~${totalTimeMin} นาที)`;
+            nextDist.textContent = `${totalDistKm} กม. (~${formatDurationThai(totalTimeMin)})`;
             if (routes[0].instructions && routes[0].instructions.length > 0) {
                 nextText.textContent = routes[0].instructions[0].text;
             }
@@ -1896,7 +1921,8 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
         routingControl.on('routingerror', function() {
             const dist = calculateDistance(userCoords[0], userCoords[1], target.lat, target.lng);
-            nextDist.textContent = `~${dist.toFixed(1)} กม. (เส้นตรง)`;
+            const estDriveMins = Math.max(1, Math.round((dist / 35) * 60));
+            nextDist.textContent = `~${dist.toFixed(1)} กม. (~${formatDurationThai(estDriveMins)})`;
             nextText.textContent = `มุ่งหน้าไปยัง ${target.title}`;
         });
     };
