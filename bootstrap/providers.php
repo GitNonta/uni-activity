@@ -1,9 +1,7 @@
 <?php
 
-use App\Providers\AppServiceProvider;
-use Laravel\Reverb\ReverbServiceProvider;
-
 return [
-    AppServiceProvider::class,
-    ReverbServiceProvider::class,
+    App\Providers\AppServiceProvider::class,
+    App\Providers\HorizonServiceProvider::class,
+    Laravel\Reverb\ReverbServiceProvider::class,
 ];
