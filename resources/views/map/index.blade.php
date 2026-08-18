@@ -1568,6 +1568,20 @@ html[data-theme="dark"] .gmap-sheet-handle {
     background: #3f3f46;
 }
 
+/* ── 3D Real-time Navigation Mode Perspective ── */
+.map-canvas-container {
+    perspective: 1000px;
+    transition: all 0.5s ease;
+}
+.map-canvas-container.nav-3d-active #unifiedMap .leaflet-map-pane {
+    transform: rotateX(28deg) scale(1.06);
+    transform-origin: 50% 75%;
+    transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.map-canvas-container.nav-3d-active #unifiedMap .leaflet-tile-container {
+    filter: saturate(1.15) contrast(1.05);
+}
+
 /* Hide default leaflet zoom controls */
 .leaflet-control-zoom {
     display: none !important;
@@ -2671,17 +2685,22 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
             line2.on('click', () => selectRouteCard(1));
             alternativePolylines.push(line2);
+
+            // Broad overview from start to destination
+            const allPoints = [...currentRouteAlternatives[0].points, ...currentRouteAlternatives[1].points];
+            const routeBounds = L.latLngBounds(allPoints);
+            map.fitBounds(routeBounds, { padding: [80, 80], maxZoom: 16 });
         } catch (e) {}
     }
 
     // Start Turn-by-Turn Navigation with Selected Route
     window.startNavigationWithSelectedRoute = function() {
-        const selRoute = currentRouteAlternatives[selectedRouteIndex] || currentRouteAlternatives[0];
+        const selRoute = (currentRouteAlternatives && currentRouteAlternatives[selectedRouteIndex]) ? currentRouteAlternatives[selectedRouteIndex] : (currentRouteAlternatives && currentRouteAlternatives[0] ? currentRouteAlternatives[0] : null);
         closeRouteSelector();
         startNavigationToActive(selRoute);
     };
 
-    // Instant Turn-by-Turn Navigation with Top GPS Banner
+    // Instant Turn-by-Turn Navigation with Top GPS Banner & 3D Mode
     window.startNavigationToActive = function(chosenRoute) {
         const target = activeLocation;
         if (!target) return;
@@ -2701,10 +2720,27 @@ html[data-theme="dark"] .gmap-sheet-handle {
             activeNavPolyline = null;
         }
 
-        // Calculate Route if not passed
-        if (!chosenRoute) {
+        // Calculate Route if not passed or invalid
+        if (!chosenRoute || !chosenRoute.distKm) {
             calculateAndRenderRouteOptions();
-            chosenRoute = currentRouteAlternatives[selectedRouteIndex] || currentRouteAlternatives[0];
+            chosenRoute = (currentRouteAlternatives && currentRouteAlternatives[selectedRouteIndex]) 
+                ? currentRouteAlternatives[selectedRouteIndex] 
+                : (currentRouteAlternatives && currentRouteAlternatives[0] ? currentRouteAlternatives[0] : null);
+
+            if (!chosenRoute) {
+                const baseDistKm = calculateDistance(startPoint[0], startPoint[1], parseFloat(target.lat), parseFloat(target.lng));
+                const estDistKm = (baseDistKm * 1.06).toFixed(1);
+                const estMins = Math.max(1, Math.round((parseFloat(estDistKm) / 42) * 60));
+                chosenRoute = {
+                    index: 0,
+                    name: 'เส้นทางหลัก',
+                    tag: '⚡ แนะนำ',
+                    distKm: estDistKm,
+                    timeMins: estMins,
+                    timeText: formatDurationThai(estMins),
+                    points: [startPoint, [parseFloat(target.lat), parseFloat(target.lng)]]
+                };
+            }
         }
 
         activeNavTarget = target;
@@ -2741,9 +2777,13 @@ html[data-theme="dark"] .gmap-sheet-handle {
             opacity: 0.95
         }).addTo(map);
 
+        // 4. Enable 3D Navigation mode and smoothly zoom into current user position
+        document.querySelector('.map-canvas-container')?.classList.add('nav-3d-active');
         try {
-            map.fitBounds(activeNavPolyline.getBounds(), { padding: [70, 70] });
-        } catch (e) {}
+            map.flyTo(startPoint, 18, { animate: true, duration: 1.0 });
+        } catch (e) {
+            map.setView(startPoint, 18);
+        }
     };
 
     window.clearNavigationRoute = function() {
@@ -2758,7 +2798,13 @@ html[data-theme="dark"] .gmap-sheet-handle {
         activeNavTarget = null;
         activeNavRoute = null;
         clearAlternativePolylines();
+        document.querySelector('.map-canvas-container')?.classList.remove('nav-3d-active');
         document.getElementById('gmapNavBanner').style.display = 'none';
+
+        const startPoint = userCoords || defaultCenter;
+        if (startPoint) {
+            try { map.flyTo(startPoint, 15, { animate: true, duration: 0.8 }); } catch (e) {}
+        }
     };
 
     // Nearby Drawer & List
