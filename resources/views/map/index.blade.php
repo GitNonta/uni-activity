@@ -982,6 +982,11 @@ html[data-theme="dark"] .gmap-icon-btn {
 html[data-theme="dark"] .gmap-sheet-handle {
     background: #3f3f46;
 }
+
+/* Hide default leaflet zoom controls */
+.leaflet-control-zoom {
+    display: none !important;
+}
 </style>
 
 <script>
@@ -1038,11 +1043,6 @@ html[data-theme="dark"] .gmap-sheet-handle {
             zoomControl: false,
             layers: [streetTile]
         });
-
-        // Add Zoom Control to Bottom Right on Desktop, Hidden on Mobile for clean touch
-        if (window.innerWidth >= 768) {
-            L.control.zoom({ position: 'bottomright' }).addTo(map);
-        }
 
         markersCluster = L.markerClusterGroup({
             showCoverageOnHover: false,
