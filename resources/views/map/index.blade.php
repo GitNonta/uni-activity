@@ -1668,10 +1668,18 @@ html[data-theme="dark"] .gmap-sheet-handle {
         }
     });
 
+    function getMapStyle(layerType) {
+        const s = MAP_STYLES[layerType] || MAP_STYLES.streets;
+        if (typeof s === 'object') {
+            return JSON.parse(JSON.stringify(s));
+        }
+        return s;
+    }
+
     function initMap() {
         map = new maplibregl.Map({
             container: 'unifiedMap',
-            style: MAP_STYLES[activeMapLayerType] || MAP_STYLES.streets,
+            style: getMapStyle(activeMapLayerType),
             center: [defaultCenter[1], defaultCenter[0]], // MapLibre takes [lng, lat]
             zoom: 15,
             pitch: 0,
@@ -1683,24 +1691,12 @@ html[data-theme="dark"] .gmap-sheet-handle {
         map.addControl(new maplibregl.NavigationControl({ showCompass: true, showZoom: false }), 'bottom-left');
 
         map.on('load', function() {
-            initVectorSourcesAndLayers();
-            rebuildClusterIndex();
+            restoreMapLayersAndState();
         });
 
         map.on('moveend', renderClusteredMarkers);
 
-        map.on('style.load', function() {
-            initVectorSourcesAndLayers();
-            enable3DBuildings();
-            if (activeNavRoute && activeNavRoute.points && activeNavRoute.points.length >= 2) {
-                renderRouteGeometryOnMap(activeNavRoute.points, true);
-            } else if (currentRouteAlternatives && currentRouteAlternatives.length > 0) {
-                previewRoutesOnMap();
-            }
-            setUserGpsMarker();
-            rebuildClusterIndex();
-            updateHeatmapData();
-        });
+        map.on('style.load', restoreMapLayersAndState);
 
         map.on('click', function(e) {
             // Close bottom sheet if clicking empty map space
@@ -1710,6 +1706,22 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 closeRouteSelector();
             }
         });
+    }
+
+    function restoreMapLayersAndState() {
+        if (!map || !map.getStyle()) return;
+        initVectorSourcesAndLayers();
+        enable3DBuildings();
+
+        if (activeNavRoute && activeNavRoute.points && activeNavRoute.points.length >= 2) {
+            renderRouteGeometryOnMap(activeNavRoute.points, true);
+        } else if (currentRouteAlternatives && currentRouteAlternatives.length > 0) {
+            previewRoutesOnMap();
+        }
+
+        setUserGpsMarker();
+        rebuildClusterIndex();
+        updateHeatmapData();
     }
 
     // Initialize WebGL GeoJSON Sources (Routing, Radius, Heatmap)
@@ -1916,7 +1928,10 @@ html[data-theme="dark"] .gmap-sheet-handle {
         if (activeCard) activeCard.classList.add('active');
         document.getElementById('gmapLayerSheet').style.display = 'none';
 
-        const styleToLoad = MAP_STYLES[layerType] || MAP_STYLES.streets;
+        const styleToLoad = getMapStyle(layerType);
+        
+        map.once('styledata', restoreMapLayersAndState);
+        map.once('idle', restoreMapLayersAndState);
         map.setStyle(styleToLoad);
     };
 
