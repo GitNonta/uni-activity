@@ -212,33 +212,6 @@
                     </button>
                 </div>
 
-                {{-- Quick ETA Estimation Info --}}
-                <div class="gmap-eta-grid">
-                    <div class="gmap-eta-card card-walk" onclick="selectModeFromCard('walk')">
-                        <div class="gmap-eta-label">
-                            <div class="gmap-eta-icon-wrap icon-walk">
-                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                                </svg>
-                            </div>
-                            <span>เดินเท้า</span>
-                        </div>
-                        <div id="bs-walk-eta" class="gmap-eta-value">-</div>
-                    </div>
-                    <div class="gmap-eta-card card-drive" onclick="selectModeFromCard('drive')">
-                        <div class="gmap-eta-label">
-                            <div class="gmap-eta-icon-wrap icon-drive">
-                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
-                                </svg>
-                            </div>
-                            <span>ขับขี่ / รถยนต์</span>
-                        </div>
-                        <div id="bs-drive-eta" class="gmap-eta-value">-</div>
-                    </div>
-                </div>
-
                 {{-- Expanded Additional Content --}}
                 <div class="gmap-sheet-expanded-content">
                     <div class="gmap-info-section">
@@ -349,9 +322,7 @@
             </div>
 
             {{-- Route Options Cards (Alternatives) --}}
-            <div class="gmap-route-cards-list" id="gmapRouteCardsList">
-                <div style="padding:1rem;text-align:center;color:#94a3b8;font-size:0.85rem;">กำลังค้นหาเส้นทางที่ดีที่สุด...</div>
-            </div>
+            <div class="gmap-route-cards-list" id="gmapRouteCardsList"></div>
 
             {{-- Bottom Start Button --}}
             <div class="gmap-route-sheet-footer">
@@ -2280,8 +2251,6 @@ html[data-theme="dark"] .gmap-sheet-handle {
         }
 
         document.getElementById('bs-dist-val').textContent = distText;
-        document.getElementById('bs-walk-eta').textContent = walkText;
-        document.getElementById('bs-drive-eta').textContent = driveText;
         document.getElementById('bs-meta-info').textContent = loc.meta_info || loc.location_name || 'สถานที่ในแผนที่';
 
         // Detail Button
@@ -2463,10 +2432,12 @@ html[data-theme="dark"] .gmap-sheet-handle {
     };
 
     window.openRouteSelector = function(loc) {
+        if (!loc) return;
         activeLocation = loc;
         closeBottomSheet();
 
         const sheet = document.getElementById('gmapRouteSelectorSheet');
+        if (!sheet) return;
         document.getElementById('gmapRouteDestTitle').textContent = loc.title;
 
         // Set active mode chip
@@ -2477,11 +2448,13 @@ html[data-theme="dark"] .gmap-sheet-handle {
         sheet.style.display = 'flex';
 
         // Center map to bounds between user and target
-        if (userCoords) {
-            const bounds = L.latLngBounds([userCoords, [loc.lat, loc.lng]]);
+        const startPoint = userCoords || defaultCenter;
+        try {
+            const bounds = L.latLngBounds([startPoint, [parseFloat(loc.lat), parseFloat(loc.lng)]]);
             map.fitBounds(bounds, { padding: [80, 80] });
-        }
+        } catch (e) {}
 
+        selectedRouteIndex = 0;
         calculateAndRenderRouteOptions();
     };
 
@@ -2498,7 +2471,9 @@ html[data-theme="dark"] .gmap-sheet-handle {
     };
 
     function clearAlternativePolylines() {
-        alternativePolylines.forEach(layer => map.removeLayer(layer));
+        alternativePolylines.forEach(layer => {
+            try { map.removeLayer(layer); } catch (e) {}
+        });
         alternativePolylines = [];
     }
 
@@ -2510,9 +2485,10 @@ html[data-theme="dark"] .gmap-sheet-handle {
         if (!target) return;
 
         const cardsContainer = document.getElementById('gmapRouteCardsList');
+        if (!cardsContainer) return;
         const startPoint = userCoords || defaultCenter;
 
-        const baseDistKm = calculateDistance(startPoint[0], startPoint[1], target.lat, target.lng);
+        const baseDistKm = calculateDistance(startPoint[0], startPoint[1], parseFloat(target.lat), parseFloat(target.lng));
 
         // Speed coefficients per mode
         let speedKmH = 38;
@@ -2564,7 +2540,6 @@ html[data-theme="dark"] .gmap-sheet-handle {
             }
         ];
 
-        selectedRouteIndex = 0;
         renderRouteCards();
         previewRoutesOnMap();
     }
@@ -2608,11 +2583,11 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
     function previewRoutesOnMap() {
         clearAlternativePolylines();
-        if (!activeLocation) return;
+        if (!activeLocation || !map) return;
 
         const target = activeLocation;
         const p1 = userCoords || defaultCenter;
-        const p2 = [target.lat, target.lng];
+        const p2 = [parseFloat(target.lat), parseFloat(target.lng)];
 
         const midLat = (p1[0] + p2[0]) / 2;
         const midLng = (p1[1] + p2[1]) / 2;
@@ -2623,27 +2598,29 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
         const isR0Active = selectedRouteIndex === 0;
 
-        // Line 1 (Main)
-        const line1 = L.polyline(route1Points, {
-            color: isR0Active ? '#10b981' : '#94a3b8',
-            weight: isR0Active ? 7 : 5,
-            opacity: isR0Active ? 0.95 : 0.6,
-            dashArray: isR0Active ? null : '6, 6'
-        }).addTo(map);
+        try {
+            // Line 1 (Main)
+            const line1 = L.polyline(route1Points, {
+                color: isR0Active ? '#10b981' : '#94a3b8',
+                weight: isR0Active ? 7 : 5,
+                opacity: isR0Active ? 0.95 : 0.6,
+                dashArray: isR0Active ? null : '6, 6'
+            }).addTo(map);
 
-        line1.on('click', () => selectRouteCard(0));
-        alternativePolylines.push(line1);
+            line1.on('click', () => selectRouteCard(0));
+            alternativePolylines.push(line1);
 
-        // Line 2 (Alternative)
-        const line2 = L.polyline(route2Points, {
-            color: !isR0Active ? '#10b981' : '#94a3b8',
-            weight: !isR0Active ? 7 : 5,
-            opacity: !isR0Active ? 0.95 : 0.6,
-            dashArray: !isR0Active ? null : '6, 6'
-        }).addTo(map);
+            // Line 2 (Alternative)
+            const line2 = L.polyline(route2Points, {
+                color: !isR0Active ? '#10b981' : '#94a3b8',
+                weight: !isR0Active ? 7 : 5,
+                opacity: !isR0Active ? 0.95 : 0.6,
+                dashArray: !isR0Active ? null : '6, 6'
+            }).addTo(map);
 
-        line2.on('click', () => selectRouteCard(1));
-        alternativePolylines.push(line2);
+            line2.on('click', () => selectRouteCard(1));
+            alternativePolylines.push(line2);
+        } catch (e) {}
     }
 
     // Start Turn-by-Turn Navigation with Selected Route
@@ -2832,10 +2809,14 @@ html[data-theme="dark"] .gmap-sheet-handle {
     // Haversine Distance Formula (km)
     function calculateDistance(lat1, lon1, lat2, lon2) {
         const R = 6371; // Earth's radius in km
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const numLat1 = parseFloat(lat1) || 0;
+        const numLon1 = parseFloat(lon1) || 0;
+        const numLat2 = parseFloat(lat2) || 0;
+        const numLon2 = parseFloat(lon2) || 0;
+        const dLat = (numLat2 - numLat1) * Math.PI / 180;
+        const dLon = (numLon2 - numLon1) * Math.PI / 180;
         const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.cos(numLat1 * Math.PI / 180) * Math.cos(numLat2 * Math.PI / 180) *
                   Math.sin(dLon / 2) * Math.sin(dLon / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c;
