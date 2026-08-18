@@ -861,16 +861,19 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     animation: slideUp 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     transition: max-height 0.3s ease;
 }
-/* Expanded: full-screen takeover */
+/* Expanded: full-screen takeover — instant, no slide */
 .gmap-bottom-sheet.expanded {
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
+    width: 100% !important;
     max-height: 100vh;
     height: 100vh;
-    border-radius: 0;
+    border-radius: 0 !important;
     z-index: 1300;
+    transition: none;
+    animation: none;
 }
 @media (min-width: 768px) {
     .gmap-bottom-sheet {
@@ -882,29 +885,24 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
         border-radius: 24px;
         box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
     }
-    .gmap-bottom-sheet.expanded {
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        width: auto;
-        max-height: 100vh;
-        height: 100vh;
-        border-radius: 0;
-    }
 }
 .gmap-sheet-handle-zone {
     width: 100%;
     padding: 10px 0 6px;
     display: flex;
     justify-content: center;
-    cursor: grab;
+    cursor: pointer;
 }
 .gmap-sheet-handle {
     width: 38px;
     height: 4px;
     border-radius: 4px;
     background: #cbd5e1;
+    transition: background 0.15s, width 0.15s;
+}
+.gmap-sheet-handle-zone:hover .gmap-sheet-handle {
+    background: #94a3b8;
+    width: 50px;
 }
 .gmap-sheet-inner {
     padding: 0 20px 24px;
