@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'แผนที่กิจกรรมและงาน - UNI Activity')
+@section('title', 'แผนที่กิจกรรมและงาน (WebGL 3D) - UNI Activity')
 
 @section('content')
 <div class="map-explorer-wrapper">
@@ -21,7 +21,7 @@
             <div class="gmap-search-divider"></div>
             <button type="button" class="gmap-list-toggle-btn" onclick="toggleNearbyDrawer()" title="เปิดรายการสถานที่">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
                 </svg>
             </button>
         </div>
@@ -81,12 +81,17 @@
         </button>
     </div>
 
-    {{-- ── 3. Main Map Canvas ── --}}
+    {{-- ── 3. Main Map Canvas (WebGL 3D Container) ── --}}
     <div class="map-canvas-container">
         <div id="unifiedMap" style="width:100%;height:100%;"></div>
 
         {{-- Floating Action Buttons (Right Side) --}}
         <div class="gmap-fab-column">
+            {{-- 3D Mode Toggle FAB --}}
+            <button type="button" class="gmap-fab" id="btnToggle3D" onclick="toggle3DView()" title="สลับมุมมอง 3 มิติ / 2 มิติ">
+                <span style="font-weight:900;font-size:0.8rem;letter-spacing:-0.5px;">3D</span>
+            </button>
+
             {{-- Layer Switcher FAB --}}
             <button type="button" class="gmap-fab" onclick="toggleLayerSheet()" title="เปลี่ยนรูปแบบแผนที่">
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,7 +102,7 @@
             {{-- GPS Current Location FAB --}}
             <button type="button" class="gmap-fab gmap-fab-gps" id="btnGpsLocate" onclick="locateUserAndCenter()" title="ระบุตำแหน่งของฉัน">
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
             </button>
@@ -114,21 +119,21 @@
         {{-- Layer Switcher Modal Sheet --}}
         <div id="gmapLayerSheet" class="gmap-layer-sheet" style="display:none;">
             <div class="gmap-layer-header">
-                <span>รูปแบบแผนที่</span>
+                <span>รูปแบบแผนที่ WebGL 3D</span>
                 <button type="button" onclick="toggleLayerSheet()" class="gmap-icon-btn">✕</button>
             </div>
             <div class="gmap-layer-grid">
                 <div class="gmap-layer-card active" id="layerCard-streets" onclick="switchMapLayer('streets')">
                     <div class="gmap-layer-preview preview-streets"></div>
-                    <span>ปกติ (ค่าเริ่มต้น)</span>
-                </div>
-                <div class="gmap-layer-card" id="layerCard-satellite" onclick="switchMapLayer('satellite')">
-                    <div class="gmap-layer-preview preview-satellite"></div>
-                    <span>ภาพถ่ายดาวเทียม</span>
+                    <span>สว่าง (Positron 3D)</span>
                 </div>
                 <div class="gmap-layer-card" id="layerCard-dark" onclick="switchMapLayer('dark')">
                     <div class="gmap-layer-preview preview-dark"></div>
-                    <span>โหมดมืด (Dark)</span>
+                    <span>โหมดมืด (Dark Matter 3D)</span>
+                </div>
+                <div class="gmap-layer-card" id="layerCard-satellite" onclick="switchMapLayer('satellite')">
+                    <div class="gmap-layer-preview preview-satellite"></div>
+                    <span>ภาพถ่ายดาวเทียม (Satellite)</span>
                 </div>
             </div>
         </div>
@@ -193,149 +198,130 @@
 
                     <button type="button" id="bs-route-options-btn" onclick="openRouteSelectorForActive()" class="gmap-btn-route-select" title="เลือกเส้นทาง / โหมดเดินทาง">
                         <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
                         </svg>
                         <span>เส้นทาง</span>
                     </button>
 
-                    <button type="button" id="bs-native-btn" onclick="openActiveNativeMap()" class="gmap-btn-native-detect" title="เปิดในแอปแผนที่ของเครื่อง">
-                        <span id="bs-native-icon">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon><line x1="9" y1="3" x2="9" y2="18"></line><line x1="15" y1="6" x2="15" y2="21"></line></svg>
-                        </span>
-                        <span id="bs-native-text">แอป</span>
-                    </button>
+                    {{-- Native Map Apps Trigger (Google Maps / Apple Maps on iOS) --}}
+                    <a id="bs-native-nav-btn" href="#" target="_blank" class="gmap-btn-native-detect" title="เปิดใน Google Maps">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                        </svg>
+                        <span id="bs-native-app-label">Google Maps</span>
+                    </a>
 
-                    <button type="button" class="gmap-btn-icon" onclick="shareActiveLocation()" title="แชร์สถานที่นี้">
+                    <button type="button" class="gmap-btn-icon" onclick="shareActiveLocation()" title="แชร์สถานที่">
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
                         </svg>
                     </button>
                 </div>
 
-                {{-- Expanded Additional Content --}}
-                <div class="gmap-sheet-expanded-content">
-                    <div class="gmap-info-section">
-                        <div class="gmap-info-item">
-                            <div class="gmap-info-icon">
-                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                </svg>
-                            </div>
-                            <div class="gmap-info-text-block">
-                                <div class="gmap-info-label">ข้อมูลกิจกรรม / ตำแหน่งงาน</div>
-                                <div id="bs-meta-info" class="gmap-info-text">-</div>
-                            </div>
+                {{-- ETA Summary Grid --}}
+                <div class="gmap-eta-grid">
+                    <div class="gmap-eta-card card-walk" onclick="selectModeFromCard('walk')">
+                        <div class="flex items-center gap-1 text-xs font-bold text-orange-600 dark:text-orange-400">
+                            <span>🚶</span> เดินเท้า
                         </div>
+                        <div class="gmap-eta-value" id="bs-walk-time">-</div>
                     </div>
+                    <div class="gmap-eta-card card-drive" onclick="selectModeFromCard('drive')">
+                        <div class="flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400">
+                            <span>🚗</span> รถยนต์ / มอไซค์
+                        </div>
+                        <div class="gmap-eta-value" id="bs-drive-time">-</div>
+                    </div>
+                </div>
 
-                    <div>
-                        <a id="bs-detail-btn" href="#" class="gmap-btn-detail">
-                            <span>ดูหน้าข้อมูลและสมัคร / เช็คชื่อ</span>
+                {{-- Detailed Section --}}
+                <div class="gmap-info-section">
+                    <div id="bs-time-wrap" class="gmap-info-row">
+                        <div class="gmap-info-icon">
                             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                        </a>
-                    </div>
-
-                    {{-- Direct Native App Launchers with Device Recommendation --}}
-                    <div class="gmap-apps-tray">
-                        <div class="gmap-apps-tray-title">เปิดโดยตรงผ่านแอปแผนที่:</div>
-                        <div class="gmap-apps-grid">
-                            <a id="bs-gmaps-btn" href="#" onclick="launchNativeApp('google', event)" class="gmap-app-pill app-google">
-                                <svg class="gmap-brand-icon" viewBox="0 0 24 24" width="16" height="16">
-                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                                </svg>
-                                <span>Google Maps</span>
-                                <span class="app-recom-tag" id="tag-recom-google" style="display:none;">แนะนำ</span>
-                            </a>
-
-                            <a id="bs-applemaps-btn" href="#" onclick="launchNativeApp('apple', event)" class="gmap-app-pill app-apple">
-                                <svg class="gmap-brand-icon" viewBox="0 0 170 170" width="16" height="16" fill="currentColor">
-                                    <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.69-3.08-7.7-7.91-12.03-14.5-5.64-8.59-10.15-18.49-13.51-29.7-3.37-11.2-5.06-22.02-5.06-32.46 0-14.75 3.8-27.18 11.41-37.3 7.6-10.13 17.2-15.26 28.79-15.41 4.71 0 9.87 1.25 15.48 3.75 5.62 2.5 9.4 3.8 11.35 3.9 1.52 0 5.48-1.39 11.89-4.17 6.41-2.77 12.06-4.04 16.94-3.8 12.52.62 22.56 5.16 30.12 13.62-10.88 6.59-16.2 15.71-15.96 27.36.24 9.17 3.86 16.89 10.87 23.16 7 6.27 15.34 9.82 25.01 10.66-2.07 6.28-4.73 12.77-7.98 19.46zM119.22 31.84c0-7.23 2.65-13.9 7.94-20.02 5.3-6.12 11.78-9.98 19.46-11.58.22 1.09.33 2.18.33 3.27 0 7.02-2.74 13.67-8.23 19.95-5.49 6.28-12.18 10.02-20.07 11.22-.11-.98-.22-1.94-.22-2.84z"/>
-                                </svg>
-                                <span>Apple Maps</span>
-                                <span class="app-recom-tag" id="tag-recom-apple" style="display:none;">แนะนำ</span>
-                            </a>
-
-                            <a id="bs-waze-btn" href="#" onclick="launchNativeApp('waze', event)" class="gmap-app-pill app-waze">
-                                <svg class="gmap-brand-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                                    <path d="M12.003 2c-5.523 0-10 4.477-10 10 0 2.22.723 4.27 1.948 5.928l-.948 3.072 3.19-.877c1.69.96 3.66 1.877 5.81 1.877 5.523 0 10-4.477 10-10s-4.477-10-10-10zm-3.5 12c-.828 0-1.5-.672-1.5-1.5s.672-1.5 1.5-1.5 1.5.672 1.5 1.5-.672 1.5-1.5 1.5zm7 0c-.828 0-1.5-.672-1.5-1.5s.672-1.5 1.5-1.5 1.5.672 1.5 1.5-.672 1.5-1.5 1.5z"/>
-                                </svg>
-                                <span>Waze</span>
-                            </a>
+                        </div>
+                        <div class="gmap-info-text">
+                            <div class="font-bold text-xs text-muted">วันและเวลาจัดกิจกรรม</div>
+                            <div id="bs-time-val" class="font-semibold">-</div>
                         </div>
                     </div>
+
+                    <div id="bs-quota-wrap" class="gmap-info-row">
+                        <div class="gmap-info-icon">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                        </div>
+                        <div class="gmap-info-text">
+                            <div class="font-bold text-xs text-muted">จำนวนผู้เข้าร่วม / รับสมัคร</div>
+                            <div id="bs-quota-val" class="font-semibold">-</div>
+                        </div>
+                    </div>
+
+                    <div id="bs-desc-wrap" class="gmap-info-desc">
+                        <div class="font-bold text-xs text-muted mb-1">รายละเอียด</div>
+                        <div id="bs-desc-val" class="text-sm leading-relaxed text-secondary">-</div>
+                    </div>
+                </div>
+
+                {{-- Footer Button: View Details Link --}}
+                <div class="gmap-sheet-footer">
+                    <a id="bs-detail-link" href="#" class="gmap-btn-detail">
+                        <span>ดูรายละเอียดกิจกรรมเต็ม</span>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </a>
                 </div>
             </div>
         </div>
 
-        {{-- ── 5. Route Selection & Travel Mode Modal Sheet ── --}}
+        {{-- ── 5. Route Selection & Alternatives Modal Sheet ── --}}
         <div id="gmapRouteSelectorSheet" class="gmap-route-sheet" style="display:none;">
-            {{-- Header: Destination + Close --}}
             <div class="gmap-route-sheet-header">
-                <div class="gmap-route-header-info">
-                    <span class="gmap-route-subtitle">เลือกเส้นทางไปยัง</span>
-                    <h3 id="gmapRouteDestTitle" class="gmap-route-title">จุดหมาย</h3>
+                <div>
+                    <div class="gmap-route-subtitle">คำนวณเส้นทางถนนจริง (OSRM)</div>
+                    <div class="gmap-route-title" id="gmapRouteDestTitle">เลือกเส้นทาง</div>
                 </div>
-                <button type="button" class="gmap-sheet-close" onclick="closeRouteSelector()" title="ปิด">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
+                <button type="button" class="gmap-icon-btn" onclick="closeRouteSelector()">✕</button>
             </div>
 
-            {{-- Travel Mode Chips (Driving, Motorbike, Walk, Bike) --}}
+            {{-- Mode Selector Chips --}}
             <div class="gmap-travel-modes-row">
                 <button type="button" class="gmap-mode-chip active" data-mode="drive" onclick="selectTravelMode('drive', this)">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
-                    </svg>
+                    <span style="font-size:1.1rem;">🚗</span>
                     <span>รถยนต์</span>
                 </button>
-
                 <button type="button" class="gmap-mode-chip" data-mode="moto" onclick="selectTravelMode('moto', this)">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                    </svg>
-                    <span>มอเตอร์ไซค์</span>
+                    <span style="font-size:1.1rem;">🛵</span>
+                    <span>มอไซค์</span>
                 </button>
-
                 <button type="button" class="gmap-mode-chip" data-mode="walk" onclick="selectTravelMode('walk', this)">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                    </svg>
-                    <span>เดินเท้า</span>
+                    <span style="font-size:1.1rem;">🚶</span>
+                    <span>เดิน</span>
                 </button>
-
                 <button type="button" class="gmap-mode-chip" data-mode="bike" onclick="selectTravelMode('bike', this)">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <circle cx="5.5" cy="17.5" r="3.5" stroke-width="2"/>
-                        <circle cx="18.5" cy="17.5" r="3.5" stroke-width="2"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 6h-3l-3 7h6l2-4h2"/>
-                    </svg>
+                    <span style="font-size:1.1rem;">🚲</span>
                     <span>จักรยาน</span>
                 </button>
             </div>
 
-            {{-- Route Options Cards (Alternatives) --}}
-            <div class="gmap-route-cards-list" id="gmapRouteCardsList"></div>
-
-            {{-- Bottom Start Button --}}
-            <div class="gmap-route-sheet-footer">
-                <button type="button" id="btnStartSelectedRoute" onclick="startNavigationWithSelectedRoute()" class="gmap-btn-start-nav w-full">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-                    </svg>
-                    <span id="btnStartSelectedRouteText">เริ่มนำทางตามเส้นทางนี้</span>
-                </button>
+            {{-- Real Road Alternatives List --}}
+            <div id="gmapRouteCardsList" class="gmap-route-cards-list">
+                {{-- Dynamic route cards inserted via JS --}}
             </div>
+
+            <button type="button" class="gmap-btn-start-nav w-full" onclick="startNavigationWithSelectedRoute()">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                </svg>
+                <span id="btnStartSelectedRouteText">เริ่มนำทางตามเส้นทางนี้</span>
+            </button>
         </div>
 
-        {{-- ── 5. Nearby Places Drawer (Google Maps List Drawer) ── --}}
+        {{-- ── 6. Nearby Places Drawer ── --}}
         <div id="gmapNearbyDrawer" class="gmap-nearby-drawer" style="display:none;">
             <div class="gmap-drawer-header">
                 <div class="flex items-center gap-2">
@@ -360,19 +346,12 @@
 @endsection
 
 @section('scripts')
-{{-- Leaflet, Routing, Heatmap, MarkerCluster --}}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-<script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
+{{-- MapLibre GL JS (WebGL 3D Engine) --}}
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 
 <style>
-/* ── Fullscreen Map App Layout (Hide Top Navbar, Bottom Nav & Floating Chat Widget) ── */
+/* ── Fullscreen Map App Layout ── */
 header.navbar,
 .bottom-nav,
 #chatFloatWidget,
@@ -408,7 +387,7 @@ html, body {
     min-height: 100% !important;
     border-radius: 0 !important;
     overflow: hidden;
-    background: #f8fafc;
+    background: #0f172a;
     border: none !important;
     box-shadow: none !important;
     display: flex;
@@ -422,6 +401,25 @@ html, body {
     width: 100%;
     height: 100%;
     overflow: hidden;
+}
+
+/* MapLibre Canvas Container */
+.maplibregl-canvas-container, .maplibregl-canvas {
+    width: 100% !important;
+    height: 100% !important;
+    outline: none !important;
+}
+.maplibregl-ctrl-attrib {
+    font-size: 10px !important;
+    background-color: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(4px);
+    border-radius: 6px;
+    margin: 6px;
+    padding: 2px 6px;
+}
+html[data-theme="dark"] .maplibregl-ctrl-attrib {
+    background-color: rgba(24, 24, 27, 0.8) !important;
+    color: #a1a1aa !important;
 }
 
 /* ── 1. Floating Top Bar ── */
@@ -438,25 +436,26 @@ html, body {
 }
 @media (min-width: 768px) {
     .gmap-floating-top {
-        max-width: 440px;
+        left: 20px;
+        right: auto;
+        width: 440px;
     }
 }
 
+/* Google Maps Style Search Pill */
 .gmap-search-pill {
     pointer-events: auto;
-    background: #ffffff;
-    border-radius: 28px;
-    height: 48px;
-    padding: 0 10px 0 6px;
     display: flex;
     align-items: center;
-    gap: 8px;
-    box-shadow: 0 4px 18px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.08);
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 6px 14px 6px 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.16), 0 1px 4px rgba(0,0,0,0.08);
     border: 1px solid rgba(0,0,0,0.06);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .gmap-search-pill:focus-within {
-    box-shadow: 0 6px 24px rgba(234, 88, 12, 0.25), 0 2px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.22);
     border-color: #ea580c;
 }
 .gmap-back-btn {
@@ -467,54 +466,38 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 38px;
-    height: 38px;
+    padding: 6px;
     border-radius: 50%;
-    transition: background 0.15s, color 0.15s;
-    flex-shrink: 0;
+    transition: background 0.15s;
 }
 .gmap-back-btn:hover {
     background: #f1f5f9;
-    color: #ea580c;
-}
-html[data-theme="dark"] .gmap-back-btn {
-    color: #f4f4f5;
-}
-html[data-theme="dark"] .gmap-back-btn:hover {
-    background: #27272a;
-    color: #ea580c;
-}
-.gmap-search-icon {
-    color: #64748b;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+    color: #0f172a;
 }
 .gmap-search-input {
     flex: 1;
     border: none;
     outline: none;
     background: transparent;
-    font-size: 0.92rem;
+    padding: 6px 10px;
+    font-size: 0.95rem;
+    font-weight: 500;
     color: #0f172a;
     font-family: inherit;
 }
-.gmap-search-input::placeholder {
-    color: #94a3b8;
-}
 .gmap-search-clear {
-    background: #f1f5f9;
+    background: #e2e8f0;
     border: none;
+    color: #64748b;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
-    width: 24px;
-    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: #64748b;
     padding: 0;
+    margin-right: 4px;
 }
 .gmap-search-divider {
     width: 1px;
@@ -566,10 +549,10 @@ html[data-theme="dark"] .gmap-back-btn:hover {
     transform: translateY(-1px);
 }
 .gmap-chip.active {
-    background: #ea580c;
+    background: #0f172a;
     color: #ffffff;
-    border-color: #ea580c;
-    box-shadow: 0 3px 12px rgba(234, 88, 12, 0.35);
+    border-color: #0f172a;
+    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.3);
 }
 .gmap-chip-dot {
     width: 8px;
@@ -673,6 +656,12 @@ html[data-theme="dark"] .gmap-back-btn:hover {
     transform: scale(1.1);
     color: #ea580c;
 }
+.gmap-fab.active {
+    background: #10b981 !important;
+    color: #ffffff !important;
+    border-color: #10b981 !important;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4) !important;
+}
 .gmap-fab-gps {
     color: #0284c7;
 }
@@ -682,39 +671,39 @@ html[data-theme="dark"] .gmap-back-btn:hover {
     right: -3px;
     background: #ea580c;
     color: #fff;
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     font-weight: 800;
+    border-radius: 10px;
     min-width: 18px;
     height: 18px;
-    border-radius: 9px;
+    padding: 0 4px;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 2px solid #fff;
 }
 
-/* ── 4. Layer Switcher Sheet ── */
+/* Layer Switcher Modal Sheet */
 .gmap-layer-sheet {
     position: absolute;
     right: 14px;
     bottom: 80px;
-    z-index: 1050;
     background: #ffffff;
-    border-radius: 16px;
-    padding: 14px;
+    border-radius: 20px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    border: 1px solid #e2e8f0;
+    padding: 14px 16px;
+    z-index: 1050;
     width: 280px;
-    animation: fadeIn 0.2s ease;
+    border: 1px solid rgba(0,0,0,0.08);
 }
 .gmap-layer-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     font-weight: 700;
-    font-size: 0.88rem;
-    margin-bottom: 10px;
+    font-size: 0.9rem;
     color: #0f172a;
+    margin-bottom: 12px;
 }
 .gmap-layer-grid {
     display: grid;
@@ -725,77 +714,88 @@ html[data-theme="dark"] .gmap-back-btn:hover {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     cursor: pointer;
+    padding: 6px;
+    border-radius: 12px;
+    border: 2px solid transparent;
     font-size: 0.72rem;
     font-weight: 600;
-    color: #64748b;
+    color: #475569;
     text-align: center;
-}
-.gmap-layer-preview {
-    width: 100%;
-    height: 52px;
-    border-radius: 8px;
-    border: 2px solid transparent;
-    background-size: cover;
-    background-position: center;
     transition: all 0.15s;
 }
-.preview-streets { background-color: #e2e8f0; background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 8px 8px; }
-.preview-satellite { background-color: #0f172a; background-image: linear-gradient(135deg, #1e293b, #0f172a); }
-.preview-dark { background-color: #18181b; }
-.gmap-layer-card.active .gmap-layer-preview {
-    border-color: #ea580c;
-    box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.3);
+.gmap-layer-card:hover {
+    background: #f8fafc;
 }
-.gmap-layer-card.active { color: #ea580c; font-weight: 700; }
+.gmap-layer-card.active {
+    border-color: #ea580c;
+    background: #fff7ed;
+    color: #ea580c;
+}
+.gmap-layer-preview {
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+.preview-streets { background: linear-gradient(135deg, #e2e8f0, #cbd5e1); }
+.preview-satellite { background: linear-gradient(135deg, #14532d, #064e3b); }
+.preview-dark { background: linear-gradient(135deg, #1e293b, #0f172a); }
 
-/* ── 5. Google Maps Bottom Sheet Refined ── */
+/* ── 4. Interactive Bottom Sheet ── */
 .gmap-bottom-sheet {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: 1000;
-    background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-radius: 24px 24px 0 0;
-    box-shadow: 0 -10px 40px rgba(0,0,0,0.14);
-    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    max-height: 88%;
+    z-index: 1200;
+    background: #ffffff;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.18);
+    max-height: 85vh;
     display: flex;
     flex-direction: column;
-    border-top: 1px solid rgba(0,0,0,0.06);
+    animation: slideUp 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: max-height 0.3s ease;
+}
+@media (min-width: 768px) {
+    .gmap-bottom-sheet {
+        left: 20px;
+        right: auto;
+        bottom: 20px;
+        width: 420px;
+        max-height: 80vh;
+        border-radius: 24px;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+    }
 }
 .gmap-sheet-handle-zone {
     width: 100%;
     padding: 10px 0 6px;
     display: flex;
-    align-items: center;
     justify-content: center;
     cursor: grab;
 }
 .gmap-sheet-handle {
-    width: 42px;
-    height: 4.5px;
-    border-radius: 3px;
+    width: 38px;
+    height: 4px;
+    border-radius: 4px;
     background: #cbd5e1;
 }
 .gmap-sheet-inner {
-    padding: 0 16px 20px;
+    padding: 0 20px 24px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
 }
-
-/* Card Head */
 .gmap-card-head {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 12px;
+    gap: 10px;
 }
 .gmap-card-head-left {
     display: flex;
@@ -988,6 +988,84 @@ html[data-theme="dark"] .gmap-back-btn:hover {
     border-color: #cbd5e1;
 }
 
+/* ETA Grid */
+.gmap-eta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+.gmap-eta-card {
+    border-radius: 12px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.card-walk {
+    background: #fff7ed;
+    border: 1px solid #ffedd5;
+}
+.card-drive {
+    background: #f0f9ff;
+    border: 1px solid #e0f2fe;
+}
+.gmap-eta-value {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+/* Info Section */
+.gmap-info-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 12px 14px;
+    border: 1px solid #f1f5f9;
+}
+.gmap-info-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+.gmap-info-icon {
+    color: #64748b;
+    margin-top: 2px;
+}
+.gmap-info-text {
+    flex: 1;
+    min-width: 0;
+}
+.gmap-info-desc {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 8px;
+}
+
+/* Sheet Footer */
+.gmap-btn-detail {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #0f172a;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.88rem;
+    border-radius: 14px;
+    padding: 12px;
+    text-decoration: none;
+    transition: all 0.15s;
+}
+.gmap-btn-detail:hover {
+    background: #1e293b;
+    color: #fff;
+    transform: translateY(-1px);
+}
+
 /* ── Route Selection & Travel Mode Modal Sheet ── */
 .gmap-route-sheet {
     position: absolute;
@@ -1099,11 +1177,9 @@ html[data-theme="dark"] .gmap-back-btn:hover {
 }
 .gmap-route-card-tag {
     font-size: 0.7rem;
-    font-weight: 800;
-    color: #059669;
-    display: flex;
-    align-items: center;
-    gap: 4px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
 }
 .gmap-route-card-time {
     font-size: 1.15rem;
@@ -1111,23 +1187,22 @@ html[data-theme="dark"] .gmap-back-btn:hover {
     color: #0f172a;
 }
 .gmap-route-card-dist {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     color: #64748b;
     font-weight: 600;
 }
 .gmap-route-card-via {
-    font-size: 0.72rem;
-    color: #94a3b8;
+    font-size: 0.78rem;
+    color: #64748b;
 }
 .gmap-route-card-radio {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     border: 2px solid #cbd5e1;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.15s;
 }
 .gmap-route-card.selected .gmap-route-card-radio {
     border-color: #10b981;
@@ -1140,201 +1215,54 @@ html[data-theme="dark"] .gmap-back-btn:hover {
     border-radius: 50%;
     background: #fff;
 }
-    border-radius: 14px;
-    background: #ffffff;
-    border: 1.5px solid #e2e8f0;
-    color: #475569;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: all 0.15s;
-}
-.gmap-btn-icon:hover {
-    background: #f8fafc;
-    color: #ea580c;
-    border-color: #cbd5e1;
-}
-
-/* ETA Grid */
-.gmap-eta-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-}
-.gmap-eta-card {
-    border-radius: 14px;
-    padding: 9px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    border: 1px solid transparent;
-}
-.card-walk {
-    background: #fff7ed;
-    border-color: #ffedd5;
-}
-.card-drive {
-    background: #f0f9ff;
-    border-color: #e0f2fe;
-}
-.gmap-eta-label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: #64748b;
-}
-.gmap-eta-icon-wrap {
-    width: 20px;
-    height: 20px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.icon-walk { background: rgba(234, 88, 12, 0.15); color: #ea580c; }
-.icon-drive { background: rgba(2, 132, 199, 0.15); color: #0284c7; }
-.gmap-eta-value {
-    font-size: 1rem;
-    font-weight: 800;
-    color: #0f172a;
-}
-
-/* Info Section */
-.gmap-info-section {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    padding: 10px 14px;
-}
-.gmap-info-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-}
-.gmap-info-icon {
-    color: #ea580c;
-    margin-top: 2px;
-    flex-shrink: 0;
-}
-.gmap-info-label {
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: #64748b;
-    margin-bottom: 2px;
-}
-.gmap-info-text {
-    font-size: 0.85rem;
-    color: #1e293b;
-    font-weight: 600;
-    line-height: 1.4;
-}
-
-/* Detail Button */
-.gmap-btn-detail {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #f1f5f9;
-    color: #0f172a;
-    font-weight: 700;
-    font-size: 0.86rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 11px 16px;
-    text-decoration: none;
-    transition: all 0.15s;
-}
-.gmap-btn-detail:hover {
-    background: #e2e8f0;
-    color: #0f172a;
-    text-decoration: none;
-}
-
-/* App Tray */
-.gmap-apps-tray {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-top: 4px;
-}
-.gmap-apps-tray-title {
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: #94a3b8;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-.gmap-apps-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-}
-.gmap-app-pill {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 8px 6px;
-    font-size: 0.74rem;
-    font-weight: 700;
-    color: #334155;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    text-decoration: none;
-    position: relative;
-    transition: all 0.15s;
-}
-.gmap-app-pill:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
-    transform: translateY(-1px);
-}
-.gmap-app-pill.recom {
-    border-color: #ea580c;
-    background: #fff7ed;
-    color: #ea580c;
-}
-.app-recom-tag {
-    font-size: 0.55rem;
-    font-weight: 800;
-    background: #ea580c;
-    color: #fff;
-    padding: 1px 4px;
-    border-radius: 4px;
-    line-height: 1;
-}
 
 /* ── 6. Nearby Places Drawer ── */
 .gmap-nearby-drawer {
     position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 360px;
-    max-width: 85%;
-    z-index: 1200;
+    top: 74px;
+    left: 14px;
+    right: 14px;
+    bottom: 24px;
+    max-width: 440px;
     background: #ffffff;
-    box-shadow: 6px 0 24px rgba(0,0,0,0.18);
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+    border: 1px solid #e2e8f0;
+    z-index: 1200;
     display: flex;
     flex-direction: column;
-    animation: slideRight 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-@keyframes slideRight {
-    from { transform: translateX(-100%); }
-    to { transform: translateX(0); }
+    overflow: hidden;
+    animation: slideDown 0.25s ease-out;
 }
 .gmap-drawer-header {
-    padding: 14px 16px;
-    border-bottom: 1px solid #e2e8f0;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid #f1f5f9;
+}
+.gmap-title-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: #ea580c;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.gmap-icon-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    border: none;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: 700;
 }
 .gmap-drawer-body {
     flex: 1;
@@ -1345,198 +1273,105 @@ html[data-theme="dark"] .gmap-back-btn:hover {
     gap: 6px;
 }
 .gmap-place-card {
-    padding: 10px;
-    border-radius: 12px;
-    border: 1px solid #f1f5f9;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
     cursor: pointer;
     transition: all 0.15s;
-    background: #ffffff;
 }
 .gmap-place-card:hover {
-    background: #f8fafc;
-    border-color: #e2e8f0;
+    background: #f1f5f9;
     transform: translateY(-1px);
 }
-.gmap-icon-btn {
-    background: #f1f5f9;
-    border: none;
-    border-radius: 50%;
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: #64748b;
-}
 
-/* ── 7. Custom Markers & Pulse ── */
-.custom-pin-marker {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 38px;
-    height: 38px;
-    border-radius: 50% 50% 50% 0;
-    transform: rotate(-45deg);
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    border: 2px solid #fff;
+/* ── WebGL Markers & Pins ── */
+.gmap-custom-marker {
+    position: relative;
     cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-origin: bottom center;
 }
-.custom-pin-marker svg {
-    transform: rotate(45deg);
+.gmap-custom-marker:hover {
+    transform: scale(1.18);
+    z-index: 1000;
 }
-.custom-pin-marker:hover, .custom-pin-marker.selected {
-    transform: rotate(-45deg) scale(1.25);
-    box-shadow: 0 6px 18px rgba(0,0,0,0.4);
-    z-index: 1000 !important;
+.gmap-marker-bubble {
+    padding: 6px 10px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.22);
+    border: 2px solid #ffffff;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #ffffff;
+    white-space: nowrap;
 }
-.pin-activity { background: linear-gradient(135deg, #ea580c, #f97316); }
-.pin-job { background: linear-gradient(135deg, #0284c7, #38bdf8); }
-.pin-landmark { background: linear-gradient(135deg, #16a34a, #4ade80); }
+.marker-activity .gmap-marker-bubble { background: linear-gradient(135deg, #ea580c, #c2410c); }
+.marker-job .gmap-marker-bubble { background: linear-gradient(135deg, #0284c7, #0369a1); }
+.marker-landmark .gmap-marker-bubble { background: linear-gradient(135deg, #16a34a, #15803d); }
 
-/* ── 7. Real-time GPS Navigation Puck & Direction Arrow (Google Maps Style) ── */
-.user-gps-puck-container {
+.gmap-marker-arrow {
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    margin-top: -1px;
+}
+.marker-activity .gmap-marker-arrow { border-top: 6px solid #c2410c; }
+.marker-job .gmap-marker-arrow { border-top: 6px solid #0369a1; }
+.marker-landmark .gmap-marker-arrow { border-top: 6px solid #15803d; }
+
+/* User GPS Heading Cone Marker */
+.user-gps-heading-marker {
     position: relative;
-    width: 52px;
-    height: 52px;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
-    pointer-events: none;
-    will-change: transform;
 }
-
-/* Directional Heading Cone / Light Beam */
-.user-gps-heading-cone {
+.user-gps-cone {
     position: absolute;
-    width: 52px;
-    height: 52px;
-    top: 0;
-    left: 0;
-    transform-origin: center center;
-    transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+    width: 44px;
+    height: 44px;
+    background: radial-gradient(circle at 50% 100%, rgba(2, 132, 199, 0.4) 0%, rgba(2, 132, 199, 0) 70%);
+    clip-path: polygon(50% 50%, 20% 0%, 80% 0%);
     pointer-events: none;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    transition: transform 0.2s ease-out;
 }
-
-/* Center Blue Navigation Puck Dot */
-.user-gps-dot-core {
-    position: relative;
+.user-gps-dot {
     width: 18px;
     height: 18px;
     border-radius: 50%;
     background: #0284c7;
-    border: 3.5px solid #ffffff;
-    box-shadow: 0 2px 10px rgba(2, 132, 199, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.12);
-    z-index: 3;
-    transition: all 0.3s ease;
-}
-
-/* Pulsing Radar Ring */
-.user-gps-radar-ring {
-    position: absolute;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: rgba(2, 132, 199, 0.22);
-    animation: gps-radar-pulse 2.2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+    border: 3px solid #ffffff;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.35), 0 3px 8px rgba(0,0,0,0.3);
     z-index: 2;
-    pointer-events: none;
 }
 
-@keyframes gps-radar-pulse {
-    0% { transform: scale(0.5); opacity: 0.9; }
-    70% { transform: scale(1.6); opacity: 0; }
-    100% { transform: scale(1.6); opacity: 0; }
-}
-
-/* ── Route Overview Origin & Destination Markers ── */
-.route-origin-marker {
-    position: relative;
-    width: 22px;
-    height: 22px;
-    background: #0284c7;
-    border-radius: 50%;
-    border: 3px solid #fff;
-    box-shadow: 0 2px 10px rgba(2,132,199,0.6);
-    z-index: 999;
-}
-.route-origin-label {
-    position: absolute;
-    top: -26px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #0284c7;
-    color: #fff;
-    font-size: 0.65rem;
-    font-weight: 700;
-    padding: 2px 7px;
-    border-radius: 6px;
-    white-space: nowrap;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-}
-.route-dest-marker {
-    position: relative;
-    width: 30px;
-    height: 42px;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-}
-.route-dest-marker svg {
-    filter: drop-shadow(0 3px 6px rgba(239,68,68,0.45));
-}
-.route-dest-label {
-    position: absolute;
-    top: -24px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #ef4444;
-    color: #fff;
-    font-size: 0.65rem;
-    font-weight: 700;
-    padding: 2px 7px;
-    border-radius: 6px;
-    white-space: nowrap;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-}
-
-/* ── Active Navigation Destination Marker ── */
-.nav-dest-marker {
-    position: relative;
-    width: 40px;
-    height: 52px;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    animation: nav-dest-bounce 1.5s infinite;
-}
-@keyframes nav-dest-bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
-}
-
-/* Live Peer / Team Member Pins */
+/* Live Peer Marker */
 .live-peer-marker {
-    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
     cursor: pointer;
+    transition: transform 0.2s;
+}
+.live-peer-marker:hover {
+    transform: scale(1.15);
 }
 .live-peer-avatar {
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     border: 2px solid #ffffff;
     box-shadow: 0 3px 8px rgba(0,0,0,0.25);
@@ -1561,6 +1396,21 @@ html[data-theme="dark"] .gmap-back-btn:hover {
     white-space: nowrap;
     backdrop-filter: blur(4px);
     border: 1px solid rgba(255,255,255,0.15);
+}
+
+/* Destination Marker */
+.nav-dest-marker {
+    position: relative;
+    width: 40px;
+    height: 52px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    animation: nav-dest-bounce 1.5s infinite;
+}
+@keyframes nav-dest-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
 }
 
 /* ── Dark Mode Adaptations ── */
@@ -1598,8 +1448,6 @@ html[data-theme="dark"] .gmap-btn-route-select,
 html[data-theme="dark"] .gmap-btn-native-detect,
 html[data-theme="dark"] .gmap-btn-icon,
 html[data-theme="dark"] .gmap-btn-detail,
-html[data-theme="dark"] .gmap-app-pill,
-html[data-theme="dark"] .gmap-app-badge,
 html[data-theme="dark"] .gmap-mode-chip,
 html[data-theme="dark"] .gmap-route-card,
 html[data-theme="dark"] .gmap-sheet-close,
@@ -1625,42 +1473,8 @@ html[data-theme="dark"] .card-drive {
     background: rgba(2, 132, 199, 0.12) !important;
     border-color: rgba(2, 132, 199, 0.25) !important;
 }
-html[data-theme="dark"] .gmap-app-pill.recom {
-    background: rgba(234, 88, 12, 0.18) !important;
-    border-color: #ea580c !important;
-    color: #fb923c !important;
-}
 html[data-theme="dark"] .gmap-sheet-handle {
     background: #3f3f46;
-}
-
-/* ── Animated Road Route Navigation Line (Google Maps Style) ── */
-.nav-route-flow-line {
-    stroke-dasharray: 8, 14;
-    animation: navRouteFlow 1.2s linear infinite;
-    pointer-events: none;
-}
-@keyframes navRouteFlow {
-    from { stroke-dashoffset: 22; }
-    to { stroke-dashoffset: 0; }
-}
-
-.route-turn-marker {
-    background: #ffffff;
-    color: #10b981;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-    border: 2px solid #10b981;
-}
-
-/* Hide default leaflet zoom controls */
-.leaflet-control-zoom {
-    display: none !important;
 }
 </style>
 
@@ -1668,43 +1482,65 @@ html[data-theme="dark"] .gmap-sheet-handle {
 (function() {
     const authUserId = '{{ auth()->id() }}';
     let map = null;
-    let markersCluster = null;
-    let heatLayer = null;
-    let routingControl = null;
     let userMarker = null;
-    let radiusCircle = null;
+    let destMarker = null;
     let userCoords = null; // [lat, lng]
-
-    // Real-time GPS & Compass Tracking State
-    let watchGpsId = null;
     let currentHeading = 0;
+    let watchGpsId = null;
     let lastBroadcastTime = 0;
     let lastBroadcastCoords = null;
-    let peerMarkers = {}; // { [userId]: L.Marker }
-    let isTrackingLive = false;
+    let peerMarkers = {}; // { [userId]: maplibregl.Marker }
 
     let allLocations = [];
+    let locationMarkers = []; // Array of { marker, loc }
     let currentFilterType = 'all';
     let currentRadiusKm = 0;
-    let searchQuery = '';
+    let isHeatmapActive = false;
+    let is3DModeActive = false;
     let activeLocation = null;
     let activeMapLayerType = 'streets';
 
-    const defaultCenter = [16.4745, 102.8235]; // Campus center
+    const defaultCenter = [16.4745, 102.8235]; // Campus center [lat, lng]
 
-    // Tile Layers
-    const streetTile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors',
-        maxZoom: 19
-    });
-    const satelliteTile = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: '&copy; Esri, Earthstar Geographics',
-        maxZoom: 19
-    });
-    const darkTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; CartoDB',
-        maxZoom: 19
-    });
+    // WebGL Vector & Raster Styles
+    const MAP_STYLES = {
+        streets: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+        dark: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+        satellite: {
+            version: 8,
+            sources: {
+                'esri-satellite': {
+                    type: 'raster',
+                    tiles: [
+                        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+                    ],
+                    tileSize: 256,
+                    attribution: '&copy; Esri, Maxar, Earthstar'
+                },
+                'esri-labels': {
+                    type: 'raster',
+                    tiles: [
+                        'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}'
+                    ],
+                    tileSize: 256
+                }
+            },
+            layers: [
+                { id: 'satellite-base', type: 'raster', source: 'esri-satellite', minzoom: 0, maxzoom: 19 },
+                { id: 'satellite-labels', type: 'raster', source: 'esri-labels', minzoom: 0, maxzoom: 19 }
+            ]
+        }
+    };
+
+    // Navigation and Routing State
+    let currentTravelMode = 'drive';
+    let currentRouteAlternatives = [];
+    let selectedRouteIndex = 0;
+    let activeNavTarget = null;
+    let activeNavRoute = null;
+    let routeFetchAbortCtrl = null;
+    let navigationRerouteAt = 0;
+    let navigationReroutePending = false;
 
     document.addEventListener('DOMContentLoaded', function() {
         initMap();
@@ -1722,63 +1558,214 @@ html[data-theme="dark"] .gmap-sheet-handle {
     });
 
     function initMap() {
-        map = L.map('unifiedMap', {
-            center: defaultCenter,
-            zoom: 14,
-            zoomControl: false,
-            layers: [streetTile]
+        map = new maplibregl.Map({
+            container: 'unifiedMap',
+            style: MAP_STYLES[activeMapLayerType] || MAP_STYLES.streets,
+            center: [defaultCenter[1], defaultCenter[0]], // MapLibre takes [lng, lat]
+            zoom: 15,
+            pitch: 0,
+            bearing: 0,
+            antialias: true
         });
 
-        markersCluster = L.markerClusterGroup({
-            showCoverageOnHover: false,
-            maxClusterRadius: 40,
-            iconCreateFunction: function(cluster) {
-                const count = cluster.getChildCount();
-                return L.divIcon({
-                    html: '<div style="background:#ea580c;color:#fff;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.85rem;border:2.5px solid #fff;box-shadow:0 3px 8px rgba(0,0,0,0.3);">' + count + '</div>',
-                    className: 'custom-cluster-icon',
-                    iconSize: [34, 34]
-                });
+        // Add standard navigation controls (compass only)
+        map.addControl(new maplibregl.NavigationControl({ showCompass: true, showZoom: false }), 'bottom-left');
+
+        map.on('load', function() {
+            initVectorSourcesAndLayers();
+            renderAllLocationMarkers();
+        });
+
+        map.on('style.load', function() {
+            initVectorSourcesAndLayers();
+            enable3DBuildings();
+            if (activeNavRoute) {
+                renderRouteGeometryOnMap(activeNavRoute.points, true);
             }
         });
-        map.addLayer(markersCluster);
 
         map.on('click', function(e) {
-            if (e.originalEvent.target.id === 'unifiedMap' || e.originalEvent.target.classList.contains('leaflet-container')) {
+            // Close bottom sheet if clicking empty map space
+            const targetEl = e.originalEvent.target;
+            if (targetEl.tagName === 'CANVAS') {
                 closeBottomSheet();
-                closeLayerSheet();
+                closeRouteSelector();
             }
         });
     }
 
-    // Search Input Binding
-    function initSearchInput() {
-        const input = document.getElementById('mapSearchInput');
-        const clearBtn = document.getElementById('mapSearchClearBtn');
+    // Initialize WebGL GeoJSON Sources (Routing, Radius, Heatmap)
+    function initVectorSourcesAndLayers() {
+        if (!map) return;
 
-        input.addEventListener('input', function() {
-            searchQuery = this.value.trim().toLowerCase();
-            clearBtn.style.display = searchQuery ? 'flex' : 'none';
-            renderMarkers();
-            updateNearbyList();
-        });
+        // 1. Primary Route Source & Layers
+        if (!map.getSource('route-primary-source')) {
+            map.addSource('route-primary-source', {
+                type: 'geojson',
+                data: { type: 'FeatureCollection', features: [] }
+            });
+
+            map.addLayer({
+                id: 'route-primary-casing',
+                type: 'line',
+                source: 'route-primary-source',
+                paint: {
+                    'line-color': '#065f46',
+                    'line-width': 11,
+                    'line-opacity': 0.9,
+                    'line-cap': 'round',
+                    'line-join': 'round'
+                }
+            });
+
+            map.addLayer({
+                id: 'route-primary-core',
+                type: 'line',
+                source: 'route-primary-source',
+                paint: {
+                    'line-color': '#10b981',
+                    'line-width': 7,
+                    'line-opacity': 1,
+                    'line-cap': 'round',
+                    'line-join': 'round'
+                }
+            });
+        }
+
+        // 2. Alternative Route Source & Layer
+        if (!map.getSource('route-alt-source')) {
+            map.addSource('route-alt-source', {
+                type: 'geojson',
+                data: { type: 'FeatureCollection', features: [] }
+            });
+
+            map.addLayer({
+                id: 'route-alt-core',
+                type: 'line',
+                source: 'route-alt-source',
+                paint: {
+                    'line-color': '#64748b',
+                    'line-width': 5,
+                    'line-opacity': 0.75,
+                    'line-dasharray': [3, 2],
+                    'line-cap': 'round',
+                    'line-join': 'round'
+                }
+            });
+        }
+
+        // 3. Radius Circle Source & Layers
+        if (!map.getSource('radius-circle-source')) {
+            map.addSource('radius-circle-source', {
+                type: 'geojson',
+                data: { type: 'FeatureCollection', features: [] }
+            });
+
+            map.addLayer({
+                id: 'radius-circle-fill',
+                type: 'fill',
+                source: 'radius-circle-source',
+                paint: {
+                    'fill-color': '#0284c7',
+                    'fill-opacity': 0.12
+                }
+            });
+
+            map.addLayer({
+                id: 'radius-circle-line',
+                type: 'line',
+                source: 'radius-circle-source',
+                paint: {
+                    'line-color': '#0284c7',
+                    'line-width': 2,
+                    'line-dasharray': [3, 3]
+                }
+            });
+        }
+
+        // 4. Heatmap Source & Layer
+        if (!map.getSource('heatmap-source')) {
+            map.addSource('heatmap-source', {
+                type: 'geojson',
+                data: { type: 'FeatureCollection', features: [] }
+            });
+
+            map.addLayer({
+                id: 'heatmap-layer',
+                type: 'heatmap',
+                source: 'heatmap-source',
+                layout: { 'visibility': 'none' },
+                paint: {
+                    'heatmap-weight': ['get', 'weight'],
+                    'heatmap-intensity': 1.2,
+                    'heatmap-color': [
+                        'interpolate', ['linear'], ['heatmap-density'],
+                        0, 'rgba(0, 0, 255, 0)',
+                        0.2, 'rgb(0, 255, 255)',
+                        0.4, 'rgb(0, 255, 0)',
+                        0.6, 'rgb(255, 255, 0)',
+                        1, 'rgb(255, 0, 0)'
+                    ],
+                    'heatmap-radius': 35,
+                    'heatmap-opacity': 0.85
+                }
+            });
+        }
     }
 
-    window.goBackOrHome = function() {
-        if (window.history.length > 1 && document.referrer && document.referrer.includes(window.location.host)) {
-            window.history.back();
-        } else {
-            window.location.href = '{{ route("activities.index") }}';
-        }
-    };
+    // 3D Buildings Extrusion
+    function enable3DBuildings() {
+        if (!map || !map.getStyle()) return;
+        const style = map.getStyle();
+        if (!style || !style.layers) return;
 
-    window.clearMapSearch = function() {
-        const input = document.getElementById('mapSearchInput');
-        input.value = '';
-        searchQuery = '';
-        document.getElementById('mapSearchClearBtn').style.display = 'none';
-        renderMarkers();
-        updateNearbyList();
+        // Check if building source layer exists
+        let labelLayerId = null;
+        for (let i = 0; i < style.layers.length; i++) {
+            if (style.layers[i].type === 'symbol' && style.layers[i].layout && style.layers[i].layout['text-field']) {
+                labelLayerId = style.layers[i].id;
+                break;
+            }
+        }
+
+        const sourceId = map.getSource('carto') ? 'carto' : (map.getSource('openmaptiles') ? 'openmaptiles' : null);
+        if (sourceId && !map.getLayer('3d-buildings')) {
+            try {
+                map.addLayer({
+                    'id': '3d-buildings',
+                    'source': sourceId,
+                    'source-layer': 'building',
+                    'filter': ['==', 'extrude', 'true'],
+                    'type': 'fill-extrusion',
+                    'minzoom': 14.5,
+                    'paint': {
+                        'fill-extrusion-color': [
+                            'interpolate', ['linear'], ['get', 'height'],
+                            0, '#cbd5e1',
+                            50, '#94a3b8',
+                            100, '#64748b'
+                        ],
+                        'fill-extrusion-height': ['interpolate', ['linear'], ['zoom'], 14.5, 0, 15, ['get', 'height']],
+                        'fill-extrusion-base': ['interpolate', ['linear'], ['zoom'], 14.5, 0, 15, ['get', 'min_height']],
+                        'fill-extrusion-opacity': 0.75
+                    }
+                }, labelLayerId);
+            } catch(e) {}
+        }
+    }
+
+    // Toggle 3D Camera View (Isometric 60° Pitch)
+    window.toggle3DView = function() {
+        if (!map) return;
+        is3DModeActive = !is3DModeActive;
+        const btn = document.getElementById('btnToggle3D');
+        if (btn) btn.classList.toggle('active', is3DModeActive);
+
+        map.easeTo({
+            pitch: is3DModeActive ? 60 : 0,
+            bearing: is3DModeActive ? (currentHeading || -20) : 0,
+            duration: 1200
+        });
     };
 
     // Layer Switcher
@@ -1787,756 +1774,348 @@ html[data-theme="dark"] .gmap-sheet-handle {
         sheet.style.display = sheet.style.display === 'none' ? 'block' : 'none';
     };
 
-    window.closeLayerSheet = function() {
-        const sheet = document.getElementById('gmapLayerSheet');
-        if (sheet) sheet.style.display = 'none';
-    };
-
     window.switchMapLayer = function(layerType) {
+        if (!map || activeMapLayerType === layerType) {
+            document.getElementById('gmapLayerSheet').style.display = 'none';
+            return;
+        }
+
         activeMapLayerType = layerType;
         document.querySelectorAll('.gmap-layer-card').forEach(c => c.classList.remove('active'));
-        const card = document.getElementById('layerCard-' + layerType);
-        if (card) card.classList.add('active');
+        const activeCard = document.getElementById(`layerCard-${layerType}`);
+        if (activeCard) activeCard.classList.add('active');
+        document.getElementById('gmapLayerSheet').style.display = 'none';
 
-        map.removeLayer(streetTile);
-        map.removeLayer(satelliteTile);
-        map.removeLayer(darkTile);
-
-        if (layerType === 'satellite') {
-            map.addLayer(satelliteTile);
-        } else if (layerType === 'dark') {
-            map.addLayer(darkTile);
-        } else {
-            map.addLayer(streetTile);
-        }
-
-        closeLayerSheet();
+        const styleToLoad = MAP_STYLES[layerType] || MAP_STYLES.streets;
+        map.setStyle(styleToLoad);
     };
 
-    // Toggle Density Heatmap Chip
-    window.toggleHeatmapChip = function(btn) {
-        const isActive = btn.classList.toggle('active');
-
-        if (isActive) {
-            const heatPoints = allLocations.map(loc => [loc.lat, loc.lng, loc.type === 'activity' ? 0.9 : 0.6]);
-            if (!heatLayer) {
-                heatLayer = L.heatLayer(heatPoints, { radius: 28, blur: 16, maxZoom: 17 });
-            }
-            map.addLayer(heatLayer);
-            map.removeLayer(markersCluster);
-        } else {
-            if (heatLayer) map.removeLayer(heatLayer);
-            map.addLayer(markersCluster);
-        }
-    };
-
-    // Fetch All Locations from Backend
-    function fetchLocations() {
-        fetch('{{ route("api.map.locations") }}')
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    allLocations = [
-                        ...(data.activities || []),
-                        ...(data.jobs || []),
-                        ...(data.landmarks || [])
-                    ];
-
-                    document.getElementById('fabPlaceCountBadge').textContent = allLocations.length;
-                    document.getElementById('drawerCountLabel').textContent = allLocations.length + ' แห่ง';
-
-                    // Parse URL Query Parameters for Focus & Filters
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const targetType = urlParams.get('type');
-                    const targetId = urlParams.get('id');
-                    const autoNav = urlParams.get('nav');
-
-                    if (targetType && !targetId) {
-                        currentFilterType = targetType;
-                        document.querySelectorAll('.gmap-chip').forEach(b => {
-                            b.classList.toggle('active', b.getAttribute('data-type') === targetType);
-                        });
-                    }
-
-                    renderMarkers();
-                    updateNearbyList();
-
-                    // If a specific target ID is requested, center, zoom, and open bottom sheet
-                    if (targetId) {
-                        const target = allLocations.find(loc => {
-                            const matchId = String(loc.id) === String(targetId);
-                            if (targetType) return loc.type === targetType && matchId;
-                            return matchId;
-                        });
-
-                        if (target) {
-                            setTimeout(() => {
-                                map.setView([target.lat, target.lng], 17, { animate: true });
-                                showBottomSheet(target);
-                                if (autoNav === '1') {
-                                    setTimeout(() => startNavigationToActive(), 400);
-                                }
-                            }, 300);
-                        }
-                    }
-                }
-            })
-            .catch(err => {
-                console.error('Failed to load map locations:', err);
+    // Fetch and Load Locations Data
+    async function fetchLocations() {
+        try {
+            const resp = await fetch('{{ route("api.map.locations") }}', {
+                headers: { 'Accept': 'application/json' }
             });
+            if (!resp.ok) throw new Error(`HTTP error! status: ${resp.status}`);
+            const data = await resp.json();
+
+            allLocations = (data.locations || []).filter(loc => {
+                const lat = parseFloat(loc.lat);
+                const lng = parseFloat(loc.lng);
+                return !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0;
+            });
+
+            document.getElementById('fabPlaceCountBadge').textContent = allLocations.length;
+            document.getElementById('drawerCountLabel').textContent = `${allLocations.length} แห่ง`;
+
+            renderAllLocationMarkers();
+            updateNearbyList();
+            updateHeatmapData();
+        } catch (err) {
+            console.error('Failed to load locations:', err);
+        }
     }
 
-    // Render Filtered Markers
-    function renderMarkers() {
-        markersCluster.clearLayers();
+    // Render WebGL HTML Markers
+    function renderAllLocationMarkers() {
+        if (!map) return;
+
+        // Clear existing markers
+        locationMarkers.forEach(item => item.marker.remove());
+        locationMarkers = [];
 
         const filtered = getFilteredLocations();
 
         filtered.forEach(loc => {
-            let pinClass = 'pin-activity';
-            let iconSvg = '<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>';
+            const el = document.createElement('div');
+            el.className = `gmap-custom-marker marker-${loc.type}`;
 
-            if (loc.type === 'job') {
-                pinClass = 'pin-job';
-                iconSvg = '<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>';
-            } else if (loc.type === 'landmark') {
-                pinClass = 'pin-landmark';
-                iconSvg = '<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>';
-            }
+            let iconEmoji = '🎪';
+            if (loc.type === 'job') iconEmoji = '💼';
+            else if (loc.type === 'landmark') iconEmoji = '🏛️';
 
-            const customIcon = L.divIcon({
-                html: `<div class="custom-pin-marker ${pinClass}">${iconSvg}</div>`,
-                className: 'leaflet-pin-wrap',
-                iconSize: [38, 38],
-                iconAnchor: [19, 38]
+            el.innerHTML = `
+                <div class="gmap-marker-bubble">
+                    <span>${iconEmoji}</span>
+                    <span>${loc.title}</span>
+                </div>
+                <div class="gmap-marker-arrow"></div>
+            `;
+
+            el.addEventListener('click', function(e) {
+                e.stopPropagation();
+                focusLocation(loc);
             });
 
-            const marker = L.marker([loc.lat, loc.lng], { icon: customIcon });
-            marker.on('click', () => {
-                showBottomSheet(loc);
-                map.panTo([loc.lat, loc.lng]);
-            });
-            markersCluster.addLayer(marker);
+            const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
+                .setLngLat([parseFloat(loc.lng), parseFloat(loc.lat)])
+                .addTo(map);
+
+            locationMarkers.push({ marker, loc });
         });
-
-        // Update badge count
-        document.getElementById('fabPlaceCountBadge').textContent = filtered.length;
     }
 
     function getFilteredLocations() {
-        return allLocations.filter(item => {
-            // Type Filter
-            if (currentFilterType !== 'all' && item.type !== currentFilterType) {
+        return allLocations.filter(loc => {
+            if (currentFilterType !== 'all' && loc.type !== currentFilterType) {
                 return false;
             }
-            // Search Query Filter
-            if (searchQuery) {
-                const titleMatch = (item.title || '').toLowerCase().includes(searchQuery);
-                const locMatch = (item.location_name || '').toLowerCase().includes(searchQuery);
-                const subtitleMatch = (item.subtitle || '').toLowerCase().includes(searchQuery);
-                if (!titleMatch && !locMatch && !subtitleMatch) return false;
+            if (searchQuery.trim() !== '') {
+                const q = searchQuery.toLowerCase();
+                const titleMatch = (loc.title || '').toLowerCase().includes(q);
+                const locMatch = (loc.location_name || '').toLowerCase().includes(q);
+                const descMatch = (loc.description || '').toLowerCase().includes(q);
+                if (!titleMatch && !locMatch && !descMatch) return false;
             }
-            // Radius Filter
             if (currentRadiusKm > 0 && userCoords) {
-                const distKm = calculateDistance(userCoords[0], userCoords[1], item.lat, item.lng);
-                if (distKm > currentRadiusKm) return false;
+                const dist = calculateDistance(userCoords[0], userCoords[1], loc.lat, loc.lng);
+                if (dist > currentRadiusKm) return false;
             }
             return true;
         });
     }
 
-    // Filter by Type
+    // Filter Chips
     window.filterType = function(type, btn) {
         currentFilterType = type;
-        document.querySelectorAll('.gmap-chip').forEach(b => {
-            if (b.getAttribute('data-type')) b.classList.remove('active');
-        });
-        btn.classList.add('active');
-        renderMarkers();
+        document.querySelectorAll('.gmap-chip[data-type]').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        renderAllLocationMarkers();
+        updateNearbyList();
+        updateHeatmapData();
+    };
+
+    window.toggleQuickRadius = function(radius, btn) {
+        if (currentRadiusKm === radius) {
+            currentRadiusKm = 0;
+            btn.classList.remove('active');
+            renderRadiusCircle(null, 0);
+        } else {
+            currentRadiusKm = radius;
+            document.querySelectorAll('.gmap-chip[data-radius]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if (userCoords) {
+                renderRadiusCircle(userCoords, radius);
+                map.flyTo({ center: [userCoords[1], userCoords[0]], zoom: 14.5, duration: 800 });
+            } else {
+                locateUserAndCenter();
+            }
+        }
+        renderAllLocationMarkers();
         updateNearbyList();
     };
 
-    // Toggle Quick Radius (< 2km)
-    window.toggleQuickRadius = function(radiusKm, btn) {
-        const isActive = btn.classList.toggle('active');
-        currentRadiusKm = isActive ? radiusKm : 0;
-
-        if (currentRadiusKm > 0) {
-            if (!userCoords) {
-                requestCurrentLocation().then(() => updateRadiusCircle(currentRadiusKm)).catch(() => {});
-            } else {
-                updateRadiusCircle(currentRadiusKm);
-            }
-        } else {
-            if (radiusCircle) map.removeLayer(radiusCircle);
-            renderMarkers();
-            updateNearbyList();
+    window.toggleHeatmapChip = function(btn) {
+        isHeatmapActive = !isHeatmapActive;
+        btn.classList.toggle('active', isHeatmapActive);
+        if (map && map.getLayer('heatmap-layer')) {
+            map.setLayoutProperty('heatmap-layer', 'visibility', isHeatmapActive ? 'visible' : 'none');
         }
     };
 
-    function updateRadiusCircle(radiusKm) {
-        if (!userCoords) return;
-        if (radiusCircle) map.removeLayer(radiusCircle);
-
-        radiusCircle = L.circle(userCoords, {
-            radius: radiusKm * 1000,
-            color: '#0284c7',
-            fillColor: '#0284c7',
-            fillOpacity: 0.06,
-            weight: 2,
-            dashArray: '6, 6'
-        }).addTo(map);
-
-        map.fitBounds(radiusCircle.getBounds());
-        renderMarkers();
-        updateNearbyList();
-    }
-
-    // Build the SVG Puck with Direction Cone
-    function getGpsPuckHtml(heading) {
-        return `
-            <div class="user-gps-puck-container">
-                <div class="user-gps-heading-cone" id="userGpsHeadingCone" style="transform: rotate(${heading || 0}deg);">
-                    <svg viewBox="0 0 100 100" width="100%" height="100%">
-                        <defs>
-                            <linearGradient id="headingGradient" x1="50%" y1="100%" x2="50%" y2="0%">
-                                <stop offset="0%" stop-color="#0284c7" stop-opacity="0.6"/>
-                                <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
-                            </linearGradient>
-                        </defs>
-                        <path d="M 50 50 L 20 8 A 50 50 0 0 1 80 8 Z" fill="url(#headingGradient)" />
-                        <polygon points="50,20 44,32 56,32" fill="#0284c7" opacity="0.95" />
-                    </svg>
-                </div>
-                <div class="user-gps-radar-ring"></div>
-                <div class="user-gps-dot-core"></div>
-            </div>
-        `;
-    }
-
-    // Set / Update User GPS Marker with Smooth Transitions
-    function setUserGpsMarker() {
-        if (!userCoords) return;
-
-        if (!userMarker) {
-            const gpsIcon = L.divIcon({
-                html: getGpsPuckHtml(currentHeading),
-                className: 'user-gps-puck-wrap',
-                iconSize: [52, 52],
-                iconAnchor: [26, 26]
-            });
-            userMarker = L.marker(userCoords, { icon: gpsIcon, zIndexOffset: 1000 }).addTo(map);
-        } else {
-            userMarker.setLatLng(userCoords);
-            updateHeadingCone(currentHeading);
-        }
-    }
-
-    // Smoothly rotate the heading cone
-    function updateHeadingCone(heading) {
-        currentHeading = heading;
-        const cone = document.getElementById('userGpsHeadingCone');
-        if (cone) {
-            cone.style.transform = `rotate(${heading}deg)`;
-        }
-    }
-
-    // Continuous Watch Position & Compass Engine
-    function startRealtimeLocationTracking() {
-        if (!navigator.geolocation) return;
-        if (isTrackingLive) return;
-        isTrackingLive = true;
-
-        // 1. Compass / Device Orientation
-        initCompassOrientation();
-
-        // 2. High Accuracy Geolocation Watch
-        watchGpsId = navigator.geolocation.watchPosition(
-            function(pos) {
-                const lat = pos.coords.latitude;
-                const lng = pos.coords.longitude;
-                const accuracy = pos.coords.accuracy || 0;
-                const speed = pos.coords.speed || 0;
-                const gpsHeading = pos.coords.heading;
-
-                userCoords = [lat, lng];
-
-                if (gpsHeading !== null && !isNaN(gpsHeading) && gpsHeading >= 0) {
-                    currentHeading = Math.round(gpsHeading);
-                }
-
-                setUserGpsMarker();
-                updateNearbyList();
-
-                // Throttled Sender to Swoole / Reverb (Every 3.5s or > 5 meters movement)
-                throttleBroadcastLocation(lat, lng, currentHeading, speed, accuracy);
-
-                updateNavigationPosition([lat, lng]);
-            },
-            function(err) {
-                console.warn('Real-time GPS watch notice:', err.message);
-            },
-            {
-                enableHighAccuracy: true,
-                maximumAge: 1500,
-                timeout: 10000
-            }
-        );
-    }
-
-    // Compass & Device Orientation Handling (iOS + Android)
-    function initCompassOrientation() {
-        if (window.DeviceOrientationEvent) {
-            // iOS 13+ permission request
-            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-                document.addEventListener('click', function requestIosCompass() {
-                    DeviceOrientationEvent.requestPermission().then(response => {
-                        if (response === 'granted') {
-                            bindOrientationEvents();
-                        }
-                    }).catch(() => {});
-                    document.removeEventListener('click', requestIosCompass);
-                }, { once: true });
-            } else {
-                bindOrientationEvents();
-            }
-        }
-    }
-
-    function bindOrientationEvents() {
-        const handleOrientation = function(e) {
-            let heading = null;
-            if (e.webkitCompassHeading !== undefined && e.webkitCompassHeading !== null) {
-                // iOS Safari True Compass Heading
-                heading = e.webkitCompassHeading;
-            } else if (e.alpha !== null) {
-                // Android standard orientation
-                heading = e.absolute ? (360 - e.alpha) : (360 - e.alpha);
-            }
-
-            if (heading !== null && !isNaN(heading)) {
-                updateHeadingCone(Math.round(heading));
-            }
+    function updateHeatmapData() {
+        if (!map || !map.getSource('heatmap-source')) return;
+        const filtered = getFilteredLocations();
+        const geojson = {
+            type: 'FeatureCollection',
+            features: filtered.map(l => ({
+                type: 'Feature',
+                geometry: { type: 'Point', coordinates: [parseFloat(l.lng), parseFloat(l.lat)] },
+                properties: { weight: l.type === 'activity' ? 1.0 : (l.type === 'job' ? 0.7 : 0.4) }
+            }))
         };
-
-        if ('ondeviceorientationabsolute' in window) {
-            window.addEventListener('deviceorientationabsolute', handleOrientation, true);
-        } else {
-            window.addEventListener('deviceorientation', handleOrientation, true);
-        }
+        map.getSource('heatmap-source').setData(geojson);
     }
 
-    // Throttle Sender (Mobile / GPS Tracker to Server)
-    function throttleBroadcastLocation(lat, lng, heading, speed, accuracy) {
-        if (!authUserId) return; // Only broadcast live location for authenticated users
-
-        const now = Date.now();
-        const minTimeInterval = 3500; // 3.5 seconds
-        const minDistanceMeters = 5;  // 5 meters
-
-        let shouldBroadcast = false;
-
-        if (!lastBroadcastCoords || (now - lastBroadcastTime) > 10000) {
-            shouldBroadcast = true;
-        } else {
-            const distKm = calculateDistance(lastBroadcastCoords[0], lastBroadcastCoords[1], lat, lng);
-            const distMeters = distKm * 1000;
-            if (distMeters >= minDistanceMeters && (now - lastBroadcastTime) >= minTimeInterval) {
-                shouldBroadcast = true;
-            }
-        }
-
-        if (!shouldBroadcast) return;
-
-        lastBroadcastTime = now;
-        lastBroadcastCoords = [lat, lng];
-
-        // Send via AJAX to Server (which broadcasts over Reverb / Swoole)
-        const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
-        if (!csrf) return;
-
-        fetch('{{ route("api.map.update_location") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrf,
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                latitude: lat,
-                longitude: lng,
-                heading: heading || 0,
-                speed: speed || 0,
-                accuracy: accuracy || 0
-            })
-        }).catch(() => {});
-    }
-
-    // Reverb WebSocket Map Tracking (Peer Markers)
-    function initReverbMapTracking() {
-        if (!window.Echo || !authUserId) return; // Only connect presence channel for authenticated users
-
-        try {
-            window.Echo.join('map.tracking')
-                .here((users) => {
-                    // Current online peers on the map
-                })
-                .joining((user) => {
-                    // Peer joined
-                })
-                .leaving((user) => {
-                    removePeerLocation(user.id);
-                })
-                .listen('.UserLocationUpdated', (e) => {
-                    updatePeerLocation(e);
-                });
-        } catch (err) {
-            console.warn('Reverb map tracking initialization skipped:', err);
-        }
-    }
-
-    function updatePeerLocation(data) {
-        // Don't draw self as a peer
-        if (authUserId && String(data.user_id) === String(authUserId)) {
+    function renderRadiusCircle(center, radiusKm) {
+        if (!map || !map.getSource('radius-circle-source')) return;
+        if (!center || radiusKm <= 0) {
+            map.getSource('radius-circle-source').setData({ type: 'FeatureCollection', features: [] });
             return;
         }
 
-        const id = data.user_id;
-        const latLng = [data.latitude, data.longitude];
+        const points = 64;
+        const coords = { latitude: center[0], longitude: center[1] };
+        const km = radiusKm;
+        const ret = [];
+        const distanceX = km / (111.320 * Math.cos(coords.latitude * Math.PI / 180));
+        const distanceY = km / 110.574;
 
-        if (peerMarkers[id]) {
-            peerMarkers[id].setLatLng(latLng);
-        } else {
-            const avatarHtml = data.avatar 
-                ? `<img src="${data.avatar}" alt="${data.name}">` 
-                : `${(data.name || 'U').charAt(0).toUpperCase()}`;
-
-            const icon = L.divIcon({
-                html: `
-                    <div class="live-peer-marker">
-                        <div class="live-peer-avatar">${avatarHtml}</div>
-                        <div class="live-peer-badge">${data.name || 'สมาชิก'}</div>
-                    </div>
-                `,
-                className: 'live-peer-wrap',
-                iconSize: [60, 48],
-                iconAnchor: [30, 24]
-            });
-
-            const marker = L.marker(latLng, { icon: icon, zIndexOffset: 800 }).addTo(map);
-            peerMarkers[id] = marker;
+        for (let i = 0; i < points; i++) {
+            const theta = (i / points) * (2 * Math.PI);
+            const x = distanceX * Math.cos(theta);
+            const y = distanceY * Math.sin(theta);
+            ret.push([coords.longitude + x, coords.latitude + y]);
         }
+        ret.push(ret[0]);
+
+        map.getSource('radius-circle-source').setData({
+            type: 'FeatureCollection',
+            features: [{
+                type: 'Feature',
+                geometry: { type: 'Polygon', coordinates: [ret] }
+            }]
+        });
     }
 
-    function removePeerLocation(userId) {
-        if (peerMarkers[userId]) {
-            map.removeLayer(peerMarkers[userId]);
-            delete peerMarkers[userId];
-        }
+    // Search Box
+    function initSearchInput() {
+        const input = document.getElementById('mapSearchInput');
+        const clearBtn = document.getElementById('mapSearchClearBtn');
+        if (!input) return;
+
+        input.addEventListener('input', function() {
+            searchQuery = this.value;
+            clearBtn.style.display = searchQuery ? 'flex' : 'none';
+            renderAllLocationMarkers();
+            updateNearbyList();
+        });
     }
 
-    window.locateUserAndCenter = function() {
-        if (userCoords) {
-            map.setView(userCoords, 16, { animate: true });
+    window.clearMapSearch = function() {
+        const input = document.getElementById('mapSearchInput');
+        if (input) input.value = '';
+        searchQuery = '';
+        document.getElementById('mapSearchClearBtn').style.display = 'none';
+        renderAllLocationMarkers();
+        updateNearbyList();
+    };
+
+    window.goBackOrHome = function() {
+        if (window.history.length > 1) {
+            window.history.back();
         } else {
-            startRealtimeLocationTracking();
+            window.location.href = '{{ route("activities.index") }}';
         }
     };
 
-    // Device Detection Helper
-    function getDeviceInfo() {
-        const ua = navigator.userAgent || navigator.vendor || window.opera || '';
-        const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-        const isAndroid = /Android/i.test(ua);
-        const isMac = !isIOS && /Macintosh|MacIntel|MacPPC|Mac68K/i.test(ua);
-        return {
-            isIOS: isIOS,
-            isAndroid: isAndroid,
-            isApple: isIOS || isMac,
-            isMobile: isIOS || isAndroid
-        };
-    }
-
-    // Format Duration into Thai Readable string (Minutes, Hours, Days)
-    function formatDurationThai(totalMinutes) {
-        if (!totalMinutes || totalMinutes <= 0) return '< 1 นาที';
-        const mins = Math.round(totalMinutes);
-        if (mins < 1) return '< 1 นาที';
-        if (mins < 60) return `${mins} นาที`;
-
-        const hours = Math.floor(mins / 60);
-        const remainMins = mins % 60;
-
-        if (hours < 24) {
-            if (remainMins === 0) {
-                return `${hours} ชม.`;
-            }
-            return `${hours} ชม. ${remainMins} นาที`;
-        }
-
-        const days = Math.floor(hours / 24);
-        const remainHours = hours % 24;
-        if (remainHours === 0) {
-            return `${days} วัน`;
-        }
-        return `${days} วัน ${remainHours} ชม.`;
-    }
-
-    // BottomSheet Handlers
-    function showBottomSheet(loc) {
+    // Location Focus & Bottom Sheet Details
+    function focusLocation(loc) {
         activeLocation = loc;
+        showBottomSheet(loc);
+
+        map.flyTo({
+            center: [parseFloat(loc.lng), parseFloat(loc.lat)],
+            zoom: 17,
+            pitch: is3DModeActive ? 55 : 0,
+            duration: 1000
+        });
+    }
+
+    function showBottomSheet(loc) {
         const sheet = document.getElementById('mapBottomSheet');
+        if (!sheet) return;
 
-        // Thumbnail
-        const img = document.getElementById('bs-img');
-        const fallback = document.getElementById('bs-icon-fallback');
+        // Image
+        const imgEl = document.getElementById('bs-img');
+        const fallbackEl = document.getElementById('bs-icon-fallback');
         if (loc.image) {
-            img.src = loc.image;
-            img.style.display = 'block';
-            fallback.style.display = 'none';
+            imgEl.src = loc.image;
+            imgEl.style.display = 'block';
+            fallbackEl.style.display = 'none';
         } else {
-            img.style.display = 'none';
-            fallback.style.display = 'flex';
+            imgEl.style.display = 'none';
+            fallbackEl.style.display = 'flex';
         }
 
-        // Title & Badges
+        // Tag Badge
+        const badgeEl = document.getElementById('bs-badge');
+        badgeEl.className = 'gmap-badge-tag';
+        if (loc.type === 'activity') {
+            badgeEl.classList.add('badge-orange');
+            badgeEl.textContent = '🎪 กิจกรรม';
+        } else if (loc.type === 'job') {
+            badgeEl.classList.add('badge-blue');
+            badgeEl.textContent = '💼 งานพาร์ทไทม์';
+        } else {
+            badgeEl.classList.add('badge-green');
+            badgeEl.textContent = '🏛️ อาคาร/สถานที่';
+        }
+
+        // Title & Location
         document.getElementById('bs-title').textContent = loc.title;
-        document.getElementById('bs-subtitle').textContent = (loc.subtitle ? loc.subtitle + ' • ' : '') + (loc.location_name || 'พิกัดในมหาวิทยาลัย');
+        document.getElementById('bs-subtitle').textContent = loc.location_name || 'ไม่ระบุสถานที่';
 
-        const badge = document.getElementById('bs-badge');
-        badge.textContent = loc.badge;
-        let badgeColorClass = 'badge-orange';
-        if (loc.type === 'job') badgeColorClass = 'badge-blue';
-        if (loc.type === 'landmark') badgeColorClass = 'badge-green';
-        badge.className = 'gmap-badge-tag ' + badgeColorClass;
-
-        // Distance & Smart ETAs (Minutes / Hours formatted)
-        let distText = '-';
-        let walkText = '-';
-        let driveText = '-';
-
-        if (userCoords) {
-            const distKm = calculateDistance(userCoords[0], userCoords[1], loc.lat, loc.lng);
-            if (distKm < 1) {
-                distText = Math.round(distKm * 1000) + ' ม.';
-            } else {
-                distText = distKm.toFixed(1) + ' กม.';
-            }
-
-            if (distKm < 0.06) {
-                walkText = '< 1 นาที';
-            } else {
-                const walkMins = Math.max(1, Math.round((distKm / 4.8) * 60));
-                walkText = '~' + formatDurationThai(walkMins);
-            }
-
-            const driveMins = Math.max(1, Math.round((distKm / 35) * 60));
-            driveText = '~' + formatDurationThai(driveMins);
-        }
-
+        // Distance & ETA Calculations
+        const startPoint = userCoords || defaultCenter;
+        const distKm = calculateDistance(startPoint[0], startPoint[1], loc.lat, loc.lng);
+        const distText = distKm < 1 ? `${Math.round(distKm * 1000)} ม.` : `${distKm.toFixed(1)} กม.`;
         document.getElementById('bs-dist-val').textContent = distText;
-        document.getElementById('bs-meta-info').textContent = loc.meta_info || loc.location_name || 'สถานที่ในแผนที่';
 
-        // Detail Button
-        const detailBtn = document.getElementById('bs-detail-btn');
-        if (loc.detail_url) {
-            detailBtn.href = loc.detail_url;
-            detailBtn.style.display = 'flex';
+        const walkMins = Math.max(1, Math.round((distKm / 4.8) * 60));
+        const driveMins = Math.max(1, Math.round((distKm / 38) * 60));
+        document.getElementById('bs-walk-time').textContent = formatDurationThai(walkMins);
+        document.getElementById('bs-drive-time').textContent = formatDurationThai(driveMins);
+
+        // Date / Time
+        const timeWrap = document.getElementById('bs-time-wrap');
+        if (loc.start_date) {
+            timeWrap.style.display = 'flex';
+            document.getElementById('bs-time-val').textContent = loc.start_date + (loc.end_date ? ` - ${loc.end_date}` : '');
         } else {
-            detailBtn.style.display = 'none';
+            timeWrap.style.display = 'none';
         }
 
-        // Configure Native App Detection and Recommend Button
-        const dev = getDeviceInfo();
-        const nativeIcon = document.getElementById('bs-native-icon');
-        const nativeText = document.getElementById('bs-native-text');
-        const tagApple = document.getElementById('tag-recom-apple');
-        const tagGoogle = document.getElementById('tag-recom-google');
-        const pillApple = document.getElementById('bs-applemaps-btn');
-        const pillGoogle = document.getElementById('bs-gmaps-btn');
-
-        if (tagApple) tagApple.style.display = 'none';
-        if (tagGoogle) tagGoogle.style.display = 'none';
-        if (pillApple) pillApple.classList.remove('recom');
-        if (pillGoogle) pillGoogle.classList.remove('recom');
-
-        if (dev.isIOS) {
-            nativeIcon.innerHTML = `<svg viewBox="0 0 170 170" width="16" height="16" fill="currentColor"><path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.69-3.08-7.7-7.91-12.03-14.5-5.64-8.59-10.15-18.49-13.51-29.7-3.37-11.2-5.06-22.02-5.06-32.46 0-14.75 3.8-27.18 11.41-37.3 7.6-10.13 17.2-15.26 28.79-15.41 4.71 0 9.87 1.25 15.48 3.75 5.62 2.5 9.4 3.8 11.35 3.9 1.52 0 5.48-1.39 11.89-4.17 6.41-2.77 12.06-4.04 16.94-3.8 12.52.62 22.56 5.16 30.12 13.62-10.88 6.59-16.2 15.71-15.96 27.36.24 9.17 3.86 16.89 10.87 23.16 7 6.27 15.34 9.82 25.01 10.66-2.07 6.28-4.73 12.77-7.98 19.46zM119.22 31.84c0-7.23 2.65-13.9 7.94-20.02 5.3-6.12 11.78-9.98 19.46-11.58.22 1.09.33 2.18.33 3.27 0 7.02-2.74 13.67-8.23 19.95-5.49 6.28-12.18 10.02-20.07 11.22-.11-.98-.22-1.94-.22-2.84z"/></svg>`;
-            nativeText.textContent = 'Apple Maps';
-            if (tagApple) tagApple.style.display = 'inline-block';
-            if (pillApple) pillApple.classList.add('recom');
-        } else if (dev.isAndroid) {
-            nativeIcon.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>`;
-            nativeText.textContent = 'Google Maps';
-            if (tagGoogle) tagGoogle.style.display = 'inline-block';
-            if (pillGoogle) pillGoogle.classList.add('recom');
+        // Quota
+        const quotaWrap = document.getElementById('bs-quota-wrap');
+        if (loc.quota) {
+            quotaWrap.style.display = 'flex';
+            document.getElementById('bs-quota-val').textContent = `${loc.current_participants || 0} / ${loc.quota} คน`;
         } else {
-            nativeIcon.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon><line x1="9" y1="3" x2="9" y2="18"></line><line x1="15" y1="6" x2="15" y2="21"></line></svg>`;
-            nativeText.textContent = 'Google Maps';
-            if (tagGoogle) tagGoogle.style.display = 'inline-block';
-            if (pillGoogle) pillGoogle.classList.add('recom');
+            quotaWrap.style.display = 'none';
         }
+
+        // Description
+        document.getElementById('bs-desc-val').textContent = loc.description || 'ไม่มีรายละเอียดเพิ่มเติม';
+
+        // Links
+        document.getElementById('bs-detail-link').href = loc.url || '#';
+        document.getElementById('bs-native-nav-btn').href = `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}`;
 
         sheet.style.display = 'flex';
     }
 
-    // Touch Swipe Gesture for BottomSheet
-    function initBottomSheetSwipe() {
+    window.closeBottomSheet = function() {
         const sheet = document.getElementById('mapBottomSheet');
-        const handle = document.getElementById('gmapSheetHandleZone');
-        let startY = 0;
-        let currentY = 0;
-
-        handle.addEventListener('touchstart', function(e) {
-            startY = e.touches[0].clientY;
-        }, { passive: true });
-
-        handle.addEventListener('touchmove', function(e) {
-            currentY = e.touches[0].clientY;
-            const diff = currentY - startY;
-            if (diff > 0) {
-                sheet.style.transform = `translateY(${diff}px)`;
-            }
-        }, { passive: true });
-
-        handle.addEventListener('touchend', function() {
-            const diff = currentY - startY;
-            sheet.style.transform = '';
-            if (diff > 60) {
-                closeBottomSheet();
-            }
-            startY = 0;
-            currentY = 0;
-        });
-    }
+        if (sheet) sheet.style.display = 'none';
+    };
 
     window.toggleBottomSheetExpand = function() {
         const sheet = document.getElementById('mapBottomSheet');
+        if (!sheet) return;
         sheet.classList.toggle('expanded');
     };
 
-    window.closeBottomSheet = function() {
-        document.getElementById('mapBottomSheet').style.display = 'none';
-        activeLocation = null;
-    };
-
-    // Launch Specific App with Native Scheme
-    window.launchNativeApp = function(app, event) {
-        if (event) event.preventDefault();
-        if (!activeLocation) return;
-
-        const loc = activeLocation;
-        const encTitle = encodeURIComponent(loc.title || loc.location_name || 'จุดหมาย');
-        const dev = getDeviceInfo();
-
-        if (app === 'apple') {
-            const appleScheme = `maps://?q=${encTitle}&ll=${loc.lat},${loc.lng}&daddr=${loc.lat},${loc.lng}`;
-            const appleWeb = `https://maps.apple.com/?daddr=${loc.lat},${loc.lng}&q=${encTitle}`;
-
-            if (dev.isIOS || dev.isApple) {
-                window.location.href = appleScheme;
-                setTimeout(() => { window.open(appleWeb, '_blank'); }, 600);
-            } else {
-                window.open(appleWeb, '_blank');
+    function initBottomSheetSwipe() {
+        const zone = document.getElementById('gmapSheetHandleZone');
+        if (!zone) return;
+        let startY = 0;
+        zone.addEventListener('touchstart', function(e) {
+            startY = e.touches[0].clientY;
+        }, { passive: true });
+        zone.addEventListener('touchend', function(e) {
+            const endY = e.changedTouches[0].clientY;
+            if (endY - startY > 50) {
+                closeBottomSheet();
             }
-        } else if (app === 'google') {
-            const gNavScheme = `google.navigation:q=${loc.lat},${loc.lng}`;
-            const gGeoScheme = `geo:${loc.lat},${loc.lng}?q=${loc.lat},${loc.lng}(${encTitle})`;
-            const gWeb = `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}`;
-
-            if (dev.isAndroid) {
-                window.location.href = gNavScheme;
-                setTimeout(() => {
-                    window.location.href = gGeoScheme;
-                    setTimeout(() => { window.open(gWeb, '_blank'); }, 500);
-                }, 400);
-            } else if (dev.isIOS) {
-                window.location.href = `comgooglemaps://?daddr=${loc.lat},${loc.lng}&directionsmode=driving`;
-                setTimeout(() => { window.open(gWeb, '_blank'); }, 500);
-            } else {
-                window.open(gWeb, '_blank');
-            }
-        } else if (app === 'waze') {
-            const wazeScheme = `waze://?ll=${loc.lat},${loc.lng}&navigate=yes`;
-            const wazeWeb = `https://waze.com/ul?ll=${loc.lat},${loc.lng}&navigate=yes`;
-
-            if (dev.isMobile) {
-                window.location.href = wazeScheme;
-                setTimeout(() => { window.open(wazeWeb, '_blank'); }, 500);
-            } else {
-                window.open(wazeWeb, '_blank');
-            }
-        }
-    };
-
-    window.openActiveNativeMap = function() {
-        if (!activeLocation) return;
-        const dev = getDeviceInfo();
-        if (dev.isIOS) {
-            launchNativeApp('apple');
-        } else {
-            launchNativeApp('google');
-        }
-    };
-
-    // Share Location
-    window.shareActiveLocation = function() {
-        if (!activeLocation) return;
-        const shareData = {
-            title: activeLocation.title || 'สถานที่ UNI Activity',
-            text: `ดูสถานที่ ${activeLocation.title} บนแผนที่กิจกรรม`,
-            url: `${window.location.origin}/map?type=${activeLocation.type}&id=${activeLocation.id}`
-        };
-
-        if (navigator.share) {
-            navigator.share(shareData).catch(() => {});
-        } else {
-            navigator.clipboard.writeText(shareData.url).then(() => {
-                alert('คัดลอกลิงก์สถานที่เรียบร้อยแล้ว');
-            });
-        }
-    };
-
-    // Format Duration into Thai Readable string (Minutes, Hours, Days)
-    function formatDurationThai(totalMinutes) {
-        if (!totalMinutes || totalMinutes <= 0) return '< 1 นาที';
-        const mins = Math.round(totalMinutes);
-        if (mins < 1) return '< 1 นาที';
-        if (mins < 60) return `${mins} นาที`;
-
-        const hours = Math.floor(mins / 60);
-        const remainMins = mins % 60;
-
-        if (hours < 24) {
-            if (remainMins === 0) {
-                return `${hours} ชม.`;
-            }
-            return `${hours} ชม. ${remainMins} นาที`;
-        }
-
-        const days = Math.floor(hours / 24);
-        const remainHours = hours % 24;
-        if (remainHours === 0) {
-            return `${days} วัน`;
-        }
-        return `${days} วัน ${remainHours} ชม.`;
+        }, { passive: true });
     }
 
-    // ── Multi-Mode & Alternative Route Selection System ──
-    let currentTravelMode = 'drive'; // 'drive', 'moto', 'walk', 'bike'
-    let currentRouteAlternatives = [];
-    let selectedRouteIndex = 0;
-    let alternativePolylines = [];
-    let activeNavPolyline = null;
-    let activeNavTarget = null;
-    let activeNavRoute = null;
-    let routeFetchAbortCtrl = null;
-    let navigationRerouteAt = 0;
-    let navigationReroutePending = false;
-    let routeOriginMarker = null;
-    let routeDestMarker = null;
+    window.shareActiveLocation = function() {
+        if (!activeLocation) return;
+        if (navigator.share) {
+            navigator.share({
+                title: activeLocation.title,
+                text: `พิกัด ${activeLocation.title} บนแผนที่ UNI Activity`,
+                url: window.location.href
+            }).catch(() => {});
+        } else {
+            navigator.clipboard.writeText(window.location.href);
+            window.alert('คัดลอกลิงก์สถานที่เรียบร้อยแล้ว!');
+        }
+    };
 
-    // Open Route Selector Sheet for Active Location
+    // ── OSRM Real Road Route Calculation Engine ──
     window.openRouteSelectorForActive = function() {
         if (!activeLocation) return;
         openRouteSelector(activeLocation);
@@ -2557,19 +2136,15 @@ html[data-theme="dark"] .gmap-sheet-handle {
         if (!sheet) return;
         document.getElementById('gmapRouteDestTitle').textContent = loc.title;
 
-        // Set active mode chip
         document.querySelectorAll('.gmap-mode-chip').forEach(btn => {
             btn.classList.toggle('active', btn.getAttribute('data-mode') === currentTravelMode);
         });
 
         sheet.style.display = 'flex';
 
-        // Center map to bounds between user and target
         const startPoint = userCoords || defaultCenter;
-        try {
-            const bounds = L.latLngBounds([startPoint, [parseFloat(loc.lat), parseFloat(loc.lng)]]);
-            map.fitBounds(bounds, { padding: [80, 80] });
-        } catch (e) {}
+        const bounds = new maplibregl.LngLatBounds([startPoint[1], startPoint[0]], [parseFloat(loc.lng), parseFloat(loc.lat)]);
+        map.fitBounds(bounds, { padding: { top: 120, bottom: 260, left: 60, right: 60 }, duration: 1000 });
 
         selectedRouteIndex = 0;
         calculateAndRenderRouteOptions();
@@ -2584,45 +2159,39 @@ html[data-theme="dark"] .gmap-sheet-handle {
     window.selectTravelMode = function(mode, btn) {
         currentTravelMode = mode;
         document.querySelectorAll('.gmap-mode-chip').forEach(b => b.classList.remove('active'));
-        if (btn) {
-            btn.classList.add('active');
-        } else {
-            const el = document.querySelector(`.gmap-mode-chip[data-mode="${mode}"]`);
-            if (el) el.classList.add('active');
-        }
+        if (btn) btn.classList.add('active');
         selectedRouteIndex = 0;
         calculateAndRenderRouteOptions();
     };
 
-    function clearAlternativePolylines() {
-        alternativePolylines.forEach(layer => {
-            try { map.removeLayer(layer); } catch (e) {}
-        });
-        alternativePolylines = [];
-    }
-
     function clearAllRouteVisuals() {
-        clearAlternativePolylines();
-        clearRouteOverviewMarkers();
+        if (!map) return;
+        if (map.getSource('route-primary-source')) {
+            map.getSource('route-primary-source').setData({ type: 'FeatureCollection', features: [] });
+        }
+        if (map.getSource('route-alt-source')) {
+            map.getSource('route-alt-source').setData({ type: 'FeatureCollection', features: [] });
+        }
+        if (destMarker) {
+            destMarker.remove();
+            destMarker = null;
+        }
     }
 
-    // Calculate real road routes via OSRM & render comparison cards
     async function calculateAndRenderRouteOptions() {
         const target = activeLocation;
-        if (!target) return;
+        if (!target) return null;
 
         const cardsContainer = document.getElementById('gmapRouteCardsList');
-        if (!cardsContainer) return;
+        if (!cardsContainer) return null;
         const startPoint = userCoords || defaultCenter;
 
-        // Cancel previous pending fetch
         if (routeFetchAbortCtrl) {
             try { routeFetchAbortCtrl.abort(); } catch (e) {}
         }
         routeFetchAbortCtrl = new AbortController();
         const requestController = routeFetchAbortCtrl;
 
-        // 1. Initial quick local calculation as immediate placeholder (0ms)
         const baseDistKm = calculateDistance(startPoint[0], startPoint[1], parseFloat(target.lat), parseFloat(target.lng));
         let speedKmH = 42;
         let modeName = 'รถยนต์';
@@ -2654,14 +2223,13 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 timeMins: estTimeMin,
                 timeText: formatDurationThai(estTimeMin),
                 via: `${modeName} • กำลังคำนวณเส้นทางบนถนนจริง...`,
-                points: [startPoint, [parseFloat(target.lat), parseFloat(target.lng)]],
+                points: [[startPoint[1], startPoint[0]], [parseFloat(target.lng), parseFloat(target.lat)]],
                 isEstimated: true,
                 isMain: true
             }
         ];
         renderRouteCards();
 
-        // 2. Fetch Real Road Geometry from OSRM
         try {
             const startLng = startPoint[1];
             const startLat = startPoint[0];
@@ -2678,9 +2246,8 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
             if (data && data.code === 'Ok' && data.routes && data.routes.length > 0) {
                 const newRoutes = [];
-
                 data.routes.forEach((r, idx) => {
-                    const roadPoints = r.geometry.coordinates.map(c => [c[1], c[0]]);
+                    const roadPoints = r.geometry.coordinates; // MapLibre takes [lng, lat]
                     const distKm = (r.distance / 1000).toFixed(1);
                     let durMin = Math.round(r.duration / 60);
                     if (currentTravelMode === 'walk' && parseFloat(distKm) < 0.06) {
@@ -2765,115 +2332,62 @@ html[data-theme="dark"] .gmap-sheet-handle {
         previewRoutesOnMap();
     };
 
-    function renderDualLayerRoadPolyline(points, isPrimary, isNavigating) {
-        const layers = [];
-        if (!points || points.length < 2) return layers;
-
-        // 1. Casing / Border line (High contrast against roads)
-        const casing = L.polyline(points, {
-            color: isPrimary ? '#065f46' : '#334155',
-            weight: isNavigating ? 11 : 9,
-            opacity: isPrimary ? 0.9 : 0.6,
-            lineCap: 'round',
-            lineJoin: 'round'
-        }).addTo(map);
-        layers.push(casing);
-
-        // 2. Core glowing road line
-        const core = L.polyline(points, {
-            color: isPrimary ? '#10b981' : '#94a3b8',
-            weight: isNavigating ? 7 : 5,
-            opacity: isPrimary ? 1 : 0.8,
-            lineCap: 'round',
-            lineJoin: 'round',
-            dashArray: (!isPrimary && !isNavigating) ? '6, 6' : null
-        }).addTo(map);
-        layers.push(core);
-
-        // 3. Directional animated flow line (only for primary active route)
-        if (isPrimary) {
-            const flow = L.polyline(points, {
-                className: 'nav-route-flow-line',
-                color: '#ffffff',
-                weight: 3,
-                opacity: 0.85,
-                lineCap: 'round',
-                lineJoin: 'round'
-            }).addTo(map);
-            layers.push(flow);
-        }
-
-        return layers;
-    }
-
     function previewRoutesOnMap() {
-        clearAllRouteVisuals();
-        if (!activeLocation || !map || currentRouteAlternatives.length === 0) return;
+        if (!map || currentRouteAlternatives.length === 0) return;
+        const isR0Active = selectedRouteIndex === 0;
+        const mainRoute = isR0Active ? currentRouteAlternatives[0] : (currentRouteAlternatives[1] || currentRouteAlternatives[0]);
+        const altRoute = isR0Active ? (currentRouteAlternatives[1] || null) : currentRouteAlternatives[0];
 
-        try {
-            const isR0Active = selectedRouteIndex === 0;
+        renderRouteGeometryOnMap(mainRoute.points, true);
 
-            // Line 1 (Main Real Road Route)
-            const line1Layers = renderDualLayerRoadPolyline(currentRouteAlternatives[0].points, isR0Active, false);
-            line1Layers.forEach(l => {
-                l.on('click', () => selectRouteCard(0));
-                alternativePolylines.push(l);
+        if (altRoute && map.getSource('route-alt-source')) {
+            map.getSource('route-alt-source').setData({
+                type: 'FeatureCollection',
+                features: [{
+                    type: 'Feature',
+                    geometry: { type: 'LineString', coordinates: altRoute.points }
+                }]
             });
+        }
+    }
 
-            // Line 2 (Alternative Route)
-            if (currentRouteAlternatives.length > 1) {
-                const line2Layers = renderDualLayerRoadPolyline(currentRouteAlternatives[1].points, !isR0Active, false);
-                line2Layers.forEach(l => {
-                    l.on('click', () => selectRouteCard(1));
-                    alternativePolylines.push(l);
-                });
-            }
+    function renderRouteGeometryOnMap(points, isPrimary) {
+        if (!map || !map.getSource('route-primary-source')) return;
 
-            // Show origin marker (user's current position)
-            const startPoint = userCoords || defaultCenter;
-            const originIcon = L.divIcon({
-                html: `<div class="route-origin-marker"><div class="route-origin-label">จุดเริ่มต้น</div></div>`,
-                className: '',
-                iconSize: [22, 22],
-                iconAnchor: [11, 11]
-            });
-            routeOriginMarker = L.marker(startPoint, { icon: originIcon, zIndexOffset: 500 }).addTo(map);
+        map.getSource('route-primary-source').setData({
+            type: 'FeatureCollection',
+            features: [{
+                type: 'Feature',
+                geometry: { type: 'LineString', coordinates: points }
+            }]
+        });
 
-            // Show destination marker
-            const destIcon = L.divIcon({
-                html: `<div class="route-dest-marker">
-                    <svg width="30" height="42" viewBox="0 0 30 42" fill="none">
-                        <path d="M15 0C6.72 0 0 6.72 0 15c0 10.5 15 27 15 27s15-16.5 15-27C30 6.72 23.28 0 15 0z" fill="#ef4444"/>
-                        <circle cx="15" cy="14" r="7" fill="#fff"/>
+        if (activeLocation) {
+            if (!destMarker) {
+                const el = document.createElement('div');
+                el.className = 'nav-dest-marker';
+                el.innerHTML = `
+                    <svg width="40" height="52" viewBox="0 0 40 52" fill="none">
+                        <path d="M20 2C10.06 2 2 10.06 2 20c0 14 18 30 18 30s18-16 18-30C38 10.06 29.94 2 20 2z" fill="#ef4444"/>
+                        <circle cx="20" cy="19" r="8" fill="#fff"/>
+                        <circle cx="20" cy="19" r="4" fill="#ef4444"/>
                     </svg>
-                    <div class="route-dest-label">${activeLocation.title}</div>
-                </div>`,
-                className: '',
-                iconSize: [30, 42],
-                iconAnchor: [15, 42]
-            });
-            routeDestMarker = L.marker([parseFloat(activeLocation.lat), parseFloat(activeLocation.lng)], { icon: destIcon, zIndexOffset: 600 }).addTo(map);
-
-            // Broad overview from start to destination
-            const activeRoutePoints = currentRouteAlternatives[selectedRouteIndex]?.points || currentRouteAlternatives[0].points;
-            const routeBounds = L.latLngBounds(activeRoutePoints);
-            map.fitBounds(routeBounds, { padding: [80, 80], maxZoom: 16 });
-        } catch (e) {}
+                `;
+                destMarker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
+                    .setLngLat([parseFloat(activeLocation.lng), parseFloat(activeLocation.lat)])
+                    .addTo(map);
+            } else {
+                destMarker.setLngLat([parseFloat(activeLocation.lng), parseFloat(activeLocation.lat)]);
+            }
+        }
     }
 
-    function clearRouteOverviewMarkers() {
-        if (routeOriginMarker) { try { map.removeLayer(routeOriginMarker); } catch(e){} routeOriginMarker = null; }
-        if (routeDestMarker) { try { map.removeLayer(routeDestMarker); } catch(e){} routeDestMarker = null; }
-    }
-
-    // Start Turn-by-Turn Navigation with Selected Route
     window.startNavigationWithSelectedRoute = async function() {
-        const selRoute = (currentRouteAlternatives && currentRouteAlternatives[selectedRouteIndex]) ? currentRouteAlternatives[selectedRouteIndex] : (currentRouteAlternatives && currentRouteAlternatives[0] ? currentRouteAlternatives[0] : null);
+        const selRoute = currentRouteAlternatives[selectedRouteIndex] || currentRouteAlternatives[0];
         closeRouteSelector();
         await startNavigationToActive(selRoute);
     };
 
-    // Instant Turn-by-Turn Navigation with Top GPS Banner & 3D Mode
     window.startNavigationToActive = async function(chosenRoute) {
         const target = activeLocation;
         if (!target) return;
@@ -2886,33 +2400,14 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 return;
             }
         }
-        const startPoint = userCoords;
 
         closeBottomSheet();
         closeRouteSelector();
-        clearAllRouteVisuals();
 
-        if (routingControl) {
-            try { map.removeControl(routingControl); } catch (e) {}
-            routingControl = null;
-        }
-        if (activeNavPolyline) {
-            if (Array.isArray(activeNavPolyline)) {
-                activeNavPolyline.forEach(l => { try { map.removeLayer(l); } catch(e){} });
-            } else {
-                try { map.removeLayer(activeNavPolyline); } catch (e) {}
-            }
-            activeNavPolyline = null;
-        }
-
-        // Do not navigate on the placeholder when a real route is still available to fetch.
         if (!chosenRoute || chosenRoute.isEstimated) {
             chosenRoute = await calculateAndRenderRouteOptions();
         }
         if (!chosenRoute) return;
-
-        // Clear any overview markers/alternatives that calculateAndRenderRouteOptions added
-        clearAllRouteVisuals();
 
         activeNavTarget = target;
         activeNavRoute = chosenRoute;
@@ -2923,7 +2418,6 @@ html[data-theme="dark"] .gmap-sheet-handle {
         const turnIcon = document.getElementById('gmapNavTurnIcon');
         navBanner.style.display = 'flex';
 
-        // 1. Set mode icon in banner
         let modeIconSvg = '<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>';
         if (currentTravelMode === 'walk') {
             modeIconSvg = '<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>';
@@ -2931,54 +2425,72 @@ html[data-theme="dark"] .gmap-sheet-handle {
             modeIconSvg = '<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>';
         } else if (currentTravelMode === 'bike') {
             modeIconSvg = '<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="5.5" cy="17.5" r="3.5" stroke-width="2"/><circle cx="18.5" cy="17.5" r="3.5" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 6h-3l-3 7h6l2-4h2"/></svg>';
-        } else {
-            modeIconSvg = '<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>';
         }
         if (turnIcon) turnIcon.innerHTML = modeIconSvg;
 
-        // 2. Set distance, time and turn instruction text
         nextDist.textContent = `${chosenRoute.distKm} กม. (~${chosenRoute.timeText})`;
-        nextText.textContent = chosenRoute.isEstimated
-            ? `มุ่งหน้าไปยัง ${target.title} (แสดงระยะโดยประมาณ)`
-            : `มุ่งหน้าไปยัง ${target.title} (${chosenRoute.name})`;
+        nextText.textContent = `มุ่งหน้าไปยัง ${target.title} (${chosenRoute.name})`;
 
-        // 3. Draw dual-layer glowing road polyline with animated flow
-        const pathPoints = chosenRoute.points || [startPoint, [parseFloat(target.lat), parseFloat(target.lng)]];
-        activeNavPolyline = renderDualLayerRoadPolyline(pathPoints, true, true);
+        renderRouteGeometryOnMap(chosenRoute.points, true);
 
-        // 4. Show destination marker during navigation
-        const navDestIcon = L.divIcon({
-            html: `<div class="nav-dest-marker">
-                <svg width="40" height="52" viewBox="0 0 40 52" fill="none">
-                    <path d="M20 2C10.06 2 2 10.06 2 20c0 14 18 30 18 30s18-16 18-30C38 10.06 29.94 2 20 2z" fill="#ef4444"/>
-                    <circle cx="20" cy="19" r="8" fill="#fff"/>
-                    <circle cx="20" cy="19" r="4" fill="#ef4444"/>
-                </svg>
-            </div>`,
-            className: '',
-            iconSize: [40, 52],
-            iconAnchor: [20, 52]
+        // Switch camera to 3D driving perspective
+        map.flyTo({
+            center: [userCoords[1], userCoords[0]],
+            zoom: 17.5,
+            pitch: 55,
+            bearing: currentHeading || 0,
+            duration: 1500
         });
-        routeDestMarker = L.marker([parseFloat(target.lat), parseFloat(target.lng)], { icon: navDestIcon, zIndexOffset: 800 }).addTo(map);
-
-        // 5. Show wide route overview first, then zoom to user for3D navigation
-        try {
-            map.invalidateSize();
-            const routeBounds = L.latLngBounds(pathPoints);
-            map.fitBounds(routeBounds, { padding: [80, 80], maxZoom: 16, animate: true, duration: 0.6 });
-
-            // After showing the wide overview, zoom to user's current location for live navigation
-            setTimeout(() => {
-                try {
-                    map.flyTo(startPoint, 17, { animate: true, duration: 1.2 });
-                } catch (e) {
-                    try { map.setView(startPoint, 17); } catch (err) {}
-                }
-            }, 1200);
-        } catch (e) {
-            try { map.setView(startPoint, 17); } catch (err) {}
-        }
     };
+
+    window.clearNavigationRoute = function() {
+        activeNavTarget = null;
+        activeNavRoute = null;
+        navigationReroutePending = false;
+        clearAllRouteVisuals();
+        document.getElementById('gmapNavBanner').style.display = 'none';
+
+        const startPoint = userCoords || defaultCenter;
+        map.easeTo({
+            center: [startPoint[1], startPoint[0]],
+            zoom: 15,
+            pitch: 0,
+            bearing: 0,
+            duration: 1000
+        });
+    };
+
+    // ── Real-time GPS & Compass Tracking ──
+    function startRealtimeLocationTracking() {
+        if (!navigator.geolocation) return;
+
+        watchGpsId = navigator.geolocation.watchPosition(
+            (pos) => {
+                userCoords = [pos.coords.latitude, pos.coords.longitude];
+                if (pos.coords.heading !== null && !isNaN(pos.coords.heading)) {
+                    currentHeading = Math.round(pos.coords.heading);
+                }
+                setUserGpsMarker();
+                broadcastUserLocation(userCoords);
+                updateNavigationPosition(userCoords);
+            },
+            (err) => {
+                console.warn('GPS Watch Notice:', err.message);
+            },
+            { enableHighAccuracy: true, maximumAge: 3000, timeout: 8000 }
+        );
+
+        if (window.DeviceOrientationEvent) {
+            window.addEventListener('deviceorientation', function(e) {
+                if (e.webkitCompassHeading) {
+                    currentHeading = Math.round(e.webkitCompassHeading);
+                } else if (e.alpha !== null) {
+                    currentHeading = Math.round(360 - e.alpha);
+                }
+                setUserGpsMarker();
+            }, { passive: true });
+        }
+    }
 
     function requestCurrentLocation() {
         if (userCoords) return Promise.resolve(userCoords);
@@ -2988,9 +2500,6 @@ html[data-theme="dark"] .gmap-sheet-handle {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     userCoords = [position.coords.latitude, position.coords.longitude];
-                    if (position.coords.heading !== null && !Number.isNaN(position.coords.heading)) {
-                        currentHeading = Math.round(position.coords.heading);
-                    }
                     setUserGpsMarker();
                     updateNearbyList();
                     resolve(userCoords);
@@ -3001,32 +2510,47 @@ html[data-theme="dark"] .gmap-sheet-handle {
         });
     }
 
-    function getRouteProgress(route, position) {
-        if (!route?.points || route.points.length < 2) return null;
-
-        let nearestIndex = 0;
-        let offRouteKm = Number.POSITIVE_INFINITY;
-        route.points.forEach((point, index) => {
-            const distance = calculateDistance(position[0], position[1], point[0], point[1]);
-            if (distance < offRouteKm) {
-                offRouteKm = distance;
-                nearestIndex = index;
+    window.locateUserAndCenter = async function() {
+        try {
+            await requestCurrentLocation();
+            if (userCoords) {
+                map.flyTo({
+                    center: [userCoords[1], userCoords[0]],
+                    zoom: 17,
+                    pitch: is3DModeActive ? 55 : 0,
+                    duration: 1000
+                });
             }
-        });
-
-        let remainingKm = calculateDistance(position[0], position[1], route.points[nearestIndex][0], route.points[nearestIndex][1]);
-        for (let index = nearestIndex; index < route.points.length - 1; index++) {
-            remainingKm += calculateDistance(route.points[index][0], route.points[index][1], route.points[index + 1][0], route.points[index + 1][1]);
+        } catch (e) {
+            window.alert('ไม่สามารถระบุตำแหน่งของคุณได้ กรุณาอนุญาตการเข้าถึง GPS บนอุปกรณ์');
         }
+    };
 
-        return { remainingKm, offRouteKm };
+    function setUserGpsMarker() {
+        if (!map || !userCoords) return;
+        const [lat, lng] = userCoords;
+
+        if (!userMarker) {
+            const el = document.createElement('div');
+            el.className = 'user-gps-heading-marker';
+            el.innerHTML = `
+                <div class="user-gps-cone" id="userHeadingCone" style="transform: rotate(${currentHeading}deg);"></div>
+                <div class="user-gps-dot"></div>
+            `;
+            userMarker = new maplibregl.Marker({ element: el, anchor: 'center' })
+                .setLngLat([lng, lat])
+                .addTo(map);
+        } else {
+            userMarker.setLngLat([lng, lat]);
+            const cone = document.getElementById('userHeadingCone');
+            if (cone) cone.style.transform = `rotate(${currentHeading}deg)`;
+        }
     }
 
     function updateNavigationPosition(position) {
         if (!activeNavTarget || !activeNavRoute) return;
 
-        const progress = getRouteProgress(activeNavRoute, position);
-        const remainingKm = progress?.remainingKm ?? calculateDistance(position[0], position[1], activeNavTarget.lat, activeNavTarget.lng);
+        const remainingKm = calculateDistance(position[0], position[1], activeNavTarget.lat, activeNavTarget.lng);
         const speedKmH = currentTravelMode === 'walk' ? 4.8 : (currentTravelMode === 'moto' ? 38 : (currentTravelMode === 'bike' ? 16 : 42));
         const remainingMinutes = remainingKm < 0.06 ? 0 : Math.max(1, Math.round((remainingKm / speedKmH) * 60));
         const nextDist = document.getElementById('gmapNavNextDist');
@@ -3041,65 +2565,90 @@ html[data-theme="dark"] .gmap-sheet-handle {
             return;
         }
 
-        const thresholdKm = currentTravelMode === 'walk' ? 0.05 : 0.08;
-        if (progress && progress.offRouteKm > thresholdKm && !navigationReroutePending && Date.now() - navigationRerouteAt > 15000) {
-            rerouteNavigation(position);
+        if (is3DModeActive || activeNavRoute) {
+            map.easeTo({
+                center: [position[1], position[0]],
+                bearing: currentHeading || 0,
+                duration: 500
+            });
         }
     }
 
-    async function rerouteNavigation(position) {
-        if (!activeNavTarget) return;
-        navigationReroutePending = true;
-        navigationRerouteAt = Date.now();
-        const savedLocation = activeLocation;
-        activeLocation = activeNavTarget;
-        const rerouted = await calculateAndRenderRouteOptions();
-        activeLocation = savedLocation;
+    // ── Laravel Reverb Realtime Peer Tracking ──
+    function initReverbMapTracking() {
+        if (!window.Echo || !authUserId) return;
 
-        if (rerouted && activeNavTarget) {
-            if (activeNavPolyline) {
-                if (Array.isArray(activeNavPolyline)) {
-                    activeNavPolyline.forEach(l => { try { map.removeLayer(l); } catch(e){} });
-                } else {
-                    try { map.removeLayer(activeNavPolyline); } catch (e) {}
-                }
-                activeNavPolyline = null;
-            }
-            clearAlternativePolylines();
-            activeNavRoute = rerouted;
-            activeNavPolyline = renderDualLayerRoadPolyline(rerouted.points, true, true);
-            updateNavigationPosition(position);
+        try {
+            window.Echo.join('map.tracking')
+                .here((users) => {
+                    users.forEach(u => {
+                        if (String(u.id) !== String(authUserId) && u.lat && u.lng) {
+                            updatePeerMarker(u);
+                        }
+                    });
+                })
+                .joining((user) => {
+                    if (String(user.id) !== String(authUserId) && user.lat && user.lng) {
+                        updatePeerMarker(user);
+                    }
+                })
+                .leaving((user) => {
+                    removePeerMarker(user.id);
+                })
+                .listen('.UserLocationUpdated', (e) => {
+                    if (String(e.user_id) !== String(authUserId)) {
+                        updatePeerMarker(e);
+                    }
+                });
+        } catch(e) {
+            console.warn('Reverb Map Notice:', e);
         }
-        navigationReroutePending = false;
     }
 
-    window.clearNavigationRoute = function() {
-        if (routingControl) {
-            try { map.removeControl(routingControl); } catch (e) {}
-            routingControl = null;
-        }
-        if (activeNavPolyline) {
-            if (Array.isArray(activeNavPolyline)) {
-                activeNavPolyline.forEach(l => { try { map.removeLayer(l); } catch(e){} });
-            } else {
-                try { map.removeLayer(activeNavPolyline); } catch (e) {}
-            }
-            activeNavPolyline = null;
-        }
-        activeNavTarget = null;
-        activeNavRoute = null;
-        navigationReroutePending = false;
-        clearAllRouteVisuals();
-        document.getElementById('gmapNavBanner').style.display = 'none';
+    function broadcastUserLocation(coords) {
+        if (!authUserId) return;
+        const now = Date.now();
+        if (now - lastBroadcastTime < 4000) return;
+        lastBroadcastTime = now;
 
-        const startPoint = userCoords || defaultCenter;
-        if (startPoint) {
-            try {
-                map.invalidateSize();
-                map.flyTo(startPoint, 15, { animate: true, duration: 0.6 });
-            } catch (e) {}
+        fetch('{{ route("api.map.update_location") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+            },
+            body: JSON.stringify({ lat: coords[0], lng: coords[1], heading: currentHeading })
+        }).catch(() => {});
+    }
+
+    function updatePeerMarker(user) {
+        if (!map || !user.lat || !user.lng) return;
+        const uid = user.id || user.user_id;
+
+        if (peerMarkers[uid]) {
+            peerMarkers[uid].setLngLat([parseFloat(user.lng), parseFloat(user.lat)]);
+        } else {
+            const el = document.createElement('div');
+            el.className = 'live-peer-marker';
+            el.innerHTML = `
+                <div class="live-peer-avatar">
+                    ${user.avatar ? `<img src="${user.avatar}" alt="">` : (user.name ? user.name.charAt(0) : 'U')}
+                </div>
+                <div class="live-peer-badge">${user.name || 'สมาชิก'}</div>
+            `;
+            const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
+                .setLngLat([parseFloat(user.lng), parseFloat(user.lat)])
+                .addTo(map);
+            peerMarkers[uid] = marker;
         }
-    };
+    }
+
+    function removePeerMarker(uid) {
+        if (peerMarkers[uid]) {
+            peerMarkers[uid].remove();
+            delete peerMarkers[uid];
+        }
+    }
 
     // Nearby Drawer & List
     window.toggleNearbyDrawer = function() {
@@ -3116,7 +2665,6 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
         let filtered = getFilteredLocations();
 
-        // Sort by distance if user GPS available
         if (userCoords) {
             filtered = [...filtered].sort((a, b) => {
                 const distA = calculateDistance(userCoords[0], userCoords[1], a.lat, a.lng);
@@ -3159,14 +2707,13 @@ html[data-theme="dark"] .gmap-sheet-handle {
         const target = allLocations.find(l => String(l.id) === String(id) && l.type === type);
         if (target) {
             document.getElementById('gmapNearbyDrawer').style.display = 'none';
-            map.setView([target.lat, target.lng], 17, { animate: true });
-            showBottomSheet(target);
+            focusLocation(target);
         }
     };
 
     // Haversine Distance Formula (km)
     function calculateDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371; // Earth's radius in km
+        const R = 6371;
         const numLat1 = parseFloat(lat1) || 0;
         const numLon1 = parseFloat(lon1) || 0;
         const numLat2 = parseFloat(lat2) || 0;
@@ -3178,6 +2725,14 @@ html[data-theme="dark"] .gmap-sheet-handle {
                   Math.sin(dLon / 2) * Math.sin(dLon / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c;
+    }
+
+    function formatDurationThai(mins) {
+        if (mins <= 0) return 'น้อยกว่า 1 นาที';
+        if (mins < 60) return `${mins} นาที`;
+        const h = Math.floor(mins / 60);
+        const m = mins % 60;
+        return m > 0 ? `${h} ชม. ${m} นาที` : `${h} ชม.`;
     }
 })();
 </script>

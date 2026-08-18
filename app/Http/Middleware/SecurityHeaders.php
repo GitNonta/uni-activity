@@ -45,11 +45,12 @@ class SecurityHeaders
             // Allowed: self, fonts.googleapis.com, Tailwind CDN (if used), WebSockets (ws/wss)
              $csp = "default-src 'self' https: http: data: blob: 'unsafe-inline' 'unsafe-eval'; "
                   . "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; "
+                  . "worker-src 'self' blob:; "
                   . "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com https://cdnjs.cloudflare.com; "
-                 . "font-src 'self' https://fonts.gstatic.com data:; "
-                 . "img-src 'self' data: https: http: blob:; "
-                 . "connect-src 'self' ws: wss: https: http:; "
-                 . "upgrade-insecure-requests;";
+                  . "font-src 'self' https://fonts.gstatic.com data:; "
+                  . "img-src 'self' data: https: http: blob:; "
+                  . "connect-src 'self' ws: wss: https: http:; "
+                  . "upgrade-insecure-requests;";
             
             $response->header('Content-Security-Policy', $csp);
             
