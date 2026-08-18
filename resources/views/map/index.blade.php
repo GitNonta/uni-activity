@@ -1413,107 +1413,46 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     50% { transform: translateY(-6px); }
 }
 
-/* ── Custom Location Markers ── */
-.gmap-custom-marker {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+/* ── Custom Location Markers (Circular Drop Pin with Icon) ── */
+.gmap-pin-wrapper {
     cursor: pointer;
-    user-select: none;
-    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.22));
-    z-index: 10;
-}
-.gmap-custom-marker:hover {
-    transform: scale(1.15) translateY(-4px);
-    z-index: 999;
-}
-.gmap-marker-bubble {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    border-radius: 16px;
-    background: #ffffff;
-    color: #0f172a;
-    font-size: 0.78rem;
-    font-weight: 700;
-    white-space: nowrap;
-    border: 2px solid #ffffff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
-    max-width: 190px;
+    justify-content: center;
+    width: 40px;
+    height: 48px;
+    padding-bottom: 8px;
+    user-select: none;
 }
-.gmap-marker-icon {
-    font-size: 0.95rem;
-    line-height: 1;
-    flex-shrink: 0;
+.custom-pin-marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border: 2.5px solid #ffffff;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
 }
-.gmap-marker-title {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.custom-pin-marker svg {
+    transform: rotate(45deg);
+    width: 19px;
+    height: 19px;
+    stroke: #ffffff;
 }
-.gmap-marker-arrow {
-    width: 0;
-    height: 0;
-    border-left: 6px solid transparent;
-    border-right: 6px solid transparent;
-    border-top: 7px solid #ffffff;
-    margin-top: -1px;
-}
-
-/* Category Marker Colors */
-.marker-activity .gmap-marker-bubble {
-    border-color: #ea580c;
-    background: #fff7ed;
-    color: #9a3412;
-}
-.marker-activity .gmap-marker-arrow {
-    border-top-color: #ea580c;
+.custom-pin-marker:hover, .custom-pin-marker.selected {
+    transform: rotate(-45deg) scale(1.22);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+    z-index: 1000 !important;
 }
 
-.marker-job .gmap-marker-bubble {
-    border-color: #0284c7;
-    background: #f0f9ff;
-    color: #075985;
-}
-.marker-job .gmap-marker-arrow {
-    border-top-color: #0284c7;
-}
-
-.marker-landmark .gmap-marker-bubble {
-    border-color: #16a34a;
-    background: #f0fdf4;
-    color: #14532d;
-}
-.marker-landmark .gmap-marker-arrow {
-    border-top-color: #16a34a;
-}
-
-html[data-theme="dark"] .marker-activity .gmap-marker-bubble {
-    background: #431407;
-    color: #ffedd5;
-    border-color: #f97316;
-}
-html[data-theme="dark"] .marker-activity .gmap-marker-arrow {
-    border-top-color: #f97316;
-}
-html[data-theme="dark"] .marker-job .gmap-marker-bubble {
-    background: #082f49;
-    color: #e0f2fe;
-    border-color: #38bdf8;
-}
-html[data-theme="dark"] .marker-job .gmap-marker-arrow {
-    border-top-color: #38bdf8;
-}
-html[data-theme="dark"] .marker-landmark .gmap-marker-bubble {
-    background: #052e16;
-    color: #dcfce7;
-    border-color: #4ade80;
-}
-html[data-theme="dark"] .marker-landmark .gmap-marker-arrow {
-    border-top-color: #4ade80;
-}
+.pin-activity { background: linear-gradient(135deg, #ea580c, #f97316); }
+.pin-job { background: linear-gradient(135deg, #0284c7, #38bdf8); }
+.pin-landmark { background: linear-gradient(135deg, #16a34a, #4ade80); }
 
 /* ── Dark Mode Adaptations ── */
 html[data-theme="dark"] .map-explorer-wrapper {
@@ -1940,7 +1879,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
         }
     }
 
-    // Render WebGL HTML Markers
+    // Render WebGL HTML Markers (Circular Drop Pin with Category Icon)
     function renderAllLocationMarkers() {
         if (!map) return;
 
@@ -1956,18 +1895,23 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
         filtered.forEach(loc => {
             const el = document.createElement('div');
-            el.className = `gmap-custom-marker marker-${loc.type}`;
+            el.className = 'gmap-pin-wrapper';
 
-            let iconEmoji = '🎪';
-            if (loc.type === 'job') iconEmoji = '💼';
-            else if (loc.type === 'landmark') iconEmoji = '🏛️';
+            let pinClass = 'pin-activity';
+            let iconSvg = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>';
+
+            if (loc.type === 'job') {
+                pinClass = 'pin-job';
+                iconSvg = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>';
+            } else if (loc.type === 'landmark') {
+                pinClass = 'pin-landmark';
+                iconSvg = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>';
+            }
 
             el.innerHTML = `
-                <div class="gmap-marker-bubble">
-                    <span class="gmap-marker-icon">${iconEmoji}</span>
-                    <span class="gmap-marker-title">${escapeHtml(loc.title)}</span>
+                <div class="custom-pin-marker ${pinClass}" title="${escapeHtml(loc.title)}">
+                    ${iconSvg}
                 </div>
-                <div class="gmap-marker-arrow"></div>
             `;
 
             el.addEventListener('click', function(e) {
