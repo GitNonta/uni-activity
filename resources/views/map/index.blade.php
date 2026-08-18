@@ -584,10 +584,10 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     transform: translateY(-1px);
 }
 .gmap-chip.active {
-    background: #0f172a;
+    background: linear-gradient(135deg, #ea580c, #c2410c);
     color: #ffffff;
-    border-color: #0f172a;
-    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.3);
+    border-color: #ea580c;
+    box-shadow: 0 3px 12px rgba(234, 88, 12, 0.35);
 }
 .gmap-chip-dot {
     width: 8px;
@@ -605,14 +605,14 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     left: 14px;
     right: 14px;
     z-index: 1100;
-    background: linear-gradient(135deg, #15803d, #16a34a);
+    background: linear-gradient(135deg, #ea580c, #c2410c);
     color: #fff;
     border-radius: 18px;
     padding: 12px 16px;
     display: flex;
     flex-direction: column;
     gap: 8px;
-    box-shadow: 0 8px 24px rgba(22, 163, 74, 0.42);
+    box-shadow: 0 8px 24px rgba(234, 88, 12, 0.42);
     backdrop-filter: blur(8px);
     animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -758,10 +758,10 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     color: #ea580c;
 }
 .gmap-fab.active {
-    background: #10b981 !important;
+    background: linear-gradient(135deg, #ea580c, #c2410c) !important;
     color: #ffffff !important;
-    border-color: #10b981 !important;
-    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4) !important;
+    border-color: #ea580c !important;
+    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.45) !important;
 }
 .gmap-fab-gps {
     color: #0284c7;
@@ -1006,7 +1006,7 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     align-items: center;
 }
 .gmap-btn-start-nav {
-    background: linear-gradient(135deg, #10b981, #059669);
+    background: linear-gradient(135deg, #ea580c, #c2410c);
     color: #ffffff;
     font-weight: 800;
     font-size: 0.92rem;
@@ -1018,13 +1018,13 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     justify-content: center;
     gap: 6px;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.38);
+    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.38);
     transition: all 0.15s ease;
 }
 .gmap-btn-start-nav:hover {
     filter: brightness(1.08);
     transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.48);
+    box-shadow: 0 6px 18px rgba(234, 88, 12, 0.48);
 }
 .gmap-btn-route-select {
     background: #f1f5f9;
@@ -1239,10 +1239,10 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     background: #e2e8f0;
 }
 .gmap-mode-chip.active {
-    background: #ecfdf5;
-    color: #059669;
-    border-color: #10b981;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+    background: #fff7ed;
+    color: #ea580c;
+    border-color: #ea580c;
+    box-shadow: 0 2px 8px rgba(234, 88, 12, 0.25);
 }
 .gmap-route-cards-list {
     display: flex;
@@ -1267,9 +1267,9 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     border-color: #cbd5e1;
 }
 .gmap-route-card.selected {
-    background: #f0fdf4;
-    border-color: #10b981;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+    background: #fff7ed;
+    border-color: #ea580c;
+    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.15);
 }
 .gmap-route-card-left {
     display: flex;
@@ -1279,7 +1279,7 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
 .gmap-route-card-tag {
     font-size: 0.7rem;
     font-weight: 700;
-    color: #16a34a;
+    color: #ea580c;
     text-transform: uppercase;
 }
 .gmap-route-card-time {
@@ -1306,8 +1306,8 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     justify-content: center;
 }
 .gmap-route-card.selected .gmap-route-card-radio {
-    border-color: #10b981;
-    background: #10b981;
+    border-color: #ea580c;
+    background: #ea580c;
 }
 .gmap-route-card.selected .gmap-route-card-radio::after {
     content: '';
