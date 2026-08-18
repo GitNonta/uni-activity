@@ -1692,11 +1692,12 @@ html[data-theme="dark"] .gmap-sheet-handle {
         map.on('style.load', function() {
             initVectorSourcesAndLayers();
             enable3DBuildings();
-            if (activeNavRoute) {
+            if (activeNavRoute && activeNavRoute.points && activeNavRoute.points.length >= 2) {
                 renderRouteGeometryOnMap(activeNavRoute.points, true);
             } else if (currentRouteAlternatives && currentRouteAlternatives.length > 0) {
                 previewRoutesOnMap();
             }
+            setUserGpsMarker();
             rebuildClusterIndex();
             updateHeatmapData();
         });
@@ -1713,7 +1714,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
     // Initialize WebGL GeoJSON Sources (Routing, Radius, Heatmap)
     function initVectorSourcesAndLayers() {
-        if (!map) return;
+        if (!map || !map.getStyle()) return;
 
         // 1. Primary Route Source & Layers
         if (!map.getSource('route-primary-source')) {
@@ -1721,7 +1722,8 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 type: 'geojson',
                 data: { type: 'FeatureCollection', features: [] }
             });
-
+        }
+        if (!map.getLayer('route-primary-casing')) {
             map.addLayer({
                 id: 'route-primary-casing',
                 type: 'line',
@@ -1736,7 +1738,8 @@ html[data-theme="dark"] .gmap-sheet-handle {
                     'line-opacity': 0.85
                 }
             });
-
+        }
+        if (!map.getLayer('route-primary-core')) {
             map.addLayer({
                 id: 'route-primary-core',
                 type: 'line',
@@ -1759,7 +1762,8 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 type: 'geojson',
                 data: { type: 'FeatureCollection', features: [] }
             });
-
+        }
+        if (!map.getLayer('route-alt-core')) {
             map.addLayer({
                 id: 'route-alt-core',
                 type: 'line',
@@ -1783,7 +1787,8 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 type: 'geojson',
                 data: { type: 'FeatureCollection', features: [] }
             });
-
+        }
+        if (!map.getLayer('radius-circle-fill')) {
             map.addLayer({
                 id: 'radius-circle-fill',
                 type: 'fill',
@@ -1793,7 +1798,8 @@ html[data-theme="dark"] .gmap-sheet-handle {
                     'fill-opacity': 0.12
                 }
             });
-
+        }
+        if (!map.getLayer('radius-circle-line')) {
             map.addLayer({
                 id: 'radius-circle-line',
                 type: 'line',
@@ -1812,7 +1818,8 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 type: 'geojson',
                 data: { type: 'FeatureCollection', features: [] }
             });
-
+        }
+        if (!map.getLayer('heatmap-layer')) {
             map.addLayer({
                 id: 'heatmap-layer',
                 type: 'heatmap',
@@ -1823,7 +1830,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
                     'heatmap-intensity': 1.2,
                     'heatmap-color': [
                         'interpolate', ['linear'], ['heatmap-density'],
-                        0, 'rgba(0, 0, 255, 0)',
+                        0, 'rgba(0, 255, 255, 0)',
                         0.2, 'rgb(0, 255, 255)',
                         0.4, 'rgb(0, 255, 0)',
                         0.6, 'rgb(255, 255, 0)',
@@ -2433,11 +2440,10 @@ html[data-theme="dark"] .gmap-sheet-handle {
     }
 
     async function calculateAndRenderRouteOptions() {
-        const target = activeLocation;
+        const target = activeNavTarget || activeLocation;
         if (!target) return null;
 
         const cardsContainer = document.getElementById('gmapRouteCardsList');
-        if (!cardsContainer) return null;
         const startPoint = userCoords || defaultCenter;
 
         if (routeFetchAbortCtrl) {
@@ -2484,6 +2490,11 @@ html[data-theme="dark"] .gmap-sheet-handle {
         ];
         renderRouteCards();
         previewRoutesOnMap();
+
+        if (activeNavRoute) {
+            activeNavRoute = currentRouteAlternatives[0];
+            renderRouteGeometryOnMap(activeNavRoute.points, true);
+        }
 
         try {
             const startLng = startPoint[1];
@@ -2533,6 +2544,14 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 }
                 renderRouteCards();
                 previewRoutesOnMap();
+
+                if (activeNavRoute) {
+                    activeNavRoute = currentRouteAlternatives[selectedRouteIndex] || currentRouteAlternatives[0];
+                    renderRouteGeometryOnMap(activeNavRoute.points, true);
+                    const nextDist = document.getElementById('gmapNavNextDist');
+                    if (nextDist) nextDist.textContent = `${activeNavRoute.distKm} กม. (~${activeNavRoute.timeText})`;
+                }
+
                 return currentRouteAlternatives[selectedRouteIndex] || currentRouteAlternatives[0];
             }
         } catch (err) {
@@ -2544,6 +2563,11 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 });
                 renderRouteCards();
                 previewRoutesOnMap();
+
+                if (activeNavRoute) {
+                    activeNavRoute = currentRouteAlternatives[selectedRouteIndex] || currentRouteAlternatives[0];
+                    renderRouteGeometryOnMap(activeNavRoute.points, true);
+                }
             }
         }
 
