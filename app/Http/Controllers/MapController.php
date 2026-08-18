@@ -68,7 +68,12 @@ class MapController extends Controller
             ->where('status', '!=', 'cancelled')
             ->get()
             ->map(function (Activity $act): array {
-                $img = $act->image_path ? Storage::url($act->image_path) : null;
+                $img = null;
+                if ($act->image_path) {
+                    $img = str_starts_with($act->image_path, 'http')
+                        ? $act->image_path
+                        : asset('storage/' . ltrim($act->image_path, '/'));
+                }
                 return [
                     'id' => $act->id,
                     'type' => 'activity',
@@ -94,7 +99,12 @@ class MapController extends Controller
             ->where('status', '!=', 'cancelled')
             ->get()
             ->map(function (JobListing $job): array {
-                $img = $job->poster_image ? Storage::url($job->poster_image) : null;
+                $img = null;
+                if ($job->poster_image) {
+                    $img = str_starts_with($job->poster_image, 'http')
+                        ? $job->poster_image
+                        : asset('storage/' . ltrim($job->poster_image, '/'));
+                }
                 return [
                     'id' => $job->id,
                     'type' => 'job',

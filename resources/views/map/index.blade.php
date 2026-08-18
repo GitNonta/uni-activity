@@ -922,8 +922,31 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(234, 88, 12, 0.08);
+    transition: all 0.2s ease;
+}
+.gmap-thumb-fallback.bg-orange {
+    background: #fff7ed;
     color: #ea580c;
+}
+.gmap-thumb-fallback.bg-blue {
+    background: #f0f9ff;
+    color: #0284c7;
+}
+.gmap-thumb-fallback.bg-green {
+    background: #f0fdf4;
+    color: #16a34a;
+}
+html[data-theme="dark"] .gmap-thumb-fallback.bg-orange {
+    background: rgba(234, 88, 12, 0.18);
+    color: #fb923c;
+}
+html[data-theme="dark"] .gmap-thumb-fallback.bg-blue {
+    background: rgba(2, 132, 199, 0.18);
+    color: #38bdf8;
+}
+html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
+    background: rgba(22, 163, 74, 0.18);
+    color: #4ade80;
 }
 .gmap-head-content {
     flex: 1;
@@ -2410,16 +2433,53 @@ html[data-theme="dark"] .gmap-sheet-handle {
         const sheet = document.getElementById('mapBottomSheet');
         if (!sheet) return;
 
-        // Image
+        // Image & Dynamic Category Fallback SVG
         const imgEl = document.getElementById('bs-img');
         const fallbackEl = document.getElementById('bs-icon-fallback');
-        if (loc.image) {
-            imgEl.src = loc.image;
-            imgEl.style.display = 'block';
-            fallbackEl.style.display = 'none';
-        } else {
+
+        function setCategoryFallback() {
             imgEl.style.display = 'none';
             fallbackEl.style.display = 'flex';
+            if (loc.type === 'activity') {
+                fallbackEl.className = 'gmap-thumb-fallback bg-orange';
+                fallbackEl.innerHTML = `
+                    <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                        <rect x="3" y="4" width="18" height="18" rx="3" ry="3"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                        <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/>
+                    </svg>
+                `;
+            } else if (loc.type === 'job') {
+                fallbackEl.className = 'gmap-thumb-fallback bg-blue';
+                fallbackEl.innerHTML = `
+                    <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                    </svg>
+                `;
+            } else {
+                fallbackEl.className = 'gmap-thumb-fallback bg-green';
+                fallbackEl.innerHTML = `
+                    <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5m-4 0h4"/>
+                    </svg>
+                `;
+            }
+        }
+
+        if (loc.image) {
+            imgEl.onload = function() {
+                imgEl.style.display = 'block';
+                fallbackEl.style.display = 'none';
+            };
+            imgEl.onerror = function() {
+                setCategoryFallback();
+            };
+            imgEl.src = loc.image;
+        } else {
+            setCategoryFallback();
         }
 
         // Tag Badge with SVG icons
