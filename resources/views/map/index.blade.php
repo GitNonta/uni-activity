@@ -1596,6 +1596,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
     let allLocations = [];
     let locationMarkers = []; // Array of { marker, loc }
     let currentFilterType = 'all';
+    let searchQuery = '';
     let currentRadiusKm = 0;
     let isHeatmapActive = false;
     let is3DModeActive = false;
