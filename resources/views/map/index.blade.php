@@ -471,8 +471,8 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
 }
 @media (min-width: 768px) {
     .gmap-floating-top {
-        left: 20px;
-        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
         width: 440px;
     }
 }
