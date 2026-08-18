@@ -1665,8 +1665,8 @@ html[data-theme="dark"] .gmap-sheet-handle {
     let activeNavTarget = null;
     let activeNavRoute = null;
     let routeFetchAbortCtrl = null;
-    let navigationRerouteAt = 0;
-    let navigationReroutePending = false;
+    let lastRerouteTime = 0;
+    let isRerouting = false;
 
     document.addEventListener('DOMContentLoaded', function() {
         initMap();
@@ -2918,12 +2918,89 @@ html[data-theme="dark"] .gmap-sheet-handle {
             return;
         }
 
+        // Real-time Route Polyline Live-Snapping & Ahead-Trimming
+        if (activeNavRoute && activeNavRoute.points && activeNavRoute.points.length > 0) {
+            const pts = activeNavRoute.points;
+            let minD = Infinity;
+            let closestIndex = 0;
+
+            for (let i = 0; i < pts.length; i++) {
+                const d = calculateDistance(position[0], position[1], pts[i][1], pts[i][0]);
+                if (d < minD) {
+                    minD = d;
+                    closestIndex = i;
+                }
+            }
+
+            if (minD <= 0.06) {
+                // User is on or near route (within 60m): trim passed segments behind user
+                const aheadPoints = pts.slice(closestIndex + 1);
+                const livePoints = [[position[1], position[0]], ...aheadPoints];
+                if (livePoints.length >= 2) {
+                    activeNavRoute.points = livePoints;
+                    renderRouteGeometryOnMap(livePoints, true);
+                }
+            } else if (minD > 0.06 && remainingKm > 0.05) {
+                // Off-route (>60m): trigger real-time dynamic rerouting
+                triggerRealtimeReroute(position);
+            }
+        }
+
         if (is3DModeActive || activeNavRoute) {
             map.easeTo({
                 center: [position[1], position[0]],
                 bearing: currentHeading || 0,
                 duration: 500
             });
+        }
+    }
+
+    async function triggerRealtimeReroute(position) {
+        if (isRerouting || (Date.now() - lastRerouteTime < 4000)) return;
+        const target = activeNavTarget;
+        if (!target) return;
+
+        isRerouting = true;
+        lastRerouteTime = Date.now();
+
+        try {
+            let osrmProfile = 'driving';
+            if (currentTravelMode === 'walk') osrmProfile = 'walking';
+            else if (currentTravelMode === 'bike') osrmProfile = 'cycling';
+            else if (currentTravelMode === 'moto') osrmProfile = 'driving';
+
+            const osrmUrl = `https://router.project-osrm.org/route/v1/${osrmProfile}/${position[1]},${position[0]};${parseFloat(target.lng)},${parseFloat(target.lat)}?overview=full&geometries=geojson`;
+            const resp = await fetch(osrmUrl);
+            if (resp.ok) {
+                const data = await resp.json();
+                if (data && data.code === 'Ok' && data.routes && data.routes.length > 0) {
+                    const r = data.routes[0];
+                    const roadPoints = r.geometry.coordinates; // [lng, lat]
+                    const distNum = r.distance / 1000;
+                    const speedKmH = currentTravelMode === 'walk' ? 4.5 : (currentTravelMode === 'bike' ? 14 : (currentTravelMode === 'moto' ? 38 : 38));
+                    const durMin = currentTravelMode === 'drive' ? Math.max(1, Math.round(r.duration / 60)) : (distNum < 0.05 ? 0 : Math.max(1, Math.round((distNum / speedKmH) * 60)));
+
+                    activeNavRoute = {
+                        name: 'เส้นทางปัจจุบัน',
+                        distKm: distNum.toFixed(1),
+                        timeMins: durMin,
+                        timeText: formatDurationThai(durMin),
+                        points: roadPoints
+                    };
+
+                    renderRouteGeometryOnMap(roadPoints, true);
+
+                    const nextDist = document.getElementById('gmapNavNextDist');
+                    if (nextDist) {
+                        const distStr = distNum < 1 ? `${Math.round(distNum * 1000)} ม.` : `${distNum.toFixed(1)} กม.`;
+                        nextDist.textContent = `${distStr} (~${formatDurationThai(durMin)})`;
+                    }
+                }
+            }
+        } catch (err) {
+            console.warn('Real-time reroute notice:', err);
+        } finally {
+            isRerouting = false;
         }
     }
 
