@@ -43,30 +43,38 @@ window.Echo = new Echo({
 // Back-Forward Cache (bfcache) & Visibility Lifecycle Management
 // ─────────────────────────────────────────────────────────────────────────────
 
-window.addEventListener('pagehide', () => {
+const gracefulDisconnect = () => {
     if (window.Echo && window.Echo.connector && window.Echo.connector.pusher) {
         try {
             window.Echo.disconnect();
         } catch (e) {}
     }
-});
+};
 
-window.addEventListener('pageshow', (event) => {
-    if (event.persisted && window.Echo && window.Echo.connector && window.Echo.connector.pusher) {
-        try {
-            window.Echo.connect();
-        } catch (e) {}
-    }
-});
-
-document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && window.Echo && window.Echo.connector && window.Echo.connector.pusher) {
+const gracefulReconnect = () => {
+    if (window.Echo && window.Echo.connector && window.Echo.connector.pusher) {
         const state = window.Echo.connector.pusher.connection.state;
         if (state === 'disconnected' || state === 'unavailable' || state === 'failed') {
             try {
                 window.Echo.connect();
             } catch (e) {}
         }
+    }
+};
+
+window.addEventListener('pagehide', gracefulDisconnect);
+window.addEventListener('freeze', gracefulDisconnect);
+window.addEventListener('beforeunload', gracefulDisconnect);
+
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+        gracefulReconnect();
+    }
+});
+
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        gracefulReconnect();
     }
 });
 
