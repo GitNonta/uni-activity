@@ -2073,6 +2073,8 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
     // Throttle Sender (Mobile / GPS Tracker to Server)
     function throttleBroadcastLocation(lat, lng, heading, speed, accuracy) {
+        if (!authUserId) return; // Only broadcast live location for authenticated users
+
         const now = Date.now();
         const minTimeInterval = 3500; // 3.5 seconds
         const minDistanceMeters = 5;  // 5 meters
@@ -2117,7 +2119,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
     // Reverb WebSocket Map Tracking (Peer Markers)
     function initReverbMapTracking() {
-        if (!window.Echo) return;
+        if (!window.Echo || !authUserId) return; // Only connect presence channel for authenticated users
 
         try {
             window.Echo.join('map.tracking')
