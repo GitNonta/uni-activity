@@ -2422,6 +2422,31 @@ html[data-theme="dark"] .gmap-sheet-handle {
         }
     };
 
+    // Format Duration into Thai Readable string (Minutes, Hours, Days)
+    function formatDurationThai(totalMinutes) {
+        if (!totalMinutes || totalMinutes <= 0) return '< 1 นาที';
+        const mins = Math.round(totalMinutes);
+        if (mins < 1) return '< 1 นาที';
+        if (mins < 60) return `${mins} นาที`;
+
+        const hours = Math.floor(mins / 60);
+        const remainMins = mins % 60;
+
+        if (hours < 24) {
+            if (remainMins === 0) {
+                return `${hours} ชม.`;
+            }
+            return `${hours} ชม. ${remainMins} นาที`;
+        }
+
+        const days = Math.floor(hours / 24);
+        const remainHours = hours % 24;
+        if (remainHours === 0) {
+            return `${days} วัน`;
+        }
+        return `${days} วัน ${remainHours} ชม.`;
+    }
+
     // ── Multi-Mode & Alternative Route Selection System ──
     let currentTravelMode = 'drive'; // 'drive', 'moto', 'walk', 'bike'
     let currentRouteAlternatives = [];
