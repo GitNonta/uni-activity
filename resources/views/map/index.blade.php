@@ -907,6 +907,15 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     .gmap-nearby-drawer {
         animation: none;
     }
+    /* Show all filter chips in full on desktop — no horizontal scroll */
+    .gmap-chips-scroll {
+        overflow-x: visible;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .gmap-chip {
+        flex-shrink: 1;
+    }
 }
 .gmap-sheet-handle-zone {
     width: 100%;
