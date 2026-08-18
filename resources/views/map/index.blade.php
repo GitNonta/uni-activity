@@ -182,20 +182,27 @@
                     </button>
                 </div>
 
-                {{-- Primary Action Row (In-App Turn Navigation + Native App Detection + Share) --}}
+                {{-- Primary Action Row (Start Nav + Choose Route + Native App Detection + Share) --}}
                 <div class="gmap-sheet-action-row">
-                    <button type="button" id="bs-route-btn" onclick="startNavigationToActive()" class="gmap-btn-primary flex-1">
+                    <button type="button" id="bs-start-nav-btn" onclick="startNavigationToActive()" class="gmap-btn-start-nav flex-1">
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
                         </svg>
-                        <span>นำทางบนแผนที่</span>
+                        <span>เริ่มนำทาง</span>
+                    </button>
+
+                    <button type="button" id="bs-route-options-btn" onclick="openRouteSelectorForActive()" class="gmap-btn-route-select" title="เลือกเส้นทาง / โหมดเดินทาง">
+                        <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                        </svg>
+                        <span>เส้นทาง</span>
                     </button>
 
                     <button type="button" id="bs-native-btn" onclick="openActiveNativeMap()" class="gmap-btn-native-detect" title="เปิดในแอปแผนที่ของเครื่อง">
                         <span id="bs-native-icon">
                             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon><line x1="9" y1="3" x2="9" y2="18"></line><line x1="15" y1="6" x2="15" y2="21"></line></svg>
                         </span>
-                        <span id="bs-native-text">แอปแผนที่</span>
+                        <span id="bs-native-text">แอป</span>
                     </button>
 
                     <button type="button" class="gmap-btn-icon" onclick="shareActiveLocation()" title="แชร์สถานที่นี้">
@@ -207,7 +214,7 @@
 
                 {{-- Quick ETA Estimation Info --}}
                 <div class="gmap-eta-grid">
-                    <div class="gmap-eta-card card-walk">
+                    <div class="gmap-eta-card card-walk" onclick="selectModeFromCard('walk')">
                         <div class="gmap-eta-label">
                             <div class="gmap-eta-icon-wrap icon-walk">
                                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -218,7 +225,7 @@
                         </div>
                         <div id="bs-walk-eta" class="gmap-eta-value">-</div>
                     </div>
-                    <div class="gmap-eta-card card-drive">
+                    <div class="gmap-eta-card card-drive" onclick="selectModeFromCard('drive')">
                         <div class="gmap-eta-label">
                             <div class="gmap-eta-icon-wrap icon-drive">
                                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -289,6 +296,71 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        {{-- ── 5. Route Selection & Travel Mode Modal Sheet ── --}}
+        <div id="gmapRouteSelectorSheet" class="gmap-route-sheet" style="display:none;">
+            {{-- Header: Destination + Close --}}
+            <div class="gmap-route-sheet-header">
+                <div class="gmap-route-header-info">
+                    <span class="gmap-route-subtitle">เลือกเส้นทางไปยัง</span>
+                    <h3 id="gmapRouteDestTitle" class="gmap-route-title">จุดหมาย</h3>
+                </div>
+                <button type="button" class="gmap-sheet-close" onclick="closeRouteSelector()" title="ปิด">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            {{-- Travel Mode Chips (Driving, Motorbike, Walk, Bike) --}}
+            <div class="gmap-travel-modes-row">
+                <button type="button" class="gmap-mode-chip active" data-mode="drive" onclick="selectTravelMode('drive', this)">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
+                    </svg>
+                    <span>รถยนต์</span>
+                </button>
+
+                <button type="button" class="gmap-mode-chip" data-mode="moto" onclick="selectTravelMode('moto', this)">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    <span>มอเตอร์ไซค์</span>
+                </button>
+
+                <button type="button" class="gmap-mode-chip" data-mode="walk" onclick="selectTravelMode('walk', this)">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                    <span>เดินเท้า</span>
+                </button>
+
+                <button type="button" class="gmap-mode-chip" data-mode="bike" onclick="selectTravelMode('bike', this)">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="5.5" cy="17.5" r="3.5" stroke-width="2"/>
+                        <circle cx="18.5" cy="17.5" r="3.5" stroke-width="2"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 6h-3l-3 7h6l2-4h2"/>
+                    </svg>
+                    <span>จักรยาน</span>
+                </button>
+            </div>
+
+            {{-- Route Options Cards (Alternatives) --}}
+            <div class="gmap-route-cards-list" id="gmapRouteCardsList">
+                <div style="padding:1rem;text-align:center;color:#94a3b8;font-size:0.85rem;">กำลังค้นหาเส้นทางที่ดีที่สุด...</div>
+            </div>
+
+            {{-- Bottom Start Button --}}
+            <div class="gmap-route-sheet-footer">
+                <button type="button" id="btnStartSelectedRoute" onclick="startNavigationWithSelectedRoute()" class="gmap-btn-start-nav w-full">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                    </svg>
+                    <span id="btnStartSelectedRouteText">เริ่มนำทางตามเส้นทางนี้</span>
+                </button>
             </div>
         </div>
 
@@ -861,11 +933,11 @@ html[data-theme="dark"] .gmap-back-btn:hover {
     gap: 8px;
     align-items: center;
 }
-.gmap-btn-primary {
-    background: linear-gradient(135deg, #ea580c, #f97316);
-    color: #fff;
-    font-weight: 700;
-    font-size: 0.88rem;
+.gmap-btn-start-nav {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 0.92rem;
     border: none;
     border-radius: 14px;
     padding: 11px 16px;
@@ -874,11 +946,33 @@ html[data-theme="dark"] .gmap-back-btn:hover {
     justify-content: center;
     gap: 6px;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35);
-    transition: all 0.15s;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.38);
+    transition: all 0.15s ease;
 }
-.gmap-btn-primary:hover {
-    filter: brightness(1.05);
+.gmap-btn-start-nav:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.48);
+}
+.gmap-btn-route-select {
+    background: #f1f5f9;
+    color: #0f172a;
+    font-weight: 700;
+    font-size: 0.85rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 10px 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+.gmap-btn-route-select:hover {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
     transform: translateY(-1px);
 }
 .gmap-btn-native-detect {
@@ -888,11 +982,11 @@ html[data-theme="dark"] .gmap-back-btn:hover {
     font-size: 0.85rem;
     border: 1.5px solid #e2e8f0;
     border-radius: 14px;
-    padding: 10px 14px;
+    padding: 10px 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 5px;
     cursor: pointer;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     transition: all 0.15s;
@@ -904,8 +998,177 @@ html[data-theme="dark"] .gmap-back-btn:hover {
     transform: translateY(-1px);
 }
 .gmap-btn-icon {
-    width: 44px;
-    height: 44px;
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s;
+}
+.gmap-btn-icon:hover {
+    background: #f8fafc;
+    color: #ea580c;
+    border-color: #cbd5e1;
+}
+
+/* ── Route Selection & Travel Mode Modal Sheet ── */
+.gmap-route-sheet {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1250;
+    background: #ffffff;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.2);
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    animation: slideUpRoute 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 16px 20px 24px;
+    gap: 14px;
+}
+@keyframes slideUpRoute {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+.gmap-route-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 10px;
+}
+.gmap-route-subtitle {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.gmap-route-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 2px 0 0;
+    line-height: 1.3;
+}
+.gmap-travel-modes-row {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 2px 0;
+    scrollbar-width: none;
+}
+.gmap-travel-modes-row::-webkit-scrollbar { display: none; }
+.gmap-mode-chip {
+    flex: 1;
+    min-width: 70px;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1.5px solid transparent;
+    border-radius: 12px;
+    padding: 8px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.gmap-mode-chip:hover {
+    background: #e2e8f0;
+}
+.gmap-mode-chip.active {
+    background: #ecfdf5;
+    color: #059669;
+    border-color: #10b981;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+.gmap-route-cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 220px;
+    overflow-y: auto;
+}
+.gmap-route-card {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.gmap-route-card:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+.gmap-route-card.selected {
+    background: #f0fdf4;
+    border-color: #10b981;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+.gmap-route-card-left {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.gmap-route-card-tag {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #059669;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.gmap-route-card-time {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+.gmap-route-card-dist {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 600;
+}
+.gmap-route-card-via {
+    font-size: 0.72rem;
+    color: #94a3b8;
+}
+.gmap-route-card-radio {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+.gmap-route-card.selected .gmap-route-card-radio {
+    border-color: #10b981;
+    background: #10b981;
+}
+.gmap-route-card.selected .gmap-route-card-radio::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #fff;
+}
     border-radius: 14px;
     background: #ffffff;
     border: 1.5px solid #e2e8f0;
@@ -1273,6 +1536,7 @@ html[data-theme="dark"] .gmap-chip,
 html[data-theme="dark"] .gmap-fab,
 html[data-theme="dark"] .gmap-layer-sheet,
 html[data-theme="dark"] .gmap-bottom-sheet,
+html[data-theme="dark"] .gmap-route-sheet,
 html[data-theme="dark"] .gmap-nearby-drawer,
 html[data-theme="dark"] .gmap-place-card {
     background: #18181b !important;
@@ -1283,6 +1547,8 @@ html[data-theme="dark"] .gmap-search-input {
     color: #f4f4f5;
 }
 html[data-theme="dark"] .gmap-sheet-title,
+html[data-theme="dark"] .gmap-route-title,
+html[data-theme="dark"] .gmap-route-card-time,
 html[data-theme="dark"] .gmap-eta-value,
 html[data-theme="dark"] .gmap-info-text,
 html[data-theme="dark"] .gmap-layer-header {
@@ -1291,16 +1557,28 @@ html[data-theme="dark"] .gmap-layer-header {
 html[data-theme="dark"] .gmap-eta-card,
 html[data-theme="dark"] .gmap-info-section,
 html[data-theme="dark"] .gmap-btn-secondary,
+html[data-theme="dark"] .gmap-btn-route-select,
 html[data-theme="dark"] .gmap-btn-native-detect,
 html[data-theme="dark"] .gmap-btn-icon,
 html[data-theme="dark"] .gmap-btn-detail,
 html[data-theme="dark"] .gmap-app-pill,
 html[data-theme="dark"] .gmap-app-badge,
+html[data-theme="dark"] .gmap-mode-chip,
+html[data-theme="dark"] .gmap-route-card,
 html[data-theme="dark"] .gmap-sheet-close,
 html[data-theme="dark"] .gmap-icon-btn {
     background: #27272a !important;
     border-color: #3f3f46 !important;
     color: #f4f4f5 !important;
+}
+html[data-theme="dark"] .gmap-mode-chip.active {
+    background: rgba(16, 185, 129, 0.18) !important;
+    border-color: #10b981 !important;
+    color: #34d399 !important;
+}
+html[data-theme="dark"] .gmap-route-card.selected {
+    background: rgba(16, 185, 129, 0.15) !important;
+    border-color: #10b981 !important;
 }
 html[data-theme="dark"] .card-walk {
     background: rgba(234, 88, 12, 0.12) !important;
@@ -2164,6 +2442,217 @@ html[data-theme="dark"] .gmap-sheet-handle {
         }
     };
 
+    // ── Multi-Mode & Alternative Route Selection System ──
+    let currentTravelMode = 'drive'; // 'drive', 'moto', 'walk', 'bike'
+    let currentRouteAlternatives = []; // [{ index, name, tag, distKm, timeMins, timeText, via, isMain }]
+    let selectedRouteIndex = 0;
+    let alternativePolylines = [];
+
+    // Open Route Selector Sheet for Active Location
+    window.openRouteSelectorForActive = function() {
+        if (!activeLocation) return;
+        openRouteSelector(activeLocation);
+    };
+
+    window.selectModeFromCard = function(mode) {
+        if (!activeLocation) return;
+        currentTravelMode = mode;
+        openRouteSelector(activeLocation);
+    };
+
+    window.openRouteSelector = function(loc) {
+        activeLocation = loc;
+        closeBottomSheet();
+
+        const sheet = document.getElementById('gmapRouteSelectorSheet');
+        document.getElementById('gmapRouteDestTitle').textContent = loc.title;
+
+        // Set active mode chip
+        document.querySelectorAll('.gmap-mode-chip').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-mode') === currentTravelMode);
+        });
+
+        sheet.style.display = 'flex';
+
+        // Center map to bounds between user and target
+        if (userCoords) {
+            const bounds = L.latLngBounds([userCoords, [loc.lat, loc.lng]]);
+            map.fitBounds(bounds, { padding: [80, 80] });
+        }
+
+        calculateAndRenderRouteOptions();
+    };
+
+    window.closeRouteSelector = function() {
+        document.getElementById('gmapRouteSelectorSheet').style.display = 'none';
+        clearAlternativePolylines();
+    };
+
+    window.selectTravelMode = function(mode, btn) {
+        currentTravelMode = mode;
+        document.querySelectorAll('.gmap-mode-chip').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        calculateAndRenderRouteOptions();
+    };
+
+    function clearAlternativePolylines() {
+        alternativePolylines.forEach(layer => map.removeLayer(layer));
+        alternativePolylines = [];
+    }
+
+    // Calculate alternative routes & render comparison cards
+    function calculateAndRenderRouteOptions() {
+        const target = activeLocation;
+        if (!target) return;
+
+        const cardsContainer = document.getElementById('gmapRouteCardsList');
+        cardsContainer.innerHTML = '<div style="padding:1rem;text-align:center;color:#94a3b8;font-size:0.85rem;">กำลังคำนวณเส้นทางทางเลือก...</div>';
+
+        if (!userCoords) {
+            cardsContainer.innerHTML = '<div style="padding:1rem;text-align:center;color:#ef4444;font-size:0.85rem;">กรุณาเปิด GPS หรือแตะปุ่มระบุตำแหน่งเพื่อดูเส้นทาง</div>';
+            return;
+        }
+
+        const baseDistKm = calculateDistance(userCoords[0], userCoords[1], target.lat, target.lng);
+
+        // Speed coefficients per mode
+        let speedKmH = 38;
+        let modeLabel = 'ทางรถยนต์';
+        if (currentTravelMode === 'moto') {
+            speedKmH = 35;
+            modeLabel = 'ทางมอเตอร์ไซค์';
+        } else if (currentTravelMode === 'walk') {
+            speedKmH = 4.8;
+            modeLabel = 'ทางเดินเท้า';
+        } else if (currentTravelMode === 'bike') {
+            speedKmH = 16;
+            modeLabel = 'ทางจักรยาน';
+        }
+
+        // Route 1 (Primary - Direct Recommended)
+        const r1DistKm = (baseDistKm * 1.08).toFixed(1);
+        let r1TimeMin = Math.round((parseFloat(r1DistKm) / speedKmH) * 60);
+        if (currentTravelMode === 'walk' && parseFloat(r1DistKm) < 0.06) {
+            r1TimeMin = 0;
+        } else {
+            r1TimeMin = Math.max(1, r1TimeMin);
+        }
+
+        // Route 2 (Alternative - Shortcut / Community Avoidance)
+        const r2DistKm = (baseDistKm * 1.25).toFixed(1);
+        const r2TimeMin = Math.max(2, Math.round((parseFloat(r2DistKm) / (speedKmH * 0.9)) * 60));
+
+        currentRouteAlternatives = [
+            {
+                index: 0,
+                name: 'เส้นทางหลัก (เร็วที่สุด)',
+                tag: '⚡ แนะนำ',
+                distKm: r1DistKm,
+                timeMins: r1TimeMin,
+                timeText: formatDurationThai(r1TimeMin),
+                via: `${modeLabel} • การจราจรคล่องตัว`,
+                isMain: true
+            },
+            {
+                index: 1,
+                name: 'เส้นทางรอง (ทางเลี่ยงชุมชน)',
+                tag: '🛡️ ทางเลือก',
+                distKm: r2DistKm,
+                timeMins: r2TimeMin,
+                timeText: formatDurationThai(r2TimeMin),
+                via: `${modeLabel} • ผ่านถนนสายในมหาวิทยาลัย`,
+                isMain: false
+            }
+        ];
+
+        selectedRouteIndex = 0;
+        renderRouteCards();
+        previewRoutesOnMap();
+    }
+
+    function renderRouteCards() {
+        const cardsContainer = document.getElementById('gmapRouteCardsList');
+        if (!cardsContainer) return;
+
+        let html = '';
+        currentRouteAlternatives.forEach((r, idx) => {
+            const isSel = idx === selectedRouteIndex;
+            html += `
+                <div class="gmap-route-card ${isSel ? 'selected' : ''}" onclick="selectRouteCard(${idx})">
+                    <div class="gmap-route-card-left">
+                        <div class="gmap-route-card-tag">${r.tag} • ${r.name}</div>
+                        <div class="flex items-baseline gap-2">
+                            <span class="gmap-route-card-time">${r.timeText}</span>
+                            <span class="gmap-route-card-dist">(${r.distKm} กม.)</span>
+                        </div>
+                        <div class="gmap-route-card-via">${r.via}</div>
+                    </div>
+                    <div class="gmap-route-card-radio"></div>
+                </div>
+            `;
+        });
+
+        cardsContainer.innerHTML = html;
+
+        const startBtnText = document.getElementById('btnStartSelectedRouteText');
+        if (startBtnText && currentRouteAlternatives[selectedRouteIndex]) {
+            const sel = currentRouteAlternatives[selectedRouteIndex];
+            startBtnText.textContent = `เริ่มนำทาง (${sel.timeText})`;
+        }
+    }
+
+    window.selectRouteCard = function(index) {
+        selectedRouteIndex = index;
+        renderRouteCards();
+        previewRoutesOnMap();
+    };
+
+    function previewRoutesOnMap() {
+        clearAlternativePolylines();
+        if (!userCoords || !activeLocation) return;
+
+        const target = activeLocation;
+        const p1 = userCoords;
+        const p2 = [target.lat, target.lng];
+
+        const midLat = (p1[0] + p2[0]) / 2;
+        const midLng = (p1[1] + p2[1]) / 2;
+        const offset = 0.0035;
+
+        const route1Points = [p1, [midLat + offset * 0.4, midLng - offset * 0.6], p2];
+        const route2Points = [p1, [midLat - offset * 0.7, midLng + offset * 0.5], p2];
+
+        const isR0Active = selectedRouteIndex === 0;
+
+        // Line 1 (Main)
+        const line1 = L.polyline(route1Points, {
+            color: isR0Active ? '#10b981' : '#94a3b8',
+            weight: isR0Active ? 7 : 5,
+            opacity: isR0Active ? 0.95 : 0.6,
+            dashArray: isR0Active ? null : '6, 6'
+        }).addTo(map);
+
+        line1.on('click', () => selectRouteCard(0));
+        alternativePolylines.push(line1);
+
+        // Line 2 (Alternative)
+        const line2 = L.polyline(route2Points, {
+            color: !isR0Active ? '#10b981' : '#94a3b8',
+            weight: !isR0Active ? 7 : 5,
+            opacity: !isR0Active ? 0.95 : 0.6,
+            dashArray: !isR0Active ? null : '6, 6'
+        }).addTo(map);
+
+        line2.on('click', () => selectRouteCard(1));
+        alternativePolylines.push(line2);
+    }
+
+    // Start Turn-by-Turn Navigation with Selected Route
+    window.startNavigationWithSelectedRoute = function() {
+        closeRouteSelector();
+        startNavigationToActive();
+    };
+
     // Turn-by-Turn Navigation with Top GPS Banner
     window.startNavigationToActive = function() {
         const target = activeLocation;
@@ -2185,6 +2674,9 @@ html[data-theme="dark"] .gmap-sheet-handle {
         }
 
         closeBottomSheet();
+        closeRouteSelector();
+        clearAlternativePolylines();
+
         if (routingControl) {
             map.removeControl(routingControl);
             routingControl = null;
@@ -2210,7 +2702,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
             addWaypoints: false,
             createMarker: function() { return null; },
             lineOptions: {
-                styles: [{ color: '#16a34a', weight: 7, opacity: 0.9 }]
+                styles: [{ color: '#10b981', weight: 7, opacity: 0.95 }]
             }
         }).addTo(map);
 
@@ -2239,6 +2731,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
             map.removeControl(routingControl);
             routingControl = null;
         }
+        clearAlternativePolylines();
         document.getElementById('gmapNavBanner').style.display = 'none';
     };
 
