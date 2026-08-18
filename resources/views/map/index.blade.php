@@ -74,12 +74,20 @@
                 <div class="gmap-nav-turn-dist" id="gmapNavTurnDist">กำลังคำนวณ...</div>
                 <div class="gmap-nav-instruction" id="gmapNavInstruction">ตรงไปตามเส้นทาง</div>
             </div>
-            <button type="button" class="gmap-nav-exit-btn" onclick="clearNavigationRoute()" title="สิ้นสุดการนำทาง">
-                <span>สิ้นสุด</span>
-                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
+            <div class="gmap-nav-actions">
+                <button type="button" class="gmap-nav-voice-btn" id="gmapNavVoiceBtn" onclick="toggleVoiceGuidance()" title="เปิด/ปิดเสียงนำทาง">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    </svg>
+                </button>
+                <button type="button" class="gmap-nav-exit-btn" onclick="clearNavigationRoute()" title="สิ้นสุดการนำทาง">
+                    <span>สิ้นสุด</span>
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
         </div>
         <div class="gmap-nav-banner-bottom">
             <div class="gmap-nav-total-stat">
@@ -132,7 +140,11 @@
         <div id="gmapLayerSheet" class="gmap-layer-sheet" style="display:none;">
             <div class="gmap-layer-header">
                 <span>รูปแบบแผนที่ WebGL 3D</span>
-                <button type="button" onclick="toggleLayerSheet()" class="gmap-icon-btn">✕</button>
+                <button type="button" onclick="toggleLayerSheet()" class="gmap-icon-btn" title="ปิด">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
             </div>
             <div class="gmap-layer-grid">
                 <div class="gmap-layer-card active" id="layerCard-streets" onclick="switchMapLayer('streets')">
@@ -233,14 +245,16 @@
                 {{-- ETA Summary Grid --}}
                 <div class="gmap-eta-grid">
                     <div class="gmap-eta-card card-walk" onclick="selectModeFromCard('walk')">
-                        <div class="flex items-center gap-1 text-xs font-bold text-orange-600 dark:text-orange-400">
-                            <span>🚶</span> เดินเท้า
+                        <div class="flex items-center gap-1.5 text-xs font-bold text-orange-600 dark:text-orange-400">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                            <span>เดินเท้า</span>
                         </div>
                         <div class="gmap-eta-value" id="bs-walk-time">-</div>
                     </div>
                     <div class="gmap-eta-card card-drive" onclick="selectModeFromCard('drive')">
-                        <div class="flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400">
-                            <span>🚗</span> รถยนต์ / มอไซค์
+                        <div class="flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9L2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+                            <span>รถยนต์ / มอไซค์</span>
                         </div>
                         <div class="gmap-eta-value" id="bs-drive-time">-</div>
                     </div>
@@ -297,25 +311,29 @@
                     <div class="gmap-route-subtitle">คำนวณเส้นทางถนนจริง (OSRM)</div>
                     <div class="gmap-route-title" id="gmapRouteDestTitle">เลือกเส้นทาง</div>
                 </div>
-                <button type="button" class="gmap-icon-btn" onclick="closeRouteSelector()">✕</button>
+                <button type="button" class="gmap-icon-btn" onclick="closeRouteSelector()" title="ปิด">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
             </div>
 
             {{-- Mode Selector Chips --}}
             <div class="gmap-travel-modes-row">
                 <button type="button" class="gmap-mode-chip active" data-mode="drive" onclick="selectTravelMode('drive', this)">
-                    <span style="font-size:1.1rem;">🚗</span>
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9L2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
                     <span>รถยนต์</span>
                 </button>
                 <button type="button" class="gmap-mode-chip" data-mode="moto" onclick="selectTravelMode('moto', this)">
-                    <span style="font-size:1.1rem;">🛵</span>
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 17h6m-3-6l2 6m-5-8h4l2 3"/></svg>
                     <span>มอไซค์</span>
                 </button>
                 <button type="button" class="gmap-mode-chip" data-mode="walk" onclick="selectTravelMode('walk', this)">
-                    <span style="font-size:1.1rem;">🚶</span>
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                     <span>เดิน</span>
                 </button>
                 <button type="button" class="gmap-mode-chip" data-mode="bike" onclick="selectTravelMode('bike', this)">
-                    <span style="font-size:1.1rem;">🚲</span>
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 6h-3l-3 7h6l2-4h2"/></svg>
                     <span>จักรยาน</span>
                 </button>
             </div>
@@ -347,7 +365,11 @@
                         <div class="text-xs text-muted" id="drawerCountLabel">0 แห่ง</div>
                     </div>
                 </div>
-                <button type="button" class="gmap-icon-btn" onclick="toggleNearbyDrawer()">✕</button>
+                <button type="button" class="gmap-icon-btn" onclick="toggleNearbyDrawer()" title="ปิด">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
             </div>
             <div id="gmapNearbyList" class="gmap-drawer-body">
                 <div style="padding:2rem;text-align:center;color:#94a3b8;">กำลังโหลดรายการสถานที่...</div>
@@ -661,6 +683,29 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     text-overflow: ellipsis;
     max-width: 42%;
     opacity: 0.85;
+}
+.gmap-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+.gmap-nav-voice-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.22);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.gmap-nav-voice-btn:hover {
+    background: rgba(0,0,0,0.38);
+    transform: scale(1.05);
 }
 .gmap-nav-exit-btn {
     background: rgba(0,0,0,0.25);
@@ -2377,18 +2422,34 @@ html[data-theme="dark"] .gmap-sheet-handle {
             fallbackEl.style.display = 'flex';
         }
 
-        // Tag Badge
+        // Tag Badge with SVG icons
         const badgeEl = document.getElementById('bs-badge');
         badgeEl.className = 'gmap-badge-tag';
         if (loc.type === 'activity') {
             badgeEl.classList.add('badge-orange');
-            badgeEl.textContent = '🎪 กิจกรรม';
+            badgeEl.innerHTML = `
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <span>กิจกรรม</span>
+            `;
         } else if (loc.type === 'job') {
             badgeEl.classList.add('badge-blue');
-            badgeEl.textContent = '💼 งานพาร์ทไทม์';
+            badgeEl.innerHTML = `
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>
+                </svg>
+                <span>งานพาร์ทไทม์</span>
+            `;
         } else {
             badgeEl.classList.add('badge-green');
-            badgeEl.textContent = '🏛️ อาคาร/สถานที่';
+            badgeEl.innerHTML = `
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                </svg>
+                <span>อาคาร/สถานที่</span>
+            `;
         }
 
         // Title & Location
@@ -2579,7 +2640,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
             {
                 index: 0,
                 name: 'เส้นทางหลัก (เร็วที่สุด)',
-                tag: '⚡ แนะนำ',
+                tag: 'แนะนำ',
                 distKm: estDistKm,
                 timeMins: estTimeMin,
                 timeText: formatDurationThai(estTimeMin),
@@ -2636,7 +2697,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
                     newRoutes.push({
                         index: idx,
                         name: idx === 0 ? 'เส้นทางหลัก (เร็วที่สุด)' : `เส้นทางรอง ${idx + 1}`,
-                        tag: idx === 0 ? '⚡ แนะนำ' : '🛡️ ทางเลือก',
+                        tag: idx === 0 ? 'แนะนำ' : 'ทางเลือก',
                         distKm: distKm,
                         timeMins: durMin,
                         timeText: formatDurationThai(durMin),
@@ -2825,6 +2886,9 @@ html[data-theme="dark"] .gmap-sheet-handle {
         // Immediately update HUD & Turn-by-Turn instruction
         updateNavigationPosition(userCoords || defaultCenter);
 
+        // Voice announcement on navigation start
+        speakNavigationGuidance(`เริ่มการนำทาง มุ่งหน้าไปยัง ${target.title}`, true);
+
         // Switch camera to 3D driving perspective
         map.flyTo({
             center: [userCoords[1], userCoords[0]],
@@ -2836,8 +2900,12 @@ html[data-theme="dark"] .gmap-sheet-handle {
     };
 
     window.clearNavigationRoute = function() {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+        }
         activeNavTarget = null;
         activeNavRoute = null;
+        lastSpokenText = '';
         navigationReroutePending = false;
         clearAllRouteVisuals();
 
@@ -3025,6 +3093,65 @@ html[data-theme="dark"] .gmap-sheet-handle {
         return `ถึงประมาณ ${hh}:${mm} น.`;
     }
 
+    let isVoiceEnabled = true;
+    let lastSpokenText = '';
+    let lastSpokenTime = 0;
+
+    function speakNavigationGuidance(text, isPriority = false) {
+        if (!isVoiceEnabled || !('speechSynthesis' in window)) return;
+        if (!text) return;
+        if (text === lastSpokenText && (Date.now() - lastSpokenTime < 12000) && !isPriority) return;
+
+        lastSpokenText = text;
+        lastSpokenTime = Date.now();
+
+        try {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'th-TH';
+            utterance.rate = 1.05;
+            utterance.pitch = 1.0;
+
+            const voices = window.speechSynthesis.getVoices();
+            const thaiVoice = voices.find(v => v.lang.includes('th') || v.name.includes('Thai') || v.lang === 'th-TH');
+            if (thaiVoice) {
+                utterance.voice = thaiVoice;
+            }
+
+            window.speechSynthesis.speak(utterance);
+        } catch(e) {
+            console.warn('Voice notice:', e);
+        }
+    }
+
+    window.toggleVoiceGuidance = function() {
+        isVoiceEnabled = !isVoiceEnabled;
+        const btn = document.getElementById('gmapNavVoiceBtn');
+        if (btn) {
+            btn.innerHTML = isVoiceEnabled ? `
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                </svg>
+            ` : `
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <line x1="23" y1="9" x2="17" y2="15"></line>
+                    <line x1="17" y1="9" x2="23" y2="15"></line>
+                </svg>
+            `;
+            btn.title = isVoiceEnabled ? 'ปิดเสียงนำทาง' : 'เปิดเสียงนำทาง';
+        }
+
+        if (isVoiceEnabled) {
+            speakNavigationGuidance('เปิดเสียงนำทาง', true);
+        } else {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+        }
+    };
+
     function updateNavigationPosition(position) {
         if (!activeNavTarget || !activeNavRoute) return;
 
@@ -3066,6 +3193,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
             if (turnDistEl) turnDistEl.textContent = 'ถึงแล้ว';
             if (instructionEl) instructionEl.textContent = `คุณมาถึง ${activeNavTarget.title} แล้ว`;
             if (totalTimeEl) totalTimeEl.textContent = 'ถึงปลายทาง';
+            speakNavigationGuidance(`คุณเดินทางถึง ${activeNavTarget.title} แล้ว`, true);
             return;
         }
 
@@ -3076,6 +3204,11 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 turnDistEl.textContent = distToStepMeters < 1000 ? `อีก ${distToStepMeters} ม.` : `อีก ${(distToStepMeters / 1000).toFixed(1)} กม.`;
             }
             if (instructionEl) instructionEl.textContent = info.text;
+
+            // Voice announcement when approaching a turn
+            if (distToStepMeters <= 80 && distToStepMeters > 20) {
+                speakNavigationGuidance(`อีก ${distToStepMeters} เมตร ${info.text}`);
+            }
         } else {
             if (turnIcon) turnIcon.innerHTML = MANEUVER_SVGS['straight'];
             if (turnDistEl) turnDistEl.textContent = remainingKm < 1 ? `อีก ${Math.round(remainingKm * 1000)} ม.` : `อีก ${remainingKm.toFixed(1)} กม.`;
@@ -3131,6 +3264,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
         isRerouting = true;
         lastRerouteTime = Date.now();
+        speakNavigationGuidance('กำลังคำนวณเส้นทางใหม่', true);
 
         try {
             let osrmProfile = 'driving';
