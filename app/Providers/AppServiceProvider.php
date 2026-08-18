@@ -52,17 +52,13 @@ class AppServiceProvider extends ServiceProvider
 
         $this->configureRateLimiters();
         $this->registerConsoleCommandLogger();
-        
-        // ตรวจสอบและบังคับใช้โปรโตคอลและโดเมนตามที่เรียกเข้ามาจริง (รองรับทั้ง localhost และ ngrok)
-        if (!app()->runningInConsole()) {
-            $currentHost = request()->getSchemeAndHttpHost();
-            URL::forceRootUrl($currentHost);
-
-            if (request()->header('X-Forwarded-Proto') === 'https' || 
-                request()->header('X-Forwarded-Ssl') === 'on' ||
-                str_contains(request()->header('Host', ''), 'ngrok')) {
-                URL::forceScheme('https');
-            }
+        // บังคับใช้ HTTPS เมื่อเชื่อมต่อผ่าน Cloudflare / Reverse Proxy หรือ Production
+        if (request()->header('x-forwarded-proto') === 'https'
+            || request()->server('HTTP_X_FORWARDED_PROTO') === 'https'
+            || request()->header('cf-visitor') !== null
+            || str_contains((string) config('app.url'), 'https://')
+            || app()->environment('production')) {
+            URL::forceScheme('https');
         }
     }
 
