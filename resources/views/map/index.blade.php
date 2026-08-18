@@ -2911,6 +2911,9 @@ html[data-theme="dark"] .gmap-sheet-handle {
         }
         if (!chosenRoute) return;
 
+        // Clear any overview markers/alternatives that calculateAndRenderRouteOptions added
+        clearAllRouteVisuals();
+
         activeNavTarget = target;
         activeNavRoute = chosenRoute;
 
