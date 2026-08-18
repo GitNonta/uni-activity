@@ -473,7 +473,10 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     .gmap-floating-top {
         left: 20px;
         right: auto;
-        width: 440px;
+        width: 460px;
+    }
+    .gmap-fab-column {
+        right: 16px;
     }
 }
 
@@ -1713,6 +1716,193 @@ html[data-theme="dark"] .card-drive {
 }
 html[data-theme="dark"] .gmap-sheet-handle {
     background: #3f3f46;
+}
+
+/* ═══════════════════════════════════════════════
+   Desktop-Optimized Layout (≥1024px)
+   ═══════════════════════════════════════════════ */
+@media (min-width: 1024px) {
+    /* ── Search Pill: Wider, taller, bigger font ── */
+    .gmap-floating-top {
+        left: 24px;
+        width: 520px;
+        gap: 10px;
+    }
+    .gmap-search-pill {
+        padding: 8px 18px 8px 10px;
+        border-radius: 32px;
+        box-shadow: 0 6px 28px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .gmap-search-input {
+        font-size: 1.05rem;
+        padding: 8px 12px;
+    }
+    .gmap-back-btn svg {
+        width: 24px;
+        height: 24px;
+    }
+    .gmap-search-clear {
+        width: 26px;
+        height: 26px;
+    }
+    .gmap-search-divider {
+        height: 28px;
+    }
+    .gmap-list-toggle-btn svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    /* ── Category Chips: Bigger text & padding ── */
+    .gmap-chips-scroll {
+        gap: 8px;
+    }
+    .gmap-chip {
+        padding: 8px 18px;
+        font-size: 0.88rem;
+        border-radius: 22px;
+        gap: 7px;
+        box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+    }
+    .gmap-chip:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 16px rgba(0,0,0,0.16);
+    }
+    .gmap-chip-dot {
+        width: 9px;
+        height: 9px;
+    }
+    .gmap-chip svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    /* ── FAB Column: Larger buttons, better spacing ── */
+    .gmap-fab-column {
+        right: 20px;
+        bottom: 32px;
+        gap: 12px;
+    }
+    .gmap-fab {
+        width: 52px;
+        height: 52px;
+        box-shadow: 0 5px 18px rgba(0,0,0,0.2);
+    }
+    .gmap-fab svg {
+        width: 22px;
+        height: 22px;
+    }
+    .gmap-fab:hover {
+        transform: scale(1.12);
+    }
+    .gmap-fab-badge-count {
+        min-width: 20px;
+        height: 20px;
+        font-size: 0.75rem;
+    }
+
+    /* ── Nearby Drawer: Wider on desktop ── */
+    .gmap-nearby-drawer {
+        left: 24px;
+        max-width: 520px;
+        bottom: 32px;
+    }
+    .gmap-nearby-item {
+        padding: 14px 16px;
+    }
+    .gmap-nearby-item-title {
+        font-size: 0.95rem;
+    }
+    .gmap-nearby-item-sub {
+        font-size: 0.82rem;
+    }
+
+    /* ── Bottom Sheet: Wider on desktop ── */
+    .gmap-bottom-sheet {
+        max-width: 480px;
+        left: 24px;
+        right: auto;
+        border-radius: 24px;
+    }
+
+    /* ── Route Selector Sheet: Wider on desktop ── */
+    .gmap-route-sheet {
+        max-width: 520px;
+        left: 24px;
+        right: auto;
+        border-radius: 24px;
+    }
+
+    /* ── Layer Sheet: Wider on desktop ── */
+    .gmap-layer-sheet {
+        max-width: 480px;
+        left: 24px;
+        right: auto;
+        border-radius: 24px;
+    }
+
+    /* ── Navigation Banner: Wider on desktop ── */
+    .gmap-nav-banner {
+        left: 24px;
+        max-width: 520px;
+        border-radius: 22px;
+        padding: 14px 20px;
+    }
+    .gmap-nav-turn-dist {
+        font-size: 1.35rem;
+    }
+    .gmap-nav-instruction {
+        font-size: 0.95rem;
+    }
+}
+
+/* ═══════════════════════════════════════════════
+   Large Desktop (≥1440px) — Even more breathing room
+   ═══════════════════════════════════════════════ */
+@media (min-width: 1440px) {
+    .gmap-floating-top {
+        width: 560px;
+    }
+    .gmap-search-pill {
+        padding: 10px 22px 10px 12px;
+    }
+    .gmap-search-input {
+        font-size: 1.12rem;
+        padding: 10px 14px;
+    }
+    .gmap-chip {
+        padding: 10px 22px;
+        font-size: 0.92rem;
+    }
+    .gmap-fab-column {
+        right: 28px;
+        bottom: 40px;
+        gap: 14px;
+    }
+    .gmap-fab {
+        width: 56px;
+        height: 56px;
+    }
+    .gmap-fab svg {
+        width: 24px;
+        height: 24px;
+    }
+    .gmap-nearby-drawer {
+        left: 28px;
+        max-width: 560px;
+    }
+    .gmap-bottom-sheet,
+    .gmap-route-sheet,
+    .gmap-layer-sheet {
+        max-width: 520px;
+    }
+    .gmap-nav-banner {
+        max-width: 560px;
+        padding: 16px 24px;
+    }
+    .gmap-nav-turn-dist {
+        font-size: 1.5rem;
+    }
 }
 </style>
 
