@@ -1168,6 +1168,12 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     border-top: 1px solid #e2e8f0;
     padding-top: 8px;
 }
+#bs-desc-val {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
 
 /* Sheet Footer */
 .gmap-btn-detail {
@@ -2547,15 +2553,11 @@ html[data-theme="dark"] .gmap-sheet-handle {
             quotaWrap.style.display = 'none';
         }
 
-        // Description (convert newlines to <br> for multi-line summary)
-        const descText = loc.description || loc.subtitle || 'ไม่มีรายละเอียดเพิ่มเติม';
-        const descEl = document.getElementById('bs-desc-val');
-        descEl.textContent = '';
-        const descLines = descText.split('\n');
-        descLines.forEach((line, i) => {
-            descEl.appendChild(document.createTextNode(line));
-            if (i < descLines.length - 1) descEl.appendChild(document.createElement('br'));
-        });
+        // Description — show short preview (first meaningful lines, max ~100 chars)
+        const rawDesc = loc.description || loc.subtitle || 'ไม่มีรายละเอียดเพิ่มเติม';
+        const firstLines = rawDesc.split('\n').filter(l => l.trim()).slice(0, 3).join(' ');
+        const descPreview = firstLines.length > 100 ? firstLines.substring(0, 100).trimEnd() + '…' : firstLines;
+        document.getElementById('bs-desc-val').textContent = descPreview;
 
         // Detail Link & Button Label
         const detailLink = document.getElementById('bs-detail-link');
