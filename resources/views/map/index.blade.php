@@ -868,12 +868,21 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     right: 0;
     bottom: 0;
     width: 100% !important;
-    max-height: 100vh;
+    max-height: 100vh !important;
     height: 100vh;
     border-radius: 0 !important;
     z-index: 1300;
     transition: none;
     animation: none;
+    overflow: hidden;
+}
+.gmap-bottom-sheet.expanded .gmap-sheet-inner {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 40px;
+}
+.gmap-bottom-sheet.expanded .gmap-sheet-handle-zone {
+    padding: 12px 0 4px;
 }
 @media (min-width: 768px) {
     .gmap-bottom-sheet {
