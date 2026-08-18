@@ -308,7 +308,10 @@
 
         function fetchNotifications() {
             fetch(NOTIF_URL, { headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' } })
-                .then(function(r) { return r.json(); })
+                .then(function(r) {
+                    if (!r.ok) return { alerts: [] };
+                    return r.json();
+                })
                 .then(function(data) {
                     var alerts = data.alerts || [];
                     var banner = document.getElementById('notif-banner');
