@@ -239,6 +239,7 @@
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
                         </svg>
+                        <span class="gmap-btn-icon-label">แชร์</span>
                     </button>
                 </div>
 
@@ -1078,8 +1079,18 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
 /* Actions Row */
 .gmap-sheet-action-row {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     align-items: center;
+}
+.gmap-sheet-action-row .gmap-btn-start-nav {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+.gmap-sheet-action-row .gmap-btn-route-select,
+.gmap-sheet-action-row .gmap-btn-native-detect,
+.gmap-sheet-action-row .gmap-btn-icon {
+    flex-shrink: 0;
 }
 .gmap-btn-start-nav {
     background: linear-gradient(135deg, #ea580c, #c2410c);
@@ -1155,9 +1166,24 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 6px;
     cursor: pointer;
     flex-shrink: 0;
     transition: all 0.15s;
+}
+.gmap-btn-icon-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1;
+}
+/* Hide label on desktop where space is tight */
+@media (min-width: 768px) {
+    .gmap-btn-icon-label {
+        display: none;
+    }
+    .gmap-btn-icon {
+        width: 42px;
+    }
 }
 .gmap-btn-icon:hover {
     background: #f8fafc;
