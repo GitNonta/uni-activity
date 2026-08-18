@@ -4,7 +4,7 @@
 @section('content')
 <div class="map-explorer-wrapper">
     {{-- ── 1. Floating Top Bar: Google Maps Search & Quick Filters ── --}}
-    <div class="gmap-floating-top">
+    <div class="gmap-floating-top" id="gmapFloatingTop">
         {{-- Search Pill Bar with Back Button --}}
         <div class="gmap-search-pill">
             <button type="button" class="gmap-back-btn" onclick="goBackOrHome()" title="ย้อนกลับ">
@@ -1615,7 +1615,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
     // WebGL Vector & Raster Styles
     const MAP_STYLES = {
-        streets: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+        streets: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
         satellite: {
             version: 8,
             sources: {
@@ -2728,11 +2728,14 @@ html[data-theme="dark"] .gmap-sheet-handle {
         activeNavTarget = target;
         activeNavRoute = chosenRoute;
 
+        const topBar = document.getElementById('gmapFloatingTop');
+        if (topBar) topBar.style.display = 'none';
+
         const navBanner = document.getElementById('gmapNavBanner');
         const nextDist = document.getElementById('gmapNavNextDist');
         const nextText = document.getElementById('gmapNavNextText');
         const turnIcon = document.getElementById('gmapNavTurnIcon');
-        navBanner.style.display = 'flex';
+        if (navBanner) navBanner.style.display = 'flex';
 
         let modeIconSvg = '<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>';
         if (currentTravelMode === 'walk') {
@@ -2764,7 +2767,12 @@ html[data-theme="dark"] .gmap-sheet-handle {
         activeNavRoute = null;
         navigationReroutePending = false;
         clearAllRouteVisuals();
-        document.getElementById('gmapNavBanner').style.display = 'none';
+
+        const navBanner = document.getElementById('gmapNavBanner');
+        if (navBanner) navBanner.style.display = 'none';
+
+        const topBar = document.getElementById('gmapFloatingTop');
+        if (topBar) topBar.style.display = 'flex';
 
         const startPoint = userCoords || defaultCenter;
         map.easeTo({
