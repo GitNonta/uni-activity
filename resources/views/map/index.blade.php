@@ -2547,8 +2547,15 @@ html[data-theme="dark"] .gmap-sheet-handle {
             quotaWrap.style.display = 'none';
         }
 
-        // Description
-        document.getElementById('bs-desc-val').textContent = loc.description || loc.subtitle || 'ไม่มีรายละเอียดเพิ่มเติม';
+        // Description (convert newlines to <br> for multi-line summary)
+        const descText = loc.description || loc.subtitle || 'ไม่มีรายละเอียดเพิ่มเติม';
+        const descEl = document.getElementById('bs-desc-val');
+        descEl.textContent = '';
+        const descLines = descText.split('\n');
+        descLines.forEach((line, i) => {
+            descEl.appendChild(document.createTextNode(line));
+            if (i < descLines.length - 1) descEl.appendChild(document.createElement('br'));
+        });
 
         // Detail Link & Button Label
         const detailLink = document.getElementById('bs-detail-link');

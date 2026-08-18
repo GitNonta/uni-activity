@@ -88,7 +88,7 @@ class MapController extends Controller
                     'lat' => (float) $act->latitude,
                     'lng' => (float) $act->longitude,
                     'image' => $img,
-                    'description' => $act->description ?? 'ไม่มีรายละเอียดเพิ่มเติม',
+                    'description' => $act->description ?: self::buildActivitySummary($act),
                     'time_text' => $timeText,
                     'quota_text' => $quotaText,
                     'badge' => $act->is_mandatory ? 'กิจกรรมบังคับ' : 'กิจกรรม',
@@ -235,5 +235,46 @@ class MapController extends Controller
             'locations' => $allLocations,
             'total_locations' => $allLocations->count(),
         ]);
+    }
+
+    /**
+     * Build a rich summary description from activity fields when description is null.
+     */
+    private static function buildActivitySummary(Activity $act): string
+    {
+        $parts = [];
+
+        if ($act->category?->name) {
+            $parts[] = 'หมวดหมู่: ' . $act->category->name;
+        }
+
+        if ($act->activity_hours) {
+            $parts[] = 'ชั่วโมงกิจกรรม: ' . $act->activity_hours . ' ชม.';
+        }
+
+        if ($act->activity_date) {
+            $dateStr = 'วันที่จัด: ' . $act->activity_date->format('d/m/Y');
+            if ($act->start_time) {
+                $dateStr .= ' เวลา ' . substr((string) $act->start_time, 0, 5) . ' น.';
+                if ($act->end_time) {
+                    $dateStr .= ' - ' . substr((string) $act->end_time, 0, 5) . ' น.';
+                }
+            }
+            $parts[] = $dateStr;
+        }
+
+        if ($act->max_participants) {
+            $parts[] = 'รับผู้เข้าร่วมสูงสุด ' . $act->max_participants . ' คน';
+        }
+
+        if ($act->is_mandatory) {
+            $parts[] = '⚡ กิจกรรมบังคับสำหรับนักศึกษา';
+        }
+
+        if ($act->location) {
+            $parts[] = 'สถานที่: ' . $act->location;
+        }
+
+        return !empty($parts) ? implode('\n', $parts) : 'ไม่มีรายละเอียดเพิ่มเติม';
     }
 }
