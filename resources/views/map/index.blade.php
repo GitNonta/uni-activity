@@ -1720,188 +1720,215 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
 /* ═══════════════════════════════════════════════
    Desktop-Optimized Layout (≥1024px)
+   Much larger elements — the screen is big, use it!
    ═══════════════════════════════════════════════ */
 @media (min-width: 1024px) {
-    /* ── Search Pill: Wider, taller, bigger font ── */
+    /* ── Search Pill: Big, bold, prominent ── */
     .gmap-floating-top {
-        left: 24px;
-        width: 520px;
-        gap: 10px;
+        left: 28px;
+        width: 580px;
+        gap: 14px;
     }
     .gmap-search-pill {
-        padding: 8px 18px 8px 10px;
-        border-radius: 32px;
-        box-shadow: 0 6px 28px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.1);
+        padding: 12px 22px 12px 14px;
+        border-radius: 36px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.2), 0 2px 8px rgba(0,0,0,0.1);
     }
     .gmap-search-input {
-        font-size: 1.05rem;
-        padding: 8px 12px;
+        font-size: 1.2rem;
+        padding: 10px 14px;
+        font-weight: 500;
+    }
+    .gmap-back-btn {
+        padding: 10px;
     }
     .gmap-back-btn svg {
-        width: 24px;
-        height: 24px;
+        width: 28px;
+        height: 28px;
     }
     .gmap-search-clear {
+        width: 30px;
+        height: 30px;
+    }
+    .gmap-search-divider {
+        height: 32px;
+    }
+    .gmap-list-toggle-btn {
+        padding: 8px;
+    }
+    .gmap-list-toggle-btn svg {
         width: 26px;
         height: 26px;
     }
-    .gmap-search-divider {
-        height: 28px;
-    }
-    .gmap-list-toggle-btn svg {
-        width: 22px;
-        height: 22px;
-    }
 
-    /* ── Category Chips: Bigger text & padding ── */
+    /* ── Category Chips: Much bigger, easy to click ── */
     .gmap-chips-scroll {
-        gap: 8px;
+        gap: 12px;
     }
     .gmap-chip {
-        padding: 8px 18px;
-        font-size: 0.88rem;
-        border-radius: 22px;
-        gap: 7px;
-        box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+        padding: 10px 22px;
+        font-size: 0.95rem;
+        border-radius: 24px;
+        gap: 8px;
+        box-shadow: 0 3px 14px rgba(0,0,0,0.13);
+        border-width: 1.5px;
     }
     .gmap-chip:hover {
         transform: translateY(-2px);
-        box-shadow: 0 5px 16px rgba(0,0,0,0.16);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.18);
     }
     .gmap-chip-dot {
-        width: 9px;
-        height: 9px;
+        width: 10px;
+        height: 10px;
     }
     .gmap-chip svg {
-        width: 16px;
-        height: 16px;
+        width: 18px;
+        height: 18px;
     }
 
-    /* ── FAB Column: Larger buttons, better spacing ── */
+    /* ── FAB Column: Big, comfortable buttons ── */
     .gmap-fab-column {
-        right: 20px;
-        bottom: 32px;
-        gap: 12px;
+        right: 24px;
+        bottom: 36px;
+        gap: 16px;
     }
     .gmap-fab {
-        width: 52px;
-        height: 52px;
-        box-shadow: 0 5px 18px rgba(0,0,0,0.2);
+        width: 58px;
+        height: 58px;
+        box-shadow: 0 6px 22px rgba(0,0,0,0.22);
+        border-width: 1.5px;
     }
     .gmap-fab svg {
-        width: 22px;
-        height: 22px;
+        width: 26px;
+        height: 26px;
+    }
+    .gmap-fab span[style*="font-weight:900"] {
+        font-size: 1rem !important;
     }
     .gmap-fab:hover {
         transform: scale(1.12);
     }
     .gmap-fab-badge-count {
-        min-width: 20px;
-        height: 20px;
-        font-size: 0.75rem;
+        min-width: 22px;
+        height: 22px;
+        font-size: 0.8rem;
+        padding: 0 5px;
     }
 
-    /* ── Nearby Drawer: Wider on desktop ── */
+    /* ── Nearby Drawer: Wide, comfortable list ── */
     .gmap-nearby-drawer {
-        left: 24px;
-        max-width: 520px;
-        bottom: 32px;
+        left: 28px;
+        max-width: 580px;
+        bottom: 36px;
+        top: 90px;
     }
     .gmap-nearby-item {
-        padding: 14px 16px;
+        padding: 16px 20px;
     }
     .gmap-nearby-item-title {
-        font-size: 0.95rem;
+        font-size: 1rem;
     }
     .gmap-nearby-item-sub {
-        font-size: 0.82rem;
+        font-size: 0.88rem;
     }
 
-    /* ── Bottom Sheet: Wider on desktop ── */
+    /* ── Bottom Sheet: Wide, clean layout ── */
     .gmap-bottom-sheet {
-        max-width: 480px;
-        left: 24px;
+        max-width: 540px;
+        left: 28px;
         right: auto;
-        border-radius: 24px;
+        border-radius: 28px;
+        box-shadow: 0 16px 48px rgba(0,0,0,0.25);
     }
 
-    /* ── Route Selector Sheet: Wider on desktop ── */
+    /* ── Route Selector Sheet ── */
     .gmap-route-sheet {
-        max-width: 520px;
-        left: 24px;
+        max-width: 580px;
+        left: 28px;
         right: auto;
-        border-radius: 24px;
+        border-radius: 28px;
     }
 
-    /* ── Layer Sheet: Wider on desktop ── */
+    /* ── Layer Sheet ── */
     .gmap-layer-sheet {
-        max-width: 480px;
-        left: 24px;
+        max-width: 540px;
+        left: 28px;
         right: auto;
-        border-radius: 24px;
+        border-radius: 28px;
     }
 
-    /* ── Navigation Banner: Wider on desktop ── */
+    /* ── Navigation Banner ── */
     .gmap-nav-banner {
-        left: 24px;
-        max-width: 520px;
-        border-radius: 22px;
-        padding: 14px 20px;
+        left: 28px;
+        max-width: 580px;
+        border-radius: 24px;
+        padding: 18px 24px;
     }
     .gmap-nav-turn-dist {
-        font-size: 1.35rem;
+        font-size: 1.45rem;
     }
     .gmap-nav-instruction {
-        font-size: 0.95rem;
+        font-size: 1rem;
+    }
+    .gmap-nav-banner-icon {
+        width: 52px;
+        height: 52px;
     }
 }
 
 /* ═══════════════════════════════════════════════
-   Large Desktop (≥1440px) — Even more breathing room
+   Large Desktop (≥1440px) — Maximum comfort
    ═══════════════════════════════════════════════ */
 @media (min-width: 1440px) {
     .gmap-floating-top {
-        width: 560px;
+        width: 640px;
+        gap: 16px;
     }
     .gmap-search-pill {
-        padding: 10px 22px 10px 12px;
+        padding: 14px 26px 14px 16px;
     }
     .gmap-search-input {
-        font-size: 1.12rem;
-        padding: 10px 14px;
+        font-size: 1.3rem;
+        padding: 12px 16px;
     }
-    .gmap-chip {
-        padding: 10px 22px;
-        font-size: 0.92rem;
-    }
-    .gmap-fab-column {
-        right: 28px;
-        bottom: 40px;
+    .gmap-chips-scroll {
         gap: 14px;
     }
+    .gmap-chip {
+        padding: 12px 26px;
+        font-size: 1rem;
+    }
+    .gmap-fab-column {
+        right: 32px;
+        bottom: 44px;
+        gap: 18px;
+    }
     .gmap-fab {
-        width: 56px;
-        height: 56px;
+        width: 64px;
+        height: 64px;
     }
     .gmap-fab svg {
-        width: 24px;
-        height: 24px;
+        width: 28px;
+        height: 28px;
+    }
+    .gmap-fab span[style*="font-weight:900"] {
+        font-size: 1.1rem !important;
     }
     .gmap-nearby-drawer {
-        left: 28px;
-        max-width: 560px;
+        left: 32px;
+        max-width: 640px;
     }
     .gmap-bottom-sheet,
     .gmap-route-sheet,
     .gmap-layer-sheet {
-        max-width: 520px;
+        max-width: 600px;
     }
     .gmap-nav-banner {
-        max-width: 560px;
-        padding: 16px 24px;
+        max-width: 640px;
+        padding: 20px 28px;
     }
     .gmap-nav-turn-dist {
-        font-size: 1.5rem;
+        font-size: 1.6rem;
     }
 }
 </style>
