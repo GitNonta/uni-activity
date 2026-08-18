@@ -38,7 +38,7 @@ return [
     |
     */
 
-    'server' => env('OCTANE_SERVER', 'swoole'),
+    'server' => env('OCTANE_SERVER', 'frankenphp'),
 
     /*
     |--------------------------------------------------------------------------
@@ -51,7 +51,7 @@ return [
     |
     */
 
-    'https' => env('OCTANE_HTTPS', false),
+    'https' => env('OCTANE_HTTPS', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -133,9 +133,13 @@ return [
     'warm' => [
         ...Octane::defaultServicesToWarm(),
         App\Services\RealtimeStateService::class,
+        App\Services\RedisSearchService::class,
+        App\Services\FaceVerificationService::class,
+        App\Services\ChatService::class,
         App\Services\LineService::class,
         App\Repositories\ActivityRepository::class,
         App\Repositories\UserRepository::class,
+        App\Repositories\ChatRepository::class,
     ],
 
     'flush' => [
