@@ -1459,6 +1459,72 @@ html[data-theme="dark"] .gmap-back-btn:hover {
     100% { transform: scale(1.6); opacity: 0; }
 }
 
+/* ── Route Overview Origin & Destination Markers ── */
+.route-origin-marker {
+    position: relative;
+    width: 22px;
+    height: 22px;
+    background: #0284c7;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 10px rgba(2,132,199,0.6);
+    z-index: 999;
+}
+.route-origin-label {
+    position: absolute;
+    top: -26px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0284c7;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 6px;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+.route-dest-marker {
+    position: relative;
+    width: 30px;
+    height: 42px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+.route-dest-marker svg {
+    filter: drop-shadow(0 3px 6px rgba(239,68,68,0.45));
+}
+.route-dest-label {
+    position: absolute;
+    top: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ef4444;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 6px;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* ── Active Navigation Destination Marker ── */
+.nav-dest-marker {
+    position: relative;
+    width: 40px;
+    height: 52px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    animation: nav-dest-bounce 1.5s infinite;
+}
+@keyframes nav-dest-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
 /* Live Peer / Team Member Pins */
 .live-peer-marker {
     position: relative;
@@ -2443,6 +2509,8 @@ html[data-theme="dark"] .gmap-sheet-handle {
     let routeFetchAbortCtrl = null;
     let navigationRerouteAt = 0;
     let navigationReroutePending = false;
+    let routeOriginMarker = null;
+    let routeDestMarker = null;
 
     // Open Route Selector Sheet for Active Location
     window.openRouteSelectorForActive = function() {
@@ -2486,7 +2554,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
     window.closeRouteSelector = function() {
         const sheet = document.getElementById('gmapRouteSelectorSheet');
         if (sheet) sheet.style.display = 'none';
-        clearAlternativePolylines();
+        clearAllRouteVisuals();
     };
 
     window.selectTravelMode = function(mode, btn) {
@@ -2507,6 +2575,11 @@ html[data-theme="dark"] .gmap-sheet-handle {
             try { map.removeLayer(layer); } catch (e) {}
         });
         alternativePolylines = [];
+    }
+
+    function clearAllRouteVisuals() {
+        clearAlternativePolylines();
+        clearRouteOverviewMarkers();
     }
 
     // Calculate real road routes via OSRM & render comparison cards
@@ -2669,7 +2742,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
     };
 
     function previewRoutesOnMap() {
-        clearAlternativePolylines();
+        clearAllRouteVisuals();
         if (!activeLocation || !map || currentRouteAlternatives.length === 0) return;
 
         try {
@@ -2703,11 +2776,41 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 alternativePolylines.push(line2);
             }
 
+            // Show origin marker (user's current position)
+            const startPoint = userCoords || defaultCenter;
+            const originIcon = L.divIcon({
+                html: `<div class="route-origin-marker"><div class="route-origin-label">จุดเริ่มต้น</div></div>`,
+                className: '',
+                iconSize: [22, 22],
+                iconAnchor: [11, 11]
+            });
+            routeOriginMarker = L.marker(startPoint, { icon: originIcon, zIndexOffset: 500 }).addTo(map);
+
+            // Show destination marker
+            const destIcon = L.divIcon({
+                html: `<div class="route-dest-marker">
+                    <svg width="30" height="42" viewBox="0 0 30 42" fill="none">
+                        <path d="M15 0C6.72 0 0 6.72 0 15c0 10.5 15 27 15 27s15-16.5 15-27C30 6.72 23.28 0 15 0z" fill="#ef4444"/>
+                        <circle cx="15" cy="14" r="7" fill="#fff"/>
+                    </svg>
+                    <div class="route-dest-label">${activeLocation.title}</div>
+                </div>`,
+                className: '',
+                iconSize: [30, 42],
+                iconAnchor: [15, 42]
+            });
+            routeDestMarker = L.marker([parseFloat(activeLocation.lat), parseFloat(activeLocation.lng)], { icon: destIcon, zIndexOffset: 600 }).addTo(map);
+
             // Broad overview from start to destination
             const activeRoutePoints = currentRouteAlternatives[selectedRouteIndex]?.points || currentRouteAlternatives[0].points;
             const routeBounds = L.latLngBounds(activeRoutePoints);
             map.fitBounds(routeBounds, { padding: [80, 80], maxZoom: 16 });
         } catch (e) {}
+    }
+
+    function clearRouteOverviewMarkers() {
+        if (routeOriginMarker) { try { map.removeLayer(routeOriginMarker); } catch(e){} routeOriginMarker = null; }
+        if (routeDestMarker) { try { map.removeLayer(routeDestMarker); } catch(e){} routeDestMarker = null; }
     }
 
     // Start Turn-by-Turn Navigation with Selected Route
@@ -2734,7 +2837,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
         closeBottomSheet();
         closeRouteSelector();
-        clearAlternativePolylines();
+        clearAllRouteVisuals();
 
         if (routingControl) {
             try { map.removeControl(routingControl); } catch (e) {}
@@ -2779,7 +2882,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
             ? `มุ่งหน้าไปยัง ${target.title} (แสดงระยะโดยประมาณ)`
             : `มุ่งหน้าไปยัง ${target.title} (${chosenRoute.name})`;
 
-        // 3. Draw active real road polyline
+        // 3. Draw active real road polyline with animated dash
         const pathPoints = chosenRoute.points || [startPoint, [parseFloat(target.lat), parseFloat(target.lng)]];
         activeNavPolyline = L.polyline(pathPoints, {
             color: '#10b981',
@@ -2789,10 +2892,35 @@ html[data-theme="dark"] .gmap-sheet-handle {
             lineJoin: 'round'
         }).addTo(map);
 
-        // 4. Focus camera on user GPS position with live navigation
+        // 4. Show destination marker during navigation
+        const navDestIcon = L.divIcon({
+            html: `<div class="nav-dest-marker">
+                <svg width="40" height="52" viewBox="0 0 40 52" fill="none">
+                    <path d="M20 2C10.06 2 2 10.06 2 20c0 14 18 30 18 30s18-16 18-30C38 10.06 29.94 2 20 2z" fill="#ef4444"/>
+                    <circle cx="20" cy="19" r="8" fill="#fff"/>
+                    <circle cx="20" cy="19" r="4" fill="#ef4444"/>
+                </svg>
+            </div>`,
+            className: '',
+            iconSize: [40, 52],
+            iconAnchor: [20, 52]
+        });
+        routeDestMarker = L.marker([parseFloat(target.lat), parseFloat(target.lng)], { icon: navDestIcon, zIndexOffset: 800 }).addTo(map);
+
+        // 5. Show wide route overview first, then zoom to user for3D navigation
         try {
             map.invalidateSize();
-            map.flyTo(startPoint, 17, { animate: true, duration: 0.8 });
+            const routeBounds = L.latLngBounds(pathPoints);
+            map.fitBounds(routeBounds, { padding: [80, 80], maxZoom: 16, animate: true, duration: 0.6 });
+
+            // After showing the wide overview, zoom to user's current location for live navigation
+            setTimeout(() => {
+                try {
+                    map.flyTo(startPoint, 17, { animate: true, duration: 1.2 });
+                } catch (e) {
+                    try { map.setView(startPoint, 17); } catch (err) {}
+                }
+            }, 1200);
         } catch (e) {
             try { map.setView(startPoint, 17); } catch (err) {}
         }
@@ -2898,7 +3026,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
         activeNavTarget = null;
         activeNavRoute = null;
         navigationReroutePending = false;
-        clearAlternativePolylines();
+        clearAllRouteVisuals();
         document.getElementById('gmapNavBanner').style.display = 'none';
 
         const startPoint = userCoords || defaultCenter;
