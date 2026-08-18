@@ -861,6 +861,17 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     animation: slideUp 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     transition: max-height 0.3s ease;
 }
+/* Expanded: full-screen takeover */
+.gmap-bottom-sheet.expanded {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-height: 100vh;
+    height: 100vh;
+    border-radius: 0;
+    z-index: 1300;
+}
 @media (min-width: 768px) {
     .gmap-bottom-sheet {
         left: 20px;
@@ -870,6 +881,16 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
         max-height: 80vh;
         border-radius: 24px;
         box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+    }
+    .gmap-bottom-sheet.expanded {
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: auto;
+        max-height: 100vh;
+        height: 100vh;
+        border-radius: 0;
     }
 }
 .gmap-sheet-handle-zone {
