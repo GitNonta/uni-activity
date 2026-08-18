@@ -858,6 +858,7 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     max-height: 85vh;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
     animation: slideUp 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     transition: max-height 0.3s ease;
 }
@@ -938,6 +939,8 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
 .gmap-sheet-inner {
     padding: 0 20px 24px;
     overflow-y: auto;
+    overflow-x: hidden;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 14px;
