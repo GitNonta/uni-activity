@@ -1708,11 +1708,30 @@ html[data-theme="dark"] .gmap-sheet-handle {
         map.on('style.load', restoreMapLayersAndState);
 
         map.on('click', function(e) {
+            // If actively navigating, keep all navigation visuals intact
+            if (activeNavRoute) return;
+
+            // Check if clicking on route line layers
+            try {
+                const features = map.queryRenderedFeatures(e.point, {
+                    layers: ['route-primary-core', 'route-primary-casing', 'route-alt-core'].filter(l => map.getLayer(l))
+                });
+                if (features.length > 0) {
+                    const clickedLayer = features[0].layer.id;
+                    if (clickedLayer === 'route-alt-core' && currentRouteAlternatives.length > 1) {
+                        selectRouteCard(1);
+                    }
+                    return;
+                }
+            } catch(err) {}
+
             // Close bottom sheet if clicking empty map space
-            const targetEl = e.originalEvent.target;
-            if (targetEl.tagName === 'CANVAS') {
-                closeBottomSheet();
-                closeRouteSelector();
+            const targetEl = e.originalEvent ? e.originalEvent.target : null;
+            if (targetEl && targetEl.tagName === 'CANVAS') {
+                const bottomSheet = document.getElementById('mapBottomSheet');
+                if (bottomSheet && bottomSheet.style.display !== 'none') {
+                    closeBottomSheet();
+                }
             }
         });
     }
@@ -2438,7 +2457,10 @@ html[data-theme="dark"] .gmap-sheet-handle {
     window.closeRouteSelector = function() {
         const sheet = document.getElementById('gmapRouteSelectorSheet');
         if (sheet) sheet.style.display = 'none';
-        clearAllRouteVisuals();
+        if (!activeNavRoute) {
+            clearAllRouteVisuals();
+            currentRouteAlternatives = [];
+        }
     };
 
     window.selectTravelMode = function(mode, btn) {
