@@ -2529,27 +2529,41 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
         // Date / Time
         const timeWrap = document.getElementById('bs-time-wrap');
-        if (loc.start_date) {
+        const timeVal = loc.time_text || loc.start_date || loc.meta_info;
+        if (timeVal) {
             timeWrap.style.display = 'flex';
-            document.getElementById('bs-time-val').textContent = loc.start_date + (loc.end_date ? ` - ${loc.end_date}` : '');
+            document.getElementById('bs-time-val').textContent = timeVal;
         } else {
             timeWrap.style.display = 'none';
         }
 
         // Quota
         const quotaWrap = document.getElementById('bs-quota-wrap');
-        if (loc.quota) {
+        const quotaVal = loc.quota_text || (loc.quota ? `${loc.quota} คน` : null);
+        if (quotaVal) {
             quotaWrap.style.display = 'flex';
-            document.getElementById('bs-quota-val').textContent = `${loc.current_participants || 0} / ${loc.quota} คน`;
+            document.getElementById('bs-quota-val').textContent = quotaVal;
         } else {
             quotaWrap.style.display = 'none';
         }
 
         // Description
-        document.getElementById('bs-desc-val').textContent = loc.description || 'ไม่มีรายละเอียดเพิ่มเติม';
+        document.getElementById('bs-desc-val').textContent = loc.description || loc.subtitle || 'ไม่มีรายละเอียดเพิ่มเติม';
 
-        // Links
-        document.getElementById('bs-detail-link').href = loc.url || '#';
+        // Detail Link & Button Label
+        const detailLink = document.getElementById('bs-detail-link');
+        const detailUrl = loc.detail_url || loc.url;
+        if (detailUrl) {
+            detailLink.parentElement.style.display = 'block';
+            detailLink.href = detailUrl;
+            const linkText = detailLink.querySelector('span');
+            if (linkText) {
+                linkText.textContent = loc.detail_button_text || (loc.type === 'job' ? 'ดูรายละเอียดงานเต็ม' : 'ดูรายละเอียดกิจกรรมเต็ม');
+            }
+        } else {
+            detailLink.parentElement.style.display = 'none';
+        }
+
         document.getElementById('bs-native-nav-btn').href = `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}`;
 
         sheet.style.display = 'flex';

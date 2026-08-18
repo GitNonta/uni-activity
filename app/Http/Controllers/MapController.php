@@ -69,11 +69,16 @@ class MapController extends Controller
             ->get()
             ->map(function (Activity $act): array {
                 $img = null;
-                if ($act->image_path) {
-                    $img = str_starts_with($act->image_path, 'http')
-                        ? $act->image_path
-                        : asset('storage/' . ltrim($act->image_path, '/'));
+                $rawImg = $act->image_path ?? null;
+                if ($rawImg) {
+                    $img = str_starts_with($rawImg, 'http')
+                        ? $rawImg
+                        : asset('storage/' . ltrim($rawImg, '/'));
                 }
+
+                $timeText = $act->activity_date ? $act->activity_date->format('d/m/Y') . ($act->start_time ? ' (' . substr((string) $act->start_time, 0, 5) . ($act->end_time ? ' - ' . substr((string) $act->end_time, 0, 5) : '') . ' น.)' : '') : null;
+                $quotaText = $act->max_participants ? $act->max_participants . ' คน' : 'ไม่จำกัดจำนวน';
+
                 return [
                     'id' => $act->id,
                     'type' => 'activity',
@@ -83,11 +88,15 @@ class MapController extends Controller
                     'lat' => (float) $act->latitude,
                     'lng' => (float) $act->longitude,
                     'image' => $img,
+                    'description' => $act->description ?? 'ไม่มีรายละเอียดเพิ่มเติม',
+                    'time_text' => $timeText,
+                    'quota_text' => $quotaText,
                     'badge' => $act->is_mandatory ? 'กิจกรรมบังคับ' : 'กิจกรรม',
                     'badge_class' => $act->is_mandatory ? 'badge-red' : 'badge-orange',
                     'status' => $act->computed_status ?? $act->status,
-                    'meta_info' => $act->activity_hours . ' ชม. | ' . $act->activity_date->format('d/m/Y'),
+                    'meta_info' => $act->activity_hours . ' ชม. | ' . ($act->activity_date ? $act->activity_date->format('d/m/Y') : ''),
                     'detail_url' => route('activities.show', $act->id),
+                    'detail_button_text' => 'ดูรายละเอียดกิจกรรมเต็ม',
                     'checkin_radius' => (int) ($act->checkin_radius ?? 100),
                 ];
             });
@@ -100,11 +109,16 @@ class MapController extends Controller
             ->get()
             ->map(function (JobListing $job): array {
                 $img = null;
-                if ($job->poster_image) {
-                    $img = str_starts_with($job->poster_image, 'http')
-                        ? $job->poster_image
-                        : asset('storage/' . ltrim($job->poster_image, '/'));
+                $rawImg = $job->image_path ?? $job->poster_image ?? null;
+                if ($rawImg) {
+                    $img = str_starts_with($rawImg, 'http')
+                        ? $rawImg
+                        : asset('storage/' . ltrim($rawImg, '/'));
                 }
+
+                $timeText = $job->work_period ?? ($job->start_date ? 'เริ่ม ' . $job->start_date->format('d/m/Y') . ($job->end_date ? ' ถึง ' . $job->end_date->format('d/m/Y') : '') : null);
+                $quotaText = $job->quota ? $job->quota . ' อัตรา' : 'รับหลายอัตรา';
+
                 return [
                     'id' => $job->id,
                     'type' => 'job',
@@ -114,11 +128,15 @@ class MapController extends Controller
                     'lat' => (float) $job->latitude,
                     'lng' => (float) $job->longitude,
                     'image' => $img,
+                    'description' => $job->description ?? $job->note ?? 'ไม่มีรายละเอียดเพิ่มเติม',
+                    'time_text' => $timeText,
+                    'quota_text' => $quotaText,
                     'badge' => $job->job_type === 'parttime' ? 'Part-time' : 'งานทั่วไป',
                     'badge_class' => 'badge-blue',
                     'status' => $job->status,
-                    'meta_info' => ($job->compensation ? $job->compensation . ' | ' : '') . 'เริ่ม ' . $job->start_date->format('d/m/Y'),
+                    'meta_info' => ($job->compensation ? $job->compensation . ' | ' : '') . ($job->start_date ? 'เริ่ม ' . $job->start_date->format('d/m/Y') : ''),
                     'detail_url' => route('jobs.show', $job->id),
+                    'detail_button_text' => 'ดูรายละเอียดงานเต็ม',
                     'checkin_radius' => 150,
                 ];
             });
