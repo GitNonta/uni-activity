@@ -347,8 +347,8 @@
 
 @section('scripts')
 {{-- MapLibre GL JS (WebGL 3D Engine) --}}
-<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
-<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.js"></script>
 
 <style>
 /* ── Fullscreen Map App Layout ── */
@@ -1609,12 +1609,14 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 id: 'route-primary-casing',
                 type: 'line',
                 source: 'route-primary-source',
+                layout: {
+                    'line-cap': 'round',
+                    'line-join': 'round'
+                },
                 paint: {
                     'line-color': '#065f46',
                     'line-width': 11,
-                    'line-opacity': 0.9,
-                    'line-cap': 'round',
-                    'line-join': 'round'
+                    'line-opacity': 0.9
                 }
             });
 
@@ -1622,12 +1624,14 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 id: 'route-primary-core',
                 type: 'line',
                 source: 'route-primary-source',
+                layout: {
+                    'line-cap': 'round',
+                    'line-join': 'round'
+                },
                 paint: {
                     'line-color': '#10b981',
                     'line-width': 7,
-                    'line-opacity': 1,
-                    'line-cap': 'round',
-                    'line-join': 'round'
+                    'line-opacity': 1
                 }
             });
         }
@@ -1643,13 +1647,15 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 id: 'route-alt-core',
                 type: 'line',
                 source: 'route-alt-source',
+                layout: {
+                    'line-cap': 'round',
+                    'line-join': 'round'
+                },
                 paint: {
                     'line-color': '#64748b',
                     'line-width': 5,
                     'line-opacity': 0.75,
-                    'line-dasharray': [3, 2],
-                    'line-cap': 'round',
-                    'line-join': 'round'
+                    'line-dasharray': [3, 2]
                 }
             });
         }
