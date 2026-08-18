@@ -125,15 +125,15 @@
             <div class="gmap-layer-grid">
                 <div class="gmap-layer-card active" id="layerCard-streets" onclick="switchMapLayer('streets')">
                     <div class="gmap-layer-preview preview-streets"></div>
-                    <span>สว่าง (Positron 3D)</span>
-                </div>
-                <div class="gmap-layer-card" id="layerCard-dark" onclick="switchMapLayer('dark')">
-                    <div class="gmap-layer-preview preview-dark"></div>
-                    <span>โหมดมืด (Dark Matter 3D)</span>
+                    <span>ค่าเริ่มต้น</span>
                 </div>
                 <div class="gmap-layer-card" id="layerCard-satellite" onclick="switchMapLayer('satellite')">
                     <div class="gmap-layer-preview preview-satellite"></div>
-                    <span>ภาพถ่ายดาวเทียม (Satellite)</span>
+                    <span>ดาวเทียม</span>
+                </div>
+                <div class="gmap-layer-card" id="layerCard-terrain" onclick="switchMapLayer('terrain')">
+                    <div class="gmap-layer-preview preview-terrain"></div>
+                    <span>ภูมิประเทศ</span>
                 </div>
             </div>
         </div>
@@ -742,7 +742,7 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
 }
 .preview-streets { background: linear-gradient(135deg, #e2e8f0, #cbd5e1); }
 .preview-satellite { background: linear-gradient(135deg, #14532d, #064e3b); }
-.preview-dark { background: linear-gradient(135deg, #1e293b, #0f172a); }
+.preview-terrain { background: linear-gradient(135deg, #d97706, #65a30d); }
 
 /* ── 4. Interactive Bottom Sheet ── */
 .gmap-bottom-sheet {
@@ -1616,7 +1616,6 @@ html[data-theme="dark"] .gmap-sheet-handle {
     // WebGL Vector & Raster Styles
     const MAP_STYLES = {
         streets: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
-        dark: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
         satellite: {
             version: 8,
             sources: {
@@ -1640,6 +1639,22 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 { id: 'satellite-base', type: 'raster', source: 'esri-satellite', minzoom: 0, maxzoom: 19 },
                 { id: 'satellite-labels', type: 'raster', source: 'esri-labels', minzoom: 0, maxzoom: 19 }
             ]
+        },
+        terrain: {
+            version: 8,
+            sources: {
+                'esri-terrain': {
+                    type: 'raster',
+                    tiles: [
+                        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}'
+                    ],
+                    tileSize: 256,
+                    attribution: '&copy; Esri, HERE, Garmin, Intermap'
+                }
+            },
+            layers: [
+                { id: 'terrain-base', type: 'raster', source: 'esri-terrain', minzoom: 0, maxzoom: 19 }
+            ]
         }
     };
 
@@ -1660,12 +1675,6 @@ html[data-theme="dark"] .gmap-sheet-handle {
         fetchLocations();
         startRealtimeLocationTracking();
         initReverbMapTracking();
-
-        // Auto-select dark tile if user is currently in dark theme
-        const currentTheme = document.documentElement.getAttribute('data-theme') || (localStorage.getItem('app-theme') || 'light');
-        if (currentTheme === 'dark') {
-            switchMapLayer('dark');
-        }
     });
 
     function getMapStyle(layerType) {
