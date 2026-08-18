@@ -3,188 +3,275 @@
 
 @section('content')
 <div class="map-explorer-wrapper">
-    {{-- Top Header & Filters --}}
-    <div class="map-top-bar">
-        <div class="flex items-center justify-between mb-2" style="flex-wrap:wrap;gap:8px;">
-            <div class="flex items-center gap-2">
-                <div class="map-title-icon">
-                    <svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-                </div>
-                <div>
-                    <h1 class="font-bold" style="font-size:1.15rem;margin:0;line-height:1.2;">แผนที่กิจกรรมและงาน</h1>
-                    <span class="text-xs text-muted" id="total-count-label">กำลังโหลดข้อมูลสถานที่...</span>
-                </div>
+    {{-- ── 1. Floating Top Bar: Google Maps Search & Quick Filters ── --}}
+    <div class="gmap-floating-top">
+        {{-- Search Pill Bar --}}
+        <div class="gmap-search-pill">
+            <div class="gmap-search-icon">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
             </div>
-
-            {{-- Mode Switchers --}}
-            <div class="flex items-center gap-1">
-                <button type="button" class="map-mode-btn active" id="btn-layer-streets" onclick="switchMapLayer('streets')" title="แผนที่ปกติ">
-                    <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-                    <span>ปกติ</span>
-                </button>
-                <button type="button" class="map-mode-btn" id="btn-layer-satellite" onclick="switchMapLayer('satellite')" title="ภาพถ่ายดาวเทียม">
-                    <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <span>ดาวเทียม</span>
-                </button>
-                <button type="button" class="map-mode-btn" id="btn-layer-heat" onclick="toggleHeatmap()" title="แผนที่ความหนาแน่น">
-                    <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/></svg>
-                    <span>ความหนาแน่น</span>
-                </button>
-            </div>
+            <input type="text" id="mapSearchInput" class="gmap-search-input" placeholder="ค้นหากิจกรรม, หางาน, อาคารสถานที่..." autocomplete="off">
+            <button type="button" id="mapSearchClearBtn" class="gmap-search-clear" onclick="clearMapSearch()" style="display:none;" title="ล้างการค้นหา">
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+            <div class="gmap-search-divider"></div>
+            <button type="button" class="gmap-list-toggle-btn" onclick="toggleNearbyDrawer()" title="เปิดรายการสถานที่">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                </svg>
+            </button>
         </div>
 
-        {{-- Type Category Filter Pills --}}
-        <div class="sort-scroll-container mb-2">
-            <button type="button" class="map-filter-pill active" data-type="all" onclick="filterType('all', this)">
-                <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+        {{-- Horizontal Scrollable Category Chips --}}
+        <div class="gmap-chips-scroll">
+            <button type="button" class="gmap-chip active" data-type="all" onclick="filterType('all', this)">
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
+                </svg>
                 <span>ทั้งหมด</span>
             </button>
-            <button type="button" class="map-filter-pill" data-type="activity" onclick="filterType('activity', this)">
-                <span class="type-dot dot-orange"></span>
-                <span>กิจกรรมมหาวิทยาลัย</span>
+            <button type="button" class="gmap-chip" data-type="activity" onclick="filterType('activity', this)">
+                <span class="gmap-chip-dot dot-orange"></span>
+                <span>กิจกรรม</span>
             </button>
-            <button type="button" class="map-filter-pill" data-type="job" onclick="filterType('job', this)">
-                <span class="type-dot dot-blue"></span>
+            <button type="button" class="gmap-chip" data-type="job" onclick="filterType('job', this)">
+                <span class="gmap-chip-dot dot-blue"></span>
                 <span>หางาน / Part-time</span>
             </button>
-            <button type="button" class="map-filter-pill" data-type="landmark" onclick="filterType('landmark', this)">
-                <span class="type-dot dot-green"></span>
-                <span>จุดสำคัญในมหาวิทยาลัย</span>
+            <button type="button" class="gmap-chip" data-type="landmark" onclick="filterType('landmark', this)">
+                <span class="gmap-chip-dot dot-green"></span>
+                <span>อาคาร / จุดสำคัญ</span>
             </button>
-        </div>
-
-        {{-- Radius Radar Filter Pills --}}
-        <div class="sort-scroll-container">
-            <span class="text-xs text-muted font-bold" style="display:inline-flex;align-items:center;gap:4px;white-space:nowrap;margin-right:2px;">
-                <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                รัศมี:
-            </span>
-            <button type="button" class="map-radius-pill active" data-radius="0" onclick="filterRadius(0, this)">
-                <span>ไม่จำกัด</span>
+            <button type="button" class="gmap-chip" data-radius="2" onclick="toggleQuickRadius(2, this)">
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <span>ใกล้ฉัน &lt; 2 กม.</span>
             </button>
-            <button type="button" class="map-radius-pill" data-radius="2" onclick="filterRadius(2, this)">
-                <span>&lt; 2 กม.</span>
-            </button>
-            <button type="button" class="map-radius-pill" data-radius="5" onclick="filterRadius(5, this)">
-                <span>&lt; 5 กม.</span>
-            </button>
-            <button type="button" class="map-radius-pill" data-radius="10" onclick="filterRadius(10, this)">
-                <span>&lt; 10 กม.</span>
-            </button>
-            <button type="button" class="map-radius-pill" data-radius="25" onclick="filterRadius(25, this)">
-                <span>&lt; 25 กม.</span>
+            <button type="button" class="gmap-chip" id="chip-heat" onclick="toggleHeatmapChip(this)">
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/>
+                </svg>
+                <span>ความหนาแน่น</span>
             </button>
         </div>
     </div>
 
-    {{-- Map Area Container --}}
+    {{-- ── 2. Active Turn-by-Turn Navigation Header Banner ── --}}
+    <div id="gmapNavBanner" class="gmap-nav-banner" style="display:none;">
+        <div class="gmap-nav-banner-icon" id="gmapNavTurnIcon">
+            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+            </svg>
+        </div>
+        <div class="gmap-nav-banner-info">
+            <div class="gmap-nav-banner-dist" id="gmapNavNextDist">กำลังคำนวณเส้นทาง...</div>
+            <div class="gmap-nav-banner-text" id="gmapNavNextText">กำลังโหลดคำแนะนำเส้นทาง</div>
+        </div>
+        <button type="button" class="gmap-nav-exit-btn" onclick="clearNavigationRoute()" title="สิ้นสุดการนำทาง">
+            <span>สิ้นสุด</span>
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+    </div>
+
+    {{-- ── 3. Main Map Canvas ── --}}
     <div class="map-canvas-container">
         <div id="unifiedMap" style="width:100%;height:100%;"></div>
 
-        {{-- Floating GPS Locate Button --}}
-        <button type="button" class="map-locate-btn" onclick="locateUserAndCenter()" title="ระบุตำแหน่งของฉัน">
-            <svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-        </button>
+        {{-- Floating Action Buttons (Right Side) --}}
+        <div class="gmap-fab-column">
+            {{-- Layer Switcher FAB --}}
+            <button type="button" class="gmap-fab" onclick="toggleLayerSheet()" title="เปลี่ยนรูปแบบแผนที่">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                </svg>
+            </button>
 
-        {{-- Routing Turn-by-Turn Panel --}}
-        <div id="mapDirectionsPanel" class="map-directions-panel" style="display:none;">
-            <div class="map-dir-header">
-                <div class="flex items-center gap-2">
-                    <svg style="width:16px;height:16px;color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-                    <span class="font-bold" style="font-size:0.9rem;">เส้นทางนำทาง</span>
-                </div>
-                <button type="button" onclick="clearNavigationRoute()" class="btn-close-route">
-                    <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-            </div>
-            <div id="routeStepsList" class="map-dir-body"></div>
+            {{-- GPS Current Location FAB --}}
+            <button type="button" class="gmap-fab gmap-fab-gps" id="btnGpsLocate" onclick="locateUserAndCenter()" title="ระบุตำแหน่งของฉัน">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+            </button>
+
+            {{-- Floating Nearby Places Counter FAB --}}
+            <button type="button" class="gmap-fab gmap-fab-badge" onclick="toggleNearbyDrawer()" title="รายการสถานที่ใกล้ฉัน">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                </svg>
+                <span id="fabPlaceCountBadge" class="gmap-fab-badge-count">0</span>
+            </button>
         </div>
 
-        {{-- BottomSheet Preview Card (Apple / Google Maps Style) --}}
-        <div id="mapBottomSheet" class="map-bottom-sheet" style="display:none;">
-            <div class="bs-handle" onclick="toggleBottomSheetExpand()"></div>
-            <div class="bs-content">
-                <button type="button" class="bs-close-btn" onclick="closeBottomSheet()">
-                    <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
+        {{-- Layer Switcher Modal Sheet --}}
+        <div id="gmapLayerSheet" class="gmap-layer-sheet" style="display:none;">
+            <div class="gmap-layer-header">
+                <span>รูปแบบแผนที่</span>
+                <button type="button" onclick="toggleLayerSheet()" class="gmap-icon-btn">✕</button>
+            </div>
+            <div class="gmap-layer-grid">
+                <div class="gmap-layer-card active" id="layerCard-streets" onclick="switchMapLayer('streets')">
+                    <div class="gmap-layer-preview preview-streets"></div>
+                    <span>ปกติ (ค่าเริ่มต้น)</span>
+                </div>
+                <div class="gmap-layer-card" id="layerCard-satellite" onclick="switchMapLayer('satellite')">
+                    <div class="gmap-layer-preview preview-satellite"></div>
+                    <span>ภาพถ่ายดาวเทียม</span>
+                </div>
+                <div class="gmap-layer-card" id="layerCard-dark" onclick="switchMapLayer('dark')">
+                    <div class="gmap-layer-preview preview-dark"></div>
+                    <span>โหมดมืด (Dark)</span>
+                </div>
+            </div>
+        </div>
 
-                <div class="flex gap-3 items-start">
-                    <div id="bs-img-wrap" class="bs-thumb">
-                        <img id="bs-img" src="" alt="Thumbnail" style="display:none;">
-                        <div id="bs-icon-fallback" class="bs-icon-fallback">
-                            <svg id="bs-fallback-svg" style="width:24px;height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+        {{-- ── 4. Interactive Google Maps Bottom Sheet ── --}}
+        <div id="mapBottomSheet" class="gmap-bottom-sheet" style="display:none;">
+            <div class="gmap-sheet-handle-zone" id="gmapSheetHandleZone" onclick="toggleBottomSheetExpand()">
+                <div class="gmap-sheet-handle"></div>
+            </div>
+
+            <div class="gmap-sheet-inner">
+                {{-- Top Card Header --}}
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex gap-3 items-start" style="flex:1;min-width:0;">
+                        <div id="bs-img-wrap" class="gmap-thumb">
+                            <img id="bs-img" src="" alt="Thumbnail" style="display:none;">
+                            <div id="bs-icon-fallback" class="gmap-thumb-fallback">
+                                <svg id="bs-fallback-svg" width="26" height="26" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div style="flex:1;min-width:0;">
+                            <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                <span id="bs-badge" class="badge badge-orange" style="font-size:0.72rem;padding:2px 8px;"></span>
+                                <span id="bs-distance" class="gmap-distance-chip">
+                                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                                    </svg>
+                                    <span id="bs-dist-val">-</span>
+                                </span>
+                            </div>
+                            <h2 id="bs-title" class="gmap-sheet-title"></h2>
+                            <p id="bs-subtitle" class="gmap-sheet-subtitle"></p>
                         </div>
                     </div>
-                    <div style="flex:1;min-width:0;">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span id="bs-badge" class="badge badge-orange"></span>
-                            <span id="bs-distance" class="bs-distance-pill"></span>
-                        </div>
-                        <h2 id="bs-title" class="bs-title"></h2>
-                        <p id="bs-subtitle" class="bs-subtitle"></p>
-                    </div>
+
+                    <button type="button" class="gmap-sheet-close" onclick="closeBottomSheet()" title="ปิด">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
                 </div>
 
-                {{-- ETA Time & Meta Info --}}
-                <div class="bs-meta-grid mt-3">
-                    <div class="bs-meta-card">
-                        <div class="bs-meta-label">
-                            <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                {{-- Primary Action Row (Directions, Share, Open External) --}}
+                <div class="gmap-sheet-action-row mt-3">
+                    <button type="button" id="bs-route-btn" onclick="startNavigationToActive()" class="gmap-btn-primary flex-1">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                        </svg>
+                        <span>นำทาง</span>
+                    </button>
+
+                    <button type="button" id="bs-native-btn" onclick="openActiveNativeMap()" class="gmap-btn-secondary" title="เปิดใน Google Maps / Apple Maps">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
+                            <line x1="9" y1="3" x2="9" y2="18"></line>
+                            <line x1="15" y1="6" x2="15" y2="21"></line>
+                        </svg>
+                        <span>แอปภายนอก</span>
+                    </button>
+
+                    <button type="button" class="gmap-btn-icon" onclick="shareActiveLocation()" title="แชร์สถานที่นี้">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                        </svg>
+                    </button>
+                </div>
+
+                {{-- Quick ETA Estimation Info --}}
+                <div class="gmap-eta-grid mt-3">
+                    <div class="gmap-eta-card">
+                        <div class="gmap-eta-label">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
                             <span>เดินเท้า</span>
                         </div>
-                        <span id="bs-walk-eta" class="bs-meta-val">-</span>
+                        <div id="bs-walk-eta" class="gmap-eta-value">-</div>
                     </div>
-                    <div class="bs-meta-card">
-                        <div class="bs-meta-label">
-                            <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
-                            <span>ขับขี่</span>
+                    <div class="gmap-eta-card">
+                        <div class="gmap-eta-label">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
+                            </svg>
+                            <span>ขับขี่ / รถยนต์</span>
                         </div>
-                        <span id="bs-drive-eta" class="bs-meta-val">-</span>
-                    </div>
-                    <div class="bs-meta-card" style="grid-column: span 2;">
-                        <div class="bs-meta-label">
-                            <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            <span>ข้อมูลเพิ่มเติม</span>
-                        </div>
-                        <span id="bs-meta-info" class="bs-meta-val">-</span>
+                        <div id="bs-drive-eta" class="gmap-eta-value">-</div>
                     </div>
                 </div>
 
-                {{-- Action Buttons --}}
-                <div class="bs-actions mt-3">
-                    <button type="button" id="bs-native-btn" onclick="openActiveNativeMap()" class="btn btn-primary btn-sm flex-1" style="background:#ea580c;color:#fff;font-weight:600;border:none;">
-                        <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-                        <span id="bs-native-text">เปิดแอปแผนที่ในเครื่อง</span>
-                    </button>
-                    <button type="button" id="bs-route-btn" onclick="startNavigationToActive()" class="btn btn-outline btn-sm flex-1">
-                        <svg style="width:14px;height:14px;color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-                        <span>นำทางบนเว็บ</span>
-                    </button>
-                </div>
+                {{-- Expanded Additional Content --}}
+                <div class="gmap-sheet-expanded-content mt-3">
+                    <div class="gmap-info-section">
+                        <div class="gmap-info-label">ที่อยู่ / พิกัดสถานที่</div>
+                        <div id="bs-meta-info" class="gmap-info-text">-</div>
+                    </div>
 
-                {{-- Detail Link --}}
-                <div class="mt-2">
-                    <a id="bs-detail-btn" href="#" class="btn btn-light btn-sm w-full text-center" style="display:flex;align-items:center;justify-content:center;gap:4px;border:1px solid #e2e8f0;font-size:0.8rem;text-decoration:none;color:#475569;background:#f8fafc;">
-                        <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                        <span>ดูรายละเอียด</span>
-                    </a>
-                </div>
+                    <div class="mt-3">
+                        <a id="bs-detail-btn" href="#" class="gmap-btn-detail w-full">
+                            <span>ดูหน้าข้อมูลและสมัคร / เช็คชื่อ</span>
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </a>
+                    </div>
 
-                {{-- External Navigation Apps --}}
-                <div class="flex gap-2 mt-2">
-                    <a id="bs-gmaps-btn" href="#" target="_blank" rel="noopener noreferrer" class="bs-app-btn flex-1">
-                        <svg style="width:13px;height:13px;flex-shrink:0;color:#ea580c;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon><line x1="9" y1="3" x2="9" y2="18"></line><line x1="15" y1="6" x2="15" y2="21"></line></svg>
-                        <span>Google Maps</span>
-                    </a>
-                    <a id="bs-applemaps-btn" href="#" target="_blank" rel="noopener noreferrer" class="bs-app-btn flex-1">
-                        <svg style="width:13px;height:13px;flex-shrink:0;color:#0284c7;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
-                        <span>Apple Maps</span>
-                    </a>
-                    <a id="bs-waze-btn" href="#" target="_blank" rel="noopener noreferrer" class="bs-app-btn flex-1">
-                        <svg style="width:13px;height:13px;flex-shrink:0;color:#059669;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"></path></svg>
-                        <span>Waze</span>
-                    </a>
+                    {{-- Direct App Links --}}
+                    <div class="flex gap-2 mt-2">
+                        <a id="bs-gmaps-btn" href="#" target="_blank" rel="noopener noreferrer" class="gmap-app-badge flex-1">
+                            <span style="color:#ea580c;font-weight:700;">G</span> Google Maps
+                        </a>
+                        <a id="bs-applemaps-btn" href="#" target="_blank" rel="noopener noreferrer" class="gmap-app-badge flex-1">
+                            <span style="color:#0284c7;font-weight:700;"></span> Apple Maps
+                        </a>
+                        <a id="bs-waze-btn" href="#" target="_blank" rel="noopener noreferrer" class="gmap-app-badge flex-1">
+                            <span style="color:#059669;font-weight:700;">W</span> Waze
+                        </a>
+                    </div>
                 </div>
+            </div>
+        </div>
+
+        {{-- ── 5. Nearby Places Drawer (Google Maps List Drawer) ── --}}
+        <div id="gmapNearbyDrawer" class="gmap-nearby-drawer" style="display:none;">
+            <div class="gmap-drawer-header">
+                <div class="flex items-center gap-2">
+                    <div class="gmap-title-icon">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="font-bold" style="font-size:0.95rem;">สถานที่ทั้งหมดในแผนที่</div>
+                        <div class="text-xs text-muted" id="drawerCountLabel">0 แห่ง</div>
+                    </div>
+                </div>
+                <button type="button" class="gmap-icon-btn" onclick="toggleNearbyDrawer()">✕</button>
+            </div>
+            <div id="gmapNearbyList" class="gmap-drawer-body">
+                <div style="padding:2rem;text-align:center;color:#94a3b8;">กำลังโหลดรายการสถานที่...</div>
             </div>
         </div>
     </div>
@@ -204,223 +291,384 @@
 <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
 
 <style>
-/* ── Unified Map Explorer Layout ── */
+/* ── Google Maps Mobile App Styles ── */
 .map-explorer-wrapper {
+    position: relative;
+    width: 100%;
+    height: calc(100vh - 110px);
+    min-height: 520px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 120px);
-    min-height: 520px;
-    background: #fff;
-    border-radius: 12px;
-    overflow: hidden;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-    position: relative;
 }
-@media (max-width: 768px) {
+
+@media (max-width: 1024px) {
     .map-explorer-wrapper {
-        height: calc(100vh - 140px);
+        height: calc(100dvh - 125px);
         min-height: 480px;
-        margin: -0.5rem -1rem;
+        margin: -0.5rem -0.75rem;
         border-radius: 0;
         border: none;
     }
 }
-.map-top-bar {
-    padding: 0.75rem 1rem;
-    background: #fff;
-    border-bottom: 1px solid #e2e8f0;
-    z-index: 10;
-}
-.map-title-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    background: rgba(234, 88, 12, 0.1);
-    color: #ea580c;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
+
 .map-canvas-container {
-    flex: 1;
     position: relative;
+    flex: 1;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
 }
 
-/* ── Mode Switchers ── */
-.map-mode-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    border: 1px solid #cbd5e1;
-    background: #fff;
-    color: #475569;
-    cursor: pointer;
-    transition: all 0.15s ease;
+/* ── 1. Floating Top Bar ── */
+.gmap-floating-top {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    right: 14px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
 }
-.map-mode-btn:hover { background: #f8fafc; color: #0f172a; }
-.map-mode-btn.active {
-    background: #0f172a;
-    color: #fff;
-    border-color: #0f172a;
+@media (min-width: 768px) {
+    .gmap-floating-top {
+        max-width: 440px;
+    }
 }
 
-/* ── Type & Radius Pills ── */
-.map-filter-pill, .map-radius-pill {
-    display: inline-flex;
+.gmap-search-pill {
+    pointer-events: auto;
+    background: #ffffff;
+    border-radius: 28px;
+    height: 48px;
+    padding: 0 14px;
+    display: flex;
     align-items: center;
-    gap: 5px;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    border: 1px solid #e2e8f0;
-    background: #fff;
-    color: #475569;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.15s ease;
-    flex-shrink: 0;
+    gap: 10px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.map-filter-pill:hover, .map-radius-pill:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
-}
-.map-filter-pill.active {
-    background: #ea580c;
-    color: #fff;
+.gmap-search-pill:focus-within {
+    box-shadow: 0 6px 24px rgba(234, 88, 12, 0.25), 0 2px 6px rgba(0,0,0,0.1);
     border-color: #ea580c;
-    box-shadow: 0 2px 6px rgba(234, 88, 12, 0.25);
 }
-.map-radius-pill.active {
-    background: #0284c7;
-    color: #fff;
-    border-color: #0284c7;
-    box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
-}
-.type-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-.dot-orange { background: #ea580c; }
-.dot-blue { background: #0284c7; }
-.dot-green { background: #16a34a; }
-
-/* ── Floating Locate Button ── */
-.map-locate-btn {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    z-index: 500;
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    background: #fff;
-    color: #0284c7;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-.map-locate-btn:hover {
-    transform: scale(1.08);
-    background: #f0f9ff;
-}
-
-/* ── Custom Markers ── */
-.custom-pin-marker {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    color: #fff;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
-    border: 2.5px solid #fff;
-    cursor: pointer;
-    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.custom-pin-marker:hover {
-    transform: scale(1.2);
-}
-.pin-activity { background: linear-gradient(135deg, #ea580c, #f97316); }
-.pin-job { background: linear-gradient(135deg, #0284c7, #38bdf8); }
-.pin-landmark { background: linear-gradient(135deg, #16a34a, #4ade80); }
-
-/* Pulse User GPS Dot */
-.user-gps-dot {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: #0284c7;
-    border: 3px solid #fff;
-    box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.4);
-    animation: gps-pulse 2s infinite;
-}
-@keyframes gps-pulse {
-    0% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.7); }
-    70% { box-shadow: 0 0 0 14px rgba(2, 132, 199, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0); }
-}
-
-/* ── BottomSheet Card (Apple Maps style) ── */
-.map-bottom-sheet {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 600;
-    background: #fff;
-    border-radius: 16px 16px 0 0;
-    box-shadow: 0 -6px 24px rgba(0,0,0,0.16);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    max-height: 80%;
-    overflow-y: auto;
-}
-.bs-handle {
-    width: 36px;
-    height: 4px;
-    background: #cbd5e1;
-    border-radius: 2px;
-    margin: 8px auto 0;
-    cursor: pointer;
-}
-.bs-content {
-    padding: 0.875rem 1.25rem 1.25rem;
-    position: relative;
-}
-.bs-close-btn {
-    position: absolute;
-    top: 10px;
-    right: 12px;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: none;
-    background: #f1f5f9;
+.gmap-search-icon {
     color: #64748b;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
+    flex-shrink: 0;
 }
-.bs-thumb {
-    width: 60px;
-    height: 60px;
-    border-radius: 10px;
+.gmap-search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.92rem;
+    color: #0f172a;
+    font-family: inherit;
+}
+.gmap-search-input::placeholder {
+    color: #94a3b8;
+}
+.gmap-search-clear {
+    background: #f1f5f9;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #64748b;
+    padding: 0;
+}
+.gmap-search-divider {
+    width: 1px;
+    height: 24px;
+    background: #e2e8f0;
+}
+.gmap-list-toggle-btn {
+    background: none;
+    border: none;
+    color: #ea580c;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+}
+
+/* Category Chips */
+.gmap-chips-scroll {
+    pointer-events: auto;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+.gmap-chips-scroll::-webkit-scrollbar { display: none; }
+
+.gmap-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    background: #ffffff;
+    color: #334155;
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+.gmap-chip:hover {
+    background: #f8fafc;
+    transform: translateY(-1px);
+}
+.gmap-chip.active {
+    background: #ea580c;
+    color: #ffffff;
+    border-color: #ea580c;
+    box-shadow: 0 3px 12px rgba(234, 88, 12, 0.35);
+}
+.gmap-chip-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+.dot-orange { background: #ea580c; }
+.dot-blue { background: #0284c7; }
+.dot-green { background: #16a34a; }
+
+/* ── 2. Active Navigation Banner ── */
+.gmap-nav-banner {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    right: 14px;
+    z-index: 1100;
+    background: linear-gradient(135deg, #15803d, #16a34a);
+    color: #fff;
+    border-radius: 16px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 8px 24px rgba(22, 163, 74, 0.35);
+    animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.gmap-nav-banner-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.gmap-nav-banner-info {
+    flex: 1;
+    min-width: 0;
+}
+.gmap-nav-banner-dist {
+    font-size: 1.1rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+.gmap-nav-banner-text {
+    font-size: 0.8rem;
+    opacity: 0.9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.gmap-nav-exit-btn {
+    background: rgba(0,0,0,0.25);
+    border: none;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+/* ── 3. Floating Action Buttons (FAB Column) ── */
+.gmap-fab-column {
+    position: absolute;
+    right: 14px;
+    bottom: 24px;
+    z-index: 950;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+.gmap-fab {
+    pointer-events: auto;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #334155;
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+}
+.gmap-fab:hover {
+    transform: scale(1.1);
+    color: #ea580c;
+}
+.gmap-fab-gps {
+    color: #0284c7;
+}
+.gmap-fab-badge-count {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    background: #ea580c;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 800;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #fff;
+}
+
+/* ── 4. Layer Switcher Sheet ── */
+.gmap-layer-sheet {
+    position: absolute;
+    right: 14px;
+    bottom: 80px;
+    z-index: 1050;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    border: 1px solid #e2e8f0;
+    width: 280px;
+    animation: fadeIn 0.2s ease;
+}
+.gmap-layer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 700;
+    font-size: 0.88rem;
+    margin-bottom: 10px;
+    color: #0f172a;
+}
+.gmap-layer-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+.gmap-layer-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #64748b;
+    text-align: center;
+}
+.gmap-layer-preview {
+    width: 100%;
+    height: 52px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-size: cover;
+    background-position: center;
+    transition: all 0.15s;
+}
+.preview-streets { background-color: #e2e8f0; background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 8px 8px; }
+.preview-satellite { background-color: #0f172a; background-image: linear-gradient(135deg, #1e293b, #0f172a); }
+.preview-dark { background-color: #18181b; }
+.gmap-layer-card.active .gmap-layer-preview {
+    border-color: #ea580c;
+    box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.3);
+}
+.gmap-layer-card.active { color: #ea580c; font-weight: 700; }
+
+/* ── 5. Google Maps Bottom Sheet ── */
+.gmap-bottom-sheet {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: #ffffff;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -8px 30px rgba(0,0,0,0.18);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 85%;
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid rgba(0,0,0,0.06);
+}
+.gmap-sheet-handle-zone {
+    width: 100%;
+    padding: 10px 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+}
+.gmap-sheet-handle {
+    width: 38px;
+    height: 4.5px;
+    border-radius: 3px;
+    background: #cbd5e1;
+}
+.gmap-sheet-inner {
+    padding: 0 16px 18px;
+    overflow-y: auto;
+}
+.gmap-thumb {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
     overflow: hidden;
     flex-shrink: 0;
     background: #f1f5f9;
 }
-.bs-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.bs-icon-fallback {
+.gmap-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.gmap-thumb-fallback {
     width: 100%;
     height: 100%;
     display: flex;
@@ -429,110 +677,310 @@
     background: rgba(234, 88, 12, 0.1);
     color: #ea580c;
 }
-.bs-title { font-size: 1rem; font-weight: 700; margin: 0 0 2px; line-height: 1.3; }
-.bs-subtitle { font-size: 0.8rem; color: #64748b; margin: 0; }
-.bs-distance-pill {
+.gmap-distance-chip {
     font-size: 0.72rem;
     font-weight: 700;
     color: #0284c7;
     background: #e0f2fe;
     padding: 2px 8px;
     border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
 }
-.bs-meta-grid {
+.gmap-sheet-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    margin: 0 0 2px;
+    line-height: 1.25;
+    color: #0f172a;
+}
+.gmap-sheet-subtitle {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin: 0;
+}
+.gmap-sheet-close {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    border: none;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.gmap-sheet-action-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.gmap-btn-primary {
+    background: #ea580c;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.88rem;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(234, 88, 12, 0.3);
+}
+.gmap-btn-primary:hover { background: #c2410c; }
+
+.gmap-btn-secondary {
+    background: #f8fafc;
+    color: #334155;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+}
+.gmap-btn-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.gmap-eta-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 6px;
+    gap: 8px;
 }
-.bs-meta-card {
+.gmap-eta-card {
     background: #f8fafc;
-    border: 1px solid #f1f5f9;
-    border-radius: 8px;
-    padding: 6px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 8px 12px;
 }
-.bs-meta-label {
+.gmap-eta-label {
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     color: #64748b;
     margin-bottom: 2px;
 }
-.bs-meta-val { font-size: 0.82rem; font-weight: 700; color: #1e293b; }
-.bs-actions { display: flex; gap: 8px; }
-.bs-app-btn {
+.gmap-eta-value {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+.gmap-info-section {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 12px;
+}
+.gmap-info-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 2px;
+}
+.gmap-info-text {
+    font-size: 0.85rem;
+    color: #1e293b;
+    line-height: 1.4;
+}
+.gmap-btn-detail {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #f1f5f9;
+    color: #0f172a;
+    font-weight: 700;
+    font-size: 0.85rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px;
+    text-decoration: none;
+    transition: all 0.15s;
+}
+.gmap-btn-detail:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+    text-decoration: none;
+}
+.gmap-app-badge {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #475569;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 4px;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    border: 1px solid #e2e8f0;
-    background: #f8fafc;
-    color: #475569;
     text-decoration: none;
-    transition: all 0.15s ease;
 }
-.bs-app-btn:hover { background: #e2e8f0; text-decoration: none; color: #0f172a; }
 
-/* ── Turn-by-Turn Routing Panel ── */
-.map-directions-panel {
+/* ── 6. Nearby Places Drawer ── */
+.gmap-nearby-drawer {
     position: absolute;
-    top: 16px;
-    left: 16px;
-    z-index: 550;
-    width: 320px;
-    max-width: calc(100% - 32px);
-    max-height: 60%;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
-    border: 1px solid #e2e8f0;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 360px;
+    max-width: 85%;
+    z-index: 1200;
+    background: #ffffff;
+    box-shadow: 6px 0 24px rgba(0,0,0,0.18);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    animation: slideRight 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.map-dir-header {
+@keyframes slideRight {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}
+.gmap-drawer-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid #e2e8f0;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 14px;
-    border-bottom: 1px solid #f1f5f9;
-    background: #fafafa;
 }
-.btn-close-route {
-    background: none;
+.gmap-drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.gmap-place-card {
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: #ffffff;
+}
+.gmap-place-card:hover {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+    transform: translateY(-1px);
+}
+.gmap-icon-btn {
+    background: #f1f5f9;
     border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
     color: #64748b;
-    padding: 2px;
-}
-.map-dir-body {
-    padding: 10px 14px;
-    overflow-y: auto;
-    font-size: 0.8rem;
 }
 
-/* ── Dark Mode ── */
-@media (prefers-color-scheme: dark) {
-    .map-explorer-wrapper, .map-top-bar, .map-bottom-sheet, .map-directions-panel, .map-locate-btn {
-        background: #202124 !important;
-        border-color: #3c4043 !important;
-        color: #f1f5f9 !important;
-    }
-    .map-mode-btn, .map-filter-pill, .map-radius-pill {
-        background: #303134 !important;
-        border-color: #5f6368 !important;
-        color: #e8eaed !important;
-    }
-    .bs-meta-card, .bs-app-btn, .map-dir-header {
-        background: #303134 !important;
-        border-color: #3c4043 !important;
-        color: #e8eaed !important;
-    }
-    .bs-meta-val { color: #f8fafc !important; }
+/* ── 7. Custom Markers & Pulse ── */
+.custom-pin-marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    border: 2px solid #fff;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.custom-pin-marker svg {
+    transform: rotate(45deg);
+}
+.custom-pin-marker:hover, .custom-pin-marker.selected {
+    transform: rotate(-45deg) scale(1.25);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+    z-index: 1000 !important;
+}
+.pin-activity { background: linear-gradient(135deg, #ea580c, #f97316); }
+.pin-job { background: linear-gradient(135deg, #0284c7, #38bdf8); }
+.pin-landmark { background: linear-gradient(135deg, #16a34a, #4ade80); }
+
+/* GPS Pulse Dot */
+.user-gps-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #0284c7;
+    border: 3.5px solid #fff;
+    box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.4);
+    animation: gps-pulse 2s infinite;
+}
+@keyframes gps-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.7); }
+    70% { box-shadow: 0 0 0 16px rgba(2, 132, 199, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0); }
+}
+
+/* ── Dark Mode Adaptations ── */
+html[data-theme="dark"] .map-explorer-wrapper {
+    background: #18181b;
+    border-color: #27272a;
+}
+html[data-theme="dark"] .gmap-search-pill,
+html[data-theme="dark"] .gmap-chip,
+html[data-theme="dark"] .gmap-fab,
+html[data-theme="dark"] .gmap-layer-sheet,
+html[data-theme="dark"] .gmap-bottom-sheet,
+html[data-theme="dark"] .gmap-nearby-drawer,
+html[data-theme="dark"] .gmap-place-card {
+    background: #18181b !important;
+    border-color: #27272a !important;
+    color: #f4f4f5 !important;
+}
+html[data-theme="dark"] .gmap-search-input {
+    color: #f4f4f5;
+}
+html[data-theme="dark"] .gmap-sheet-title,
+html[data-theme="dark"] .gmap-eta-value,
+html[data-theme="dark"] .gmap-info-text,
+html[data-theme="dark"] .gmap-layer-header {
+    color: #f4f4f5 !important;
+}
+html[data-theme="dark"] .gmap-eta-card,
+html[data-theme="dark"] .gmap-info-section,
+html[data-theme="dark"] .gmap-btn-secondary,
+html[data-theme="dark"] .gmap-btn-icon,
+html[data-theme="dark"] .gmap-btn-detail,
+html[data-theme="dark"] .gmap-app-badge,
+html[data-theme="dark"] .gmap-sheet-close,
+html[data-theme="dark"] .gmap-icon-btn {
+    background: #27272a !important;
+    border-color: #3f3f46 !important;
+    color: #f4f4f5 !important;
+}
+html[data-theme="dark"] .gmap-sheet-handle {
+    background: #3f3f46;
 }
 </style>
 
@@ -549,6 +997,7 @@
     let allLocations = [];
     let currentFilterType = 'all';
     let currentRadiusKm = 0;
+    let searchQuery = '';
     let activeLocation = null;
     let activeMapLayerType = 'streets';
 
@@ -563,11 +1012,23 @@
         attribution: '&copy; Esri, Earthstar Geographics',
         maxZoom: 19
     });
+    const darkTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; CartoDB',
+        maxZoom: 19
+    });
 
     document.addEventListener('DOMContentLoaded', function() {
         initMap();
+        initSearchInput();
+        initBottomSheetSwipe();
         fetchLocations();
         getUserLocation();
+
+        // Auto-select dark tile if user is currently in dark theme
+        const currentTheme = document.documentElement.getAttribute('data-theme') || (localStorage.getItem('app-theme') || 'light');
+        if (currentTheme === 'dark') {
+            switchMapLayer('dark');
+        }
     });
 
     function initMap() {
@@ -578,7 +1039,10 @@
             layers: [streetTile]
         });
 
-        L.control.zoom({ position: 'topright' }).addTo(map);
+        // Add Zoom Control to Bottom Right on Desktop, Hidden on Mobile for clean touch
+        if (window.innerWidth >= 768) {
+            L.control.zoom({ position: 'bottomright' }).addTo(map);
+        }
 
         markersCluster = L.markerClusterGroup({
             showCoverageOnHover: false,
@@ -586,7 +1050,7 @@
             iconCreateFunction: function(cluster) {
                 const count = cluster.getChildCount();
                 return L.divIcon({
-                    html: '<div style="background:#ea580c;color:#fff;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;border:2.5px solid #fff;box-shadow:0 3px 8px rgba(0,0,0,0.3);">' + count + '</div>',
+                    html: '<div style="background:#ea580c;color:#fff;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.85rem;border:2.5px solid #fff;box-shadow:0 3px 8px rgba(0,0,0,0.3);">' + count + '</div>',
                     className: 'custom-cluster-icon',
                     iconSize: [34, 34]
                 });
@@ -595,37 +1059,75 @@
         map.addLayer(markersCluster);
 
         map.on('click', function(e) {
-            // Close bottomsheet on blank map tap
             if (e.originalEvent.target.id === 'unifiedMap' || e.originalEvent.target.classList.contains('leaflet-container')) {
                 closeBottomSheet();
+                closeLayerSheet();
             }
         });
     }
 
-    // Layer Switcher
-    window.switchMapLayer = function(layerType) {
-        activeMapLayerType = layerType;
-        document.getElementById('btn-layer-streets').classList.toggle('active', layerType === 'streets');
-        document.getElementById('btn-layer-satellite').classList.toggle('active', layerType === 'satellite');
+    // Search Input Binding
+    function initSearchInput() {
+        const input = document.getElementById('mapSearchInput');
+        const clearBtn = document.getElementById('mapSearchClearBtn');
 
-        if (layerType === 'satellite') {
-            map.removeLayer(streetTile);
-            map.addLayer(satelliteTile);
-        } else {
-            map.removeLayer(satelliteTile);
-            map.addLayer(streetTile);
-        }
+        input.addEventListener('input', function() {
+            searchQuery = this.value.trim().toLowerCase();
+            clearBtn.style.display = searchQuery ? 'flex' : 'none';
+            renderMarkers();
+            updateNearbyList();
+        });
+    }
+
+    window.clearMapSearch = function() {
+        const input = document.getElementById('mapSearchInput');
+        input.value = '';
+        searchQuery = '';
+        document.getElementById('mapSearchClearBtn').style.display = 'none';
+        renderMarkers();
+        updateNearbyList();
     };
 
-    // Toggle Density Heatmap
-    window.toggleHeatmap = function() {
-        const btn = document.getElementById('btn-layer-heat');
+    // Layer Switcher
+    window.toggleLayerSheet = function() {
+        const sheet = document.getElementById('gmapLayerSheet');
+        sheet.style.display = sheet.style.display === 'none' ? 'block' : 'none';
+    };
+
+    window.closeLayerSheet = function() {
+        const sheet = document.getElementById('gmapLayerSheet');
+        if (sheet) sheet.style.display = 'none';
+    };
+
+    window.switchMapLayer = function(layerType) {
+        activeMapLayerType = layerType;
+        document.querySelectorAll('.gmap-layer-card').forEach(c => c.classList.remove('active'));
+        const card = document.getElementById('layerCard-' + layerType);
+        if (card) card.classList.add('active');
+
+        map.removeLayer(streetTile);
+        map.removeLayer(satelliteTile);
+        map.removeLayer(darkTile);
+
+        if (layerType === 'satellite') {
+            map.addLayer(satelliteTile);
+        } else if (layerType === 'dark') {
+            map.addLayer(darkTile);
+        } else {
+            map.addLayer(streetTile);
+        }
+
+        closeLayerSheet();
+    };
+
+    // Toggle Density Heatmap Chip
+    window.toggleHeatmapChip = function(btn) {
         const isActive = btn.classList.toggle('active');
 
         if (isActive) {
-            const heatPoints = allLocations.map(loc => [loc.lat, loc.lng, loc.type === 'activity' ? 0.8 : 0.6]);
+            const heatPoints = allLocations.map(loc => [loc.lat, loc.lng, loc.type === 'activity' ? 0.9 : 0.6]);
             if (!heatLayer) {
-                heatLayer = L.heatLayer(heatPoints, { radius: 25, blur: 15, maxZoom: 17 });
+                heatLayer = L.heatLayer(heatPoints, { radius: 28, blur: 16, maxZoom: 17 });
             }
             map.addLayer(heatLayer);
             map.removeLayer(markersCluster);
@@ -646,7 +1148,9 @@
                         ...(data.jobs || []),
                         ...(data.landmarks || [])
                     ];
-                    document.getElementById('total-count-label').textContent = 'พบ ' + allLocations.length + ' จุดสถานที่';
+
+                    document.getElementById('fabPlaceCountBadge').textContent = allLocations.length;
+                    document.getElementById('drawerCountLabel').textContent = allLocations.length + ' แห่ง';
 
                     // Parse URL Query Parameters for Focus & Filters
                     const urlParams = new URLSearchParams(window.location.search);
@@ -656,13 +1160,13 @@
 
                     if (targetType && !targetId) {
                         currentFilterType = targetType;
-                        document.querySelectorAll('.map-filter-pill').forEach(b => {
-                            const onclickAttr = b.getAttribute('onclick') || '';
-                            b.classList.toggle('active', onclickAttr.includes("'" + targetType + "'"));
+                        document.querySelectorAll('.gmap-chip').forEach(b => {
+                            b.classList.toggle('active', b.getAttribute('data-type') === targetType);
                         });
                     }
 
                     renderMarkers();
+                    updateNearbyList();
 
                     // If a specific target ID is requested, center, zoom, and open bottom sheet
                     if (targetId) {
@@ -677,9 +1181,7 @@
                                 map.setView([target.lat, target.lng], 17, { animate: true });
                                 showBottomSheet(target);
                                 if (autoNav === '1') {
-                                    setTimeout(() => {
-                                        startNavigationToActive();
-                                    }, 400);
+                                    setTimeout(() => startNavigationToActive(), 400);
                                 }
                             }, 300);
                         }
@@ -688,18 +1190,58 @@
             })
             .catch(err => {
                 console.error('Failed to load map locations:', err);
-                document.getElementById('total-count-label').textContent = 'ไม่สามารถโหลดข้อมูลสถานที่ได้';
             });
     }
 
-    // Render Markers with Filters
+    // Render Filtered Markers
     function renderMarkers() {
         markersCluster.clearLayers();
 
-        const filtered = allLocations.filter(item => {
+        const filtered = getFilteredLocations();
+
+        filtered.forEach(loc => {
+            let pinClass = 'pin-activity';
+            let iconSvg = '<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>';
+
+            if (loc.type === 'job') {
+                pinClass = 'pin-job';
+                iconSvg = '<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>';
+            } else if (loc.type === 'landmark') {
+                pinClass = 'pin-landmark';
+                iconSvg = '<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>';
+            }
+
+            const customIcon = L.divIcon({
+                html: `<div class="custom-pin-marker ${pinClass}">${iconSvg}</div>`,
+                className: 'leaflet-pin-wrap',
+                iconSize: [38, 38],
+                iconAnchor: [19, 38]
+            });
+
+            const marker = L.marker([loc.lat, loc.lng], { icon: customIcon });
+            marker.on('click', () => {
+                showBottomSheet(loc);
+                map.panTo([loc.lat, loc.lng]);
+            });
+            markersCluster.addLayer(marker);
+        });
+
+        // Update badge count
+        document.getElementById('fabPlaceCountBadge').textContent = filtered.length;
+    }
+
+    function getFilteredLocations() {
+        return allLocations.filter(item => {
             // Type Filter
             if (currentFilterType !== 'all' && item.type !== currentFilterType) {
                 return false;
+            }
+            // Search Query Filter
+            if (searchQuery) {
+                const titleMatch = (item.title || '').toLowerCase().includes(searchQuery);
+                const locMatch = (item.location_name || '').toLowerCase().includes(searchQuery);
+                const subtitleMatch = (item.subtitle || '').toLowerCase().includes(searchQuery);
+                if (!titleMatch && !locMatch && !subtitleMatch) return false;
             }
             // Radius Filter
             if (currentRadiusKm > 0 && userCoords) {
@@ -708,61 +1250,34 @@
             }
             return true;
         });
-
-        filtered.forEach(loc => {
-            let pinClass = 'pin-activity';
-            let iconSvg = '<svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>';
-
-            if (loc.type === 'job') {
-                pinClass = 'pin-job';
-                iconSvg = '<svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>';
-            } else if (loc.type === 'landmark') {
-                pinClass = 'pin-landmark';
-                iconSvg = '<svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>';
-            }
-
-            const customIcon = L.divIcon({
-                html: `<div class="custom-pin-marker ${pinClass}">${iconSvg}</div>`,
-                className: 'leaflet-pin-wrap',
-                iconSize: [38, 38],
-                iconAnchor: [19, 19]
-            });
-
-            const marker = L.marker([loc.lat, loc.lng], { icon: customIcon });
-            marker.on('click', () => showBottomSheet(loc));
-            markersCluster.addLayer(marker);
-        });
-
-        // Fit bounds if markers exist
-        if (filtered.length > 0 && currentRadiusKm === 0) {
-            const group = L.featureGroup(filtered.map(l => L.marker([l.lat, l.lng])));
-            map.fitBounds(group.getBounds().pad(0.15));
-        }
     }
 
     // Filter by Type
     window.filterType = function(type, btn) {
         currentFilterType = type;
-        document.querySelectorAll('.map-filter-pill').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.gmap-chip').forEach(b => {
+            if (b.getAttribute('data-type')) b.classList.remove('active');
+        });
         btn.classList.add('active');
         renderMarkers();
+        updateNearbyList();
     };
 
-    // Filter by Radius
-    window.filterRadius = function(radiusKm, btn) {
-        currentRadiusKm = radiusKm;
-        document.querySelectorAll('.map-radius-pill').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+    // Toggle Quick Radius (< 2km)
+    window.toggleQuickRadius = function(radiusKm, btn) {
+        const isActive = btn.classList.toggle('active');
+        currentRadiusKm = isActive ? radiusKm : 0;
 
-        if (radiusKm > 0) {
+        if (currentRadiusKm > 0) {
             if (!userCoords) {
-                getUserLocation(() => updateRadiusCircle(radiusKm));
+                getUserLocation(() => updateRadiusCircle(currentRadiusKm));
             } else {
-                updateRadiusCircle(radiusKm);
+                updateRadiusCircle(currentRadiusKm);
             }
         } else {
             if (radiusCircle) map.removeLayer(radiusCircle);
             renderMarkers();
+            updateNearbyList();
         }
     };
 
@@ -774,13 +1289,14 @@
             radius: radiusKm * 1000,
             color: '#0284c7',
             fillColor: '#0284c7',
-            fillOpacity: 0.08,
+            fillOpacity: 0.06,
             weight: 2,
             dashArray: '6, 6'
         }).addTo(map);
 
         map.fitBounds(radiusCircle.getBounds());
         renderMarkers();
+        updateNearbyList();
     }
 
     // Get User GPS Location
@@ -791,6 +1307,7 @@
                 userCoords = [pos.coords.latitude, pos.coords.longitude];
                 setUserGpsMarker();
                 if (callback) callback();
+                updateNearbyList();
             },
             function(err) {
                 console.warn('GPS location access denied or unavailable:', err);
@@ -806,8 +1323,8 @@
         const gpsIcon = L.divIcon({
             html: '<div class="user-gps-dot"></div>',
             className: 'user-gps-wrap',
-            iconSize: [16, 16],
-            iconAnchor: [8, 8]
+            iconSize: [18, 18],
+            iconAnchor: [9, 9]
         });
 
         userMarker = L.marker(userCoords, { icon: gpsIcon, zIndexOffset: 1000 }).addTo(map);
@@ -840,7 +1357,7 @@
 
         // Title & Badges
         document.getElementById('bs-title').textContent = loc.title;
-        document.getElementById('bs-subtitle').textContent = loc.subtitle + ' • ' + loc.location_name;
+        document.getElementById('bs-subtitle').textContent = (loc.subtitle ? loc.subtitle + ' • ' : '') + loc.location_name;
 
         const badge = document.getElementById('bs-badge');
         badge.textContent = loc.badge;
@@ -864,7 +1381,7 @@
             driveText = '~' + driveMins + ' นาที';
         }
 
-        document.getElementById('bs-distance').textContent = distText;
+        document.getElementById('bs-dist-val').textContent = distText;
         document.getElementById('bs-walk-eta').textContent = walkText;
         document.getElementById('bs-drive-eta').textContent = driveText;
         document.getElementById('bs-meta-info').textContent = loc.meta_info || loc.location_name;
@@ -873,30 +1390,60 @@
         const detailBtn = document.getElementById('bs-detail-btn');
         if (loc.detail_url) {
             detailBtn.href = loc.detail_url;
-            detailBtn.style.display = 'inline-flex';
+            detailBtn.style.display = 'flex';
         } else {
             detailBtn.style.display = 'none';
         }
 
-        // Native App Detect & Label
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-        const isAndroid = /Android/.test(navigator.userAgent);
-        const nativeText = document.getElementById('bs-native-text');
-        if (nativeText) {
-            if (isIOS) nativeText.textContent = 'เปิดใน Apple Maps';
-            else if (isAndroid) nativeText.textContent = 'เปิดใน Google Maps (แอป)';
-            else nativeText.textContent = 'เปิดแอปแผนที่ในเครื่อง';
-        }
-
-        // Navigation Apps Links
+        // External Navigation Links
         const encodedTitle = encodeURIComponent(loc.title || loc.location_name || 'จุดหมาย');
         document.getElementById('bs-gmaps-btn').href = `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}`;
         document.getElementById('bs-applemaps-btn').href = `https://maps.apple.com/?daddr=${loc.lat},${loc.lng}&q=${encodedTitle}`;
         const wazeBtn = document.getElementById('bs-waze-btn');
         if (wazeBtn) wazeBtn.href = `https://waze.com/ul?ll=${loc.lat},${loc.lng}&navigate=yes`;
 
-        sheet.style.display = 'block';
+        sheet.style.display = 'flex';
     }
+
+    // Touch Swipe Gesture for BottomSheet
+    function initBottomSheetSwipe() {
+        const sheet = document.getElementById('mapBottomSheet');
+        const handle = document.getElementById('gmapSheetHandleZone');
+        let startY = 0;
+        let currentY = 0;
+
+        handle.addEventListener('touchstart', function(e) {
+            startY = e.touches[0].clientY;
+        }, { passive: true });
+
+        handle.addEventListener('touchmove', function(e) {
+            currentY = e.touches[0].clientY;
+            const diff = currentY - startY;
+            if (diff > 0) {
+                sheet.style.transform = `translateY(${diff}px)`;
+            }
+        }, { passive: true });
+
+        handle.addEventListener('touchend', function() {
+            const diff = currentY - startY;
+            sheet.style.transform = '';
+            if (diff > 60) {
+                closeBottomSheet();
+            }
+            startY = 0;
+            currentY = 0;
+        });
+    }
+
+    window.toggleBottomSheetExpand = function() {
+        const sheet = document.getElementById('mapBottomSheet');
+        sheet.classList.toggle('expanded');
+    };
+
+    window.closeBottomSheet = function() {
+        document.getElementById('mapBottomSheet').style.display = 'none';
+        activeLocation = null;
+    };
 
     // Native Maps Universal Deep Link
     window.openNativeMap = function(lat, lng, title) {
@@ -925,17 +1472,25 @@
         openNativeMap(activeLocation.lat, activeLocation.lng, activeLocation.title || activeLocation.location_name);
     };
 
-    window.closeBottomSheet = function() {
-        document.getElementById('mapBottomSheet').style.display = 'none';
-        activeLocation = null;
+    // Share Location
+    window.shareActiveLocation = function() {
+        if (!activeLocation) return;
+        const shareData = {
+            title: activeLocation.title || 'สถานที่ UNI Activity',
+            text: `ดูสถานที่ ${activeLocation.title} บนแผนที่กิจกรรม`,
+            url: `${window.location.origin}/map?type=${activeLocation.type}&id=${activeLocation.id}`
+        };
+
+        if (navigator.share) {
+            navigator.share(shareData).catch(() => {});
+        } else {
+            navigator.clipboard.writeText(shareData.url).then(() => {
+                alert('คัดลอกลิงก์สถานที่เรียบร้อยแล้ว');
+            });
+        }
     };
 
-    window.toggleBottomSheetExpand = function() {
-        const sheet = document.getElementById('mapBottomSheet');
-        sheet.classList.toggle('expanded');
-    };
-
-    // In-App Turn-by-Turn Navigation (Leaflet Routing Machine)
+    // Turn-by-Turn Navigation with Top GPS Banner
     window.startNavigationToActive = function() {
         const target = activeLocation;
         if (!target) return;
@@ -946,7 +1501,7 @@
                     userCoords = [pos.coords.latitude, pos.coords.longitude];
                     setUserGpsMarker();
                     startNavigationToActive();
-                }, function(err) {
+                }, function() {
                     alert('กรุณาเปิด GPS หรืออนุญาตการเข้าถึงตำแหน่งในเบราว์เซอร์เพื่อเริ่มนำทาง');
                 }, { enableHighAccuracy: true, timeout: 10000 });
             } else {
@@ -955,20 +1510,18 @@
             return;
         }
 
-        document.getElementById('mapBottomSheet').style.display = 'none';
+        closeBottomSheet();
         if (routingControl) {
             map.removeControl(routingControl);
             routingControl = null;
         }
-        if (window._fallbackRouteLine) {
-            map.removeLayer(window._fallbackRouteLine);
-            window._fallbackRouteLine = null;
-        }
 
-        const dirPanel = document.getElementById('mapDirectionsPanel');
-        const stepsList = document.getElementById('routeStepsList');
-        dirPanel.style.display = 'flex';
-        stepsList.innerHTML = '<div style="padding:10px;text-align:center;color:#64748b;">กำลังคำนวณเส้นทาง...</div>';
+        const navBanner = document.getElementById('gmapNavBanner');
+        const nextDist = document.getElementById('gmapNavNextDist');
+        const nextText = document.getElementById('gmapNavNextText');
+        navBanner.style.display = 'flex';
+        nextDist.textContent = 'กำลังคำนวณ...';
+        nextText.textContent = 'มุ่งหน้าไปยัง ' + target.title;
 
         routingControl = L.Routing.control({
             waypoints: [
@@ -983,7 +1536,7 @@
             addWaypoints: false,
             createMarker: function() { return null; },
             lineOptions: {
-                styles: [{ color: '#ea580c', weight: 6, opacity: 0.85 }]
+                styles: [{ color: '#16a34a', weight: 7, opacity: 0.9 }]
             }
         }).addTo(map);
 
@@ -993,23 +1546,16 @@
             const totalDistKm = (summary.totalDistance / 1000).toFixed(1);
             const totalTimeMin = Math.round(summary.totalTime / 60);
 
-            let html = `<div style="margin-bottom:8px;font-weight:700;color:#ea580c;">ระยะทาง ${totalDistKm} กม. (~${totalTimeMin} นาที)</div><ol style="padding-left:18px;margin:0;line-height:1.6;">`;
-            routes[0].instructions.forEach(step => {
-                html += `<li>${step.text} <span class="text-muted" style="font-size:0.75rem;">(${Math.round(step.distance)} ม.)</span></li>`;
-            });
-            html += '</ol>';
-            stepsList.innerHTML = html;
+            nextDist.textContent = `${totalDistKm} กม. (~${totalTimeMin} นาที)`;
+            if (routes[0].instructions && routes[0].instructions.length > 0) {
+                nextText.textContent = routes[0].instructions[0].text;
+            }
         });
 
-        routingControl.on('routingerror', function(err) {
-            console.warn('Routing error, falling back to direct line:', err);
-            if (window._fallbackRouteLine) map.removeLayer(window._fallbackRouteLine);
-            window._fallbackRouteLine = L.polyline([userCoords, [target.lat, target.lng]], {
-                color: '#ea580c', weight: 6, opacity: 0.85, dashArray: '8, 8'
-            }).addTo(map);
-            map.fitBounds(window._fallbackRouteLine.getBounds(), { padding: [60, 60] });
+        routingControl.on('routingerror', function() {
             const dist = calculateDistance(userCoords[0], userCoords[1], target.lat, target.lng);
-            stepsList.innerHTML = `<div style="margin-bottom:8px;font-weight:700;color:#ea580c;">ระยะทางเส้นตรง ${dist.toFixed(1)} กม.</div><p class="text-xs text-muted" style="margin:0 0 8px;">เซิร์ฟเวอร์เส้นทางถนนไม่ตอบสนอง คุณสามารถกดเปิดนำทางผ่าน Google Maps หรือ Apple Maps ด้านล่างนี้ได้ทันที</p><div style="display:flex;gap:6px;"><a href="https://www.google.com/maps/dir/?api=1&destination=${target.lat},${target.lng}" target="_blank" class="bs-app-btn flex-1">Google Maps</a><a href="https://maps.apple.com/?daddr=${target.lat},${target.lng}" target="_blank" class="bs-app-btn flex-1">Apple Maps</a></div>`;
+            nextDist.textContent = `~${dist.toFixed(1)} กม. (เส้นตรง)`;
+            nextText.textContent = `มุ่งหน้าไปยัง ${target.title}`;
         });
     };
 
@@ -1018,11 +1564,70 @@
             map.removeControl(routingControl);
             routingControl = null;
         }
-        if (window._fallbackRouteLine) {
-            map.removeLayer(window._fallbackRouteLine);
-            window._fallbackRouteLine = null;
+        document.getElementById('gmapNavBanner').style.display = 'none';
+    };
+
+    // Nearby Drawer & List
+    window.toggleNearbyDrawer = function() {
+        const drawer = document.getElementById('gmapNearbyDrawer');
+        drawer.style.display = drawer.style.display === 'none' ? 'flex' : 'none';
+        if (drawer.style.display === 'flex') {
+            updateNearbyList();
         }
-        document.getElementById('mapDirectionsPanel').style.display = 'none';
+    };
+
+    function updateNearbyList() {
+        const listEl = document.getElementById('gmapNearbyList');
+        if (!listEl) return;
+
+        let filtered = getFilteredLocations();
+
+        // Sort by distance if user GPS available
+        if (userCoords) {
+            filtered = [...filtered].sort((a, b) => {
+                const distA = calculateDistance(userCoords[0], userCoords[1], a.lat, a.lng);
+                const distB = calculateDistance(userCoords[0], userCoords[1], b.lat, b.lng);
+                return distA - distB;
+            });
+        }
+
+        if (filtered.length === 0) {
+            listEl.innerHTML = '<div style="padding:2rem;text-align:center;color:#94a3b8;font-size:0.88rem;">ไม่พบสถานที่ตามเงื่อนไข</div>';
+            return;
+        }
+
+        let html = '';
+        filtered.forEach(loc => {
+            let distText = '';
+            if (userCoords) {
+                const distKm = calculateDistance(userCoords[0], userCoords[1], loc.lat, loc.lng);
+                distText = distKm < 1 ? Math.round(distKm * 1000) + ' ม.' : distKm.toFixed(1) + ' กม.';
+            }
+
+            html += `
+                <div class="gmap-place-card" onclick="focusLocationFromList(${loc.id}, '${loc.type}')">
+                    <div class="gmap-thumb" style="width:48px;height:48px;">
+                        ${loc.image ? `<img src="${loc.image}" alt="">` : `<div class="gmap-thumb-fallback"><svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg></div>`}
+                    </div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-weight:700;font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#0f172a;">${loc.title}</div>
+                        <div style="font-size:0.75rem;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${loc.location_name}</div>
+                    </div>
+                    ${distText ? `<span class="gmap-distance-chip">${distText}</span>` : ''}
+                </div>
+            `;
+        });
+
+        listEl.innerHTML = html;
+    }
+
+    window.focusLocationFromList = function(id, type) {
+        const target = allLocations.find(l => String(l.id) === String(id) && l.type === type);
+        if (target) {
+            document.getElementById('gmapNearbyDrawer').style.display = 'none';
+            map.setView([target.lat, target.lng], 17, { animate: true });
+            showBottomSheet(target);
+        }
     };
 
     // Haversine Distance Formula (km)
