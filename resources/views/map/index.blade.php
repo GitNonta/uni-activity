@@ -64,21 +64,33 @@
 
     {{-- ── 2. Active Turn-by-Turn Navigation Header Banner ── --}}
     <div id="gmapNavBanner" class="gmap-nav-banner" style="display:none;">
-        <div class="gmap-nav-banner-icon" id="gmapNavTurnIcon">
-            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-            </svg>
+        <div class="gmap-nav-banner-top">
+            <div class="gmap-nav-banner-icon" id="gmapNavTurnIcon">
+                <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                    <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
+                </svg>
+            </div>
+            <div class="gmap-nav-banner-info">
+                <div class="gmap-nav-turn-dist" id="gmapNavTurnDist">กำลังคำนวณ...</div>
+                <div class="gmap-nav-instruction" id="gmapNavInstruction">ตรงไปตามเส้นทาง</div>
+            </div>
+            <button type="button" class="gmap-nav-exit-btn" onclick="clearNavigationRoute()" title="สิ้นสุดการนำทาง">
+                <span>สิ้นสุด</span>
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
         </div>
-        <div class="gmap-nav-banner-info">
-            <div class="gmap-nav-banner-dist" id="gmapNavNextDist">กำลังคำนวณเส้นทาง...</div>
-            <div class="gmap-nav-banner-text" id="gmapNavNextText">กำลังโหลดคำแนะนำเส้นทาง</div>
+        <div class="gmap-nav-banner-bottom">
+            <div class="gmap-nav-total-stat">
+                <span class="stat-highlight" id="gmapNavTotalTime">5 นาที</span>
+                <span class="stat-bullet">•</span>
+                <span id="gmapNavTotalDist">3.3 กม.</span>
+                <span class="stat-bullet">•</span>
+                <span id="gmapNavEtaClock">ถึงประมาณ --:-- น.</span>
+            </div>
+            <div class="gmap-nav-dest-label" id="gmapNavDestLabel">มุ่งหน้าไปยัง...</div>
         </div>
-        <button type="button" class="gmap-nav-exit-btn" onclick="clearNavigationRoute()" title="สิ้นสุดการนำทาง">
-            <span>สิ้นสุด</span>
-            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-        </button>
     </div>
 
     {{-- ── 3. Main Map Canvas (WebGL 3D Container) ── --}}
@@ -573,43 +585,82 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     z-index: 1100;
     background: linear-gradient(135deg, #15803d, #16a34a);
     color: #fff;
-    border-radius: 16px;
+    border-radius: 18px;
     padding: 12px 16px;
     display: flex;
-    align-items: center;
-    gap: 12px;
-    box-shadow: 0 8px 24px rgba(22, 163, 74, 0.35);
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: 0 8px 24px rgba(22, 163, 74, 0.42);
+    backdrop-filter: blur(8px);
     animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 @keyframes slideDown {
     from { opacity: 0; transform: translateY(-16px); }
     to { opacity: 1; transform: translateY(0); }
 }
+.gmap-nav-banner-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
 .gmap-nav-banner-icon {
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
     border-radius: 12px;
-    background: rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.22);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25);
 }
 .gmap-nav-banner-info {
     flex: 1;
     min-width: 0;
 }
-.gmap-nav-banner-dist {
-    font-size: 1.1rem;
+.gmap-nav-turn-dist {
+    font-size: 1.18rem;
     font-weight: 800;
     line-height: 1.2;
+    letter-spacing: -0.3px;
 }
-.gmap-nav-banner-text {
-    font-size: 0.8rem;
-    opacity: 0.9;
+.gmap-nav-instruction {
+    font-size: 0.88rem;
+    font-weight: 700;
+    opacity: 0.95;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin-top: 2px;
+}
+.gmap-nav-banner-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255,255,255,0.18);
+    font-size: 0.76rem;
+    font-weight: 600;
+    opacity: 0.94;
+}
+.gmap-nav-total-stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.gmap-nav-total-stat .stat-highlight {
+    font-weight: 800;
+    color: #fef08a;
+}
+.stat-bullet {
+    opacity: 0.6;
+}
+.gmap-nav-dest-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 42%;
+    opacity: 0.85;
 }
 .gmap-nav-exit-btn {
     background: rgba(0,0,0,0.25);
@@ -624,6 +675,10 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     gap: 4px;
     cursor: pointer;
     flex-shrink: 0;
+    transition: all 0.15s;
+}
+.gmap-nav-exit-btn:hover {
+    background: rgba(0,0,0,0.4);
 }
 
 /* ── 3. Floating Action Buttons (FAB Column) ── */
@@ -2576,6 +2631,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
                     }
 
                     let roadSummary = r.legs && r.legs[0] && r.legs[0].summary ? `ผ่าน ${r.legs[0].summary}` : (idx === 0 ? 'เส้นทางถนนสายหลัก' : 'เส้นทางสายรอง');
+                    const steps = (r.legs && r.legs[0] && r.legs[0].steps) ? r.legs[0].steps : [];
 
                     newRoutes.push({
                         index: idx,
@@ -2586,6 +2642,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
                         timeText: formatDurationThai(durMin),
                         via: `${modeName} • ${roadSummary}`,
                         points: roadPoints,
+                        steps: steps,
                         isEstimated: false,
                         isMain: idx === 0
                     });
@@ -2761,25 +2818,12 @@ html[data-theme="dark"] .gmap-sheet-handle {
         if (topBar) topBar.style.display = 'none';
 
         const navBanner = document.getElementById('gmapNavBanner');
-        const nextDist = document.getElementById('gmapNavNextDist');
-        const nextText = document.getElementById('gmapNavNextText');
-        const turnIcon = document.getElementById('gmapNavTurnIcon');
         if (navBanner) navBanner.style.display = 'flex';
 
-        let modeIconSvg = '<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>';
-        if (currentTravelMode === 'walk') {
-            modeIconSvg = '<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>';
-        } else if (currentTravelMode === 'moto') {
-            modeIconSvg = '<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>';
-        } else if (currentTravelMode === 'bike') {
-            modeIconSvg = '<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="5.5" cy="17.5" r="3.5" stroke-width="2"/><circle cx="18.5" cy="17.5" r="3.5" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 6h-3l-3 7h6l2-4h2"/></svg>';
-        }
-        if (turnIcon) turnIcon.innerHTML = modeIconSvg;
-
-        nextDist.textContent = `${chosenRoute.distKm} กม. (~${chosenRoute.timeText})`;
-        nextText.textContent = `มุ่งหน้าไปยัง ${target.title} (${chosenRoute.name})`;
-
         renderRouteGeometryOnMap(chosenRoute.points, true);
+
+        // Immediately update HUD & Turn-by-Turn instruction
+        updateNavigationPosition(userCoords || defaultCenter);
 
         // Switch camera to 3D driving perspective
         map.flyTo({
@@ -2900,23 +2944,148 @@ html[data-theme="dark"] .gmap-sheet-handle {
         }
     }
 
+    const MANEUVER_SVGS = {
+        'turn-left': `<svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M19 19v-6a4 4 0 0 0-4-4H5"/><polyline points="10 5 4 9 10 13"/></svg>`,
+        'turn-right': `<svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 19v-6a4 4 0 0 1 4-4h10"/><polyline points="14 5 20 9 14 13"/></svg>`,
+        'slight-left': `<svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M17 20l-4-9-6-3"/><polyline points="7 14 7 8 13 8"/></svg>`,
+        'slight-right': `<svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M7 20l4-9 6-3"/><polyline points="17 14 17 8 11 8"/></svg>`,
+        'sharp-left': `<svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M18 20V8a2 2 0 0 0-2-2H6"/><polyline points="10 2 6 6 10 10"/></svg>`,
+        'sharp-right': `<svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M6 20V8a2 2 0 0 1 2-2h10"/><polyline points="14 2 18 6 14 10"/></svg>`,
+        'uturn': `<svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M19 20V9a5 5 0 0 0-10 0v11"/><polyline points="13 16 9 20 5 16"/></svg>`,
+        'straight': `<svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>`,
+        'roundabout': `<svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M16 8l4-2-2 4"/><path d="M8 16l-4 2 2-4"/></svg>`,
+        'arrive': `<svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>`
+    };
+
+    function getStepManeuverInfo(step) {
+        if (!step) return { action: 'ตรงไป', name: '', text: 'ตรงไปตามเส้นทาง', icon: 'straight' };
+        const m = step.maneuver || {};
+        const type = m.type || 'turn';
+        const mod = m.modifier || '';
+        let name = step.name ? step.name.trim() : (step.ref ? step.ref.trim() : '');
+
+        let action = 'ตรงไป';
+        let iconKey = 'straight';
+
+        if (type === 'depart') {
+            action = 'มุ่งหน้า';
+            iconKey = 'straight';
+        } else if (type === 'arrive') {
+            action = 'ถึงปลายทาง';
+            iconKey = 'arrive';
+        } else if (type === 'roundabout' || type === 'rotary') {
+            action = 'เข้าสู่วงเวียน';
+            iconKey = 'roundabout';
+        } else if (mod === 'uturn') {
+            action = 'กลับรถ / ยูเทิร์น';
+            iconKey = 'uturn';
+        } else if (mod === 'sharp left') {
+            action = 'เลี้ยวหักศอกซ้าย';
+            iconKey = 'sharp-left';
+        } else if (mod === 'sharp right') {
+            action = 'เลี้ยวหักศอกขวา';
+            iconKey = 'sharp-right';
+        } else if (mod === 'slight left') {
+            action = 'เบี่ยงซ้าย';
+            iconKey = 'slight-left';
+        } else if (mod === 'slight right') {
+            action = 'เบี่ยงขวา';
+            iconKey = 'slight-right';
+        } else if (mod === 'left') {
+            action = 'เลี้ยวซ้าย';
+            iconKey = 'turn-left';
+        } else if (mod === 'right') {
+            action = 'เลี้ยวขวา';
+            iconKey = 'turn-right';
+        } else if (type === 'fork') {
+            action = mod && mod.includes('left') ? 'ชิดซ้ายที่ทางแยก' : 'ชิดขวาที่ทางแยก';
+            iconKey = mod && mod.includes('left') ? 'slight-left' : 'slight-right';
+        } else if (type === 'end of road') {
+            action = mod && mod.includes('left') ? 'สุดทางเลี้ยวซ้าย' : 'สุดทางเลี้ยวขวา';
+            iconKey = mod && mod.includes('left') ? 'turn-left' : 'turn-right';
+        } else if (type === 'continue' || mod === 'straight') {
+            action = 'ตรงไป';
+            iconKey = 'straight';
+        }
+
+        let text = action;
+        if (name) {
+            text += ` เข้าสู่ ${name}`;
+        } else if (action === 'ตรงไป') {
+            text = 'ตรงไปตามเส้นทาง';
+        }
+
+        return { action, name, text, icon: iconKey };
+    }
+
+    function formatEtaClock(minutesRemaining) {
+        const d = new Date(Date.now() + minutesRemaining * 60000);
+        const hh = String(d.getHours()).padStart(2, '0');
+        const mm = String(d.getMinutes()).padStart(2, '0');
+        return `ถึงประมาณ ${hh}:${mm} น.`;
+    }
+
     function updateNavigationPosition(position) {
         if (!activeNavTarget || !activeNavRoute) return;
 
         const remainingKm = calculateDistance(position[0], position[1], activeNavTarget.lat, activeNavTarget.lng);
         const speedKmH = currentTravelMode === 'walk' ? 4.5 : (currentTravelMode === 'bike' ? 14 : (currentTravelMode === 'moto' ? 38 : 38));
         const remainingMinutes = remainingKm < 0.05 ? 0 : Math.max(1, Math.round((remainingKm / speedKmH) * 60));
-        const nextDist = document.getElementById('gmapNavNextDist');
-        if (nextDist) {
-            const distanceText = remainingKm < 1 ? `${Math.round(remainingKm * 1000)} ม.` : `${remainingKm.toFixed(1)} กม.`;
-            nextDist.textContent = `${distanceText} (~${formatDurationThai(remainingMinutes)})`;
+
+        // Find upcoming maneuver step
+        let currentStep = null;
+        let distToStepMeters = 0;
+
+        if (activeNavRoute && activeNavRoute.steps && activeNavRoute.steps.length > 0) {
+            const steps = activeNavRoute.steps;
+            for (let i = 0; i < steps.length; i++) {
+                const s = steps[i];
+                const sLoc = s.maneuver && s.maneuver.location ? s.maneuver.location : null; // [lng, lat]
+                if (sLoc) {
+                    const dKm = calculateDistance(position[0], position[1], sLoc[1], sLoc[0]);
+                    const dM = Math.round(dKm * 1000);
+                    if (dM > 18 || i === steps.length - 1) {
+                        currentStep = s;
+                        distToStepMeters = dM;
+                        break;
+                    }
+                }
+            }
         }
 
+        const turnIcon = document.getElementById('gmapNavTurnIcon');
+        const turnDistEl = document.getElementById('gmapNavTurnDist');
+        const instructionEl = document.getElementById('gmapNavInstruction');
+        const totalTimeEl = document.getElementById('gmapNavTotalTime');
+        const totalDistEl = document.getElementById('gmapNavTotalDist');
+        const etaClockEl = document.getElementById('gmapNavEtaClock');
+        const destLabelEl = document.getElementById('gmapNavDestLabel');
+
         if (remainingKm <= 0.03) {
-            const nextText = document.getElementById('gmapNavNextText');
-            if (nextText) nextText.textContent = `คุณมาถึง ${activeNavTarget.title} แล้ว`;
+            if (turnIcon) turnIcon.innerHTML = MANEUVER_SVGS['arrive'];
+            if (turnDistEl) turnDistEl.textContent = 'ถึงแล้ว';
+            if (instructionEl) instructionEl.textContent = `คุณมาถึง ${activeNavTarget.title} แล้ว`;
+            if (totalTimeEl) totalTimeEl.textContent = 'ถึงปลายทาง';
             return;
         }
+
+        if (currentStep) {
+            const info = getStepManeuverInfo(currentStep);
+            if (turnIcon) turnIcon.innerHTML = MANEUVER_SVGS[info.icon] || MANEUVER_SVGS['straight'];
+            if (turnDistEl) {
+                turnDistEl.textContent = distToStepMeters < 1000 ? `อีก ${distToStepMeters} ม.` : `อีก ${(distToStepMeters / 1000).toFixed(1)} กม.`;
+            }
+            if (instructionEl) instructionEl.textContent = info.text;
+        } else {
+            if (turnIcon) turnIcon.innerHTML = MANEUVER_SVGS['straight'];
+            if (turnDistEl) turnDistEl.textContent = remainingKm < 1 ? `อีก ${Math.round(remainingKm * 1000)} ม.` : `อีก ${remainingKm.toFixed(1)} กม.`;
+            if (instructionEl) instructionEl.textContent = `มุ่งหน้าไปยัง ${activeNavTarget.title}`;
+        }
+
+        if (totalTimeEl) totalTimeEl.textContent = formatDurationThai(remainingMinutes);
+        if (totalDistEl) totalDistEl.textContent = remainingKm < 1 ? `${Math.round(remainingKm * 1000)} ม.` : `${remainingKm.toFixed(1)} กม.`;
+        if (etaClockEl) etaClockEl.textContent = formatEtaClock(remainingMinutes);
+        if (destLabelEl) destLabelEl.textContent = activeNavTarget.title;
 
         // Real-time Route Polyline Live-Snapping & Ahead-Trimming
         if (activeNavRoute && activeNavRoute.points && activeNavRoute.points.length > 0) {
@@ -2969,7 +3138,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
             else if (currentTravelMode === 'bike') osrmProfile = 'cycling';
             else if (currentTravelMode === 'moto') osrmProfile = 'driving';
 
-            const osrmUrl = `https://router.project-osrm.org/route/v1/${osrmProfile}/${position[1]},${position[0]};${parseFloat(target.lng)},${parseFloat(target.lat)}?overview=full&geometries=geojson`;
+            const osrmUrl = `https://router.project-osrm.org/route/v1/${osrmProfile}/${position[1]},${position[0]};${parseFloat(target.lng)},${parseFloat(target.lat)}?overview=full&geometries=geojson&steps=true`;
             const resp = await fetch(osrmUrl);
             if (resp.ok) {
                 const data = await resp.json();
@@ -2979,22 +3148,19 @@ html[data-theme="dark"] .gmap-sheet-handle {
                     const distNum = r.distance / 1000;
                     const speedKmH = currentTravelMode === 'walk' ? 4.5 : (currentTravelMode === 'bike' ? 14 : (currentTravelMode === 'moto' ? 38 : 38));
                     const durMin = currentTravelMode === 'drive' ? Math.max(1, Math.round(r.duration / 60)) : (distNum < 0.05 ? 0 : Math.max(1, Math.round((distNum / speedKmH) * 60)));
+                    const steps = (r.legs && r.legs[0] && r.legs[0].steps) ? r.legs[0].steps : [];
 
                     activeNavRoute = {
                         name: 'เส้นทางปัจจุบัน',
                         distKm: distNum.toFixed(1),
                         timeMins: durMin,
                         timeText: formatDurationThai(durMin),
-                        points: roadPoints
+                        points: roadPoints,
+                        steps: steps
                     };
 
                     renderRouteGeometryOnMap(roadPoints, true);
-
-                    const nextDist = document.getElementById('gmapNavNextDist');
-                    if (nextDist) {
-                        const distStr = distNum < 1 ? `${Math.round(distNum * 1000)} ม.` : `${distNum.toFixed(1)} กม.`;
-                        nextDist.textContent = `${distStr} (~${formatDurationThai(durMin)})`;
-                    }
+                    updateNavigationPosition(position);
                 }
             }
         } catch (err) {
