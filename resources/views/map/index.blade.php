@@ -5,13 +5,13 @@
 <div class="map-explorer-wrapper">
     {{-- ── 1. Floating Top Bar: Google Maps Search & Quick Filters ── --}}
     <div class="gmap-floating-top">
-        {{-- Search Pill Bar --}}
+        {{-- Search Pill Bar with Back Button --}}
         <div class="gmap-search-pill">
-            <div class="gmap-search-icon">
-                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            <button type="button" class="gmap-back-btn" onclick="goBackOrHome()" title="ย้อนกลับ">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
-            </div>
+            </button>
             <input type="text" id="mapSearchInput" class="gmap-search-input" placeholder="ค้นหากิจกรรม, หางาน, อาคารสถานที่..." autocomplete="off">
             <button type="button" id="mapSearchClearBtn" class="gmap-search-clear" onclick="clearMapSearch()" style="display:none;" title="ล้างการค้นหา">
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -291,29 +291,48 @@
 <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
 
 <style>
-/* ── Google Maps Mobile App Styles ── */
-.map-explorer-wrapper {
-    position: relative;
-    width: 100%;
-    height: calc(100vh - 110px);
-    min-height: 520px;
-    border-radius: 16px;
-    overflow: hidden;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    display: flex;
-    flex-direction: column;
+/* ── Fullscreen Map App Layout (Hide Top Navbar, Bottom Nav & Floating Chat Widget) ── */
+header.navbar,
+.bottom-nav,
+#chatFloatWidget,
+#notif-banner,
+footer {
+    display: none !important;
 }
 
-@media (max-width: 1024px) {
-    .map-explorer-wrapper {
-        height: calc(100dvh - 125px);
-        min-height: 480px;
-        margin: -0.5rem -0.75rem;
-        border-radius: 0;
-        border: none;
-    }
+html, body {
+    overflow: hidden !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+}
+
+.container {
+    max-width: 100% !important;
+    width: 100% !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+.map-explorer-wrapper {
+    position: relative;
+    width: 100% !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    min-height: 100% !important;
+    border-radius: 0 !important;
+    overflow: hidden;
+    background: #f8fafc;
+    border: none !important;
+    box-shadow: none !important;
+    display: flex;
+    flex-direction: column;
+    margin: 0 !important;
 }
 
 .map-canvas-container {
@@ -347,10 +366,10 @@
     background: #ffffff;
     border-radius: 28px;
     height: 48px;
-    padding: 0 14px;
+    padding: 0 10px 0 6px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     box-shadow: 0 4px 18px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.08);
     border: 1px solid rgba(0,0,0,0.06);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -358,6 +377,31 @@
 .gmap-search-pill:focus-within {
     box-shadow: 0 6px 24px rgba(234, 88, 12, 0.25), 0 2px 6px rgba(0,0,0,0.1);
     border-color: #ea580c;
+}
+.gmap-back-btn {
+    background: none;
+    border: none;
+    color: #475569;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    transition: background 0.15s, color 0.15s;
+    flex-shrink: 0;
+}
+.gmap-back-btn:hover {
+    background: #f1f5f9;
+    color: #ea580c;
+}
+html[data-theme="dark"] .gmap-back-btn {
+    color: #f4f4f5;
+}
+html[data-theme="dark"] .gmap-back-btn:hover {
+    background: #27272a;
+    color: #ea580c;
 }
 .gmap-search-icon {
     color: #64748b;
@@ -1078,6 +1122,14 @@ html[data-theme="dark"] .gmap-sheet-handle {
             updateNearbyList();
         });
     }
+
+    window.goBackOrHome = function() {
+        if (window.history.length > 1 && document.referrer && document.referrer.includes(window.location.host)) {
+            window.history.back();
+        } else {
+            window.location.href = '{{ route("activities.index") }}';
+        }
+    };
 
     window.clearMapSearch = function() {
         const input = document.getElementById('mapSearchInput');
