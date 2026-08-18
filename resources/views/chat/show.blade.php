@@ -74,17 +74,14 @@
         gap: 0.75rem;
         scroll-behavior: smooth;
         position: relative;
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
     }
 
     .chat-window::-webkit-scrollbar {
-        width: 6px;
-    }
-    .chat-window::-webkit-scrollbar-track {
-        background: transparent;
-    }
-    .chat-window::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 10px;
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
     }
 
     .date-separator {

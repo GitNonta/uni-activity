@@ -141,6 +141,20 @@
             color: #a1a1aa;
         }
 
+        /* ซ่อน Scrollbar ของหน้าแชท */
+        #chatWindow, #msgInput {
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+        }
+        #chatWindow::-webkit-scrollbar, #msgInput::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+        }
+        #msgInput {
+            resize: none !important;
+        }
+
         .chat-header-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;

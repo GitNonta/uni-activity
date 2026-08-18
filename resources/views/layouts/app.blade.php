@@ -532,6 +532,23 @@
     html[data-theme="dark"] #cfTypingBar {
         background: #121214 !important;
     }
+
+    /* ซ่อน Scrollbar ของ Floating Chat Widget */
+    #cfChatWindow, #cfViewList, #cfListContent, #cfMsgInput {
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+    }
+    #cfChatWindow::-webkit-scrollbar, 
+    #cfViewList::-webkit-scrollbar, 
+    #cfListContent::-webkit-scrollbar, 
+    #cfMsgInput::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+    }
+    #cfMsgInput {
+        resize: none !important;
+    }
     </style>
     
     <div id="chatFloatWidget" style="position:fixed;bottom:5.5rem;right:1.1rem;z-index:8500;display:flex;flex-direction:column;align-items:flex-end;gap:.5rem;">

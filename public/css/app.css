@@ -1523,5 +1523,63 @@ html[data-theme="dark"] .cf-msg-bubble-other { background: #36383a !important; c
     .nav-speed-value { color: #f8fafc !important; }
 }
 
+/* ── ซ่อน Scrollbar ของหน้าแชท (Floating Chat, Admin Inbox, Chat Show) ── */
+#chatWindow,
+#cfChatWindow,
+#cfViewList,
+#cfListContent,
+#msgInput,
+#cfMsgInput,
+.chat-window,
+.chat-messages,
+.chat-container,
+.chat-body,
+.chat-history,
+.no-scrollbar,
+.cf-input-field {
+    scrollbar-width: none !important; /* Firefox */
+    -ms-overflow-style: none !important;  /* IE and Edge */
+}
+
+#chatWindow::-webkit-scrollbar,
+#cfChatWindow::-webkit-scrollbar,
+#cfViewList::-webkit-scrollbar,
+#cfListContent::-webkit-scrollbar,
+#msgInput::-webkit-scrollbar,
+#cfMsgInput::-webkit-scrollbar,
+.chat-window::-webkit-scrollbar,
+.chat-messages::-webkit-scrollbar,
+.chat-container::-webkit-scrollbar,
+.chat-body::-webkit-scrollbar,
+.chat-history::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar,
+.cf-input-field::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+}
+
+/* ซ่อน Spinner / Scroll buttons บน Textarea และ Input */
+#cfMsgInput,
+#msgInput,
+textarea.cf-input-field,
+textarea.form-control,
+textarea {
+    resize: none !important;
+    overflow-y: auto;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+#cfMsgInput::-webkit-scrollbar,
+#msgInput::-webkit-scrollbar,
+textarea::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+
 
 
