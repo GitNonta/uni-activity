@@ -52,3 +52,16 @@ Broadcast::channel('chat.room.{roomId}', function ($user, $roomId) {
     return $room->users()->where('users.id', $user->id)->exists() || $user->isStaffOrAdmin();
 });
 
+// Presence Channel สำหรับแผนที่และ Real-time Location Tracking (แยกจากแชท)
+Broadcast::channel('map.tracking', function ($user) {
+    if (!$user) {
+        return false;
+    }
+    return [
+        'id'       => (string) $user->id,
+        'name'     => $user->full_name ?? $user->name ?? 'User',
+        'role'     => $user->role ?? 'student',
+        'is_staff' => $user->isStaffOrAdmin(),
+    ];
+});
+

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Events\UserLocationUpdated;
+use App\Http\Requests\UpdateLocationRequest;
 use App\Models\Activity;
 use App\Models\JobListing;
 use Illuminate\Http\JsonResponse;
@@ -19,6 +21,38 @@ class MapController extends Controller
     public function index(Request $request): View
     {
         return view('map.index');
+    }
+
+    /**
+     * Broadcast live user location via WebSocket (Reverb / Octane).
+     */
+    public function updateLocation(UpdateLocationRequest $request): JsonResponse
+    {
+        $user = $request->user();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $data = $request->validated();
+        $avatar = $user->profile_photo_path ? Storage::url($user->profile_photo_path) : null;
+
+        broadcast(new UserLocationUpdated(
+            userId: (int) $user->id,
+            userName: (string) ($user->full_name ?? $user->name ?? 'User'),
+            userRole: (string) ($user->role ?? 'student'),
+            latitude: (float) $data['latitude'],
+            longitude: (float) $data['longitude'],
+            heading: isset($data['heading']) ? (float) $data['heading'] : null,
+            speed: isset($data['speed']) ? (float) $data['speed'] : null,
+            accuracy: isset($data['accuracy']) ? (float) $data['accuracy'] : null,
+            avatar: $avatar,
+            timestamp: time(),
+        ))->toOthers();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Location updated and broadcasted successfully',
+        ]);
     }
 
     /**

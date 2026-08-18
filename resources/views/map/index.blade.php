@@ -1166,20 +1166,101 @@ html[data-theme="dark"] .gmap-back-btn:hover {
 .pin-job { background: linear-gradient(135deg, #0284c7, #38bdf8); }
 .pin-landmark { background: linear-gradient(135deg, #16a34a, #4ade80); }
 
-/* GPS Pulse Dot */
-.user-gps-dot {
+/* ── 7. Real-time GPS Navigation Puck & Direction Arrow (Google Maps Style) ── */
+.user-gps-puck-container {
+    position: relative;
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    will-change: transform;
+}
+
+/* Directional Heading Cone / Light Beam */
+.user-gps-heading-cone {
+    position: absolute;
+    width: 52px;
+    height: 52px;
+    top: 0;
+    left: 0;
+    transform-origin: center center;
+    transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+    pointer-events: none;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Center Blue Navigation Puck Dot */
+.user-gps-dot-core {
+    position: relative;
     width: 18px;
     height: 18px;
     border-radius: 50%;
     background: #0284c7;
-    border: 3.5px solid #fff;
-    box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.4);
-    animation: gps-pulse 2s infinite;
+    border: 3.5px solid #ffffff;
+    box-shadow: 0 2px 10px rgba(2, 132, 199, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.12);
+    z-index: 3;
+    transition: all 0.3s ease;
 }
-@keyframes gps-pulse {
-    0% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.7); }
-    70% { box-shadow: 0 0 0 16px rgba(2, 132, 199, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0); }
+
+/* Pulsing Radar Ring */
+.user-gps-radar-ring {
+    position: absolute;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(2, 132, 199, 0.22);
+    animation: gps-radar-pulse 2.2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+    z-index: 2;
+    pointer-events: none;
+}
+
+@keyframes gps-radar-pulse {
+    0% { transform: scale(0.5); opacity: 0.9; }
+    70% { transform: scale(1.6); opacity: 0; }
+    100% { transform: scale(1.6); opacity: 0; }
+}
+
+/* Live Peer / Team Member Pins */
+.live-peer-marker {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+    cursor: pointer;
+}
+.live-peer-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+    background: #ea580c;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 800;
+    overflow: hidden;
+}
+.live-peer-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.live-peer-badge {
+    background: rgba(15, 23, 42, 0.85);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 8px;
+    margin-top: 2px;
+    white-space: nowrap;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,0.15);
 }
 
 /* ── Dark Mode Adaptations ── */
@@ -1246,6 +1327,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
 <script>
 (function() {
+    const authUserId = '{{ auth()->id() }}';
     let map = null;
     let markersCluster = null;
     let heatLayer = null;
@@ -1253,6 +1335,14 @@ html[data-theme="dark"] .gmap-sheet-handle {
     let userMarker = null;
     let radiusCircle = null;
     let userCoords = null; // [lat, lng]
+
+    // Real-time GPS & Compass Tracking State
+    let watchGpsId = null;
+    let currentHeading = 0;
+    let lastBroadcastTime = 0;
+    let lastBroadcastCoords = null;
+    let peerMarkers = {}; // { [userId]: L.Marker }
+    let isTrackingLive = false;
 
     let allLocations = [];
     let currentFilterType = 'all';
@@ -1282,7 +1372,8 @@ html[data-theme="dark"] .gmap-sheet-handle {
         initSearchInput();
         initBottomSheetSwipe();
         fetchLocations();
-        getUserLocation();
+        startRealtimeLocationTracking();
+        initReverbMapTracking();
 
         // Auto-select dark tile if user is currently in dark theme
         const currentTheme = document.documentElement.getAttribute('data-theme') || (localStorage.getItem('app-theme') || 'light');
@@ -1562,43 +1653,259 @@ html[data-theme="dark"] .gmap-sheet-handle {
         updateNearbyList();
     }
 
-    // Get User GPS Location
-    function getUserLocation(callback) {
+    // Build the SVG Puck with Direction Cone
+    function getGpsPuckHtml(heading) {
+        return `
+            <div class="user-gps-puck-container">
+                <div class="user-gps-heading-cone" id="userGpsHeadingCone" style="transform: rotate(${heading || 0}deg);">
+                    <svg viewBox="0 0 100 100" width="100%" height="100%">
+                        <defs>
+                            <linearGradient id="headingGradient" x1="50%" y1="100%" x2="50%" y2="0%">
+                                <stop offset="0%" stop-color="#0284c7" stop-opacity="0.6"/>
+                                <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+                            </linearGradient>
+                        </defs>
+                        <path d="M 50 50 L 20 8 A 50 50 0 0 1 80 8 Z" fill="url(#headingGradient)" />
+                        <polygon points="50,20 44,32 56,32" fill="#0284c7" opacity="0.95" />
+                    </svg>
+                </div>
+                <div class="user-gps-radar-ring"></div>
+                <div class="user-gps-dot-core"></div>
+            </div>
+        `;
+    }
+
+    // Set / Update User GPS Marker with Smooth Transitions
+    function setUserGpsMarker() {
+        if (!userCoords) return;
+
+        if (!userMarker) {
+            const gpsIcon = L.divIcon({
+                html: getGpsPuckHtml(currentHeading),
+                className: 'user-gps-puck-wrap',
+                iconSize: [52, 52],
+                iconAnchor: [26, 26]
+            });
+            userMarker = L.marker(userCoords, { icon: gpsIcon, zIndexOffset: 1000 }).addTo(map);
+        } else {
+            userMarker.setLatLng(userCoords);
+            updateHeadingCone(currentHeading);
+        }
+    }
+
+    // Smoothly rotate the heading cone
+    function updateHeadingCone(heading) {
+        currentHeading = heading;
+        const cone = document.getElementById('userGpsHeadingCone');
+        if (cone) {
+            cone.style.transform = `rotate(${heading}deg)`;
+        }
+    }
+
+    // Continuous Watch Position & Compass Engine
+    function startRealtimeLocationTracking() {
         if (!navigator.geolocation) return;
-        navigator.geolocation.getCurrentPosition(
+        if (isTrackingLive) return;
+        isTrackingLive = true;
+
+        // 1. Compass / Device Orientation
+        initCompassOrientation();
+
+        // 2. High Accuracy Geolocation Watch
+        watchGpsId = navigator.geolocation.watchPosition(
             function(pos) {
-                userCoords = [pos.coords.latitude, pos.coords.longitude];
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+                const accuracy = pos.coords.accuracy || 0;
+                const speed = pos.coords.speed || 0;
+                const gpsHeading = pos.coords.heading;
+
+                userCoords = [lat, lng];
+
+                if (gpsHeading !== null && !isNaN(gpsHeading) && gpsHeading >= 0) {
+                    currentHeading = Math.round(gpsHeading);
+                }
+
                 setUserGpsMarker();
-                if (callback) callback();
                 updateNearbyList();
+
+                // Throttled Sender to Swoole / Reverb (Every 3.5s or > 5 meters movement)
+                throttleBroadcastLocation(lat, lng, currentHeading, speed, accuracy);
+
+                // If turn-by-turn navigation is active, update origin waypoint
+                if (routingControl && routingControl.getWaypoints) {
+                    const wps = routingControl.getWaypoints();
+                    if (wps && wps.length > 1 && wps[1].latLng) {
+                        routingControl.spliceWaypoints(0, 1, L.latLng(lat, lng));
+                    }
+                }
             },
             function(err) {
-                console.warn('GPS location access denied or unavailable:', err);
+                console.warn('Real-time GPS watch notice:', err.message);
             },
-            { enableHighAccuracy: true, timeout: 8000 }
+            {
+                enableHighAccuracy: true,
+                maximumAge: 1500,
+                timeout: 10000
+            }
         );
     }
 
-    function setUserGpsMarker() {
-        if (!userCoords) return;
-        if (userMarker) map.removeLayer(userMarker);
+    // Compass & Device Orientation Handling (iOS + Android)
+    function initCompassOrientation() {
+        if (window.DeviceOrientationEvent) {
+            // iOS 13+ permission request
+            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                document.addEventListener('click', function requestIosCompass() {
+                    DeviceOrientationEvent.requestPermission().then(response => {
+                        if (response === 'granted') {
+                            bindOrientationEvents();
+                        }
+                    }).catch(() => {});
+                    document.removeEventListener('click', requestIosCompass);
+                }, { once: true });
+            } else {
+                bindOrientationEvents();
+            }
+        }
+    }
 
-        const gpsIcon = L.divIcon({
-            html: '<div class="user-gps-dot"></div>',
-            className: 'user-gps-wrap',
-            iconSize: [18, 18],
-            iconAnchor: [9, 9]
-        });
+    function bindOrientationEvents() {
+        const handleOrientation = function(e) {
+            let heading = null;
+            if (e.webkitCompassHeading !== undefined && e.webkitCompassHeading !== null) {
+                // iOS Safari True Compass Heading
+                heading = e.webkitCompassHeading;
+            } else if (e.alpha !== null) {
+                // Android standard orientation
+                heading = e.absolute ? (360 - e.alpha) : (360 - e.alpha);
+            }
 
-        userMarker = L.marker(userCoords, { icon: gpsIcon, zIndexOffset: 1000 }).addTo(map);
+            if (heading !== null && !isNaN(heading)) {
+                updateHeadingCone(Math.round(heading));
+            }
+        };
+
+        if ('ondeviceorientationabsolute' in window) {
+            window.addEventListener('deviceorientationabsolute', handleOrientation, true);
+        } else {
+            window.addEventListener('deviceorientation', handleOrientation, true);
+        }
+    }
+
+    // Throttle Sender (Mobile / GPS Tracker to Server)
+    function throttleBroadcastLocation(lat, lng, heading, speed, accuracy) {
+        const now = Date.now();
+        const minTimeInterval = 3500; // 3.5 seconds
+        const minDistanceMeters = 5;  // 5 meters
+
+        let shouldBroadcast = false;
+
+        if (!lastBroadcastCoords || (now - lastBroadcastTime) > 10000) {
+            shouldBroadcast = true;
+        } else {
+            const distKm = calculateDistance(lastBroadcastCoords[0], lastBroadcastCoords[1], lat, lng);
+            const distMeters = distKm * 1000;
+            if (distMeters >= minDistanceMeters && (now - lastBroadcastTime) >= minTimeInterval) {
+                shouldBroadcast = true;
+            }
+        }
+
+        if (!shouldBroadcast) return;
+
+        lastBroadcastTime = now;
+        lastBroadcastCoords = [lat, lng];
+
+        // Send via AJAX to Server (which broadcasts over Reverb / Swoole)
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+        if (!csrf) return;
+
+        fetch('{{ route("api.map.update_location") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrf,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                latitude: lat,
+                longitude: lng,
+                heading: heading || 0,
+                speed: speed || 0,
+                accuracy: accuracy || 0
+            })
+        }).catch(() => {});
+    }
+
+    // Reverb WebSocket Map Tracking (Peer Markers)
+    function initReverbMapTracking() {
+        if (!window.Echo) return;
+
+        try {
+            window.Echo.join('map.tracking')
+                .here((users) => {
+                    // Current online peers on the map
+                })
+                .joining((user) => {
+                    // Peer joined
+                })
+                .leaving((user) => {
+                    removePeerLocation(user.id);
+                })
+                .listen('.UserLocationUpdated', (e) => {
+                    updatePeerLocation(e);
+                });
+        } catch (err) {
+            console.warn('Reverb map tracking initialization skipped:', err);
+        }
+    }
+
+    function updatePeerLocation(data) {
+        // Don't draw self as a peer
+        if (authUserId && String(data.user_id) === String(authUserId)) {
+            return;
+        }
+
+        const id = data.user_id;
+        const latLng = [data.latitude, data.longitude];
+
+        if (peerMarkers[id]) {
+            peerMarkers[id].setLatLng(latLng);
+        } else {
+            const avatarHtml = data.avatar 
+                ? `<img src="${data.avatar}" alt="${data.name}">` 
+                : `${(data.name || 'U').charAt(0).toUpperCase()}`;
+
+            const icon = L.divIcon({
+                html: `
+                    <div class="live-peer-marker">
+                        <div class="live-peer-avatar">${avatarHtml}</div>
+                        <div class="live-peer-badge">${data.name || 'สมาชิก'}</div>
+                    </div>
+                `,
+                className: 'live-peer-wrap',
+                iconSize: [60, 48],
+                iconAnchor: [30, 24]
+            });
+
+            const marker = L.marker(latLng, { icon: icon, zIndexOffset: 800 }).addTo(map);
+            peerMarkers[id] = marker;
+        }
+    }
+
+    function removePeerLocation(userId) {
+        if (peerMarkers[userId]) {
+            map.removeLayer(peerMarkers[userId]);
+            delete peerMarkers[userId];
+        }
     }
 
     window.locateUserAndCenter = function() {
-        getUserLocation(() => {
-            if (userCoords) {
-                map.setView(userCoords, 16, { animate: true });
-            }
-        });
+        if (userCoords) {
+            map.setView(userCoords, 16, { animate: true });
+        } else {
+            startRealtimeLocationTracking();
+        }
     };
 
     // Device Detection Helper

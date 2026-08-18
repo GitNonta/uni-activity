@@ -132,6 +132,7 @@ Route::get('/api/map/locations', [MapController::class, 'locationsApi'])->name('
 
 // ── เส้นทางนักศึกษา (ต้อง login ก่อน) ──────────────────
 Route::middleware('auth')->group(function () {
+    Route::post('/api/map/update-location', [MapController::class, 'updateLocation'])->name('api.map.update_location');
     Route::post('/activities/{activity}/register', [RegistrationController::class, 'store'])->name('activities.register'); // ลงทะเบียนกิจกรรม
     Route::delete('/registrations/{registration}', [RegistrationController::class, 'destroy'])->name('registrations.destroy'); // ยกเลิกการลงทะเบียน
     Route::get('/check-in/{token}', [CheckInController::class, 'show'])->name('checkin.show');                       // หน้าเช็คอินจาก QR
