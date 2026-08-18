@@ -2346,7 +2346,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
         const distText = distKm < 1 ? `${Math.round(distKm * 1000)} ม.` : `${distKm.toFixed(1)} กม.`;
         document.getElementById('bs-dist-val').textContent = distText;
 
-        const walkMins = Math.max(1, Math.round((distKm / 4.8) * 60));
+        const walkMins = Math.max(1, Math.round((distKm / 4.5) * 60));
         const driveMins = Math.max(1, Math.round((distKm / 38) * 60));
         document.getElementById('bs-walk-time').textContent = formatDurationThai(walkMins);
         document.getElementById('bs-drive-time').textContent = formatDurationThai(driveMins);
@@ -2499,7 +2499,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
         const requestController = routeFetchAbortCtrl;
 
         const baseDistKm = calculateDistance(startPoint[0], startPoint[1], parseFloat(target.lat), parseFloat(target.lng));
-        let speedKmH = 42;
+        let speedKmH = 38;
         let modeName = 'รถยนต์';
         let osrmProfile = 'driving';
 
@@ -2508,11 +2508,11 @@ html[data-theme="dark"] .gmap-sheet-handle {
             modeName = 'มอเตอร์ไซค์';
             osrmProfile = 'driving';
         } else if (currentTravelMode === 'walk') {
-            speedKmH = 4.8;
+            speedKmH = 4.5;
             modeName = 'เดินเท้า';
             osrmProfile = 'walking';
         } else if (currentTravelMode === 'bike') {
-            speedKmH = 16;
+            speedKmH = 14;
             modeName = 'จักรยาน';
             osrmProfile = 'cycling';
         }
@@ -2560,12 +2560,19 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 const newRoutes = [];
                 data.routes.forEach((r, idx) => {
                     const roadPoints = r.geometry.coordinates; // [lng, lat]
-                    const distKm = (r.distance / 1000).toFixed(1);
-                    let durMin = Math.round(r.duration / 60);
-                    if (currentTravelMode === 'walk' && parseFloat(distKm) < 0.06) {
-                        durMin = 0;
+                    const distNum = r.distance / 1000;
+                    const distKm = distNum.toFixed(1);
+                    let durMin = 0;
+
+                    if (currentTravelMode === 'walk') {
+                        durMin = distNum < 0.05 ? 0 : Math.max(1, Math.round((distNum / 4.5) * 60));
+                    } else if (currentTravelMode === 'bike') {
+                        durMin = distNum < 0.05 ? 0 : Math.max(1, Math.round((distNum / 14) * 60));
+                    } else if (currentTravelMode === 'moto') {
+                        durMin = distNum < 0.05 ? 0 : Math.max(1, Math.round((distNum / 38) * 60));
                     } else {
-                        durMin = Math.max(1, durMin);
+                        // Car (drive)
+                        durMin = Math.max(1, Math.round(r.duration / 60));
                     }
 
                     let roadSummary = r.legs && r.legs[0] && r.legs[0].summary ? `ผ่าน ${r.legs[0].summary}` : (idx === 0 ? 'เส้นทางถนนสายหลัก' : 'เส้นทางสายรอง');
@@ -2897,8 +2904,8 @@ html[data-theme="dark"] .gmap-sheet-handle {
         if (!activeNavTarget || !activeNavRoute) return;
 
         const remainingKm = calculateDistance(position[0], position[1], activeNavTarget.lat, activeNavTarget.lng);
-        const speedKmH = currentTravelMode === 'walk' ? 4.8 : (currentTravelMode === 'moto' ? 38 : (currentTravelMode === 'bike' ? 16 : 42));
-        const remainingMinutes = remainingKm < 0.06 ? 0 : Math.max(1, Math.round((remainingKm / speedKmH) * 60));
+        const speedKmH = currentTravelMode === 'walk' ? 4.5 : (currentTravelMode === 'bike' ? 14 : (currentTravelMode === 'moto' ? 38 : 38));
+        const remainingMinutes = remainingKm < 0.05 ? 0 : Math.max(1, Math.round((remainingKm / speedKmH) * 60));
         const nextDist = document.getElementById('gmapNavNextDist');
         if (nextDist) {
             const distanceText = remainingKm < 1 ? `${Math.round(remainingKm * 1000)} ม.` : `${remainingKm.toFixed(1)} กม.`;
