@@ -1413,6 +1413,108 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     50% { transform: translateY(-6px); }
 }
 
+/* ── Custom Location Markers ── */
+.gmap-custom-marker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.22));
+    z-index: 10;
+}
+.gmap-custom-marker:hover {
+    transform: scale(1.15) translateY(-4px);
+    z-index: 999;
+}
+.gmap-marker-bubble {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 16px;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 0.78rem;
+    font-weight: 700;
+    white-space: nowrap;
+    border: 2px solid #ffffff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    max-width: 190px;
+}
+.gmap-marker-icon {
+    font-size: 0.95rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.gmap-marker-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.gmap-marker-arrow {
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 7px solid #ffffff;
+    margin-top: -1px;
+}
+
+/* Category Marker Colors */
+.marker-activity .gmap-marker-bubble {
+    border-color: #ea580c;
+    background: #fff7ed;
+    color: #9a3412;
+}
+.marker-activity .gmap-marker-arrow {
+    border-top-color: #ea580c;
+}
+
+.marker-job .gmap-marker-bubble {
+    border-color: #0284c7;
+    background: #f0f9ff;
+    color: #075985;
+}
+.marker-job .gmap-marker-arrow {
+    border-top-color: #0284c7;
+}
+
+.marker-landmark .gmap-marker-bubble {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #14532d;
+}
+.marker-landmark .gmap-marker-arrow {
+    border-top-color: #16a34a;
+}
+
+html[data-theme="dark"] .marker-activity .gmap-marker-bubble {
+    background: #431407;
+    color: #ffedd5;
+    border-color: #f97316;
+}
+html[data-theme="dark"] .marker-activity .gmap-marker-arrow {
+    border-top-color: #f97316;
+}
+html[data-theme="dark"] .marker-job .gmap-marker-bubble {
+    background: #082f49;
+    color: #e0f2fe;
+    border-color: #38bdf8;
+}
+html[data-theme="dark"] .marker-job .gmap-marker-arrow {
+    border-top-color: #38bdf8;
+}
+html[data-theme="dark"] .marker-landmark .gmap-marker-bubble {
+    background: #052e16;
+    color: #dcfce7;
+    border-color: #4ade80;
+}
+html[data-theme="dark"] .marker-landmark .gmap-marker-arrow {
+    border-top-color: #4ade80;
+}
+
 /* ── Dark Mode Adaptations ── */
 html[data-theme="dark"] .map-explorer-wrapper {
     background: #18181b;
@@ -1805,18 +1907,33 @@ html[data-theme="dark"] .gmap-sheet-handle {
             if (!resp.ok) throw new Error(`HTTP error! status: ${resp.status}`);
             const data = await resp.json();
 
-            allLocations = (data.locations || []).filter(loc => {
+            const rawLocations = data.locations || [
+                ...(data.activities || []),
+                ...(data.jobs || []),
+                ...(data.landmarks || [])
+            ];
+
+            allLocations = rawLocations.filter(loc => {
                 const lat = parseFloat(loc.lat);
                 const lng = parseFloat(loc.lng);
                 return !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0;
             });
 
-            document.getElementById('fabPlaceCountBadge').textContent = allLocations.length;
-            document.getElementById('drawerCountLabel').textContent = `${allLocations.length} แห่ง`;
+            const placeCountEl = document.getElementById('fabPlaceCountBadge');
+            if (placeCountEl) placeCountEl.textContent = allLocations.length;
+            const drawerCountEl = document.getElementById('drawerCountLabel');
+            if (drawerCountEl) drawerCountEl.textContent = `${allLocations.length} แห่ง`;
 
             renderAllLocationMarkers();
             updateNearbyList();
             updateHeatmapData();
+
+            // Auto fit bounds on initial load if locations exist
+            if (allLocations.length > 0 && map && (!userCoords || is3DModeActive === false)) {
+                const bounds = new maplibregl.LngLatBounds();
+                allLocations.forEach(l => bounds.extend([parseFloat(l.lng), parseFloat(l.lat)]));
+                map.fitBounds(bounds, { padding: { top: 90, bottom: 90, left: 50, right: 50 }, maxZoom: 16, duration: 1000 });
+            }
         } catch (err) {
             console.error('Failed to load locations:', err);
         }
@@ -1827,7 +1944,11 @@ html[data-theme="dark"] .gmap-sheet-handle {
         if (!map) return;
 
         // Clear existing markers
-        locationMarkers.forEach(item => item.marker.remove());
+        locationMarkers.forEach(item => {
+            if (item && item.marker) {
+                item.marker.remove();
+            }
+        });
         locationMarkers = [];
 
         const filtered = getFilteredLocations();
@@ -1842,8 +1963,8 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
             el.innerHTML = `
                 <div class="gmap-marker-bubble">
-                    <span>${iconEmoji}</span>
-                    <span>${loc.title}</span>
+                    <span class="gmap-marker-icon">${iconEmoji}</span>
+                    <span class="gmap-marker-title">${escapeHtml(loc.title)}</span>
                 </div>
                 <div class="gmap-marker-arrow"></div>
             `;
@@ -1859,6 +1980,18 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
             locationMarkers.push({ marker, loc });
         });
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return String(text).replace(/[&<>"']/g, m => map[m]);
     }
 
     function getFilteredLocations() {

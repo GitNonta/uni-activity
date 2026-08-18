@@ -197,12 +197,15 @@ class MapController extends Controller
             ],
         ]);
 
+        $allLocations = $activities->concat($jobs)->concat($landmarks)->values();
+
         return response()->json([
             'success' => true,
             'activities' => $activities,
             'jobs' => $jobs,
             'landmarks' => $landmarks,
-            'total_locations' => $activities->count() + $jobs->count() + $landmarks->count(),
+            'locations' => $allLocations,
+            'total_locations' => $allLocations->count(),
         ]);
     }
 }
