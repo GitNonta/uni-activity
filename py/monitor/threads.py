@@ -59,8 +59,21 @@ def auto_sync_thread():
                 subprocess.run(["git", "reset", "--hard", "origin/main"], cwd=app_dir)
                 subprocess.run(["php", "artisan", "config:clear"], cwd=app_dir)
                 subprocess.run(["php", "artisan", "route:clear"],  cwd=app_dir)
-                subprocess.run(["pkill", "-9", "-f", "php-fpm"])
-                subprocess.Popen(["nohup", "php-fpm"], cwd=app_dir)
+                octane_reload = subprocess.run(
+                    ["php", "artisan", "octane:reload"],
+                    cwd=app_dir,
+                    capture_output=True,
+                    text=True,
+                )
+                with open(sync_log, "a", encoding="utf-8") as f:
+                    f.write(
+                        f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] "
+                        f"Octane reload exited with status {octane_reload.returncode}.\n"
+                    )
+                    if octane_reload.stdout:
+                        f.write(octane_reload.stdout)
+                    if octane_reload.stderr:
+                        f.write(octane_reload.stderr)
 
                 pid = os.getpid()
                 subprocess.Popen(

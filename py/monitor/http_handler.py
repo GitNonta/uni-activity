@@ -160,9 +160,8 @@ class MonitorHandler(BaseHTTPRequestHandler):
                         run_and_log(["php", "artisan", "route:clear"])
                         run_and_log(["npm", "run", "build"]) # Generate build logs
                         
-                        f.write("Restarting php-fpm...\n")
-                        subprocess.run(["pkill", "-9", "-f", "php-fpm"])
-                        subprocess.Popen(["nohup", "php-fpm"], cwd=app_dir)
+                        f.write("Reloading Laravel Octane...\n")
+                        run_and_log(["php", "artisan", "octane:reload"])
                         f.write("Deploy finished.\n")
                         
                 except Exception:
