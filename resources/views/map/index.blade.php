@@ -346,9 +346,10 @@
 @endsection
 
 @section('scripts')
-{{-- MapLibre GL JS (WebGL 3D Engine) --}}
+{{-- MapLibre GL JS (WebGL 3D Engine) & Supercluster --}}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/supercluster@8.0.1/dist/supercluster.min.js"></script>
 
 <style>
 /* ── Fullscreen Map App Layout ── */
@@ -1454,6 +1455,73 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
 .pin-job { background: linear-gradient(135deg, #0284c7, #38bdf8); }
 .pin-landmark { background: linear-gradient(135deg, #16a34a, #4ade80); }
 
+/* ── Cluster Markers (Number Bubble when zoomed out) ── */
+.gmap-cluster-wrapper {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+}
+.custom-cluster-marker {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ea580c, #f97316);
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 16px rgba(234, 88, 12, 0.45);
+    border: 3px solid #ffffff;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.custom-cluster-marker:hover {
+    transform: scale(1.18);
+    box-shadow: 0 6px 22px rgba(234, 88, 12, 0.6);
+}
+.cluster-pulse-ring {
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    background: rgba(234, 88, 12, 0.28);
+    animation: cluster-pulse 2s infinite ease-out;
+    pointer-events: none;
+}
+@keyframes cluster-pulse {
+    0% { transform: scale(0.9); opacity: 0.85; }
+    50% { transform: scale(1.25); opacity: 0.25; }
+    100% { transform: scale(0.9); opacity: 0.85; }
+}
+
+.cluster-sm {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #ea580c, #f97316);
+    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.45);
+}
+.cluster-md {
+    width: 46px;
+    height: 46px;
+    background: linear-gradient(135deg, #0284c7, #38bdf8);
+    box-shadow: 0 4px 16px rgba(2, 132, 199, 0.45);
+}
+.cluster-md .cluster-pulse-ring {
+    background: rgba(2, 132, 199, 0.28);
+}
+.cluster-lg {
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    box-shadow: 0 4px 18px rgba(124, 58, 237, 0.45);
+}
+.cluster-lg .cluster-pulse-ring {
+    background: rgba(124, 58, 237, 0.28);
+}
+
 /* ── Dark Mode Adaptations ── */
 html[data-theme="dark"] .map-explorer-wrapper {
     background: #18181b;
@@ -1534,6 +1602,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
     let allLocations = [];
     let locationMarkers = []; // Array of { marker, loc }
+    let clusterIndex = null;
     let currentFilterType = 'all';
     let searchQuery = '';
     let currentRadiusKm = 0;
@@ -1615,8 +1684,10 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
         map.on('load', function() {
             initVectorSourcesAndLayers();
-            renderAllLocationMarkers();
+            rebuildClusterIndex();
         });
+
+        map.on('moveend', renderClusteredMarkers);
 
         map.on('style.load', function() {
             initVectorSourcesAndLayers();
@@ -1864,7 +1935,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
             const drawerCountEl = document.getElementById('drawerCountLabel');
             if (drawerCountEl) drawerCountEl.textContent = `${allLocations.length} แห่ง`;
 
-            renderAllLocationMarkers();
+            rebuildClusterIndex();
             updateNearbyList();
             updateHeatmapData();
 
@@ -1879,8 +1950,29 @@ html[data-theme="dark"] .gmap-sheet-handle {
         }
     }
 
-    // Render WebGL HTML Markers (Circular Drop Pin with Category Icon)
-    function renderAllLocationMarkers() {
+    // Build Supercluster Index
+    function rebuildClusterIndex() {
+        const filtered = getFilteredLocations();
+        if (typeof Supercluster !== 'undefined') {
+            clusterIndex = new Supercluster({
+                radius: 55,
+                maxZoom: 15,
+                minPoints: 2
+            });
+            clusterIndex.load(filtered.map(loc => ({
+                type: 'Feature',
+                properties: { ...loc },
+                geometry: {
+                    type: 'Point',
+                    coordinates: [parseFloat(loc.lng), parseFloat(loc.lat)]
+                }
+            })));
+        }
+        renderClusteredMarkers();
+    }
+
+    // Render WebGL HTML Markers (Clusters or Individual Circular Drop Pins)
+    function renderClusteredMarkers() {
         if (!map) return;
 
         // Clear existing markers
@@ -1893,38 +1985,109 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
         const filtered = getFilteredLocations();
 
-        filtered.forEach(loc => {
-            const el = document.createElement('div');
-            el.className = 'gmap-pin-wrapper';
+        if (!clusterIndex || typeof Supercluster === 'undefined') {
+            // Fallback if supercluster is not loaded
+            filtered.forEach(loc => renderSingleLocationPin(loc));
+            return;
+        }
 
-            let pinClass = 'pin-activity';
-            let iconSvg = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>';
+        const bounds = map.getBounds();
+        const bbox = [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()];
+        const zoom = Math.floor(map.getZoom());
 
-            if (loc.type === 'job') {
-                pinClass = 'pin-job';
-                iconSvg = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>';
-            } else if (loc.type === 'landmark') {
-                pinClass = 'pin-landmark';
-                iconSvg = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>';
+        let clusters = [];
+        try {
+            clusters = clusterIndex.getClusters(bbox, zoom);
+        } catch(e) {
+            clusters = filtered.map(loc => ({
+                type: 'Feature',
+                properties: { ...loc, cluster: false },
+                geometry: { type: 'Point', coordinates: [parseFloat(loc.lng), parseFloat(loc.lat)] }
+            }));
+        }
+
+        clusters.forEach(feat => {
+            const [lng, lat] = feat.geometry.coordinates;
+            const isCluster = feat.properties && feat.properties.cluster === true;
+
+            if (isCluster) {
+                const count = feat.properties.point_count;
+                const clusterId = feat.properties.cluster_id;
+
+                let sizeClass = 'cluster-sm';
+                if (count >= 20) sizeClass = 'cluster-lg';
+                else if (count >= 6) sizeClass = 'cluster-md';
+
+                const el = document.createElement('div');
+                el.className = 'gmap-cluster-wrapper';
+                el.innerHTML = `
+                    <div class="custom-cluster-marker ${sizeClass}">
+                        <div class="cluster-pulse-ring"></div>
+                        <span>${count}</span>
+                    </div>
+                `;
+
+                el.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    try {
+                        const expansionZoom = Math.min(clusterIndex.getClusterExpansionZoom(clusterId), 17);
+                        map.easeTo({
+                            center: [lng, lat],
+                            zoom: expansionZoom,
+                            duration: 600
+                        });
+                    } catch(err) {
+                        map.easeTo({
+                            center: [lng, lat],
+                            zoom: map.getZoom() + 2,
+                            duration: 500
+                        });
+                    }
+                });
+
+                const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
+                    .setLngLat([lng, lat])
+                    .addTo(map);
+
+                locationMarkers.push({ marker, isCluster: true });
+            } else {
+                renderSingleLocationPin(feat.properties);
             }
-
-            el.innerHTML = `
-                <div class="custom-pin-marker ${pinClass}" title="${escapeHtml(loc.title)}">
-                    ${iconSvg}
-                </div>
-            `;
-
-            el.addEventListener('click', function(e) {
-                e.stopPropagation();
-                focusLocation(loc);
-            });
-
-            const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
-                .setLngLat([parseFloat(loc.lng), parseFloat(loc.lat)])
-                .addTo(map);
-
-            locationMarkers.push({ marker, loc });
         });
+    }
+
+    function renderSingleLocationPin(loc) {
+        if (!loc || !loc.lat || !loc.lng) return;
+        const el = document.createElement('div');
+        el.className = 'gmap-pin-wrapper';
+
+        let pinClass = 'pin-activity';
+        let iconSvg = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>';
+
+        if (loc.type === 'job') {
+            pinClass = 'pin-job';
+            iconSvg = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>';
+        } else if (loc.type === 'landmark') {
+            pinClass = 'pin-landmark';
+            iconSvg = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>';
+        }
+
+        el.innerHTML = `
+            <div class="custom-pin-marker ${pinClass}" title="${escapeHtml(loc.title)}">
+                ${iconSvg}
+            </div>
+        `;
+
+        el.addEventListener('click', function(e) {
+            e.stopPropagation();
+            focusLocation(loc);
+        });
+
+        const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
+            .setLngLat([parseFloat(loc.lng), parseFloat(loc.lat)])
+            .addTo(map);
+
+        locationMarkers.push({ marker, loc, isCluster: false });
     }
 
     function escapeHtml(text) {
@@ -1964,7 +2127,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
         currentFilterType = type;
         document.querySelectorAll('.gmap-chip[data-type]').forEach(b => b.classList.remove('active'));
         if (btn) btn.classList.add('active');
-        renderAllLocationMarkers();
+        rebuildClusterIndex();
         updateNearbyList();
         updateHeatmapData();
     };
@@ -1985,7 +2148,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 locateUserAndCenter();
             }
         }
-        renderAllLocationMarkers();
+        rebuildClusterIndex();
         updateNearbyList();
     };
 
@@ -2051,7 +2214,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
         input.addEventListener('input', function() {
             searchQuery = this.value;
             clearBtn.style.display = searchQuery ? 'flex' : 'none';
-            renderAllLocationMarkers();
+            rebuildClusterIndex();
             updateNearbyList();
         });
     }
@@ -2061,7 +2224,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
         if (input) input.value = '';
         searchQuery = '';
         document.getElementById('mapSearchClearBtn').style.display = 'none';
-        renderAllLocationMarkers();
+        rebuildClusterIndex();
         updateNearbyList();
     };
 
