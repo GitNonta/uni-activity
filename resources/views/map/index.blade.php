@@ -1568,20 +1568,6 @@ html[data-theme="dark"] .gmap-sheet-handle {
     background: #3f3f46;
 }
 
-/* ── 3D Real-time Navigation Mode Perspective ── */
-.map-canvas-container {
-    perspective: 1000px;
-    transition: all 0.5s ease;
-}
-.map-canvas-container.nav-3d-active #unifiedMap .leaflet-map-pane {
-    transform: rotateX(28deg) scale(1.06);
-    transform-origin: 50% 75%;
-    transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
-}
-.map-canvas-container.nav-3d-active #unifiedMap .leaflet-tile-container {
-    filter: saturate(1.15) contrast(1.05);
-}
-
 /* Hide default leaflet zoom controls */
 .leaflet-control-zoom {
     display: none !important;
@@ -2777,12 +2763,12 @@ html[data-theme="dark"] .gmap-sheet-handle {
             opacity: 0.95
         }).addTo(map);
 
-        // 4. Enable 3D Navigation mode and smoothly zoom into current user position
-        document.querySelector('.map-canvas-container')?.classList.add('nav-3d-active');
+        // 4. Focus camera on user GPS position with live navigation
         try {
-            map.flyTo(startPoint, 18, { animate: true, duration: 1.0 });
+            map.invalidateSize();
+            map.flyTo(startPoint, 17, { animate: true, duration: 0.8 });
         } catch (e) {
-            map.setView(startPoint, 18);
+            try { map.setView(startPoint, 17); } catch (err) {}
         }
     };
 
@@ -2798,12 +2784,14 @@ html[data-theme="dark"] .gmap-sheet-handle {
         activeNavTarget = null;
         activeNavRoute = null;
         clearAlternativePolylines();
-        document.querySelector('.map-canvas-container')?.classList.remove('nav-3d-active');
         document.getElementById('gmapNavBanner').style.display = 'none';
 
         const startPoint = userCoords || defaultCenter;
         if (startPoint) {
-            try { map.flyTo(startPoint, 15, { animate: true, duration: 0.8 }); } catch (e) {}
+            try {
+                map.invalidateSize();
+                map.flyTo(startPoint, 15, { animate: true, duration: 0.6 });
+            } catch (e) {}
         }
     };
 
