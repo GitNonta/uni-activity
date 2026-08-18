@@ -1694,7 +1694,11 @@ html[data-theme="dark"] .gmap-sheet-handle {
             enable3DBuildings();
             if (activeNavRoute) {
                 renderRouteGeometryOnMap(activeNavRoute.points, true);
+            } else if (currentRouteAlternatives && currentRouteAlternatives.length > 0) {
+                previewRoutesOnMap();
             }
+            rebuildClusterIndex();
+            updateHeatmapData();
         });
 
         map.on('click', function(e) {
@@ -1727,9 +1731,9 @@ html[data-theme="dark"] .gmap-sheet-handle {
                     'line-join': 'round'
                 },
                 paint: {
-                    'line-color': '#065f46',
-                    'line-width': 11,
-                    'line-opacity': 0.9
+                    'line-color': '#0f172a',
+                    'line-width': 10,
+                    'line-opacity': 0.85
                 }
             });
 
@@ -1742,8 +1746,8 @@ html[data-theme="dark"] .gmap-sheet-handle {
                     'line-join': 'round'
                 },
                 paint: {
-                    'line-color': '#10b981',
-                    'line-width': 7,
+                    'line-color': '#0284c7',
+                    'line-width': 6,
                     'line-opacity': 1
                 }
             });
@@ -1767,7 +1771,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 paint: {
                     'line-color': '#64748b',
                     'line-width': 5,
-                    'line-opacity': 0.75,
+                    'line-opacity': 0.8,
                     'line-dasharray': [3, 2]
                 }
             });
@@ -2243,10 +2247,13 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
         map.flyTo({
             center: [parseFloat(loc.lng), parseFloat(loc.lat)],
-            zoom: 17,
+            zoom: 16,
             pitch: is3DModeActive ? 55 : 0,
             duration: 1000
         });
+
+        // Automatically calculate and preview OSRM route line immediately
+        calculateAndRenderRouteOptions();
     }
 
     function showBottomSheet(loc) {
@@ -2476,6 +2483,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
             }
         ];
         renderRouteCards();
+        previewRoutesOnMap();
 
         try {
             const startLng = startPoint[1];
@@ -2494,7 +2502,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
             if (data && data.code === 'Ok' && data.routes && data.routes.length > 0) {
                 const newRoutes = [];
                 data.routes.forEach((r, idx) => {
-                    const roadPoints = r.geometry.coordinates; // MapLibre takes [lng, lat]
+                    const roadPoints = r.geometry.coordinates; // [lng, lat]
                     const distKm = (r.distance / 1000).toFixed(1);
                     let durMin = Math.round(r.duration / 60);
                     if (currentTravelMode === 'walk' && parseFloat(distKm) < 0.06) {
@@ -2587,27 +2595,40 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
         renderRouteGeometryOnMap(mainRoute.points, true);
 
-        if (altRoute && map.getSource('route-alt-source')) {
-            map.getSource('route-alt-source').setData({
-                type: 'FeatureCollection',
-                features: [{
-                    type: 'Feature',
-                    geometry: { type: 'LineString', coordinates: altRoute.points }
-                }]
-            });
+        if (map.getSource('route-alt-source')) {
+            if (altRoute && altRoute.points && altRoute.points.length >= 2) {
+                map.getSource('route-alt-source').setData({
+                    type: 'FeatureCollection',
+                    features: [{
+                        type: 'Feature',
+                        geometry: { type: 'LineString', coordinates: altRoute.points }
+                    }]
+                });
+            } else {
+                map.getSource('route-alt-source').setData({
+                    type: 'FeatureCollection',
+                    features: []
+                });
+            }
         }
     }
 
     function renderRouteGeometryOnMap(points, isPrimary) {
-        if (!map || !map.getSource('route-primary-source')) return;
+        if (!map) return;
+        if (!map.getSource('route-primary-source')) {
+            initVectorSourcesAndLayers();
+        }
+        if (!map.getSource('route-primary-source')) return;
 
-        map.getSource('route-primary-source').setData({
-            type: 'FeatureCollection',
-            features: [{
-                type: 'Feature',
-                geometry: { type: 'LineString', coordinates: points }
-            }]
-        });
+        if (points && points.length >= 2) {
+            map.getSource('route-primary-source').setData({
+                type: 'FeatureCollection',
+                features: [{
+                    type: 'Feature',
+                    geometry: { type: 'LineString', coordinates: points }
+                }]
+            });
+        }
 
         if (activeLocation) {
             if (!destMarker) {
