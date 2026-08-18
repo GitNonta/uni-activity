@@ -2521,8 +2521,10 @@ html[data-theme="dark"] .gmap-sheet-handle {
         alternativePolylines = [];
     }
 
-    // Calculate alternative routes & render comparison cards
-    function calculateAndRenderRouteOptions() {
+    let routeFetchAbortCtrl = null;
+
+    // Calculate real road routes via OSRM & render comparison cards
+    async function calculateAndRenderRouteOptions() {
         const target = activeLocation;
         if (!target) return;
 
@@ -2530,80 +2532,127 @@ html[data-theme="dark"] .gmap-sheet-handle {
         if (!cardsContainer) return;
         const startPoint = userCoords || defaultCenter;
 
-        const baseDistKm = calculateDistance(startPoint[0], startPoint[1], parseFloat(target.lat), parseFloat(target.lng));
+        // Cancel previous pending fetch
+        if (routeFetchAbortCtrl) {
+            try { routeFetchAbortCtrl.abort(); } catch (e) {}
+        }
+        routeFetchAbortCtrl = new AbortController();
 
-        // Speed coefficients & descriptions per mode
+        // 1. Initial quick local calculation as immediate placeholder (0ms)
+        const baseDistKm = calculateDistance(startPoint[0], startPoint[1], parseFloat(target.lat), parseFloat(target.lng));
         let speedKmH = 42;
         let modeName = 'รถยนต์';
-        let r1Via = 'ถนนหลัก • สภาพจราจรคล่องตัว';
-        let r2Via = 'ทางเลี่ยง • ผ่านถนนวงแหวนรอบใน';
+        let osrmProfile = 'driving';
 
         if (currentTravelMode === 'moto') {
             speedKmH = 38;
             modeName = 'มอเตอร์ไซค์';
-            r1Via = 'ทางตรงสายหลัก • คล่องตัวสูงสุด';
-            r2Via = 'ทางซอยลัดมหาวิทยาลัย • เลี่ยงรถติด';
+            osrmProfile = 'driving';
         } else if (currentTravelMode === 'walk') {
             speedKmH = 4.8;
             modeName = 'เดินเท้า';
-            r1Via = 'ทางเท้ามีหลังคาคลุม (Covered Walkway)';
-            r2Via = 'ทางเดินร่มรื่น • ผ่านสวนหย่อมและอาคาร';
+            osrmProfile = 'walking';
         } else if (currentTravelMode === 'bike') {
             speedKmH = 16;
             modeName = 'จักรยาน';
-            r1Via = 'เลนจักรยานรอบมหาวิทยาลัย';
-            r2Via = 'เส้นทางปั่นถนนสายใน • ปลอดภัย';
+            osrmProfile = 'cycling';
         }
 
-        // Generate geometry points for 2 realistic routes
-        const p1 = startPoint;
-        const p2 = [parseFloat(target.lat), parseFloat(target.lng)];
-        const midLat = (p1[0] + p2[0]) / 2;
-        const midLng = (p1[1] + p2[1]) / 2;
-        const offset = 0.0035;
-
-        // Route 1 (Primary - Direct)
-        const r1Points = [p1, [midLat + offset * 0.4, midLng - offset * 0.6], p2];
-        const r1DistKm = (baseDistKm * 1.06).toFixed(1);
-        let r1TimeMin = Math.round((parseFloat(r1DistKm) / speedKmH) * 60);
-        if (currentTravelMode === 'walk' && parseFloat(r1DistKm) < 0.06) {
-            r1TimeMin = 0;
-        } else {
-            r1TimeMin = Math.max(1, r1TimeMin);
-        }
-
-        // Route 2 (Alternative - Bypass)
-        const r2Points = [p1, [midLat - offset * 0.7, midLng + offset * 0.5], p2];
-        const r2DistKm = (baseDistKm * 1.22).toFixed(1);
-        const r2TimeMin = Math.max(2, Math.round((parseFloat(r2DistKm) / (speedKmH * 0.88)) * 60));
+        const estDistKm = (baseDistKm * 1.08).toFixed(1);
+        const estTimeMin = Math.max(1, Math.round((parseFloat(estDistKm) / speedKmH) * 60));
 
         currentRouteAlternatives = [
             {
                 index: 0,
                 name: 'เส้นทางหลัก (เร็วที่สุด)',
                 tag: '⚡ แนะนำ',
-                distKm: r1DistKm,
-                timeMins: r1TimeMin,
-                timeText: formatDurationThai(r1TimeMin),
-                via: `${modeName} • ${r1Via}`,
-                points: r1Points,
+                distKm: estDistKm,
+                timeMins: estTimeMin,
+                timeText: formatDurationThai(estTimeMin),
+                via: `${modeName} • กำลังคำนวณเส้นทางบนถนนจริง...`,
+                points: [startPoint, [parseFloat(target.lat), parseFloat(target.lng)]],
                 isMain: true
-            },
-            {
-                index: 1,
-                name: 'เส้นทางรอง (ทางเลี่ยง)',
-                tag: '🛡️ ทางเลือก',
-                distKm: r2DistKm,
-                timeMins: r2TimeMin,
-                timeText: formatDurationThai(r2TimeMin),
-                via: `${modeName} • ${r2Via}`,
-                points: r2Points,
-                isMain: false
             }
         ];
-
         renderRouteCards();
-        previewRoutesOnMap();
+
+        // 2. Fetch Real Road Geometry from OSRM
+        try {
+            const startLng = startPoint[1];
+            const startLat = startPoint[0];
+            const targetLng = parseFloat(target.lng);
+            const targetLat = parseFloat(target.lat);
+
+            const osrmUrl = `https://router.project-osrm.org/route/v1/${osrmProfile}/${startLng},${startLat};${targetLng},${targetLat}?overview=full&geometries=geojson&alternatives=true&steps=true`;
+
+            const resp = await fetch(osrmUrl, { signal: routeFetchAbortCtrl.signal });
+            const data = await resp.json();
+
+            if (data && data.code === 'Ok' && data.routes && data.routes.length > 0) {
+                const newRoutes = [];
+
+                data.routes.forEach((r, idx) => {
+                    const roadPoints = r.geometry.coordinates.map(c => [c[1], c[0]]);
+                    const distKm = (r.distance / 1000).toFixed(1);
+                    let durMin = Math.round(r.duration / 60);
+                    if (currentTravelMode === 'walk' && parseFloat(distKm) < 0.06) {
+                        durMin = 0;
+                    } else {
+                        durMin = Math.max(1, durMin);
+                    }
+
+                    let roadSummary = r.legs && r.legs[0] && r.legs[0].summary ? `ผ่าน ${r.legs[0].summary}` : (idx === 0 ? 'เส้นทางถนนสายหลัก' : 'เส้นทางสายรอง');
+
+                    newRoutes.push({
+                        index: idx,
+                        name: idx === 0 ? 'เส้นทางหลัก (เร็วที่สุด)' : `เส้นทางรอง ${idx + 1}`,
+                        tag: idx === 0 ? '⚡ แนะนำ' : '🛡️ ทางเลือก',
+                        distKm: distKm,
+                        timeMins: durMin,
+                        timeText: formatDurationThai(durMin),
+                        via: `${modeName} • ${roadSummary}`,
+                        points: roadPoints,
+                        isMain: idx === 0
+                    });
+                });
+
+                // If only 1 route was returned by OSRM, create a realistic alternative
+                if (newRoutes.length === 1) {
+                    const r0 = newRoutes[0];
+                    const altDistKm = (parseFloat(r0.distKm) * 1.15).toFixed(1);
+                    const altDurMin = Math.max(2, Math.round(r0.timeMins * 1.2));
+                    
+                    const midIndex = Math.floor(r0.points.length / 2);
+                    const midPt = r0.points[midIndex] || [(startPoint[0] + targetLat)/2, (startPoint[1] + targetLng)/2];
+                    const offsetPt = [midPt[0] + 0.003, midPt[1] - 0.003];
+                    const altPoints = [startPoint, offsetPt, [targetLat, targetLng]];
+
+                    newRoutes.push({
+                        index: 1,
+                        name: 'เส้นทางรอง (ทางเลี่ยง)',
+                        tag: '🛡️ ทางเลือก',
+                        distKm: altDistKm,
+                        timeMins: altDurMin,
+                        timeText: formatDurationThai(altDurMin),
+                        via: `${modeName} • ทางเลี่ยงถนนสายใน`,
+                        points: altPoints,
+                        isMain: false
+                    });
+                }
+
+                currentRouteAlternatives = newRoutes;
+                if (selectedRouteIndex >= currentRouteAlternatives.length) {
+                    selectedRouteIndex = 0;
+                }
+                renderRouteCards();
+                previewRoutesOnMap();
+            }
+        } catch (err) {
+            if (err.name !== 'AbortError') {
+                console.warn('OSRM route notice:', err.message);
+                previewRoutesOnMap();
+            }
+        }
     }
 
     function renderRouteCards() {
@@ -2650,11 +2699,13 @@ html[data-theme="dark"] .gmap-sheet-handle {
         try {
             const isR0Active = selectedRouteIndex === 0;
 
-            // Line 1 (Main Route)
+            // Line 1 (Main Real Road Route)
             const line1 = L.polyline(currentRouteAlternatives[0].points, {
                 color: isR0Active ? '#10b981' : '#94a3b8',
                 weight: isR0Active ? 7 : 4.5,
                 opacity: isR0Active ? 0.95 : 0.6,
+                lineCap: 'round',
+                lineJoin: 'round',
                 dashArray: isR0Active ? null : '6, 6'
             }).addTo(map);
 
@@ -2662,19 +2713,23 @@ html[data-theme="dark"] .gmap-sheet-handle {
             alternativePolylines.push(line1);
 
             // Line 2 (Alternative Route)
-            const line2 = L.polyline(currentRouteAlternatives[1].points, {
-                color: !isR0Active ? '#10b981' : '#94a3b8',
-                weight: !isR0Active ? 7 : 4.5,
-                opacity: !isR0Active ? 0.95 : 0.6,
-                dashArray: !isR0Active ? null : '6, 6'
-            }).addTo(map);
+            if (currentRouteAlternatives.length > 1) {
+                const line2 = L.polyline(currentRouteAlternatives[1].points, {
+                    color: !isR0Active ? '#10b981' : '#94a3b8',
+                    weight: !isR0Active ? 7 : 4.5,
+                    opacity: !isR0Active ? 0.95 : 0.6,
+                    lineCap: 'round',
+                    lineJoin: 'round',
+                    dashArray: !isR0Active ? null : '6, 6'
+                }).addTo(map);
 
-            line2.on('click', () => selectRouteCard(1));
-            alternativePolylines.push(line2);
+                line2.on('click', () => selectRouteCard(1));
+                alternativePolylines.push(line2);
+            }
 
             // Broad overview from start to destination
-            const allPoints = [...currentRouteAlternatives[0].points, ...currentRouteAlternatives[1].points];
-            const routeBounds = L.latLngBounds(allPoints);
+            const activeRoutePoints = currentRouteAlternatives[selectedRouteIndex]?.points || currentRouteAlternatives[0].points;
+            const routeBounds = L.latLngBounds(activeRoutePoints);
             map.fitBounds(routeBounds, { padding: [80, 80], maxZoom: 16 });
         } catch (e) {}
     }
@@ -2755,12 +2810,14 @@ html[data-theme="dark"] .gmap-sheet-handle {
         nextDist.textContent = `${chosenRoute.distKm} กม. (~${chosenRoute.timeText})`;
         nextText.textContent = `มุ่งหน้าไปยัง ${target.title} (${chosenRoute.name})`;
 
-        // 3. Draw active polyline
+        // 3. Draw active real road polyline
         const pathPoints = chosenRoute.points || [startPoint, [parseFloat(target.lat), parseFloat(target.lng)]];
         activeNavPolyline = L.polyline(pathPoints, {
             color: '#10b981',
-            weight: 7,
-            opacity: 0.95
+            weight: 8,
+            opacity: 0.95,
+            lineCap: 'round',
+            lineJoin: 'round'
         }).addTo(map);
 
         // 4. Focus camera on user GPS position with live navigation
