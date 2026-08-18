@@ -1981,11 +1981,20 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 // Throttled Sender to Swoole / Reverb (Every 3.5s or > 5 meters movement)
                 throttleBroadcastLocation(lat, lng, currentHeading, speed, accuracy);
 
-                // If turn-by-turn navigation is active, update origin waypoint
-                if (routingControl && routingControl.getWaypoints) {
-                    const wps = routingControl.getWaypoints();
-                    if (wps && wps.length > 1 && wps[1].latLng) {
-                        routingControl.spliceWaypoints(0, 1, L.latLng(lat, lng));
+                // Dynamic Live Navigation Banner update on GPS movement
+                if (activeNavTarget) {
+                    const remainingDistKm = calculateDistance(lat, lng, parseFloat(activeNavTarget.lat), parseFloat(activeNavTarget.lng));
+                    const speedVal = currentTravelMode === 'walk' ? 4.8 : (currentTravelMode === 'moto' ? 38 : (currentTravelMode === 'bike' ? 16 : 42));
+                    let remainTimeMin = Math.round((remainingDistKm / speedVal) * 60);
+                    if (currentTravelMode === 'walk' && remainingDistKm < 0.06) {
+                        remainTimeMin = 0;
+                    } else {
+                        remainTimeMin = Math.max(1, remainTimeMin);
+                    }
+                    const nextDist = document.getElementById('gmapNavNextDist');
+                    if (nextDist) {
+                        const distFormatted = remainingDistKm < 1 ? (Math.round(remainingDistKm * 1000) + ' ม.') : (remainingDistKm.toFixed(1) + ' กม.');
+                        nextDist.textContent = `${distFormatted} (~${formatDurationThai(remainTimeMin)})`;
                     }
                 }
             },
@@ -2415,9 +2424,12 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
     // ── Multi-Mode & Alternative Route Selection System ──
     let currentTravelMode = 'drive'; // 'drive', 'moto', 'walk', 'bike'
-    let currentRouteAlternatives = []; // [{ index, name, tag, distKm, timeMins, timeText, via, isMain }]
+    let currentRouteAlternatives = [];
     let selectedRouteIndex = 0;
     let alternativePolylines = [];
+    let activeNavPolyline = null;
+    let activeNavTarget = null;
+    let activeNavRoute = null;
 
     // Open Route Selector Sheet for Active Location
     window.openRouteSelectorForActive = function() {
@@ -2459,14 +2471,21 @@ html[data-theme="dark"] .gmap-sheet-handle {
     };
 
     window.closeRouteSelector = function() {
-        document.getElementById('gmapRouteSelectorSheet').style.display = 'none';
+        const sheet = document.getElementById('gmapRouteSelectorSheet');
+        if (sheet) sheet.style.display = 'none';
         clearAlternativePolylines();
     };
 
     window.selectTravelMode = function(mode, btn) {
         currentTravelMode = mode;
         document.querySelectorAll('.gmap-mode-chip').forEach(b => b.classList.remove('active'));
-        if (btn) btn.classList.add('active');
+        if (btn) {
+            btn.classList.add('active');
+        } else {
+            const el = document.querySelector(`.gmap-mode-chip[data-mode="${mode}"]`);
+            if (el) el.classList.add('active');
+        }
+        selectedRouteIndex = 0;
         calculateAndRenderRouteOptions();
     };
 
@@ -2477,9 +2496,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
         alternativePolylines = [];
     }
 
-    let activeNavPolyline = null;
-
-    // Calculate alternative routes & render comparison cards (Instant 0ms calculation)
+    // Calculate alternative routes & render comparison cards
     function calculateAndRenderRouteOptions() {
         const target = activeLocation;
         if (!target) return;
@@ -2490,22 +2507,39 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
         const baseDistKm = calculateDistance(startPoint[0], startPoint[1], parseFloat(target.lat), parseFloat(target.lng));
 
-        // Speed coefficients per mode
-        let speedKmH = 38;
-        let modeLabel = 'ทางรถยนต์';
+        // Speed coefficients & descriptions per mode
+        let speedKmH = 42;
+        let modeName = 'รถยนต์';
+        let r1Via = 'ถนนหลัก • สภาพจราจรคล่องตัว';
+        let r2Via = 'ทางเลี่ยง • ผ่านถนนวงแหวนรอบใน';
+
         if (currentTravelMode === 'moto') {
-            speedKmH = 35;
-            modeLabel = 'ทางมอเตอร์ไซค์';
+            speedKmH = 38;
+            modeName = 'มอเตอร์ไซค์';
+            r1Via = 'ทางตรงสายหลัก • คล่องตัวสูงสุด';
+            r2Via = 'ทางซอยลัดมหาวิทยาลัย • เลี่ยงรถติด';
         } else if (currentTravelMode === 'walk') {
             speedKmH = 4.8;
-            modeLabel = 'ทางเดินเท้า';
+            modeName = 'เดินเท้า';
+            r1Via = 'ทางเท้ามีหลังคาคลุม (Covered Walkway)';
+            r2Via = 'ทางเดินร่มรื่น • ผ่านสวนหย่อมและอาคาร';
         } else if (currentTravelMode === 'bike') {
             speedKmH = 16;
-            modeLabel = 'ทางจักรยาน';
+            modeName = 'จักรยาน';
+            r1Via = 'เลนจักรยานรอบมหาวิทยาลัย';
+            r2Via = 'เส้นทางปั่นถนนสายใน • ปลอดภัย';
         }
 
-        // Route 1 (Primary - Direct Recommended)
-        const r1DistKm = (baseDistKm * 1.08).toFixed(1);
+        // Generate geometry points for 2 realistic routes
+        const p1 = startPoint;
+        const p2 = [parseFloat(target.lat), parseFloat(target.lng)];
+        const midLat = (p1[0] + p2[0]) / 2;
+        const midLng = (p1[1] + p2[1]) / 2;
+        const offset = 0.0035;
+
+        // Route 1 (Primary - Direct)
+        const r1Points = [p1, [midLat + offset * 0.4, midLng - offset * 0.6], p2];
+        const r1DistKm = (baseDistKm * 1.06).toFixed(1);
         let r1TimeMin = Math.round((parseFloat(r1DistKm) / speedKmH) * 60);
         if (currentTravelMode === 'walk' && parseFloat(r1DistKm) < 0.06) {
             r1TimeMin = 0;
@@ -2513,9 +2547,10 @@ html[data-theme="dark"] .gmap-sheet-handle {
             r1TimeMin = Math.max(1, r1TimeMin);
         }
 
-        // Route 2 (Alternative - Shortcut / Community Avoidance)
-        const r2DistKm = (baseDistKm * 1.25).toFixed(1);
-        const r2TimeMin = Math.max(2, Math.round((parseFloat(r2DistKm) / (speedKmH * 0.9)) * 60));
+        // Route 2 (Alternative - Bypass)
+        const r2Points = [p1, [midLat - offset * 0.7, midLng + offset * 0.5], p2];
+        const r2DistKm = (baseDistKm * 1.22).toFixed(1);
+        const r2TimeMin = Math.max(2, Math.round((parseFloat(r2DistKm) / (speedKmH * 0.88)) * 60));
 
         currentRouteAlternatives = [
             {
@@ -2525,17 +2560,19 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 distKm: r1DistKm,
                 timeMins: r1TimeMin,
                 timeText: formatDurationThai(r1TimeMin),
-                via: `${modeLabel} • การจราจรคล่องตัว`,
+                via: `${modeName} • ${r1Via}`,
+                points: r1Points,
                 isMain: true
             },
             {
                 index: 1,
-                name: 'เส้นทางรอง (ทางเลี่ยงชุมชน)',
+                name: 'เส้นทางรอง (ทางเลี่ยง)',
                 tag: '🛡️ ทางเลือก',
                 distKm: r2DistKm,
                 timeMins: r2TimeMin,
                 timeText: formatDurationThai(r2TimeMin),
-                via: `${modeLabel} • ผ่านถนนสายในมหาวิทยาลัย`,
+                via: `${modeName} • ${r2Via}`,
+                points: r2Points,
                 isMain: false
             }
         ];
@@ -2571,7 +2608,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
         const startBtnText = document.getElementById('btnStartSelectedRouteText');
         if (startBtnText && currentRouteAlternatives[selectedRouteIndex]) {
             const sel = currentRouteAlternatives[selectedRouteIndex];
-            startBtnText.textContent = `เริ่มนำทาง (${sel.timeText})`;
+            startBtnText.textContent = `เริ่มนำทาง (${sel.name} • ${sel.timeText})`;
         }
     }
 
@@ -2583,26 +2620,15 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
     function previewRoutesOnMap() {
         clearAlternativePolylines();
-        if (!activeLocation || !map) return;
-
-        const target = activeLocation;
-        const p1 = userCoords || defaultCenter;
-        const p2 = [parseFloat(target.lat), parseFloat(target.lng)];
-
-        const midLat = (p1[0] + p2[0]) / 2;
-        const midLng = (p1[1] + p2[1]) / 2;
-        const offset = 0.0035;
-
-        const route1Points = [p1, [midLat + offset * 0.4, midLng - offset * 0.6], p2];
-        const route2Points = [p1, [midLat - offset * 0.7, midLng + offset * 0.5], p2];
-
-        const isR0Active = selectedRouteIndex === 0;
+        if (!activeLocation || !map || currentRouteAlternatives.length === 0) return;
 
         try {
-            // Line 1 (Main)
-            const line1 = L.polyline(route1Points, {
+            const isR0Active = selectedRouteIndex === 0;
+
+            // Line 1 (Main Route)
+            const line1 = L.polyline(currentRouteAlternatives[0].points, {
                 color: isR0Active ? '#10b981' : '#94a3b8',
-                weight: isR0Active ? 7 : 5,
+                weight: isR0Active ? 7 : 4.5,
                 opacity: isR0Active ? 0.95 : 0.6,
                 dashArray: isR0Active ? null : '6, 6'
             }).addTo(map);
@@ -2610,10 +2636,10 @@ html[data-theme="dark"] .gmap-sheet-handle {
             line1.on('click', () => selectRouteCard(0));
             alternativePolylines.push(line1);
 
-            // Line 2 (Alternative)
-            const line2 = L.polyline(route2Points, {
+            // Line 2 (Alternative Route)
+            const line2 = L.polyline(currentRouteAlternatives[1].points, {
                 color: !isR0Active ? '#10b981' : '#94a3b8',
-                weight: !isR0Active ? 7 : 5,
+                weight: !isR0Active ? 7 : 4.5,
                 opacity: !isR0Active ? 0.95 : 0.6,
                 dashArray: !isR0Active ? null : '6, 6'
             }).addTo(map);
@@ -2625,12 +2651,13 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
     // Start Turn-by-Turn Navigation with Selected Route
     window.startNavigationWithSelectedRoute = function() {
+        const selRoute = currentRouteAlternatives[selectedRouteIndex] || currentRouteAlternatives[0];
         closeRouteSelector();
-        startNavigationToActive();
+        startNavigationToActive(selRoute);
     };
 
-    // Instant Turn-by-Turn Navigation with Top GPS Banner (Instant 0ms)
-    window.startNavigationToActive = function() {
+    // Instant Turn-by-Turn Navigation with Top GPS Banner
+    window.startNavigationToActive = function(chosenRoute) {
         const target = activeLocation;
         if (!target) return;
 
@@ -2641,104 +2668,70 @@ html[data-theme="dark"] .gmap-sheet-handle {
         clearAlternativePolylines();
 
         if (routingControl) {
-            map.removeControl(routingControl);
+            try { map.removeControl(routingControl); } catch (e) {}
             routingControl = null;
         }
         if (activeNavPolyline) {
-            map.removeLayer(activeNavPolyline);
+            try { map.removeLayer(activeNavPolyline); } catch (e) {}
             activeNavPolyline = null;
         }
+
+        // Calculate Route if not passed
+        if (!chosenRoute) {
+            calculateAndRenderRouteOptions();
+            chosenRoute = currentRouteAlternatives[selectedRouteIndex] || currentRouteAlternatives[0];
+        }
+
+        activeNavTarget = target;
+        activeNavRoute = chosenRoute;
 
         const navBanner = document.getElementById('gmapNavBanner');
         const nextDist = document.getElementById('gmapNavNextDist');
         const nextText = document.getElementById('gmapNavNextText');
+        const turnIcon = document.getElementById('gmapNavTurnIcon');
         navBanner.style.display = 'flex';
 
-        // 1. Instant calculation (Zero delay)
-        const baseDistKm = calculateDistance(startPoint[0], startPoint[1], target.lat, target.lng);
-        const estDistKm = (baseDistKm * 1.08).toFixed(1);
-        let speedKmH = 38;
-        if (currentTravelMode === 'moto') speedKmH = 35;
-        else if (currentTravelMode === 'walk') speedKmH = 4.8;
-        else if (currentTravelMode === 'bike') speedKmH = 16;
-
-        let estTimeMin = Math.round((parseFloat(estDistKm) / speedKmH) * 60);
-        if (currentTravelMode === 'walk' && parseFloat(estDistKm) < 0.06) {
-            estTimeMin = 0;
+        // 1. Set mode icon in banner
+        let modeIconSvg = '<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>';
+        if (currentTravelMode === 'walk') {
+            modeIconSvg = '<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>';
+        } else if (currentTravelMode === 'moto') {
+            modeIconSvg = '<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>';
+        } else if (currentTravelMode === 'bike') {
+            modeIconSvg = '<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="5.5" cy="17.5" r="3.5" stroke-width="2"/><circle cx="18.5" cy="17.5" r="3.5" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 6h-3l-3 7h6l2-4h2"/></svg>';
         } else {
-            estTimeMin = Math.max(1, estTimeMin);
+            modeIconSvg = '<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>';
         }
+        if (turnIcon) turnIcon.innerHTML = modeIconSvg;
 
-        nextDist.textContent = `${estDistKm} กม. (~${formatDurationThai(estTimeMin)})`;
-        nextText.textContent = `มุ่งหน้าไปยัง ${target.title}`;
+        // 2. Set distance, time and turn instruction text
+        nextDist.textContent = `${chosenRoute.distKm} กม. (~${chosenRoute.timeText})`;
+        nextText.textContent = `มุ่งหน้าไปยัง ${target.title} (${chosenRoute.name})`;
 
-        // 2. Draw immediate instant polyline route
-        const midLat = (startPoint[0] + target.lat) / 2;
-        const midLng = (startPoint[1] + target.lng) / 2;
-        const offset = 0.002;
-        const instantPath = [startPoint, [midLat + offset, midLng - offset], [target.lat, target.lng]];
-
-        activeNavPolyline = L.polyline(instantPath, {
+        // 3. Draw active polyline
+        const pathPoints = chosenRoute.points || [startPoint, [parseFloat(target.lat), parseFloat(target.lng)]];
+        activeNavPolyline = L.polyline(pathPoints, {
             color: '#10b981',
             weight: 7,
             opacity: 0.95
         }).addTo(map);
 
-        map.fitBounds(activeNavPolyline.getBounds(), { padding: [70, 70] });
-
-        // 3. Enrich with OSRM in background if available
         try {
-            routingControl = L.Routing.control({
-                waypoints: [
-                    L.latLng(startPoint[0], startPoint[1]),
-                    L.latLng(target.lat, target.lng)
-                ],
-                router: L.Routing.osrmv1({
-                    serviceUrl: 'https://router.project-osrm.org/route/v1',
-                    timeout: 3000
-                }),
-                routeWhileDragging: false,
-                showAlternatives: false,
-                addWaypoints: false,
-                createMarker: function() { return null; },
-                lineOptions: {
-                    styles: [{ color: '#10b981', weight: 7, opacity: 0.95 }]
-                }
-            }).addTo(map);
-
-            routingControl.on('routesfound', function(e) {
-                if (activeNavPolyline) {
-                    map.removeLayer(activeNavPolyline);
-                    activeNavPolyline = null;
-                }
-                const routes = e.routes;
-                const summary = routes[0].summary;
-                const totalDistKm = (summary.totalDistance / 1000).toFixed(1);
-                const totalTimeMin = Math.round(summary.totalTime / 60);
-
-                nextDist.textContent = `${totalDistKm} กม. (~${formatDurationThai(totalTimeMin)})`;
-                if (routes[0].instructions && routes[0].instructions.length > 0) {
-                    nextText.textContent = routes[0].instructions[0].text;
-                }
-            });
-
-            routingControl.on('routingerror', function() {
-                // Keep instant polyline and calculation intact
-            });
-        } catch (e) {
-            // Ignore background error
-        }
+            map.fitBounds(activeNavPolyline.getBounds(), { padding: [70, 70] });
+        } catch (e) {}
     };
 
     window.clearNavigationRoute = function() {
         if (routingControl) {
-            map.removeControl(routingControl);
+            try { map.removeControl(routingControl); } catch (e) {}
             routingControl = null;
         }
         if (activeNavPolyline) {
-            map.removeLayer(activeNavPolyline);
+            try { map.removeLayer(activeNavPolyline); } catch (e) {}
             activeNavPolyline = null;
         }
+        activeNavTarget = null;
+        activeNavRoute = null;
         clearAlternativePolylines();
         document.getElementById('gmapNavBanner').style.display = 'none';
     };
