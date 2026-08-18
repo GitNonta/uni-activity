@@ -2502,20 +2502,17 @@ html[data-theme="dark"] .gmap-sheet-handle {
         alternativePolylines = [];
     }
 
-    // Calculate alternative routes & render comparison cards
+    let activeNavPolyline = null;
+
+    // Calculate alternative routes & render comparison cards (Instant 0ms calculation)
     function calculateAndRenderRouteOptions() {
         const target = activeLocation;
         if (!target) return;
 
         const cardsContainer = document.getElementById('gmapRouteCardsList');
-        cardsContainer.innerHTML = '<div style="padding:1rem;text-align:center;color:#94a3b8;font-size:0.85rem;">กำลังคำนวณเส้นทางทางเลือก...</div>';
+        const startPoint = userCoords || defaultCenter;
 
-        if (!userCoords) {
-            cardsContainer.innerHTML = '<div style="padding:1rem;text-align:center;color:#ef4444;font-size:0.85rem;">กรุณาเปิด GPS หรือแตะปุ่มระบุตำแหน่งเพื่อดูเส้นทาง</div>';
-            return;
-        }
-
-        const baseDistKm = calculateDistance(userCoords[0], userCoords[1], target.lat, target.lng);
+        const baseDistKm = calculateDistance(startPoint[0], startPoint[1], target.lat, target.lng);
 
         // Speed coefficients per mode
         let speedKmH = 38;
@@ -2611,10 +2608,10 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
     function previewRoutesOnMap() {
         clearAlternativePolylines();
-        if (!userCoords || !activeLocation) return;
+        if (!activeLocation) return;
 
         const target = activeLocation;
-        const p1 = userCoords;
+        const p1 = userCoords || defaultCenter;
         const p2 = [target.lat, target.lng];
 
         const midLat = (p1[0] + p2[0]) / 2;
@@ -2655,25 +2652,12 @@ html[data-theme="dark"] .gmap-sheet-handle {
         startNavigationToActive();
     };
 
-    // Turn-by-Turn Navigation with Top GPS Banner
+    // Instant Turn-by-Turn Navigation with Top GPS Banner (Instant 0ms)
     window.startNavigationToActive = function() {
         const target = activeLocation;
         if (!target) return;
 
-        if (!userCoords) {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(pos) {
-                    userCoords = [pos.coords.latitude, pos.coords.longitude];
-                    setUserGpsMarker();
-                    startNavigationToActive();
-                }, function() {
-                    alert('กรุณาเปิด GPS หรืออนุญาตการเข้าถึงตำแหน่งในเบราว์เซอร์เพื่อเริ่มนำทาง');
-                }, { enableHighAccuracy: true, timeout: 10000 });
-            } else {
-                alert('เบราว์เซอร์ไม่รองรับ GPS');
-            }
-            return;
-        }
+        const startPoint = userCoords || defaultCenter;
 
         closeBottomSheet();
         closeRouteSelector();
@@ -2683,55 +2667,100 @@ html[data-theme="dark"] .gmap-sheet-handle {
             map.removeControl(routingControl);
             routingControl = null;
         }
+        if (activeNavPolyline) {
+            map.removeLayer(activeNavPolyline);
+            activeNavPolyline = null;
+        }
 
         const navBanner = document.getElementById('gmapNavBanner');
         const nextDist = document.getElementById('gmapNavNextDist');
         const nextText = document.getElementById('gmapNavNextText');
         navBanner.style.display = 'flex';
-        nextDist.textContent = 'กำลังคำนวณ...';
-        nextText.textContent = 'มุ่งหน้าไปยัง ' + target.title;
 
-        routingControl = L.Routing.control({
-            waypoints: [
-                L.latLng(userCoords[0], userCoords[1]),
-                L.latLng(target.lat, target.lng)
-            ],
-            router: L.Routing.osrmv1({
-                serviceUrl: 'https://router.project-osrm.org/route/v1'
-            }),
-            routeWhileDragging: false,
-            showAlternatives: false,
-            addWaypoints: false,
-            createMarker: function() { return null; },
-            lineOptions: {
-                styles: [{ color: '#10b981', weight: 7, opacity: 0.95 }]
-            }
+        // 1. Instant calculation (Zero delay)
+        const baseDistKm = calculateDistance(startPoint[0], startPoint[1], target.lat, target.lng);
+        const estDistKm = (baseDistKm * 1.08).toFixed(1);
+        let speedKmH = 38;
+        if (currentTravelMode === 'moto') speedKmH = 35;
+        else if (currentTravelMode === 'walk') speedKmH = 4.8;
+        else if (currentTravelMode === 'bike') speedKmH = 16;
+
+        let estTimeMin = Math.round((parseFloat(estDistKm) / speedKmH) * 60);
+        if (currentTravelMode === 'walk' && parseFloat(estDistKm) < 0.06) {
+            estTimeMin = 0;
+        } else {
+            estTimeMin = Math.max(1, estTimeMin);
+        }
+
+        nextDist.textContent = `${estDistKm} กม. (~${formatDurationThai(estTimeMin)})`;
+        nextText.textContent = `มุ่งหน้าไปยัง ${target.title}`;
+
+        // 2. Draw immediate instant polyline route
+        const midLat = (startPoint[0] + target.lat) / 2;
+        const midLng = (startPoint[1] + target.lng) / 2;
+        const offset = 0.002;
+        const instantPath = [startPoint, [midLat + offset, midLng - offset], [target.lat, target.lng]];
+
+        activeNavPolyline = L.polyline(instantPath, {
+            color: '#10b981',
+            weight: 7,
+            opacity: 0.95
         }).addTo(map);
 
-        routingControl.on('routesfound', function(e) {
-            const routes = e.routes;
-            const summary = routes[0].summary;
-            const totalDistKm = (summary.totalDistance / 1000).toFixed(1);
-            const totalTimeMin = Math.round(summary.totalTime / 60);
+        map.fitBounds(activeNavPolyline.getBounds(), { padding: [70, 70] });
 
-            nextDist.textContent = `${totalDistKm} กม. (~${formatDurationThai(totalTimeMin)})`;
-            if (routes[0].instructions && routes[0].instructions.length > 0) {
-                nextText.textContent = routes[0].instructions[0].text;
-            }
-        });
+        // 3. Enrich with OSRM in background if available
+        try {
+            routingControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(startPoint[0], startPoint[1]),
+                    L.latLng(target.lat, target.lng)
+                ],
+                router: L.Routing.osrmv1({
+                    serviceUrl: 'https://router.project-osrm.org/route/v1',
+                    timeout: 3000
+                }),
+                routeWhileDragging: false,
+                showAlternatives: false,
+                addWaypoints: false,
+                createMarker: function() { return null; },
+                lineOptions: {
+                    styles: [{ color: '#10b981', weight: 7, opacity: 0.95 }]
+                }
+            }).addTo(map);
 
-        routingControl.on('routingerror', function() {
-            const dist = calculateDistance(userCoords[0], userCoords[1], target.lat, target.lng);
-            const estDriveMins = Math.max(1, Math.round((dist / 35) * 60));
-            nextDist.textContent = `~${dist.toFixed(1)} กม. (~${formatDurationThai(estDriveMins)})`;
-            nextText.textContent = `มุ่งหน้าไปยัง ${target.title}`;
-        });
+            routingControl.on('routesfound', function(e) {
+                if (activeNavPolyline) {
+                    map.removeLayer(activeNavPolyline);
+                    activeNavPolyline = null;
+                }
+                const routes = e.routes;
+                const summary = routes[0].summary;
+                const totalDistKm = (summary.totalDistance / 1000).toFixed(1);
+                const totalTimeMin = Math.round(summary.totalTime / 60);
+
+                nextDist.textContent = `${totalDistKm} กม. (~${formatDurationThai(totalTimeMin)})`;
+                if (routes[0].instructions && routes[0].instructions.length > 0) {
+                    nextText.textContent = routes[0].instructions[0].text;
+                }
+            });
+
+            routingControl.on('routingerror', function() {
+                // Keep instant polyline and calculation intact
+            });
+        } catch (e) {
+            // Ignore background error
+        }
     };
 
     window.clearNavigationRoute = function() {
         if (routingControl) {
             map.removeControl(routingControl);
             routingControl = null;
+        }
+        if (activeNavPolyline) {
+            map.removeLayer(activeNavPolyline);
+            activeNavPolyline = null;
         }
         clearAlternativePolylines();
         document.getElementById('gmapNavBanner').style.display = 'none';
