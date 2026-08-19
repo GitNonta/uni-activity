@@ -28,7 +28,19 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
             'face-verify' => \App\Http\Middleware\FaceVerificationThrottle::class,
-            'protect-admin' => \App\Http\Middleware\ProtectAdminPanel::class,
+            'protect-admin' => function ($request, $next) {
+                if (auth()->check() && (auth()->user()->isAdmin() || auth()->user()->isStaff())) {
+                    return $next($request);
+                }
+                $whitelist = env('ADMIN_IP_WHITELIST');
+                if ($whitelist) {
+                    $allowedIps = array_map('trim', explode(',', $whitelist));
+                    if (!in_array($request->ip(), $allowedIps, strict: true)) {
+                        return response()->view('errors.403', ['message' => 'Access to admin panel is restricted.'], 403);
+                    }
+                }
+                return $next($request);
+            },
             \App\Http\Middleware\AuditLogMiddleware::class,
         ]);
         $middleware->appendToGroup('web', \App\Http\Middleware\UpdateLastSeen::class);
