@@ -82,6 +82,7 @@ class SecurityHeaders
             
             // 6. Hide PHP version (Termux ignores expose_php=Off)
             $response->headers->remove('X-Powered-By');
+            header_remove('X-Powered-By');
         }
 
         return $response;
