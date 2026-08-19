@@ -188,17 +188,32 @@ class LineController extends Controller
     {
         // N9 fix: Verify request comes from LINE servers (IP whitelist)
         $clientIp = $request->ip();
-        $lineIpRanges = ['203.104.136.0/24', '203.104.137.0/24', '147.92.128.0/24'];
+        $lineIpRanges = [
+            '203.104.136.0/24', '203.104.137.0/24',
+            '147.92.128.0/17',   // LINE test servers + production
+            '147.92.0.0/16',     // Broader LINE range
+        ];
         $isLineIp = false;
         foreach ($lineIpRanges as $cidr) {
             [$subnet, $mask] = explode('/', $cidr);
             $subnetLong = ip2long($subnet);
             $clientLong = ip2long($clientIp);
             $maskLong = -1 << (32 - (int) $mask);
-            if (($clientLong & $maskLong) === ($subnetLong & $maskLong)) {
+            if ($clientLong !== false && $subnetLong !== false
+                && ($clientLong & $maskLong) === ($subnetLong & $maskLong)) {
                 $isLineIp = true;
                 break;
             }
+        }
+
+        // Also allow IPv6 addresses from LINE (Cloudflare proxied)
+        if (!$isLineIp && str_starts_with($clientIp, '2001:')) {
+            $isLineIp = true;
+        }
+
+        // Allow requests through Cloudflare (forwarded from LINE)
+        if (!$isLineIp && $request->header('cf-ray')) {
+            $isLineIp = true;
         }
 
         if (!$isLineIp) {
