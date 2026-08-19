@@ -79,6 +79,9 @@ class SecurityHeaders
             
             // 5. Referrer Policy
             $response->header('Referrer-Policy', 'strict-origin-when-cross-origin');
+            
+            // 6. Hide PHP version (Termux ignores expose_php=Off)
+            $response->headers->remove('X-Powered-By');
         }
 
         return $response;
