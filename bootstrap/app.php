@@ -45,7 +45,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->appendToGroup('web', \App\Http\Middleware\UpdateLastSeen::class);
         $middleware->validateCsrfTokens(except: [
-            'line/webhook',
+            'line/*',
         ]);
         $middleware->redirectUsersTo('/');
         
