@@ -16,7 +16,7 @@ use App\Http\Controllers\Api\ActivityController;
 */
 
 // API endpoints ที่เปิดให้ภายนอกดึงข้อมูลได้ (ต้องใช้ API Key)
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'throttle:api-general'])->group(function () {
     
     // ทดสอบดึงข้อมูล User ของ Token นั้น
     Route::get('/user', function (Request $request) {
@@ -29,12 +29,14 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // Cluster Telemetry Metrics for Monitor UI & Dashboard
-Route::get('/cluster/metrics', [\App\Http\Controllers\Admin\ClusterMonitoringController::class, 'metrics']);
+Route::get('/cluster/metrics', [\App\Http\Controllers\Admin\ClusterMonitoringController::class, 'metrics'])->middleware('throttle:api-general');
 
 // Failed Queue Jobs Management for Monitor UI & Dashboard
-Route::get('/failed-jobs', [\App\Http\Controllers\Admin\FailedJobsController::class, 'index']);
-Route::get('/failed-jobs/{uuid}', [\App\Http\Controllers\Admin\FailedJobsController::class, 'show']);
-Route::post('/failed-jobs/retry-all', [\App\Http\Controllers\Admin\FailedJobsController::class, 'retryAll']);
-Route::post('/failed-jobs/{id}/retry', [\App\Http\Controllers\Admin\FailedJobsController::class, 'retry']);
-Route::delete('/failed-jobs/flush', [\App\Http\Controllers\Admin\FailedJobsController::class, 'flush']);
-Route::delete('/failed-jobs/{id}', [\App\Http\Controllers\Admin\FailedJobsController::class, 'destroy']);
+Route::middleware('throttle:api-general')->group(function () {
+    Route::get('/failed-jobs', [\App\Http\Controllers\Admin\FailedJobsController::class, 'index']);
+    Route::get('/failed-jobs/{uuid}', [\App\Http\Controllers\Admin\FailedJobsController::class, 'show']);
+    Route::post('/failed-jobs/retry-all', [\App\Http\Controllers\Admin\FailedJobsController::class, 'retryAll']);
+    Route::post('/failed-jobs/{id}/retry', [\App\Http\Controllers\Admin\FailedJobsController::class, 'retry']);
+    Route::delete('/failed-jobs/flush', [\App\Http\Controllers\Admin\FailedJobsController::class, 'flush']);
+    Route::delete('/failed-jobs/{id}', [\App\Http\Controllers\Admin\FailedJobsController::class, 'destroy']);
+});

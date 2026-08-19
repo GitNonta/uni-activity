@@ -94,14 +94,14 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [StudentAuthController::class, 'logout'])->name('logout');
 
 // ── เส้นทางเจ้าหน้าที่: เข้าสู่ระบบด้วย email + password ──
-Route::middleware('guest')->group(function () {
+Route::middleware(['guest', 'protect-admin'])->group(function () {
     Route::get('/admin/login', [StaffAuthController::class, 'showLogin'])->name('admin.login');   // แสดงฟอร์ม login
     Route::post('/admin/login', [StaffAuthController::class, 'login'])->middleware('throttle:staff-login'); // ดำเนินการ login
 });
 Route::post('/admin/logout', [StaffAuthController::class, 'logout'])->name('admin.logout');   // ออกจากระบบ
 
 // ── ระบบลืมรหัสผ่าน Staff ──
-Route::middleware('guest')->group(function () {
+Route::middleware(['guest', 'protect-admin'])->group(function () {
     Route::get('/admin/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('admin.password.request');
     Route::post('/admin/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->middleware('throttle:password-reset')->name('admin.password.email');
     
@@ -128,7 +128,8 @@ Route::get('/announcements/{announcement}', [StudentAnnouncementController::clas
 Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
 Route::get('/jobs/{job}', [JobController::class, 'show'])->name('jobs.show');
 Route::get('/map', [MapController::class, 'index'])->name('map.index');
-Route::get('/api/map/locations', [MapController::class, 'locationsApi'])->name('api.map.locations');
+// ❌ FIXED V1: Require authentication for location data (was: public API data leakage)
+Route::middleware('auth:sanctum')->get('/api/map/locations', [MapController::class, 'locationsApi'])->name('api.map.locations');
 
 // ── เส้นทางนักศึกษา (ต้อง login ก่อน) ──────────────────
 Route::middleware('auth')->group(function () {

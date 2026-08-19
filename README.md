@@ -66,7 +66,7 @@
 
 | ส่วนประกอบ (Component) | เทคโนโลยีที่ใช้ (Technology) | หน้าที่การทำงาน (Description) |
 |:---|:---|:---|
-| **Backend Framework** | Laravel 11.x / 12.x | Core Web Application, RESTful APIs, Business Logic |
+| **Backend Framework** | Laravel 13.x / 12.x | Core Web Application, RESTful APIs, Business Logic |
 | **Language** | PHP 8.2+ | Server-side Application Execution |
 | **Primary Database** | PostgreSQL 16 | Relational Database for Enterprise Data Storage |
 | **Cache & Queue** | Redis | In-Memory Caching & Background Job Queueing |

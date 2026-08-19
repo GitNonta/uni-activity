@@ -132,6 +132,14 @@ class AppServiceProvider extends ServiceProvider
                 Limit::perMinute(50)->by($request->ip() . '|exports-global')
             ];
         });
+
+        // 9. ❌ FIXED V3: API General - Rate limiting for all API endpoints (GET/POST/PUT/DELETE)
+        RateLimiter::for('api-general', function (Request $request) {
+            return [
+                Limit::perMinute(60)->by($request->user()?->id ?: $request->ip() . '|api'),
+                Limit::perMinute(300)->by($request->ip() . '|api-global')
+            ];
+        });
     }
 
     /** ลงทะเบียน Event → Listener สำหรับ LINE Notifications */

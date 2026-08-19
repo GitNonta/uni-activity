@@ -1,2 +1,7 @@
 User-agent: *
-Disallow:
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api/
+Disallow: /.env
+Disallow: /storage/
+Disallow: /config/

@@ -90,7 +90,8 @@ RUN echo "upload_max_filesize = 50M" > /usr/local/etc/php/conf.d/uploads.ini \
     && echo "post_max_size = 55M" >> /usr/local/etc/php/conf.d/uploads.ini \
     && echo "max_file_uploads = 20" >> /usr/local/etc/php/conf.d/uploads.ini \
     && echo "memory_limit = 512M" >> /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "max_execution_time = 300" >> /usr/local/etc/php/conf.d/uploads.ini
+    && echo "max_execution_time = 300" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "expose_php = Off" >> /usr/local/etc/php/conf.d/uploads.ini
 
 WORKDIR /var/www/html
 

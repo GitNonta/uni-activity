@@ -2,7 +2,7 @@
 # ไฟล์นี้ถูกอ่านโดย Antigravity, Cursor, และ Claude Code อัตโนมัติ
 
 ## Project Stack
-- **Backend:** Laravel 11, PHP 8.2+
+- **Backend:** Laravel 13, PHP 8.2+
 - **Database:** PostgreSQL (primary core database)
 - **Cache / Queue / Locks:** Redis / Dragonfly
 - **Real-time:** Laravel Reverb (WebSocket)

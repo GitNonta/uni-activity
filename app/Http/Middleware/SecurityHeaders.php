@@ -40,16 +40,16 @@ class SecurityHeaders
             // 3. HTTP Strict Transport Security (HSTS)
             $response->header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
             
-            // 4. Content Security Policy (CSP)
-            // Adjust the allowed sources based on your application's actual CDN and external resource needs.
-            // Allowed: self, fonts.googleapis.com, Tailwind CDN (if used), WebSockets (ws/wss)
-             $csp = "default-src 'self' https: http: data: blob: 'unsafe-inline' 'unsafe-eval'; "
-                  . "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; "
+            // 4. Content Security Policy (CSP) ❌ FIXED V6: Remove unsafe-inline and unsafe-eval
+            // Updated policy restricts inline scripts and eval() to prevent XSS attacks
+            // Note: Tailwind CDN may need to be replaced with local/build-time CSS to fully comply
+            $csp = "default-src 'self' https: data: blob:; "
+                  . "script-src 'self' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; "
                   . "worker-src 'self' blob:; "
-                  . "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com https://cdnjs.cloudflare.com; "
+                  . "style-src 'self' https://fonts.googleapis.com https://unpkg.com https://cdnjs.cloudflare.com; "
                   . "font-src 'self' https://fonts.gstatic.com data:; "
-                  . "img-src 'self' data: https: http: blob:; "
-                  . "connect-src 'self' ws: wss: https: http:; "
+                  . "img-src 'self' data: https: blob:; "
+                  . "connect-src 'self' ws: wss: https:; "
                   . "upgrade-insecure-requests;";
             
             $response->header('Content-Security-Policy', $csp);
