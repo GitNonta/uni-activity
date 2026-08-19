@@ -32,6 +32,8 @@ class SecurityHeaders
         // Make sure the response supports headers (e.g. not a BinaryFileResponse in some edge cases, though it usually does)
         if (method_exists($response, 'header')) {
             if (str_contains($response->headers->get('Content-Type', ''), 'text/html')) {
+                $response->header('Content-Type', 'text/html; charset=UTF-8');
+                $response->header('Content-Disposition', 'inline');
                 $response->header('Cache-Control', 'no-store, private');
             }
 
