@@ -28,11 +28,12 @@ Route::middleware(['auth:sanctum', 'throttle:api-general'])->group(function () {
 
 });
 
-// Cluster Telemetry Metrics for Monitor UI & Dashboard
-Route::get('/cluster/metrics', [\App\Http\Controllers\Admin\ClusterMonitoringController::class, 'metrics'])->middleware('throttle:api-general');
+// Admin Dashboard & Monitoring (ต้องใช้ API Token)
+Route::middleware(['auth:sanctum', 'throttle:api-general'])->group(function () {
+    // Cluster Telemetry Metrics for Monitor UI & Dashboard
+    Route::get('/cluster/metrics', [\App\Http\Controllers\Admin\ClusterMonitoringController::class, 'metrics']);
 
-// Failed Queue Jobs Management for Monitor UI & Dashboard
-Route::middleware('throttle:api-general')->group(function () {
+    // Failed Queue Jobs Management for Monitor UI & Dashboard
     Route::get('/failed-jobs', [\App\Http\Controllers\Admin\FailedJobsController::class, 'index']);
     Route::get('/failed-jobs/{uuid}', [\App\Http\Controllers\Admin\FailedJobsController::class, 'show']);
     Route::post('/failed-jobs/retry-all', [\App\Http\Controllers\Admin\FailedJobsController::class, 'retryAll']);
