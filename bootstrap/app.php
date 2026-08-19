@@ -44,6 +44,9 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\AuditLogMiddleware::class,
         ]);
         $middleware->appendToGroup('web', \App\Http\Middleware\UpdateLastSeen::class);
+        $middleware->validateCsrfTokens(except: [
+            'line/webhook',
+        ]);
         $middleware->redirectUsersTo('/');
         
         $middleware->priority([
