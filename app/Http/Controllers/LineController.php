@@ -186,7 +186,27 @@ class LineController extends Controller
     /** LINE Webhook endpoint (รับ events จาก LINE) */
     public function webhook(Request $request): Response
     {
-        // Verify signature
+        // N9 fix: Verify request comes from LINE servers (IP whitelist)
+        $clientIp = $request->ip();
+        $lineIpRanges = ['203.104.136.0/24', '203.104.137.0/24', '147.92.128.0/24'];
+        $isLineIp = false;
+        foreach ($lineIpRanges as $cidr) {
+            [$subnet, $mask] = explode('/', $cidr);
+            $subnetLong = ip2long($subnet);
+            $clientLong = ip2long($clientIp);
+            $maskLong = -1 << (32 - (int) $mask);
+            if (($clientLong & $maskLong) === ($subnetLong & $maskLong)) {
+                $isLineIp = true;
+                break;
+            }
+        }
+
+        if (!$isLineIp) {
+            Log::warning('LINE webhook from non-LINE IP: ' . $clientIp);
+            return response('Forbidden', 403);
+        }
+
+        // Verify HMAC signature
         $signature = $request->header('X-Line-Signature', '');
         $body      = $request->getContent();
         $hash      = base64_encode(hash_hmac('sha256', $body, config('services.line.channel_secret'), true));

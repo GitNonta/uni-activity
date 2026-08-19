@@ -16,6 +16,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Barryvdh\DomPDF\PDF as DomPdfWrapper;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 
 /**
  * เซอร์วิสสรุปชั่วโมงกิจกรรมและจัดการข้อมูลหน้านักศึกษา
@@ -543,10 +544,17 @@ class ActivitySummaryService
 
         try {
             $cleanName = str_replace(['นาย ', 'นางสาว ', 'นาง '], '', $user->full_name);
-            $url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=th&tl=en&dt=t&q=' . urlencode($cleanName);
-            $response = @file_get_contents($url);
-            if ($response) {
-                $data = json_decode($response, true);
+            // N6 fix: Use Laravel HTTP client instead of file_get_contents (prevents SSRF)
+            $response = Http::timeout(5)
+                ->get('https://translate.googleapis.com/translate_a/single', [
+                    'client' => 'gtx',
+                    'sl'     => 'th',
+                    'tl'     => 'en',
+                    'dt'     => 't',
+                    'q'      => $cleanName,
+                ]);
+            if ($response->successful()) {
+                $data = $response->json();
                 if (isset($data[0][0][0])) {
                     $user->english_name = ucwords(strtolower(trim((string) $data[0][0][0])));
                     $user->save();

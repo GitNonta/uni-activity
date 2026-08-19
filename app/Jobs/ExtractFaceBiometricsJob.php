@@ -52,11 +52,16 @@ class ExtractFaceBiometricsJob implements ShouldQueue
             return;
         }
 
+        // Security: Validate path — reject traversal attempts (N5 fix)
+        if (str_contains($photoRelPath, '..') || str_contains($photoRelPath, "\0")) {
+            Log::warning("ExtractFaceBiometricsJob: Path traversal attempt blocked for User #{$this->userId}: {$photoRelPath}");
+            return;
+        }
+
+        // Use Storage facade exclusively — never raw file_get_contents (N5 fix)
         $imageContents = null;
         if (Storage::disk('public')->exists($photoRelPath)) {
             $imageContents = Storage::disk('public')->get($photoRelPath);
-        } elseif (file_exists($photoRelPath)) {
-            $imageContents = file_get_contents($photoRelPath);
         } elseif (file_exists(storage_path('app/public/' . ltrim($photoRelPath, '/')))) {
             $imageContents = file_get_contents(storage_path('app/public/' . ltrim($photoRelPath, '/')));
         }

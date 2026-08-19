@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use App\Traits\LogsAdminActivity;
+use Illuminate\Support\Facades\Http;
 
 class ProfileAdminController extends Controller
 {
@@ -25,12 +26,19 @@ class ProfileAdminController extends Controller
         if (empty($user->english_name) && !empty($user->full_name)) {
             try {
                 $cleanName = str_replace(['นาย ', 'นางสาว ', 'นาง '], '', $user->full_name);
-                $url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=th&tl=en&dt=t&q=' . urlencode($cleanName);
-                $response = @file_get_contents($url);
-                if ($response) {
-                    $data = json_decode($response, true);
+                // N6 fix: Use Laravel HTTP client instead of file_get_contents (prevents SSRF)
+                $response = Http::timeout(5)
+                    ->get('https://translate.googleapis.com/translate_a/single', [
+                        'client' => 'gtx',
+                        'sl'     => 'th',
+                        'tl'     => 'en',
+                        'dt'     => 't',
+                        'q'      => $cleanName,
+                    ]);
+                if ($response->successful()) {
+                    $data = $response->json();
                     if (isset($data[0][0][0])) {
-                        $user->english_name = ucwords(strtolower(trim($data[0][0][0])));
+                        $user->english_name = ucwords(strtolower(trim((string) $data[0][0][0])));
                         $user->save();
                     }
                 }

@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /**
@@ -30,6 +31,11 @@ class CheckInController extends Controller
      */
     public function show(string $token): View|RedirectResponse
     {
+        // N10 fix: Require authentication — QR token alone is not enough
+        if (!auth()->check()) {
+            return redirect()->route('login')->with('error', 'กรุณาเข้าสู่ระบบก่อนเช็คอิน');
+        }
+
         $activity = Activity::where('qr_token', $token)
             ->orWhere('qr_checkout_token', $token)
             ->firstOrFail();
@@ -70,14 +76,31 @@ class CheckInController extends Controller
             return back()->with('error', 'QR Code หมดอายุแล้ว');
         }
 
-        $result = $this->checkInService->processQrCheckInWithFace(
-            $activity,
-            $request->user(),
-            $token,
-            $request->filled('selfie') ? (string) $request->selfie : null,
-            $request->filled('latitude') ? (float) $request->latitude : null,
-            $request->filled('longitude') ? (float) $request->longitude : null,
-        );
+        // N7 fix: Use database transaction with lock to prevent race condition
+        $result = DB::transaction(function () use ($activity, $request, $token) {
+            // Check for existing attendance under lock
+            $existing = Attendance::where('user_id', $request->user()->id)
+                ->where('activity_id', $activity->id)
+                ->lockForUpdate()
+                ->first();
+
+            if ($existing && $existing->status === 'approved') {
+                return [
+                    'success' => false,
+                    'message' => 'คุณได้เช็คอินกิจกรรมนี้แล้ว',
+                    'activity' => $activity,
+                ];
+            }
+
+            return $this->checkInService->processQrCheckInWithFace(
+                $activity,
+                $request->user(),
+                $token,
+                $request->filled('selfie') ? (string) $request->selfie : null,
+                $request->filled('latitude') ? (float) $request->latitude : null,
+                $request->filled('longitude') ? (float) $request->longitude : null,
+            );
+        });
 
         if ($result['success']) {
             return view('checkin.success', [
