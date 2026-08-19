@@ -35,15 +35,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // ❌ FIX: Fall back to file session driver if Redis is unreachable
+        // ❌ FIX: Fall back to file session + cache drivers if Redis is unreachable
         // This prevents HTTP 500 on every page when Redis is down
-        if (config('session.driver') === 'redis') {
+        if (config('session.driver') === 'redis' || config('cache.default') === 'redis') {
             try {
                 \Illuminate\Support\Facades\Redis::connection()->ping();
             } catch (\Throwable) {
-                config(['session.driver' => 'file']);
+                config([
+                    'session.driver'  => 'file',
+                    'cache.default'   => 'file',
+                    'CACHE_STORE'     => 'file',
+                    'SESSION_DRIVER'  => 'file',
+                ]);
                 \Illuminate\Support\Facades\Log::warning(
-                    'Session driver fallback: Redis unavailable, switched to file driver'
+                    'Redis unavailable — session + cache fallback to file driver'
                 );
             }
         }

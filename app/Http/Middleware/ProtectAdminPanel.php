@@ -21,8 +21,18 @@ class ProtectAdminPanel
     public function handle(Request $request, Closure $next): Response
     {
         // Allow authenticated admins to access admin panel
-        if (auth()->check() && (auth()->user()->isAdmin() || auth()->user()->isStaff())) {
-            return $next($request);
+        // Wrap in try-catch to handle Redis/session connection failures gracefully
+        try {
+            if (auth()->check() && (auth()->user()->isAdmin() || auth()->user()->isStaff())) {
+                return $next($request);
+            }
+        } catch (\Throwable $e) {
+            // If session backend (Redis) is down, log and continue without auth check
+            // This prevents a 500 error on every page when Redis is unreachable
+            \Illuminate\Support\Facades\Log::error('ProtectAdminPanel: Session backend unavailable', [
+                'error' => $e->getMessage(),
+                'path'  => $request->path(),
+            ]);
         }
 
         // If trying to access admin login, check IP whitelist if configured

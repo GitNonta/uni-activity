@@ -44,14 +44,15 @@ class SecurityHeaders
             // 3. HTTP Strict Transport Security (HSTS)
             $response->header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
             
-            // 4. Content Security Policy (CSP) ❌ FIXED V6: Remove unsafe-inline and unsafe-eval
-            // Updated policy restricts inline scripts and eval() to prevent XSS attacks
-            // Note: Tailwind CDN may need to be replaced with local/build-time CSS to fully comply
+            // 4. Content Security Policy (CSP)
+            // unsafe-inline kept for scripts because 85+ Blade templates use inline event handlers
+            // (onclick, onchange, onsubmit). Nonces only work on <script> tags, not HTML attributes.
+            // unsafe-eval is still blocked.
+            // TODO: Migrate inline handlers to external scripts to remove unsafe-inline
             $csp = "default-src 'self' https: data: blob:; "
-                . "script-src 'self' 'nonce-{$cspNonce}' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; "
+                . "script-src 'self' 'unsafe-inline' 'nonce-{$cspNonce}' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; "
                   . "worker-src 'self' blob:; "
-                . "style-src 'self' 'nonce-{$cspNonce}' https://fonts.googleapis.com https://unpkg.com https://cdnjs.cloudflare.com; "
-                  . "style-src-attr 'unsafe-inline'; "
+                . "style-src 'self' 'unsafe-inline' 'nonce-{$cspNonce}' https://fonts.googleapis.com https://unpkg.com https://cdnjs.cloudflare.com; "
                   . "font-src 'self' https://fonts.gstatic.com data:; "
                   . "img-src 'self' data: https: blob:; "
                   . "connect-src 'self' ws: wss: https:; "

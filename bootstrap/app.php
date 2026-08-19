@@ -96,6 +96,26 @@ return Application::configure(basePath: dirname(__DIR__))
             ]);
         });
 
+        // ❌ FIX: Handle Redis connection failures gracefully — prevent 500 on every page
+        $exceptions->renderable(function (\Predis\Connection\ConnectionException $e, $request) {
+            \Illuminate\Support\Facades\Log::error('Redis connection failed: ' . $e->getMessage());
+
+            if ($request->expectsJson()) {
+                return response()->json(['error' => 'Service temporarily unavailable'], 503);
+            }
+
+            // Don't show error page — let the app continue with file-based fallback
+            return null;
+        });
+
+        $exceptions->shouldRender(function (\Throwable $e) {
+            // Suppress Redis errors from rendering — allow app to continue
+            if ($e instanceof \Predis\Connection\ConnectionException) {
+                return false;
+            }
+            return null;
+        });
+
         // Handle CSRF Token Mismatch (419 Page Expired) gracefully
 
         $exceptions->renderable(function (\Illuminate\Session\TokenMismatchException $e, $request) {
