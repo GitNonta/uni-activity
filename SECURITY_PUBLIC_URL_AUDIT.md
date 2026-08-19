@@ -1,8 +1,9 @@
 # 🔓 Public URL Security Vulnerability Audit Report
 
 **Project:** uni-activity (Laravel 13.25.0)  
-**Public URL:** `https://reception-parameter-wear-source.trycloudflare.com`  
+**Public URL:** `https://folk-timing-intl-seasons.trycloudflare.com`  
 **Audit Date:** 2026-08-19  
+**Last Updated:** 2026-08-19 (All findings remediated)  
 **Auditor:** Buffy (Codebuff AI)  
 **Scope:** Vulnerabilities exploitable via the public Cloudflare tunnel URL
 

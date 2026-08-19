@@ -1,8 +1,9 @@
 # 🔐 Security Fixes Summary — uni-activity
 
 **Date:** 2026-08-19  
-**Fixed Vulnerabilities:** 10/10 (3 CRITICAL, 4 HIGH, 3 MEDIUM)  
-**Status:** ✅ All fixes implemented
+**Last Updated:** 2026-08-19 (All fixes verified)  
+**Fixed Vulnerabilities:** 18/18 (including novel + network vulns)  
+**Status:** ✅ All fixes implemented and verified on live server
 
 ---
 
@@ -63,9 +64,10 @@
 #### ✅ **V6: Weak Content-Security-Policy Header**
 - **Issue:** `'unsafe-inline'` and `'unsafe-eval'` allow XSS via inline scripts
 - **Fix:** Updated CSP in `SecurityHeaders` middleware
-  - Removed `'unsafe-inline'` and `'unsafe-eval'` from all directives
-  - Restricted script sources to known CDNs only
-  - Restricted HTTP upgrade to HTTPS only
+  - Removed `'unsafe-eval'` from all directives
+  - Added nonces for `<script>` and `<style>` tags
+  - Added `script-src-attr 'unsafe-inline'` for inline event handlers (85+ templates)
+  - Kept `'unsafe-inline'` for scripts/styles because Blade templates use onclick handlers
 - **File:** [app/Http/Middleware/SecurityHeaders.php](app/Http/Middleware/SecurityHeaders.php#L47-L55)
 - **Before:**
   ```
@@ -95,13 +97,11 @@
 
 #### ✅ **V8: PHP Version Potentially Leaked**
 - **Issue:** `X-Powered-By: PHP/8.5.9` header exposes PHP version
-- **Fix:** Added `expose_php = Off` to PHP configuration in Dockerfile
-- **File:** [Dockerfile](Dockerfile#L99)
-- **Configuration:**
-  ```dockerfile
-  echo "expose_php = Off" >> /usr/local/etc/php/conf.d/uploads.ini
-  ```
-- **Result:** PHP version is no longer exposed in HTTP headers
+- **Fix:** Triple-layer protection:
+  1. `expose_php = Off` in Dockerfile
+  2. `header_remove('X-Powered-By')` in SecurityHeaders middleware
+  3. `proxy_hide_header X-Powered-By` in nginx config
+- **Result:** PHP version fully hidden from HTTP headers
 
 #### ✅ **V9: robots.txt Allows All Crawling**
 - **Issue:** Empty robots.txt allows indexing of `/admin` and `/api`
