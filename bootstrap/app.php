@@ -108,14 +108,6 @@ return Application::configure(basePath: dirname(__DIR__))
             return null;
         });
 
-        $exceptions->shouldRender(function (\Throwable $e) {
-            // Suppress Redis errors from rendering — allow app to continue
-            if ($e instanceof \Predis\Connection\ConnectionException) {
-                return false;
-            }
-            return null;
-        });
-
         // Handle CSRF Token Mismatch (419 Page Expired) gracefully
 
         $exceptions->renderable(function (\Illuminate\Session\TokenMismatchException $e, $request) {
