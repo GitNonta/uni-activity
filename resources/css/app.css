@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+.login-submit-spinner {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  animation: login-submit-spin 1s linear infinite;
+}
+
+@keyframes login-submit-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .navbar-user {
   display: inline-flex;
   align-items: center;

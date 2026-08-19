@@ -12,54 +12,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ time() }}">
     @vite(['resources/js/app.js'])
-    <script>
-        (function() {
-            var saved = localStorage.getItem('app-theme');
-            var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            var theme = saved || (prefersDark ? 'dark' : 'light');
-            document.documentElement.setAttribute('data-theme', theme);
-            if (theme === 'dark') {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-        })();
-
-        window.toggleThemeMode = function() {
-            var current = document.documentElement.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-            var next = current === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', next);
-            if (next === 'dark') {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-            localStorage.setItem('app-theme', next);
-            window.updateThemeToggleIcons(next);
-        };
-
-        window.updateThemeToggleIcons = function(theme) {
-            var isDark = theme === 'dark';
-            document.querySelectorAll('.theme-icon-sun').forEach(function(el) {
-                el.style.display = isDark ? 'block' : 'none';
-            });
-            document.querySelectorAll('.theme-icon-moon').forEach(function(el) {
-                el.style.display = isDark ? 'none' : 'block';
-            });
-        };
-
-        document.addEventListener('DOMContentLoaded', function() {
-            var current = document.documentElement.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-            window.updateThemeToggleIcons(current);
-        });
-
-        // ป้องกันปัญหา 419 Page Expired จาก BFCache (การกดปุ่ม Back)
-        window.addEventListener('pageshow', function(event) {
-            if (event.persisted) {
-                window.location.reload();
-            }
-        });
-    </script>
 </head>
 <body>
     {{-- Top Navbar --}}
@@ -115,7 +67,7 @@
                 </span>
 
                 <!-- SVG Theme Toggle Button (Desktop Auth) -->
-                <button onclick="toggleThemeMode()" class="navbar-theme-toggle-btn" title="สลับโหมดมืด / สว่าง (Dark / Light Mode)">
+                <button type="button" data-theme-toggle class="navbar-theme-toggle-btn" title="สลับโหมดมืด / สว่าง (Dark / Light Mode)">
                     <svg class="theme-icon-sun" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
                     </svg>
@@ -132,7 +84,7 @@
             {{-- Mobile: แสดงชื่อ + ปุ่มออก --}}
             <div class="navbar-mobile-right">
                 <!-- SVG Theme Toggle Button (Mobile Auth) -->
-                <button onclick="toggleThemeMode()" class="navbar-theme-toggle-btn" style="width:32px; height:32px;" title="สลับโหมดมืด / สว่าง">
+                <button type="button" data-theme-toggle class="navbar-theme-toggle-btn" style="width:32px; height:32px;" title="สลับโหมดมืด / สว่าง">
                     <svg class="theme-icon-sun" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
                     </svg>
@@ -176,7 +128,7 @@
             </nav>
             <div class="navbar-right navbar-desktop">
                 <!-- SVG Theme Toggle Button (Desktop Guest) -->
-                <button onclick="toggleThemeMode()" class="navbar-theme-toggle-btn" title="สลับโหมดมืด / สว่าง (Dark / Light Mode)">
+                <button type="button" data-theme-toggle class="navbar-theme-toggle-btn" title="สลับโหมดมืด / สว่าง (Dark / Light Mode)">
                     <svg class="theme-icon-sun" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
                     </svg>
@@ -196,7 +148,7 @@
             {{-- Guest Mobile Header Right --}}
             <div class="navbar-mobile-right">
                 <!-- SVG Theme Toggle Button (Mobile Guest) -->
-                <button onclick="toggleThemeMode()" class="navbar-theme-toggle-btn" style="width:32px; height:32px;" title="สลับโหมดมืด / สว่าง">
+                <button type="button" data-theme-toggle class="navbar-theme-toggle-btn" style="width:32px; height:32px;" title="สลับโหมดมืด / สว่าง">
                     <svg class="theme-icon-sun" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
                     </svg>
@@ -290,7 +242,7 @@
     </nav>
     @endauth
 
-    <script>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}">
     document.addEventListener('click', function(e) {
         document.querySelectorAll('.recommend-dropdown.open').forEach(function(d) {
             if (!d.contains(e.target)) d.classList.remove('open');
@@ -301,7 +253,7 @@
     @auth
     @if(!in_array(auth()->user()->role ?? 'student', ['admin','staff']))
     {{-- ── Notification Polling Script ── --}}
-    <script>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}">
     (function() {
         var NOTIF_URL = '{{ route("student.notifications") }}';
         var CSRF = document.querySelector('meta[name="csrf-token"]').content;
@@ -357,7 +309,7 @@
     @if(!in_array(auth()->user()->role ?? 'student', ['admin','staff']))
     {{-- ── Floating Chat Widget ── --}}
     {{-- ── Floating Chat Widget Styles ── --}}
-    <style>
+    <style nonce="{{ request()->attributes->get('csp_nonce') }}">
     .chat-list-item { background: transparent; transition: all .15s ease; margin: 6px 8px; border-radius: 12px; border: 1px solid #f1f5f9; }
     .chat-list-item:hover { background: #f8fafc; border-color: #e2e8f0; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
     .chat-list-item.unread { background: #FF9933; border-color: #FF9933; } /* Requested #FF9933 orange background */
@@ -590,7 +542,7 @@
         </button>
     </div>
 
-    <script>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}">
     (function () {
         var THREADS_URL = '{{ route("chat.threads") }}';
         var CSRF = document.querySelector('meta[name="csrf-token"]').content;
@@ -1416,7 +1368,7 @@
     @endif
     @endauth
     <!-- Auto-Linker & Hashtag Script for Descriptions and Comments -->
-    <script>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}">
     document.addEventListener('DOMContentLoaded', function() {
         var tokenPattern = /(?:(https?:\/\/[^\s<]+|(?<![\/\w])www\.[^\s<]+)|(?<![\w#&;:=])#(?!(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\b)([a-zA-Z0-9_\u0E00-\u0E7F]+))/gi;
         

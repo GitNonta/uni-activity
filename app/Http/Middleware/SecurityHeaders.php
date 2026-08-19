@@ -17,20 +17,24 @@ class SecurityHeaders
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // บังคับใช้ HTTPS ในระดับ Request สำหรับ Octane Worker
-        if ($request->isSecure()
+        $cspNonce = base64_encode(random_bytes(16));
+        $request->attributes->set('csp_nonce', $cspNonce);
+
+        $isDirectIpRequest = filter_var($request->getHost(), FILTER_VALIDATE_IP) !== false;
+        $isHttps = !$isDirectIpRequest && ($request->isSecure()
             || $request->header('x-forwarded-proto') === 'https'
             || $request->server('HTTP_X_FORWARDED_PROTO') === 'https'
-            || str_contains($request->header('host', ''), 'trycloudflare.com')
-            || str_contains($request->header('host', ''), 'ngrok')
-            || app()->environment('production')) {
-            \Illuminate\Support\Facades\URL::forceScheme('https');
-        }
+            || $request->header('cf-visitor') !== null);
+        \Illuminate\Support\Facades\URL::forceScheme($isHttps ? 'https' : 'http');
 
         $response = $next($request);
 
         // Make sure the response supports headers (e.g. not a BinaryFileResponse in some edge cases, though it usually does)
         if (method_exists($response, 'header')) {
+            if (str_contains($response->headers->get('Content-Type', ''), 'text/html')) {
+                $response->header('Cache-Control', 'no-store, private');
+            }
+
             // 1. Prevent Clickjacking
             $response->header('X-Frame-Options', 'SAMEORIGIN');
             
@@ -44,9 +48,10 @@ class SecurityHeaders
             // Updated policy restricts inline scripts and eval() to prevent XSS attacks
             // Note: Tailwind CDN may need to be replaced with local/build-time CSS to fully comply
             $csp = "default-src 'self' https: data: blob:; "
-                  . "script-src 'self' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; "
+                . "script-src 'self' 'nonce-{$cspNonce}' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; "
                   . "worker-src 'self' blob:; "
-                  . "style-src 'self' https://fonts.googleapis.com https://unpkg.com https://cdnjs.cloudflare.com; "
+                . "style-src 'self' 'nonce-{$cspNonce}' https://fonts.googleapis.com https://unpkg.com https://cdnjs.cloudflare.com; "
+                  . "style-src-attr 'unsafe-inline'; "
                   . "font-src 'self' https://fonts.gstatic.com data:; "
                   . "img-src 'self' data: https: blob:; "
                   . "connect-src 'self' ws: wss: https:; "

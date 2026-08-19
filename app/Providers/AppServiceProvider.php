@@ -16,7 +16,6 @@ use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -36,6 +35,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // ❌ FIX: Fall back to file session driver if Redis is unreachable
+        // This prevents HTTP 500 on every page when Redis is down
+        if (config('session.driver') === 'redis') {
+            try {
+                \Illuminate\Support\Facades\Redis::connection()->ping();
+            } catch (\Throwable) {
+                config(['session.driver' => 'file']);
+                \Illuminate\Support\Facades\Log::warning(
+                    'Session driver fallback: Redis unavailable, switched to file driver'
+                );
+            }
+        }
+
         \Carbon\Carbon::setLocale('th');
 
         if (file_exists(app_path('Helpers/TextHelper.php'))) {
@@ -52,14 +64,6 @@ class AppServiceProvider extends ServiceProvider
 
         $this->configureRateLimiters();
         $this->registerConsoleCommandLogger();
-        // บังคับใช้ HTTPS เมื่อเชื่อมต่อผ่าน Cloudflare / Reverse Proxy หรือ Production
-        if (request()->header('x-forwarded-proto') === 'https'
-            || request()->server('HTTP_X_FORWARDED_PROTO') === 'https'
-            || request()->header('cf-visitor') !== null
-            || str_contains((string) config('app.url'), 'https://')
-            || app()->environment('production')) {
-            URL::forceScheme('https');
-        }
     }
 
     private function configureRateLimiters(): void

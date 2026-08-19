@@ -7,19 +7,19 @@
     <div class="gmap-floating-top" id="gmapFloatingTop">
         {{-- Search Pill Bar with Back Button --}}
         <div class="gmap-search-pill">
-            <button type="button" class="gmap-back-btn" onclick="goBackOrHome()" title="ย้อนกลับ">
+            <button type="button" class="gmap-back-btn" data-map-action="goBackOrHome" title="ย้อนกลับ">
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
             </button>
             <input type="text" id="mapSearchInput" class="gmap-search-input" placeholder="ค้นหากิจกรรม, หางาน, อาคารสถานที่..." autocomplete="off">
-            <button type="button" id="mapSearchClearBtn" class="gmap-search-clear" onclick="clearMapSearch()" style="display:none;" title="ล้างการค้นหา">
+            <button type="button" id="mapSearchClearBtn" class="gmap-search-clear" data-map-action="clearMapSearch" style="display:none;" title="ล้างการค้นหา">
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
             </button>
             <div class="gmap-search-divider"></div>
-            <button type="button" class="gmap-list-toggle-btn" onclick="toggleNearbyDrawer()" title="เปิดรายการสถานที่">
+            <button type="button" class="gmap-list-toggle-btn" data-map-action="toggleNearbyDrawer" title="เปิดรายการสถานที่">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
                 </svg>
@@ -28,32 +28,32 @@
 
         {{-- Horizontal Scrollable Category Chips --}}
         <div class="gmap-chips-scroll">
-            <button type="button" class="gmap-chip active" data-type="all" onclick="filterType('all', this)">
+            <button type="button" class="gmap-chip active" data-map-action="filterType" data-type="all">
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
                 </svg>
                 <span>ทั้งหมด</span>
             </button>
-            <button type="button" class="gmap-chip" data-type="activity" onclick="filterType('activity', this)">
+            <button type="button" class="gmap-chip" data-map-action="filterType" data-type="activity">
                 <span class="gmap-chip-dot dot-orange"></span>
                 <span>กิจกรรม</span>
             </button>
-            <button type="button" class="gmap-chip" data-type="job" onclick="filterType('job', this)">
+            <button type="button" class="gmap-chip" data-map-action="filterType" data-type="job">
                 <span class="gmap-chip-dot dot-blue"></span>
                 <span>หางาน / Part-time</span>
             </button>
-            <button type="button" class="gmap-chip" data-type="landmark" onclick="filterType('landmark', this)">
+            <button type="button" class="gmap-chip" data-map-action="filterType" data-type="landmark">
                 <span class="gmap-chip-dot dot-green"></span>
                 <span>อาคาร / จุดสำคัญ</span>
             </button>
-            <button type="button" class="gmap-chip" data-radius="2" onclick="toggleQuickRadius(2, this)">
+            <button type="button" class="gmap-chip" data-map-action="toggleQuickRadius" data-radius="2">
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
                 <span>ใกล้ฉัน &lt; 2 กม.</span>
             </button>
-            <button type="button" class="gmap-chip" id="chip-heat" onclick="toggleHeatmapChip(this)">
+            <button type="button" class="gmap-chip" id="chip-heat" data-map-action="toggleHeatmapChip">
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/>
                 </svg>
@@ -75,13 +75,13 @@
                 <div class="gmap-nav-instruction" id="gmapNavInstruction">ตรงไปตามเส้นทาง</div>
             </div>
             <div class="gmap-nav-actions">
-                <button type="button" class="gmap-nav-voice-btn" id="gmapNavVoiceBtn" onclick="toggleVoiceGuidance()" title="เปิด/ปิดเสียงนำทาง">
+                <button type="button" class="gmap-nav-voice-btn" id="gmapNavVoiceBtn" data-map-action="toggleVoiceGuidance" title="เปิด/ปิดเสียงนำทาง">
                     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
                         <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                         <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
                     </svg>
                 </button>
-                <button type="button" class="gmap-nav-exit-btn" onclick="clearNavigationRoute()" title="สิ้นสุดการนำทาง">
+                <button type="button" class="gmap-nav-exit-btn" data-map-action="clearNavigationRoute" title="สิ้นสุดการนำทาง">
                     <span>สิ้นสุด</span>
                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
@@ -108,19 +108,19 @@
         {{-- Floating Action Buttons (Right Side) --}}
         <div class="gmap-fab-column">
             {{-- 3D Mode Toggle FAB --}}
-            <button type="button" class="gmap-fab" id="btnToggle3D" onclick="toggle3DView()" title="สลับมุมมอง 3 มิติ / 2 มิติ">
+            <button type="button" class="gmap-fab" id="btnToggle3D" data-map-action="toggle3DView" title="สลับมุมมอง 3 มิติ / 2 มิติ">
                 <span style="font-weight:900;font-size:0.8rem;letter-spacing:-0.5px;">3D</span>
             </button>
 
             {{-- Layer Switcher FAB --}}
-            <button type="button" class="gmap-fab" onclick="toggleLayerSheet()" title="เปลี่ยนรูปแบบแผนที่">
+            <button type="button" class="gmap-fab" data-map-action="toggleLayerSheet" title="เปลี่ยนรูปแบบแผนที่">
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                 </svg>
             </button>
 
             {{-- GPS Current Location FAB --}}
-            <button type="button" class="gmap-fab gmap-fab-gps" id="btnGpsLocate" onclick="locateUserAndCenter()" title="ระบุตำแหน่งของฉัน">
+            <button type="button" class="gmap-fab gmap-fab-gps" id="btnGpsLocate" data-map-action="locateUserAndCenter" title="ระบุตำแหน่งของฉัน">
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -128,7 +128,7 @@
             </button>
 
             {{-- Floating Nearby Places Counter FAB --}}
-            <button type="button" class="gmap-fab gmap-fab-badge" onclick="toggleNearbyDrawer()" title="รายการสถานที่ใกล้ฉัน">
+            <button type="button" class="gmap-fab gmap-fab-badge" data-map-action="toggleNearbyDrawer" title="รายการสถานที่ใกล้ฉัน">
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
                 </svg>
@@ -140,22 +140,22 @@
         <div id="gmapLayerSheet" class="gmap-layer-sheet" style="display:none;">
             <div class="gmap-layer-header">
                 <span>รูปแบบแผนที่ WebGL 3D</span>
-                <button type="button" onclick="toggleLayerSheet()" class="gmap-icon-btn" title="ปิด">
+                <button type="button" data-map-action="toggleLayerSheet" class="gmap-icon-btn" title="ปิด">
                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
             </div>
             <div class="gmap-layer-grid">
-                <div class="gmap-layer-card active" id="layerCard-streets" onclick="switchMapLayer('streets')">
+                <div class="gmap-layer-card active" id="layerCard-streets" data-map-action="switchMapLayer" data-layer="streets">
                     <div class="gmap-layer-preview preview-streets"></div>
                     <span>ค่าเริ่มต้น</span>
                 </div>
-                <div class="gmap-layer-card" id="layerCard-satellite" onclick="switchMapLayer('satellite')">
+                <div class="gmap-layer-card" id="layerCard-satellite" data-map-action="switchMapLayer" data-layer="satellite">
                     <div class="gmap-layer-preview preview-satellite"></div>
                     <span>ดาวเทียม</span>
                 </div>
-                <div class="gmap-layer-card" id="layerCard-terrain" onclick="switchMapLayer('terrain')">
+                <div class="gmap-layer-card" id="layerCard-terrain" data-map-action="switchMapLayer" data-layer="terrain">
                     <div class="gmap-layer-preview preview-terrain"></div>
                     <span>ภูมิประเทศ</span>
                 </div>
@@ -165,7 +165,7 @@
         {{-- ── 4. Interactive Google Maps Bottom Sheet ── --}}
         <div id="mapBottomSheet" class="gmap-bottom-sheet" style="display:none;">
             {{-- Sheet Handle & Drag Zone --}}
-            <div class="gmap-sheet-handle-zone" id="gmapSheetHandleZone" onclick="toggleBottomSheetExpand()">
+            <div class="gmap-sheet-handle-zone" id="gmapSheetHandleZone" data-map-action="toggleBottomSheetExpand">
                 <div class="gmap-sheet-handle"></div>
             </div>
 
@@ -204,7 +204,7 @@
                         </div>
                     </div>
 
-                    <button type="button" class="gmap-sheet-close" onclick="closeBottomSheet()" title="ปิด">
+                    <button type="button" class="gmap-sheet-close" data-map-action="closeBottomSheet" title="ปิด">
                         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
@@ -213,14 +213,14 @@
 
                 {{-- Primary Action Row (Start Nav + Choose Route + Native App Detection + Share) --}}
                 <div class="gmap-sheet-action-row">
-                    <button type="button" id="bs-start-nav-btn" onclick="startNavigationToActive()" class="gmap-btn-start-nav flex-1">
+                    <button type="button" id="bs-start-nav-btn" data-map-action="startNavigationToActive" class="gmap-btn-start-nav flex-1">
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
                         </svg>
                         <span>เริ่มนำทาง</span>
                     </button>
 
-                    <button type="button" id="bs-route-options-btn" onclick="openRouteSelectorForActive()" class="gmap-btn-route-select" title="เลือกเส้นทาง / โหมดเดินทาง">
+                    <button type="button" id="bs-route-options-btn" data-map-action="openRouteSelectorForActive" class="gmap-btn-route-select" title="เลือกเส้นทาง / โหมดเดินทาง">
                         <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
                         </svg>
@@ -235,7 +235,7 @@
                         <span id="bs-native-app-label">Google Maps</span>
                     </a>
 
-                    <button type="button" class="gmap-btn-icon" onclick="shareActiveLocation()" title="แชร์สถานที่">
+                    <button type="button" class="gmap-btn-icon" data-map-action="shareActiveLocation" title="แชร์สถานที่">
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
                         </svg>
@@ -245,14 +245,14 @@
 
                 {{-- ETA Summary Grid --}}
                 <div class="gmap-eta-grid">
-                    <div class="gmap-eta-card card-walk" onclick="selectModeFromCard('walk')">
+                    <div class="gmap-eta-card card-walk" data-map-action="selectModeFromCard" data-mode="walk">
                         <div class="flex items-center gap-1.5 text-xs font-bold text-orange-600 dark:text-orange-400">
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                             <span>เดินเท้า</span>
                         </div>
                         <div class="gmap-eta-value" id="bs-walk-time">-</div>
                     </div>
-                    <div class="gmap-eta-card card-drive" onclick="selectModeFromCard('drive')">
+                    <div class="gmap-eta-card card-drive" data-map-action="selectModeFromCard" data-mode="drive">
                         <div class="flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400">
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9L2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
                             <span>รถยนต์ / มอไซค์</span>
@@ -312,7 +312,7 @@
                     <div class="gmap-route-subtitle">คำนวณเส้นทางถนนจริง (OSRM)</div>
                     <div class="gmap-route-title" id="gmapRouteDestTitle">เลือกเส้นทาง</div>
                 </div>
-                <button type="button" class="gmap-icon-btn" onclick="closeRouteSelector()" title="ปิด">
+                <button type="button" class="gmap-icon-btn" data-map-action="closeRouteSelector" title="ปิด">
                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
@@ -321,19 +321,19 @@
 
             {{-- Mode Selector Chips --}}
             <div class="gmap-travel-modes-row">
-                <button type="button" class="gmap-mode-chip active" data-mode="drive" onclick="selectTravelMode('drive', this)">
+                <button type="button" class="gmap-mode-chip active" data-map-action="selectTravelMode" data-mode="drive">
                     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9L2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
                     <span>รถยนต์</span>
                 </button>
-                <button type="button" class="gmap-mode-chip" data-mode="moto" onclick="selectTravelMode('moto', this)">
+                <button type="button" class="gmap-mode-chip" data-map-action="selectTravelMode" data-mode="moto">
                     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 17h6m-3-6l2 6m-5-8h4l2 3"/></svg>
                     <span>มอไซค์</span>
                 </button>
-                <button type="button" class="gmap-mode-chip" data-mode="walk" onclick="selectTravelMode('walk', this)">
+                <button type="button" class="gmap-mode-chip" data-map-action="selectTravelMode" data-mode="walk">
                     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                     <span>เดิน</span>
                 </button>
-                <button type="button" class="gmap-mode-chip" data-mode="bike" onclick="selectTravelMode('bike', this)">
+                <button type="button" class="gmap-mode-chip" data-map-action="selectTravelMode" data-mode="bike">
                     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 6h-3l-3 7h6l2-4h2"/></svg>
                     <span>จักรยาน</span>
                 </button>
@@ -344,7 +344,7 @@
                 {{-- Dynamic route cards inserted via JS --}}
             </div>
 
-            <button type="button" class="gmap-btn-start-nav w-full" onclick="startNavigationWithSelectedRoute()">
+            <button type="button" class="gmap-btn-start-nav w-full" data-map-action="startNavigationWithSelectedRoute">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
                 </svg>
@@ -366,7 +366,7 @@
                         <div class="text-xs text-muted" id="drawerCountLabel">0 แห่ง</div>
                     </div>
                 </div>
-                <button type="button" class="gmap-icon-btn" onclick="toggleNearbyDrawer()" title="ปิด">
+                <button type="button" class="gmap-icon-btn" data-map-action="toggleNearbyDrawer" title="ปิด">
                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
@@ -386,7 +386,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/supercluster@8.0.1/dist/supercluster.min.js"></script>
 
-<style>
+<style nonce="{{ request()->attributes->get('csp_nonce') }}">
 /* ── Fullscreen Map App Layout ── */
 header.navbar,
 .bottom-nav,
@@ -1796,8 +1796,40 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
 </style>
 
-<script>
+<script nonce="{{ request()->attributes->get('csp_nonce') }}">
 (function() {
+    document.addEventListener('click', function(event) {
+        const target = event.target instanceof Element ? event.target.closest('[data-map-action]') : null;
+        if (!target) return;
+
+        const action = target.dataset.mapAction;
+        switch (action) {
+            case 'filterType':
+                window.filterType(target.dataset.type, target);
+                break;
+            case 'toggleQuickRadius':
+                window.toggleQuickRadius(Number(target.dataset.radius), target);
+                break;
+            case 'switchMapLayer':
+                window.switchMapLayer(target.dataset.layer);
+                break;
+            case 'selectModeFromCard':
+                window.selectModeFromCard(target.dataset.mode);
+                break;
+            case 'selectTravelMode':
+                window.selectTravelMode(target.dataset.mode, target);
+                break;
+            case 'selectRouteCard':
+                window.selectRouteCard(Number(target.dataset.routeIndex));
+                break;
+            case 'focusLocationFromList':
+                window.focusLocationFromList(target.dataset.locationId, target.dataset.locationType);
+                break;
+            default:
+                if (typeof window[action] === 'function') window[action]();
+        }
+    });
+
     const authUserId = '{{ auth()->id() }}';
     let map = null;
     let userMarker = null;
@@ -2916,7 +2948,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
         currentRouteAlternatives.forEach((r, idx) => {
             const isSel = idx === selectedRouteIndex;
             html += `
-                <div class="gmap-route-card ${isSel ? 'selected' : ''}" onclick="selectRouteCard(${idx})">
+                <div class="gmap-route-card ${isSel ? 'selected' : ''}" data-map-action="selectRouteCard" data-route-index="${idx}">
                     <div class="gmap-route-card-left">
                         <div class="gmap-route-card-tag">${r.tag} • ${r.name}</div>
                         <div class="flex items-baseline gap-2">
@@ -3580,7 +3612,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
             }
 
             html += `
-                <div class="gmap-place-card" onclick="focusLocationFromList(${loc.id}, '${loc.type}')">
+                <div class="gmap-place-card" data-map-action="focusLocationFromList" data-location-id="${loc.id}" data-location-type="${loc.type}">
                     <div class="gmap-thumb" style="width:48px;height:48px;">
                         ${loc.image ? `<img src="${loc.image}" alt="">` : `<div class="gmap-thumb-fallback"><svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg></div>`}
                     </div>
