@@ -345,6 +345,22 @@ REDIS_PASSWORD="<รหัสผ่าน redis>"
 
 > ⚠️ **เจอจริง**: `.env` ที่ copy จาก Phone 1 มี `DB_REPLICA_HOST=127.0.0.1` ติดมาด้วย — Phone 2 ใช้ read-connection นี้แล้วพยายามต่อ localhost ตัวเอง (Connection refused) ต้องแก้เป็น IP ของ Phone 1
 
+### 6.5) ⚠️ ถ้าเห็น 401/403 บน `/chat/threads`, `/student/notifications`, `/broadcasting/auth` แบบสุ่ม
+
+สาเหตุ: **Redis หลุดชั่วครู่** (LAN เด้ง, password ผิด, Redis โดน OOM kill) → `AppServiceProvider` เดิม
+fallback session ไปเป็น `file` → file session อยู่คนละเครื่องกัน → request ที่ Nginx LB ส่งไป Phone 2
+หา session ไม่เจอ → 401/403
+
+แก้แล้วในโค้ด (commit หลัง 21 ส.ค. 2026): fallback เปลี่ยนเป็น `database` driver แทน — Postgres
+เป็นตัวเดียวที่ทั้ง 2 เครื่องชี้ร่วมกัน ดังนั้น session ยังอยู่ร่วมกันได้แม้ Redis จะล่ม
+
+ถ้ายังเจอ 401/403 อยู่ ให้เช็ค:
+1. `REDIS_PASSWORD` ใน `.env` ของ **ทั้ง 2 เครื่อง** ตรงกับ `redis-server --requirepass` จริง (หลุดตัวเดียว → fallback ทำงาน)
+2. `APP_KEY` ยัง MATCH กันทั้ง 2 เครื่อง (ถ้าต่างกัน cookie ถอดรหัสไม่ได้ → 401 ตลอด)
+3. `redis-cli -a <password> ping` จาก Phone 2 → ต้องได้ `PONG` (ทดสอบการเข้าถึง Redis ข้ามเครื่อง)
+
+---
+
 ### 6) php-redis ของ Termux อาจ compile ไม่ตรง PHP version
 บนระบบจริง `pkg install php-redis` ได้ `6.3.0RC1` ที่ compile กับ PHP 8.4 (module API `20240924`) แต่ PHP ที่ติดตั้งเป็น 8.5.1 (API `20250925`) → โหลดไม่ได้ (`Unable to initialize module`)
 

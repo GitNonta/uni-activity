@@ -35,23 +35,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // ❌ FIX: Fall back to file session + cache drivers if Redis is unreachable
-        // This prevents HTTP 500 on every page when Redis is down
-        if (config('session.driver') === 'redis' || config('cache.default') === 'redis') {
-            try {
-                \Illuminate\Support\Facades\Redis::connection()->ping();
-            } catch (\Throwable) {
-                config([
-                    'session.driver'  => 'file',
-                    'cache.default'   => 'file',
-                    'CACHE_STORE'     => 'file',
-                    'SESSION_DRIVER'  => 'file',
-                ]);
-                \Illuminate\Support\Facades\Log::warning(
-                    'Redis unavailable — session + cache fallback to file driver'
-                );
-            }
-        }
+        $this->applyRedisFallback();
 
         \Carbon\Carbon::setLocale('th');
 
@@ -69,6 +53,35 @@ class AppServiceProvider extends ServiceProvider
 
         $this->configureRateLimiters();
         $this->registerConsoleCommandLogger();
+    }
+
+    /**
+     * Fall back to shared database session + file cache drivers if Redis is unreachable.
+     * Prevents HTTP 500 on every page when Redis is down.
+     *
+     * ⚠️ Dual-node cluster: NEVER fall back to 'file' for sessions — file sessions live in
+     * each phone's local storage/framework/sessions and are NOT shared across nodes.
+     * With the Nginx LB (least_conn) spreading requests across workers on both phones,
+     * a session written by a Phone 1 worker is invisible to Phone 2 workers → random 401s
+     * on auth-protected routes (chat/threads, student/notifications, broadcasting/auth).
+     * The 'database' driver stores sessions in the shared PostgreSQL (both phones point
+     * to Phone 1's Postgres), so sessions stay consistent across the whole cluster.
+     */
+    public function applyRedisFallback(): void
+    {
+        if (config('session.driver') === 'redis' || config('cache.default') === 'redis') {
+            try {
+                \Illuminate\Support\Facades\Redis::connection()->ping();
+            } catch (\Throwable) {
+                config([
+                    'session.driver' => 'database',
+                    'cache.default'  => 'file',
+                ]);
+                \Illuminate\Support\Facades\Log::warning(
+                    'Redis unavailable — sessions fall back to shared database driver, cache to file driver'
+                );
+            }
+        }
     }
 
     private function configureRateLimiters(): void
