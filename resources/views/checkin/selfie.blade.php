@@ -288,6 +288,7 @@
         let isJsModeActive = (faceScanMethod === 'js');
         let profileDescriptor = null;
         let pythonFailCount = 0;
+        let pythonThrottledUntil = 0; // epoch ms — while set, the scan loop backs off to respect the server rate limiter
         let isFaceApiLoaded = false;
         
         // ========================================
@@ -863,8 +864,10 @@
         } finally {
             isVerifying = false;
             
-            // Schedule next scan with adaptive timing
-            const nextInterval = smartScanner ? smartScanner.currentInterval : 1000;
+            // Schedule next scan with adaptive timing — back off hard while the
+            // server rate limiter is active so we don't waste 429 responses
+            const throttled = Date.now() < pythonThrottledUntil;
+            const nextInterval = throttled ? 5000 : (smartScanner ? smartScanner.currentInterval : 1000);
             if (!stopScanning) {
                 scanTimeout = setTimeout(scanFrame, nextInterval);
             }
@@ -1053,6 +1056,20 @@
 
                 const processingTime = Date.now() - startTime;
                 
+                // 429 = server rate limiter active (FaceVerificationThrottle). Back off instead
+                // of hammering — don't count it as a hard Python failure so the JS-mode
+                // switch isn't triggered spuriously.
+                if (response.status === 429) {
+                    let retryAfter = 30;
+                    try {
+                        const j = await response.json();
+                        retryAfter = j.retry_after || 30;
+                    } catch (_) {}
+                    pythonThrottledUntil = Date.now() + retryAfter * 1000;
+                    console.warn(`Rate limited (429) — backing off for ${retryAfter}s`);
+                    return;
+                }
+                
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}`);
                 }
@@ -1060,6 +1077,9 @@
                 const result = await response.json();
                 
                 if (result.success !== false) {
+                    // A real successful verification clears past blips
+                    pythonFailCount = 0;
+
                     const score = result.score_percentage || 0;
                     const passed = result.is_match || false;
 
