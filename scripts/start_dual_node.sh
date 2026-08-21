@@ -29,12 +29,18 @@ if [ "$ROLE" = "node1" ]; then
 
     # 2. Start Valkey datastore (drop-in แทน Redis / Dragonfly)
     echo "⚡ Checking Valkey..."
-    if ! pgrep -x "valkey-server" > /dev/null; then
-        RPW=$(awk -F= '/^REDIS_PASSWORD=/{print $2}' .env | tr -d '"\r')
-        valkey-server --daemonize yes --port 6379 --bind 0.0.0.0 --requirepass "$RPW" --dir "$HOME/valkey-data" --dbfilename dump.rdb
+    RPW=$(awk -F= '/^REDIS_PASSWORD=/{print $2}' .env | tr -d '"\r')
+    if ! (echo > /dev/tcp/127.0.0.1/6379) 2>/dev/null; then
+        valkey-server --daemonize yes --port 6379 --bind 0.0.0.0 --requirepass "$RPW" --dir "$HOME/valkey-data" --dbfilename dump.rdb --pidfile "$HOME/valkey-data/valkey6379.pid"
         sleep 1
     fi
-    echo "✅ Valkey running on port 6379"
+    echo "✅ Valkey running on port 6379 (sessions/cache)"
+    if ! (echo > /dev/tcp/127.0.0.1/6380) 2>/dev/null; then
+        mkdir -p "$HOME/valkey-queue-data"
+        valkey-server --daemonize yes --port 6380 --bind 0.0.0.0 --requirepass "$RPW" --dir "$HOME/valkey-queue-data" --dbfilename dump.rdb --pidfile "$HOME/valkey-queue-data/valkey6380.pid"
+        sleep 1
+    fi
+    echo "✅ Valkey running on port 6380 (queue)"
 
     # 3. Start Laravel Reverb (WebSocket)
     echo "📡 Starting Laravel Reverb..."

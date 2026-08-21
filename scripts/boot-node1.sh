@@ -43,11 +43,18 @@ sleep 3
 # Valkey 9.x เป็น drop-in แทน Redis — ใช้ port/password เดิม โปรแกรม (predis) ไม่ต้องแก้
 # หมายเหตุ: RDB ของ Redis 8.8 (format v14) โหลดใน Valkey ไม่ได้ → ถ้าต้อง migrate ข้อมูลเก่า
 # ต้องคัดลอกแบบ key-by-key (ดู scripts/migrate_redis_to_valkey.php)
+RPW=$(awk -F= '/^REDIS_PASSWORD=/{print $2}' "$PROJ/.env" | tr -d '"\r')
 if ! (echo > /dev/tcp/127.0.0.1/6379) 2>/dev/null; then
-    RPW=$(awk -F= '/^REDIS_PASSWORD=/{print $2}' "$PROJ/.env" | tr -d '"\r')
-    valkey-server --daemonize yes --port 6379 --bind 0.0.0.0 --requirepass "$RPW" --dir "$HOME/valkey-data" --dbfilename dump.rdb 2>/dev/null
+    valkey-server --daemonize yes --port 6379 --bind 0.0.0.0 --requirepass "$RPW" --dir "$HOME/valkey-data" --dbfilename dump.rdb --pidfile "$HOME/valkey-data/valkey6379.pid" 2>/dev/null
     sleep 1
-    log "valkey started on :6379"
+    log "valkey started on :6379 (sessions/cache)"
+fi
+
+if ! (echo > /dev/tcp/127.0.0.1/6380) 2>/dev/null; then
+    mkdir -p "$HOME/valkey-queue-data"
+    valkey-server --daemonize yes --port 6380 --bind 0.0.0.0 --requirepass "$RPW" --dir "$HOME/valkey-queue-data" --dbfilename dump.rdb --pidfile "$HOME/valkey-queue-data/valkey6380.pid" 2>/dev/null
+    sleep 1
+    log "valkey started on :6380 (queue)"
 fi
 
 # ── 5. Web workers (3× artisan serve) + watchdog ───────────────────────────

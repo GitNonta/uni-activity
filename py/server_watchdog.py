@@ -12,6 +12,8 @@ from datetime import datetime
 
 APP = '/data/data/com.termux/files/home/uni-activity'
 LOG_FILE = f'{APP}/storage/logs/watchdog.log'
+VALKEY_MAIN_DIR = os.path.expanduser('~/valkey-data')        # :6379 = sessions/cache
+VALKEY_QUEUE_DIR = os.path.expanduser('~/valkey-queue-data')  # :6380 = queue
 
 logging.basicConfig(
     level=logging.INFO,
@@ -43,10 +45,33 @@ def shell(cmd):
 
 
 # --- Checks ---
-def is_redis_ok():
-    # Valkey 9.x drop-in แทน Redis — ใช้ valkey-cli (same RESP protocol)
-    out, _ = shell('valkey-cli ping 2>/dev/null')
+def _valkey_pw():
+    try:
+        with open(f'{APP}/.env', 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith('REDIS_PASSWORD='):
+                    return line.split('=', 1)[1].strip().strip('"')
+    except Exception:
+        pass
+    return ''
+
+
+def _valkey_cli_ping(port):
+    rpw = _valkey_pw()
+    auth = f'-a "{rpw}"' if rpw else ''
+    out, _ = shell(f'valkey-cli -p {port} {auth} ping 2>/dev/null')
     return out == 'PONG'
+
+
+def is_redis_ok():
+    # :6379 = sessions/cache
+    return _valkey_cli_ping(6379)
+
+
+def is_queue_store_ok():
+    # :6380 = queue (isolated instance)
+    return _valkey_cli_ping(6380)
 
 def is_nginx_ok():
     out, _ = shell("netstat -tlnp 2>/dev/null | grep ':8080 '")
@@ -73,23 +98,42 @@ def is_cloudflared_ok():
     return bool(out)
 
 
-def restart_redis():
-    log.warning('RESTART: In-Memory Datastore (Valkey)')
-    shell('pkill -9 -f "dragonfly|redis-server|valkey-server" ; sleep 1')
-    rpw = ''
-    try:
-        with open(f'{APP}/.env', 'r') as f:
-            for line in f:
-                if line.startswith('REDIS_PASSWORD='):
-                    rpw = line.split('=', 1)[1].strip().strip('"').strip("\r")
-    except Exception:
-        pass
-    cmd = 'valkey-server --daemonize yes --port 6379 --bind 0.0.0.0'
+def _start_valkey(port, data_dir):
+    rpw = _valkey_pw()
+    os.makedirs(data_dir, exist_ok=True)
+    cmd = (
+        f'valkey-server --daemonize yes --port {port} --bind 0.0.0.0 '
+        f'--dir {data_dir} --dbfilename dump.rdb --pidfile {data_dir}/valkey{port}.pid'
+    )
     if rpw:
         cmd += f' --requirepass "{rpw}"'
-    shell(f'nohup {cmd} --dir {os.path.expanduser("~")}/valkey-data --dbfilename dump.rdb </dev/null >{APP}/storage/logs/valkey.log 2>&1 &')
+    shell(f'nohup {cmd} </dev/null >{APP}/storage/logs/valkey-{port}.log 2>&1 &')
+
+
+def _stop_valkey(port, data_dir):
+    rpw = _valkey_pw()
+    auth = f'-a "{rpw}"' if rpw else ''
+    # graceful shutdown targets only this port; fall back to pidfile kill
+    shell(f'valkey-cli -p {port} {auth} shutdown nosave 2>/dev/null')
+    time.sleep(1)
+    pidfile = f'{data_dir}/valkey{port}.pid'
+    shell(f'[ -f "{pidfile}" ] && kill -9 "$(cat "{pidfile}")" 2>/dev/null; rm -f "{pidfile}"')
+
+
+def restart_redis():
+    log.warning('RESTART: Valkey :6379 (sessions/cache)')
+    _stop_valkey(6379, VALKEY_MAIN_DIR)
+    _start_valkey(6379, VALKEY_MAIN_DIR)
     time.sleep(4)
     return is_redis_ok()
+
+
+def restart_queue_store():
+    log.warning('RESTART: Valkey :6380 (queue)')
+    _stop_valkey(6380, VALKEY_QUEUE_DIR)
+    _start_valkey(6380, VALKEY_QUEUE_DIR)
+    time.sleep(4)
+    return is_queue_store_ok()
 
 def restart_nginx():
     log.warning('RESTART: Nginx')
@@ -169,6 +213,7 @@ def restart_web_engine():
 
 SERVICES = [
     {'name': 'Datastore',   'check': is_redis_ok,       'restart': restart_redis,       'cascade': ['Queue', 'Reverb']},
+    {'name': 'QueueStore',  'check': is_queue_store_ok, 'restart': restart_queue_store, 'cascade': ['Queue']},
     {'name': 'Nginx',       'check': is_nginx_ok,        'restart': restart_nginx,       'cascade': []},
     {'name': 'WebEngine',   'check': is_web_engine_ok,   'restart': restart_web_engine,  'cascade': []},
     {'name': 'Queue',       'check': is_queue_ok,        'restart': restart_queue,       'cascade': []},
