@@ -154,7 +154,7 @@ def restart_queue():
     shell("pkill -9 -f 'artisan queue:work' ; sleep 1")
     cmd = (
         f'nohup php {APP}/artisan queue:work redis '
-        f'--queue=line-notifications,default '
+        f'--queue=ai,notifications,exports,line-notifications,sync,stats,images,default '
         f'--tries=3 --sleep=3 --max-time=3600 '
         f'</dev/null >{APP}/storage/logs/queue.log 2>&1 &'
     )

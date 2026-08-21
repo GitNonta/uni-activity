@@ -73,7 +73,7 @@ fi
 
 # ── 7. Queue worker ─────────────────────────────────────────────────────────
 if ! pgrep -f "artisan queue:work" > /dev/null 2>&1; then
-    (cd "$PROJ" && setsid nohup php artisan queue:work redis --sleep=3 --tries=3 --timeout=90 \
+    (cd "$PROJ" && setsid nohup php artisan queue:work redis --queue=ai,notifications,exports,line-notifications,sync,stats,images,default --sleep=3 --tries=3 --timeout=90 \
         --no-interaction > storage/logs/queue.log 2>&1 < /dev/null &)
     log "queue worker started"
 fi

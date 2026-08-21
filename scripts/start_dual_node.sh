@@ -117,7 +117,7 @@ elif [ "$ROLE" = "node2" ]; then
     # 3. Start High-Priority Queue Worker for AI & Line Notifications
     echo "📬 Starting Background Queue Worker..."
     pkill -f "artisan queue:work" 2>/dev/null
-    nohup php artisan queue:work --queue=high,default --tries=3 --timeout=60 --sleep=3 > /dev/null 2>&1 &
+    nohup php artisan queue:work --queue=ai,notifications,exports,line-notifications,sync,stats,images,default --tries=3 --timeout=60 --sleep=3 > /dev/null 2>&1 &
     echo "✅ Queue Worker active"
 
     echo "================================================="
