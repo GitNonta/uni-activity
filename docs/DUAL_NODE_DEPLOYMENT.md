@@ -30,7 +30,7 @@
                                     ▼
        ┌────────────────────────────────────────────────────────┐
        │             📱 Phone 2: Compute & AI Worker            │
-       │                   (IP: 192.168.1.223)                  │
+       │                   (IP: 192.168.1.140)                  │
        │                                                        │
        │  • Laravel Octane Instance #2 (Port 8000)              │
        │  • Python AI Microservice (Port 8001 - FastAPI)        │
@@ -52,10 +52,10 @@ cd ~/uni-activity
 git pull origin main
 
 # สตาร์ท Node 1 โดยระบุ IP ของ Phone 2
-bash scripts/start_dual_node.sh node1 192.168.1.223
+bash scripts/start_dual_node.sh node1 192.168.1.140
 ```
 - Nginx Load Balancer จะเปิดให้บริการที่พอร์ต `8088`
-- กระจาย Request ไปยัง `127.0.0.1:8000` (Phone 1) และ `192.168.1.223:8000` (Phone 2) อัตโนมัติ
+- กระจาย Request ไปยัง `127.0.0.1:8000` (Phone 1) และ `192.168.1.140:8000` (Phone 2) อัตโนมัติ
 
 ### 3. รันบน Phone 2 (Worker & AI Node)
 บน Phone 2 ตั้งค่า `.env` ให้ชี้ Database และ Redis ไปที่ Phone 1:

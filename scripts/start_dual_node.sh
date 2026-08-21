@@ -5,7 +5,7 @@
 #   bash scripts/start_dual_node.sh node2 [PRIMARY_PHONE_IP]
 
 ROLE="${1:-node1}"
-REMOTE_IP="${2:-192.168.1.223}"
+REMOTE_IP="${2:-192.168.1.140}"   # ค่า default = IP จริงของ Phone 2 (Y7 2019 ตัวที่ 2)
 PROJECT_PATH="/data/data/com.termux/files/home/uni-activity"
 
 cd "$PROJECT_PATH" || { echo "❌ Cannot access project directory $PROJECT_PATH"; exit 1; }
@@ -42,12 +42,25 @@ if [ "$ROLE" = "node1" ]; then
     sleep 1
     echo "✅ Reverb running on port 8080"
 
-    # 4. Start Local Laravel Octane Instance (Node 1 Worker)
-    echo "⚡ Starting Laravel Octane (Node 1)..."
-    pkill -f "artisan octane:start.*8000" 2>/dev/null
-    nohup php artisan octane:start --server=swoole --host=127.0.0.1 --port=8000 --workers=2 > /dev/null 2>&1 &
+    # 4. Start Local Laravel Web Workers (Node 1) — 3 parallel artisan serve processes
+    # NOTE: Octane (swoole/roadrunner/frankenphp) ไม่มีใน Termux repo สำหรับ PHP 8.5.1 —
+    # ใช้ artisan serve หลาย process แทน (แต่ละ process จัดการ request ได้พร้อมกัน 1 ตัว)
+    echo "⚡ Starting Laravel Web Workers (Node 1)..."
+    for port in 8000 8002 8003; do
+        pkill -f "artisan serve.*$port" 2>/dev/null
+        if ! ss -tln 2>/dev/null | grep -q ":$port "; then
+            setsid nohup php artisan serve --host=0.0.0.0 --port=$port > serve-$port.log 2>&1 < /dev/null &
+        fi
+    done
     sleep 2
-    echo "✅ Octane Worker 1 running on port 8000"
+    echo "✅ Web Workers running on ports 8000, 8002, 8003"
+
+    # 4b. Start Web-Worker Watchdog (auto-restart if Android OOM killer reaps workers)
+    echo "🛡️ Starting Web-Worker Watchdog..."
+    pkill -f "watch_web_workers[.]sh" 2>/dev/null
+    setsid bash "$PROJECT_PATH/../watch_web_workers.sh" > /dev/null 2>&1 < /dev/null &
+    sleep 1
+    echo "✅ Watchdog active (restarts dead workers on :8000/:8002/:8003 within ~12s)"
 
     # 5. Start Dual-Node Nginx Load Balancer
     echo "⚖️ Configuring & Starting Nginx Cluster Load Balancer..."
@@ -65,18 +78,34 @@ elif [ "$ROLE" = "node2" ]; then
     echo "🚀 Starting Node 2 (AI Processing & Worker Node)..."
 
     # 1. Start Python AI Microservice (FastAPI + InsightFace)
+    # NOTE: ต้อง cd เข้า ai_service/ เพราะ server.py import `from liveness import ...`
+    # แบบ relative — รัน `uvicorn server:app` จากโฟลเดอร์ ai_service จึงจะเจอ module
+    # ใช้ --workers 1 (Y7 2019 RAM 2-3GB — แต่ละ worker โหลด InsightFace+YOLO หนักมาก)
     echo "🧠 Starting Python AI Microservice..."
     pkill -f "uvicorn.*8001" 2>/dev/null
-    nohup uvicorn ai_service.main:app --host 0.0.0.0 --port 8001 --workers 2 > /dev/null 2>&1 &
+    cd "$PROJECT_PATH/ai_service"
+    nohup uvicorn server:app --host 0.0.0.0 --port 8001 --workers ${AI_WORKERS:-1} > /dev/null 2>&1 &
+    cd "$PROJECT_PATH"
     sleep 2
     echo "✅ Python AI Service running on port 8001"
 
-    # 2. Start Laravel Octane Instance (Node 2 Worker)
-    echo "⚡ Starting Laravel Octane (Node 2)..."
-    pkill -f "artisan octane:start.*8000" 2>/dev/null
-    nohup php artisan octane:start --server=swoole --host=0.0.0.0 --port=8000 --workers=2 > /dev/null 2>&1 &
+    # 2. Start Laravel Web Workers (Node 2) — 3 parallel artisan serve processes
+    echo "⚡ Starting Laravel Web Workers (Node 2)..."
+    for port in 8000 8002 8003; do
+        pkill -f "artisan serve.*$port" 2>/dev/null
+        if ! ss -tln 2>/dev/null | grep -q ":$port "; then
+            setsid nohup php artisan serve --host=0.0.0.0 --port=$port > serve-$port.log 2>&1 < /dev/null &
+        fi
+    done
     sleep 2
-    echo "✅ Octane Worker 2 running on port 8000"
+    echo "✅ Web Workers running on ports 8000, 8002, 8003"
+
+    # 2b. Start Web-Worker Watchdog (auto-restart if Android OOM killer reaps workers)
+    echo "🛡️ Starting Web-Worker Watchdog..."
+    pkill -f "watch_web_workers[.]sh" 2>/dev/null
+    setsid bash "$PROJECT_PATH/../watch_web_workers.sh" > /dev/null 2>&1 < /dev/null &
+    sleep 1
+    echo "✅ Watchdog active (restarts dead workers on :8000/:8002/:8003 within ~12s)"
 
     # 3. Start High-Priority Queue Worker for AI & Line Notifications
     echo "📬 Starting Background Queue Worker..."

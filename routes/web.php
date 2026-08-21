@@ -128,8 +128,10 @@ Route::get('/announcements/{announcement}', [StudentAnnouncementController::clas
 Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
 Route::get('/jobs/{job}', [JobController::class, 'show'])->name('jobs.show');
 Route::get('/map', [MapController::class, 'index'])->name('map.index');
-// ❌ FIXED V1: Require authentication for location data (was: public API data leakage)
-Route::middleware('auth:sanctum')->get('/api/map/locations', [MapController::class, 'locationsApi'])->name('api.map.locations');
+// ✅ FIXED V2: Public map pins for logged-out visitors (activities/jobs/landmarks are public data,
+// identical to what /activities & /jobs pages already expose). Rate-limited to prevent scraping.
+// Live user coordinates stay protected in the auth-only update-location route below.
+Route::middleware('throttle:api-general')->get('/api/map/locations', [MapController::class, 'locationsApi'])->name('api.map.locations');
 
 // ── เส้นทางนักศึกษา (ต้อง login ก่อน) ──────────────────
 Route::middleware('auth')->group(function () {
