@@ -78,6 +78,12 @@ if ! pgrep -f "artisan queue:work" > /dev/null 2>&1; then
     log "queue worker started"
 fi
 
+# ── 7b. Queue worker watchdog ──────────────────────────────────────────────
+if ! pgrep -f "watch_queue_workers[.]sh" > /dev/null 2>&1; then
+    setsid bash "$HOME/watch_queue_workers.sh" > /dev/null 2>&1 < /dev/null &
+    log "queue-worker watchdog started"
+fi
+
 # ── 8. AI service (proot, :8001) ────────────────────────────────────────────
 if ! (echo > /dev/tcp/127.0.0.1/8001) 2>/dev/null; then
     setsid proot-distro login ubuntu -- bash -c \
