@@ -282,7 +282,6 @@
         <input type="hidden" name="selfie" id="selfieData">
     </form>
 
-    <script src="{{ asset('js/smartFaceScanner.js') }}" defer></script>
     <script>
         const faceScanMethod = '{{ $faceScanMethod ?? "hybrid" }}'; // Changed default to hybrid
         let isJsModeActive = (faceScanMethod === 'js');
@@ -294,8 +293,6 @@
         // SMART FACE SCANNER - Balanced Processing
         // ========================================
         let smartScanner = null;
-        let profileDescriptor = null;
-        let pythonFailCount = 0;
         let performanceMonitor = {
             requests: 0,
             successRate: 0,
