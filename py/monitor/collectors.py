@@ -672,14 +672,14 @@ def get_services():
     # Check active web worker
     is_octane = bool(subprocess.run(["pgrep", "-f", "octane:start"], capture_output=True, text=True).stdout.strip())
     is_fpm = bool(subprocess.run(["pgrep", "-f", "php-fpm"], capture_output=True, text=True).stdout.strip())
-    is_dragonfly = bool(subprocess.run(["pgrep", "-f", "dragonfly|redis-server"], capture_output=True, text=True).stdout.strip())
+    is_dragonfly = bool(subprocess.run(["pgrep", "-f", "dragonfly|redis-server|valkey-server"], capture_output=True, text=True).stdout.strip())
 
     services = {
         "Nginx (Edge Proxy)": ("nginx", 8080),
         "Laravel Application Server": ("octane:start|php-fpm", 8080 if is_fpm else 8000),
-        "Swoole / OpenSwoole": ("swoole|dragonfly|redis-server", 6379),
+        "Swoole / OpenSwoole": ("swoole|dragonfly|redis-server|valkey-server", 6379),
         "Laravel Reverb (WebSocket)": ("reverb:start", 8082),
-        "Datastore (Dragonfly / Redis)": ("dragonfly|redis-server", 6379),
+        "Datastore (Valkey)": ("dragonfly|redis-server|valkey-server", 6379),
         "PostgreSQL 16 Database": ("postgres", 5432),
         "Redis Queue Worker": ("artisan queue:work", None),
         "AI Biometrics Face Service": ("server.py", 8000),

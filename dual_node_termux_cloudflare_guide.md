@@ -361,6 +361,24 @@ fallback session ไปเป็น `file` → file session อยู่คน�
 
 ---
 
+### 6.6) ⚠️ เปลี่ยนจาก Redis เป็น Valkey (ส.ค. 2026)
+
+ระบบจริงเปลี่ยน datastore หลักจาก `redis-server` เป็น `valkey-server` (drop-in แทน Redis — RESP protocol เดียวกัน, predis ใช้ได้เลย ไม่ต้องแก้โค้ด):
+
+```bash
+pkg install -y valkey   # จะถอน redis อัตโนมัติ (แพ็กเกจ conflict กัน)
+# เริ่ม Valkey บน port 6379 เดิม (password เดิม, bind 0.0.0.0, data อยู่ ~/valkey-data):
+valkey-server --daemonize yes --port 6379 --bind 0.0.0.0 --requirepass "$REDIS_PASSWORD" --dir ~/valkey-data --dbfilename dump.rdb
+```
+
+⚠️ **ข้อจำกัดสำคัญ**: Valkey 9.x **โหลด RDB ของ Redis 8.8 (format v14) ไม่ได้** (error: `Can't handle RDB format version 14`) — ถ้าต้องย้ายข้อมูลจาก Redis เดิม ต้อง migrate แบบ key-by-key ด้วย `scripts/migrate_redis_to_valkey.php` (ใน repo) หรือใช้ replication
+
+บน **Phone 2** ต้องเปลี่ยน `REDIS_HOST` ใน `.env` ให้ชี้ไป Phone 1 (จาก `127.0.0.1` → `192.168.1.222`) แล้ว restart web workers — ไม่งั้น Phone 2 จะใช้ Valkey คนละตัว (split-brain) → 401/403 สลับไปมา
+
+สคริปต์ boot/watchdog ถูกแก้ให้ใช้ `valkey-server` แล้ว (`scripts/boot-node1.sh`, `scripts/start_dual_node.sh`, `py/server_watchdog.py`, `py/monitor/*`)
+
+---
+
 ### 6) php-redis ของ Termux อาจ compile ไม่ตรง PHP version
 บนระบบจริง `pkg install php-redis` ได้ `6.3.0RC1` ที่ compile กับ PHP 8.4 (module API `20240924`) แต่ PHP ที่ติดตั้งเป็น 8.5.1 (API `20250925`) → โหลดไม่ได้ (`Unable to initialize module`)
 

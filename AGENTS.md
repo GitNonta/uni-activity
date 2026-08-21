@@ -4,7 +4,7 @@
 ## Project Stack
 - **Backend:** Laravel 13, PHP 8.2+
 - **Database:** PostgreSQL (primary core database)
-- **Cache / Queue / Locks:** Redis / Dragonfly
+- **Cache / Queue / Locks:** Valkey (drop-in แทน Redis) / Dragonfly
 - **Real-time:** Laravel Reverb (WebSocket)
 - **AI Microservice:** Python FastAPI (InsightFace, OpenCV)
 - **Auth:** Laravel Sanctum

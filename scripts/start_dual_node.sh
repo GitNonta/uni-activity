@@ -27,13 +27,14 @@ if [ "$ROLE" = "node1" ]; then
     fi
     echo "✅ PostgreSQL running on port 5432"
 
-    # 2. Start Redis / Dragonfly
-    echo "⚡ Checking Redis..."
-    if ! pgrep -x "redis-server" > /dev/null; then
-        redis-server --daemonize yes --port 6379 --bind 0.0.0.0
+    # 2. Start Valkey datastore (drop-in แทน Redis / Dragonfly)
+    echo "⚡ Checking Valkey..."
+    if ! pgrep -x "valkey-server" > /dev/null; then
+        RPW=$(awk -F= '/^REDIS_PASSWORD=/{print $2}' .env | tr -d '"\r')
+        valkey-server --daemonize yes --port 6379 --bind 0.0.0.0 --requirepass "$RPW" --dir "$HOME/valkey-data" --dbfilename dump.rdb
         sleep 1
     fi
-    echo "✅ Redis running on port 6379"
+    echo "✅ Valkey running on port 6379"
 
     # 3. Start Laravel Reverb (WebSocket)
     echo "📡 Starting Laravel Reverb..."

@@ -1005,8 +1005,8 @@ def _cmd_restart() -> None:
     restart_cmds = {
         "Nginx"        : ["nginx", "-s", "reload"],
         "PHP-FPM"      : ["php-fpm", "--daemonize"],
-        "Redis"        : ["redis-server",
-                          "/data/data/com.termux/files/usr/etc/redis.conf",
+        "Redis"        : ["valkey-server",
+                          "--port", "6379", "--bind", "0.0.0.0",
                           "--daemonize", "yes"],
         "PostgreSQL"   : ["pg_ctl", "start", "-D",
                           "/data/data/com.termux/files/usr/var/lib/postgresql"],

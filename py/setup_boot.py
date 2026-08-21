@@ -23,8 +23,8 @@ pkill nginx
 nginx
 
 # 4. Start Redis
-pkill redis-server
-redis-server --daemonize yes
+pkill valkey-server
+valkey-server --daemonize yes
 
 # 5. Start Laravel Queue Worker
 pkill -f 'artisan queue'

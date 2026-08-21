@@ -44,7 +44,8 @@ def shell(cmd):
 
 # --- Checks ---
 def is_redis_ok():
-    out, _ = shell('redis-cli ping 2>/dev/null')
+    # Valkey 9.x drop-in แทน Redis — ใช้ valkey-cli (same RESP protocol)
+    out, _ = shell('valkey-cli ping 2>/dev/null')
     return out == 'PONG'
 
 def is_nginx_ok():
@@ -73,12 +74,20 @@ def is_cloudflared_ok():
 
 
 def restart_redis():
-    log.warning('RESTART: In-Memory Datastore (Dragonfly/Redis)')
-    shell('pkill -9 -f "dragonfly|redis-server" ; sleep 1')
-    if os.path.exists('/usr/local/bin/dragonfly') or shell('which dragonfly 2>/dev/null')[0]:
-        shell(f'nohup dragonfly --cache_mode=true </dev/null >{APP}/storage/logs/dragonfly.log 2>&1 &')
-    else:
-        shell(f'nohup redis-server </dev/null >{APP}/storage/logs/redis.log 2>&1 &')
+    log.warning('RESTART: In-Memory Datastore (Valkey)')
+    shell('pkill -9 -f "dragonfly|redis-server|valkey-server" ; sleep 1')
+    rpw = ''
+    try:
+        with open(f'{APP}/.env', 'r') as f:
+            for line in f:
+                if line.startswith('REDIS_PASSWORD='):
+                    rpw = line.split('=', 1)[1].strip().strip('"').strip("\r")
+    except Exception:
+        pass
+    cmd = 'valkey-server --daemonize yes --port 6379 --bind 0.0.0.0'
+    if rpw:
+        cmd += f' --requirepass "{rpw}"'
+    shell(f'nohup {cmd} --dir {os.path.expanduser("~")}/valkey-data --dbfilename dump.rdb </dev/null >{APP}/storage/logs/valkey.log 2>&1 &')
     time.sleep(4)
     return is_redis_ok()
 
