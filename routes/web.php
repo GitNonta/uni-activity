@@ -143,7 +143,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/check-in/{token}/verify-frame', [CheckInController::class, 'verifyFrame'])->name('checkin.verify_frame'); // สแกนหน้าแบบเรียวไทม์
     
     // Optimized face verification API endpoints
-    Route::prefix('api/face')->middleware('throttle:face-verify')->group(function () {
+    Route::prefix('api/face')->middleware('face-verify')->group(function () {
         Route::post('/verify', [App\Http\Controllers\Api\FaceVerificationController::class, 'verify'])->name('api.face.verify');
         Route::get('/metrics', [App\Http\Controllers\Api\FaceVerificationController::class, 'metrics'])->name('api.face.metrics');
     });

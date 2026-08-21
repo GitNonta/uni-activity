@@ -282,6 +282,7 @@
         <input type="hidden" name="selfie" id="selfieData">
     </form>
 
+    <script defer src="{{ asset('js/face-api.min.js') }}"></script>
     <script>
         const faceScanMethod = '{{ $faceScanMethod ?? "hybrid" }}'; // Changed default to hybrid
         let isJsModeActive = (faceScanMethod === 'js');
