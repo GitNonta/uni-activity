@@ -622,10 +622,9 @@
                 await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
                 await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
                 
-                // Also load SSD for final verification if needed
-                if (faceScanMethod === 'js') {
-                    await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
-                }
+                // Load SSD too — detectSingleFace() defaults to SSD, so it's needed for
+                // profile descriptor computation AND the JS-mode fallback on any scan method
+                await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
                 
                 // Setup pre-computed descriptor or compute it
                 const preComputed = {!! $profileJsDescriptor ?? 'null' !!};
