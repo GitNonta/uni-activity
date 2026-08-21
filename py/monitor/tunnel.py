@@ -155,9 +155,9 @@ def do_restart_tunnel() -> str | None:
             with open(lp, "w") as f:
                 f.write("")
 
-        # Tunnel 1 — HTTP :8080
+        # Tunnel 1 — HTTP → Nginx Load Balancer :8088 (dual-node)
         subprocess.Popen(
-            f"nohup cloudflared tunnel --url http://127.0.0.1:8080 "
+            f"nohup cloudflared tunnel --url {cfg.TUNNEL_TARGET_URL} "
             f"--no-autoupdate > {log_http} 2>&1 &",
             shell=True,
         )

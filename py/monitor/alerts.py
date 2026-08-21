@@ -14,6 +14,7 @@ from monitor.collectors import (
     get_listening_ports, get_cpu_freqs, get_wifi_rssi, get_net_speeds,
     get_top_processes, get_postgres_stats, get_redis_stats,
     get_queue_stats, get_cloudflared_stats, get_gpu_stats,
+    get_ai_cluster_health,
 )
 
 def get_alerts(stats):
@@ -60,7 +61,18 @@ def get_alerts(stats):
     if disk_percent > 90:
         alerts.append({"id": "high_disk", "type": "warning", "message": f"Disk Space Low: {disk_percent}% used"})
         
-    # 7. Abnormal Traffic Spike (Per IP)
+    # 7. AI Service Node Down
+    ai_health = stats.get("ai_cluster", {})
+    for node in ai_health.get("nodes", []):
+        node_host = node.get("host", "?")
+        if not node.get("available", True):
+            alerts.append({"id": f"ai_node_down_{node_host}", "type": "critical",
+                           "message": f"AI Node {node.get('url', '?')} is DOWN ({node.get('error', '?')})"})
+    if ai_health.get("cluster_status") == "critical" and ai_health.get("total_count", 0) > 0:
+        alerts.append({"id": "ai_cluster_critical", "type": "critical",
+                       "message": "🚨 ALL AI Nodes are DOWN! Face verification is unavailable."})
+
+    # 8. Abnormal Traffic Spike (Per IP)
     current_time = time.time()
     ip_counts = {}
     for log in cfg.inspector_logs:
@@ -96,6 +108,8 @@ def get_alerts(stats):
             "high_temp"     : "อุณหภูมิ Server กลับสู่ระดับปกติแล้ว",
             "high_mem"      : "Memory Usage กลับสู่ระดับปกติแล้ว",
             "high_disk"     : "Disk Space กลับสู่ระดับปกติแล้ว",
+        "ai_cluster_critical": "AI Cluster กลับมา Online แล้ว ✓",
+        # Dynamic ai_node_down_* resolved handled below
         }.get(resolved_id, f"{resolved_id} resolved")
         tg_resolved(resolved_id, resolved_msg)
 
@@ -142,7 +156,8 @@ def collect_stats():
             "cloudflared": get_cloudflared_stats(),
             "gpu": get_gpu_stats()
         },
-        "public_ip": cfg.CACHED_PUBLIC_IP
+        "public_ip": cfg.CACHED_PUBLIC_IP,
+        "ai_cluster": get_ai_cluster_health(),
     }
     stats["alerts"] = get_alerts(stats)
     stats["alerts_history"] = list(cfg.alerts_history)

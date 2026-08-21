@@ -26,6 +26,7 @@ from monitor.tg_commands import tg_command_poll_thread
 from monitor.threads import (
     udp_receiver_thread, udp_ai_receiver_thread,
     auto_sync_thread, manage_ai_service_thread,
+    watch_remote_ai_nodes_thread,
     stats_collector_thread,
 )
 from monitor.http_handler import MonitorHandler
@@ -38,6 +39,7 @@ if __name__ == "__main__":
     threading.Thread(target=udp_ai_receiver_thread,  daemon=True).start()
     threading.Thread(target=ping_url_thread,          daemon=True).start()
     threading.Thread(target=manage_ai_service_thread, daemon=True).start()
+    threading.Thread(target=watch_remote_ai_nodes_thread, daemon=True).start()
     threading.Thread(target=auto_sync_thread,         daemon=True).start()
     threading.Thread(target=stats_collector_thread,   daemon=True).start()
     threading.Thread(target=tg_command_poll_thread,   daemon=True).start()

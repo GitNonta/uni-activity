@@ -16,6 +16,7 @@ from monitor.tg_commands import (
 from monitor.threads import (
     udp_receiver_thread, udp_ai_receiver_thread,
     auto_sync_thread, manage_ai_service_thread,
+    watch_remote_ai_nodes_thread,
     stats_collector_thread, ws_client_thread, ws_handshake, ws_encode,
 )
 from monitor.http_handler import MonitorHandler

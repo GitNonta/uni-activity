@@ -17,6 +17,10 @@ PORT        = 9999
 UDP_PORT    = 9998
 UDP_PORT_AI = 9997
 
+# ── Dual-node: tunnel ต้องชี้ไปที่ Nginx Load Balancer (ไม่ใช่ Octane ตรงๆ) ──
+LB_PORT            = 8088
+TUNNEL_TARGET_URL  = os.environ.get("TUNNEL_TARGET_URL", f"http://127.0.0.1:{LB_PORT}")
+
 # ── Shared mutable state ──────────────────────────────────────────────────────
 inspector_logs   = collections.deque(maxlen=100)
 remote_ai_logs   = collections.deque(maxlen=200)

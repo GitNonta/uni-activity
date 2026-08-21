@@ -90,7 +90,8 @@ class MonitorHandler(BaseHTTPRequestHandler):
                 # Clear old log
                 with open(log_path, "w") as f:
                     f.write("")
-                subprocess.Popen(f"nohup cloudflared tunnel --url http://localhost:8080 > {log_path} 2>&1 &", shell=True)
+                # Dual-node: ชี้ไปที่ Nginx Load Balancer :8088 (กระจายไปทั้ง 2 เครื่อง)
+                subprocess.Popen(f"nohup cloudflared tunnel --url {cfg.TUNNEL_TARGET_URL} > {log_path} 2>&1 &", shell=True)
                 
                 # Wait for URL and update .env
                 new_url = None

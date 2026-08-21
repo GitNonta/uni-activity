@@ -988,6 +988,92 @@ def get_server_info():
     cfg.server_info_cache = info
     return info
 
+# ------- AI Cluster Health -------
+import socket as _socket
+
+_ai_node_cache = {}
+
+def get_ai_cluster_health():
+    """Check health of all configured AI service nodes."""
+    nodes = _get_ai_nodes()
+    if not nodes:
+        return {"nodes": [], "healthy_count": 0, "total_count": 0, "cluster_status": "no_nodes_configured"}
+
+    results = []
+    for url in nodes:
+        results.append(_check_ai_node_health(url))
+
+    healthy = sum(1 for r in results if r["available"])
+
+    return {
+        "nodes": results,
+        "healthy_count": healthy,
+        "total_count": len(results),
+        "cluster_status": "healthy" if healthy == len(results) else ("degraded" if healthy > 0 else "critical"),
+        "checked_at": time.time(),
+    }
+
+def _get_ai_nodes():
+    """Read AI_SERVERS (or AI_SERVER_URL) from .env."""
+    nodes = []
+    try:
+        with open(cfg.ENV_PATH) as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith("AI_SERVERS="):
+                    val = line.split("=", 1)[1].strip().strip('"\'')
+                    nodes = [u.strip() for u in val.split(",") if u.strip()]
+                elif line.startswith("AI_SERVER_URL=") and not nodes:
+                    val = line.split("=", 1)[1].strip().strip('"\'')
+                    if val:
+                        nodes = [val]
+    except Exception:
+        pass
+    return nodes
+
+def _parse_node_url(url):
+    from urllib.parse import urlparse
+    try:
+        parsed = urlparse(url if "://" in url else f"http://{url}")
+        return {"host": parsed.hostname or "127.0.0.1", "port": parsed.port or 8001}
+    except Exception:
+        return {"host": "127.0.0.1", "port": 8001}
+
+def _check_ai_node_health(url, timeout=3):
+    """TCP + HTTP health check for one AI node, with 10s cache."""
+    cached = _ai_node_cache.get(url)
+    if cached and (time.time() - cached["t"]) < 10:
+        return cached["r"]
+
+    node = _parse_node_url(url)
+    t0 = time.time()
+    try:
+        sock = _socket.socket(_socket.AF_INET, _socket.SOCK_STREAM)
+        sock.settimeout(timeout)
+        if sock.connect_ex((node["host"], node["port"])) != 0:
+            raise ConnectionRefusedError("TCP port closed")
+        sock.close()
+    except Exception as e:
+        r = {"url": url, "host": node["host"], "port": node["port"], "available": False,
+             "status": "down", "latency_ms": int((time.time() - t0) * 1000), "error": str(e)}
+        _ai_node_cache[url] = {"t": time.time(), "r": r}
+        return r
+
+    try:
+        import urllib.request as _req
+        resp = _req.urlopen(_req.Request(f"{url}/health", headers={"User-Agent": "Monitor/1.0"}), timeout=timeout)
+        data = json.loads(resp.read().decode())
+        latency = int((time.time() - t0) * 1000)
+        r = {"url": url, "host": node["host"], "port": node["port"], "available": True,
+             "status": data.get("status", "unknown"), "latency_ms": latency,
+             "models": data.get("models", {}), "version": data.get("version", "")}
+    except Exception as e:
+        r = {"url": url, "host": node["host"], "port": node["port"], "available": False,
+             "status": "unhealthy", "latency_ms": int((time.time() - t0) * 1000), "error": str(e)}
+
+    _ai_node_cache[url] = {"t": time.time(), "r": r}
+    return r
+
 def get_uptime():
     try:
         import subprocess

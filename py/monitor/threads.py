@@ -85,7 +85,27 @@ def auto_sync_thread():
             pass
 
 # ------- AI Service Manager -------
+def _is_local_ai_configured() -> bool:
+    """True ถ้า AI_SERVERS/AI_SERVER_URL ใน .env ระบุ localhost (AI รันบนเครื่องนี้)"""
+    from monitor.collectors import _get_ai_nodes
+    try:
+        for url in _get_ai_nodes():
+            if "127.0.0.1" in url or "localhost" in url:
+                return True
+    except Exception:
+        pass
+    return False
+
+
 def manage_ai_service_thread():
+    """Monitor local AI service and auto-restart if down.
+
+    ในโหมด dual-node (AI อยู่ที่ Phone 2) ถ้าเครื่องนี้ไม่ได้รัน AI ในเครื่อง
+    (AI_SERVERS ไม่มี localhost) ให้ข้ามไป — ไม่งั้นจะ spawn restart ทุก 10 วิ
+    บนเครื่อง master ที่ไม่มี AI จริง ๆ
+    """
+    if not _is_local_ai_configured():
+        return
     while True:
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -105,6 +125,91 @@ def manage_ai_service_thread():
         except Exception:
             pass
         time.sleep(10)
+
+# ------- Remote AI Node Watcher -------
+_remote_ai_node_state = {}  # url -> {"was_up": bool, "last_alert": float}
+
+def watch_remote_ai_nodes_thread():
+    """Monitor remote AI nodes via SSH and restart if down. Sends Telegram alerts.
+
+    Config (env vars, ค่า default = เท่าที่เคย hardcode ไว้):
+      AI_SSH_USER      — Termux user ของโหนดปลายทาง (default: u0_a175)
+      AI_SSH_PORT      — SSH port (default: 8022)
+      AI_SSH_RESTART_CMD — คำสั่ง restart บนเครื่องปลายทาง (default: tmux + proot-distro)
+    """
+    from monitor.collectors import _parse_node_url, _get_ai_nodes
+
+    ssh_user = os.environ.get("AI_SSH_USER", "u0_a175")
+    ssh_port = os.environ.get("AI_SSH_PORT", "8022")
+    restart_cmd = os.environ.get(
+        "AI_SSH_RESTART_CMD",
+        "tmux kill-session -t ai_service 2>/dev/null; "
+        "tmux new-session -d -s ai_service 'proot-distro login ubuntu -- bash -c \""
+        "cd /data/data/com.termux/files/home/uni-activity/ai_service && "
+        "/root/ai_project/venv/bin/python server.py\"'",
+    )
+
+    while True:
+        try:
+            nodes = _get_ai_nodes()
+            for url in nodes:
+                node = _parse_node_url(url)
+                host = node["host"]
+                port = node["port"]
+
+                # Skip localhost — handled by manage_ai_service_thread
+                if host in ("127.0.0.1", "localhost"):
+                    continue
+
+                # TCP check
+                is_up = False
+                try:
+                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    s.settimeout(3)
+                    is_up = s.connect_ex((host, port)) == 0
+                    s.close()
+                except Exception:
+                    is_up = False
+
+                prev = _remote_ai_node_state.get(url, {"was_up": True, "last_alert": 0})
+
+                if not is_up and prev["was_up"]:
+                    # Node just went down — try to restart via SSH
+                    now = time.time()
+                    if now - prev["last_alert"] > 300:  # alert max every 5 min
+                        try:
+                            from monitor.telegram import tg_alert
+                            tg_alert(f"ai_node_down_{host}", "critical",
+                                     f"🤖 Remote AI Node {url} is DOWN! Attempting restart via SSH...")
+                        except Exception:
+                            pass
+                        _remote_ai_node_state[url] = {"was_up": False, "last_alert": now}
+
+                    # Try SSH restart
+                    try:
+                        subprocess.run(
+                            ["ssh", "-o", "ConnectTimeout=5", "-o", "StrictHostKeyChecking=no",
+                             "-p", ssh_port, f"{ssh_user}@{host}", restart_cmd, "2>/dev/null"],
+                            timeout=15, capture_output=True
+                        )
+                    except Exception:
+                        pass
+
+                elif is_up and not prev.get("was_up", True):
+                    # Node recovered
+                    try:
+                        from monitor.telegram import tg_resolved
+                        tg_resolved(f"ai_node_down_{host}", f"🤖 Remote AI Node {url} is back UP ✓")
+                    except Exception:
+                        pass
+                    _remote_ai_node_state[url] = {"was_up": True, "last_alert": 0}
+
+                else:
+                    _remote_ai_node_state[url] = {"was_up": is_up, "last_alert": prev["last_alert"]}
+
+        except Exception:
+            pass
+        time.sleep(30)  # Check every 30 seconds
 
 # ------- WebSocket Helpers -------
 def ws_handshake(conn, request_data: str) -> bool:
