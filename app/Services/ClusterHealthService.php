@@ -113,8 +113,11 @@ class ClusterHealthService
             $latencyMs = round((microtime(true) - $start) * 1000, 2);
             $hasAuth = !empty(config('database.redis.default.password'));
 
+            // predis returns a Predis\Response\Status object, phpredis returns true/"+PONG".
+            $pongString = is_bool($pong) ? ($pong ? 'PONG' : '') : (string) $pong;
+
             return [
-                'status'       => ($pong === true || $pong === '+PONG' || $pong === 'PONG') ? 'HEALTHY' : 'DEGRADED',
+                'status'       => in_array($pongString, ['PONG', '+PONG'], true) ? 'HEALTHY' : 'DEGRADED',
                 'client'       => config('database.redis.client', 'phpredis'),
                 'host'         => config('database.redis.default.host'),
                 'port'         => (int) config('database.redis.default.port', 6379),
