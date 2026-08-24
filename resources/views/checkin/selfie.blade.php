@@ -10,41 +10,37 @@
     <link rel="stylesheet" href="{{ asset('css/face-scan-animation.css') }}?v=1">
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'Sarabun', sans-serif; }
-        #cameraContainer { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
+        #cameraContainer { position: absolute; inset: 0; width: 100%; height: 100%; height: 100dvh; z-index: 1; }
         #cameraPreview { 
             width: 100%; 
             height: 100%; 
-            object-fit: contain; /* เปลี่ยนจาก cover เป็น contain เพื่อแสดงภาพเต็ม */
+            object-fit: cover; /* เต็มจอ — ตัดขอบส่วนเกินออกเพื่อภาพแบบ full-screen */
             transform: scaleX(-1);
             /* ป้องกันการซูมมากเกินไปบนจอใหญ่ */
             max-width: none;
             max-height: none;
         }
         
-        /* ปรับสำหรับมือถือให้แสดงมุมมองกว้างขึ้น */
+        /* ปรับสำหรับมือถือ: กล้องเต็มจอ (cover) */
         @media (max-width: 1023px) {
             #cameraPreview {
-                /* เปลี่ยนเป็น contain เพื่อแสดงภาพเต็มไม่โดนตัด */
-                object-fit: contain !important;
+                /* เต็มจอ — ครอบภาพให้เติมทั้งหน้าจอ ไม่มีแถบดำ */
+                object-fit: cover !important;
                 object-position: center;
-                /* ลดการซูมด้วยการปรับ scale */
-                transform: scaleX(-1) scale(0.7) !important;
+                transform: scaleX(-1) !important;
                 transform-origin: center;
             }
             
             #cameraContainer {
                 background: #000;
-                display: flex;
-                align-items: center;
-                justify-content: center;
             }
             
-            /* ปรับ face guide ให้เล็กลงเล็กน้อยเพื่อให้เห็นมุมมองกว้างขึ้น */
+            /* ปรับ face guide ให้พอดีกับจอเต็ม */
             #faceGuide {
-                width: 260px !important;
-                height: 350px !important;
+                width: 280px !important;
+                height: 360px !important;
                 border-width: 2.5px !important;
-                top: 50% !important; /* จัดให้อยู่กึ่งกลางจอ */
+                top: 46% !important; /* จัดให้อยู่กึ่งกลางจอ */
             }
             
             /* ปรับ corner brackets */
@@ -57,14 +53,14 @@
         /* ปรับสำหรับมือถือขนาดเล็กมาก */
         @media (max-width: 480px) {
             #cameraPreview {
-                object-fit: contain !important;
-                transform: scaleX(-1) scale(0.6) !important;
+                object-fit: cover !important;
+                transform: scaleX(-1) !important;
             }
             
             #faceGuide {
                 width: 240px !important;
                 height: 320px !important;
-                top: 50% !important;
+                top: 48% !important;
             }
             
             .status-text {
@@ -74,11 +70,12 @@
         }
         .overlay-ui { position: absolute; z-index: 10; pointer-events: none; }
         
-        .top-bar { top: 0; left: 0; right: 0; padding: 1.5rem; display: flex; justify-content: space-between; align-items: flex-start; background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent); pointer-events: auto; }
+        /* กันส่วนบาก/ไดนามิกไอส์แลนด์บนมือถือ */
+        .top-bar { top: 0; left: 0; right: 0; padding: 1.5rem; padding-top: calc(1.5rem + env(safe-area-inset-top, 0px)); display: flex; justify-content: space-between; align-items: flex-start; background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent); pointer-events: auto; }
         .back-btn { color: white; background: rgba(0,0,0,0.3); border-radius: 50%; padding: 12px; backdrop-filter: blur(8px); display: inline-flex; transition: background 0.3s; text-decoration: none; border: 1px solid rgba(255,255,255,0.2); }
         .back-btn:active { background: rgba(255,255,255,0.4); }
 
-        .status-container { position: absolute; bottom: 10%; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 1.5rem; pointer-events: auto; }
+        .status-container { position: absolute; bottom: 10%; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 1.5rem; padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); pointer-events: auto; }
         .status-text { color: white; background: rgba(0,0,0,0.6); padding: 12px 24px; border-radius: 30px; text-align: center; font-size: 1.1rem; backdrop-filter: blur(8px); transition: all 0.3s; border: 1px solid rgba(255,255,255,0.15); margin-bottom: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.3); max-width: 100%; width: 100%; }
         
         #faceGuide { 
@@ -802,28 +799,19 @@
             
             console.log('🖥️ UI adjusted for large screen');
         } else {
-            // มือถือ: ใช้ contain และ scale เล็กลงเพื่อแสดงมุมมองกว้างขึ้น
-            faceGuide.style.width = '260px';
-            faceGuide.style.height = '350px';
+            // มือถือ: กล้องเต็มจอ (cover) — ไม่มีแถบดำ ไม่ย่อภาพ
+            faceGuide.style.width = '280px';
+            faceGuide.style.height = '360px';
             faceGuide.style.borderWidth = '2.5px';
-            faceGuide.style.top = '50%';
+            faceGuide.style.top = '46%';
             
-            // บังคับใช้ object-fit: contain และ scale ที่เล็กลง
-            video.style.objectFit = 'contain';
+            // บังคับใช้ object-fit: cover เพื่อให้ภาพเต็มจอ (ตัดขอบส่วนเกิน)
+            video.style.objectFit = 'cover';
             video.style.objectPosition = 'center';
-            video.style.transform = 'scaleX(-1) scale(0.7)';
+            video.style.transform = 'scaleX(-1)';
             video.style.transformOrigin = 'center';
             
-            // ปรับ container ให้จัดกึ่งกลาง
-            const container = document.getElementById('cameraContainer');
-            if (container) {
-                container.style.display = 'flex';
-                container.style.alignItems = 'center';
-                container.style.justifyContent = 'center';
-                container.style.background = '#000';
-            }
-            
-            console.log('📱 UI adjusted for mobile with contain + scale(0.7) for wider view');
+            console.log('📱 UI adjusted for mobile with full-screen cover view');
         }
     }
 
