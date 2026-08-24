@@ -1,3 +1,19 @@
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes login-submit-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.login-submit-spinner {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  min-height: 18px !important;
+  max-width: 18px !important;
+  max-height: 18px !important;
+  display: inline-block !important;
+  flex-shrink: 0 !important;
+  vertical-align: middle !important;
+  animation: spin 1s linear infinite !important;
+}
+
 /* ── รีเซ็ตและสไตล์พื้นฐาน: box-sizing, ฟอนต์, สีพื้นหลัง ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 ::selection { background: #ea580c; color: #ffffff; }

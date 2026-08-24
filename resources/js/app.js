@@ -39,7 +39,7 @@ document.addEventListener('submit', (event) => {
 	}
 
 	button.disabled = true;
-	button.innerHTML = '<svg class="login-submit-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> กำลังส่งรหัส OTP...';
+	button.innerHTML = '<svg class="login-submit-spinner" style="width:18px;height:18px;min-width:18px;min-height:18px;max-width:18px;max-height:18px;animation:login-submit-spin 1s linear infinite;display:inline-block;flex-shrink:0;vertical-align:middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> <span>กำลังส่งรหัส OTP...</span>';
 });
 
 window.addEventListener('pageshow', (event) => {
