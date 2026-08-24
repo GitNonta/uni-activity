@@ -82,8 +82,8 @@
             @enderror
         </div>
 
-        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem; background: #ea580c; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s;">
-            ยืนยันรหัส
+        <button type="submit" id="verifySubmitBtn" class="btn btn-primary btn-block btn-lg" style="display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;">
+            <span>ยืนยันรหัส OTP</span>
         </button>
     </form>
 

@@ -39,7 +39,7 @@
             @enderror
         </div>
 
-        <button type="submit" id="verifySubmitBtn" class="btn btn-primary" style="width: 100%; padding: 0.85rem; background: #ea580c; color: #fff; border: none; border-radius: 12px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 12px rgba(234,88,12,0.3); display:inline-flex; align-items:center; justify-content:center; gap:0.5rem;">
+        <button type="submit" id="verifySubmitBtn" class="btn btn-primary btn-block btn-lg" style="display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;">
             <span>เข้าสู่ระบบ</span>
         </button>
     </form>
