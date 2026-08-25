@@ -1599,3 +1599,43 @@ textarea::-webkit-scrollbar {
 
 
 
+
+/* ── Admin Mobile UX: touch targets, iOS zoom prevention, stacked tables ──────
+ * เพิ่มพื้นที่แตะปุ่มให้เหมาะกับนิ้ว ป้องกัน iOS ซูมอัตโนมัติตอนโฟกัส input
+ * และปรับตารางแบบ stack ให้อ่านง่ายบนมือถือ (ใช้ร่วมกับ data-label)
+ */
+@media (max-width: 768px) {
+    html {
+        -webkit-text-size-adjust: 100%;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* iOS auto-zooms on focus when input font-size < 16px */
+    .form-control,
+    .form-control[type="text"],
+    .form-control[type="number"],
+    .form-control[type="email"],
+    .form-control[type="date"],
+    .form-control[type="datetime-local"],
+    select.form-control,
+    textarea.form-control {
+        font-size: 16px;
+    }
+
+    /* Comfortable touch targets (Apple HIG: >= 44px) */
+    .btn { min-height: 44px; }
+    .btn-sm { min-height: 38px; padding: 0.5rem 0.875rem; font-size: 0.8rem; }
+
+    /* Stacked table rows: label column stays readable, action cells wrap */
+    .responsive-table td[data-label] {
+        flex-wrap: wrap;
+        gap: 0.25rem 0.5rem;
+    }
+    .responsive-table td[data-label]::before {
+        flex-shrink: 0;
+        max-width: 45%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}

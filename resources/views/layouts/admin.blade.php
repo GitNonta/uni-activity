@@ -552,9 +552,19 @@ html[data-theme="light"] {
     .sb-sidebar { left: -260px; transition: left 0.3s ease; }
     .sb-sidebar.mobile-open { left: 0; }
     .sb-content { margin-left: 0 !important; }
-    .sb-main { padding: 16px; }
+    /* Extra bottom space: keeps last rows/buttons clear of the chat widget + safe area */
+    .sb-main { padding: 16px; padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px)); overflow-x: hidden; }
     .sb-search-btn { min-width: auto; padding: 0 10px; }
     .sb-search-btn span span { display: none; }
+    /* Desktop-only keyboard hint has no meaning on touch devices */
+    .sb-search-btn kbd { display: none; }
+    .admin-topbar-right { gap: 6px !important; }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+    #adminChatWidgetContainer { right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); left: 12px; justify-content: flex-end; }
+    .admin-chat-widget { width: min(340px, 100%); height: min(480px, 65vh); }
 }
 </style>
 
@@ -799,12 +809,26 @@ html[data-theme="light"] {
 
 <script>
     function toggleSidebar() {
+        // Mobile: hamburger opens the off-canvas drawer instead of collapsing
+        if (window.matchMedia('(max-width: 768px)').matches) {
+            toggleMobileSidebar();
+            return;
+        }
         const sidebar = document.getElementById('mainSidebar');
         const brandBox = document.getElementById('adminBrandBox');
         const content = document.getElementById('sbContent');
         if (sidebar) sidebar.classList.toggle('collapsed');
         if (brandBox) brandBox.classList.toggle('collapsed');
         if (content) content.classList.toggle('collapsed');
+    }
+
+    function toggleMobileSidebar() {
+        const sidebar = document.getElementById('mainSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        if (!sidebar || !overlay) return;
+        sidebar.classList.toggle('mobile-open');
+        overlay.classList.toggle('open');
+        document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
     }
 
     function toggleSubmenu(el) {
@@ -814,12 +838,39 @@ html[data-theme="light"] {
         submenu.style.maxHeight = submenu.classList.contains('open') ? submenu.scrollHeight + "px" : "0px";
     }
 
-    function toggleMobileSidebar() {
-        const sidebar = document.getElementById('mainSidebar');
-        const overlay = document.getElementById('sidebarOverlay');
-        sidebar.classList.toggle('mobile-open');
-        overlay.classList.toggle('open');
-        document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+    // Mobile UX: close the drawer after tapping a nav link (SPA-feel, prevents stuck overlay)
+    document.addEventListener('click', function(e) {
+        if (!window.matchMedia('(max-width: 768px)').matches) return;
+        const link = e.target.closest('.sb-link');
+        if (link && link.getAttribute('href') && !link.getAttribute('href').startsWith('#')) {
+            const sidebar = document.getElementById('mainSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (sidebar) sidebar.classList.remove('mobile-open');
+            if (overlay) overlay.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+    });
+
+    // Mobile UX: auto-label stacked table cells from their column headers so
+    // every admin table stacks cleanly without horizontal scrolling
+    function hydrateTableLabels() {
+        document.querySelectorAll('.table-wrap table').forEach(function(table) {
+            var headers = Array.from(table.querySelectorAll('thead th'));
+            if (!headers.length) return;
+            table.querySelectorAll('tbody tr').forEach(function(row) {
+                Array.from(row.children).forEach(function(cell, i) {
+                    if (!cell.hasAttribute('data-label') && headers[i]) {
+                        var label = headers[i].textContent.trim();
+                        if (label) cell.setAttribute('data-label', label);
+                    }
+                });
+            });
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hydrateTableLabels);
+    } else {
+        hydrateTableLabels();
     }
 </script>
 @yield('scripts')

@@ -16,7 +16,7 @@
         <label class="form-label">ค้นหา</label>
         <input type="text" name="search" value="{{ request('search') }}" placeholder="ชื่อกิจกรรม..." class="form-control">
     </div>
-    <div style="width:180px;">
+    <div style="width:180px;max-width:100%;">
         <label class="form-label">สถานะ</label>
         <select name="status" class="form-control">
             <option value="">ทุกสถานะ</option>
