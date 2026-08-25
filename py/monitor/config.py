@@ -51,6 +51,8 @@ ALERT_RESOLVE_DEBOUNCE_CHECKS = 6   # ต้องหายครบ N รอบ
 STARTUP_GRACE               = 90    # วินาที หลัง start ไม่ส่ง cf_offline
 TG_ALERT_BURST_LIMIT        = 20    # Circuit breaker: สูงสุด 20 ข้อความ alert/resolved ต่อ window
 TG_ALERT_BURST_WINDOW       = 3600  # Window ของ circuit breaker (วินาที = 1 ชม.)
+TG_CMD_MAX_AGE              = 120   # ข้ามคำสั่งเก่ากว่า N วินาที (กัน bot replay คำสั่งเก่าหลัง restart)
+TG_POLL_BACKOFF_MAX         = 30    # Backoff สูงสุดตอน getUpdates error (วินาที)
 
 # ── Telegram internal state (mutable) ────────────────────────────────────────
 _tg_sent_ids: set         = set()

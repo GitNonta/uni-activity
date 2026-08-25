@@ -106,22 +106,51 @@ def _ensure_worker():
 _ensure_worker()
 
 
+# Telegram hard limit is 4096 chars — stay safely below it
+TG_MAX_MSG_LEN = 3800
+
+
+def _chunk_message(text: str, limit: int = TG_MAX_MSG_LEN) -> list:
+    """Split long text into <=limit chunks (prefer newline boundaries).
+
+    Without this, messages over Telegram's 4096-char limit are rejected
+    outright and the user receives no reply at all.
+    """
+    if len(text) <= limit:
+        return [text]
+    chunks: list = []
+    while text:
+        if len(text) <= limit:
+            chunks.append(text)
+            break
+        cut = text.rfind("\n", 100, limit)   # never split within the first 100 chars
+        if cut <= 0:
+            cut = limit
+        chunks.append(text[:cut])
+        text = text[cut:].lstrip("\n")
+    return chunks
+
+
 def tg_send(text: str, parse_mode: str = "HTML") -> bool:
-    """Non-blocking: Enqueue message for reliable background delivery."""
+    """Non-blocking: Enqueue message(s) for reliable background delivery."""
     if not cfg.TELEGRAM_BOT_TOKEN or not cfg.TELEGRAM_CHAT_ID:
         return False
     _ensure_worker()
-    try:
-        _tg_queue.put_nowait((text, parse_mode))
-        return True
-    except queue.Full:
-        # If queue is full, drop oldest and insert
+    ok = True
+    for part in _chunk_message(text):
         try:
-            _tg_queue.get_nowait()
-        except Exception:
-            pass
-        _tg_queue.put((text, parse_mode))
-        return True
+            _tg_queue.put_nowait((part, parse_mode))
+        except queue.Full:
+            # If queue is full, drop oldest and insert
+            try:
+                _tg_queue.get_nowait()
+            except Exception:
+                pass
+            try:
+                _tg_queue.put((part, parse_mode))
+            except Exception:
+                ok = False
+    return ok
 
 
 # ── Global burst limiter (circuit breaker สำหรับ alert/resolved) ─────────────

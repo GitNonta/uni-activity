@@ -9,22 +9,29 @@ from monitor.tunnel import push_active_url_to_github
 
 # ── Telegram Bot Command Handler ─────────────────────────────────────────────
 _tg_last_update_id: int = 0
-_tg_cmd_queue = None   # กำหนดใน __main__
+_cmd_locks: dict        = {}   # cmd -> Lock — กันรันคำสั่งเดิมซ้ำพร้อมกัน (double-tap)
+_unauth_warn_at: dict   = {}   # chat -> epoch — throttle แจ้งเตือน unauthorized chat
+_handler_sem = threading.BoundedSemaphore(8)  # จำกัด handler ทำงานพร้อมกัน
 
 def tg_handle_commands() -> None:
-    """Long-poll Telegram getUpdates — block 25 วิ ตอบสนองทันทีแบบ Real-time เมื่อมี update"""
+    """Long-poll Telegram getUpdates — block 25 วิ ตอบสนองทันทีแบบ Real-time เมื่อมี update.
+
+    Raises on network/API errors so the poll loop can apply backoff
+    (ก่อนหน้านี้ error ถูกกลืน → loop ยิง API ถี่ผิดปกติตอน net หลุด).
+    """
     global _tg_last_update_id
     if not cfg.TELEGRAM_BOT_TOKEN or not cfg.TELEGRAM_CHAT_ID:
+        time.sleep(60)
         return
 
     try:
-        import urllib.request, json as _json
+        import urllib.request, urllib.error, json as _json
         url = (
             f"https://api.telegram.org/bot{cfg.TELEGRAM_BOT_TOKEN}/getUpdates"
             f"?offset={_tg_last_update_id + 1}&limit=10&timeout=25"
         )
         req = urllib.request.Request(url, headers={"User-Agent": "UniMonitor/2.0"})
-        with urllib.request.urlopen(req, timeout=30) as r:
+        with urllib.request.urlopen(req, timeout=35) as r:
             data = _json.loads(r.read())
 
         for update in data.get("result", []):
@@ -33,24 +40,89 @@ def tg_handle_commands() -> None:
             chat = str(msg.get("chat", {}).get("id", ""))
             text = msg.get("text", "").strip()
 
+            # ── ข้ามคำสั่งเก่า (ค้างจากก่อน restart) — ไม่งั้น bot จะ replay
+            #    คำสั่งเก่าหลายชม.ก่อนหน้าเองทันทีที่ start ใหม่
+            msg_age = time.time() - msg.get("date", 0)
+            if msg_age > cfg.TG_CMD_MAX_AGE or msg_age < -5:
+                continue
+
             if chat != cfg.TELEGRAM_CHAT_ID:
-                tg_send(f"⛔ Unauthorized: <code>{chat}</code>")
+                # แจ้ง owner แบบ throttled — stranger ยิง message รัวๆ ไม่ให้กลายเป็นสแปม
+                now = time.time()
+                if now - _unauth_warn_at.get(chat, 0.0) > 60.0:
+                    _unauth_warn_at[chat] = now
+                    tg_send(f"⛔ Unauthorized: <code>{html.escape(chat)}</code>")
                 continue
 
             # dispatch ใน thread แยก — ไม่บล็อก poll loop
             threading.Thread(target=_dispatch_command, args=(text,), daemon=True).start()
 
+    except urllib.error.HTTPError as e:
+        if e.code == 429:   # rate limited — respect retry_after
+            try:
+                wait = _json_loads(e.read().decode("utf-8", "ignore")).get(
+                    "parameters", {}).get("retry_after", 5)
+                time.sleep(min(wait + 1, cfg.TG_POLL_BACKOFF_MAX))
+            except Exception:
+                time.sleep(5)
+        raise
+
+
+def _json_loads(s: str) -> dict:
+    import json as _json
+    try:
+        return _json.loads(s)
     except Exception:
-        pass
+        return {}
 
 
 def tg_command_poll_thread() -> None:
-    """Long-poll loop — ไม่มี sleep เพิ่ม รอ response จาก Telegram แทน"""
+    """Long-poll loop with exponential backoff on errors (1s → 30s cap).
+
+    กัน busy-loop ยิง Telegram API ไม่ยั้งตอน network/API มีปัญหา.
+    """
+    backoff = 1.0
     while True:
         try:
             tg_handle_commands()
+            backoff = 1.0
         except Exception:
-            time.sleep(1)   # sleep แค่ตอน error เท่านั้น
+            time.sleep(backoff)
+            backoff = min(backoff * 2, float(cfg.TG_POLL_BACKOFF_MAX))
+
+
+def _get_cmd_lock(cmd: str) -> threading.Lock:
+    lock = _cmd_locks.get(cmd)
+    if lock is None:
+        lock = threading.Lock()
+        _cmd_locks[cmd] = lock
+    return lock
+
+
+def _run_handler(cmd: str, fn) -> None:
+    """Run one handler with duplicate-guard + concurrency cap + error reporting.
+
+    - Lock per command: double-tap /tunnel_restart ไม่แข่ง kill/start กันเอง
+    - Semaphore: command flood ไม่ spawn thread ล้นระบบ
+    - try/except: handler crash ต้องแจ้ง user กลับ (เดิมเงียบ = ดูเหมือน bot พัง)
+    """
+    lock = _get_cmd_lock(cmd)
+    if not lock.acquire(blocking=False):
+        tg_send(f"⏳ <code>{html.escape(cmd)}</code> กำลังทำงานอยู่ — รอผลลัพธ์ก่อนรันซ้ำ")
+        return
+    try:
+        if not _handler_sem.acquire(timeout=10):
+            tg_send("⚠️ มีคำสั่งรอประมวลผลเยอะ — ลองใหม่อีกครั้งสักครู่")
+            return
+        try:
+            fn()
+        except Exception as e:
+            tg_send(f"❌ <code>{html.escape(cmd)}</code> failed: "
+                    f"<code>{html.escape(str(e)[:300])}</code>")
+        finally:
+            _handler_sem.release()
+    finally:
+        lock.release()
 
 
 def _dispatch_command(text: str) -> None:
@@ -92,7 +164,8 @@ def _dispatch_command(text: str) -> None:
 
     fn = handlers.get(cmd)
     if fn:
-        threading.Thread(target=fn, daemon=True).start()
+        # รันใน thread ของ dispatch เดียวกัน — _run_handler จัดการ lock/semaphore/error
+        _run_handler(cmd, fn)
     elif cmd.startswith("/"):
         tg_send(f"❓ ไม่รู้จัก command: <code>{html.escape(cmd)}</code>\nพิมพ์ /help เพื่อดูคำสั่งทั้งหมด")
 
@@ -397,7 +470,8 @@ def _cmd_tunnel() -> None:
     proc_count = 0
     pids = []
     try:
-        r = subprocess.run(["pgrep", "-a", "cloudflared"], capture_output=True, text=True)
+        r = subprocess.run(["pgrep", "-a", "cloudflared"], capture_output=True,
+                           text=True, timeout=5)
         lines = [l for l in r.stdout.strip().splitlines() if l]
         proc_count = len(lines)
         pids = [l.split()[0] for l in lines]
@@ -418,7 +492,8 @@ def _cmd_tunnel() -> None:
     for lp in ["/data/data/com.termux/files/home/cloudflared.log",
                "/data/data/com.termux/files/usr/var/log/sv/cloudflared/current"]:
         try:
-            r = subprocess.run(["tail", "-3", lp], capture_output=True, text=True)
+            r = subprocess.run(["tail", "-3", lp], capture_output=True, text=True,
+                               timeout=5)
             if r.stdout.strip():
                 log_line = r.stdout.strip().splitlines()[-1][:100]
                 break
@@ -770,11 +845,13 @@ def _cmd_tunnel_restart_ssh() -> None:
         try:
             # kill เฉพาะ cloudflared ตัวที่ connect :80
             procs = subprocess.run(["pgrep", "-a", "cloudflared"],
-                                   capture_output=True, text=True).stdout.strip().splitlines()
+                                   capture_output=True, text=True, timeout=5
+                                   ).stdout.strip().splitlines()
             for line in procs:
                 if ":80" in line and "8080" not in line and "8082" not in line:
                     pid = line.split()[0]
-                    subprocess.run(["kill", "-9", pid], capture_output=True)
+                    subprocess.run(["kill", "-9", pid], capture_output=True,
+                                   timeout=5)
             time.sleep(3)
 
             log_ssh = "/data/data/com.termux/files/home/cloudflared-ssh.log"
@@ -857,17 +934,19 @@ def _cmd_tunnel_stop() -> None:
     """หยุด Cloudflare Tunnel ทั้งหมด"""
     import subprocess
 
-    r = subprocess.run(["pgrep", "-c", "cloudflared"], capture_output=True, text=True)
+    r = subprocess.run(["pgrep", "-c", "cloudflared"], capture_output=True,
+                       text=True, timeout=5)
     count = r.stdout.strip()
     if count == "0":
         tg_send("ℹ️ ไม่มี Cloudflare Tunnel รันอยู่")
         return
 
-    subprocess.run(["pkill", "-9", "cloudflared"], capture_output=True)
+    subprocess.run(["pkill", "-9", "cloudflared"], capture_output=True, timeout=5)
     time.sleep(1)
 
     # ยืนยัน
-    r2 = subprocess.run(["pgrep", "-c", "cloudflared"], capture_output=True, text=True)
+    r2 = subprocess.run(["pgrep", "-c", "cloudflared"], capture_output=True,
+                        text=True, timeout=5)
     still = r2.stdout.strip()
     if still == "0":
         tg_send(f"🔴 <b>Cloudflare Tunnel หยุดแล้ว</b>\nหยุด {count} process(es)\nพิมพ์ /tunnel_restart เพื่อเปิดใหม่")
@@ -942,7 +1021,8 @@ def _cmd_tunnel_log() -> None:
     output = ""
     for path in log_paths:
         try:
-            r = subprocess.run(["tail", "-20", path], capture_output=True, text=True)
+            r = subprocess.run(["tail", "-20", path], capture_output=True,
+                               text=True, timeout=5)
             if r.stdout.strip():
                 output = r.stdout.strip()
                 break
