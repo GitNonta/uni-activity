@@ -62,7 +62,7 @@ if __name__ == "__main__":
             f"📡 Alerts: <b>Active</b>\n\n"
             f"<i>จะแจ้งเตือนเมื่อ:</i>\n"
             f"• 🚨 Service down\n"
-            f"• ⚠️ CPU load &gt; 6.0\n"
+            f"• ⚠️ CPU load &gt; 8.0\n"
             f"• ⚠️ Memory &gt; 90%\n"
             f"• ⚠️ Disk &gt; 90%\n"
             f"• ⚠️ Temp &gt; 75°C\n"

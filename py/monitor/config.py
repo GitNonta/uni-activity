@@ -44,14 +44,22 @@ if (not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID) and os.path.exists(ENV_PATH)
     except Exception:
         pass
 
-ALERT_MIN_INTERVAL = 600   # ขั้นต่ำ 10 นาที ระหว่าง alert เดิม
-STARTUP_GRACE      = 90    # วินาที หลัง start ไม่ส่ง cf_offline
+ALERT_MIN_INTERVAL          = 600   # ขั้นต่ำ 10 นาที ระหว่าง alert เดิม
+ALERT_RESOLVED_MIN_INTERVAL = 900   # ขั้นต่ำ 15 นาที ระหว่าง resolved เดิม (กัน flap spam)
+ALERT_DEBOUNCE_CHECKS       = 3     # ต้องเจอเงื่อนไขครบ N รอบติดกันก่อนยิง alert
+ALERT_RESOLVE_DEBOUNCE_CHECKS = 6   # ต้องหายครบ N รอบติดกัน (~30s) ก่อนแจ้ง resolved — กัน flap ping-pong
+STARTUP_GRACE               = 90    # วินาที หลัง start ไม่ส่ง cf_offline
+TG_ALERT_BURST_LIMIT        = 20    # Circuit breaker: สูงสุด 20 ข้อความ alert/resolved ต่อ window
+TG_ALERT_BURST_WINDOW       = 3600  # Window ของ circuit breaker (วินาที = 1 ชม.)
 
 # ── Telegram internal state (mutable) ────────────────────────────────────────
 _tg_sent_ids: set         = set()
 _tg_resolved: set         = set()
 _tg_last_daily: float     = 0.0
 _tg_alert_cooldown: dict  = {}
+_tg_resolved_cooldown: dict = {}   # alert_id -> last resolved-sent epoch
+_alert_pending: dict      = {}     # alert_id -> consecutive checks seen (debounce)
+_alert_resolve_pending: dict = {}  # alert_id -> consecutive checks gone (resolve debounce)
 _monitor_start_time: float = time.time()
 _tg_last_update_id: int   = 0
 

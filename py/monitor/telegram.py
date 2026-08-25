@@ -8,6 +8,7 @@ import urllib.request
 import urllib.error
 import json as _json
 import re
+from collections import deque
 
 import monitor.config as cfg
 
@@ -123,8 +124,31 @@ def tg_send(text: str, parse_mode: str = "HTML") -> bool:
         return True
 
 
+# ── Global burst limiter (circuit breaker สำหรับ alert/resolved) ─────────────
+_tg_burst_times: deque = deque()
+
+
+def _alert_burst_allow() -> bool:
+    """Allow at most TG_ALERT_BURST_LIMIT alert/resolved messages per window.
+
+    Interactive command replies (tg_send) are NOT limited — only automatic
+    alerts, so a burst of simultaneous incidents can never flood the chat.
+    """
+    now = time.time()
+    while _tg_burst_times and now - _tg_burst_times[0] > cfg.TG_ALERT_BURST_WINDOW:
+        _tg_burst_times.popleft()
+    if len(_tg_burst_times) >= cfg.TG_ALERT_BURST_LIMIT:
+        return False
+    _tg_burst_times.append(now)
+    return True
+
+
 def tg_alert(alert_id: str, alert_type: str, message: str) -> None:
     """Send alert with cooldown and deduplication."""
+    # Circuit breaker: drop excess alert messages during an incident storm
+    if not _alert_burst_allow():
+        return
+
     now = time.time()
 
     # Startup grace: do not send cf_offline during first 90s
@@ -163,9 +187,22 @@ def tg_alert(alert_id: str, alert_type: str, message: str) -> None:
 
 
 def tg_resolved(alert_id: str, message: str) -> None:
-    """Notify alert resolved."""
+    """Notify alert resolved (with cooldown to prevent flap spam)."""
+    # Circuit breaker (shared with tg_alert)
+    if not _alert_burst_allow():
+        return
+
     if alert_id in cfg._tg_resolved:
         return
+
+    # Resolved cooldown: ไม่ส่ง resolved ซ้ำภายใน ALERT_RESOLVED_MIN_INTERVAL
+    # กันกรณี alert flap (เกิด→หาย→เกิด) จาก threshold oscillation
+    now = time.time()
+    last = cfg._tg_resolved_cooldown.get(alert_id, 0.0)
+    if now - last < cfg.ALERT_RESOLVED_MIN_INTERVAL:
+        return
+    cfg._tg_resolved_cooldown[alert_id] = now
+
     cfg._tg_resolved.add(alert_id)
     ts   = time.strftime("%H:%M:%S")
     text = (

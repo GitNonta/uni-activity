@@ -175,15 +175,10 @@ def watch_remote_ai_nodes_thread():
 
                 if not is_up and prev["was_up"]:
                     # Node just went down — try to restart via SSH
+                    # (Telegram alert/resolved สำหรับ AI node ถูกจัดการโดย alert loop
+                    #  กลางใน alerts.py ที่เดียว — เดิมสอง thread ส่งซ้ำกันเองจนสแปม)
                     now = time.time()
-                    if now - prev["last_alert"] > 300:  # alert max every 5 min
-                        try:
-                            from monitor.telegram import tg_alert
-                            tg_alert(f"ai_node_down_{host}", "critical",
-                                     f"🤖 Remote AI Node {url} is DOWN! Attempting restart via SSH...")
-                        except Exception:
-                            pass
-                        _remote_ai_node_state[url] = {"was_up": False, "last_alert": now}
+                    _remote_ai_node_state[url] = {"was_up": False, "last_alert": now}
 
                     # Try SSH restart
                     try:
@@ -196,12 +191,7 @@ def watch_remote_ai_nodes_thread():
                         pass
 
                 elif is_up and not prev.get("was_up", True):
-                    # Node recovered
-                    try:
-                        from monitor.telegram import tg_resolved
-                        tg_resolved(f"ai_node_down_{host}", f"🤖 Remote AI Node {url} is back UP ✓")
-                    except Exception:
-                        pass
+                    # Node recovered (การแจ้ง Telegram เป็นหน้าที่ของ alerts.py กลาง)
                     _remote_ai_node_state[url] = {"was_up": True, "last_alert": 0}
 
                 else:

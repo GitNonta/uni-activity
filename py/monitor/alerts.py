@@ -55,27 +55,27 @@ def get_alerts(stats):
     if offline_services:
         alerts.append({"id": "service_crash", "type": "critical", "message": f"Service(s) Offline: {', '.join(offline_services)}"})
         
-    # 3. High CPU Load
+    # 3. High CPU Load (hysteresis: fire >8, clear <5 — กัน flap เมื่อโหลดแกว่งรอบ threshold)
     load = stats.get("load", [0,0,0])[0]
-    if load > 6.0:
+    if load > 8.0 or ("high_load" in cfg.active_alert_ids and load >= 5.0):
         alerts.append({"id": "high_load", "type": "warning", "message": f"High CPU Load: {load}"})
         
-    # 4. Overheating
+    # 4. Overheating (hysteresis: fire >75, clear <65)
     try:
         temp = float(stats.get("temp", 0))
-        if temp > 75.0:
+        if temp > 75.0 or ("high_temp" in cfg.active_alert_ids and temp >= 65.0):
             alerts.append({"id": "high_temp", "type": "warning", "message": f"Server Overheating: {temp}°C"})
     except:
         pass
         
-    # 5. High Memory Usage
+    # 5. High Memory Usage (hysteresis: fire >90, clear <80)
     mem_percent = stats.get("memory", {}).get("percent", 0)
-    if mem_percent > 90:
+    if mem_percent > 90 or ("high_mem" in cfg.active_alert_ids and mem_percent >= 80):
         alerts.append({"id": "high_mem", "type": "warning", "message": f"High Memory Usage: {mem_percent}%"})
         
-    # 6. High Storage Usage
+    # 6. High Storage Usage (hysteresis: fire >90, clear <80 — เหมือน high_mem)
     disk_percent = stats.get("disk", {}).get("percent", 0)
-    if disk_percent > 90:
+    if disk_percent > 90 or ("high_disk" in cfg.active_alert_ids and disk_percent >= 80):
         alerts.append({"id": "high_disk", "type": "warning", "message": f"Disk Space Low: {disk_percent}% used"})
         
     # 7. AI Service Node Down
@@ -89,7 +89,8 @@ def get_alerts(stats):
         alerts.append({"id": "ai_cluster_critical", "type": "critical",
                        "message": "🚨 ALL AI Nodes are DOWN! Face verification is unavailable."})
 
-    # 8. Abnormal Traffic Spike (Per IP)
+    # 8. Abnormal Traffic Spike (Per IP) — รวมทุก IP เป็น alert เดียว
+    # (แต่ละ IP แยก id ก่อนหน้านี้ทำให้ได้ alert+resolved เป็นคู่ต่อ IP = สแปม)
     current_time = time.time()
     ip_counts = {}
     for log in cfg.inspector_logs:
@@ -97,15 +98,34 @@ def get_alerts(stats):
         if current_time - server_time <= 10:
             ip = log.get("ip", "unknown")
             ip_counts[ip] = ip_counts.get(ip, 0) + 1
+
+    spiking_ips = [
+        f"{ip} ({count} reqs/10s)"
+        for ip, count in sorted(ip_counts.items(), key=lambda kv: kv[1], reverse=True)
+        if count >= 40  # 40 requests in 10s from a single IP
+    ]
+    if spiking_ips:
+        alerts.append({
+            "id": "traffic_spike",
+            "type": "warning",
+            "message": "Abnormal Traffic: " + ", ".join(spiking_ips[:5]),
+        })
             
-    for ip, count in ip_counts.items():
-        if count >= 40: # 40 requests in 10s from a single IP
-            alerts.append({"id": f"traffic_spike_{ip}", "type": "warning", "message": f"Abnormal Traffic: {count} reqs in 10s from {ip}"})
-            
+    # Debounce: alert ต้องเจอเงื่อนไขครบ ALERT_DEBOUNCE_CHECKS รอบติดกันก่อนถือว่าจริง
+    # (ยกเว้น id ที่ active อยู่แล้ว — ให้คงสถานะไว้จน resolved)
+    debounced = []
+    for a in alerts:
+        n = cfg._alert_pending.get(a["id"], 0) + 1
+        cfg._alert_pending[a["id"]] = n
+        if a["id"] in cfg.active_alert_ids or n >= cfg.ALERT_DEBOUNCE_CHECKS:
+            debounced.append(a)
+    for stale_id in set(cfg._alert_pending) - {a["id"] for a in alerts}:
+        cfg._alert_pending.pop(stale_id, None)
+
     # Track history + Telegram alerts
     current_ids = set()
     from datetime import datetime
-    for a in alerts:
+    for a in debounced:
         current_ids.add(a["id"])
         if a["id"] not in cfg.active_alert_ids:
             # บันทึก history
@@ -115,9 +135,26 @@ def get_alerts(stats):
             # ส่ง Telegram เฉพาะ alert ใหม่
             tg_alert(a["id"], a["type"], a["message"])
 
-    # แจ้ง resolved เมื่อ alert หายไป
-    for resolved_id in (cfg.active_alert_ids - current_ids):
+    # แจ้ง resolved เมื่อ alert หายไป — พร้อม resolve-debounce กัน flap ping-pong
+    # (ต้องหายครบ ALERT_RESOLVE_DEBOUNCE_CHECKS รอบติดกันก่อนถือว่าหายจริง
+    #  ไม่งั้น metric แกว่งรอบ threshold จะสลับส่ง alert ↔ resolved ไม่เว้นวรรค)
+    gone_ids = cfg.active_alert_ids - current_ids
+
+    # id ที่กลับมา active ก่อนครบจำนวนรอบ → ล้างตัวนับ resolve เริ่มนับใหม่
+    for rid in list(cfg._alert_resolve_pending):
+        if rid not in gone_ids:
+            cfg._alert_resolve_pending.pop(rid, None)
+
+    confirmed_resolved = set()
+    for resolved_id in sorted(gone_ids):
+        seen_gone = cfg._alert_resolve_pending.get(resolved_id, 0) + 1
+        cfg._alert_resolve_pending[resolved_id] = seen_gone
+        if seen_gone < cfg.ALERT_RESOLVE_DEBOUNCE_CHECKS:
+            continue  # อาจเป็นแค่ flap — ยังไม่แจ้ง resolved, คงสถานะ active ไว้
+        cfg._alert_resolve_pending.pop(resolved_id, None)
+        confirmed_resolved.add(resolved_id)
         cfg._tg_resolved.discard(resolved_id)   # reset เพื่อให้ส่งได้อีกถ้าเกิดซ้ำ
+        cfg._alert_pending.pop(resolved_id, None)
         resolved_msg = {
             "cf_offline"    : "Cloudflare Tunnel กลับมา Online แล้ว",
             "service_crash" : "Services กลับมา Running แล้ว",
@@ -125,12 +162,14 @@ def get_alerts(stats):
             "high_temp"     : "อุณหภูมิ Server กลับสู่ระดับปกติแล้ว",
             "high_mem"      : "Memory Usage กลับสู่ระดับปกติแล้ว",
             "high_disk"     : "Disk Space กลับสู่ระดับปกติแล้ว",
-        "ai_cluster_critical": "AI Cluster กลับมา Online แล้ว ✓",
+            "ai_cluster_critical": "AI Cluster กลับมา Online แล้ว ✓",
+            "traffic_spike" : "Traffic กลับสู่ระดับปกติแล้ว",
         # Dynamic ai_node_down_* resolved handled below
         }.get(resolved_id, f"{resolved_id} resolved")
         tg_resolved(resolved_id, resolved_msg)
 
-    cfg.active_alert_ids = current_ids
+    # active = ที่ยังเจออยู่ + ที่หายไปชั่วคราว (ยังไม่ผ่าน resolve-debounce)
+    cfg.active_alert_ids = (cfg.active_alert_ids - confirmed_resolved) | current_ids
     return alerts
 
 def collect_stats():
