@@ -41,14 +41,18 @@ export function ServicesCard({ services, listeningPorts }) {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
             {ports.map(port => {
               const portLabels = {
-                8000: 'Octane (Swoole) / FastAPI',
+                8000: 'Web Worker 1 (artisan serve)',
+                8002: 'Web Worker 2 (artisan serve)',
+                8003: 'Web Worker 3 (artisan serve)',
                 8080: 'Nginx Edge (Web)',
+                8088: 'Nginx Load Balancer',
                 8082: 'Laravel Reverb (WS)',
                 9999: 'Monitor API / UI',
+                9998: 'Telemetry (UDP)',
                 8022: 'SSH / SFTP',
-                5432: 'PostgreSQL 16',
-                6379: 'Dragonfly / Redis',
-                8001: 'AI Scan Service'
+                5432: 'PostgreSQL',
+                6379: 'Valkey Datastore',
+                6380: 'Valkey Queue Store'
               };
               const label = portLabels[port] || `Port ${port}`;
               return (

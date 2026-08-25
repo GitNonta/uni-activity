@@ -662,6 +662,48 @@ def get_listening_ports():
             
     return sorted(list(ports))
 
+def _env_var(name, default=""):
+    """Read a variable from the Laravel .env file."""
+    val = default
+    try:
+        env_path = os.path.expanduser("~/uni-activity/.env")
+        with open(env_path, "r", encoding="utf-8") as f:
+            for line in f:
+                if line.startswith(name + "="):
+                    val = line.split("=", 1)[1].strip().strip('"').strip("'")
+                    break
+    except Exception:
+        pass
+    return val
+
+
+def _valkey_password():
+    return _env_var("REDIS_PASSWORD")
+
+
+def _valkey_host():
+    return _env_var("REDIS_HOST", "127.0.0.1")
+
+
+def _valkey_cli(port, *args):
+    """Run valkey-cli against the configured Valkey host (local or remote)."""
+    cmd = ["valkey-cli", "-h", _valkey_host(), "-p", str(port),
+           "-a", _valkey_password(), "--no-auth-warning"] + list(args)
+    try:
+        return subprocess.run(cmd, capture_output=True, text=True, timeout=3)
+    except Exception:
+        return None
+
+
+def _tcp_open(host, port):
+    try:
+        s = socket.create_connection((host, port), timeout=1)
+        s.close()
+        return True
+    except Exception:
+        return False
+
+
 def get_services():
     global _services_cache, _services_cache_time
     import subprocess, time as _time
@@ -669,51 +711,58 @@ def get_services():
     if _services_cache and (_time.time() - _services_cache_time) < 15:
         return _services_cache
 
-    # Check active web worker
-    is_octane = bool(subprocess.run(["pgrep", "-f", "octane:start"], capture_output=True, text=True).stdout.strip())
-    is_fpm = bool(subprocess.run(["pgrep", "-f", "php-fpm"], capture_output=True, text=True).stdout.strip())
-    is_dragonfly = bool(subprocess.run(["pgrep", "-f", "dragonfly|redis-server|valkey-server"], capture_output=True, text=True).stdout.strip())
+    def pgrep(pattern):
+        try:
+            res = subprocess.run(["pgrep", "-f", pattern], capture_output=True, text=True)
+            return bool(res.stdout.strip())
+        except Exception:
+            return False
 
-    services = {
-        "Nginx (Edge Proxy)": ("nginx", 8080),
-        "Laravel Application Server": ("octane:start|php-fpm", 8080 if is_fpm else 8000),
-        "Swoole / OpenSwoole": ("swoole|dragonfly|redis-server|valkey-server", 6379),
-        "Laravel Reverb (WebSocket)": ("reverb:start", 8082),
-        "Datastore (Valkey)": ("dragonfly|redis-server|valkey-server", 6379),
-        "PostgreSQL 16 Database": ("postgres", 5432),
-        "Redis Queue Worker": ("artisan queue:work", None),
-        "AI Biometrics Face Service": ("server.py", 8000),
-        "Cloudflared Tunnel": ("cloudflared", None),
-        "SSH / SFTP Server": ("sshd", 8022)
-    }
+    def count_workers():
+        try:
+            res = subprocess.run(["pgrep", "-f", "artisan serve"], capture_output=True, text=True)
+            return len([x for x in res.stdout.split() if x.strip()])
+        except Exception:
+            return 0
 
+    vk_host = _valkey_host()
     listening = get_listening_ports()
 
-    status = {}
-    for name, (proc_pattern, default_port) in services.items():
-        try:
-            patterns = proc_pattern.split('|')
-            is_running = False
-            for pat in patterns:
-                res = subprocess.run(["pgrep", "-f", pat], capture_output=True, text=True)
-                if bool(res.stdout.strip()):
-                    is_running = True
-                    break
+    candidates = [
+        ("Nginx (Edge Proxy)",          lambda: pgrep("nginx"),                     8080),
+        ("Web Workers (artisan serve)", lambda: count_workers() > 0,                None),
+        ("Laravel Reverb (WebSocket)",  lambda: pgrep("reverb:start"),              8082),
+        ("Datastore (Valkey)",          lambda: _tcp_open(vk_host, 6379),           None),
+        ("Queue Store (Valkey)",        lambda: _tcp_open(vk_host, 6380),           None),
+        ("PostgreSQL Database",         lambda: pgrep("postgres"),                  5432),
+        ("Queue Worker",                lambda: pgrep("artisan queue:work"),        None),
+        ("AI Biometrics Face Service",  lambda: pgrep("venv/bin/python server.py"), None),
+        ("Cloudflared Tunnel",          lambda: pgrep("cloudflared"),               None),
+        ("SSH / SFTP Server",           lambda: pgrep("sshd"),                      8022),
+    ]
 
-            if is_running:
-                if name == "Laravel Application Server":
-                    engine_desc = "Octane (In-Memory)" if is_octane else "Active Engine"
-                    status[name] = f"Running ({engine_desc})"
-                elif name == "Swoole / OpenSwoole":
-                    status[name] = "Running (In-Memory State & Tables)"
-                elif default_port and default_port in listening:
-                    status[name] = f"Running (Port {default_port})"
-                else:
-                    status[name] = "Running"
-            else:
-                status[name] = "Stopped"
+    status = {}
+    for name, check, default_port in candidates:
+        try:
+            running = bool(check())
         except Exception:
-            status[name] = "Unknown"
+            running = False
+
+        if not running:
+            status[name] = "Stopped"
+        elif name == "Web Workers (artisan serve)":
+            n = count_workers()
+            status[name] = f"Running ({n} workers)" if n else "Running"
+        elif name == "Datastore (Valkey)":
+            status[name] = ("Running (Port 6379)" if vk_host in ("127.0.0.1", "localhost")
+                            else f"Running (Port 6379 @ {vk_host})")
+        elif name == "Queue Store (Valkey)":
+            status[name] = ("Running (Port 6380)" if vk_host in ("127.0.0.1", "localhost")
+                            else f"Running (Port 6380 @ {vk_host})")
+        elif default_port and default_port in listening:
+            status[name] = f"Running (Port {default_port})"
+        else:
+            status[name] = "Running"
 
     _services_cache = status
     _services_cache_time = _time.time()
@@ -820,11 +869,15 @@ def get_redis_stats():
     import subprocess
     stats = {"used_memory": "—", "clients": 0}
     try:
-        res = subprocess.run(["redis-cli", "info", "memory"], capture_output=True, text=True, timeout=1)
+        res = subprocess.run(["valkey-cli", "-h", _valkey_host(), "-p", "6379",
+                              "-a", _valkey_password(), "--no-auth-warning",
+                              "info", "memory"], capture_output=True, text=True, timeout=3)
         for line in res.stdout.split('\n'):
             if "used_memory_human:" in line:
                 stats["used_memory"] = line.split(":")[1].strip()
-        res2 = subprocess.run(["redis-cli", "info", "clients"], capture_output=True, text=True, timeout=1)
+        res2 = subprocess.run(["valkey-cli", "-h", _valkey_host(), "-p", "6379",
+                               "-a", _valkey_password(), "--no-auth-warning",
+                               "info", "clients"], capture_output=True, text=True, timeout=3)
         for line in res2.stdout.split('\n'):
             if "connected_clients:" in line:
                 stats["clients"] = int(line.split(":")[1].strip())
@@ -836,7 +889,9 @@ def get_queue_stats():
     import subprocess
     stats = {"pending": 0, "failed": 0}
     try:
-        res1 = subprocess.run(["redis-cli", "llen", "queues:default"], capture_output=True, text=True, timeout=1)
+        res1 = subprocess.run(["valkey-cli", "-h", _valkey_host(), "-p", "6380",
+                               "-a", _valkey_password(), "--no-auth-warning",
+                               "llen", "queues:default"], capture_output=True, text=True, timeout=3)
         if res1.returncode == 0 and res1.stdout.strip():
             stats["pending"] = int(res1.stdout.strip())
             
