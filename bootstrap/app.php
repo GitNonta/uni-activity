@@ -44,6 +44,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\AuditLogMiddleware::class,
         ]);
         $middleware->appendToGroup('web', \App\Http\Middleware\UpdateLastSeen::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\NoCacheForAuthenticatedUsers::class);
         $middleware->validateCsrfTokens(except: [
             'line/*',
         ]);
