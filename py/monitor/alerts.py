@@ -17,6 +17,22 @@ from monitor.collectors import (
     get_ai_cluster_health,
 )
 
+def _expected_services():
+    """Services this node is responsible for (MONITOR_SERVICES in .env,
+    comma-separated display names). Empty/unset = alert on every service."""
+    expected = set()
+    try:
+        with open(cfg.ENV_PATH) as f:
+            for line in f:
+                if line.startswith("MONITOR_SERVICES="):
+                    raw = line.split("=", 1)[1].strip().strip('"').strip("'")
+                    expected = {s.strip() for s in raw.split(",") if s.strip()}
+                    break
+    except Exception:
+        pass
+    return expected
+
+
 def get_alerts(stats):
     # active_alert_ids lives in cfg (no global needed)
     alerts = []
@@ -30,10 +46,11 @@ def get_alerts(stats):
     if not cf_online and cf_has_url and not in_grace:
         alerts.append({"id": "cf_offline", "type": "critical", "message": "Cloudflare Tunnel is Offline!"})
         
-    # 2. Services Crash
+    # 2. Services Crash (only services this node is responsible for)
+    expected = _expected_services()
     offline_services = []
     for svc, status in stats.get("services", {}).items():
-        if status == "Stopped":
+        if status == "Stopped" and (not expected or svc in expected):
             offline_services.append(svc)
     if offline_services:
         alerts.append({"id": "service_crash", "type": "critical", "message": f"Service(s) Offline: {', '.join(offline_services)}"})
