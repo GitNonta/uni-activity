@@ -154,6 +154,41 @@ class Activity extends Model
         return $this->qr_expires_at !== null && now()->greaterThan($this->qr_expires_at);
     }
 
+    /** กิจกรรมสิ้นสุดแล้วหรือยัง (status done/completed หรือเลยเวลาปิดเช็คอิน) */
+    public function isCompleted(): bool
+    {
+        if (in_array($this->status, ['done', 'completed'], true)) {
+            return true;
+        }
+
+        return $this->checkin_close_at !== null
+            && now()->greaterThan($this->checkin_close_at);
+    }
+
+    /**
+     * QR เข้างาน / Walk-in ปิดใช้งานเมื่อกิจกรรมสิ้นสุดแล้ว
+     * (ระบบ QR จะปิดทันทีที่กิจกรรม complete)
+     */
+    public function isCheckInQrClosed(): bool
+    {
+        return $this->isCompleted();
+    }
+
+    /**
+     * QR ออกงานปิดเมื่อกิจกรรมสิ้นสุด หรือเลยเวลา checkout
+     * (ยังเปิดให้เช็คออกได้ถ้ายังไม่เลย checkout_close_at แม้เลยเวลาเช็คอิน)
+     */
+    public function isCheckoutQrClosed(): bool
+    {
+        if ($this->isCompleted()) {
+            return true;
+        }
+
+        $closeAt = $this->checkout_close_at ?? $this->checkin_close_at;
+
+        return $closeAt !== null && now()->greaterThan($closeAt);
+    }
+
     /** นับจำนวนผู้ลงทะเบียนทั้งหมด (pending + approved) */
     public function getRegisteredCount(): int
     {

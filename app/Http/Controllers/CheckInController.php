@@ -44,6 +44,13 @@ class CheckInController extends Controller
             abort(403, 'QR Code หมดอายุแล้ว');
         }
 
+        // ปิดระบบ QR เมื่อกิจกรรมสิ้นสุดแล้ว (entry / checkout / walk-in)
+        if ($activity->qr_checkout_token === $token
+            ? $activity->isCheckoutQrClosed()
+            : $activity->isCheckInQrClosed()) {
+            abort(403, 'กิจกรรมสิ้นสุดแล้ว — ระบบ QR Code ถูกปิดใช้งาน');
+        }
+
         $isCheckoutToken = ($activity->qr_checkout_token === $token);
 
         if ($activity->require_face_scan) {
@@ -74,6 +81,13 @@ class CheckInController extends Controller
 
         if ($activity->qr_expires_at && now()->gt($activity->qr_expires_at)) {
             return back()->with('error', 'QR Code หมดอายุแล้ว');
+        }
+
+        // ปิดระบบ QR เมื่อกิจกรรมสิ้นสุดแล้ว
+        if (($activity->qr_checkout_token === $token)
+            ? $activity->isCheckoutQrClosed()
+            : $activity->isCheckInQrClosed()) {
+            return back()->with('error', 'กิจกรรมสิ้นสุดแล้ว — ระบบ QR Code ถูกปิดใช้งาน');
         }
 
         // N7 fix: Use database transaction with lock to prevent race condition
@@ -224,6 +238,11 @@ class CheckInController extends Controller
             abort(403, 'QR Code หมดอายุแล้ว');
         }
 
+        // ปิดระบบ Walk-in เมื่อกิจกรรมสิ้นสุดแล้ว
+        if ($activity->isCompleted()) {
+            abort(403, 'กิจกรรมสิ้นสุดแล้ว — ระบบ Walk-in QR ถูกปิดใช้งาน');
+        }
+
         $attendances = Attendance::with('user')
             ->where('activity_id', $activity->id)
             ->orderByDesc('checked_in_at')
@@ -245,6 +264,11 @@ class CheckInController extends Controller
 
         if ($activity->qr_expires_at && now()->gt($activity->qr_expires_at)) {
             return back()->with('error', 'QR Code หมดอายุแล้ว')->withInput();
+        }
+
+        // ปิดระบบ Walk-in เมื่อกิจกรรมสิ้นสุดแล้ว
+        if ($activity->isCompleted()) {
+            return back()->with('error', 'กิจกรรมสิ้นสุดแล้ว — ระบบ Walk-in QR ถูกปิดใช้งาน')->withInput();
         }
 
         $result = $this->checkInService->processWalkInCheckIn(

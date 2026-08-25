@@ -267,6 +267,11 @@ class ActivityAdminController extends Controller
     {
         Gate::authorize('manage', $activity);
 
+        // กิจกรรมสิ้นสุดแล้ว → ปิดระบบ QR ไม่ให้สร้างใหม่
+        if ($activity->isCheckInQrClosed()) {
+            return back()->with('error', 'กิจกรรมสิ้นสุดแล้ว — ระบบ QR Code ถูกปิด ไม่สามารถสร้าง QR เข้างานใหม่ได้');
+        }
+
         $oldToken = $activity->qr_token;
         $newToken = $qrService->generateToken();
         
@@ -292,6 +297,11 @@ class ActivityAdminController extends Controller
     public function regenerateCheckoutQr(Activity $activity, QrCodeService $qrService): RedirectResponse
     {
         Gate::authorize('manage', $activity);
+
+        // กิจกรรมสิ้นสุดแล้ว → ปิดระบบ QR ไม่ให้สร้างใหม่
+        if ($activity->isCheckoutQrClosed()) {
+            return back()->with('error', 'กิจกรรมสิ้นสุดแล้ว — ระบบ QR Code ถูกปิด ไม่สามารถสร้าง QR ออกงานใหม่ได้');
+        }
 
         $oldToken = $activity->qr_checkout_token;
         $newToken = $qrService->generateToken();

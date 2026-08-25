@@ -121,7 +121,12 @@
         {{-- QR Code Section --}}
         <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid #e2e8f0;">
             <h3 class="font-bold mb-3" style="font-size:1.1rem;color:#1e293b;">ระบบคิวอาร์โค้ด (QR Codes)</h3>
-            
+
+            @if($activity->isCompleted())
+                <div class="alert mb-3" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.75rem 1rem;border-radius:6px;">
+                    🔒 <strong>กิจกรรมสิ้นสุดแล้ว</strong> — ระบบ QR Code ทั้งหมด (เข้างาน / ออกงาน / Walk-in) ถูกปิดใช้งาน
+                </div>
+            @else
             <div class="grid-2" style="gap:1rem;">
                 {{-- QR 1: Check-in --}}
                 <div class="card" style="border:1px solid #dcfce7;box-shadow:none;">
@@ -204,8 +209,9 @@
                     @endif
                 </div>
             </div>
-            
-            @if($activity->qr_expires_at)
+            @endif {{-- end isCompleted else --}}
+
+            @if($activity->qr_expires_at && !$activity->isCompleted())
             <div class="mt-3 text-sm" style="color:#ef4444;font-weight:600;">
                 * QR Code เข้างานเดิม หมดอายุ: {{ \Carbon\Carbon::parse($activity->qr_expires_at)->format('d/m/Y H:i') }}
             </div>

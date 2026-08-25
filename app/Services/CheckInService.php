@@ -309,6 +309,15 @@ class CheckInService
         $isCheckoutToken = ($activity->qr_checkout_token === $token);
         $lockKey = "checkin_lock_{$user->id}_{$activity->id}";
 
+        // ── 0. ปิดระบบ QR เมื่อกิจกรรมสิ้นสุดแล้ว (defense in depth —
+        //      controller guard อาจถูกข้ามผ่าน API/flow อื่น) ──
+        if ($isCheckoutToken ? $activity->isCheckoutQrClosed() : $activity->isCheckInQrClosed()) {
+            return [
+                'success' => false,
+                'message' => 'กิจกรรมสิ้นสุดแล้ว — ระบบ QR Code ถูกปิดใช้งาน',
+            ];
+        }
+
         // ── 1. ป้องกัน Race Condition ด้วย Atomic Cache Lock ──
         return Cache::lock($lockKey, 10)->block(5, function () use ($token, $activity, $isCheckoutToken, $user, $method, $latitude, $longitude, $metaData): array {
             // ── 2. ทำงานภายใต้ Database Transaction เพื่อความถูกต้องแบบ All-or-Nothing ──
