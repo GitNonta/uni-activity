@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=1">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=2">
     @vite(['resources/js/app.js'])
     <script>
         (function() {
@@ -559,6 +559,9 @@ html[data-theme="light"] {
     /* Desktop-only keyboard hint has no meaning on touch devices */
     .sb-search-btn kbd { display: none; }
     .admin-topbar-right { gap: 6px !important; }
+    /* Menu button: comfortable, always-tappable target on touch screens */
+    .sb-toggle-btn { width: 42px; height: 42px; }
+    .sb-toggle-btn svg { width: 22px; height: 22px; }
 }
 
 /* Small phones */
@@ -598,7 +601,7 @@ html[data-theme="light"] {
         </a>
 
         <div class="admin-topbar-action-group">
-            <button onclick="toggleSidebar()" class="sb-toggle-btn" title="ย่อ/ขยาย เมนูด้านข้าง">
+            <button type="button" id="adminMenuToggleBtn" onclick="toggleSidebar()" class="sb-toggle-btn" title="เปิด/ปิด เมนูด้านข้าง" aria-label="เปิด/ปิด เมนูด้านข้าง" aria-expanded="false" aria-controls="mainSidebar">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
 
@@ -808,70 +811,121 @@ html[data-theme="light"] {
 </div>
 
 <script>
-    function toggleSidebar() {
-        // Mobile: hamburger opens the off-canvas drawer instead of collapsing
-        if (window.matchMedia('(max-width: 768px)').matches) {
-            toggleMobileSidebar();
-            return;
+    // ── Mobile menu drawer (hardened: id-bound listener independent of inline
+    //     onclick; open/close helpers usable from any other page script) ──
+    (function() {
+        var mqMobile = window.matchMedia('(max-width: 768px)');
+
+        window.isMobileViewport = function() { return mqMobile.matches; };
+
+        function setMenuExpanded(expanded) {
+            var btn = document.getElementById('adminMenuToggleBtn');
+            if (btn) btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
         }
-        const sidebar = document.getElementById('mainSidebar');
-        const brandBox = document.getElementById('adminBrandBox');
-        const content = document.getElementById('sbContent');
-        if (sidebar) sidebar.classList.toggle('collapsed');
-        if (brandBox) brandBox.classList.toggle('collapsed');
-        if (content) content.classList.toggle('collapsed');
-    }
 
-    function toggleMobileSidebar() {
-        const sidebar = document.getElementById('mainSidebar');
-        const overlay = document.getElementById('sidebarOverlay');
-        if (!sidebar || !overlay) return;
-        sidebar.classList.toggle('mobile-open');
-        overlay.classList.toggle('open');
-        document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
-    }
+        window.openMobileSidebar = function() {
+            var sidebar = document.getElementById('mainSidebar');
+            var overlay = document.getElementById('sidebarOverlay');
+            if (!sidebar || !overlay || sidebar.classList.contains('mobile-open')) return;
+            sidebar.classList.add('mobile-open');
+            overlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
+            setMenuExpanded(true);
+        };
 
-    function toggleSubmenu(el) {
-        const submenu = el.nextElementSibling;
-        el.classList.toggle('open');
-        submenu.classList.toggle('open');
-        submenu.style.maxHeight = submenu.classList.contains('open') ? submenu.scrollHeight + "px" : "0px";
-    }
-
-    // Mobile UX: close the drawer after tapping a nav link (SPA-feel, prevents stuck overlay)
-    document.addEventListener('click', function(e) {
-        if (!window.matchMedia('(max-width: 768px)').matches) return;
-        const link = e.target.closest('.sb-link');
-        if (link && link.getAttribute('href') && !link.getAttribute('href').startsWith('#')) {
-            const sidebar = document.getElementById('mainSidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            if (sidebar) sidebar.classList.remove('mobile-open');
-            if (overlay) overlay.classList.remove('open');
+        window.closeMobileSidebar = function() {
+            var sidebar = document.getElementById('mainSidebar');
+            var overlay = document.getElementById('sidebarOverlay');
+            if (!sidebar || !overlay) return;
+            sidebar.classList.remove('mobile-open');
+            overlay.classList.remove('open');
             document.body.style.overflow = '';
-        }
-    });
+            setMenuExpanded(false);
+        };
 
-    // Mobile UX: auto-label stacked table cells from their column headers so
-    // every admin table stacks cleanly without horizontal scrolling
-    function hydrateTableLabels() {
-        document.querySelectorAll('.table-wrap table').forEach(function(table) {
-            var headers = Array.from(table.querySelectorAll('thead th'));
-            if (!headers.length) return;
-            table.querySelectorAll('tbody tr').forEach(function(row) {
-                Array.from(row.children).forEach(function(cell, i) {
-                    if (!cell.hasAttribute('data-label') && headers[i]) {
-                        var label = headers[i].textContent.trim();
-                        if (label) cell.setAttribute('data-label', label);
-                    }
+        window.toggleMobileSidebar = function() {
+            var sidebar = document.getElementById('mainSidebar');
+            if (sidebar && sidebar.classList.contains('mobile-open')) {
+                window.closeMobileSidebar();
+            } else {
+                window.openMobileSidebar();
+            }
+        };
+
+        window.toggleSubmenu = function(el) {
+            var submenu = el.nextElementSibling;
+            el.classList.toggle('open');
+            submenu.classList.toggle('open');
+            submenu.style.maxHeight = submenu.classList.contains('open') ? submenu.scrollHeight + "px" : "0px";
+        };
+
+        window.toggleSidebar = function() {
+            // Mobile: hamburger opens the off-canvas drawer; Desktop: collapse/expand
+            if (mqMobile.matches) {
+                window.toggleMobileSidebar();
+                return;
+            }
+            var sidebar = document.getElementById('mainSidebar');
+            var brandBox = document.getElementById('adminBrandBox');
+            var content = document.getElementById('sbContent');
+            if (sidebar) sidebar.classList.toggle('collapsed');
+            if (brandBox) brandBox.classList.toggle('collapsed');
+            if (content) content.classList.toggle('collapsed');
+        };
+
+        // Idempotent direct binding — survives inline-onclick failures
+        function bindMenuToggle() {
+            var btn = document.getElementById('adminMenuToggleBtn');
+            if (btn && !btn.dataset.menuBound) {
+                btn.dataset.menuBound = '1';
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.toggleSidebar();
+                });
+            }
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', bindMenuToggle);
+        } else {
+            bindMenuToggle();
+        }
+
+        // Close the drawer after tapping a nav link; reset state across breakpoint changes
+        document.addEventListener('click', function(e) {
+            var link = e.target.closest ? e.target.closest('.sb-link') : null;
+            if (!link || !mqMobile.matches) return;
+            if (link.getAttribute('href') && !link.getAttribute('href').startsWith('#')) {
+                window.closeMobileSidebar();
+            }
+        });
+        if (mqMobile.addEventListener) {
+            mqMobile.addEventListener('change', function(e) {
+                if (!e.matches) window.closeMobileSidebar();
+            });
+        }
+
+        // Mobile UX: auto-label stacked table cells from their column headers so
+        // every admin table stacks cleanly without horizontal scrolling
+        function hydrateTableLabels() {
+            document.querySelectorAll('.table-wrap table').forEach(function(table) {
+                var headers = Array.from(table.querySelectorAll('thead th'));
+                if (!headers.length) return;
+                table.querySelectorAll('tbody tr').forEach(function(row) {
+                    Array.from(row.children).forEach(function(cell, i) {
+                        if (!cell.hasAttribute('data-label') && headers[i]) {
+                            var label = headers[i].textContent.trim();
+                            if (label) cell.setAttribute('data-label', label);
+                        }
+                    });
                 });
             });
-        });
-    }
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', hydrateTableLabels);
-    } else {
-        hydrateTableLabels();
-    }
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', hydrateTableLabels);
+        } else {
+            hydrateTableLabels();
+        }
+    })();
 </script>
 @yield('scripts')
 @stack('scripts')
