@@ -123,8 +123,12 @@
             <h3 class="font-bold mb-3" style="font-size:1.1rem;color:#1e293b;">ระบบคิวอาร์โค้ด (QR Codes)</h3>
 
             @if($activity->isCompleted())
-                <div class="alert mb-3" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.75rem 1rem;border-radius:6px;">
-                    🔒 <strong>กิจกรรมสิ้นสุดแล้ว</strong> — ระบบ QR Code ทั้งหมด (เข้างาน / ออกงาน / Walk-in) ถูกปิดใช้งาน
+                <div class="alert mb-3" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.75rem 1rem;border-radius:6px;display:flex;align-items:center;gap:0.5rem;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;">
+                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    <span><strong>กิจกรรมสิ้นสุดแล้ว</strong> — ระบบ QR Code ทั้งหมด (เข้างาน / ออกงาน / Walk-in) ถูกปิดใช้งาน</span>
                 </div>
             @else
             <div class="grid-2" style="gap:1rem;">
