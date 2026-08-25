@@ -1094,8 +1094,10 @@ def _parse_node_url(url):
     except Exception:
         return {"host": "127.0.0.1", "port": 8001}
 
-def _check_ai_node_health(url, timeout=3):
-    """TCP + HTTP health check for one AI node, with 10s cache."""
+def _check_ai_node_health(url, timeout=8):
+    """TCP + HTTP health check for one AI node, with 10s cache.
+    Timeout is generous: /health can stall while the node is busy
+    running a face-verification inference."""
     cached = _ai_node_cache.get(url)
     if cached and (time.time() - cached["t"]) < 10:
         return cached["r"]
