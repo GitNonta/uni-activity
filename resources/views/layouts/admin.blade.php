@@ -601,7 +601,11 @@ html[data-theme="light"] {
         </a>
 
         <div class="admin-topbar-action-group">
-            <button type="button" id="adminMenuToggleBtn" onclick="toggleSidebar()" class="sb-toggle-btn" title="เปิด/ปิด เมนูด้านข้าง" aria-label="เปิด/ปิด เมนูด้านข้าง" aria-expanded="false" aria-controls="mainSidebar">
+            {{-- NOTE: click handling is bound once via addEventListener in the
+                 layout script below (id: adminMenuToggleBtn). Do NOT also add an
+                 inline onclick here - two handlers would toggle twice per tap,
+                 opening and instantly re-closing the drawer. --}}
+            <button type="button" id="adminMenuToggleBtn" class="sb-toggle-btn" title="เปิด/ปิด เมนูด้านข้าง" aria-label="เปิด/ปิด เมนูด้านข้าง" aria-expanded="false" aria-controls="mainSidebar">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
 
