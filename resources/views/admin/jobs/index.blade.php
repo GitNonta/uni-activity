@@ -32,6 +32,7 @@
             <thead>
                 <tr>
                     <th>#</th>
+                    <th style="width:50px;"></th>
                     <th>หัวข้องาน</th>
                     <th>ประเภท</th>
                     <th>ตำแหน่ง</th>
@@ -45,6 +46,11 @@
                 @forelse($jobs as $job)
                 <tr>
                     <td>{{ $job->id }}</td>
+                    <td style="width:50px; padding-right:0;">
+                        @if($job->image_path)
+                            <img src="{{ Storage::url($job->image_path) }}" alt="" style="width:40px; height:40px; object-fit:cover; border-radius:8px; background:#f1f5f9;">
+                        @endif
+                    </td>
                     <td><a href="{{ route('admin.jobs.show', $job->id) }}" class="text-primary font-semi">{{ Str::limit($job->title, 40) }}</a></td>
                     <td>
                         <span class="badge {{ $job->job_type === 'parttime' ? 'job-badge-parttime' : 'job-badge-general' }}">
@@ -77,7 +83,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="8" class="text-center text-muted" style="padding:2rem;">ยังไม่มีประกาศงาน</td></tr>
+                <tr><td colspan="9" class="text-center text-muted" style="padding:2rem;">ยังไม่มีประกาศงาน</td></tr>
                 @endforelse
             </tbody>
         </table>
