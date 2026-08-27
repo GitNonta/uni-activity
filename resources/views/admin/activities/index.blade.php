@@ -47,6 +47,7 @@
         <table class="responsive-table">
             <thead>
                 <tr>
+                    <th style="width:50px;"></th>
                     <th>ชื่อ</th>
                     <th class="text-center">วันที่</th>
                     <th class="text-center">สถานะ</th>
@@ -58,6 +59,11 @@
             <tbody>
                 @forelse($activities as $act)
                 <tr>
+                    <td style="width:50px; padding-right:0;">
+                        @if($act->image_path)
+                            <img src="{{ Storage::url($act->image_path) }}" alt="" style="width:40px; height:40px; object-fit:cover; border-radius:8px; background:#f1f5f9;">
+                        @endif
+                    </td>
                     <td data-label="ชื่อ">
                         <a href="{{ route('admin.activities.show', $act->id) }}" class="font-semi">{{ $act->title }}</a>
                         <p class="text-xs text-muted">{{ $act->category->name ?? '-' }}</p>
@@ -91,7 +97,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="6" class="text-center text-muted" style="padding:2rem;">ไม่พบกิจกรรม</td></tr>
+                <tr><td colspan="7" class="text-center text-muted" style="padding:2rem;">ไม่พบกิจกรรม</td></tr>
                 @endforelse
             </tbody>
         </table>
