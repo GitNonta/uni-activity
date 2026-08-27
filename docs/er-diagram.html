@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uni-Activity — ER Diagram</title>
+<style>
+    :root {
+        --bg: #f8fafc;
+        --card: #ffffff;
+        --line: #cbd5e1;
+        --text: #0f172a;
+        --muted: #64748b;
+        --accent: #2563eb;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        font-family: "Segoe UI", "Leelawadee UI", Tahoma, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+    }
+    header {
+        padding: 28px 32px 20px;
+        border-bottom: 1px solid var(--line);
+        background: linear-gradient(180deg, #eff6ff, var(--bg));
+    }
+    h1 { margin: 0 0 6px; font-size: 24px; }
+    header p { margin: 0; color: var(--muted); font-size: 14px; }
+    .toolbar {
+        display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+        padding: 10px 32px; background: var(--card);
+        border-bottom: 1px solid var(--line);
+        position: sticky; top: 0; z-index: 5;
+    }
+    .toolbar label { font-size: 13px; color: var(--muted); }
+    input[type="range"] { accent-color: var(--accent); }
+    code {
+        background: #f1f5f9; border: 1px solid var(--line);
+        border-radius: 6px; padding: 2px 8px; font-size: 12px;
+    }
+    main { max-width: 1280px; margin: 0 auto; padding: 24px 32px 64px; }
+    .diagram-shell {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        overflow: auto;
+        box-shadow: 0 4px 14px rgb(15 23 42 / .06);
+    }
+    #diagramWrap {
+        transition: width .15s ease;
+        min-width: 100%;
+        transform-origin: top left;
+    }
+    #diagramWrap img { display: block; height: auto; width: 100%; }
+    .grid-legend {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+        margin-top: 28px;
+    }
+    .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 18px 20px;
+    }
+    .card h2 { margin: 0 0 10px; font-size: 16px; }
+    .card ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 13px; line-height: 1.9; }
+    code.badge { background:#eff6ff; color:#1d4ed8; font-weight:600; }
+    .links a {
+        display: inline-block; margin: 4px 6px 0 0; padding: 6px 12px;
+        background: #eff6ff; border: 1px solid #bfdbfe; color: var(--accent);
+        border-radius: 999px; text-decoration: none; font-size: 13px;
+    }
+    footer { padding: 18px 32px 40px; color: var(--muted); font-size: 12.5px; }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>🗄️ Uni-Activity — Entity Relationship Diagram</h1>
+    <p>โครงสร้างฐานข้อมูล PostgreSQL จริงจาก migrations (19 domain tables) · enum values / unique / cascade constraints ตาม source · สร้างจาก <code>docs/diagrams/er-diagram.mmd</code></p>
+</header>
+
+<div class="toolbar">
+    <label for="zoom">🔍 Zoom</label>
+    <input id="zoom" type="range" min="50" max="250" value="100" step="5">
+    <span id="zoomLabel" style="font-size:13px;color:var(--muted)">100%</span>
+    <span style="flex:1"></span>
+    <code>mmdc -i diagrams/er-diagram.mmd -o diagrams/er-diagram.svg</code>
+</div>
+
+<main>
+    <div class="diagram-shell">
+        <div id="diagramWrap">
+            <img id="diagram" src="./diagrams/er-diagram.svg"
+                 alt="Uni-Activity ER diagram"
+                 style="width:100%;">
+        </div>
+    </div>
+
+    <div class="grid-legend">
+        <div class="card">
+            <h2>📘 Crow's Foot Notation</h2>
+            <ul>
+                <li><code class="badge">||--o{</code> one-to-many (1 : 0..n)</li>
+                <li><code class="badge">|o--o{</code> zero-or-one → many (เช่น attendance ผ่านการ verify)</li>
+                <li><code class="badge">}o--o|</code> optional-optional (rooms ↔ job_listings)</li>
+                <li><strong>PK</strong> primary key · <strong>FK</strong> foreign key · <strong>UK</strong> unique</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h2>🔎 กฎที่น่าสังเกต</h2>
+            <ul>
+                <li><code>registrations</code>/<code>attendances</code>: UNIQUE(user+activity) — ลงทะเบียนซ้ำไม่ได้</li>
+                <li>delete users cascade → registrations/messages; categories nullOnDelete → activities</li>
+                <li><code>room_user</code> เป็น pivot M:N ที่เก็บ <em>last_read_at</em> (read receipt)</li>
+                <li><code>activities.qr_token / checkout_qr_token</code> rotate ได้ + qr_expires_at</li>
+            </ul>
+        </div>
+        <div class="card links">
+            <h2>🔗 Diagrams อื่น ๆ</h2>
+            <a href="./class-diagram.html">Class Diagram (HTML)</a>
+            <a href="./use-case-diagram.html">Use Case Diagram (HTML)</a>
+            <a href="./FLOWCHART.md">FLOWCHARTS.md</a>
+            <a href="./SCREEN-FLOW.md">SCREEN-FLOW.md</a>
+            <a href="./flowchart.svg">flowchart.svg</a>
+        </div>
+    </div>
+</main>
+
+<footer>
+    Regenerate SVG after editing the Mermaid source:<br>
+    <code>cd docs &amp;&amp; npx -y @mermaid-js/mermaid-cli -p diagrams/puppeteer.json -i diagrams/er-diagram.mmd -o diagrams/er-diagram.svg -b white</code>
+</footer>
+
+<script>
+    const zoom = document.getElementById('zoom');
+    const wrap = document.getElementById('diagramWrap');
+    const label = document.getElementById('zoomLabel');
+    zoom.addEventListener('input', () => {
+        wrap.style.transform = 'scale(' + zoom.value / 100 + ')';
+        wrap.style.width = (10000 / zoom.value) + '%';
+        label.textContent = zoom.value + '%';
+    });
+</script>
+</body>
+</html>

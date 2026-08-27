@@ -1,0 +1,179 @@
+classDiagram
+    direction LR
+
+    %% ─── Domain Models ───
+    class User {
+        <<Model>>
+        +id int
+        +student_id string
+        +full_name string
+        +email string
+        +role string
+        +profile_photo string
+        +last_seen_at datetime
+        +totalHours() float
+        +isAdmin() bool
+        +isStaff() bool
+        +isStudent() bool
+    }
+    class Activity {
+        <<Model>>
+        +id int
+        +title string
+        +category_id int
+        +created_by int
+        +starts_at datetime
+        +max_participants int
+        +checkin_token string
+        +registrationsCount() int
+        +remainingSlots() int
+        +computedStatus() string
+        +isCompleted() bool
+    }
+    class ActivityCategory {
+        <<Model>>
+        +id int
+        +name string
+        +required_hours int
+    }
+    class Registration {
+        <<Model>>
+        +id int
+        +user_id int
+        +activity_id int
+        +status string
+        +markAsCompleted() void
+    }
+    class Attendance {
+        <<Model>>
+        +id int
+        +user_id int
+        +activity_id int
+        +verified_by int
+        +selfie_reviewed_by int
+        +checkin_at datetime
+        +method string
+    }
+    class ActivityFeedback {
+        <<Model>>
+        +id int
+        +rating int
+        +comment text
+    }
+    class Certificate {
+        <<Model>>
+        +id int
+        +user_id int
+        +category_id int
+        +code string
+        +verificationUrl() string
+    }
+    class Room {
+        <<Model>>
+        +id int
+        +job_id int nullable
+        +type string
+        +title string
+    }
+    class Message {
+        <<Model>>
+        +id int
+        +room_id int
+        +user_id int
+        +body text
+        +attachments json
+        +is_edited bool
+    }
+    class JobListing {
+        <<Model>>
+        +id int
+        +title string
+        +created_by int
+        +slots int
+        +isOpen() bool
+        +confirmedApplicants() int
+    }
+    class JobApplication {
+        <<Model>>
+        +id int
+        +job_listing_id int
+        +user_id int
+        +status string
+    }
+    class JobComment {
+        <<Model>>
+        +id int
+        +body text
+    }
+
+    %% ─── Services / Repository ───
+    class ChatService {
+        <<Service>>
+        +sendMessage(user, jobId, body, files)
+        +getStudentThreads(user)
+        +getAdminThreads(admin)
+        +markAsRead(user, jobId)
+        -findRoom(userId, jobId)
+    }
+    class ChatRepository {
+        <<Repository>>
+        +createRoom(users, type, title)
+        +sendMessage(room, user, body, attachments)
+        +getRecentMessages(room)
+    }
+    class CheckInService {
+        <<Service>>
+        +store(token, user)
+        +walkIn(token, data)
+        -riskScoring()
+    }
+    class FaceVerificationService {
+        <<Service>>
+        +verify(frame, user)
+        +liveness(frame)
+        -aiLoadBalance()
+    }
+    class CertificateService {
+        <<Service>>
+        +claimCertificates(user)
+        +downloadPdf(certificate)
+    }
+    class QrCodeService {
+        <<Service>>
+        +regenerate(activity)
+        +regenerateCheckout(activity)
+    }
+
+    %% ─── Relationships: hasMany / pivot ───
+    User "1" --> "*" Registration : registrations()
+    User "1" --> "*" Attendance : attendances()
+    User "1" --> "*" ActivityFeedback : feedbacks()
+    User "*" -- "*" Room : rooms() pivot·last_read_at
+    Activity "1" --> "*" Registration : registrations()
+    Activity "1" --> "*" Attendance : attendances()
+    Activity "1" --> "*" ActivityFeedback : feedbacks()
+    Room "1" --> "*" Message : messages()
+    JobListing "1" --> "*" JobApplication : applications()
+    JobListing "1" --> "*" JobComment : comments()
+    ActivityCategory "1" --> "*" Activity : activities
+    ActivityCategory "1" --> "*" Certificate : certificates
+
+    %% ─── Relationships: FK references ───
+    Activity ..> User : created_by
+    Attendance ..> User : verified_by · selfie_reviewed_by
+    Registration ..> User : user_id
+    Registration ..> Activity : activity_id
+    Message ..> User : user_id
+    Certificate ..> User : user_id
+    Room ..> JobListing : job_id nullable
+    JobApplication ..> User : user_id
+    JobListing ..> User : created_by
+
+    %% ─── Service wiring ───
+    ChatService --> ChatRepository : uses
+    ChatService ..> Room : manages
+    ChatService ..> Message : formats
+    CheckInService ..> Attendance : stores
+    FaceVerificationService ..> Attendance : verifies identity
+    CertificateService ..> Certificate : issues
+    QrCodeService ..> Activity : rotates tokens

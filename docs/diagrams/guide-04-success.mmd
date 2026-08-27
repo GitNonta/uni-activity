@@ -1,0 +1,19 @@
+flowchart LR
+    A["🎟️ ได้ QR Code<br/>ในหน้า 'กิจกรรมของฉัน'"]
+    B["📷 วันงาน: สแกน QR<br/>GET /scan"]
+    C["🤳 ยืนยันใบหน้า<br/>(face + liveness)"]
+    D["🎉 เช็คอินสำเร็จ<br/>checkin/success"]
+    E["📊 สะสมชั่วโมงกิจกรรม<br/>GET /summary"]
+
+    A --> B --> C -->|"ผ่าน ✓"| D --> E
+    C -->|"ไม่ผ่าน ✗"| B
+
+    classDef ticket fill:#dbeafe,stroke:#2563eb,color:#0f172a
+    classDef action fill:#eff6ff,stroke:#60a5fa,color:#0f172a
+    classDef ok fill:#f0fdf4,stroke:#4ade80,color:#14532d
+    classDef result fill:#dcfce7,stroke:#16a34a,color:#14532d
+
+    class A ticket
+    class B,C action
+    class D ok
+    class E result

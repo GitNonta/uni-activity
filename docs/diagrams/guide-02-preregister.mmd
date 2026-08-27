@@ -1,0 +1,17 @@
+flowchart LR
+    A["📋 หน้ารายละเอียดกิจกรรม"] -->|"กดปุ่ม 'ลงทะเบียน'"| B{"🔐 Login<br/>แล้วหรือยัง?"}
+    B -->|"ยังไม่ login"| C["🔑 หน้าเข้าสู่ระบบ<br/>GET /login"]
+    C --> D["✉️ ยืนยัน OTP<br/>GET /login/verify-otp"]
+    D --> E["📝 ลงทะเบียนล่วงหน้า<br/>POST /activities/{id}/register"]
+    B -->|"login แล้ว"| E
+    E --> F["✅ ส่งคำขอสำเร็จ<br/>รอเจ้าหน้าที่อนุมัติ"]
+
+    classDef screen fill:#eff6ff,stroke:#60a5fa,color:#0f172a
+    classDef auth fill:#fef9c3,stroke:#eab308,color:#713f12
+    classDef action fill:#dbeafe,stroke:#2563eb,color:#0f172a
+    classDef ok fill:#f0fdf4,stroke:#4ade80,color:#14532d
+
+    class A screen
+    class C,D auth
+    class B,E action
+    class F ok

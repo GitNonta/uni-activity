@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1100" viewBox="0 0 1000 1100" font-family="Segoe UI, Helvetica, sans-serif">
+  <defs>
+    <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="1100" fill="#f8fafc"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Uni-Activity — Overall System Flowchart</text>
+  <text x="500" y="54" text-anchor="middle" font-size="12" fill="#64748b">Laravel 13 + Reverb + Valkey + PostgreSQL + FastAPI (InsightFace)</text>
+
+  <!-- ═══ Boxes ═══ -->
+  <g stroke-width="1.5">
+    <!-- Clients -->
+    <rect x="120" y="80" width="220" height="60" rx="10" fill="#f1f5f9" stroke="#334155"/>
+    <text x="230" y="105" text-anchor="middle" font-size="13" font-weight="600" fill="#0f172a">Student Browser</text>
+    <text x="230" y="123" text-anchor="middle" font-size="11" fill="#475569">Web / Mobile</text>
+
+    <rect x="660" y="80" width="220" height="60" rx="10" fill="#f1f5f9" stroke="#334155"/>
+    <text x="770" y="105" text-anchor="middle" font-size="13" font-weight="600" fill="#0f172a">Admin Dashboard</text>
+    <text x="770" y="123" text-anchor="middle" font-size="11" fill="#475569">staff · admin</text>
+
+    <!-- Nginx -->
+    <rect x="390" y="200" width="220" height="60" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="500" y="225" text-anchor="middle" font-size="13" font-weight="600" fill="#0f172a">Nginx Load Balancer</text>
+    <text x="500" y="243" text-anchor="middle" font-size="11" fill="#475569">HTTP :80/443 · WebSocket :8080</text>
+
+    <!-- Laravel container -->
+    <rect x="300" y="320" width="400" height="220" rx="12" fill="#f0fdf4" stroke="#16a34a" stroke-dasharray="6 3"/>
+    <text x="500" y="342" text-anchor="middle" font-size="13" font-weight="600" fill="#14532d">Laravel Application (node-1 / node-2)</text>
+
+    <rect x="330" y="355" width="340" height="44" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="500" y="382" text-anchor="middle" font-size="12" fill="#14532d">Controllers · FormRequest · Sanctum auth</text>
+
+    <rect x="330" y="415" width="340" height="44" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="500" y="442" text-anchor="middle" font-size="12" fill="#14532d">Services (ChatService, FaceVerification…)</text>
+
+    <rect x="330" y="475" width="340" height="44" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="500" y="502" text-anchor="middle" font-size="12" fill="#14532d">Repositories · DB::transaction</text>
+
+    <!-- Data tier -->
+    <rect x="310" y="610" width="220" height="80" rx="10" fill="#fef3c7" stroke="#d97706"/>
+    <text x="420" y="640" text-anchor="middle" font-size="13" font-weight="600" fill="#78350f">PostgreSQL 16</text>
+    <text x="420" y="658" text-anchor="middle" font-size="11" fill="#92400e">uni_activity (primary)</text>
+    <text x="420" y="674" text-anchor="middle" font-size="11" fill="#92400e">internal network (prod)</text>
+
+    <rect x="580" y="610" width="220" height="80" rx="10" fill="#fef3c7" stroke="#d97706"/>
+    <text x="690" y="640" text-anchor="middle" font-size="13" font-weight="600" fill="#78350f">Valkey / Dragonfly</text>
+    <text x="690" y="658" text-anchor="middle" font-size="11" fill="#92400e">cache · session · queue</text>
+    <text x="690" y="674" text-anchor="middle" font-size="11" fill="#92400e">pub/sub · locks</text>
+
+    <!-- Async tier -->
+    <rect x="310" y="750" width="220" height="60" rx="10" fill="#f3e8ff" stroke="#9333ea"/>
+    <text x="420" y="775" text-anchor="middle" font-size="13" font-weight="600" fill="#581c87">Reverb WebSocket</text>
+    <text x="420" y="793" text-anchor="middle" font-size="11" fill="#6b21a8">:8080</text>
+
+    <rect x="580" y="750" width="220" height="60" rx="10" fill="#f3e8ff" stroke="#9333ea"/>
+    <text x="690" y="775" text-anchor="middle" font-size="13" font-weight="600" fill="#581c87">Queue Workers</text>
+    <text x="690" y="793" text-anchor="middle" font-size="11" fill="#6b21a8">ai · notifications · exports · default</text>
+
+    <!-- External tier -->
+    <rect x="310" y="870" width="220" height="60" rx="10" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="420" y="895" text-anchor="middle" font-size="13" font-weight="600" fill="#7f1d1d">LINE Messaging API</text>
+    <text x="420" y="913" text-anchor="middle" font-size="11" fill="#991b1b">push notifications</text>
+
+    <rect x="580" y="870" width="220" height="60" rx="10" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="690" y="895" text-anchor="middle" font-size="13" font-weight="600" fill="#7f1d1d">AI Microservice (FastAPI)</text>
+    <text x="690" y="913" text-anchor="middle" font-size="11" fill="#991b1b">/extract · /verify · /liveness</text>
+  </g>
+
+  <!-- ═══ Arrows ═══ -->
+  <g fill="none" stroke="#475569" stroke-width="1.6" marker-end="url(#arw)">
+    <path d="M230 140 L230 170 L470 170 L470 200"/>
+    <path d="M770 140 L770 170 L530 170 L530 200"/>
+    <path d="M500 260 L500 320"/>
+    <path d="M500 399 L500 415"/>
+    <path d="M500 459 L500 475"/>
+    <path d="M420 519 L420 610"/>
+    <path d="M660 519 L660 610"/>
+    <path d="M690 690 L690 750"/>
+    <path d="M580 780 L530 780"/>
+    <path d="M620 810 L620 845 L420 845 L420 870"/>
+    <path d="M700 500 L940 500 L940 900 L800 900"/>
+  </g>
+
+  <!-- Broadcast (dashed purple) -->
+  <g fill="none" stroke="#9333ea" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arw)">
+    <path d="M310 780 L100 780 L100 110 L120 110"/>
+    <path d="M310 755 L285 755 L285 90 L660 90"/>
+  </g>
+
+  <!-- Arrow labels -->
+  <g font-size="11" fill="#475569">
+    <text x="300" y="165">HTTPS</text>
+    <text x="620" y="165">HTTPS</text>
+    <text x="508" y="295">route → controller</text>
+    <text x="428" y="580">SQL</text>
+    <text x="668" y="580">cache / session / dispatch</text>
+    <text x="698" y="725">consume</text>
+    <text x="532" y="775" font-size="10" fill="#9333ea">broadcast</text>
+    <text x="450" y="838">LINE notify</text>
+    <text x="710" y="493">REST + X-API-Key (face verify)</text>
+    <text x="88" y="470" fill="#9333ea" transform="rotate(-90 88 470)">wss · Echo .listen('.MessageSent')</text>
+    <text x="272" y="430" fill="#9333ea" transform="rotate(-90 272 430)">wss · realtime events</text>
+  </g>
+
+  <!-- Legend -->
+  <g font-size="11" fill="#334155">
+    <rect x="120" y="990" width="760" height="72" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+    <rect x="140" y="1010" width="14" height="14" fill="#dbeafe" stroke="#2563eb"/><text x="160" y="1021">Edge</text>
+    <rect x="240" y="1010" width="14" height="14" fill="#dcfce7" stroke="#16a34a"/><text x="260" y="1021">App tier</text>
+    <rect x="360" y="1010" width="14" height="14" fill="#fef3c7" stroke="#d97706"/><text x="380" y="1021">Data (internal)</text>
+    <rect x="510" y="1010" width="14" height="14" fill="#f3e8ff" stroke="#9333ea"/><text x="530" y="1021">Async / realtime</text>
+    <rect x="670" y="1010" width="14" height="14" fill="#fee2e2" stroke="#dc2626"/><text x="690" y="1021">External</text>
+    <line x1="140" y1="1044" x2="180" y2="1044" stroke="#9333ea" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <text x="190" y="1048">WebSocket broadcast: queue → Reverb → browser (.listen('.MessageSent'))</text>
+  </g>
+</svg>

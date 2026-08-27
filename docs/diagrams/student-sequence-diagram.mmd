@@ -1,0 +1,34 @@
+sequenceDiagram
+    autonumber
+    actor Student as 🧑‍🎓 Student
+    participant Website as 🌐 Uni-Activity Website
+    participant Staff as 👩‍💼 Staff/Admin
+
+    Note over Student,Staff: ① ดูกิจกรรม
+    Student->>Website: เปิดเว็บไซต์
+    Website-->>Student: แสดงหน้ารายการกิจกรรม
+    Student->>Website: เลือกกิจกรรม
+    Website-->>Student: แสดงรายละเอียดกิจกรรม<br/>วันเวลา · สถานที่ · ชั่วโมง · จำนวนที่ว่าง
+
+    Note over Student,Staff: ② ลงทะเบียนล่วงหน้า — ยังไม่ได้เข้าสู่ระบบ
+    Student->>Website: กด “ลงทะเบียนล่วงหน้า”
+    Website-->>Student: แสดงหน้าเข้าสู่ระบบ
+    Student->>Website: กรอกข้อมูลเข้าสู่ระบบ
+    Website-->>Student: แสดงหน้ายืนยัน OTP
+    Student->>Website: กรอก OTP
+    Website-->>Student: กลับไปยังหน้ารายละเอียดกิจกรรม
+
+    Note over Student,Staff: ③ ส่งคำขอลงทะเบียน
+    Student->>Website: กด “ลงทะเบียนล่วงหน้า” อีกครั้ง
+    Website-->>Student: แสดง “ส่งคำขอลงทะเบียนสำเร็จ”
+    Website-->>Student: แสดงสถานะ “รอเจ้าหน้าที่อนุมัติ”
+
+    Note over Student,Staff: ④ เจ้าหน้าที่ตรวจสอบคำขอ
+    Staff->>Website: เปิดรายการคำขอลงทะเบียน
+    Staff->>Website: อนุมัติการเข้าร่วมกิจกรรม
+    Website-->>Student: แจ้งเตือน “ลงทะเบียนได้รับการอนุมัติ”
+
+    Note over Student,Staff: ⑤ พร้อมเข้าร่วมกิจกรรม
+    Student->>Website: เปิด “กิจกรรมของฉัน”
+    Website-->>Student: แสดงกิจกรรมที่ได้รับอนุมัติ
+    Website-->>Student: แสดงวิธีเช็คอินในวันกิจกรรม

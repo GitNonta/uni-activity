@@ -1,0 +1,11 @@
+flowchart LR
+    THREADS["chat threads<br/>GET /chat/threads"]
+    ROOM["chat/show.blade<br/>GET /jobs/{jobId}/chat"]
+    INBOX["inbox/index<br/>GET /admin/inbox"]
+    INBOX_ROOM["inbox/show<br/>GET /admin/inbox/{jobId}/{userId}"]
+    WS_ENV{{".listen('.MessageSent')<br/>.listen('.MessagesRead')<br/>channel chat.room.{id}<br/>admin.inbox"}}
+
+    THREADS --> ROOM
+    INBOX --> INBOX_ROOM
+    ROOM <-->|"send/read/edit/delete messages"| WS_ENV
+    INBOX_ROOM <-->|same events| WS_ENV

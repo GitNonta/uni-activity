@@ -1,0 +1,24 @@
+flowchart TD
+    A["⏳ สถานะ: รอการอนุมัติ<br/>(registered / pending)"]
+    B["🖥️ เจ้าหน้าที่ตรวจสอบ<br/>Admin Dashboard"]
+    C{"ผลการอนุมัติ?"}
+    D["✅ อนุมัติ<br/>quick-approve"]
+    E["❌ ไม่อนุมัติ<br/>quick-reject"]
+    F["🎉 ได้สิทธิ์เข้าร่วมกิจกรรม<br/>พร้อม QR Code เช็คอิน"]
+    G["📩 แจ้งเตือนผ่านเว็บ/LINE<br/>ลองลงทะเบียนกิจกรรมอื่น"]
+
+    A --> B --> C
+    C -->|"approve"| D --> F
+    C -->|"reject"| E --> G
+
+    classDef wait fill:#fef9c3,stroke:#eab308,color:#713f12
+    classDef admin fill:#f3e8ff,stroke:#a855f7,color:#581c87
+    classDef decision fill:#ffffff,stroke:#64748b,color:#0f172a
+    classDef ok fill:#f0fdf4,stroke:#4ade80,color:#14532d
+    classDef no fill:#fee2e2,stroke:#ef4444,color:#7f1d1d
+
+    class A wait
+    class B admin
+    class C decision
+    class D,F ok
+    class E,G no

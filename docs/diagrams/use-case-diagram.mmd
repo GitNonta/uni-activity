@@ -1,0 +1,126 @@
+flowchart LR
+    %% ══════════ Actors ══════════
+    GUEST(["👤 ผู้เยี่ยมชม<br/>(Guest)"]):::actor
+    STU(["🧑‍🎓 นักศึกษา<br/>(Student)"]):::actor
+    STF(["👩‍💼 เจ้าหน้าที่<br/>(Staff)"]):::actor
+    ADM(["🛡️ ผู้ดูแลระบบ<br/>(Admin/Super)"]):::actor
+    AI(["🤖 AI Microservice"]):::ext
+    LINE(["💬 LINE API"]):::ext
+
+    classDef actor fill:#dbeafe,stroke:#2563eb,color:#0f172a,stroke-width:1.5px
+    classDef ext fill:#fee2e2,stroke:#dc2626,color:#7f1d1d,stroke-width:1.5px
+    classDef uc fill:#ffffff,stroke:#94a3b8,color:#0f172a
+    classDef key fill:#f0fdf4,stroke:#16a34a,color:#14532d
+    classDef auth fill:#fef9c3,stroke:#eab308,color:#713f12
+
+    subgraph SYS["🏛️ Uni-Activity System"]
+        direction TB
+
+        subgraph PUB["🌐 Public"]
+            UC1((ดูรายการ<br/>กิจกรรม)):::uc
+            UC2((ดูรายละเอียด<br/>กิจกรรม · ประกาศ · งาน)):::uc
+            UC3((ดูแผนที่<br/>/map)):::uc
+            UC4((ตรวจสอบใบรับรอง<br/>ออนไลน์)):::uc
+        end
+
+        subgraph ACC["🔐 บัญชีผู้ใช้"]
+            UC5((เข้าสู่ระบบ<br/>Login + OTP)):::auth
+            UC6((สมัครบัญชี<br/>Register)):::auth
+            UC7((ลืมรหัสผ่าน<br/>Reset ผ่าน Email)):::auth
+            UC8((จัดการโปรไฟล์<br/>รูป · ชื่อ EN)):::uc
+            UC9((เชื่อม / ตัดการเชื่อม<br/>LINE Notify)):::uc
+        end
+
+        subgraph ACT["📅 กิจกรรม & ลงทะเบียน"]
+            UC10((ลงทะเบียน<br/>กิจกรรม)):::key
+            UC11((ยกเลิก<br/>การลงทะเบียน)):::uc
+            UC12((ดูกิจกรรมของฉัน<br/>ปฏิทิน · ประวัติ)):::uc
+            UC13((ประเมินกิจกรรม<br/>Feedback)):::uc
+        end
+
+        subgraph CHECK["✅ เช็คอิน"]
+            UC14((สแกน QR<br/>เช็คอิน)):::key
+            UC15((ยืนยันใบหน้า<br/>Face + Liveness)):::key
+            UC16((Walk-in Check-in<br/>หน้างาน)):::uc
+            UC17((เช็คอินแทน<br/>Manual)):::uc
+            UC18((Monitor เช็คอิน<br/>Real-time)):::uc
+            UC19((Review Selfie<br/>ที่ไม่ผ่าน Auto)):::uc
+        end
+
+        subgraph RPT["📊 สรุป & เอกสาร"]
+            UC20((สรุปชั่วโมง<br/>+ PDF Transcript)):::uc
+            UC21((เคลมใบรับรอง<br/>Certificate)):::key
+            UC22((Export Excel<br/>รายงานทั้งหมด)):::uc
+        end
+
+        subgraph CHAT["💬 Realtime Chat"]
+            UC23((ส่ง/แก้ไข/ลบข้อความ<br/>แชทกับเจ้าหน้าที่)):::key
+            UC24((Inbox ตอบนักศึกษา<br/>Read receipt live)):::uc
+        end
+
+        subgraph JOB["💼 ประกาศรับสมัครงาน"]
+            UC25((สมัครงาน<br/>Apply + Comment)):::uc
+            UC26((จัดการประกาศ<br/>จัดการผู้สมัคร)):::uc
+        end
+
+        subgraph BACK["🖥️ หลังบ้าน (Admin)"]
+            UC27((จัดการกิจกรรม<br/>CRUD · Clone · QR)):::uc
+            UC28((อนุมัติ/ปฏิเสธ<br/>Quick Approve)):::key
+            UC29((Import นักศึกษา<br/>Excel Bulk)):::uc
+            UC30((จัดการหมวดหมู่<br/>เกณฑ์ชั่วโมง)):::uc
+            UC31((Audit Log · Security Log<br/>Review Multi-account)):::uc
+            UC32((Backup · Settings<br/>API Keys)):::uc
+            UC33((Cluster Monitor<br/>Failed Jobs Retry)):::uc
+        end
+    end
+
+    %% ── Guest associations
+    GUEST --- UC1
+    GUEST --- UC2
+    GUEST --- UC3
+    GUEST --- UC4
+
+    %% ── Student associations
+    STU --- UC5
+    STU --- UC6
+    STU --- UC7
+    STU --- UC8
+    STU --- UC9
+    STU --- UC10
+    STU --- UC11
+    STU --- UC12
+    STU --- UC13
+    STU --- UC14
+    STU --- UC20
+    STU --- UC21
+    STU --- UC25
+    STU --- UC23
+
+    %% ── Staff associations
+    STF --- UC5
+    STF --- UC24
+    STF --- UC26
+    STF --- UC16
+    STF --- UC17
+    STF --- UC18
+    STF --- UC19
+    STF --- UC28
+    STF --- UC22
+
+    %% ── Admin associations (staff super-set)
+    ADM --- UC27
+    ADM --- UC29
+    ADM --- UC30
+    ADM --- UC31
+    ADM --- UC32
+    ADM --- UC33
+
+    %% ── include / extend (dashed)
+    UC10 -.->|"«include»"| UC5
+    UC14 -.->|"«include»"| UC15
+    UC21 -.->|"«extend»"| UC20
+    UC28 -.->|"extends"| UC18
+
+    %% ── External system connections
+    UC15 --- AI
+    UC9 --- LINE

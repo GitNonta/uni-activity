@@ -1,0 +1,43 @@
+sequenceDiagram
+    autonumber
+    actor Student as 🧑‍🎓 Student
+    participant Website as 🌐 Uni-Activity Website
+    participant Staff as 👩‍💼 Staff/Admin
+
+    Note over Student,Staff: ① เตรียมเข้าร่วมกิจกรรม
+    Student->>Website: เปิด “กิจกรรมของฉัน”
+    Website-->>Student: แสดงกิจกรรมที่ได้รับอนุมัติ
+    Student->>Website: เปิดรายละเอียดกิจกรรม
+    Website-->>Student: แสดง QR Code / วิธีเช็คอิน
+
+    Note over Student,Staff: ② เช็คอินหน้างาน
+    Student->>Website: เปิดหน้าสแกนเช็คอิน
+    Website-->>Student: เปิดกล้องหรือหน้าสแกน QR
+    Student->>Website: สแกน QR Code ของกิจกรรม
+    Website-->>Student: ขอการยืนยันตัวตน
+    Student->>Website: ยืนยันใบหน้า หรือทำตามขั้นตอนที่กำหนด
+
+    alt ยืนยันตัวตนสำเร็จ
+        Website-->>Student: แสดง “เช็คอินสำเร็จ”
+        Website-->>Staff: อัปเดตรายชื่อผู้เข้าร่วมแบบเรียลไทม์
+    else ยืนยันตัวตนไม่สำเร็จ
+        Website-->>Student: แสดงข้อความให้ลองใหม่
+        Student->>Website: สแกนหรือยืนยันตัวตนอีกครั้ง
+    end
+
+    Note over Student,Staff: ③ บันทึกชั่วโมงกิจกรรม
+    Website-->>Student: บันทึกเวลาเริ่มเข้าร่วมกิจกรรม
+    Website-->>Student: แสดงสถานะ “กำลังเข้าร่วม”
+
+    Note over Student,Staff: ④ จบกิจกรรมและเช็คเอาต์
+    Student->>Website: เปิดหน้ากิจกรรมเมื่อจบงาน
+    Website-->>Student: แสดง QR Code เช็คเอาต์ (ถ้ามี)
+    Student->>Website: เช็คเอาต์กิจกรรม
+    Website-->>Student: แสดง “เช็คเอาต์สำเร็จ”
+    Website-->>Student: คำนวณชั่วโมงกิจกรรมที่ได้รับ
+
+    Note over Student,Staff: ⑤ ตรวจสอบชั่วโมงสะสม
+    Student->>Website: เปิดประวัติหรือสรุปชั่วโมง
+    Website-->>Student: แสดงชั่วโมงกิจกรรมล่าสุด
+    Website-->>Student: อัปเดตยอดชั่วโมงสะสม
+    Student->>Website: ดาวน์โหลดสรุปชั่วโมงหรือใบรับรอง

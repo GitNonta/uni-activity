@@ -1,0 +1,62 @@
+sequenceDiagram
+    autonumber
+    participant BR as 🧑‍🎓 Student Browser
+    participant NGX as Nginx LB
+    participant APP as Laravel<br/>(Controller · Middleware)
+    participant FV as FaceVerificationService<br/>+ AiLoadBalancer
+    participant DB as PostgreSQL
+    participant KV as Valkey<br/>(queue · pub/sub)
+    participant AI as FastAPI AI<br/>(YOLOv8 + InsightFace)
+    participant QW as Queue Worker
+    participant RV as Reverb WS
+    participant ADM as 👩‍💼 Admin Monitor
+
+    Note over BR,RV: ── ① เปิดหน้าสแกน QR ──
+    BR->>NGX: GET /scan
+    NGX->>APP: route student.scanner
+    APP-->>BR: checkin/scan.blade
+
+    Note over BR,RV: ── ② สแกน QR ได้ token ──
+    BR->>NGX: POST /check-in/{token}
+    NGX->>APP: auth middleware
+    APP->>DB: lookup activities.qr_token<br/>(+ qr_expires_at)
+    DB-->>APP: activity ✓ (status ongoing)
+
+    alt กิจกรรมไม่บังคับยืนยันใบหน้า
+        APP->>DB: DB::transaction insert attendances<br/>method=qr_scan · UNIQUE(user+activity)
+        APP-->>BR: 🎉 success screen
+    else บังคับ face_scan
+        loop จับกล้องทุก frame
+            BR->>NGX: POST /check-in/{token}/verify-frame (base64)
+            NGX->>APP: middleware face-verify
+            APP->>FV: verify(frame, user)
+            FV->>AI: POST /verify<br/>Header X-API-Key
+            Note over AI: YOLOv8 detect face<br/>InsightFace extract embedding
+            AI-->>FV: embedding + best_match score
+
+            alt similarity ไม่ผ่าน threshold
+                FV-->>APP: ✗ no match
+                APP->>DB: insert security_logs<br/>(risk scoring · device_fingerprint)
+                APP-->>BR: ❌ 401 retry
+            else ผ่าน
+                FV->>AI: POST /liveness (anti-spoofing)
+                alt liveness ไม่ผ่าน
+                    FV-->>APP: ✗ spoof suspected
+                    APP-->>BR: ❌ retry / selfie review
+                else liveness ผ่าน
+                    FV-->>APP: ✓ identity confirmed
+                    APP->>DB: DB::transaction<br/>insert attendances method=qr_scan+selfie
+                    APP->>KV: dispatch AttendeeCheckedIn<br/>+ SendLineNotificationJob
+                    APP-->>BR: ✅ JSON success
+                end
+            end
+        end
+    end
+
+    %% Async realtime fan-out
+    KV--)QW: pop AttendeeCheckedIn
+    QW->>DB: mark registration completed
+    QW->>RV: publish private channel
+    Note over RV: channel แจ้งเตือน<br/>admin dashboard สด
+    RV--)ADM: echo .listen('.AttendeeCheckedIn')
+    QW--)AI: LINE API notify (queue: notifications)

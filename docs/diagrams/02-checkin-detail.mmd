@@ -1,0 +1,22 @@
+flowchart TD
+    START["student opens QR scanner<br/>GET /scan (checkin/scan.blade)"]
+    TOKEN{"กวาด QR<br/>สำเร็จ?"}
+    SHOW["checkin page<br/>GET /check-in/{token}"]
+    VERIFY_FRAME["POST /check-in/{token}/verify-frame"]
+    API_FACE["POST /api/face/verify"]
+    LIVE{"liveness ✓"}
+    MATCH{"face match ✓"}
+    STORE["store attendance<br/>DB::transaction"]
+    WALKIN["walk-in (staff only)<br/>GET /walkin/{token}"]
+    ATT_API["attendees real-time list<br/>GET /walkin/{token}/attendees"]
+
+    START --> TOKEN
+    TOKEN -- no --> START
+    TOKEN -- yes --> SHOW
+    SHOW -->|"auto submit camera frame"| VERIFY_FRAME --> API_FACE
+    MATCH -- yes --> LIVE
+    MATCH -- no --> REJECT["❌ ปฏิเสธ + log SecurityLog"] --> SHOW
+    LIVE -- yes --> STORE
+    LIVE -- no --> REJECT
+    STORE --> SUCCESS_S["🎉 checkin/success.blade"]
+    WALKIN --> ATT_API

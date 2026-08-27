@@ -1,0 +1,230 @@
+erDiagram
+    %% ══════════ Users domain ══════════
+    USERS {
+        bigint id PK
+        string student_id UK "รหัสนักศึกษา"
+        string full_name
+        string english_name
+        string email UK
+        enum role "student, staff, admin, super-admin"
+        string faculty
+        string department
+        string program
+        string profile_photo
+        json face_descriptor "AI biometric"
+        json face_descriptor_js "JS descriptor"
+        string line_user_id UK
+        string device_fingerprint
+        timestamp last_seen_at
+        string password
+    }
+
+    %% ══════════ Activities domain ══════════
+    ACTIVITY_CATEGORIES {
+        bigint id PK
+        string name UK
+        text description
+        int required_hours
+        json options
+    }
+    ACTIVITIES {
+        bigint id PK
+        bigint category_id FK "nullOnDelete"
+        bigint created_by FK "users"
+        string title
+        text description
+        string location
+        date activity_date
+        date start_date "multiday"
+        date end_date "multiday"
+        time start_time
+        time end_time
+        decimal activity_hours
+        int max_participants
+        datetime register_open_at
+        datetime register_close_at
+        datetime checkin_open_at
+        datetime checkin_close_at
+        bool is_mandatory
+        bool allow_early_checkin
+        bool allow_walkin
+        string attendance_approval_mode
+        string qr_token UK "64 chars"
+        datetime qr_expires_at
+        string checkout_qr_token UK
+        string image_path
+        enum status "upcoming, open, full, ongoing, done, cancelled"
+    }
+    REGISTRATIONS {
+        bigint id PK
+        bigint user_id FK "cascade"
+        bigint activity_id FK "cascade"
+        enum status "pending, approved, cancelled, rejected, completed, waitlisted"
+        timestamp registered_at
+        timestamp cancelled_at
+        text note
+    }
+    ATTENDANCES {
+        bigint id PK
+        bigint user_id FK
+        bigint activity_id FK
+        bigint verified_by FK "nullable users"
+        timestamp checked_in_at
+        enum method "qr_scan, self, manual, walk_in, staff_scan"
+        bool is_verified
+        decimal latitude
+        decimal longitude
+        int distance_meters
+        string ip_address
+        string device_fingerprint
+        string selfie_path "checkout fields มีเช่นกัน"
+        timestamp checked_out_at
+    }
+    ACTIVITY_FEEDBACKS {
+        bigint id PK
+        bigint activity_id FK
+        bigint user_id FK
+        tinyint rating
+        text comment
+    }
+    CERTIFICATES {
+        bigint id PK
+        bigint user_id FK
+        bigint category_id FK
+        string code UK
+        decimal hours_earned
+        timestamp issued_at
+    }
+    ANNOUNCEMENTS {
+        bigint id PK
+        bigint created_by FK
+        string title
+        text body
+        bool is_active
+        string image_path
+    }
+    NOTIFICATIONS_CUSTOM {
+        bigint id PK
+        bigint user_id FK
+        string type
+        json payload
+        timestamp read_at
+    }
+
+    %% ══════════ Chat domain ══════════
+    ROOMS {
+        ulid id PK
+        bigint job_id FK "nullable"
+        bigint created_by FK
+        enum type "direct, group"
+        string title
+    }
+    ROOM_USER {
+        ulid room_id PK_FK
+        bigint user_id PK_FK
+        timestamp joined_at
+        timestamp last_read_at "read receipt"
+    }
+    MESSAGES {
+        ulid id PK
+        ulid room_id FK
+        bigint user_id FK
+        text body
+        json attachments
+        json read_by
+        bool is_edited
+    }
+
+    %% ══════════ Jobs domain ══════════
+    JOB_LISTINGS {
+        bigint id PK
+        bigint created_by FK
+        string title
+        string position
+        text description
+        enum job_type "part_time, full_time, internship"
+        string compensation
+        string dresscode
+        string work_period
+        int quota
+        enum gender "any, male, female"
+        string location
+        decimal latitude
+        decimal longitude
+        string image_path
+        enum status "open, closed, full"
+        date application_deadline
+    }
+    JOB_APPLICATIONS {
+        bigint id PK
+        bigint job_listing_id FK
+        bigint user_id FK
+        enum status "pending, confirmed, rejected"
+        text note
+        timestamp joined_at
+    }
+    JOB_COMMENTS {
+        bigint id PK
+        bigint job_listing_id FK
+        bigint user_id FK
+        text body
+    }
+    JOB_INQUIRIES {
+        bigint id PK
+        bigint job_listing_id FK
+        text body
+        json read_by
+    }
+
+    %% ══════════ Security & ops ══════════
+    SECURITY_LOGS {
+        bigint id PK
+        bigint user_id FK
+        string event_type
+        json context
+        enum risk_level "low, medium, high"
+        bool reviewed
+    }
+    ADMIN_AUDIT_LOGS {
+        bigint id PK
+        bigint user_id FK "actor"
+        string action
+        json changes
+        string ip_address
+    }
+    SETTINGS {
+        bigint id PK
+        string key UK
+        text value
+    }
+
+    %% ══════════ Relationships ══════════
+    USERS ||--o{ REGISTRATIONS : "ลงทะเบียน (unique user+activity)"
+    ACTIVITIES ||--o{ REGISTRATIONS : ""
+    USERS ||--o{ ATTENDANCES : "เข้าร่วม (unique user+activity)"
+    ACTIVITIES ||--o{ ATTENDANCES : ""
+    USERS |o--o{ ATTENDANCES : "verified_by / selfie_reviewed_by"
+    ACTIVITY_CATEGORIES ||--o{ ACTIVITIES : "จัดกลุ่ม"
+    ACTIVITIES ||--o{ ACTIVITY_FEEDBACKS : "ประเมิน"
+    USERS ||--o{ ACTIVITY_FEEDBACKS : ""
+    ACTIVITY_CATEGORIES ||--o{ CERTIFICATES : "ตามเกณฑ์ชั่วโมง"
+    USERS ||--o{ CERTIFICATES : "เคลม"
+    USERS ||--o| ACTIVITIES : "created_by"
+    USERS ||--o{ ANNOUNCEMENTS : "created_by"
+    USERS ||--o{ NOTIFICATIONS_CUSTOM : ""
+
+    USERS ||--o{ ROOM_USER : ""
+    ROOMS ||--o{ ROOM_USER : "M:N + last_read_at"
+    ROOMS ||--o{ MESSAGES : ""
+    USERS ||--o{ MESSAGES : "ผู้ส่ง"
+    ROOMS }o--o| JOB_LISTINGS : "chat ของงาน"
+
+    USERS ||--o| JOB_LISTINGS : "created_by"
+    JOB_LISTINGS ||--o{ JOB_APPLICATIONS : "รับสมัคร"
+    USERS ||--o{ JOB_APPLICATIONS : ""
+    JOB_LISTINGS ||--o{ JOB_COMMENTS : ""
+    USERS ||--o{ JOB_COMMENTS : ""
+    JOB_LISTINGS ||--o{ JOB_INQUIRIES : ""
+
+    USERS ||--o{ SECURITY_LOGS : "flagged"
+    USERS ||--o{ ADMIN_AUDIT_LOGS : "actor"
