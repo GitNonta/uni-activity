@@ -53,11 +53,18 @@ class ActivityAdminController extends Controller
             })
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
             ->when($request->search, fn ($q) => $q->where('title', 'like', "%{$request->search}%"))
+            ->active()
             ->orderByDesc('created_at')
             ->paginate(15)
             ->withQueryString();
 
-        return view('admin.activities.index', compact('activities'));
+        $completedActivities = Activity::with(['category', 'creator'])
+            ->oldCompleted()
+            ->orderByDesc('activity_date')
+            ->paginate(12, ['*'], 'completed_page')
+            ->withQueryString();
+
+        return view('admin.activities.index', compact('activities', 'completedActivities'));
     }
 
     /**

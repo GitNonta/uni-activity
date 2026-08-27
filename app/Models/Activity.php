@@ -189,6 +189,32 @@ class Activity extends Model
         return $closeAt !== null && now()->greaterThan($closeAt);
     }
 
+    // ─── Scopes ───
+
+    /**
+     * กิจกรรมที่ยังแสดงในหน้าหลัก
+     * ตัดกิจกรรมที่ status=done ออกไปแล้วเกิน 7 วัน
+     */
+    public function scopeActive($query)
+    {
+        $query->where(function ($q) {
+            $q->where('status', '!=', 'done')
+              ->orWhere(function ($sq) {
+                  $sq->where('status', 'done')
+                     ->whereRaw("(activity_date + interval '7 days') >= ?", [now()->toDateString()]);
+              });
+        });
+    }
+
+    /**
+     * กิจกรรมที่เสร็จสิ้นแล้วเกิน 7 วัน — แสดงเฉพาะในส่วน "_completed"
+     */
+    public function scopeOldCompleted($query)
+    {
+        $query->where('status', 'done')
+              ->whereRaw("(activity_date + interval '7 days') < ?", [now()->toDateString()]);
+    }
+
     /** นับจำนวนผู้ลงทะเบียนทั้งหมด (pending + approved) */
     public function getRegisteredCount(): int
     {

@@ -105,6 +105,53 @@
 </div>
 <div class="mt-4">{{ $activities->links() }}</div>
 
+{{-- ══════════════════════════════════════════════════════ --}}
+{{-- ส่วนกิจกรรมที่เสร็จสิ้นแล้ว (เกิน 7 วัน)           --}}
+{{-- ══════════════════════════════════════════════════════ --}}
+@if($completedActivities->count())
+<div style="margin-top:2rem; padding-top:1.5rem; border-top:1px solid #e2e8f0;">
+    <details>
+        <summary style="cursor:pointer; font-weight:600; color:#64748b; padding:0.5rem 0; user-select:none;">
+            📁 กิจกรรมที่เสร็จสิ้นแล้ว <span style="font-weight:400; font-size:0.85rem;">({{ $completedActivities->total() }} รายการ)</span>
+        </summary>
+        <div class="mt-3">
+            <div class="table-wrap">
+                <table class="responsive-table">
+                    <thead>
+                        <tr>
+                            <th style="width:50px;"></th>
+                            <th>ชื่อ</th>
+                            <th class="text-center">วันที่</th>
+                            <th class="text-center">ผู้สมัคร</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($completedActivities as $act)
+                        <tr>
+                            <td style="width:50px; padding-right:0;">
+                                @if($act->image_path)
+                                    <img src="{{ Storage::url($act->image_path) }}" alt="" style="width:40px; height:40px; object-fit:cover; border-radius:8px; background:#f1f5f9;">
+                                @endif
+                            </td>
+                            <td>
+                                <a href="{{ route('admin.activities.show', $act->id) }}" class="font-semi">{{ $act->title }}</a>
+                                <p class="text-xs text-muted">{{ $act->category->name ?? '-' }}</p>
+                            </td>
+                            <td class="text-center text-muted">{{ $act->activity_date->format('d/m/Y') }}</td>
+                            <td class="text-center">{{ $act->getRegisteredCount() }}</td>
+                        </tr>
+                        @empty
+                        <tr><td colspan="4" class="text-center text-muted" style="padding:1rem;">ไม่มีกิจกรรมเก่า</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-3">{{ $completedActivities->links() }}</div>
+        </div>
+    </details>
+</div>
+@endif
+
 {{-- Modal สำหรับแสดงคำขออนุมัติ --}}
 <div id="pendingModal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; padding:1rem;">
     <div class="card" style="width:100%; max-width:600px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1);">

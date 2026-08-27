@@ -58,7 +58,8 @@ class ActivityController extends Controller
                    ->orWhere('location', 'like', "%{$cleanSearch}%");
             }))
             ->when($request->scope, fn($q) => $q->where('scope', $request->scope))
-            ->where('status', '!=', 'cancelled');
+            ->where('status', '!=', 'cancelled')
+            ->active();
 
         // จัดเรียงตามอัลกอริทึม
         if ($sort === 'closing_soon') {
@@ -172,7 +173,14 @@ class ActivityController extends Controller
                 'url'       => route('activities.show', $a->id),
             ]);
 
-        return view('activities.index', compact('activities', 'categories', 'registeredActivityIds', 'attendedActivityIds', 'geoActivities'));
+        $completedActivities = Activity::query()
+            ->with('category')
+            ->oldCompleted()
+            ->orderByDesc('activity_date')
+            ->paginate(12, ['*'], 'completed_page')
+            ->withQueryString();
+
+        return view('activities.index', compact('activities', 'categories', 'registeredActivityIds', 'attendedActivityIds', 'geoActivities', 'completedActivities'));
     }
 
     /**
