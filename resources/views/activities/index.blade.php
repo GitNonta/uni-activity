@@ -99,26 +99,25 @@
 {{-- ══════════════════════════════════════════════════════ --}}
 @if($completedActivities->count())
 <div style="margin-top:3rem; padding-top:2rem; border-top:1px solid #e2e8f0;">
-    <details>
-        <summary style="cursor:pointer; font-size:1.1rem; font-weight:600; color:#64748b; padding:0.5rem 0; user-select:none;">
-            📁 กิจกรรมที่เสร็จสิ้นแล้ว <span style="font-weight:400; font-size:0.85rem;">({{ $completedActivities->total() }} รายการ)</span>
-        </summary>
-        <div class="mt-3" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:1rem;">
-            @forelse($completedActivities as $act)
-                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; opacity:0.85;">
-                    @if($act->image_path)
-                        <img src="{{ Storage::url($act->image_path) }}" alt="{{ $act->title }}" style="width:100%; height:140px; object-fit:cover; background:#f1f5f9;">
-                    @endif
-                    <div style="padding:0.75rem;">
-                        <a href="{{ route('activities.show', $act->id) }}" style="font-weight:600; color:#1e293b; text-decoration:none;">{{ $act->title }}</a>
-                        <p style="margin:4px 0 0; font-size:0.8rem; color:#94a3b8;">{{ $act->activity_date->format('d/m/Y') }} · {{ $act->category->name ?? '' }}</p>
-                    </div>
+    <h2 style="font-size:1.1rem; font-weight:600; color:#64748b; padding:0.5rem 0; display:flex; align-items:center; gap:8px;">
+        <svg style="width:20px; height:20px; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        กิจกรรมที่เสร็จสิ้นแล้ว <span style="font-weight:400; font-size:0.85rem;">({{ $completedActivities->total() }} รายการ)</span>
+    </h2>
+    <div class="mt-3" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:1rem;">
+        @forelse($completedActivities as $act)
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; opacity:0.85;">
+                @if($act->image_path)
+                    <img src="{{ Storage::url($act->image_path) }}" alt="{{ $act->title }}" style="width:100%; height:140px; object-fit:cover; background:#f1f5f9;">
+                @endif
+                <div style="padding:0.75rem;">
+                    <a href="{{ route('activities.show', $act->id) }}" style="font-weight:600; color:#1e293b; text-decoration:none;">{{ $act->title }}</a>
+                    <p style="margin:4px 0 0; font-size:0.8rem; color:#94a3b8;">{{ $act->activity_date->format('d/m/Y') }} · {{ $act->category->name ?? '' }}</p>
                 </div>
-            @empty
-            @endforelse
-        </div>
-        <div class="mt-3">{{ $completedActivities->links() }}</div>
-    </details>
+            </div>
+        @empty
+        @endforelse
+    </div>
+    <div class="mt-3">{{ $completedActivities->links() }}</div>
 </div>
 @endif
 @endsection

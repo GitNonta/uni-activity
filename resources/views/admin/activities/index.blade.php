@@ -110,45 +110,44 @@
 {{-- ══════════════════════════════════════════════════════ --}}
 @if($completedActivities->count())
 <div style="margin-top:2rem; padding-top:1.5rem; border-top:1px solid #e2e8f0;">
-    <details>
-        <summary style="cursor:pointer; font-weight:600; color:#64748b; padding:0.5rem 0; user-select:none;">
-            📁 กิจกรรมที่เสร็จสิ้นแล้ว <span style="font-weight:400; font-size:0.85rem;">({{ $completedActivities->total() }} รายการ)</span>
-        </summary>
-        <div class="mt-3">
-            <div class="table-wrap">
-                <table class="responsive-table">
-                    <thead>
-                        <tr>
-                            <th style="width:50px;"></th>
-                            <th>ชื่อ</th>
-                            <th class="text-center">วันที่</th>
-                            <th class="text-center">ผู้สมัคร</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($completedActivities as $act)
-                        <tr>
-                            <td style="width:50px; padding-right:0;">
-                                @if($act->image_path)
-                                    <img src="{{ Storage::url($act->image_path) }}" alt="" style="width:40px; height:40px; object-fit:cover; border-radius:8px; background:#f1f5f9;">
-                                @endif
-                            </td>
-                            <td>
-                                <a href="{{ route('admin.activities.show', $act->id) }}" class="font-semi">{{ $act->title }}</a>
-                                <p class="text-xs text-muted">{{ $act->category->name ?? '-' }}</p>
-                            </td>
-                            <td class="text-center text-muted">{{ $act->activity_date->format('d/m/Y') }}</td>
-                            <td class="text-center">{{ $act->getRegisteredCount() }}</td>
-                        </tr>
-                        @empty
-                        <tr><td colspan="4" class="text-center text-muted" style="padding:1rem;">ไม่มีกิจกรรมเก่า</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-            <div class="mt-3">{{ $completedActivities->links() }}</div>
+    <h2 style="font-weight:600; color:#64748b; padding:0.5rem 0; display:flex; align-items:center; gap:8px;">
+        <svg style="width:20px; height:20px; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        กิจกรรมที่เสร็จสิ้นแล้ว <span style="font-weight:400; font-size:0.85rem;">({{ $completedActivities->total() }} รายการ)</span>
+    </h2>
+    <div class="mt-3">
+        <div class="table-wrap">
+            <table class="responsive-table">
+                <thead>
+                    <tr>
+                        <th style="width:50px;"></th>
+                        <th>ชื่อ</th>
+                        <th class="text-center">วันที่</th>
+                        <th class="text-center">ผู้สมัคร</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($completedActivities as $act)
+                    <tr>
+                        <td style="width:50px; padding-right:0;">
+                            @if($act->image_path)
+                                <img src="{{ Storage::url($act->image_path) }}" alt="" style="width:40px; height:40px; object-fit:cover; border-radius:8px; background:#f1f5f9;">
+                            @endif
+                        </td>
+                        <td>
+                            <a href="{{ route('admin.activities.show', $act->id) }}" class="font-semi">{{ $act->title }}</a>
+                            <p class="text-xs text-muted">{{ $act->category->name ?? '-' }}</p>
+                        </td>
+                        <td class="text-center text-muted">{{ $act->activity_date->format('d/m/Y') }}</td>
+                        <td class="text-center">{{ $act->getRegisteredCount() }}</td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="4" class="text-center text-muted" style="padding:1rem;">ไม่มีกิจกรรมเก่า</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
-    </details>
+        <div class="mt-3">{{ $completedActivities->links() }}</div>
+    </div>
 </div>
 @endif
 
