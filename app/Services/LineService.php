@@ -511,24 +511,26 @@ class LineService
     }
 
     /** ดึงข้อมูล Profile ผู้ใช้จาก LINE ด้วย Access Token */
+    /** ดึงข้อมูล Profile ผู้ใช้จาก LINE ด้วย Access Token (cached 5 min) */
     public function getLineProfile(string $accessToken): ?array
     {
         try {
-            $response = Http::withToken($accessToken)
-                ->timeout(10)
-                ->get('https://api.line.me/v2/profile');
-
-            if ($response->successful()) {
-                return $response->json();
-            }
+            return Cache::remember(
+                'api:line:profile:' . md5($accessToken),
+                300,
+                function () use ($accessToken) {
+                    $response = Http::withOptions(['proxy' => env('FORWARD_PROXY')])
+                        ->withToken($accessToken)
+                        ->timeout(10)
+                        ->get('https://api.line.me/v2/profile');
+                    return $response->successful() ? $response->json() : null;
+                }
+            );
         } catch (\Throwable $e) {
-            Log::error('LINE getProfile exception', ['error' => $e->getMessage()]);
+            Log::error('LINE getProfile', ['error' => $e->getMessage()]);
         }
-
         return null;
     }
-
-    /** แลก Authorization Code เป็น Access Token */
     public function exchangeToken(string $code, string $redirectUri): ?array
     {
         try {
