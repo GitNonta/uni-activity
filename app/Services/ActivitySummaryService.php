@@ -544,21 +544,29 @@ class ActivitySummaryService
 
         try {
             $cleanName = str_replace(['นาย ', 'นางสาว ', 'นาง '], '', $user->full_name);
-            // N6 fix: Use Laravel HTTP client instead of file_get_contents (prevents SSRF)
-            $response = Http::timeout(5)
-                ->get('https://translate.googleapis.com/translate_a/single', [
-                    'client' => 'gtx',
-                    'sl'     => 'th',
-                    'tl'     => 'en',
-                    'dt'     => 't',
-                    'q'      => $cleanName,
-                ]);
-            if ($response->successful()) {
-                $data = $response->json();
-                if (isset($data[0][0][0])) {
-                    $user->english_name = ucwords(strtolower(trim((string) $data[0][0][0])));
-                    $user->save();
+            // Cache::flexible: stale-while-revalidate for translations (30 days)
+            $translated = Cache::flexible(
+                'api:translate:th-en:' . md5($cleanName),
+                [2591940, 2592000],
+                function () use ($cleanName) {
+                    $response = Http::withOptions(['proxy' => env('FORWARD_PROXY')])->timeout(5)
+                        ->get('https://translate.googleapis.com/translate_a/single', [
+                            'client' => 'gtx',
+                            'sl'     => 'th',
+                            'tl'     => 'en',
+                            'dt'     => 't',
+                            'q'      => $cleanName,
+                        ]);
+                    if ($response->successful()) {
+                        $data = $response->json();
+                        return $data[0][0][0] ?? null;
+                    }
+                    return null;
                 }
+            );
+            if ($translated) {
+                $user->english_name = ucwords(strtolower(trim((string) $translated)));
+                $user->save();
             }
         } catch (\Throwable) {
             // Non-blocking fallback

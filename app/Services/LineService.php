@@ -512,12 +512,14 @@ class LineService
 
     /** ดึงข้อมูล Profile ผู้ใช้จาก LINE ด้วย Access Token */
     /** ดึงข้อมูล Profile ผู้ใช้จาก LINE ด้วย Access Token (cached 5 min) */
+    /** ดึงข้อมูล Profile ผู้ใช้จาก LINE ด้วย Access Token (flexible cache) */
     public function getLineProfile(string $accessToken): ?array
     {
         try {
-            return Cache::remember(
+            // Cache::flexible: serves stale data while 1 worker refreshes in background
+            return Cache::flexible(
                 'api:line:profile:' . md5($accessToken),
-                300,
+                [240, 300],
                 function () use ($accessToken) {
                     $response = Http::withOptions(['proxy' => env('FORWARD_PROXY')])
                         ->withToken($accessToken)
@@ -527,7 +529,7 @@ class LineService
                 }
             );
         } catch (\Throwable $e) {
-            Log::error('LINE getProfile', ['error' => $e->getMessage()]);
+            Log::error('LINE getProfile exception', ['error' => $e->getMessage()]);
         }
         return null;
     }
