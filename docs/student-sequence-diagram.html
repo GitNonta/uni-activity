@@ -21,8 +21,9 @@ main{max-width:1280px;margin:0 auto;padding:24px 32px 64px}.diagram-shell{backgr
 <div class="grid">
 <div class="card"><h2>🎯 โฟลว์หลัก</h2><ul><li><span class="step">①</span> Public: `/` → `/activities`</li><li><span class="step">②</span> เลือกรายการ → `/activities/{id}`</li><li><span class="step">③</span> กด Register ขณะ logged out → `/login`</li><li><span class="step">④</span> Login สำเร็จ → OTP → กลับหน้ากิจกรรม</li><li><span class="step">⑤</span> POST register → `pending` → Admin approve</li></ul></div>
 <div class="card"><h2>📱 หน้าจอที่เกี่ยวข้อง</h2><ul><li><code>activities/index.blade.php</code> — รายการกิจกรรม</li><li><code>activities/show.blade.php</code> — รายละเอียด + ปุ่มลงทะเบียน</li><li><code>auth/login.blade.php</code> — Login</li><li><code>auth/verify-login-otp.blade.php</code> — OTP</li><li><code>/my-activities</code> — สถานะหลังลงทะเบียน</li></ul></div>
-<div class="card links"><h2>🔗 Diagrams อื่น ๆ</h2><a href="./class-diagram.html">Class Diagram</a><a href="./use-case-diagram.html">Use Case Diagram</a><a href="./er-diagram.html">ER Diagram</a><a href="./sequence-diagram.html">Check-in Sequence</a><a href="./SCREEN-FLOW.md">SCREEN-FLOW.md</a></div>
-</div></main>
+<div class="card links" id="nav-links"></div>
+    </div></main>
 <footer>Regenerate: <code>cd docs &amp;&amp; npx -y @mermaid-js/mermaid-cli -p diagrams/puppeteer.json -i diagrams/student-sequence-diagram.mmd -o diagrams/student-sequence-diagram.svg -b white</code></footer>
 <script>const z=document.getElementById('zoom'),w=document.getElementById('diagramWrap'),l=document.getElementById('zoomLabel');z.addEventListener('input',()=>{w.style.transform='scale('+z.value/100+')';w.style.width=(10000/z.value)+'%';l.textContent=z.value+'%'});</script>
+<script src="./_nav.js"></script>
 </body></html>

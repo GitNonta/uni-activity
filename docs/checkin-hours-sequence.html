@@ -21,8 +21,9 @@ main{max-width:1280px;margin:0 auto;padding:24px 32px 64px}.diagram-shell{backgr
 <div class="grid">
 <div class="card"><h2>🎯 ขั้นตอนหลัก</h2><ul><li><span class="step">①</span> เปิดกิจกรรมที่อนุมัติใน “กิจกรรมของฉัน”</li><li><span class="step">②</span> สแกน QR และยืนยันตัวตนหน้างาน</li><li><span class="step">③</span> ระบบบันทึกเวลาเริ่มเข้าร่วม</li><li><span class="step">④</span> เช็คเอาต์เมื่อจบกิจกรรม</li><li><span class="step">⑤</span> ตรวจสอบชั่วโมงสะสมและดาวน์โหลดเอกสาร</li></ul></div>
 <div class="card"><h2>📊 การบันทึกชั่วโมง</h2><ul><li>เช็คอินสำเร็จ → เริ่มนับการเข้าร่วม</li><li>เช็คเอาต์สำเร็จ → คำนวณชั่วโมงที่ได้รับ</li><li>ประวัติและสรุปชั่วโมงแสดงข้อมูลล่าสุด</li><li>เจ้าหน้าที่เห็นรายชื่อผู้เข้าร่วมแบบเรียลไทม์</li></ul></div>
-<div class="card links"><h2>🔗 Diagrams อื่น ๆ</h2><a href="./student-sequence-diagram.html">Registration Sequence</a><a href="./class-diagram.html">Class Diagram</a><a href="./use-case-diagram.html">Use Case Diagram</a><a href="./er-diagram.html">ER Diagram</a><a href="./SCREEN-FLOW.md">SCREEN-FLOW.md</a></div>
-</div></main>
+<div class="card links" id="nav-links"></div>
+    </div></main>
 <footer>Regenerate: <code>cd docs &amp;&amp; npx -y @mermaid-js/mermaid-cli -p diagrams/puppeteer.json -i diagrams/checkin-hours-sequence.mmd -o diagrams/checkin-hours-sequence.svg -b white</code></footer>
 <script>const z=document.getElementById('zoom'),w=document.getElementById('diagramWrap'),l=document.getElementById('zoomLabel');z.addEventListener('input',()=>{w.style.transform='scale('+z.value/100+')';w.style.width=(10000/z.value)+'%';l.textContent=z.value+'%'});</script>
+<script src="./_nav.js"></script>
 </body></html>
