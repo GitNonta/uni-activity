@@ -59,10 +59,15 @@ class ActivityController extends Controller
             }))
             ->when($request->scope, fn($q) => $q->where('scope', $request->scope))
             ->where('status', '!=', 'cancelled')
-            ->active();
+            ->when($sort !== 'completed', fn($q) => $q->active());
 
         // จัดเรียงตามอัลกอริทึม
-        if ($sort === 'closing_soon') {
+        if ($sort === 'completed') {
+            // แสดงเฉพาะกิจกรรมที่เสร็จสิ้นแล้ว (เกิน 7 วัน)
+            $query->where('status', 'done')
+                  ->where('activity_date', '<', now()->subDays(7)->toDateString())
+                  ->orderByDesc('activity_date');
+        } elseif ($sort === 'closing_soon') {
             $query->orderByRaw("CASE WHEN register_close_at IS NOT NULL AND register_close_at >= ? THEN 0 ELSE 1 END ASC", [$nowStr])
                   ->orderBy('register_close_at', 'asc')
                   ->orderBy('activity_date', 'asc');

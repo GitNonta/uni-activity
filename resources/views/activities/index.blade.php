@@ -73,6 +73,12 @@
         <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         <span>มาใหม่</span>
     </a>
+    <a href="{{ request()->fullUrlWithQuery(['sort' => 'completed']) }}"
+       class="sort-pill {{ $currentSort === 'completed' ? 'active' : '' }}"
+       style="white-space:nowrap;padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:600;text-decoration:none;transition:all 0.15s ease;display:inline-flex;align-items:center;gap:5px;{{ $currentSort === 'completed' ? 'background:#ea580c;color:#fff;box-shadow:0 2px 6px rgba(234,88,12,0.3);' : 'background:#fff;color:#475569;border:1px solid #e2e8f0;' }}">
+        <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span>เสร็จสิ้นแล้ว</span>
+    </a>
 </div>
 
 {{-- แสดงการ์ดกิจกรรม หรือข้อความว่างถ้าไม่พบ --}}
@@ -97,7 +103,7 @@
 {{-- ══════════════════════════════════════════════════════ --}}
 {{-- ส่วนกิจกรรมที่เสร็จสิ้นแล้ว (เกิน 7 วัน)           --}}
 {{-- ══════════════════════════════════════════════════════ --}}
-@if($completedActivities->count())
+@if($completedActivities->count() && $currentSort !== 'completed')
 <div style="margin-top:3rem; padding-top:2rem; border-top:1px solid #e2e8f0;">
     <h2 style="font-size:1.1rem; font-weight:600; color:#64748b; padding:0.5rem 0; display:flex; align-items:center; gap:8px;">
         <svg style="width:20px; height:20px; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
