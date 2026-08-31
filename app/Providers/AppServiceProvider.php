@@ -15,6 +15,7 @@ use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -52,6 +53,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->configureRateLimiters();
+        $this->configureOutboundProxy();
         $this->registerConsoleCommandLogger();
     }
 
@@ -170,6 +172,24 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(ActivityPublished::class,    SendLineActivityNotification::class);
         Event::listen(JobPublished::class,         SendLineJobNotification::class);
         Event::listen(AnnouncementPublished::class, SendLineAnnouncementNotification::class);
+    }
+
+    /**
+     * Configure outbound HTTP proxy for external API calls.
+     * All Http:: requests will route through Squid (127.0.0.1:3128)
+     * to avoid IP bans from 7 workers hitting the same endpoint.
+     */
+    private function configureOutboundProxy(): void
+    {
+        $proxyUrl = env('FORWARD_PROXY');
+        if ($proxyUrl) {
+            Http::macro('proxied', function () use ($proxyUrl) {
+                return Http::withOptions([
+                    'proxy' => $proxyUrl,
+                    'verify' => false,
+                ]);
+            });
+        }
     }
 
     /**
