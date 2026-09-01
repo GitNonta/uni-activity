@@ -84,7 +84,7 @@
                     </div>
                     <input type="number" name="activity_hours" id="activityHours"
                         value="{{ old('activity_hours', 3) }}" step="0.5" min="0.5" class="form-control"
-                        id="activityHoursInput" {{ old('custom_hours') ? '' : 'readonly' }}
+                        {{ old('custom_hours') ? '' : 'readonly' }}
                         style="{{ old('custom_hours') ? '' : 'background:#f8fafc;color:#475569;' }}" required>
                     <p class="text-xs text-muted" style="margin-top:.2rem;" id="hoursHint">
                         คำนวณอัตโนมัติจากเวลาเริ่ม–สิ้นสุด
@@ -195,6 +195,7 @@
                     <input type="checkbox" name="require_attendance_approval" value="1" {{ old('require_attendance_approval') ? 'checked' : '' }}> ต้องตรวจสอบการเช็คอิน (Manual Approval)
                 </label>
                 <p class="text-xs text-muted" style="margin-left: 1.5rem; margin-top: 0.15rem;">หากติ๊กเลือก นักศึกษาที่สแกน QR จะมีสถานะ "รอตรวจสอบ" จนกว่าผู้จัดจะกดอนุมัติ</p>
+                </div>
             <div class="form-group" style="padding: 1rem; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc;">
                 <label class="checkbox-label" style="font-weight: bold; margin-bottom: 0.5rem;">
                     <input type="checkbox" name="require_face_scan" id="requireFaceScan" value="1" onchange="toggleFaceScanMethod()" {{ old('require_face_scan', true) ? 'checked' : '' }}> 
