@@ -46,13 +46,7 @@ if (app()->environment('local', 'testing')) {
     })->name('debug.ip');
 }
 // ── Health Check Endpoints สำหรับ Load Balancer, Nginx & Monitoring (ไม่มี CORS) ──
-Route::get('/health', function () {
-    return response()->json([
-        'status'    => 'ok',
-        'timestamp' => time(),
-        'service'   => 'uni-activity',
-    ]);
-})->name('health');
+Route::get('/health', \App\Http\Controllers\Api\HealthCheckController::class)->name('health');
 
 Route::get('/up', function () {
     return response()->json([
