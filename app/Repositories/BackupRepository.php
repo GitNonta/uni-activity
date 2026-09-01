@@ -200,11 +200,11 @@ class BackupRepository
         return null;
     }
 
-    public function formatBytes(int $bytes, int $precision = 2): string
+    public function formatBytes(int|float $bytes, int $precision = 2): string
     {
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
 
-        $bytes = max($bytes, 0);
+        $bytes = max((int) $bytes, 0);
         $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
         $pow = min((int) $pow, count($units) - 1);
 
