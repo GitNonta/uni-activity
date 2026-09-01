@@ -29,6 +29,13 @@ class BackupAdminController extends Controller
         $formattedTotalSize = $this->backupRepo->formatBytes($totalSize);
         $latestBackup = $this->backupRepo->getLatestBackup();
 
+        // Disk space info
+        $backupPath = $this->backupRepo->getBackupDirectory();
+        $diskTotal = disk_total_space($backupPath) ?: 0;
+        $diskFree = disk_free_space($backupPath) ?: 0;
+        $diskUsed = $diskTotal - $diskFree;
+        $diskPercent = $diskTotal > 0 ? round(($diskUsed / $diskTotal) * 100, 1) : 0;
+
         $scheduleInfo = [
             'daily_db'     => 'ทุกวัน เวลา 01:00 น.',
             'weekly_full'  => 'ทุกวันอาทิตย์ เวลา 02:00 น.',
@@ -42,7 +49,11 @@ class BackupAdminController extends Controller
             'totalSize',
             'formattedTotalSize',
             'latestBackup',
-            'scheduleInfo'
+            'scheduleInfo',
+            'diskTotal',
+            'diskFree',
+            'diskUsed',
+            'diskPercent',
         ));
     }
 
@@ -136,7 +147,7 @@ class BackupAdminController extends Controller
         );
 
         $count = count($deleted);
-        $msg = $count > 0 
+        $msg = $count > 0
             ? "ทำความสะอาดไฟล์เก่าสำเร็จ ลบไปทั้งหมด {$count} ไฟล์"
             : "ไม่มีไฟล์สำรองข้อมูลเก่าที่เกินกำหนดระยะเวลาจัดเก็บ";
 
