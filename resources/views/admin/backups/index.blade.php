@@ -188,12 +188,12 @@
             <div class="flex-1">
                 <p class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">พื้นที่ดิสก์</p>
                 <p class="text-sm font-bold text-zinc-900 dark:text-zinc-100 mt-0.5">
-                    {{ \App\Repositories\BackupRepository::formatBytes((int) $diskUsed) }} / {{ \App\Repositories\BackupRepository::formatBytes((int) $diskTotal) }}
+                    {{ $formattedDiskUsed }} / {{ $formattedDiskTotal }}
                 </p>
                 <div class="disk-bar mt-1.5">
                     <div class="disk-bar-fill {{ $diskPercent > 90 ? 'high' : ($diskPercent > 70 ? 'medium' : 'low') }}" style="width: {{ $diskPercent }}%"></div>
                 </div>
-                <p class="text-[10px] text-zinc-500 mt-1">{{ $diskPercent }}% ใช้งาน · ว่าง {{ \App\Repositories\BackupRepository::formatBytes((int) $diskFree) }}</p>
+                <p class="text-[10px] text-zinc-500 mt-1">{{ $diskPercent }}% ใช้งาน · ว่าง {{ $formattedDiskFree }}</p>
             </div>
         </div>
     </div>
