@@ -35,9 +35,9 @@ class BackupAdminController extends Controller
         $diskFree = disk_free_space($backupPath) ?: 0;
         $diskUsed = $diskTotal - $diskFree;
         $diskPercent = $diskTotal > 0 ? round(($diskUsed / $diskTotal) * 100, 1) : 0;
-        $formattedDiskUsed = $this->backupRepo->formatBytes($diskUsed);
-        $formattedDiskTotal = $this->backupRepo->formatBytes($diskTotal);
-        $formattedDiskFree = $this->backupRepo->formatBytes($diskFree);
+        $formattedDiskUsed = $this->backupRepo->formatBytes((int) $diskUsed);
+        $formattedDiskTotal = $this->backupRepo->formatBytes((int) $diskTotal);
+        $formattedDiskFree = $this->backupRepo->formatBytes((int) $diskFree);
 
         $scheduleInfo = [
             'daily_db'     => 'ทุกวัน เวลา 01:00 น.',
