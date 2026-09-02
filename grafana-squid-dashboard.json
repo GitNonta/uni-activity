@@ -1,0 +1,198 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "squid-proxy",
+    "title": "Squid Proxy Monitor",
+    "tags": ["squid", "proxy", "network"],
+    "timezone": "browser",
+    "refresh": "10s",
+    "time": { "from": "now-1h", "to": "now" },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Requests Total",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+        "targets": [
+          { "expr": "squid_requests_total", "legendFormat": "{{domain}}", "refId": "A" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 5000 }, { "color": "red", "value": 10000 }] },
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Errors Total",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+        "targets": [
+          { "expr": "squid_errors_total", "legendFormat": "{{type}}", "refId": "A" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 10 }, { "color": "red", "value": 50 }] },
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Cache Hit Ratio",
+        "type": "gauge",
+        "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+        "targets": [
+          { "expr": "squid_cache_hit_ratio * 100", "legendFormat": "Hit %", "refId": "A" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0, "max": 100,
+            "thresholds": { "steps": [{ "color": "red", "value": null }, { "color": "yellow", "value": 30 }, { "color": "green", "value": 70 }] },
+            "unit": "percent"
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Exporter Status",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+        "targets": [
+          { "expr": "squid_up", "legendFormat": "Up", "refId": "A" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": { "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] },
+            "mappings": [{ "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }]
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "Request Rate Over Time",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+        "targets": [
+          { "expr": "rate(squid_requests_total[1m])", "legendFormat": "Requests/sec", "refId": "A" },
+          { "expr": "rate(squid_errors_total[1m])", "legendFormat": "Errors/sec", "refId": "B" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": { "drawStyle": "line", "fillOpacity": 20, "lineWidth": 2 },
+            "unit": "reqps"
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Cache Performance",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+        "targets": [
+          { "expr": "squid_cache_hits_total", "legendFormat": "Cache Hits", "refId": "A" },
+          { "expr": "squid_cache_misses_total", "legendFormat": "Cache Misses", "refId": "B" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": { "drawStyle": "line", "fillOpacity": 20, "lineWidth": 2 },
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "Bandwidth (Total Bytes)",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+        "targets": [
+          { "expr": "squid_bytes_total", "legendFormat": "{{direction}}", "refId": "A" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": { "drawStyle": "line", "fillOpacity": 20, "lineWidth": 2 },
+            "unit": "decbytes"
+          }
+        }
+      },
+      {
+        "id": 8,
+        "title": "Scrape Duration",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+        "targets": [
+          { "expr": "squid_scrape_duration_seconds", "legendFormat": "Scrape Time", "refId": "A" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": { "drawStyle": "line", "fillOpacity": 20, "lineWidth": 2 },
+            "unit": "s"
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Top 10 Domains by Requests",
+        "type": "table",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
+        "targets": [
+          { "expr": "topk(10, squid_requests_total)", "instant": true, "legendFormat": "{{domain}}", "refId": "A", "format": "table" }
+        ],
+        "fieldConfig": {
+          "overrides": [
+            { "matcher": { "id": "byName", "options": "domain" }, "properties": [{ "id": "displayName", "value": "Domain" }] },
+            { "matcher": { "id": "byName", "options": "Value" }, "properties": [{ "id": "displayName", "value": "Requests" }] }
+          ]
+        },
+        "options": { "sortBy": [{ "displayName": "Value", "desc": true }] }
+      },
+      {
+        "id": 10,
+        "title": "HTTP Status Codes",
+        "type": "piechart",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 20 },
+        "targets": [
+          { "expr": "squid_http_status_total{code=~\"TCP_TUNNEL/200|TCP_MISS/200\"}", "legendFormat": "200 OK", "refId": "A" },
+          { "expr": "squid_http_status_total{code=~\"TCP_TUNNEL/503\"}", "legendFormat": "503 Unavailable", "refId": "B" },
+          { "expr": "squid_http_status_total{code=~\"NONE_NONE/400|NONE/NONE\"}", "legendFormat": "400 Bad Request", "refId": "C" },
+          { "expr": "squid_http_status_total{code=~\"TCP_DENIED.*\"}", "legendFormat": "Denied", "refId": "D" }
+        ]
+      },
+      {
+        "id": 11,
+        "title": "Errors Over Time",
+        "type": "timeseries",
+        "gridPos": { "h": 6, "w": 12, "x": 0, "y": 28 },
+        "targets": [
+          { "expr": "rate(squid_errors_total[5m])", "legendFormat": "Errors/sec", "refId": "A" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": { "drawStyle": "bars", "fillOpacity": 50, "lineWidth": 1 },
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 12,
+        "title": "HTTP Status Breakdown Over Time",
+        "type": "timeseries",
+        "gridPos": { "h": 6, "w": 12, "x": 12, "y": 28 },
+        "targets": [
+          { "expr": "rate(squid_http_status_total{code=~\"TCP_TUNNEL/200|TCP_MISS/200\"}[5m])", "legendFormat": "200 OK/s", "refId": "A" },
+          { "expr": "rate(squid_http_status_total{code=~\"TCP_TUNNEL/503\"}[5m])", "legendFormat": "503/s", "refId": "B" },
+          { "expr": "rate(squid_http_status_total{code=~\"NONE_NONE/400\"}[5m])", "legendFormat": "400/s", "refId": "C" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": { "drawStyle": "line", "fillOpacity": 30, "lineWidth": 2 },
+            "unit": "reqps"
+          }
+        }
+      }
+    ],
+    "schemaVersion": 39
+  },
+  "overwrite": true
+}
