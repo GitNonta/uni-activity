@@ -385,6 +385,66 @@ function SecurityDashboard({ security }) {
   );
 }
 
+function CachePerformance({ cache }) {
+  if (!cache) return null;
+  const c = cache;
+
+  const hitRatioColor = c.hit_ratio >= 70 ? '#10b981' : (c.hit_ratio >= 40 ? '#f59e0b' : '#ef4444');
+  const hitRatioBg = c.hit_ratio >= 70 ? '#f0fdf4' : (c.hit_ratio >= 40 ? '#fefce8' : '#fef2f2');
+  const dnsColor = c.dns_resolution_ms < 50 ? '#10b981' : (c.dns_resolution_ms < 200 ? '#f59e0b' : '#ef4444');
+
+  return (
+    <div style={{
+      background: '#fff', border: '1px solid #e2e8f0', borderRadius: 14,
+      padding: '1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
+    }}>
+      <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <svg width="18" height="18" fill="none" stroke="#f59e0b" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
+        Cache Performance (Squid RAM)
+      </h3>
+
+      {/* Cache KPIs */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
+        {/* Cache Hit Ratio - prominent gauge */}
+        <div style={{ background: hitRatioBg, border: `1px solid ${hitRatioColor}33`, borderRadius: 10, padding: '1rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: hitRatioColor, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cache Hit Ratio</div>
+          <div style={{ fontSize: '2rem', fontWeight: 800, color: hitRatioColor, margin: '0.25rem 0' }}>{c.hit_ratio}%</div>
+          <div style={{ width: '100%', height: 8, background: '#e5e7eb', borderRadius: 999, overflow: 'hidden', marginTop: '0.35rem' }}>
+            <div style={{ width: `${c.hit_ratio}%`, height: '100%', background: hitRatioColor, borderRadius: 999, transition: 'width 0.5s ease' }}></div>
+          </div>
+          <div style={{ fontSize: '0.65rem', color: '#6b7280', marginTop: '0.3rem' }}>{c.total_hits} hits / {c.total_misses} misses</div>
+        </div>
+
+        {/* DNS Resolution */}
+        <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 10, padding: '0.85rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#0369a1', textTransform: 'uppercase' }}>DNS Resolution</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: dnsColor, margin: '0.25rem 0' }}>{c.dns_resolution_ms}ms</div>
+          <div style={{ fontSize: '0.7rem', color: '#0369a1' }}>via {c.dns_server}</div>
+        </div>
+
+        {/* Bandwidth Saved */}
+        <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '0.85rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#15803d', textTransform: 'uppercase' }}>Bandwidth Saved</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#14532d', margin: '0.25rem 0' }}>{c.bandwidth_saved_kb > 1024 ? (c.bandwidth_saved_kb / 1024).toFixed(1) + ' MB' : c.bandwidth_saved_kb + ' KB'}</div>
+          <div style={{ fontSize: '0.7rem', color: '#15803d' }}>from RAM cache</div>
+        </div>
+
+        {/* Cache Objects */}
+        <div style={{ background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 10, padding: '0.85rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#7c3aed', textTransform: 'uppercase' }}>Cache Objects</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#581c87', margin: '0.25rem 0' }}>{c.objects_in_cache || '—'}</div>
+          <div style={{ fontSize: '0.7rem', color: '#7c3aed' }}>in 128 MB RAM</div>
+        </div>
+      </div>
+
+      {/* Cache explanation */}
+      <div style={{ padding: '0.6rem 0.8rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: '0.75rem', color: '#64748b' }}>
+        <strong style={{ color: '#374151' }}>How it works:</strong> Squid stores frequently accessed files in RAM (128 MB). When a client requests the same file again, Squid serves it from memory instead of downloading from the internet. Higher hit ratio = less bandwidth used = faster responses.
+      </div>
+    </div>
+  );
+}
+
 function TopologyDiagram({ proxy }) {
   return (
     <div style={{
@@ -552,6 +612,9 @@ export function ProxyCard({ proxy }) {
 
       {/* Security Dashboard */}
       <SecurityDashboard security={proxy.security} />
+
+      {/* Cache Performance */}
+      <CachePerformance cache={proxy.cache_perf} />
 
       {/* Worker Grid */}
       <WorkerGrid workers={proxy.workers} />

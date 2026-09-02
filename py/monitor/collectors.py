@@ -1486,6 +1486,102 @@ def get_proxy_status():
 
     result['security'] = security
 
+    # ═══ Cache Performance Metrics (Squid only) ═══
+    cache_perf = {
+        'hit_ratio': 0.0,
+        'total_hits': 0,
+        'total_misses': 0,
+        'total_requests': 0,
+        'bandwidth_saved_kb': 0,
+        'dns_resolution_ms': 0.0,
+        'dns_server': '1.1.1.1',
+        'cache_size_mb': 0,
+        'objects_in_cache': 0,
+    }
+
+    # Parse Squid access log for cache stats
+    try:
+        access_log = os.path.expanduser('~/uni-activity/storage/logs/squid-access.log')
+        if os.path.exists(access_log):
+            hits = 0
+            misses = 0
+            hit_bytes = 0
+
+            with open(access_log, 'rb') as f:
+                f.seek(0, 2)
+                file_size = f.tell()
+                read_size = min(200000, file_size)
+                f.seek(max(0, file_size - read_size))
+                data = f.read().decode('utf-8', errors='ignore')
+
+            lines = data.strip().split('\n')[-500:]
+            for line in lines:
+                try:
+                    parts = line.split()
+                    if len(parts) < 5:
+                        continue
+
+                    status = parts[3]
+                    if 'TCP_HIT' in status:
+                        hits += 1
+                        try:
+                            hit_bytes += int(parts[4])
+                        except:
+                            pass
+                    elif 'TCP_MISS' in status:
+                        misses += 1
+                except:
+                    continue
+
+            total = hits + misses
+            cache_perf['total_hits'] = hits
+            cache_perf['total_misses'] = misses
+            cache_perf['total_requests'] = total
+            cache_perf['hit_ratio'] = round(hits / total * 100, 1) if total > 0 else 0
+            cache_perf['bandwidth_saved_kb'] = round(hit_bytes / 1024, 1)
+    except:
+        pass
+
+    # DNS Resolution Time (test Cloudflare 1.1.1.1)
+    try:
+        import socket
+        dns_servers = ['1.1.1.1', '1.0.0.1']
+        dns_times = []
+        for dns in dns_servers:
+            try:
+                start = time.time()
+                socket.setdefaulttimeout(3)
+                result_dns = socket.getaddrinfo('github.com', 443, socket.AF_INET, socket.SOCK_STREAM)
+                elapsed = (time.time() - start) * 1000  # ms
+                dns_times.append(elapsed)
+            except:
+                pass
+        if dns_times:
+            cache_perf['dns_resolution_ms'] = round(sum(dns_times) / len(dns_times), 1)
+    except:
+        pass
+
+    # Squid cache manager stats
+    try:
+        mgr_output = _run_cmd("echo 'stats' | nc -w 2 127.0.0.1 3128 2>/dev/null | head -30")
+        if mgr_output:
+            for line in mgr_output.split('\n'):
+                if 'Memory usage' in line:
+                    try:
+                        mb = float(line.split(':')[1].strip().split()[0])
+                        cache_perf['cache_size_mb'] = mb
+                    except:
+                        pass
+                elif 'objects' in line.lower() and 'size' in line.lower():
+                    try:
+                        cache_perf['objects_in_cache'] = int(line.split()[0])
+                    except:
+                        pass
+    except:
+        pass
+
+    result['cache_perf'] = cache_perf
+
     cfg._proxy_cache = {'t': now, 'data': result}
     return result
 
