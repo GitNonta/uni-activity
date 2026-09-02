@@ -1,0 +1,305 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "pg-pgbouncer",
+    "title": "PostgreSQL & PgBouncer Monitor",
+    "tags": ["postgresql", "pgbouncer", "database"],
+    "timezone": "browser",
+    "refresh": "10s",
+    "time": { "from": "now-1h", "to": "now" },
+    "panels": [
+      {
+        "id": 1,
+        "title": "PgBouncer Up",
+        "type": "stat",
+        "gridPos": { "h": 3, "w": 4, "x": 0, "y": 0 },
+        "targets": [
+          { "expr": "pgbouncer_up", "legendFormat": "Status", "refId": "A" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": { "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] },
+            "mappings": [{ "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }]
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "PostgreSQL Up",
+        "type": "stat",
+        "gridPos": { "h": 3, "w": 4, "x": 4, "y": 0 },
+        "targets": [
+          { "expr": "pg_up", "legendFormat": "Status", "refId": "A" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": { "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] },
+            "mappings": [{ "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }]
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Client Connections",
+        "type": "stat",
+        "gridPos": { "h": 3, "w": 4, "x": 8, "y": 0 },
+        "targets": [
+          { "expr": "pgbouncer_client_connections_used", "legendFormat": "Active", "refId": "A" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 100 }, { "color": "red", "value": 180 }] },
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Server Connections",
+        "type": "stat",
+        "gridPos": { "h": 3, "w": 4, "x": 12, "y": 0 },
+        "targets": [
+          { "expr": "pgbouncer_server_connections_used", "legendFormat": "Active", "refId": "A" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 20 }, { "color": "red", "value": 28 }] },
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "Database Size",
+        "type": "stat",
+        "gridPos": { "h": 3, "w": 4, "x": 16, "y": 0 },
+        "targets": [
+          { "expr": "pg_database_size_bytes", "legendFormat": "Size", "refId": "A" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "decbytes",
+            "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 1073741824 }, { "color": "red", "value": 10737418240 }] }
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Waiting Clients",
+        "type": "stat",
+        "gridPos": { "h": 3, "w": 4, "x": 20, "y": 0 },
+        "targets": [
+          { "expr": "sum(pgbouncer_client_waiting{database!=\"pgbouncer\"})", "legendFormat": "Waiting", "refId": "A" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 1 }, { "color": "red", "value": 5 }] },
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 10,
+        "title": "Connection Pool Utilization",
+        "type": "gauge",
+        "gridPos": { "h": 6, "w": 8, "x": 0, "y": 3 },
+        "targets": [
+          { "expr": "pgbouncer_client_utilization_percent", "legendFormat": "Client %", "refId": "A" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0, "max": 100,
+            "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 50 }, { "color": "red", "value": 80 }] },
+            "unit": "percent"
+          }
+        }
+      },
+      {
+        "id": 11,
+        "title": "Client Connections (Active vs Waiting)",
+        "type": "bargauge",
+        "gridPos": { "h": 6, "w": 8, "x": 8, "y": 3 },
+        "targets": [
+          { "expr": "sum(pgbouncer_client_active{database!=\"pgbouncer\"})", "legendFormat": "Active", "refId": "A" },
+          { "expr": "sum(pgbouncer_client_waiting{database!=\"pgbouncer\"})", "legendFormat": "Waiting", "refId": "B" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 50 }, { "color": "red", "value": 150 }] }
+          }
+        },
+        "options": { "orientation": "horizontal", "displayMode": "gradient" }
+      },
+      {
+        "id": 12,
+        "title": "Server Connections (Active vs Idle vs Used)",
+        "type": "bargauge",
+        "gridPos": { "h": 6, "w": 8, "x": 16, "y": 3 },
+        "targets": [
+          { "expr": "sum(pgbouncer_server_active{database!=\"pgbouncer\"})", "legendFormat": "Active", "refId": "A" },
+          { "expr": "sum(pgbouncer_server_idle{database!=\"pgbouncer\"})", "legendFormat": "Idle", "refId": "B" },
+          { "expr": "sum(pgbouncer_server_used{database!=\"pgbouncer\"})", "legendFormat": "Used", "refId": "C" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 20 }, { "color": "red", "value": 28 }] }
+          }
+        },
+        "options": { "orientation": "horizontal", "displayMode": "gradient" }
+      },
+      {
+        "id": 20,
+        "title": "Transaction Count Over Time",
+        "type": "timeseries",
+        "gridPos": { "h": 7, "w": 12, "x": 0, "y": 9 },
+        "targets": [
+          { "expr": "rate(pgbouncer_total_transactions{database!=\"pgbouncer\"}[1m])", "legendFormat": "{{database}} txn/s", "refId": "A" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": { "drawStyle": "line", "fillOpacity": 20, "lineWidth": 2 },
+            "unit": "cps"
+          }
+        }
+      },
+      {
+        "id": 21,
+        "title": "Query Count Over Time",
+        "type": "timeseries",
+        "gridPos": { "h": 7, "w": 12, "x": 12, "y": 9 },
+        "targets": [
+          { "expr": "rate(pgbouncer_total_queries{database!=\"pgbouncer\"}[1m])", "legendFormat": "{{database}} q/s", "refId": "A" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": { "drawStyle": "line", "fillOpacity": 20, "lineWidth": 2 },
+            "unit": "qps"
+          }
+        }
+      },
+      {
+        "id": 30,
+        "title": "Avg Transaction Time",
+        "type": "timeseries",
+        "gridPos": { "h": 7, "w": 12, "x": 0, "y": 16 },
+        "targets": [
+          { "expr": "pgbouncer_avg_xact_time_ms{database!=\"pgbouncer\"}", "legendFormat": "{{database}}", "refId": "A" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": { "drawStyle": "line", "fillOpacity": 20, "lineWidth": 2 },
+            "unit": "ms"
+          }
+        }
+      },
+      {
+        "id": 31,
+        "title": "Avg Query Time",
+        "type": "timeseries",
+        "gridPos": { "h": 7, "w": 12, "x": 12, "y": 16 },
+        "targets": [
+          { "expr": "pgbouncer_avg_query_time_ms{database!=\"pgbouncer\"}", "legendFormat": "{{database}}", "refId": "A" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": { "drawStyle": "line", "fillOpacity": 20, "lineWidth": 2 },
+            "unit": "ms"
+          }
+        }
+      },
+      {
+        "id": 40,
+        "title": "Bandwidth (Bytes In/Out)",
+        "type": "timeseries",
+        "gridPos": { "h": 7, "w": 12, "x": 0, "y": 23 },
+        "targets": [
+          { "expr": "rate(pgbouncer_bytes_received{database!=\"pgbouncer\"}[1m])", "legendFormat": "Received {{database}}", "refId": "A" },
+          { "expr": "rate(pgbouncer_bytes_sent{database!=\"pgbouncer\"}[1m])", "legendFormat": "Sent {{database}}", "refId": "B" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": { "drawStyle": "line", "fillOpacity": 20, "lineWidth": 2 },
+            "unit": "Bps"
+          }
+        }
+      },
+      {
+        "id": 41,
+        "title": "Connections by State",
+        "type": "piechart",
+        "gridPos": { "h": 7, "w": 12, "x": 12, "y": 23 },
+        "targets": [
+          { "expr": "pg_connections_by_state{state!=\"\"}", "legendFormat": "{{state}}", "refId": "A" }
+        ]
+      },
+      {
+        "id": 50,
+        "title": "Top Tables by Row Count",
+        "type": "table",
+        "gridPos": { "h": 7, "w": 12, "x": 0, "y": 30 },
+        "targets": [
+          { "expr": "pg_table_rows", "instant": true, "legendFormat": "{{table}}", "refId": "A", "format": "table" }
+        ],
+        "fieldConfig": {
+          "overrides": [
+            { "matcher": { "id": "byName", "options": "table" }, "properties": [{ "id": "displayName", "value": "Table" }] },
+            { "matcher": { "id": "byName", "options": "Value" }, "properties": [{ "id": "displayName", "value": "Rows" }] }
+          ]
+        },
+        "options": { "sortBy": [{ "displayName": "Value", "desc": true }] }
+      },
+      {
+        "id": 51,
+        "title": "PgBouncer Global Stats",
+        "type": "table",
+        "gridPos": { "h": 7, "w": 12, "x": 12, "y": 30 },
+        "targets": [
+          { "expr": "pgbouncer_databases", "legendFormat": "Databases", "refId": "A", "instant": true },
+          { "expr": "pgbouncer_users", "legendFormat": "Users", "refId": "B", "instant": true },
+          { "expr": "pgbouncer_pools", "legendFormat": "Pools", "refId": "C", "instant": true },
+          { "expr": "pgbouncer_used_clients", "legendFormat": "Used Clients", "refId": "D", "instant": true },
+          { "expr": "pgbouncer_free_clients", "legendFormat": "Free Clients", "refId": "E", "instant": true },
+          { "expr": "pgbouncer_used_servers", "legendFormat": "Used Servers", "refId": "F", "instant": true },
+          { "expr": "pgbouncer_free_servers", "legendFormat": "Free Servers", "refId": "G", "instant": true },
+          { "expr": "pgbouncer_login_clients", "legendFormat": "Login Clients", "refId": "H", "instant": true }
+        ],
+        "options": { "sortBy": [{ "displayName": "Value", "desc": true }] }
+      },
+      {
+        "id": 60,
+        "title": "Max Wait Time (Queue Delay)",
+        "type": "timeseries",
+        "gridPos": { "h": 6, "w": 12, "x": 0, "y": 37 },
+        "targets": [
+          { "expr": "pgbouncer_max_wait_seconds{database!=\"pgbouncer\"}", "legendFormat": "{{database}}", "refId": "A" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": { "drawStyle": "bars", "fillOpacity": 50 },
+            "unit": "s",
+            "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 5 }, { "color": "red", "value": 15 }] }
+          }
+        }
+      },
+      {
+        "id": 61,
+        "title": "Server Connections Over Time",
+        "type": "timeseries",
+        "gridPos": { "h": 6, "w": 12, "x": 12, "y": 37 },
+        "targets": [
+          { "expr": "pgbouncer_server_active{database!=\"pgbouncer\"}", "legendFormat": "Active", "refId": "A" },
+          { "expr": "pgbouncer_server_idle{database!=\"pgbouncer\"}", "legendFormat": "Idle", "refId": "B" },
+          { "expr": "pgbouncer_server_used{database!=\"pgbouncer\"}", "legendFormat": "Used", "refId": "C" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": { "drawStyle": "line", "fillOpacity": 30, "lineWidth": 2 },
+            "unit": "short"
+          }
+        }
+      }
+    ],
+    "schemaVersion": 39
+  },
+  "overwrite": true
+}
