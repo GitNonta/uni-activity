@@ -11,6 +11,7 @@ use App\Models\Registration;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -510,16 +511,14 @@ class LineService
         ];
     }
 
-    /** ดึงข้อมูล Profile ผู้ใช้จาก LINE ด้วย Access Token */
     /** ดึงข้อมูล Profile ผู้ใช้จาก LINE ด้วย Access Token (cached 5 min) */
-    /** ดึงข้อมูล Profile ผู้ใช้จาก LINE ด้วย Access Token (flexible cache) */
     public function getLineProfile(string $accessToken): ?array
     {
         try {
             // Cache::flexible: serves stale data while 1 worker refreshes in background
-            return Cache::flexible(
+            return Cache::remember(
                 'api:line:profile:' . md5($accessToken),
-                [240, 300],
+                300,
                 function () use ($accessToken) {
                     $response = Http::withOptions(['proxy' => env('FORWARD_PROXY')])
                         ->withToken($accessToken)
