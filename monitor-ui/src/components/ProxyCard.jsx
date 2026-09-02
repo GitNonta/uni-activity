@@ -282,6 +282,109 @@ function ConnectionDashboard({ connections }) {
   );
 }
 
+function SecurityDashboard({ security }) {
+  if (!security) return null;
+  const s = security;
+  const totalRequests = s.blocked_requests + s.allowed_requests;
+  const blockRate = totalRequests > 0 ? ((s.blocked_requests / totalRequests) * 100).toFixed(1) : 0;
+
+  return (
+    <div style={{
+      background: '#fff', border: '1px solid #e2e8f0', borderRadius: 14,
+      padding: '1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
+    }}>
+      <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <svg width="18" height="18" fill="none" stroke="#ef4444" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+        Security & Access Control (Zero Trust)
+      </h3>
+
+      {/* Security KPIs */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
+        <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: '0.85rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#b91c1c', textTransform: 'uppercase' }}>Blocked</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#991b1b', margin: '0.25rem 0' }}>{s.blocked_requests}</div>
+          <div style={{ fontSize: '0.7rem', color: '#b91c1c' }}>HTTP 403 / DENIED</div>
+        </div>
+
+        <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '0.85rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#15803d', textTransform: 'uppercase' }}>Allowed</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#14532d', margin: '0.25rem 0' }}>{s.allowed_requests}</div>
+          <div style={{ fontSize: '0.7rem', color: '#15803d' }}>TCP_TUNNEL / MISS / HIT</div>
+        </div>
+
+        <div style={{ background: '#fefce8', border: '1px solid #fde68a', borderRadius: 10, padding: '0.85rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#a16207', textTransform: 'uppercase' }}>Block Rate</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#713f12', margin: '0.25rem 0' }}>{blockRate}%</div>
+          <div style={{ fontSize: '0.7rem', color: '#a16207' }}>of total requests</div>
+        </div>
+
+        <div style={{ background: s.auth_failures > 0 ? '#fef2f2' : '#f0fdf4', border: `1px solid ${s.auth_failures > 0 ? '#fecaca' : '#bbf7d0'}`, borderRadius: 10, padding: '0.85rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: s.auth_failures > 0 ? '#b91c1c' : '#15803d', textTransform: 'uppercase' }}>Auth Failures</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: s.auth_failures > 0 ? '#991b1b' : '#14532d', margin: '0.25rem 0' }}>{s.auth_failures}</div>
+          <div style={{ fontSize: '0.7rem', color: s.auth_failures > 0 ? '#b91c1c' : '#15803d' }}>{s.auth_failures > 0 ? 'Failed auth' : 'All OK'}</div>
+        </div>
+      </div>
+
+      {/* Blocked & Allowed domains side by side */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+        {/* Top Blocked Domains */}
+        <div>
+          <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', fontWeight: 700, color: '#b91c1c', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+            Top Blocked Domains
+          </h4>
+          {s.blocked_domains && s.blocked_domains.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+              {s.blocked_domains.map((d, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.35rem 0.5rem', background: '#fef2f2', borderRadius: 6, border: '1px solid #fecaca' }}>
+                  <span style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: '#991b1b' }}>{d.domain}</span>
+                  <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#b91c1c', background: '#fee2e2', padding: '0.1rem 0.35rem', borderRadius: 4 }}>{d.count}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ fontSize: '0.8rem', color: '#15803d', padding: '0.5rem', background: '#f0fdf4', borderRadius: 6, textAlign: 'center' }}>✅ No blocked requests</div>
+          )}
+        </div>
+
+        {/* Top Allowed Domains */}
+        <div>
+          <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', fontWeight: 700, color: '#15803d', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            Top Allowed Domains
+          </h4>
+          {s.allowed_domains && s.allowed_domains.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+              {s.allowed_domains.map((d, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.35rem 0.5rem', background: '#f0fdf4', borderRadius: 6, border: '1px solid #bbf7d0' }}>
+                  <span style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: '#14532d' }}>{d.domain}</span>
+                  <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#15803d', background: '#dcfce7', padding: '0.1rem 0.35rem', borderRadius: 4 }}>{d.count}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ fontSize: '0.8rem', color: '#6b7280', padding: '0.5rem', background: '#f8fafc', borderRadius: 6, textAlign: 'center' }}>No data yet</div>
+          )}
+        </div>
+      </div>
+
+      {/* Blocked Ports */}
+      {s.blocked_ports && s.blocked_ports.length > 0 && (
+        <div style={{ marginTop: '1rem', padding: '0.75rem', background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 8 }}>
+          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#c2410c', marginBottom: '0.4rem' }}>🚫 Blocked Ports (Egress Security)</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
+            {s.blocked_ports.map(port => (
+              <span key={port} style={{ fontSize: '0.65rem', fontFamily: 'monospace', background: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca', padding: '0.1rem 0.3rem', borderRadius: 3 }}>
+                :{port}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function TopologyDiagram({ proxy }) {
   return (
     <div style={{
@@ -446,6 +549,9 @@ export function ProxyCard({ proxy }) {
 
       {/* Connection Dashboard */}
       <ConnectionDashboard connections={proxy.connections} />
+
+      {/* Security Dashboard */}
+      <SecurityDashboard security={proxy.security} />
 
       {/* Worker Grid */}
       <WorkerGrid workers={proxy.workers} />

@@ -1428,6 +1428,64 @@ def get_proxy_status():
 
     result['connections'] = connections
 
+    # ═══ Security & Access Control Metrics ═══
+    security = {
+        'blocked_requests': 0,
+        'allowed_requests': 0,
+        'blocked_domains': [],
+        'allowed_domains': [],
+        'blocked_ports': [7, 9, 19, 22, 23, 25, 110, 111, 135, 139, 445, 512, 513, 514, 515],
+        'auth_failures': 0,
+    }
+
+    # Parse Squid access log for security stats
+    try:
+        access_log = os.path.expanduser('~/uni-activity/storage/logs/squid-access.log')
+        if os.path.exists(access_log):
+            blocked_domains = {}
+            allowed_domains = {}
+
+            with open(access_log, 'rb') as f:
+                f.seek(0, 2)
+                file_size = f.tell()
+                read_size = min(200000, file_size)
+                f.seek(max(0, file_size - read_size))
+                data = f.read().decode('utf-8', errors='ignore')
+
+            lines = data.strip().split('\n')[-500:]
+            for line in lines:
+                try:
+                    parts = line.split()
+                    if len(parts) < 7:
+                        continue
+
+                    status = parts[3]
+                    domain = parts[6].split(':')[0]
+
+                    if 'DENIED' in status:
+                        security['blocked_requests'] += 1
+                        blocked_domains[domain] = blocked_domains.get(domain, 0) + 1
+                    elif 'TCP_TUNNEL' in status or 'TCP_MISS' in status or 'TCP_HIT' in status:
+                        security['allowed_requests'] += 1
+                        allowed_domains[domain] = allowed_domains.get(domain, 0) + 1
+
+                    if 'NONE/000' in status:
+                        security['auth_failures'] += 1
+
+                except:
+                    continue
+
+            # Sort and format
+            sorted_blocked = sorted(blocked_domains.items(), key=lambda x: x[1], reverse=True)
+            security['blocked_domains'] = [{'domain': d, 'count': c} for d, c in sorted_blocked[:10]]
+
+            sorted_allowed = sorted(allowed_domains.items(), key=lambda x: x[1], reverse=True)
+            security['allowed_domains'] = [{'domain': d, 'count': c} for d, c in sorted_allowed[:15]]
+    except:
+        pass
+
+    result['security'] = security
+
     cfg._proxy_cache = {'t': now, 'data': result}
     return result
 
