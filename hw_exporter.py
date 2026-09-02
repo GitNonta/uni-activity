@@ -195,6 +195,25 @@ def collect_metrics():
     lines.append(f'hw_cpu_usage_percent {get_cpu_percent()}')
     lines.append(f'hw_cpu_cores {get_cpu_cores()}')
 
+    # ── CPU Frequency per core ──
+    max_freq = 0
+    for i in range(16):
+        freq = read_file(f'/sys/devices/system/cpu/cpu{i}/cpufreq/scaling_cur_freq')
+        if freq:
+            try:
+                freq_khz = int(freq)
+                lines.append(f'hw_cpu_frequency_hz{{core="{i}"}} {freq_khz * 1000}')
+                if freq_khz > max_freq:
+                    max_freq = freq_khz
+            except:
+                pass
+    if max_freq > 0:
+        lines.append(f'hw_cpu_max_frequency_hz {max_freq * 1000}')
+
+    gov = read_file('/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor')
+    if gov:
+        lines.append(f'hw_cpu_governor{{governor="{gov}"}} 1')
+
     # ── Load Average ──
     l1, l5, l15 = get_load_avg()
     lines.append(f'hw_load_avg_1m {l1}')

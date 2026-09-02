@@ -72,6 +72,24 @@
         }}
       },
       {
+        "id": 8, "title": "CPU Core Frequencies", "type": "timeseries",
+        "gridPos": { "h": 4, "w": 12, "x": 0, "y": 3 },
+        "targets": [
+          { "expr": "hw_cpu_frequency_hz{core=\"0\"}", "legendFormat": "Core 0", "refId": "A" },
+          { "expr": "hw_cpu_frequency_hz{core=\"1\"}", "legendFormat": "Core 1", "refId": "B" },
+          { "expr": "hw_cpu_frequency_hz{core=\"2\"}", "legendFormat": "Core 2", "refId": "C" },
+          { "expr": "hw_cpu_frequency_hz{core=\"3\"}", "legendFormat": "Core 3", "refId": "D" },
+          { "expr": "hw_cpu_frequency_hz{core=\"4\"}", "legendFormat": "Core 4", "refId": "E" },
+          { "expr": "hw_cpu_frequency_hz{core=\"5\"}", "legendFormat": "Core 5", "refId": "F" },
+          { "expr": "hw_cpu_frequency_hz{core=\"6\"}", "legendFormat": "Core 6", "refId": "G" },
+          { "expr": "hw_cpu_frequency_hz{core=\"7\"}", "legendFormat": "Core 7", "refId": "H" }
+        ],
+        "fieldConfig": { "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1 },
+          "unit": "hertz"
+        }}
+      },
+      {
         "id": 10, "title": "CPU Usage Over Time", "type": "timeseries",
         "gridPos": { "h": 7, "w": 12, "x": 0, "y": 3 },
         "targets": [{ "expr": "hw_cpu_usage_percent", "legendFormat": "CPU %", "refId": "A" }],
