@@ -9,8 +9,8 @@
     <link rel="icon" type="image/svg+xml" href="{{ asset('logo.svg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ time() }}">
+    <link href="https://fonts.googleapis.com/css2?display=swap&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ md5_file(public_path("css/app.css")) }}">
     @vite(['resources/js/app.js'])
 </head>
 <body>
