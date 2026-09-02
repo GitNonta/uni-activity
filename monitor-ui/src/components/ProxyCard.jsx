@@ -200,7 +200,7 @@ function EgressSecurity({ blockedPorts }) {
         ))}
       </div>
       <div style={{ marginTop: '0.75rem', padding: '0.5rem 0.75rem', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, fontSize: '0.75rem', color: '#15803d' }}>
-        <strong>✅ LAN clients</strong> can access all HTTP/HTTPS sites — only dangerous ports are blocked.
+        <strong>LAN clients</strong> can access all HTTP/HTTPS sites — only dangerous ports are blocked.
       </div>
     </div>
   );
@@ -254,13 +254,13 @@ function ConnectionDashboard({ connections }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
             {c.top_clients.map((cl, i) => {
               const deviceNames = {
-                '192.168.1.44': '📱 iPad',
-                '192.168.1.57': '💻 Computer',
-                '192.168.1.140': '📱 Phone 2',
-                '127.0.0.1': '🖥️ Phone 1 (local)',
-                '192.168.1.222': '🖥️ Phone 1',
+                '192.168.1.44': 'iPad',
+                '192.168.1.57': 'Computer',
+                '192.168.1.140': 'Phone 2',
+                '127.0.0.1': 'Phone 1 (local)',
+                '192.168.1.222': 'Phone 1',
               };
-              const device = deviceNames[cl.ip] || '📡 Device';
+              const device = deviceNames[cl.ip] || 'Device';
               return (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0.6rem', background: '#f8fafc', borderRadius: 6, border: '1px solid #f1f5f9' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -343,7 +343,7 @@ function SecurityDashboard({ security }) {
               ))}
             </div>
           ) : (
-            <div style={{ fontSize: '0.8rem', color: '#15803d', padding: '0.5rem', background: '#f0fdf4', borderRadius: 6, textAlign: 'center' }}>✅ No blocked requests</div>
+            <div style={{ fontSize: '0.8rem', color: '#15803d', padding: '0.5rem', background: '#f0fdf4', borderRadius: 6, textAlign: 'center' }}>No blocked requests</div>
           )}
         </div>
 
@@ -371,7 +371,7 @@ function SecurityDashboard({ security }) {
       {/* Blocked Ports */}
       {s.blocked_ports && s.blocked_ports.length > 0 && (
         <div style={{ marginTop: '1rem', padding: '0.75rem', background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 8 }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#c2410c', marginBottom: '0.4rem' }}>🚫 Blocked Ports (Egress Security)</div>
+          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#c2410c', marginBottom: '0.4rem' }}>Blocked Ports (Egress Security)</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
             {s.blocked_ports.map(port => (
               <span key={port} style={{ fontSize: '0.65rem', fontFamily: 'monospace', background: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca', padding: '0.1rem 0.3rem', borderRadius: 3 }}>
@@ -461,7 +461,7 @@ function TopologyDiagram({ proxy }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', overflowX: 'auto', padding: '0.5rem 0' }}>
         {/* iPad / Devices */}
         <div style={{ flex: 1, minWidth: 100, background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 12, padding: '0.75rem', textAlign: 'center' }}>
-          <div style={{ fontSize: '1.5rem' }}>📱</div>
+          <div style={{ fontSize: '1.5rem' }}><svg width="24" height="24" fill="none" stroke="#7c3aed" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg></div>
           <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#7c3aed' }}>iPad / PC</div>
           <div style={{ fontSize: '0.65rem', color: '#94a3b8' }}>LAN Devices</div>
         </div>
@@ -487,7 +487,7 @@ function TopologyDiagram({ proxy }) {
 
         {/* Cloudflare */}
         <div style={{ flex: 1, minWidth: 100, background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 12, padding: '0.75rem', textAlign: 'center' }}>
-          <div style={{ fontSize: '1.5rem' }}>☁️</div>
+          <div style={{ fontSize: '1.5rem' }}><svg width="24" height="24" fill="none" stroke="#f97316" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg></div>
           <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#c2410c' }}>Cloudflare</div>
           <div style={{ fontSize: '0.65rem', color: '#94a3b8' }}>HTTPS Tunnel</div>
         </div>
@@ -498,16 +498,16 @@ function TopologyDiagram({ proxy }) {
 
         {/* Internet */}
         <div style={{ flex: 1, minWidth: 100, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 12, padding: '0.75rem', textAlign: 'center' }}>
-          <div style={{ fontSize: '1.5rem' }}>🌐</div>
+          <div style={{ fontSize: '1.5rem' }}><svg width="24" height="24" fill="none" stroke="#2563eb" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg></div>
           <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#0369a1' }}>Internet</div>
           <div style={{ fontSize: '0.65rem', color: '#94a3b8' }}>{proxy?.public_ip || 'N/A'}</div>
         </div>
       </div>
 
       <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'center', gap: '1rem', fontSize: '0.7rem', color: '#64748b' }}>
-        <span>🔒 Squid: Whitelist + Cache</span>
-        <span>⚡ SOCKS5: Direct Tunnel</span>
-        <span>⚖️ Nginx: Load Balance</span>
+        <span>Squid: Whitelist + Cache</span>
+        <span>SOCKS5: Direct Tunnel</span>
+        <span>Nginx: Load Balance</span>
       </div>
     </div>
   );
@@ -604,14 +604,14 @@ function HardwareHealth({ hw }) {
           <div style={{ width: `${Math.min(100, h.open_files_pct)}%`, height: '100%', background: fdColor, borderRadius: 999 }}></div>
         </div>
         <div style={{ fontSize: '0.7rem', color: '#6b7280' }}>
-          {h.open_files_current} / {h.open_files_limit} open files — {h.open_files_pct > 80 ? '⚠️ Running low!' : '✅ Healthy'}
+          {h.open_files_current} / {h.open_files_limit} open files — {h.open_files_pct > 80 ? 'Running low!' : 'Healthy'}
         </div>
       </div>
 
       {/* Squid Manager Info */}
       {h.squid_mgr_info && Object.keys(h.squid_mgr_info).length > 0 && (
         <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 10, padding: '0.85rem' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#c2410c', marginBottom: '0.4rem' }}>📊 Squid Manager Info</div>
+          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#c2410c', marginBottom: '0.4rem' }}>Squid Manager Info</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.3rem', fontSize: '0.7rem' }}>
             {Object.entries(h.squid_mgr_info).slice(0, 8).map(([k, v]) => (
               <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.2rem 0.4rem', background: '#fff', borderRadius: 4 }}>
