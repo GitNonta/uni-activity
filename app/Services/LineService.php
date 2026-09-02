@@ -515,7 +515,7 @@ class LineService
     public function getLineProfile(string $accessToken): ?array
     {
         try {
-            // Cache::flexible: serves stale data while 1 worker refreshes in background
+            // Cache LINE profile for 5 min to reduce API calls
             return Cache::remember(
                 'api:line:profile:' . md5($accessToken),
                 300,
