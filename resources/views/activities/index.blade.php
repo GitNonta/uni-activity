@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', 'รายการกิจกรรม')
+@section('description', 'ค้นหาและลงทะเบียนเข้าร่วมกิจกรรมของมหาวิทยาลัย - ดูกิจกรรมที่กำลังเปิดรับสมัครและที่จัดขึ้นแล้ว')
 
 @section('content')
 <div class="flex items-center gap-3 mb-4">

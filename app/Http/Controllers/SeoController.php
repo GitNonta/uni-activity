@@ -13,7 +13,7 @@ class SeoController extends Controller
 {
     public function robots(): Response
     {
-        $robots = "User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /chat\nDisallow: /check-in\nDisallow: /api\nDisallow: /export\n\nSitemap: " . config('app.url', 'https://uni-activity.example.com') . "/sitemap.xml\n";
+        $robots = "User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /admin/\nDisallow: /chat\nDisallow: /check-in\nDisallow: /api/\nDisallow: /export/\nDisallow: /.env\nDisallow: /storage/\nDisallow: /config/\n\nSitemap: https://forgotten-camera-placed-twist.trycloudflare.com/sitemap.xml\n";
 
         return response($robots, 200)
             ->header('Content-Type', 'text/plain');
@@ -21,7 +21,7 @@ class SeoController extends Controller
 
     public function sitemap(): Response
     {
-        $baseUrl = config('app.url', 'https://uni-activity.example.com');
+        $baseUrl = 'https://forgotten-camera-placed-twist.trycloudflare.com';
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
 
@@ -76,7 +76,7 @@ class SeoController extends Controller
             $xml .= '  </url>' . "\n";
         }
 
-        // Announcement pages (column is 'is_active', not 'is_published')
+        // Announcement pages
         $announcements = Announcement::where('is_active', true)
             ->select('id', 'updated_at')
             ->orderByDesc('updated_at')

@@ -6,7 +6,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#2563eb">
-    <title>@yield('title', 'UNI Activity - ระบบศูนย์รวมกิจกรรม')</title>
+    {{-- SEO: Title --}}
+    <title>@yield('title', 'UNI Activity') | UNI Activity</title>
+    {{-- SEO: Description --}}
+    <meta name="description" content="@yield('description', 'ระบบศูนย์รวมกิจกรรมมหาวิทยาลัย - ค้นหา ลงทะเบียน และติดตามกิจกรรมของคุณ')">
+    <meta name="author" content="@yield('author', 'UNI Activity')">
+    @yield('head')
+    {{-- Canonical URL --}}
+    @if(request()->isMethod('GET'))
+    <link rel="canonical" href="{{ request()->url() }}">
+    @endif
+    {{-- Open Graph / Facebook --}}
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request()->url() }}">
+    <meta property="og:title" content="@yield('title', 'UNI Activity') | UNI Activity">
+    <meta property="og:description" content="@yield('description', 'ระบบศูนย์รวมกิจกรรมมหาวิทยาลัย - ค้นหา ลงทะเบียน และติดตามกิจกรรมของคุณ')">
+    <meta property="og:image" content="{{ asset('logo.svg') }}">
+    <meta property="og:site_name" content="UNI Activity">
+    <meta property="og:locale" content="th_TH">
+    {{-- Twitter --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('title', 'UNI Activity') | UNI Activity">
+    <meta name="twitter:description" content="@yield('description', 'ระบบศูนย์รวมกิจกรรมมหาวิทยาลัย - ค้นหา ลงทะเบียน และติดตามกิจกรรมของคุณ')">
+    <meta name="twitter:image" content="{{ asset('logo.svg') }}">
     <link rel="icon" type="image/svg+xml" href="{{ asset('logo.svg') }}">
     {{-- Preconnect to Google Fonts (resolve DNS early) --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,7 +41,7 @@
     <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ md5_file(public_path('css/app.css')) }}">
     {{-- JS loaded async (non-render-blocking) --}}
     @vite(['resources/js/app.js'])
-    @yield('head')
+    @stack('head')
 </head>
 <body>
     {{-- Top Navbar --}}
