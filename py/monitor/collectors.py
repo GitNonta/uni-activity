@@ -1248,5 +1248,119 @@ def get_proxy_status():
     # Egress security: blocked ports
     result['nginx_lb']['blocked_ports'] = [7, 9, 19, 22, 23, 25, 110, 111, 135, 139, 445, 512, 513, 514, 515]
 
+    # ═══ Traffic & Throughput Metrics ═══
+    traffic = {
+        'bandwidth_rx': 0.0,
+        'bandwidth_tx': 0.0,
+        'rps': 0,
+        'total_requests': 0,
+        'total_bytes': 0,
+        'total_bytes_human': '0 KB',
+        'avg_response_time': 0.0,
+        'cache_hit_ratio': 0.0,
+        'top_domains': [],
+        'recent_errors': 0,
+    }
+
+    # Bandwidth from network interface
+    try:
+        net_dev = '/proc/net/dev'
+        if os.path.exists(net_dev):
+            with open(net_dev, 'r') as f:
+                lines = f.readlines()[2:]  # skip headers
+            total_rx = 0
+            total_tx = 0
+            for line in lines:
+                parts = line.split()
+                if len(parts) >= 10:
+                    iface = parts[0].rstrip(':')
+                    if iface in ('wlan0', 'eth0', 'rmnet_data0'):
+                        total_rx += int(parts[1])
+                        total_tx += int(parts[9])
+            traffic['total_bytes'] = total_rx + total_tx
+            traffic['total_bytes_human'] = _human_bytes(total_rx + total_tx)
+    except:
+        pass
+
+    # Parse Squid access log for RPS and stats
+    try:
+        access_log = os.path.expanduser('~/uni-activity/storage/logs/squid-access.log')
+        if os.path.exists(access_log):
+            # Get last 1000 lines for recent stats
+            rps_count = 0
+            error_count = 0
+            total_size = 0
+            domain_counts = {}
+            response_times = []
+            now_ts = time.time()
+
+            with open(access_log, 'rb') as f:
+                # Read last 100KB of file
+                f.seek(0, 2)
+                file_size = f.tell()
+                read_size = min(100000, file_size)
+                f.seek(max(0, file_size - read_size))
+                data = f.read().decode('utf-8', errors='ignore')
+
+            lines = data.strip().split('\n')[-200:]  # last 200 lines
+            for line in lines:
+                try:
+                    parts = line.split()
+                    if len(parts) < 4:
+                        continue
+
+                    # Parse timestamp (Unix epoch)
+                    ts = float(parts[0])
+                    if now_ts - ts < 60:  # last 60 seconds
+                        rps_count += 1
+
+                    # Parse status code
+                    status = parts[3]
+                    if 'DENIED' in status or 'ERR' in status:
+                        error_count += 1
+
+                    # Parse response size
+                    if len(parts) > 5:
+                        try:
+                            size = int(parts[5])
+                            total_size += size
+                        except:
+                            pass
+
+                    # Parse domain
+                    if len(parts) > 6:
+                        domain = parts[6].split(':')[0]
+                        domain_counts[domain] = domain_counts.get(domain, 0) + 1
+
+                except:
+                    continue
+
+            traffic['rps'] = round(rps_count / 60.0, 1)  # requests per second
+            traffic['recent_errors'] = error_count
+            traffic['total_requests'] = len(lines)
+
+            # Top domains
+            sorted_domains = sorted(domain_counts.items(), key=lambda x: x[1], reverse=True)
+            traffic['top_domains'] = [{'domain': d, 'count': c} for d, c in sorted_domains[:10]]
+
+            # Cache hit ratio
+            hits = sum(1 for l in lines if 'HIT' in l)
+            misses = sum(1 for l in lines if 'MISS' in l)
+            total_cache = hits + misses
+            traffic['cache_hit_ratio'] = round(hits / total_cache * 100, 1) if total_cache > 0 else 0
+    except:
+        pass
+
+    result['traffic'] = traffic
+
     cfg._proxy_cache = {'t': now, 'data': result}
     return result
+
+
+def _human_bytes(size):
+    """Convert bytes to human readable format."""
+    for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+        if abs(size) < 1024.0:
+            return f"{size:.1f} {unit}"
+        size /= 1024.0
+    return f"{size:.1f} PB"

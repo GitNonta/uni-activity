@@ -60,6 +60,68 @@ function ServiceCard({ title, subtitle, status, port, connections, extra, icon }
   );
 }
 
+function TrafficDashboard({ traffic }) {
+  if (!traffic) return null;
+  const t = traffic;
+
+  return (
+    <div style={{
+      background: '#fff', border: '1px solid #e2e8f0', borderRadius: 14,
+      padding: '1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
+    }}>
+      <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <svg width="18" height="18" fill="none" stroke="#2563eb" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+        Traffic & Throughput
+      </h3>
+
+      {/* KPI Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
+        <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 10, padding: '0.85rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#0369a1', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Requests/sec</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0c4a6e', margin: '0.25rem 0' }}>{t.rps}</div>
+          <div style={{ fontSize: '0.7rem', color: '#0369a1' }}>RPS (last 60s)</div>
+        </div>
+
+        <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '0.85rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#15803d', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Data</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#14532d', margin: '0.25rem 0' }}>{t.total_bytes_human}</div>
+          <div style={{ fontSize: '0.7rem', color: '#15803d' }}>All interfaces</div>
+        </div>
+
+        <div style={{ background: '#fefce8', border: '1px solid #fde68a', borderRadius: 10, padding: '0.85rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#a16207', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cache Hit Ratio</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#713f12', margin: '0.25rem 0' }}>{t.cache_hit_ratio}%</div>
+          <div style={{ fontSize: '0.7rem', color: '#a16207' }}>RAM cache efficiency</div>
+        </div>
+
+        <div style={{ background: t.recent_errors > 0 ? '#fef2f2' : '#f0fdf4', border: `1px solid ${t.recent_errors > 0 ? '#fecaca' : '#bbf7d0'}`, borderRadius: 10, padding: '0.85rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: t.recent_errors > 0 ? '#b91c1c' : '#15803d', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Errors (60s)</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: t.recent_errors > 0 ? '#991b1b' : '#14532d', margin: '0.25rem 0' }}>{t.recent_errors}</div>
+          <div style={{ fontSize: '0.7rem', color: t.recent_errors > 0 ? '#b91c1c' : '#15803d' }}>{t.recent_errors > 0 ? 'DENIED/ERR' : 'All OK'}</div>
+        </div>
+      </div>
+
+      {/* Top Domains */}
+      {t.top_domains && t.top_domains.length > 0 && (
+        <div>
+          <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', fontWeight: 700, color: '#374151' }}>Top Domains (last 60s)</h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+            {t.top_domains.map((d, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.4rem 0.6rem', background: '#f8fafc', borderRadius: 6, border: '1px solid #f1f5f9' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#94a3b8', width: 20, textAlign: 'right' }}>#{i + 1}</span>
+                  <span style={{ fontSize: '0.8rem', fontFamily: 'monospace', color: '#334155' }}>{d.domain}</span>
+                </div>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2563eb', background: '#eff6ff', padding: '0.1rem 0.4rem', borderRadius: 4 }}>{d.count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function WorkerGrid({ workers }) {
   if (!workers || workers.length === 0) return null;
   return (
@@ -302,6 +364,9 @@ export function ProxyCard({ proxy }) {
           extra={<span style={{ fontSize: '0.65rem', background: '#f1f5f9', padding: '0.1rem 0.35rem', borderRadius: 4, color: '#475569' }}>Public IP: {proxy.public_ip || 'N/A'}</span>}
         />
       </div>
+
+      {/* Traffic Dashboard */}
+      <TrafficDashboard traffic={proxy.traffic} />
 
       {/* Worker Grid */}
       <WorkerGrid workers={proxy.workers} />
