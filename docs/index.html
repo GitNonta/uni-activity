@@ -156,7 +156,7 @@
                     return false;
                 }
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 2500);
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
 
                 try {
                     const res = await fetch(baseUrl.replace(/\/$/, '') + '/up', {
@@ -170,7 +170,7 @@
                 } catch (e) {
                     clearTimeout(timeoutId);
                     const controller2 = new AbortController();
-                    const timeoutId2 = setTimeout(() => controller2.abort(), 2500);
+                    const timeoutId2 = setTimeout(() => controller2.abort(), 5000);
                     try {
                         await fetch(baseUrl, {
                             method: 'HEAD',
@@ -182,7 +182,8 @@
                         return true;
                     } catch (e2) {
                         clearTimeout(timeoutId2);
-                        return false;
+                        // If both checks fail, still try to redirect (proxy may block /up)
+                        return true;
                     }
                 }
             }
@@ -236,11 +237,19 @@
                     console.warn('active_url.json fetch failed:', err);
                 }
 
-                // 4. Retry
+                // 4. Retry with fallback redirect
                 setProgress(30, 'กำลังรอเซิร์ฟเวอร์ตอบรับ...');
+                retryCount = (retryCount || 0) + 1;
+                if (retryCount >= 3) {
+                    // After 3 retries, redirect anyway (proxy may block health checks)
+                    setProgress(100, 'กำลังเปิดหน้าเว็บ...');
+                    window.location.replace('https://forgotten-camera-placed-twist.trycloudflare.com/');
+                    return;
+                }
                 setTimeout(resolveAndRedirect, 2500);
             }
 
+            var retryCount = 0;
             document.addEventListener('DOMContentLoaded', resolveAndRedirect);
         })();
     </script>
