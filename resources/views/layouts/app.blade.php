@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ md5_file(public_path('css/app.css')) }}">
     {{-- JS loaded async (non-render-blocking) --}}
     @vite(['resources/js/app.js'])
+    @yield('head')
 </head>
 <body>
     {{-- Top Navbar --}}
@@ -51,6 +52,7 @@
                 </a>
                 @endif
             </nav>
+            @endauth
             <div class="navbar-right">
                 @auth
                     <div class="dropdown" id="profileDropdown">

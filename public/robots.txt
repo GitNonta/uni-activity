@@ -1,7 +1,13 @@
 User-agent: *
+Allow: /
 Disallow: /admin
 Disallow: /admin/
+Disallow: /chat
+Disallow: /check-in
 Disallow: /api/
+Disallow: /export/
 Disallow: /.env
 Disallow: /storage/
 Disallow: /config/
+
+Sitemap: https://forgotten-camera-placed-twist.trycloudflare.com/sitemap.xml

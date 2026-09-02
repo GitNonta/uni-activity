@@ -360,3 +360,5 @@ Route::middleware(['auth', 'role:admin,super-admin'])->prefix('admin')->name('ad
         Route::get('/activities', [App\Http\Controllers\Api\ActivityController::class, 'index']);
     });
 });
+Route::get('/robots.txt', [\App\Http\Controllers\SeoController::class, 'robots'])->name('robots');
+Route::get('/sitemap.xml', [\App\Http\Controllers\SeoController::class, 'sitemap'])->name('sitemap');
