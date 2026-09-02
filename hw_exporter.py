@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Hardware Metrics Exporter for Phone 1 (Termux)
-Exposes CPU, RAM, disk, temperature, battery, network metrics
+Uses top/uptime/df commands (Termux blocks /proc/stat access)
 Port: 9189
 """
 import os
@@ -21,42 +21,60 @@ def read_file(path, default=''):
         return default
 
 
-def read_proc_stat():
-    """Read CPU times from /proc/stat."""
+def run_cmd(cmd, timeout=10):
     try:
-        with open('/proc/stat') as f:
-            line = f.readline()
-        parts = line.split()
-        # user, nice, system, idle, iowait, irq, softirq, steal
-        vals = [int(x) for x in parts[1:9]]
-        idle = vals[3] + vals[4]
-        total = sum(vals)
-        return idle, total
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        return r.stdout.strip()
     except:
-        return 0, 0
+        return ''
 
 
-def calc_cpu_percent(interval=1):
-    """Calculate CPU usage over interval."""
-    idle1, total1 = read_proc_stat()
-    time.sleep(interval)
-    idle2, total2 = read_proc_stat()
-    idle_delta = idle2 - idle1
-    total_delta = total2 - total1
-    if total_delta == 0:
-        return 0.0
-    return round((1.0 - idle_delta / total_delta) * 100, 1)
+def get_cpu_percent():
+    """Parse CPU from top -bn1."""
+    out = run_cmd(['top', '-bn1'])
+    for line in out.split('\n'):
+        line = line.replace('\r', '')  # Strip carriage returns
+        if '%cpu' in line.lower() and 'idle' in line.lower():
+            # "800%cpu   0%user   0%nice   0%sys 800%idle   0%iow   0%irq   0%sirq   0%host"
+            m_idle = re.search(r'(\d+)%idle', line)
+            m_total = re.search(r'(\d+)%cpu', line)
+            if m_idle and m_total:
+                idle_pct = int(m_idle.group(1))
+                total_pct = int(m_total.group(1))
+                if total_pct > 0:
+                    return round((1.0 - idle_pct / total_pct) * 100, 1)
+    return 0.0
+
+
+def get_load_avg():
+    """Parse load average from uptime."""
+    out = run_cmd(['uptime'])
+    m = re.search(r'load average:\s*([\d.]+),\s*([\d.]+),\s*([\d.]+)', out)
+    if m:
+        return float(m.group(1)), float(m.group(2)), float(m.group(3))
+    return 0, 0, 0
+
+
+def get_cpu_cores():
+    """Get CPU core count from top."""
+    out = run_cmd(['top', '-bn1'])
+    for line in out.split('\n'):
+        line = line.replace('\r', '')
+        if '%cpu' in line.lower() and 'idle' in line.lower():
+            m = re.search(r'(\d+)%cpu', line)
+            if m:
+                return int(m.group(1)) // 100
+    return 1
 
 
 def read_meminfo():
-    """Read memory info from /proc/meminfo."""
     info = {}
     try:
         with open('/proc/meminfo') as f:
             for line in f:
                 parts = line.split()
                 key = parts[0].rstrip(':')
-                val = int(parts[1]) * 1024  # Convert kB to bytes
+                val = int(parts[1]) * 1024
                 info[key] = val
     except:
         pass
@@ -64,33 +82,30 @@ def read_meminfo():
 
 
 def get_disk_usage():
-    """Get disk usage for /data."""
-    try:
-        result = subprocess.run(['df', '-B1', '/data'], capture_output=True, text=True, timeout=5)
-        lines = result.stdout.strip().split('\n')
-        if len(lines) >= 2:
-            parts = lines[1].split()
-            total = int(parts[1])
-            used = int(parts[2])
-            avail = int(parts[3])
-            return total, used, avail
-    except:
-        pass
+    """Parse disk from df /data."""
+    out = run_cmd(['df', '/data'])
+    for line in out.split('\n'):
+        if '/data' in line:
+            parts = line.split()
+            if len(parts) >= 4:
+                total = int(parts[1]) * 1024
+                used = int(parts[2]) * 1024
+                avail = int(parts[3]) * 1024
+                return total, used, avail
     return 0, 0, 0
 
 
 def get_temperatures():
-    """Read thermal zones."""
     temps = {}
     try:
-        for zone_dir in os.listdir('/sys/class/thermal/'):
+        for zone_dir in sorted(os.listdir('/sys/class/thermal/')):
             if zone_dir.startswith('thermal_zone'):
                 zone_path = f'/sys/class/thermal/{zone_dir}'
                 zone_type = read_file(f'{zone_path}/type', zone_dir)
                 zone_temp = read_file(f'{zone_path}/temp', '0')
                 try:
                     temp_val = int(zone_temp)
-                    if temp_val > 0:
+                    if temp_val > 100:
                         temps[zone_type] = temp_val
                 except:
                     pass
@@ -99,29 +114,7 @@ def get_temperatures():
     return temps
 
 
-def get_battery():
-    """Get battery info."""
-    battery = {}
-    try:
-        for item in ['capacity', 'status', 'voltage_now', 'current_now', 'temp', 'health']:
-            val = read_file(f'/sys/class/power_supply/battery/{item}')
-            if val:
-                battery[item] = val
-    except:
-        pass
-    # Fallback: check pmu-vbat-lvl0 for voltage
-    if 'voltage_now' not in battery:
-        vbat = read_file('/sys/class/thermal/thermal_zone35/temp')
-        if vbat:
-            try:
-                battery['voltage_now'] = str(int(vbat) * 1000)  # Convert mV to uV
-            except:
-                pass
-    return battery
-
-
 def get_network_stats():
-    """Read network stats from /proc/net/dev."""
     stats = {}
     try:
         with open('/proc/net/dev') as f:
@@ -139,20 +132,16 @@ def get_network_stats():
 
 
 def get_process_stats():
-    """Get process count and top processes."""
     try:
         result = subprocess.run(['ps', 'aux'], capture_output=True, text=True, timeout=5)
         lines = result.stdout.strip().split('\n')
-        total = len(lines) - 1  # Exclude header
-
-        # Count by service
+        total = len(lines) - 1
         services = {}
         for line in lines[1:]:
             parts = line.split(None, 10)
             if len(parts) >= 11:
                 cmd = parts[10].split()[0] if parts[10].split() else 'unknown'
-                # Simplify command name
-                for short in ['postgres', 'python3', 'nginx', 'squid', 'pgbouncer', 'node', 'svlogd', 'runsv', 'sshd', 'cron', 'microsocks', 'grafana', 'prometheus']:
+                for short in ['postgres', 'python3', 'nginx', 'squid', 'pgbouncer', 'node', 'svlogd', 'runsv', 'sshd', 'cron', 'microsocks', 'grafana', 'prometheus', 'java']:
                     if short in cmd.lower():
                         cmd = short
                         break
@@ -162,27 +151,29 @@ def get_process_stats():
         return 0, {}
 
 
-def get_load_avg():
-    """Get load average."""
-    try:
-        with open('/proc/loadavg') as f:
-            parts = f.read().split()
-            return float(parts[0]), float(parts[1]), float(parts[2])
-    except:
-        return 0, 0, 0
-
-
 def get_uptime():
-    """Get uptime in seconds."""
+    """Get uptime in seconds from uptime command."""
     try:
         with open('/proc/uptime') as f:
             return float(f.read().split()[0])
     except:
-        return 0
+        pass
+    # Fallback: parse uptime -p output
+    out = run_cmd(['uptime', '-p'])
+    # 'up 2 weeks, 4 days, 11 hours, 51 minutes'
+    total = 0
+    m = re.search(r'(\d+)\s*week', out)
+    if m: total += int(m.group(1)) * 7 * 86400
+    m = re.search(r'(\d+)\s*day', out)
+    if m: total += int(m.group(1)) * 86400
+    m = re.search(r'(\d+)\s*hour', out)
+    if m: total += int(m.group(1)) * 3600
+    m = re.search(r'(\d+)\s*minute', out)
+    if m: total += int(m.group(1)) * 60
+    return total
 
 
 def get_fd_usage():
-    """Get file descriptor usage for a process."""
     try:
         pid = subprocess.check_output(['pgrep', '-o', 'python3'], text=True).strip()
         fds = len(os.listdir(f'/proc/{pid}/fd'))
@@ -199,31 +190,22 @@ def get_fd_usage():
 
 def collect_metrics():
     lines = []
-    now = time.time()
 
-    # ── CPU Usage (quick 1s sample) ──
-    cpu_pct = calc_cpu_percent(1)
-    lines.append(f'hw_cpu_usage_percent {cpu_pct}')
+    # ── CPU ──
+    lines.append(f'hw_cpu_usage_percent {get_cpu_percent()}')
+    lines.append(f'hw_cpu_cores {get_cpu_cores()}')
 
     # ── Load Average ──
-    load1, load5, load15 = get_load_avg()
-    lines.append(f'hw_load_avg_1m {load1}')
-    lines.append(f'hw_load_avg_5m {load5}')
-    lines.append(f'hw_load_avg_15m {load15}')
-
-    # ── CPU cores ──
-    try:
-        with open('/proc/cpuinfo') as f:
-            cores = f.read().count('processor')
-        lines.append(f'hw_cpu_cores {cores}')
-    except:
-        pass
+    l1, l5, l15 = get_load_avg()
+    lines.append(f'hw_load_avg_1m {l1}')
+    lines.append(f'hw_load_avg_5m {l5}')
+    lines.append(f'hw_load_avg_15m {l15}')
 
     # ── Memory ──
     mem = read_meminfo()
     total_mem = mem.get('MemTotal', 0)
-    free_mem = mem.get('MemFree', 0)
     available_mem = mem.get('MemAvailable', 0)
+    free_mem = mem.get('MemFree', 0)
     buffers = mem.get('Buffers', 0)
     cached = mem.get('Cached', 0)
     swap_total = mem.get('SwapTotal', 0)
@@ -239,6 +221,7 @@ def collect_metrics():
     lines.append(f'hw_memory_usage_percent {round(used_mem / total_mem * 100, 1) if total_mem > 0 else 0}')
     lines.append(f'hw_swap_total_bytes {swap_total}')
     lines.append(f'hw_swap_used_bytes {swap_total - swap_free}')
+    lines.append(f'hw_swap_usage_percent {round((swap_total - swap_free) / swap_total * 100, 1) if swap_total > 0 else 0}')
 
     # ── Disk ──
     disk_total, disk_used, disk_avail = get_disk_usage()
@@ -250,41 +233,25 @@ def collect_metrics():
     # ── Temperature ──
     temps = get_temperatures()
     key_temps = {
-        'xo-therm-adc': 'board',
-        'xo-therm-buf-adc': 'board_buf',
-        'pm8953_tz': 'pmic',
-        'battery': 'battery',
-        'Battery': 'battery_alt',
-        'pa-therm0': 'pa',
+        'xo-therm-adc': 'board', 'xo-therm-buf-adc': 'board_buf',
+        'pm8953_tz': 'pmic', 'battery': 'battery',
     }
     for zone_type, temp_val in temps.items():
         label = key_temps.get(zone_type, zone_type)
-        # Values are in millidegrees
         lines.append(f'hw_temperature_celsius{{zone="{label}"}} {temp_val / 1000:.1f}')
 
-    # CPU-specific temps
-    cpu_temps = {k: v for k, v in temps.items() if 'cpu' in k.lower()}
+    cpu_temps = {k: v for k, v in temps.items() if 'cpu0' in k.lower() and 'usr' in k.lower()}
     if cpu_temps:
-        avg_cpu_temp = sum(cpu_temps.values()) / len(cpu_temps)
-        lines.append(f'hw_cpu_temperature_celsius {avg_cpu_temp / 1000:.1f}')
+        lines.append(f'hw_cpu_temperature_celsius {sum(cpu_temps.values()) / len(cpu_temps) / 1000:.1f}')
 
-    gpu_temps = {k: v for k, v in temps.items() if 'gpu' in k.lower()}
+    gpu_temps = {k: v for k, v in temps.items() if 'gpu' in k.lower() and 'usr' in k.lower()}
     if gpu_temps:
-        avg_gpu_temp = sum(gpu_temps.values()) / len(gpu_temps)
-        lines.append(f'hw_gpu_temperature_celsius {avg_gpu_temp / 1000:.1f}')
+        lines.append(f'hw_gpu_temperature_celsius {sum(gpu_temps.values()) / len(gpu_temps) / 1000:.1f}')
 
-    # ── Battery ──
-    battery = get_battery()
-    if 'capacity' in battery:
-        lines.append(f'hw_battery_percent {battery["capacity"]}')
-    if 'voltage_now' in battery:
-        try:
-            lines.append(f'hw_battery_voltage_uv {int(battery["voltage_now"])}')
-        except:
-            pass
-    if 'status' in battery:
-        status_map = {'Charging': 1, 'Discharging': 0, 'Full': 2, 'Not charging': 3}
-        lines.append(f'hw_battery_status {status_map.get(battery["status"], -1)}')
+    battery_temps = {k: v for k, v in temps.items() if k in ('battery', 'bk_battery', 'Battery')}
+    if battery_temps:
+        bt = sum(battery_temps.values()) / len(battery_temps)
+        lines.append(f'hw_battery_temperature_celsius {bt / 1000:.1f}')
 
     # ── Network ──
     net = get_network_stats()
@@ -307,10 +274,7 @@ def collect_metrics():
     lines.append(f'hw_fd_usage_percent {round(fd_used / fd_max * 100, 1) if fd_max > 0 else 0}')
 
     # ── Uptime ──
-    uptime = get_uptime()
-    lines.append(f'hw_uptime_seconds {uptime}')
-
-    # ── Up ──
+    lines.append(f'hw_uptime_seconds {get_uptime()}')
     lines.append('hw_up 1')
 
     return '\n'.join(lines)
