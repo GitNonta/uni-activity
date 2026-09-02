@@ -172,3 +172,14 @@
     @stack('scripts')
 </body>
 </html>
+
+<script>
+// Close dropdown on outside click
+document.addEventListener('click', function(e) {
+    var dropdown = document.getElementById('profileDropdown');
+    var menu = document.getElementById('profileMenu');
+    if (dropdown && menu && !dropdown.contains(e.target)) {
+        menu.classList.add('hidden');
+    }
+});
+</script>

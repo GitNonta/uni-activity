@@ -1639,3 +1639,17 @@ textarea::-webkit-scrollbar {
         white-space: nowrap;
     }
 }
+
+/* === Profile Dropdown & Avatar === */
+.avatar-sm { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0; }
+.btn-ghost { background: transparent; border: none; color: #475569; cursor: pointer; padding: .375rem; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.btn-ghost:hover { background: #f1f5f9; }
+.dropdown { position: relative; }
+.dropdown-menu { position: absolute; top: 100%; right: 0; margin-top: 4px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); min-width: 180px; padding: 6px 0; z-index: 200; }
+.dropdown-item { display: flex; align-items: center; gap: 8px; padding: 10px 16px; font-size: .875rem; color: #475569; text-decoration: none; border: none; background: none; width: 100%; text-align: left; cursor: pointer; }
+.dropdown-item:hover { background: #f8fafc; color: #ea580c; }
+html[data-theme='dark'] .dropdown-menu { background: #1e293b; border-color: #334155; }
+html[data-theme='dark'] .dropdown-item { color: #cbd5e1; }
+html[data-theme='dark'] .dropdown-item:hover { background: #334155; }
+html[data-theme='dark'] .avatar-sm { border-color: #475569; }
+html[data-theme='dark'] .btn-ghost:hover { background: #334155; }
