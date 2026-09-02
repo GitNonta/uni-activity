@@ -1,0 +1,198 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "hw-operations",
+    "title": "Hardware Operations",
+    "tags": ["hardware", "phone1", "system"],
+    "timezone": "browser",
+    "refresh": "10s",
+    "time": { "from": "now-1h", "to": "now" },
+    "panels": [
+      {
+        "id": 1, "title": "System Up", "type": "stat",
+        "gridPos": { "h": 3, "w": 3, "x": 0, "y": 0 },
+        "targets": [{ "expr": "hw_up", "legendFormat": "Up", "refId": "A" }],
+        "fieldConfig": { "defaults": {
+          "thresholds": { "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] },
+          "mappings": [{ "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }]
+        }}
+      },
+      {
+        "id": 2, "title": "CPU Usage", "type": "gauge",
+        "gridPos": { "h": 3, "w": 4, "x": 3, "y": 0 },
+        "targets": [{ "expr": "hw_cpu_usage_percent", "legendFormat": "CPU", "refId": "A" }],
+        "fieldConfig": { "defaults": {
+          "min": 0, "max": 100, "unit": "percent",
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 60 }, { "color": "red", "value": 85 }] }
+        }}
+      },
+      {
+        "id": 3, "title": "RAM Usage", "type": "gauge",
+        "gridPos": { "h": 3, "w": 4, "x": 7, "y": 0 },
+        "targets": [{ "expr": "hw_memory_usage_percent", "legendFormat": "RAM", "refId": "A" }],
+        "fieldConfig": { "defaults": {
+          "min": 0, "max": 100, "unit": "percent",
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 70 }, { "color": "red", "value": 90 }] }
+        }}
+      },
+      {
+        "id": 4, "title": "Disk Usage", "type": "gauge",
+        "gridPos": { "h": 3, "w": 4, "x": 11, "y": 0 },
+        "targets": [{ "expr": "hw_disk_usage_percent", "legendFormat": "Disk", "refId": "A" }],
+        "fieldConfig": { "defaults": {
+          "min": 0, "max": 100, "unit": "percent",
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 75 }, { "color": "red", "value": 90 }] }
+        }}
+      },
+      {
+        "id": 5, "title": "Board Temp", "type": "stat",
+        "gridPos": { "h": 3, "w": 3, "x": 15, "y": 0 },
+        "targets": [{ "expr": "hw_temperature_celsius{zone=\"board\"}", "legendFormat": "Board", "refId": "A" }],
+        "fieldConfig": { "defaults": {
+          "unit": "celsius",
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 45 }, { "color": "red", "value": 55 }] }
+        }}
+      },
+      {
+        "id": 6, "title": "CPU Temp", "type": "stat",
+        "gridPos": { "h": 3, "w": 3, "x": 18, "y": 0 },
+        "targets": [{ "expr": "hw_cpu_temperature_celsius", "legendFormat": "CPU", "refId": "A" }],
+        "fieldConfig": { "defaults": {
+          "unit": "celsius",
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 55 }, { "color": "red", "value": 70 }] }
+        }}
+      },
+      {
+        "id": 7, "title": "Battery", "type": "stat",
+        "gridPos": { "h": 3, "w": 3, "x": 21, "y": 0 },
+        "targets": [{ "expr": "hw_battery_percent", "legendFormat": "Battery", "refId": "A" }],
+        "fieldConfig": { "defaults": {
+          "unit": "percent",
+          "thresholds": { "steps": [{ "color": "red", "value": null }, { "color": "yellow", "value": 20 }, { "color": "green", "value": 50 }] }
+        }}
+      },
+      {
+        "id": 10, "title": "CPU Usage Over Time", "type": "timeseries",
+        "gridPos": { "h": 7, "w": 12, "x": 0, "y": 3 },
+        "targets": [{ "expr": "hw_cpu_usage_percent", "legendFormat": "CPU %", "refId": "A" }],
+        "fieldConfig": { "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 30, "lineWidth": 2 },
+          "min": 0, "max": 100, "unit": "percent",
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 60 }, { "color": "red", "value": 85 }] }
+        }}
+      },
+      {
+        "id": 11, "title": "Load Average", "type": "timeseries",
+        "gridPos": { "h": 7, "w": 12, "x": 12, "y": 3 },
+        "targets": [
+          { "expr": "hw_load_avg_1m", "legendFormat": "1 min", "refId": "A" },
+          { "expr": "hw_load_avg_5m", "legendFormat": "5 min", "refId": "B" },
+          { "expr": "hw_load_avg_15m", "legendFormat": "15 min", "refId": "C" },
+          { "expr": "hw_cpu_cores", "legendFormat": "Cores", "refId": "D" }
+        ],
+        "fieldConfig": { "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 2 }
+        }}
+      },
+      {
+        "id": 20, "title": "Memory Usage", "type": "timeseries",
+        "gridPos": { "h": 7, "w": 12, "x": 0, "y": 10 },
+        "targets": [
+          { "expr": "hw_memory_used_bytes", "legendFormat": "Used", "refId": "A" },
+          { "expr": "hw_memory_buffers_bytes + hw_memory_cached_bytes", "legendFormat": "Buffers+Cache", "refId": "B" },
+          { "expr": "hw_memory_available_bytes", "legendFormat": "Available", "refId": "C" }
+        ],
+        "fieldConfig": { "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 30, "lineWidth": 2 },
+          "unit": "decbytes"
+        }}
+      },
+      {
+        "id": 21, "title": "Disk Usage", "type": "timeseries",
+        "gridPos": { "h": 7, "w": 12, "x": 12, "y": 10 },
+        "targets": [
+          { "expr": "hw_disk_used_bytes", "legendFormat": "Used", "refId": "A" },
+          { "expr": "hw_disk_available_bytes", "legendFormat": "Available", "refId": "B" }
+        ],
+        "fieldConfig": { "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 30, "lineWidth": 2 },
+          "unit": "decbytes"
+        }}
+      },
+      {
+        "id": 30, "title": "Temperature Overview", "type": "timeseries",
+        "gridPos": { "h": 7, "w": 12, "x": 0, "y": 17 },
+        "targets": [
+          { "expr": "hw_temperature_celsius{zone=\"board\"}", "legendFormat": "Board", "refId": "A" },
+          { "expr": "hw_cpu_temperature_celsius", "legendFormat": "CPU", "refId": "B" },
+          { "expr": "hw_gpu_temperature_celsius", "legendFormat": "GPU", "refId": "C" },
+          { "expr": "hw_temperature_celsius{zone=\"pmic\"}", "legendFormat": "PMIC", "refId": "D" }
+        ],
+        "fieldConfig": { "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 2 },
+          "unit": "celsius"
+        }}
+      },
+      {
+        "id": 31, "title": "Network Traffic", "type": "timeseries",
+        "gridPos": { "h": 7, "w": 12, "x": 12, "y": 17 },
+        "targets": [
+          { "expr": "rate(hw_network_rx_bytes[1m])", "legendFormat": "RX", "refId": "A" },
+          { "expr": "rate(hw_network_tx_bytes[1m])", "legendFormat": "TX", "refId": "B" }
+        ],
+        "fieldConfig": { "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 30, "lineWidth": 2 },
+          "unit": "Bps"
+        }}
+      },
+      {
+        "id": 40, "title": "Process Count", "type": "timeseries",
+        "gridPos": { "h": 7, "w": 12, "x": 0, "y": 24 },
+        "targets": [{ "expr": "hw_process_count", "legendFormat": "Processes", "refId": "A" }],
+        "fieldConfig": { "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 20, "lineWidth": 2 },
+          "unit": "short"
+        }}
+      },
+      {
+        "id": 41, "title": "File Descriptors", "type": "gauge",
+        "gridPos": { "h": 7, "w": 6, "x": 12, "y": 24 },
+        "targets": [{ "expr": "hw_fd_usage_percent", "legendFormat": "FD Usage", "refId": "A" }],
+        "fieldConfig": { "defaults": {
+          "min": 0, "max": 100, "unit": "percent",
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 70 }, { "color": "red", "value": 90 }] }
+        }}
+      },
+      {
+        "id": 42, "title": "Service Processes", "type": "table",
+        "gridPos": { "h": 7, "w": 6, "x": 18, "y": 24 },
+        "targets": [{ "expr": "hw_service_processes", "instant": true, "legendFormat": "{{service}}", "refId": "A", "format": "table" }],
+        "fieldConfig": { "overrides": [
+          { "matcher": { "id": "byName", "options": "service" }, "properties": [{ "id": "displayName", "value": "Service" }] },
+          { "matcher": { "id": "byName", "options": "Value" }, "properties": [{ "id": "displayName", "value": "Count" }] }
+        ]},
+        "options": { "sortBy": [{ "displayName": "Value", "desc": true }] }
+      },
+      {
+        "id": 50, "title": "Swap Usage", "type": "stat",
+        "gridPos": { "h": 5, "w": 8, "x": 0, "y": 31 },
+        "targets": [{ "expr": "hw_swap_used_bytes", "legendFormat": "Swap Used", "refId": "A" }],
+        "fieldConfig": { "defaults": { "unit": "decbytes" }}
+      },
+      {
+        "id": 51, "title": "Uptime", "type": "stat",
+        "gridPos": { "h": 5, "w": 8, "x": 8, "y": 31 },
+        "targets": [{ "expr": "hw_uptime_seconds", "legendFormat": "Uptime", "refId": "A" }],
+        "fieldConfig": { "defaults": { "unit": "dtdurations" }}
+      },
+      {
+        "id": 52, "title": "Battery Voltage", "type": "stat",
+        "gridPos": { "h": 5, "w": 8, "x": 16, "y": 31 },
+        "targets": [{ "expr": "hw_battery_voltage_uv", "legendFormat": "Voltage", "refId": "A" }],
+        "fieldConfig": { "defaults": { "unit": "volt" }}
+      }
+    ],
+    "schemaVersion": 39
+  },
+  "overwrite": true
+}
