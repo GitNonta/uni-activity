@@ -1145,3 +1145,108 @@ def get_uptime():
             return f"{hours}h {minutes}m"
     except:
         return "N/A"
+
+
+# ------- Proxy Monitoring -------
+
+def _run_cmd(cmd, timeout=5):
+    """Run a shell command and return stdout, or empty string on error."""
+    try:
+        r = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=timeout)
+        return r.stdout.strip()
+    except:
+        return ""
+
+
+def get_proxy_status():
+    """Collect status of all proxy services: Squid HTTP, SOCKS5 (Python), Nginx LB."""
+    now = time.time()
+    # Cache for 10 seconds
+    if hasattr(cfg, '_proxy_cache') and now - cfg._proxy_cache.get('t', 0) < 10:
+        return cfg._proxy_cache.get('data', {})
+
+    result = {
+        'squid': {'status': 'Stopped', 'port': 3128, 'connections': 0, 'cache_hits': 0, 'cache_misses': 0},
+        'socks5': {'status': 'Stopped', 'port': 1080, 'connections': 0},
+        'nginx_lb': {'status': 'Stopped', 'port': 8088, 'connections': 0},
+        'cloudflared': {'status': 'Stopped', 'port': 8080},
+        'public_ip': cfg.CACHED_PUBLIC_IP or 'N/A',
+    }
+
+    # Squid HTTP Proxy
+    squid_pid = _run_cmd("pgrep -f 'squid -f' | head -1")
+    if squid_pid:
+        result['squid']['status'] = 'Running'
+        # Count active connections
+        conns = _run_cmd("netstat -tnp 2>/dev/null | grep ':3128' | grep ESTABLISHED | wc -l")
+        result['squid']['connections'] = int(conns) if conns.isdigit() else 0
+        # Parse cache stats from squid cache.log or manager
+        try:
+            cache_log = os.path.expanduser('~/uni-activity/storage/logs/squid-cache.log')
+            if os.path.exists(cache_log):
+                with open(cache_log, 'r') as f:
+                    lines = f.readlines()[-50:]
+                for line in lines:
+                    if 'TCP_HIT' in line:
+                        result['squid']['cache_hits'] += 1
+                    elif 'TCP_MISS' in line:
+                        result['squid']['cache_misses'] += 1
+        except:
+            pass
+
+    # SOCKS5 Proxy (Python)
+    socks5_pid = _run_cmd("pgrep -f 'socks5_proxy.py' | head -1")
+    if socks5_pid:
+        result['socks5']['status'] = 'Running'
+        conns = _run_cmd("netstat -tnp 2>/dev/null | grep ':1080' | grep ESTABLISHED | wc -l")
+        result['socks5']['connections'] = int(conns) if conns.isdigit() else 0
+
+    # Nginx Load Balancer
+    nginx_pid = _run_cmd("pgrep -f 'nginx' | head -1")
+    if nginx_pid:
+        result['nginx_lb']['status'] = 'Running'
+        conns = _run_cmd("netstat -tnp 2>/dev/null | grep ':8088' | grep ESTABLISHED | wc -l")
+        result['nginx_lb']['connections'] = int(conns) if conns.isdigit() else 0
+
+    # Cloudflared
+    cf_pid = _run_cmd("pgrep -f 'cloudflared' | head -1")
+    if cf_pid:
+        result['cloudflared']['status'] = 'Running'
+
+    # Nginx upstream health (down markers)
+    try:
+        nginx_conf = '/data/data/com.termux/files/usr/etc/nginx/nginx.conf'
+        if os.path.exists(nginx_conf):
+            with open(nginx_conf, 'r') as f:
+                content = f.read()
+            down_count = content.count(' down')
+            result['nginx_lb']['down_markers'] = down_count
+    except:
+        result['nginx_lb']['down_markers'] = 0
+
+    # Worker health (all 7 workers)
+    workers = []
+    for port in [8000, 8002, 8003]:
+        wstatus = _run_cmd(f"curl -s -o /dev/null -w '%{{http_code}}' http://127.0.0.1:{port}/health --connect-timeout 2 2>/dev/null")
+        workers.append({'host': '127.0.0.1', 'port': port, 'phone': 'P1', 'status': wstatus})
+    for port in [8000, 8002, 8003, 8004]:
+        wstatus = _run_cmd(f"curl -s -o /dev/null -w '%{{http_code}}' http://192.168.1.140:{port}/health --connect-timeout 2 2>/dev/null")
+        workers.append({'host': '192.168.1.140', 'port': port, 'phone': 'P2', 'status': wstatus})
+    result['workers'] = workers
+
+    # Squid allowed sites count
+    try:
+        squid_conf = '/data/data/com.termux/files/usr/etc/squid/squid.conf'
+        if os.path.exists(squid_conf):
+            with open(squid_conf, 'r') as f:
+                lines = f.readlines()
+            allowed = sum(1 for l in lines if 'allowed_sites' in l and 'dstdomain' in l)
+            result['squid']['allowed_domains'] = allowed
+    except:
+        result['squid']['allowed_domains'] = 0
+
+    # Egress security: blocked ports
+    result['nginx_lb']['blocked_ports'] = [7, 9, 19, 22, 23, 25, 110, 111, 135, 139, 445, 512, 513, 514, 515]
+
+    cfg._proxy_cache = {'t': now, 'data': result}
+    return result

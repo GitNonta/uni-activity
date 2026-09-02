@@ -18,10 +18,12 @@ import { AiScanner } from './components/AiScanner'
 import { EventsCard } from './components/EventsCard'
 import { ClusterControlCard } from './components/ClusterControlCard'
 import { FailedJobsCard } from './components/FailedJobsCard'
+import { ProxyCard } from './components/ProxyCard'
 import './App.css'
 
 const NAV_TABS = [
   { id: 'dashboard',     label: 'Dashboard' },
+  { id: 'proxy',         label: 'Proxy Management' },
   { id: 'cluster',       label: 'Cluster Control Center' },
   { id: 'failed-jobs',   label: 'Failed Queue Jobs' },
   { id: 'status',        label: 'System Status' },
@@ -153,6 +155,9 @@ export default function App() {
             />
           )
         )}
+
+        {/* Proxy Management */}
+        {activeTab === 'proxy' && <ProxyCard proxy={data?.proxy} />}
 
         {/* Cluster Control Center */}
         {activeTab === 'cluster' && <ClusterControlCard initialData={data} />}

@@ -14,7 +14,7 @@ from monitor.collectors import (
     get_listening_ports, get_cpu_freqs, get_wifi_rssi, get_net_speeds,
     get_top_processes, get_postgres_stats, get_redis_stats,
     get_queue_stats, get_cloudflared_stats, get_gpu_stats,
-    get_ai_cluster_health,
+    get_ai_cluster_health, get_proxy_status,
 )
 
 def _expected_services():
@@ -214,6 +214,7 @@ def collect_stats():
         },
         "public_ip": cfg.CACHED_PUBLIC_IP,
         "ai_cluster": get_ai_cluster_health(),
+        "proxy": get_proxy_status(),
     }
     stats["alerts"] = get_alerts(stats)
     stats["alerts_history"] = list(cfg.alerts_history)
