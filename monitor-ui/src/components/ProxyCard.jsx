@@ -513,6 +513,127 @@ function TopologyDiagram({ proxy }) {
   );
 }
 
+function HardwareHealth({ hw }) {
+  if (!hw) return null;
+  const h = hw;
+
+  const ramColor = h.system_ram_pct > 85 ? '#ef4444' : (h.system_ram_pct > 70 ? '#f59e0b' : '#10b981');
+  const fdColor = h.open_files_pct > 80 ? '#ef4444' : (h.open_files_pct > 50 ? '#f59e0b' : '#10b981');
+  const tempColor = h.system_temp > 70 ? '#ef4444' : (h.system_temp > 55 ? '#f59e0b' : '#10b981');
+
+  return (
+    <div style={{
+      background: '#fff', border: '1px solid #e2e8f0', borderRadius: 14,
+      padding: '1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
+    }}>
+      <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <svg width="18" height="18" fill="none" stroke="#059669" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" /></svg>
+        Hardware Health (Phone 1 Gateway)
+      </h3>
+
+      {/* System KPIs */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
+        {/* RAM */}
+        <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '0.85rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#15803d', textTransform: 'uppercase' }}>System RAM</div>
+          <div style={{ fontSize: '1.3rem', fontWeight: 800, color: ramColor, margin: '0.25rem 0' }}>{h.system_ram_used_mb} / {h.system_ram_total_mb} MB</div>
+          <div style={{ width: '100%', height: 6, background: '#e5e7eb', borderRadius: 999, overflow: 'hidden' }}>
+            <div style={{ width: `${h.system_ram_pct}%`, height: '100%', background: ramColor, borderRadius: 999 }}></div>
+          </div>
+          <div style={{ fontSize: '0.65rem', color: '#6b7280', marginTop: '0.2rem' }}>{h.system_ram_pct}% used</div>
+        </div>
+
+        {/* CPU Load */}
+        <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 10, padding: '0.85rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#0369a1', textTransform: 'uppercase' }}>CPU Load</div>
+          <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0c4a6e', margin: '0.25rem 0' }}>{h.system_load[0]} / {h.system_load[1]} / {h.system_load[2]}</div>
+          <div style={{ fontSize: '0.65rem', color: '#6b7280' }}>1m / 5m / 15m avg</div>
+        </div>
+
+        {/* Temperature */}
+        <div style={{ background: '#fefce8', border: '1px solid #fde68a', borderRadius: 10, padding: '0.85rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#a16207', textTransform: 'uppercase' }}>Temperature</div>
+          <div style={{ fontSize: '1.3rem', fontWeight: 800, color: tempColor, margin: '0.25rem 0' }}>{h.system_temp}°C</div>
+          <div style={{ fontSize: '0.65rem', color: '#6b7280' }}>CPU thermal</div>
+        </div>
+
+        {/* Battery */}
+        <div style={{ background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 10, padding: '0.85rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#7c3aed', textTransform: 'uppercase' }}>Battery</div>
+          <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#581c87', margin: '0.25rem 0' }}>{h.battery_pct}%</div>
+          <div style={{ fontSize: '0.65rem', color: '#6b7280' }}>Power level</div>
+        </div>
+      </div>
+
+      {/* Process Stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
+        {/* Squid Process */}
+        <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '0.85rem' }}>
+          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#374151', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981' }}></span>
+            Squid Process
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem', fontSize: '0.75rem' }}>
+            <div><span style={{ color: '#6b7280' }}>CPU:</span> <strong>{h.squid_cpu}%</strong></div>
+            <div><span style={{ color: '#6b7280' }}>RSS:</span> <strong>{h.squid_rss_human}</strong></div>
+            <div><span style={{ color: '#6b7280' }}>VSZ:</span> <strong>{_human_bytes(h.squid_vsz_kb * 1024)}</strong></div>
+            <div><span style={{ color: '#6b7280' }}>Uptime:</span> <strong>{h.squid_uptime}</strong></div>
+          </div>
+        </div>
+
+        {/* SOCKS5 Process */}
+        <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '0.85rem' }}>
+          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#374151', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#8b5cf6' }}></span>
+            SOCKS5 Process
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem', fontSize: '0.75rem' }}>
+            <div><span style={{ color: '#6b7280' }}>CPU:</span> <strong>{h.socks5_cpu}%</strong></div>
+            <div><span style={{ color: '#6b7280' }}>RSS:</span> <strong>{h.socks5_rss_human}</strong></div>
+          </div>
+        </div>
+      </div>
+
+      {/* File Descriptors */}
+      <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '0.85rem', marginBottom: '0.75rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#374151' }}>File Descriptors (ulimit)</span>
+          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: fdColor }}>{h.open_files_pct}%</span>
+        </div>
+        <div style={{ width: '100%', height: 8, background: '#e5e7eb', borderRadius: 999, overflow: 'hidden', marginBottom: '0.3rem' }}>
+          <div style={{ width: `${Math.min(100, h.open_files_pct)}%`, height: '100%', background: fdColor, borderRadius: 999 }}></div>
+        </div>
+        <div style={{ fontSize: '0.7rem', color: '#6b7280' }}>
+          {h.open_files_current} / {h.open_files_limit} open files — {h.open_files_pct > 80 ? '⚠️ Running low!' : '✅ Healthy'}
+        </div>
+      </div>
+
+      {/* Squid Manager Info */}
+      {h.squid_mgr_info && Object.keys(h.squid_mgr_info).length > 0 && (
+        <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 10, padding: '0.85rem' }}>
+          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#c2410c', marginBottom: '0.4rem' }}>📊 Squid Manager Info</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.3rem', fontSize: '0.7rem' }}>
+            {Object.entries(h.squid_mgr_info).slice(0, 8).map(([k, v]) => (
+              <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.2rem 0.4rem', background: '#fff', borderRadius: 4 }}>
+                <span style={{ color: '#6b7280' }}>{k.replace(/_/g, ' ')}</span>
+                <span style={{ fontWeight: 600, color: '#374151' }}>{v}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function _human_bytes(size) {
+  for (const unit of ['B', 'KB', 'MB', 'GB', 'TB']) {
+    if (Math.abs(size) < 1024.0) return size.toFixed(1) + ' ' + unit;
+    size /= 1024.0;
+  }
+  return size.toFixed(1) + ' PB';
+}
+
 export function ProxyCard({ proxy }) {
   if (!proxy) {
     return (
@@ -615,6 +736,9 @@ export function ProxyCard({ proxy }) {
 
       {/* Cache Performance */}
       <CachePerformance cache={proxy.cache_perf} />
+
+      {/* Hardware Health */}
+      <HardwareHealth hw={proxy.hw_health} />
 
       {/* Worker Grid */}
       <WorkerGrid workers={proxy.workers} />

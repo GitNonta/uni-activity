@@ -1582,6 +1582,118 @@ def get_proxy_status():
 
     result['cache_perf'] = cache_perf
 
+    # ═══ Hardware Health (Phone 1 Gateway) ═══
+    hw_health = {
+        'squid_cpu': 0.0,
+        'squid_rss_kb': 0,
+        'squid_rss_human': '0 KB',
+        'squid_vsz_kb': 0,
+        'socks5_cpu': 0.0,
+        'socks5_rss_kb': 0,
+        'socks5_rss_human': '0 KB',
+        'open_files_current': 0,
+        'open_files_limit': 0,
+        'open_files_pct': 0,
+        'squid_uptime': 'N/A',
+        'system_load': [0, 0, 0],
+        'system_ram_total_mb': 0,
+        'system_ram_used_mb': 0,
+        'system_ram_pct': 0,
+        'system_temp': 0,
+        'battery_pct': 0,
+        'squid_mgr_info': {},
+    }
+
+    # Squid process stats
+    try:
+        squid_pid = _run_cmd("pgrep -f 'squid -f' | head -1")
+        if squid_pid:
+            ps_line = _run_cmd(f"ps -p {squid_pid} -o %cpu,rss,vsz,etime --no-headers 2>/dev/null")
+            if ps_line:
+                parts = ps_line.split()
+                if len(parts) >= 4:
+                    hw_health['squid_cpu'] = float(parts[0])
+                    hw_health['squid_rss_kb'] = int(parts[1])
+                    hw_health['squid_rss_human'] = _human_bytes(int(parts[1]) * 1024)
+                    hw_health['squid_vsz_kb'] = int(parts[2])
+                    hw_health['squid_uptime'] = parts[3]
+    except:
+        pass
+
+    # SOCKS5 process stats
+    try:
+        socks5_pid = _run_cmd("pgrep -f 'socks5_proxy.py' | head -1")
+        if socks5_pid:
+            ps_line = _run_cmd(f"ps -p {socks5_pid} -o %cpu,rss,vsz --no-headers 2>/dev/null")
+            if ps_line:
+                parts = ps_line.split()
+                if len(parts) >= 3:
+                    hw_health['socks5_cpu'] = float(parts[0])
+                    hw_health['socks5_rss_kb'] = int(parts[1])
+                    hw_health['socks5_rss_human'] = _human_bytes(int(parts[1]) * 1024)
+    except:
+        pass
+
+    # File descriptor limits
+    try:
+        if squid_pid:
+            fd_current = _run_cmd(f"ls /proc/{squid_pid}/fd 2>/dev/null | wc -l")
+            hw_health['open_files_current'] = int(fd_current) if fd_current.isdigit() else 0
+
+            fd_limit = _run_cmd(f"cat /proc/{squid_pid}/limits 2>/dev/null | grep 'Max open files' | awk '{{print $4}}'")
+            hw_health['open_files_limit'] = int(fd_limit) if fd_limit.isdigit() else 0
+
+            if hw_health['open_files_limit'] > 0:
+                hw_health['open_files_pct'] = round(hw_health['open_files_current'] / hw_health['open_files_limit'] * 100, 1)
+    except:
+        pass
+
+    # System health
+    try:
+        load = _run_cmd("cat /proc/loadavg 2>/dev/null")
+        if load:
+            parts = load.split()[:3]
+            hw_health['system_load'] = [float(x) for x in parts]
+
+        meminfo = _run_cmd("cat /proc/meminfo 2>/dev/null")
+        if meminfo:
+            for line in meminfo.split('\n'):
+                if 'MemTotal' in line:
+                    hw_health['system_ram_total_mb'] = int(line.split()[1]) // 1024
+                elif 'MemAvailable' in line:
+                    avail = int(line.split()[1]) // 1024
+                    hw_health['system_ram_used_mb'] = hw_health['system_ram_total_mb'] - avail
+            if hw_health['system_ram_total_mb'] > 0:
+                hw_health['system_ram_pct'] = round(hw_health['system_ram_used_mb'] / hw_health['system_ram_total_mb'] * 100, 1)
+
+        temp = _run_cmd("cat /sys/class/thermal/thermal_zone0/temp 2>/dev/null")
+        if temp and temp.isdigit():
+            hw_health['system_temp'] = round(int(temp) / 1000, 1)
+
+        batt = _run_cmd("cat /sys/class/power_supply/battery/capacity 2>/dev/null")
+        if batt and batt.isdigit():
+            hw_health['battery_pct'] = int(batt)
+    except:
+        pass
+
+    # Squid manager info (squidclient mgr:info)
+    try:
+        mgr_info = _run_cmd("echo 'info' | nc -w 3 127.0.0.1 3128 2>/dev/null | head -40")
+        if mgr_info:
+            info_dict = {}
+            for line in mgr_info.split('\n'):
+                if ':' in line:
+                    key, _, val = line.partition(':')
+                    key = key.strip().lower().replace(' ', '_').replace('/', '_')
+                    val = val.strip()
+                    if val:
+                        info_dict[key] = val
+            hw_health['squid_mgr_info'] = info_dict
+    except:
+        pass
+
+    result['hw_health'] = hw_health
+
     cfg._proxy_cache = {'t': now, 'data': result}
     return result
 
