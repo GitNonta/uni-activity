@@ -206,6 +206,82 @@ function EgressSecurity({ blockedPorts }) {
   );
 }
 
+function ConnectionDashboard({ connections }) {
+  if (!connections) return null;
+  const c = connections;
+
+  return (
+    <div style={{
+      background: '#fff', border: '1px solid #e2e8f0', borderRadius: 14,
+      padding: '1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
+    }}>
+      <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <svg width="18" height="18" fill="none" stroke="#7c3aed" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+        Connection & Concurrency
+      </h3>
+
+      {/* Connection KPIs */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
+        <div style={{ background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 10, padding: '0.85rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#7c3aed', textTransform: 'uppercase' }}>Squid HTTP</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#581c87', margin: '0.25rem 0' }}>{c.squid_active}</div>
+          <div style={{ fontSize: '0.7rem', color: '#7c3aed' }}>Active connections (:3128)</div>
+        </div>
+
+        <div style={{ background: '#fdf2f8', border: '1px solid #fbcfe8', borderRadius: 10, padding: '0.85rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#be185d', textTransform: 'uppercase' }}>SOCKS5</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#9d174d', margin: '0.25rem 0' }}>{c.socks5_active}</div>
+          <div style={{ fontSize: '0.7rem', color: '#be185d' }}>Active connections (:1080)</div>
+        </div>
+
+        <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 10, padding: '0.85rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#0369a1', textTransform: 'uppercase' }}>Total HTTP</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0c4a6e', margin: '0.25rem 0' }}>{c.total_squid_conns}</div>
+          <div style={{ fontSize: '0.7rem', color: '#0369a1' }}>All states (incl. TIME_WAIT)</div>
+        </div>
+
+        <div style={{ background: '#fefce8', border: '1px solid #fde68a', borderRadius: 10, padding: '0.85rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#a16207', textTransform: 'uppercase' }}>Total SOCKS5</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#713f12', margin: '0.25rem 0' }}>{c.total_socks5_conns}</div>
+          <div style={{ fontSize: '0.7rem', color: '#a16207' }}>All states</div>
+        </div>
+      </div>
+
+      {/* Top Client IPs */}
+      {c.top_clients && c.top_clients.length > 0 && (
+        <div>
+          <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', fontWeight: 700, color: '#374151' }}>Top Client IPs (by requests)</h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+            {c.top_clients.map((cl, i) => {
+              const deviceNames = {
+                '192.168.1.44': '📱 iPad',
+                '192.168.1.57': '💻 Computer',
+                '192.168.1.140': '📱 Phone 2',
+                '127.0.0.1': '🖥️ Phone 1 (local)',
+                '192.168.1.222': '🖥️ Phone 1',
+              };
+              const device = deviceNames[cl.ip] || '📡 Device';
+              return (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0.6rem', background: '#f8fafc', borderRadius: 6, border: '1px solid #f1f5f9' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#94a3b8', width: 20, textAlign: 'right' }}>#{i + 1}</span>
+                    <span style={{ fontSize: '0.8rem', color: '#374151' }}>{device}</span>
+                    <span style={{ fontSize: '0.7rem', fontFamily: 'monospace', color: '#6b7280' }}>{cl.ip}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '0.7rem', color: '#6b7280' }}>{cl.bytes_human}</span>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2563eb', background: '#eff6ff', padding: '0.1rem 0.4rem', borderRadius: 4 }}>{cl.requests} reqs</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function TopologyDiagram({ proxy }) {
   return (
     <div style={{
@@ -367,6 +443,9 @@ export function ProxyCard({ proxy }) {
 
       {/* Traffic Dashboard */}
       <TrafficDashboard traffic={proxy.traffic} />
+
+      {/* Connection Dashboard */}
+      <ConnectionDashboard connections={proxy.connections} />
 
       {/* Worker Grid */}
       <WorkerGrid workers={proxy.workers} />

@@ -1353,6 +1353,81 @@ def get_proxy_status():
 
     result['traffic'] = traffic
 
+    # ═══ Connection & Concurrency Metrics ═══
+    connections = {
+        'squid_active': 0,
+        'socks5_active': 0,
+        'top_clients': [],
+        'total_squid_conns': 0,
+        'total_socks5_conns': 0,
+    }
+
+    # Active HTTP connections (Squid :3128)
+    try:
+        conns = _run_cmd("netstat -tnp 2>/dev/null | grep ':3128' | grep ESTABLISHED | wc -l")
+        connections['squid_active'] = int(conns) if conns.isdigit() else 0
+        # Total including TIME_WAIT
+        conns_total = _run_cmd("netstat -tnp 2>/dev/null | grep ':3128' | wc -l")
+        connections['total_squid_conns'] = int(conns_total) if conns_total.isdigit() else 0
+    except:
+        pass
+
+    # Active SOCKS5 connections (port 1080)
+    try:
+        conns = _run_cmd("netstat -tnp 2>/dev/null | grep ':1080' | grep ESTABLISHED | wc -l")
+        connections['socks5_active'] = int(conns) if conns.isdigit() else 0
+        conns_total = _run_cmd("netstat -tnp 2>/dev/null | grep ':1080' | wc -l")
+        connections['total_socks5_conns'] = int(conns_total) if conns_total.isdigit() else 0
+    except:
+        pass
+
+    # Top client IPs (from Squid access log)
+    try:
+        access_log = os.path.expanduser('~/uni-activity/storage/logs/squid-access.log')
+        if os.path.exists(access_log):
+            client_ips = {}
+            client_bytes = {}
+            with open(access_log, 'rb') as f:
+                f.seek(0, 2)
+                file_size = f.tell()
+                read_size = min(200000, file_size)
+                f.seek(max(0, file_size - read_size))
+                data = f.read().decode('utf-8', errors='ignore')
+
+            lines = data.strip().split('\n')[-500:]
+            for line in lines:
+                try:
+                    parts = line.split()
+                    if len(parts) < 5:
+                        continue
+                    # Format: timestamp elapsed client code size method url
+                    client = parts[2]
+                    if client.startswith('192.168.') or client.startswith('127.'):
+                        client_ips[client] = client_ips.get(client, 0) + 1
+                        try:
+                            size = int(parts[4])
+                            client_bytes[client] = client_bytes.get(client, 0) + size
+                        except:
+                            pass
+                except:
+                    continue
+
+            # Sort by request count
+            sorted_clients = sorted(client_ips.items(), key=lambda x: x[1], reverse=True)
+            connections['top_clients'] = [
+                {
+                    'ip': ip,
+                    'requests': count,
+                    'bytes': client_bytes.get(ip, 0),
+                    'bytes_human': _human_bytes(client_bytes.get(ip, 0)),
+                }
+                for ip, count in sorted_clients[:10]
+            ]
+    except:
+        pass
+
+    result['connections'] = connections
+
     cfg._proxy_cache = {'t': now, 'data': result}
     return result
 
