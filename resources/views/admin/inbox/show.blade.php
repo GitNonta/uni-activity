@@ -272,6 +272,86 @@
         }
         .msg-action-btn:hover { color: #ea580c; background: #f1f5f9; }
 
+        /* ── UI polish: bubbles, composer, buttons ── */
+        .msg-bubble-mine div[id^="bubble-"] {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+            box-shadow: 0 2px 8px rgba(234, 88, 12, 0.3) !important;
+            border: none !important;
+        }
+        .msg-bubble-theirs div[id^="bubble-"] {
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+        }
+
+        #msgInput {
+            border-radius: 22px !important;
+            transition: box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+        }
+        #msgInput:focus {
+            outline: none !important;
+            border-color: #ea580c !important;
+            box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.14) !important;
+        }
+        html[data-theme="dark"] #msgInput {
+            border-radius: 22px !important;
+        }
+        html[data-theme="dark"] #msgInput:focus {
+            border-color: #f97316 !important;
+        }
+
+        #sendBtn {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+            box-shadow: 0 3px 10px rgba(234, 88, 12, 0.38);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+        }
+        #sendBtn:hover {
+            transform: scale(1.07);
+            box-shadow: 0 5px 14px rgba(234, 88, 12, 0.45);
+        }
+        #sendBtn:active { transform: scale(0.95); }
+
+        form#chatForm label[title*="แนบไฟล์"] {
+            transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+        }
+        form#chatForm label[title*="แนบไฟล์"]:hover {
+            border-color: #fdba74 !important;
+            color: #ea580c !important;
+            background: #fff7ed !important;
+        }
+
+        /* Editing state: green glow on the composer */
+        form#chatForm.editing {
+            border-color: #10b981 !important;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+        }
+
+        /* Read status pill */
+        .admin-msg-read-status {
+            padding: 1px 7px;
+            border-radius: 9px;
+            background: rgba(234, 88, 12, 0.08);
+            font-weight: 600;
+        }
+
+        /* Attach button hover (dark theme) */
+        html[data-theme="dark"] form#chatForm label[title*="แนบไฟล์"]:hover {
+            border-color: #f97316 !important;
+            color: #fdba74 !important;
+            background: rgba(249, 115, 22, 0.1) !important;
+        }
+
+        /* Empty state */
+        #noMsg {
+            background: #ffffff;
+            border: 1px dashed #e2e8f0;
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            margin: auto 1rem;
+        }
+        html[data-theme="dark"] #noMsg {
+            background: #1c1c1f;
+            border-color: #3f3f46;
+        }
+
         .attachment-img {
             max-width: 100%;
             max-height: 260px;
@@ -1094,6 +1174,7 @@ document.addEventListener('DOMContentLoaded', function () {
         isEditingId = id;
         input.value = textEl.textContent.trim();
         input.focus();
+        form.classList.add('editing');
         btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>';
         btn.style.background = '#10b981';
     };
@@ -1102,6 +1183,7 @@ document.addEventListener('DOMContentLoaded', function () {
         isEditingId = null;
         input.value = '';
         input.style.height = 'auto';
+        form.classList.remove('editing');
         btn.innerHTML = '<svg style="width:18px;height:18px;transform:rotate(45deg);margin-left:-2px;" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';
         btn.style.background = '#ea580c';
     }

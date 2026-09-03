@@ -996,18 +996,23 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .admin-chat-widget {
-    width: 340px;
-    height: 480px;
+    width: 360px;
+    height: 520px;
     background: #fff;
     border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.08);
     display: flex;
     flex-direction: column;
     overflow: hidden;
     pointer-events: auto;
-    transition: transform 0.2s, height 0.2s, background 0.2s, border-color 0.2s;
+    transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), height 0.25s ease, background 0.2s, border-color 0.2s;
     transform-origin: bottom center;
+    animation: acw-open 0.28s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes acw-open {
+    from { opacity: 0; transform: translateY(18px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 html[data-theme="light"] .admin-chat-widget {
@@ -1023,44 +1028,97 @@ html[data-theme="dark"] .admin-chat-widget {
 }
 
 .admin-chat-widget.minimized {
-    height: 50px;
+    height: 62px;
 }
 
 .acw-header {
-    background: #ea580c;
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 55%, #c2410c 100%);
     color: #fff;
-    padding: 0.75rem 1rem;
+    padding: 0.6rem 0.85rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 0.5rem;
     cursor: pointer;
+    flex-shrink: 0;
+}
+.acw-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    border: 1.5px solid rgba(255,255,255,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 .acw-title {
-    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-width: 0;
+    flex: 1;
+}
+.acw-title-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 1px;
+}
+.acw-title-name {
+    font-size: 0.88rem;
     font-weight: 700;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+.acw-title-sub {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
+    font-size: 0.66rem;
+    font-weight: 500;
+    opacity: 0.92;
+}
+.acw-live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 0 2px rgba(74,222,128,0.25);
+    animation: acw-pulse 2s ease-in-out infinite;
+}
+@keyframes acw-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
 }
 .acw-actions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 .acw-actions button {
-    background: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.16);
     border: none;
     color: #fff;
     cursor: pointer;
-    opacity: 0.8;
     margin: 0;
     padding: 0;
     line-height: 1;
+    transition: background 0.15s ease, transform 0.15s ease;
 }
-.acw-actions button:hover { opacity: 1; }
+.acw-actions button:hover {
+    background: rgba(255,255,255,0.32);
+    transform: scale(1.08);
+}
+.acw-actions button:active { transform: scale(0.94); }
 .acw-iframe {
     flex: 1;
     border: none;
@@ -1097,14 +1155,16 @@ window.AdminChatManager = (function() {
 
         const titleSpan = document.createElement('span');
         titleSpan.className = 'acw-title';
-        titleSpan.innerHTML = '<svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg> ' + title;
+        titleSpan.innerHTML = '<span class="acw-avatar"><svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg></span>'
+            + '<span class="acw-title-text"><span class="acw-title-name">' + title + '</span>'
+            + '<span class="acw-title-sub"><span class="acw-live-dot"></span>แชทสด</span></span>';
 
         const actions = document.createElement('div');
         actions.className = 'acw-actions';
         
         const closeBtn = document.createElement('button');
-        closeBtn.innerHTML = '✕';
-        closeBtn.style.fontSize = '1.1rem';
+        closeBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+        closeBtn.title = 'ปิดหน้าต่างแชท';
         closeBtn.onclick = function() {
             widget.remove();
             delete openChats[chatId];
