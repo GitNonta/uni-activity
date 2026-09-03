@@ -94,7 +94,7 @@ class OtpVerificationController extends Controller
         // ดึงข้อมูลการเปลี่ยนรหัสที่ค้างไว้ใน Session
         $resetData = session('pending_password_reset');
         
-        if (!$resetData || $resetData['email'] !== $request->email) {
+        if (!$resetData || $resetData['email'] !== $email) {
             return redirect()->route('admin.password.request')
                 ->withErrors(['email' => 'เซสชันหมดอายุหรือข้อมูลไม่ถูกต้อง กรุณาเริ่มขั้นตอนใหม่']);
         }

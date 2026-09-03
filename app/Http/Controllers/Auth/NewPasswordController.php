@@ -61,10 +61,10 @@ class NewPasswordController extends Controller
             Log::error('Password Reset OTP Mail Error: ' . $e->getMessage());
         }
 
-        // เก็บข้อมูลรหัสผ่านใหม่ไว้ใน Session ชั่วคราว
+        // เก็บข้อมูลรหัสผ่านใหม่ไว้ใน Session ชั่วคราว (ใช้ lowercase email เพื่อให้ตรงกับ OtpVerificationController)
         session([
             'pending_password_reset' => [
-                'email'    => $request->email,
+                'email'    => $email, // ← ใช้ $email ที่ผ่าน strtolower() แล้ว (บรรทัด 36)
                 'password' => $request->password,
                 'token'    => $request->token,
             ]
