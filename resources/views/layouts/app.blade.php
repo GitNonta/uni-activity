@@ -400,9 +400,13 @@
         padding-bottom: calc(.5rem + env(safe-area-inset-bottom, 0px));
         background: #fff;
         flex-shrink: 0;
+        width: 100%;
+        box-sizing: border-box;
     }
     .cf-input-field {
         flex: 1;
+        min-width: 0;
+        width: 100%;
         resize: none;
         border: 1.5px solid transparent;
         border-radius: 20px;
@@ -655,12 +659,16 @@
 
         #cfChatForm {
             gap: 0.4rem !important;
+            flex-wrap: nowrap !important;
+            align-items: flex-end !important;
+            min-width: 0 !important;
         }
 
         .cf-attach-label {
             width: 40px !important;
             height: 40px !important;
             min-width: 40px !important;
+            flex-shrink: 0 !important;
             border-radius: 50% !important;
             border: none !important;
             background: #f1f5f9 !important;
@@ -672,9 +680,15 @@
             max-height: 96px !important;
             border-radius: 20px !important;
             padding: 0.55rem 0.9rem !important;
-            font-size: 0.9rem !important;
+            /* 16px prevents iOS Safari auto-zoom on focus, which distorts
+               the fixed fullscreen panel layout */
+            font-size: 16px !important;
+            line-height: 1.4 !important;
+            min-width: 0 !important;
+            flex: 1 1 auto !important;
             background: #f8fafc !important;
             border: 1.5px solid transparent !important;
+            box-sizing: border-box !important;
             transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
         }
 
@@ -688,6 +702,7 @@
             width: 40px !important;
             height: 40px !important;
             min-width: 40px !important;
+            flex-shrink: 0 !important;
             padding: 0 !important;
             border-radius: 50% !important;
             background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
