@@ -68,7 +68,7 @@
                         </label>
                     </div>
                     <div style="display:flex; gap:0.5rem; align-items:center;">
-                        <input type="date" name="activity_date" id="activityDate" value="{{ old('activity_date', $activity->activity_date->format('Y-m-d')) }}" class="form-control" required style="flex:1;">
+                        <input type="date" name="activity_date" id="activityDate" value="{{ old('activity_date', $activity->activity_date->format('Y-m-d')) }}" class="form-control" required style="flex:1;" onchange="autoFillDates()">
                         <span id="endDateSeparator" style="display:{{ old('is_multiday', $activity->is_multiday) ? 'inline' : 'none' }};">ถึง</span>
                         <input type="date" name="end_date" id="endDate" value="{{ old('end_date', $activity->end_date ? $activity->end_date->format('Y-m-d') : '') }}" class="form-control" style="flex:1; display:{{ old('is_multiday', $activity->is_multiday) ? 'block' : 'none' }};">
                     </div>
@@ -89,11 +89,11 @@
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label">เวลาเริ่ม</label>
-                    <input type="time" name="start_time" id="startTime" value="{{ old('start_time', \Carbon\Carbon::parse($activity->start_time)->format('H:i')) }}" class="form-control" required onchange="autoCalcHours()">
+                    <input type="time" name="start_time" id="startTime" value="{{ old('start_time', \Carbon\Carbon::parse($activity->start_time)->format('H:i')) }}" class="form-control" required onchange="autoCalcHours(); autoFillDates()">
                 </div>
                 <div class="form-group">
                     <label class="form-label">เวลาสิ้นสุด</label>
-                    <input type="time" name="end_time" id="endTime" value="{{ old('end_time', \Carbon\Carbon::parse($activity->end_time)->format('H:i')) }}" class="form-control" required onchange="autoCalcHours()">
+                    <input type="time" name="end_time" id="endTime" value="{{ old('end_time', \Carbon\Carbon::parse($activity->end_time)->format('H:i')) }}" class="form-control" required onchange="autoCalcHours(); autoFillDates()">
                     <small id="crossDayHint" class="text-muted" style="display:{{ old('is_multiday', $activity->is_multiday) ? 'block' : 'none' }}; margin-top:4px;">(ข้ามวันได้)</small>
                 </div>
             </div>
@@ -102,23 +102,28 @@
                 <input type="number" name="max_participants" value="{{ old('max_participants', $activity->max_participants) }}" min="1" class="form-control" required>
             </div>
             <div class="form-row">
+            <div class="form-group" style="padding:.6rem .8rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;margin-bottom:.75rem;display:flex;align-items:center;justify-content:space-between;">
+                <p class="text-xs" style="color:#16a34a;margin:0;">💡 คลิกปุ่มด้านขวาเพื่อตั้งค่าเวลาลงทะเบียน / เช็คอิน / เช็คเอาต์ อัตโนมัติจากวันที่จัดกิจกรรม</p>
+                <button type="button" class="btn btn-outline btn-sm" onclick="autoFillDates()" style="white-space:nowrap;margin-left:.5rem;flex-shrink:0;">ตั้งค่าอัตโนมัติ</button>
+            </div>
+            <div class="form-row">
                 <div class="form-group">
                     <label class="form-label">เปิดลงทะเบียน</label>
-                    <input type="datetime-local" name="register_open_at" value="{{ old('register_open_at', $activity->register_open_at->format('Y-m-d\TH:i')) }}" class="form-control" required>
+                    <input type="datetime-local" name="register_open_at" id="registerOpenInput" value="{{ old('register_open_at', $activity->register_open_at->format('Y-m-d\TH:i')) }}" class="form-control" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">ปิดลงทะเบียน</label>
-                    <input type="datetime-local" name="register_close_at" value="{{ old('register_close_at', $activity->register_close_at->format('Y-m-d\TH:i')) }}" class="form-control" required>
+                    <input type="datetime-local" name="register_close_at" id="registerCloseInput" value="{{ old('register_close_at', $activity->register_close_at->format('Y-m-d\TH:i')) }}" class="form-control" required>
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label">เปิดเช็คอิน</label>
-                    <input type="datetime-local" name="checkin_open_at" value="{{ old('checkin_open_at', $activity->checkin_open_at->format('Y-m-d\TH:i')) }}" class="form-control" required>
+                    <input type="datetime-local" name="checkin_open_at" id="checkinOpenInput" value="{{ old('checkin_open_at', $activity->checkin_open_at->format('Y-m-d\TH:i')) }}" class="form-control" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">ปิดเช็คอิน</label>
-                    <input type="datetime-local" name="checkin_close_at" value="{{ old('checkin_close_at', $activity->checkin_close_at->format('Y-m-d\TH:i')) }}" class="form-control" required>
+                    <input type="datetime-local" name="checkin_close_at" id="checkinCloseInput" value="{{ old('checkin_close_at', $activity->checkin_close_at->format('Y-m-d\TH:i')) }}" class="form-control" required>
                 </div>
             </div>
             <div class="form-group" id="noCheckoutGroup" style="display:{{ old('is_multiday', $activity->is_multiday) ? 'block' : 'none' }}; margin-bottom: 0.5rem;">
@@ -561,6 +566,66 @@ function toggleCustomHours(cb) {
         hint.textContent = 'คำนวณอัตโนมัติจากเวลาเริ่ม–สิ้นสุด';
         autoCalcHours();
     }
+}
+
+// ── Auto-fill dates: ตั้งค่าเวลาลงทะเบียน/เช็คอิน/เช็คเอาต์อัตโนมัติจากวันที่จัดกิจกรรม ──
+function autoFillDates() {
+    var dateVal = document.getElementById('activityDate').value;
+    var startVal = document.getElementById('startTime').value;
+    var endVal = document.getElementById('endTime').value;
+    if (!dateVal || !startVal || !endVal) return;
+
+    // Parse date (YYYY-MM-DD)
+    var dp = dateVal.split('-');
+    var y = parseInt(dp[0]), m = parseInt(dp[1]) - 1, d = parseInt(dp[2]);
+
+    // Parse times (HH:MM)
+    var sp = startVal.split(':'), ep = endVal.split(':');
+    var sh = parseInt(sp[0]), sm = parseInt(sp[1]);
+    var eh = parseInt(ep[0]), em = parseInt(ep[1]);
+
+    // Build Date objects
+    var startDate = new Date(y, m, d, sh, sm);
+    var endDate   = new Date(y, m, d, eh, em);
+
+    // Cross-day: end time on the next day
+    if (endDate <= startDate) endDate.setDate(endDate.getDate() + 1);
+
+    var now = new Date();
+
+    // register_open_at  = ตอนนี้
+    // register_close_at = วันที่จัด − 1 ชม. (ก่อนเริ่มกิจกรรม)
+    // checkin_open_at   = วันที่จัด + เวลาเริ่ม − 30 นาที
+    // checkin_close_at  = วันที่จัด + เวลาสิ้นสุด + 30 นาที
+    // checkout_open_at  = วันที่จัด + เวลาเริ่ม
+    // checkout_close_at = วันที่จัด + เวลาสิ้นสุด
+    var regOpen  = now;
+    var regClose = new Date(startDate.getTime() - 3600000);
+    var ciOpen   = new Date(startDate.getTime() - 1800000);
+    var ciClose  = new Date(endDate.getTime()   + 1800000);
+    var coOpen   = new Date(startDate.getTime());
+    var coClose  = new Date(endDate.getTime());
+
+    function fmt(dt) {
+        return dt.getFullYear() + '-' +
+            String(dt.getMonth()+1).padStart(2,'0') + '-' +
+            String(dt.getDate()).padStart(2,'0') + 'T' +
+            String(dt.getHours()).padStart(2,'0') + ':' +
+            String(dt.getMinutes()).padStart(2,'0');
+    }
+
+    var ids = ['registerOpenInput','registerCloseInput','checkinOpenInput','checkinCloseInput','checkoutOpenInput','checkoutCloseInput'];
+    var vals = [fmt(regOpen), fmt(regClose), fmt(ciOpen), fmt(ciClose), fmt(coOpen), fmt(coClose)];
+
+    ids.forEach(function(id, i) {
+        var el = document.getElementById(id);
+        if (el) {
+            el.value = vals[i];
+            el.style.background = '#f0fdf4';
+            el.style.borderColor = '#86efac';
+            el.style.transition = 'background .3s, border-color .3s';
+        }
+    });
 }
 </script>
 @endsection
