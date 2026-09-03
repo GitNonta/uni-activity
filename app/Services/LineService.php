@@ -51,7 +51,7 @@ class LineService
         }
 
         // If app URL is not HTTPS, check if HTTPS_HOST or proxy is available
-        $httpsHost = env('APP_HTTPS_URL');
+        $httpsHost = config('app.https_url');
         if ($httpsHost && str_starts_with($httpsHost, 'https://')) {
             return rtrim($httpsHost, '/') . '/storage/' . ltrim($imagePath, '/');
         }
@@ -68,7 +68,7 @@ class LineService
         }
 
         try {
-            $response = Http::withOptions(['proxy' => env('FORWARD_PROXY')])
+            $response = Http::withOptions(['proxy' => config('services.line.forward_proxy')])
                 ->withToken($this->accessToken)
                 ->timeout(15)
                 ->post("{$this->apiBase}/message/push", [
@@ -102,7 +102,7 @@ class LineService
         // ส่งได้สูงสุด 500 คนต่อ request
         foreach (array_chunk($lineUserIds, 500) as $chunk) {
             try {
-                $response = Http::withOptions(['proxy' => env('FORWARD_PROXY')])
+                $response = Http::withOptions(['proxy' => config('services.line.forward_proxy')])
                     ->withToken($this->accessToken)
                     ->timeout(15)
                     ->post("{$this->apiBase}/message/multicast", [
@@ -522,7 +522,7 @@ class LineService
                 'api:line:profile:' . md5($accessToken),
                 300,
                 function () use ($accessToken) {
-                    $response = Http::withOptions(['proxy' => env('FORWARD_PROXY')])
+                    $response = Http::withOptions(['proxy' => config('services.line.forward_proxy')])
                         ->withToken($accessToken)
                         ->timeout(10)
                         ->get('https://api.line.me/v2/profile');
@@ -537,7 +537,7 @@ class LineService
     public function exchangeToken(string $code, string $redirectUri): ?array
     {
         try {
-            $response = Http::withOptions(['proxy' => env('FORWARD_PROXY')])
+            $response = Http::withOptions(['proxy' => config('services.line.forward_proxy')])
                 ->asForm()
                 ->timeout(15)
                 ->post('https://api.line.me/oauth2/v2.1/token', [

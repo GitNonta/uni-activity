@@ -42,6 +42,7 @@ return [
         'login_channel_secret'  => env('LINE_LOGIN_CHANNEL_SECRET', ''),
         'callback_url'          => env('LINE_CALLBACK_URL', ''),
         'redirect_base_url'     => env('LINE_REDIRECT_BASE_URL', ''),
+        'forward_proxy'         => env('FORWARD_PROXY', ''),
     ],
     
     'ai_server' => [
