@@ -24,28 +24,25 @@
             <span style="background:#f59e0b;color:#fff;border-radius:999px;padding:1px 8px;font-size:.75rem;margin-left:6px;">{{ $todos->count() }}</span>
         </h2>
     </div>
-    <div style="display:flex;gap:.75rem;overflow-x:auto;padding-bottom:.5rem;scroll-snap-type:x mandatory;">
+    <div class="todo-scroll">
         @foreach($todos as $todo)
-        <div style="min-width:260px;max-width:300px;scroll-snap-align:start;flex-shrink:0;
-                    background:{{ $todo['bg'] }};border:1.5px solid {{ $todo['color'] }}22;
-                    border-left:4px solid {{ $todo['color'] }};border-radius:12px;padding:1rem;
-                    box-shadow:0 2px 8px rgba(0,0,0,.06);">
+        <div class="todo-card" style="background:{{ $todo['bg'] }};border:1.5px solid {{ $todo['color'] }}22;border-left:4px solid {{ $todo['color'] }};--todo-color: {{ $todo['color'] }};--todo-glow: {{ $todo['color'] }}33;">
             {{-- Icon + label --}}
             <div class="flex items-center gap-2 mb-2">
                 @if($todo['icon'] === 'check')
-                    <span style="background:{{ $todo['color'] }};color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <span class="todo-icon">
                         <svg style="width:15px;height:15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                     </span>
                 @elseif($todo['icon'] === 'clock')
-                    <span style="background:{{ $todo['color'] }};color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <span class="todo-icon">
                         <svg style="width:15px;height:15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </span>
                 @elseif($todo['icon'] === 'star')
-                    <span style="background:{{ $todo['color'] }};color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <span class="todo-icon">
                         <svg style="width:15px;height:15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
                     </span>
                 @else
-                    <span style="background:{{ $todo['color'] }};color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <span class="todo-icon">
                         <svg style="width:15px;height:15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </span>
                 @endif
@@ -56,7 +53,7 @@
                 <svg style="width:14px;height:14px;display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> {{ $todo['activity']->activity_date->format('d/m/Y') }}
                 · <svg style="width:14px;height:14px;display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> {{ $todo['activity']->location }}
             </p>
-            <a href="{{ $todo['action_url'] }}" class="btn btn-sm" style="background:{{ $todo['color'] }};color:#fff;width:100%;justify-content:center;font-size:.8rem;padding:.4rem .75rem;border-radius:8px;">
+            <a href="{{ $todo['action_url'] }}" class="btn btn-sm" style="background:{{ $todo['color'] }};color:#fff;width:100%;justify-content:center;font-size:.8rem;padding:.4rem .75rem;border-radius:12px;font-weight:600;">
                 {{ $todo['action_label'] }}
             </a>
         </div>
@@ -183,6 +180,101 @@
     </div>
 @endforelse
 @endsection
+
+@push('styles')
+<style>
+    /* ═══ Native-feel task carousel (กิจกรรมของฉัน) ═══ */
+    .todo-scroll {
+        display: flex;
+        gap: .75rem;
+        overflow-x: auto;
+        padding: .25rem .25rem .9rem;
+        margin: 0 -.25rem;
+        scroll-snap-type: x mandatory;
+        scroll-padding-left: .25rem;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: contain;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    .todo-scroll::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
+    .todo-card {
+        position: relative;
+        min-width: 260px;
+        max-width: 300px;
+        flex: 1 0 78%;
+        scroll-snap-align: start;
+        overflow: hidden;
+        border-radius: 16px;
+        padding: .9rem 1rem .95rem;
+        transition: transform .15s ease, box-shadow .15s ease;
+    }
+    /* soft tinted glow from the card's accent color */
+    .todo-card::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: radial-gradient(120% 90% at 100% 0%, var(--todo-glow) 0%, transparent 55%);
+        pointer-events: none;
+    }
+    .todo-card > * { position: relative; z-index: 1; }
+
+    .todo-icon {
+        background: var(--todo-color);
+        color: #fff;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 2px 6px var(--todo-glow);
+    }
+    .todo-icon svg { width: 15px; height: 15px; }
+
+    .todo-card .font-semi {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .todo-card .text-xs.text-muted svg { vertical-align: -2px; }
+    .todo-card .text-xs.text-muted {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .todo-card .btn {
+        border-radius: 12px !important;
+        font-weight: 600;
+        transition: transform .15s ease, filter .15s ease;
+    }
+
+    /* desktop hint: there is more to scroll */
+    @media (hover: hover) and (pointer: fine) {
+        .todo-scroll {
+            padding-bottom: 1.25rem;
+            background:
+                linear-gradient(90deg, #f1f5f9 0%, #cbd5e1 50%, #f1f5f9 100%) no-repeat bottom / 72px 4px;
+        }
+        .todo-card:hover {
+            transform: translateY(-2px);
+        }
+        .todo-card .btn:hover { filter: brightness(1.06); }
+    }
+
+    /* phones: cards snap almost full-width, content bleeds past the frame */
+    @media (max-width: 640px) {
+        .todo-scroll { margin: 0 -24px; padding: .25rem 24px .9rem; }
+        .todo-card { flex: 1 0 84%; min-width: 0; }
+        .todo-card:active { transform: scale(.98); }
+    }
+</style>
+@endpush
 
 @section('scripts')
 {{-- qrcode.js CDN --}}

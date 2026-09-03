@@ -1846,6 +1846,7 @@
     </script>
 
     @yield('scripts')
+    @stack('styles')
     @stack('scripts')
 </body>
 </html>
