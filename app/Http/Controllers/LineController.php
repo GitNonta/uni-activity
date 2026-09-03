@@ -33,7 +33,7 @@ class LineController extends Controller
             'client_id'     => config('services.line.login_channel_id'),
             'redirect_uri'  => $callbackUrl,
             'state'         => $state,
-            'scope'         => 'profile openid',
+            'scope'         => 'profile',
         ]);
 
         return redirect("https://access.line.me/oauth2/v2.1/authorize?{$params}");
