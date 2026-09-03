@@ -29,7 +29,7 @@
         <table class="responsive-table">
             <thead>
                 <tr>
-                    <th>หัวข้อ</th>
+                    <th style="width: 250px;">หัวข้อ</th>
                     <th>กลุ่มเป้าหมาย</th>
                     <th>ประเภท</th>
                     <th>ผู้สร้าง</th>
@@ -40,7 +40,7 @@
             <tbody>
                 @forelse($announcements as $item)
                 <tr>
-                    <td data-label="หัวข้อ" style="width: 100%; min-width: 200px; white-space: normal; word-break: break-word;">
+                    <td data-label="หัวข้อ" style="width: 250px; max-width: 250px; min-width: 200px;">
                         <div class="flex items-start gap-2">
                             @if($item->image_path)
                                 <img src="{{ Storage::url($item->image_path) }}" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover; flex-shrink: 0; background: #f1f5f9;">
