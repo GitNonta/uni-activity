@@ -50,7 +50,7 @@
                                 </div>
                             @endif
                             <div style="min-width:0; flex:1;">
-                                <div class="font-semi text-sm" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;">{{ $item->title }}</div>
+                                <div class="font-semi text-sm line-clamp-1">{{ $item->title }}</div>
                                 <div class="text-xs text-muted">{{ $item->created_at->format('d/m/Y H:i') }}</div>
                             </div>
                         </div>
