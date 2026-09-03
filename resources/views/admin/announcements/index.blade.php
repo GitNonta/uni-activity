@@ -40,8 +40,8 @@
             <tbody>
                 @forelse($announcements as $item)
                 <tr>
-                    <td data-label="หัวข้อ">
-                        <div class="flex items-center gap-2">
+                    <td data-label="หัวข้อ" style="width: 100%; min-width: 200px; white-space: normal; word-break: break-word;">
+                        <div class="flex items-start gap-2">
                             @if($item->image_path)
                                 <img src="{{ Storage::url($item->image_path) }}" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover; flex-shrink: 0; background: #f1f5f9;">
                             @else
@@ -49,8 +49,8 @@
                                     <svg class="icon-sm text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                 </div>
                             @endif
-                            <div style="min-width:0;">
-                                <div class="font-semi text-sm line-clamp-1">{{ $item->title }}</div>
+                            <div style="min-width:0; flex:1;">
+                                <div class="font-semi text-sm" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;">{{ $item->title }}</div>
                                 <div class="text-xs text-muted">{{ $item->created_at->format('d/m/Y H:i') }}</div>
                             </div>
                         </div>
