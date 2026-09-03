@@ -6,10 +6,12 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\SecurityService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 /**
@@ -18,6 +20,10 @@ use Illuminate\View\View;
  */
 class StaffAuthController extends Controller
 {
+    public function __construct(
+        private readonly SecurityService $security,
+    ) {}
+
     /** แสดงหน้าเข้าสู่ระบบเจ้าหน้าที่ */
     public function showLogin(): View|RedirectResponse
     {
@@ -46,6 +52,24 @@ class StaffAuthController extends Controller
 
         // ตรวจสอบ email และ password
         if (!$user || !Hash::check($request->password, $user->password)) {
+            // บันทึก failed login เพื่อ security monitoring
+            $this->security->logEvent(
+                eventType: 'staff_login_failed',
+                userId:    $user?->id,
+                request:   $request,
+                details:   [
+                    'email'   => $request->email,
+                    'reason'  => $user ? 'wrong_password' : 'email_not_found',
+                    'message' => 'Staff login attempt failed',
+                ],
+            );
+
+            Log::warning('Staff login failed', [
+                'ip'    => $request->ip(),
+                'email' => $request->email,
+                'ua'    => $request->userAgent(),
+            ]);
+
             return back()->withErrors(['email' => 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'])->withInput();
         }
 
@@ -65,6 +89,14 @@ class StaffAuthController extends Controller
         ]);
 
         $otpController->sendOtp($user, $request);
+
+        // บันทึก login attempt สำเร็จ (ก่อน OTP)
+        $this->security->logEvent(
+            eventType: 'staff_login_otp_sent',
+            userId:    $user->id,
+            request:   $request,
+            details:   ['email' => $user->email, 'message' => 'OTP sent for staff login'],
+        );
 
         return redirect()->route('login.otp.show');
     }
