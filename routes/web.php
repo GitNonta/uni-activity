@@ -88,7 +88,7 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [StudentAuthController::class, 'logout'])->name('logout');
 
 // ── เส้นทางเจ้าหน้าที่: เข้าสู่ระบบด้วย email + password ──
-Route::middleware(['guest', 'protect-admin'])->group(function () {
+Route::middleware(['guest', 'protect-admin', 'strip-hpp'])->group(function () {
     Route::get('/admin/login', [StaffAuthController::class, 'showLogin'])->name('admin.login');   // แสดงฟอร์ม login
     Route::post('/admin/login', [StaffAuthController::class, 'login'])->middleware('throttle:staff-login'); // ดำเนินการ login
 });
