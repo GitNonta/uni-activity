@@ -40,8 +40,8 @@
             <tbody>
                 @forelse($announcements as $item)
                 <tr>
-                    <td data-label="หัวข้อ" style="width: 250px; max-width: 250px; overflow: hidden;">
-                        <div class="font-semi text-sm line-clamp-1">{{ $item->title }}</div>
+                    <td data-label="หัวข้อ">
+                        <span class="font-semi text-sm" style="display:block;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ $item->title }}">{{ $item->title }}</span>
                         <div class="text-xs text-muted">{{ $item->created_at->format('d/m/Y H:i') }}</div>
                     </td>
                     <td data-label="กลุ่มเป้าหมาย">
