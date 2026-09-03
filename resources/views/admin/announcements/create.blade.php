@@ -29,6 +29,12 @@
                 <input type="file" name="image" class="form-control" accept="image/*">
                 @error('image') <div class="text-xs text-danger mt-1">{{ $message }}</div> @enderror
                 <div class="text-xs text-muted mt-1">ขนาดไฟล์ไม่เกิน 2MB รองรับไฟล์ jpeg, png, jpg, webp</div>
+                <div id="imageUploadStatus" style="display:none;align-items:center;gap:.5rem;margin-top:.5rem;padding:.45rem .65rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;">
+                    <svg style="width:16px;height:16px;flex-shrink:0;" fill="none" stroke="#16a34a" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span id="imageUploadName" style="font-size:.78rem;font-weight:600;color:#15803d;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></span>
+                    <span id="imageUploadSize" style="font-size:.72rem;color:#16a34a;flex-shrink:0;"></span>
+                    <button type="button" onclick="clearImageSelection()" title="ลบรูปที่เลือก" style="background:transparent;border:none;color:#dc2626;cursor:pointer;font-size:.85rem;line-height:1;padding:2px 4px;border-radius:4px;">✕</button>
+                </div>
             </div>
 
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;">
@@ -76,4 +82,33 @@
         </form>
     </div>
 </div>
+
+<script>
+(function () {
+    var input = document.querySelector('input[type="file"][name="image"]');
+    var status = document.getElementById('imageUploadStatus');
+    var nameEl = document.getElementById('imageUploadName');
+    var sizeEl = document.getElementById('imageUploadSize');
+    if (!input || !status) return;
+
+    function fmtSize(bytes) {
+        if (bytes >= 1048576) return (bytes / 1048576).toFixed(1) + ' MB';
+        if (bytes >= 1024) return (bytes / 1024).toFixed(0) + ' KB';
+        return bytes + ' B';
+    }
+
+    input.addEventListener('change', function () {
+        var f = input.files && input.files[0];
+        if (!f) { status.style.display = 'none'; return; }
+        nameEl.textContent = f.name;
+        sizeEl.textContent = fmtSize(f.size);
+        status.style.display = 'flex';
+    });
+
+    window.clearImageSelection = function () {
+        input.value = '';
+        status.style.display = 'none';
+    };
+})();
+</script>
 @endsection
