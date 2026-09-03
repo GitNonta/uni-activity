@@ -1,6 +1,32 @@
-import { useState } from 'react'
+import { useState, Component } from 'react'
 
-export function Inspector({ logs }) {
+// Error Boundary — ป้องกันจอขาวทั้งหน้าเมื่อ Inspector crash
+class InspectorErrorBoundary extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { hasError: false, error: null }
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error }
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#ef4444' }}>
+          <strong>Inspector Error:</strong> {this.state.error?.message}
+          <br />
+          <button
+            onClick={() => this.setState({ hasError: false, error: null })}
+            style={{ marginTop: '1rem', padding: '0.5rem 1rem', cursor: 'pointer', borderRadius: '0.375rem', border: '1px solid #ef4444', color: '#ef4444', background: 'transparent' }}
+          >Retry</button>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
+export function InspectorInner({ logs }) {
   const [selectedLogId, setSelectedLogId] = useState(null)
   const [activeTab, setActiveTab] = useState('summary')
   const [filterType, setFilterType] = useState('all') // 'all', 'http', 'artisan', 'shell'
@@ -254,7 +280,7 @@ export function Inspector({ logs }) {
                           fontSize: '0.85rem',
                           border: '1px solid #222'
                         }}>
-                          {selectedLog.response?.body || '(No output recorded)'}
+                          {selectedLog.response?.body ?? '(No output recorded)'}
                         </pre>
                         <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#888', display: 'flex', justifyContent: 'space-between' }}>
                           <span>Duration: {selectedLog.duration > 0 ? `${selectedLog.duration} ms` : 'N/A'}</span>
@@ -263,10 +289,10 @@ export function Inspector({ logs }) {
                       </div>
                     </div>
                   ) : (
-                    selectedLog.response.body && (
+                    selectedLog.response?.body && (
                       <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '0.5rem', padding: '1rem', overflowX: 'auto' }}>
                         <pre style={{ margin: 0, fontSize: '0.875rem', color: '#374151', whiteSpace: 'pre-wrap' }}>
-                          {selectedLog.response.body}
+                          {selectedLog.response?.body}
                         </pre>
                       </div>
                     )
@@ -279,14 +305,14 @@ export function Inspector({ logs }) {
                   <div>
                     <h4 style={{ margin: '0 0 0.5rem 0', color: '#111827', fontWeight: 600 }}>Properties / Headers</h4>
                     <pre style={{ background: '#fff', border: '1px solid #e5e7eb', padding: '1rem', borderRadius: '0.5rem', margin: 0, fontSize: '0.875rem', overflowX: 'auto' }}>
-                      {formatHeaders(selectedLog.request.headers)}
+                      {formatHeaders(selectedLog.request?.headers)}
                     </pre>
                   </div>
                   {getLogType(selectedLog) === 'http' && (
                     <div>
                       <h4 style={{ margin: '0 0 0.5rem 0', color: '#111827', fontWeight: 600 }}>Response Headers</h4>
                       <pre style={{ background: '#fff', border: '1px solid #e5e7eb', padding: '1rem', borderRadius: '0.5rem', margin: 0, fontSize: '0.875rem', overflowX: 'auto' }}>
-                        {formatHeaders(selectedLog.response.headers)}
+                        {formatHeaders(selectedLog.response?.headers)}
                       </pre>
                     </div>
                   )}
@@ -297,7 +323,7 @@ export function Inspector({ logs }) {
                 <div>
                    <h4 style={{ margin: '0 0 0.5rem 0', color: '#111827', fontWeight: 600 }}>Raw Body / Input</h4>
                     <pre style={{ background: '#fff', border: '1px solid #e5e7eb', padding: '1rem', borderRadius: '0.5rem', margin: '0 0 1rem 0', fontSize: '0.875rem', overflowX: 'auto' }}>
-                      {selectedLog.request.body || '(empty)'}
+                      {selectedLog.request?.body ?? '(empty)'}
                     </pre>
                 </div>
               )}
@@ -310,6 +336,15 @@ export function Inspector({ logs }) {
         )}
       </div>
     </div>
+  )
+}
+
+// Export wrapped with ErrorBoundary
+export function Inspector(props) {
+  return (
+    <InspectorErrorBoundary>
+      <InspectorInner {...props} />
+    </InspectorErrorBoundary>
   )
 }
 
