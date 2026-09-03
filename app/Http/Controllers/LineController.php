@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -23,7 +24,9 @@ class LineController extends Controller
     public function redirect(Request $request): RedirectResponse
     {
         $state = Str::random(32);
-        $request->session()->put('line_oauth_state', $state);
+        // Store state in Redis (not session) — session cookie is lost
+        // during cross-domain redirect: Site → LINE → GitHub Pages → Site
+        Cache::put('line_oauth_state:' . $state, true, 600);  // 10 min TTL
 
         // ใช้ LINE_CALLBACK_URL จาก .env เสมอ (ต้องตรงกับที่ลงทะเบียนใน LINE Developers Console)
         $callbackUrl = config('services.line.callback_url') ?: route('line.callback');
@@ -43,7 +46,8 @@ class LineController extends Controller
     public function callback(Request $request): RedirectResponse
     {
         // ตรวจสอบ state
-        if ($request->input('state') !== $request->session()->pull('line_oauth_state')) {
+        $state = $request->input('state', '');
+        if (!$state || !Cache::pull('line_oauth_state:' . $state)) {
             return redirect()->route('student.profile')
                 ->with('error', 'ผูก LINE ไม่สำเร็จ: ข้อมูลไม่ถูกต้อง (invalid state)');
         }
