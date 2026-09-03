@@ -30,6 +30,10 @@ html[data-theme="light"] .inbox-read-text { color: #64748b !important; }
 html[data-theme="dark"] .inbox-thread-item { border-bottom-color: #27272a !important; }
 html[data-theme="dark"] .inbox-thread-item:hover { background: #27272a !important; }
 html[data-theme="dark"] .inbox-read-text { color: #a1a1aa !important; }
+
+/* Delete button */
+.inbox-thread-item:hover .inbox-delete-btn { display: flex !important; }
+.inbox-thread-item:hover .inbox-time { opacity: 0.5; }
 </style>
 
 <div class="card" style="padding:0;overflow:hidden;">
@@ -103,6 +107,12 @@ html[data-theme="dark"] .inbox-read-text { color: #a1a1aa !important; }
                 {{ $unread }}
             </span>
             @endif
+            <button onclick="event.preventDefault();event.stopPropagation();deleteThread('{{ $thread['job_id'] }}','{{ $thread['student_id'] }}',this)"
+                class="inbox-delete-btn" title="ลบการสนทนา"
+                style="background:none;border:none;color:#94a3b8;cursor:pointer;padding:.2rem;border-radius:6px;display:none;align-items:center;justify-content:center;transition:color .15s;"
+                onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#94a3b8'">
+                <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
         </div>
     </a>
     @empty
@@ -213,6 +223,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 window.updateStudentOnlineDots();
             });
+
+        // Delete thread function
+        window.deleteThread = function(jobId, studentId, btn) {
+            if (!confirm('ยืนยันลบห้องแชทนี้และข้อความทั้งหมด?')) return;
+            var row = btn.closest('.inbox-thread-item');
+            if (row) row.style.opacity = '0.4';
+            window.axios.delete('/admin/inbox/' + jobId + '/' + studentId)
+                .then(function(res) {
+                    if (res.data.success && row) {
+                        row.style.transition = 'all 0.3s ease-out';
+                        row.style.maxHeight = row.offsetHeight + 'px';
+                        requestAnimationFrame(function() {
+                            row.style.maxHeight = '0';
+                            row.style.padding = '0';
+                            row.style.margin = '0';
+                            row.style.overflow = 'hidden';
+                        });
+                        setTimeout(function() { row.remove(); }, 300);
+                    } else if (row) {
+                        row.style.opacity = '1';
+                    }
+                })
+                .catch(function() {
+                    if (row) row.style.opacity = '1';
+                    alert('ไม่สามารถลบการสนทนาได้');
+                });
+        };
 
         setInterval(function() {
             window.updateStudentOnlineDots();
