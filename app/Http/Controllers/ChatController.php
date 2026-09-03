@@ -63,12 +63,23 @@ class ChatController extends Controller
     /**
      * ประวัติข้อความสำหรับ floating widget (JSON)
      */
-    public function messages(int $jobId): JsonResponse
+    public function messages(Request $request, int $jobId): JsonResponse
     {
         $result = $this->chatService->getRecentMessagesForJob(Auth::user(), $jobId);
 
+        $messages = collect($result['messages']);
+
+        // Incremental polling support: only messages newer than the client's watermark
+        $after = (string) $request->query('after', '');
+        if ($after !== '') {
+            $messages = $messages->filter(
+                fn ($m) => !empty($m['created_at'])
+                    && \Carbon\Carbon::parse($m['created_at'])->gt(\Carbon\Carbon::parse($after))
+            )->values();
+        }
+
         return response()->json([
-            'messages' => $result['messages'],
+            'messages' => $messages,
             'room_id'  => $result['room_id'],
         ]);
     }

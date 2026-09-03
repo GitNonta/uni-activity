@@ -110,6 +110,33 @@ class AdminInboxController extends Controller
     }
 
     /**
+     * ข้อความทั้งหมดในห้อง (JSON) — ใช้เป็น fallback polling เมื่อ WebSocket event หลุด
+     */
+    public function messages(Request $request, int|string $jobId, int|string $userId): JsonResponse
+    {
+        $data = $this->chatService->getOrCreateRoomForAdmin(Auth::user(), (int) $jobId, (int) $userId);
+
+        $messages = collect($data['messages'])
+            ->map(fn ($m) => $m instanceof Message ? $this->chatService->formatMessage($m) : $m)
+            ->values();
+
+        // Incremental polling support: only messages newer than the client's watermark
+        $after = (string) $request->query('after', '');
+        if ($after !== '') {
+            $messages = $messages->filter(
+                fn ($m) => !empty($m['created_at'])
+                    && \Carbon\Carbon::parse($m['created_at'])->gt(\Carbon\Carbon::parse($after))
+            )->values();
+        }
+
+        return response()->json([
+            'success'  => true,
+            'room_id'  => $data['room']->id,
+            'messages' => $messages,
+        ]);
+    }
+
+    /**
      * ลบข้อความในห้องแชท
      */
     public function deleteMessage(Message $message): JsonResponse

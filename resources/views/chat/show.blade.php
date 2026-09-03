@@ -1040,6 +1040,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendUrl  = '{{ route("chat.send", $job->id) }}';
     const readUrl  = '{{ route("chat.read", $job->id) }}';
     const readStatusUrl = '{{ route("chat.read-status", $job->id) }}';
+    const messagesUrl = '{{ route("chat.messages", $job->id) }}';
     
     let isEditingId = null;
 
@@ -1210,6 +1211,39 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     setInterval(pollReadStatus, 5000);
 
+    // Message delivery fallback: merge any messages we don't have yet.
+    // Keeps the chat alive when a WebSocket (Reverb) event is missed.
+    window.lastMsgTs = null;
+    function pollNewMessages() {
+        window.axios.get(messagesUrl, { params: { after: window.lastMsgTs || '' } })
+            .then(res => {
+                const msgs = res.data.messages || [];
+                if (!msgs.length) return;
+                const last = msgs[msgs.length - 1];
+                if (last.created_at) window.lastMsgTs = last.created_at;
+                msgs.forEach(m => {
+                    if (document.getElementById('cm-' + m.id)) return;
+                    const mine = String(m.user_id) === String(USER_ID) || (m.user && String(m.user.id) === String(USER_ID));
+                    const optEl = document.querySelector('.message-wrapper[id^="cm-tmp-"]');
+                    if (mine && optEl) return; // optimistic send still in flight — will render on response
+                    renderMessage(m, mine);
+                    if (!mine) {
+                        playChime();
+                        window.axios.post(readUrl);
+                    }
+                });
+            })
+            .catch(() => {});
+    }
+    setInterval(pollNewMessages, 3000);
+    // Seed the watermark from server history so the first poll doesn't replay old messages
+    window.axios.get(messagesUrl).then(res => {
+        const msgs = res.data.messages || [];
+        if (msgs.length && msgs[msgs.length - 1].created_at) {
+            window.lastMsgTs = msgs[msgs.length - 1].created_at;
+        }
+    }).catch(() => {});
+
     function renderMessage(msg, isMine) {
         const noMsg = document.getElementById('noMsg');
         if (noMsg) noMsg.remove();
@@ -1331,10 +1365,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!text && fileInput.files.length === 0) return;
 
-        sendBtn.disabled = true;
         const formData = new FormData(chatForm);
 
-        // Optimistic UI render
+        // Optimistic UI render — composer stays open for rapid-fire sending
         const tempId = 'tmp-' + Date.now();
         const optimisticMsg = {
             id: tempId,
@@ -1381,8 +1414,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (statusSpan) { statusSpan.textContent = 'ส่งไม่สำเร็จ'; statusSpan.style.color = '#ef4444'; }
             }
             alert('ไม่สามารถส่งข้อความได้ กรุณาลองใหม่อีกครั้ง');
-        } finally {
-            sendBtn.disabled = false;
         }
     });
 

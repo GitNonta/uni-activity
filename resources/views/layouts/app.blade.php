@@ -1129,6 +1129,7 @@
                     }
                     msgs.forEach(function(m) { win.appendChild(buildBubble(m, m.id === lastMineId)); });
                     win.scrollTop = win.scrollHeight;
+                    if (msgs.length && msgs[msgs.length - 1].created_at) { cfLastMsgTs = msgs[msgs.length - 1].created_at; }
                     resetFloatingReadGuard();
                 });
         }
@@ -1338,9 +1339,9 @@
             if (!text && fileInput.files.length === 0) return;
 
             var btn = document.getElementById('cfSendBtn');
-            btn.disabled = true;
 
             if (currentEditId) {
+                btn.disabled = true;
                 fetch('/chat/messages/' + currentEditId, {
                     method: 'PUT',
                     headers: { 
@@ -1384,10 +1385,7 @@
             var fd = new FormData(form);
             if (!fd.has('message')) fd.append('message', text);
 
-            var btn = document.getElementById('cfSendBtn');
-            btn.disabled = true;
-
-            // Optimistic UI: Append message immediately
+            // Optimistic UI: Append message immediately (composer stays open for rapid-fire)
             var win = document.getElementById('cfChatWindow');
             var tempId = 'tmp-' + Date.now();
             var optimisticMsg = {
@@ -1431,7 +1429,6 @@
                     return r.json();
                 })
                 .then(function(data) {
-                    btn.disabled = false;
                     // Replace optimistic bubble with real one
                     if (data.message) {
                         var realBubble = buildBubble(data.message);
@@ -1445,9 +1442,35 @@
                     bubble.style.background = '#fee2e2'; // Error state
                     bubble.style.color = '#991b1b';
                     alert(err.error || (err.errors && err.errors.message ? err.errors.message[0] : null) || 'ไม่สามารถส่งข้อความได้');
-                    btn.disabled = false;
                 });
         });
+
+        // Message delivery fallback: merge messages missed by WebSocket (widget)
+        var cfLastMsgTs = null;
+        function cfPollNewMessages() {
+            if (currentJobId === null || currentJobId === undefined) return;
+            fetch('/jobs/' + currentJobId + '/chat/messages?after=' + encodeURIComponent(cfLastMsgTs || ''), { headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' } })
+                .then(function(r){ return r.json(); })
+                .then(function(data) {
+                    var msgs = data.messages || [];
+                    if (!Array.isArray(msgs)) msgs = Object.values(msgs);
+                    if (!msgs.length) return;
+                    var last = msgs[msgs.length - 1];
+                    if (last.created_at) cfLastMsgTs = last.created_at;
+                    var win = document.getElementById('cfChatWindow');
+                    msgs.forEach(function(m) {
+                        if (document.getElementById('cf-msg-' + m.id)) return;
+                        var mine = m.user_id == USER_ID || (m.user && m.user.id == USER_ID);
+                        var optEl = win.querySelector('[id^="cf-msg-tmp-"]');
+                        if (mine && optEl) return; // optimistic send still in flight
+                        win.appendChild(buildBubble(m, mine));
+                        win.scrollTop = win.scrollHeight;
+                        if (!mine) { recalcBadge(); loadThreads(); }
+                    });
+                })
+                .catch(function() {});
+        }
+        setInterval(cfPollNewMessages, 3000);
 
         function updateBadge(count) {
             var badge = document.getElementById('chatFloatBadge');

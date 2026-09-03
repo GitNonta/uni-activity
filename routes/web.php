@@ -255,6 +255,7 @@ Route::middleware(['auth', 'role:staff'])->prefix('admin')->name('admin.')->grou
     Route::post('inbox/{jobId}/{userId}', [AdminInboxController::class, 'send'])->middleware('throttle:chat-send')->name('inbox.send');
     Route::post('inbox/{jobId}/{userId}/read', [AdminInboxController::class, 'markRead'])->name('inbox.read');
     Route::get('inbox/{jobId}/{userId}/read-status', [AdminInboxController::class, 'readStatus'])->name('inbox.read-status');
+    Route::get('inbox/{jobId}/{userId}/messages', [AdminInboxController::class, 'messages'])->name('inbox.messages');
     Route::delete('inbox/messages/{message}', [AdminInboxController::class, 'deleteMessage'])->name('inbox.messages.delete');
     Route::get('inbox/messages/{message}', [AdminInboxController::class, 'showMessage'])->name('inbox.messages.show');
     Route::put('inbox/messages/{message}', [AdminInboxController::class, 'editMessage'])->name('inbox.messages.edit');
