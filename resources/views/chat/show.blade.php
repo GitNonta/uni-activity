@@ -1039,6 +1039,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const roomID   = '{{ $room->id }}';
     const sendUrl  = '{{ route("chat.send", $job->id) }}';
     const readUrl  = '{{ route("chat.read", $job->id) }}';
+    const readStatusUrl = '{{ route("chat.read-status", $job->id) }}';
     
     let isEditingId = null;
 
@@ -1176,6 +1177,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     updateAllReadStatuses();
     setInterval(updateAllReadStatuses, 10000);
+
+    // Newest read timestamp seen (guards against out-of-order events)
+    let newestReadAtMs = 0;
+    document.querySelectorAll('.msg-read-status[data-read-at]').forEach(el => {
+        const t = new Date(el.getAttribute('data-read-at')).getTime();
+        if (!isNaN(t) && t > newestReadAtMs) newestReadAtMs = t;
+    });
+
+    function applyReadUpdate(readAt) {
+        const t = new Date(readAt).getTime();
+        if (isNaN(t) || t <= newestReadAtMs) return; // ignore stale/duplicate events
+        newestReadAtMs = t;
+        document.querySelectorAll('.msg-read-status').forEach(el => {
+            el.setAttribute('data-read-at', readAt);
+            el.textContent = formatReadStatus(readAt, true);
+            el.style.color = '#10b981';
+            setTimeout(() => { el.style.color = '#ea580c'; }, 2000);
+        });
+    }
+
+    // Polling fallback: if a WebSocket read event was missed, the status
+    // self-heals within 5 seconds from the server's persisted value.
+    function pollReadStatus() {
+        window.axios.get(readStatusUrl)
+            .then(res => {
+                if (res.data.success && res.data.other_read_at) {
+                    applyReadUpdate(res.data.other_read_at);
+                }
+            })
+            .catch(() => {});
+    }
+    setInterval(pollReadStatus, 5000);
 
     function renderMessage(msg, isMine) {
         const noMsg = document.getElementById('noMsg');
@@ -1424,14 +1457,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
                 .listen('.MessagesRead', (data) => {
                     if (String(data.reader_id) === String(USER_ID)) return;
-                    const readAt = data.read_at || new Date().toISOString();
-                    const statusEls = document.querySelectorAll('.msg-read-status');
-                    statusEls.forEach(el => {
-                        el.setAttribute('data-read-at', readAt);
-                        el.textContent = formatReadStatus(readAt, true);
-                        el.style.color = '#10b981';
-                        setTimeout(() => { el.style.color = '#ea580c'; }, 2000);
-                    });
+                    applyReadUpdate(data.read_at || new Date().toISOString());
                 })
                 .listen('.MessageEdited', (data) => {
                     const bubble = document.getElementById('bubble-' + data.id);
@@ -1477,12 +1503,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .listen('.MessagesRead', (data) => {
                     if (String(data.reader_id) === String(USER_ID)) return;
                     if (String(data.room_id) === String(roomID)) {
-                        const readAt = data.read_at || new Date().toISOString();
-                        const statusEls = document.querySelectorAll('.msg-read-status');
-                        statusEls.forEach(el => {
-                            el.setAttribute('data-read-at', readAt);
-                            el.textContent = formatReadStatus(readAt, true);
-                        });
+                        applyReadUpdate(data.read_at || new Date().toISOString());
                     }
                 });
 

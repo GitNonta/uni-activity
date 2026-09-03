@@ -839,6 +839,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const roomID       = '{{ $room->id }}';
     const sendUrl      = '{{ route("admin.inbox.send", [$job->id, $student->id]) }}';
     const readUrl      = '{{ route("admin.inbox.read", [$job->id, $student->id]) }}';
+    const readStatusUrl = '{{ route("admin.inbox.read-status", [$job->id, $student->id]) }}';
 
     let isEditingId    = null;
 
@@ -976,6 +977,38 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     updateAllReadStatuses();
     setInterval(updateAllReadStatuses, 10000);
+
+    // Newest read timestamp seen (guards against out-of-order events)
+    let newestReadAtMs = 0;
+    document.querySelectorAll('.admin-msg-read-status[data-read-at]').forEach(el => {
+        const t = new Date(el.getAttribute('data-read-at')).getTime();
+        if (!isNaN(t) && t > newestReadAtMs) newestReadAtMs = t;
+    });
+
+    function applyReadUpdate(readAt) {
+        const t = new Date(readAt).getTime();
+        if (isNaN(t) || t <= newestReadAtMs) return; // ignore stale/duplicate events
+        newestReadAtMs = t;
+        document.querySelectorAll('.admin-msg-read-status').forEach(el => {
+            el.setAttribute('data-read-at', readAt);
+            el.textContent = formatReadStatus(readAt, true);
+            el.style.color = '#10b981';
+            setTimeout(() => { el.style.color = '#ea580c'; }, 2000);
+        });
+    }
+
+    // Polling fallback: if a WebSocket read event was missed, the status
+    // self-heals within 5 seconds from the server's persisted value.
+    function pollReadStatus() {
+        window.axios.get(readStatusUrl)
+            .then(res => {
+                if (res.data.success && res.data.other_read_at) {
+                    applyReadUpdate(res.data.other_read_at);
+                }
+            })
+            .catch(() => {});
+    }
+    setInterval(pollReadStatus, 5000);
 
     function renderMessage(msg, isMine) {
         const noMsg = document.getElementById('noMsg');
@@ -1231,14 +1264,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 })
                 .listen('.MessagesRead', function (data) {
                     if (String(data.reader_id) === String(myId)) return;
-                    const readAt = data.read_at || new Date().toISOString();
-                    const statusEls = document.querySelectorAll('.admin-msg-read-status');
-                    statusEls.forEach(el => {
-                        el.setAttribute('data-read-at', readAt);
-                        el.textContent = formatReadStatus(readAt, true);
-                        el.style.color = '#10b981';
-                        setTimeout(() => { el.style.color = '#ea580c'; }, 2000);
-                    });
+                    applyReadUpdate(data.read_at || new Date().toISOString());
                 })
                 .listen('.MessageDeleted', function (e) {
                     const el = document.getElementById('cm-' + e.id);
@@ -1273,12 +1299,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 .listen('.MessagesRead', function (data) {
                     if (String(data.reader_id) === String(myId)) return;
                     if (String(data.room_id) === String(roomID)) {
-                        const readAt = data.read_at || new Date().toISOString();
-                        const statusEls = document.querySelectorAll('.admin-msg-read-status');
-                        statusEls.forEach(el => {
-                            el.setAttribute('data-read-at', readAt);
-                            el.textContent = formatReadStatus(readAt, true);
-                        });
+                        applyReadUpdate(data.read_at || new Date().toISOString());
                     }
                 });
 

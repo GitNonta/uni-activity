@@ -89,6 +89,27 @@ class AdminInboxController extends Controller
     }
 
     /**
+     * สถานะการอ่านล่าสุดของฝ่ายตรงข้าม (fallback เมื่อ WebSocket event หลุด)
+     */
+    public function readStatus(int|string $jobId, int|string $userId): JsonResponse
+    {
+        $data = $this->chatService->getOrCreateRoomForAdmin(Auth::user(), (int) $jobId, (int) $userId);
+        $room = $data['room'];
+
+        $otherPivot = \Illuminate\Support\Facades\DB::table('room_user')
+            ->where('room_id', $room->id)
+            ->where('user_id', '!=', Auth::id())
+            ->first();
+
+        return response()->json([
+            'success'       => true,
+            'other_read_at' => $otherPivot?->last_read_at
+                ? \Carbon\Carbon::parse($otherPivot->last_read_at)->toISOString()
+                : null,
+        ]);
+    }
+
+    /**
      * ลบข้อความในห้องแชท
      */
     public function deleteMessage(Message $message): JsonResponse

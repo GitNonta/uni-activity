@@ -97,6 +97,27 @@ class ChatController extends Controller
     }
 
     /**
+     * สถานะการอ่านล่าสุดของฝ่ายตรงข้าม (fallback เมื่อ WebSocket event หลุด)
+     */
+    public function readStatus(int $jobId): JsonResponse
+    {
+        $data = $this->chatService->getOrCreateRoomForJob(Auth::user(), $jobId);
+        $room = $data['room'];
+
+        $otherPivot = \Illuminate\Support\Facades\DB::table('room_user')
+            ->where('room_id', $room->id)
+            ->where('user_id', '!=', Auth::id())
+            ->first();
+
+        return response()->json([
+            'success'     => true,
+            'other_read_at' => $otherPivot?->last_read_at
+                ? \Carbon\Carbon::parse($otherPivot->last_read_at)->toISOString()
+                : null,
+        ]);
+    }
+
+    /**
      * ตรวจสอบว่ามี Admin online หรือไม่
      */
     public function adminOnlineStatus(int $jobId): JsonResponse

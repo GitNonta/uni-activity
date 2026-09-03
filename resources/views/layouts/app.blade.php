@@ -979,6 +979,42 @@
         updateAllFloatingReadStatuses();
         setInterval(updateAllFloatingReadStatuses, 10000);
 
+        // Newest read timestamp seen (guards against out-of-order events)
+        var newestFloatingReadAtMs = 0;
+        function resetFloatingReadGuard() {
+            newestFloatingReadAtMs = 0;
+            document.querySelectorAll('.cf-read-status[data-read-at]').forEach(function(el) {
+                var t = new Date(el.getAttribute('data-read-at')).getTime();
+                if (!isNaN(t) && t > newestFloatingReadAtMs) newestFloatingReadAtMs = t;
+            });
+        }
+        resetFloatingReadGuard();
+
+        function applyFloatingReadUpdate(readAt) {
+            var t = new Date(readAt).getTime();
+            if (isNaN(t) || t <= newestFloatingReadAtMs) return; // ignore stale/duplicate events
+            newestFloatingReadAtMs = t;
+            document.querySelectorAll('.cf-read-status').forEach(function(el) {
+                el.setAttribute('data-read-at', readAt);
+                el.textContent = formatReadStatus(readAt, true);
+                el.style.color = '#10b981';
+                setTimeout(function(){ el.style.color = '#f97316'; }, 2000);
+            });
+        }
+
+        // Polling fallback: if a WebSocket read event was missed, the status
+        // self-heals within 5 seconds from the server's persisted value.
+        function pollFloatingReadStatus() {
+            if (currentJobId === null || currentJobId === undefined) return;
+            fetch('/jobs/' + currentJobId + '/chat/read-status', { headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' }, cache: 'no-store' })
+                .then(function(r){ return r.json(); })
+                .then(function(res) {
+                    if (res && res.success && res.other_read_at) applyFloatingReadUpdate(res.other_read_at);
+                })
+                .catch(function() {});
+        }
+        setInterval(pollFloatingReadStatus, 5000);
+
         function playChatChime() {
             try {
                 var ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1039,13 +1075,7 @@
                 })
                 .listen('.MessagesRead', function(e) {
                     if (String(e.reader_id) === String(USER_ID)) return;
-                    var readAt = e.read_at || new Date().toISOString();
-                    document.querySelectorAll('.cf-read-status').forEach(function(el) {
-                        el.setAttribute('data-read-at', readAt);
-                        el.textContent = formatReadStatus(readAt, true);
-                        el.style.color = '#10b981';
-                        setTimeout(function(){ el.style.color = '#f97316'; }, 2000);
-                    });
+                    applyFloatingReadUpdate(e.read_at || new Date().toISOString());
                 })
                 .listen('.MessageEdited', function(e) {
                     var el = document.getElementById('cf-msg-' + e.id);
@@ -1099,6 +1129,7 @@
                     }
                     msgs.forEach(function(m) { win.appendChild(buildBubble(m, m.id === lastMineId)); });
                     win.scrollTop = win.scrollHeight;
+                    resetFloatingReadGuard();
                 });
         }
 
@@ -1467,11 +1498,7 @@
                 })
                 .listen('.MessagesRead', function(e) {
                     if (String(e.reader_id) === String(USER_ID)) return;
-                    var readAt = e.read_at || new Date().toISOString();
-                    document.querySelectorAll('.cf-read-status').forEach(function(el) {
-                        el.setAttribute('data-read-at', readAt);
-                        el.textContent = formatReadStatus(readAt, true);
-                    });
+                    applyFloatingReadUpdate(e.read_at || new Date().toISOString());
                 })
                 .listen('.ChatDeleted', function(e) {
                     loadThreads();
