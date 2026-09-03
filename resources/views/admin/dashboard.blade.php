@@ -303,6 +303,147 @@
     </div>
 </div>
 
+{{-- ═══ ประกาศงานล่าสุด — รูปแบบเดียวกับหน้า jobs/index ═══ --}}
+<div class="flex items-center justify-between mb-2">
+    <h2 class="font-bold flex items-center gap-2">
+        <svg style="width:20px;height:20px;color:#10b981;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-8.995-1.745M16 6l4-4m0 0l-4-4m4 4H9a2 2 0 00-2 2v12a2 2 0 002 2h9a2 2 0 002-2V8a2 2 0 00-2-2z"/></svg>
+        ประกาศงานล่าสุด
+    </h2>
+    <a href="{{ route('admin.jobs.create') }}" class="btn btn-primary btn-sm">
+        <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        สร้างประกาศงาน
+    </a>
+</div>
+<div class="card mb-6">
+    <div class="table-wrap">
+        <table class="responsive-table">
+            <thead>
+                <tr>
+                    <th style="width:50px;"></th>
+                    <th>หัวข้องาน</th>
+                    <th>ประเภท</th>
+                    <th>ตำแหน่ง</th>
+                    <th class="text-center">สถานะ</th>
+                    <th class="text-center">ผู้สมัคร</th>
+                    <th class="text-center">วันเริ่ม</th>
+                    <th class="text-right">จัดการ</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($recentJobs as $job)
+                <tr>
+                    <td data-label="รูป" style="width:50px; padding-right:0;">
+                        @if($job->image_path)
+                            <img src="{{ Storage::url($job->image_path) }}" alt="" style="width:40px; height:40px; object-fit:cover; border-radius:8px; background:#f1f5f9;">
+                        @else
+                            <div style="width:40px; height:40px; border-radius:8px; background:#f8fafc; border:1px dashed #e2e8f0; display:flex; align-items:center; justify-content:center;">
+                                <svg class="icon-sm text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            </div>
+                        @endif
+                    </td>
+                    <td data-label="หัวข้องาน"><a href="{{ route('admin.jobs.show', $job->id) }}" class="text-primary font-semi">{{ Str::limit($job->title, 40) }}</a></td>
+                    <td data-label="ประเภท">
+                        <span class="badge {{ $job->job_type === 'parttime' ? 'job-badge-parttime' : 'job-badge-general' }}">
+                            {{ $job->job_type === 'parttime' ? 'Part-time' : 'งานทั่วไป' }}
+                        </span>
+                    </td>
+                    <td data-label="ตำแหน่ง">{{ $job->position }}</td>
+                    <td data-label="สถานะ" class="text-center">
+                        @if($job->status === 'open')
+                            <span class="badge badge-green">เปิด</span>
+                        @elseif($job->status === 'closed')
+                            <span class="badge badge-red">ปิด</span>
+                        @else
+                            <span class="badge badge-gray">เสร็จสิ้น</span>
+                        @endif
+                    </td>
+                    <td data-label="ผู้สมัคร" class="text-center"><span class="badge badge-orange">{{ $job->applications_count }} คน</span></td>
+                    <td data-label="วันเริ่ม" class="text-center text-muted">{{ $job->start_date?->format('d/m/Y') ?? '-' }}</td>
+                    <td data-label="จัดการ" class="text-right">
+                        <div class="flex gap-2" style="justify-content:flex-end;">
+                            <a href="{{ route('admin.jobs.show', $job->id) }}" class="btn btn-outline btn-sm">ดู</a>
+                            <a href="{{ route('admin.jobs.edit', $job->id) }}" class="btn btn-outline btn-sm">แก้ไข</a>
+                        </div>
+                    </td>
+                </tr>
+                @empty
+                <tr><td colspan="8" class="text-center text-muted" style="padding:2rem;">ยังไม่มีประกาศงาน</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{{-- ═══ ประกาศล่าสุด — รูปแบบเดียวกับหน้า announcements/index ═══ --}}
+<div class="flex items-center justify-between mb-2">
+    <h2 class="font-bold flex items-center gap-2">
+        <svg style="width:20px;height:20px;color:#f59e0b;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3-.204.904-.402 1.92-.402 3 0 1.08.198 2.096.402 3M2 9s1.5 2 2.5 2S7 9 7 9M2 9s1.5-2 2.5-2S7 9 7 9"/></svg>
+        ประกาศล่าสุด
+    </h2>
+    <a href="{{ route('admin.announcements.create') }}" class="btn btn-primary btn-sm">
+        <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        สร้างประกาศ
+    </a>
+</div>
+<div class="card">
+    <div class="table-wrap">
+        <table class="responsive-table">
+            <thead>
+                <tr>
+                    <th style="width:50px;"></th>
+                    <th>หัวข้อ</th>
+                    <th>กลุ่มเป้าหมาย</th>
+                    <th>ประเภท</th>
+                    <th class="text-center">สถานะ</th>
+                    <th class="text-right">จัดการ</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($recentAnnouncements as $item)
+                <tr>
+                    <td data-label="รูป" style="width:50px; padding-right:0;">
+                        @if($item->image_path)
+                            <img src="{{ Storage::url($item->image_path) }}" alt="" style="width:40px; height:40px; border-radius:8px; object-fit:cover; background:#f1f5f9;">
+                        @else
+                            <div style="width:40px; height:40px; border-radius:8px; background:#f8fafc; border:1px dashed #e2e8f0; display:flex; align-items:center; justify-content:center;">
+                                <svg class="icon-sm text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            </div>
+                        @endif
+                    </td>
+                    <td data-label="หัวข้อ">
+                        <div style="min-width:0;">
+                            <div class="font-semi text-sm line-clamp-1">{{ $item->title }}</div>
+                            <div class="text-xs text-muted">{{ $item->created_at->format('d/m/Y H:i') }}</div>
+                        </div>
+                    </td>
+                    <td data-label="กลุ่มเป้าหมาย"><span class="badge badge-orange">{{ $item->target_faculty ?? 'ทุกคน' }}</span></td>
+                    <td data-label="ประเภท">
+                        <span class="badge badge-{{ $item->type === 'danger' ? 'red' : ($item->type === 'warning' ? 'yellow' : ($item->type === 'success' ? 'green' : 'gray')) }}">
+                            {{ ucfirst($item->type) }}
+                        </span>
+                    </td>
+                    <td data-label="สถานะ" class="text-center">
+                        @if($item->published_at?->isFuture())
+                            <div class="text-xs text-muted" style="margin-bottom:.35rem;">ตั้งเวลา {{ $item->published_at->format('d/m/Y H:i') }}</div>
+                        @elseif($item->published_at)
+                            <div class="text-xs text-muted" style="margin-bottom:.35rem;">เผยแพร่แล้ว</div>
+                        @endif
+                        <span class="badge {{ $item->is_active ? 'badge-green' : 'badge-gray' }}">{{ $item->is_active ? 'เปิดใช้งาน' : 'ปิดใช้งาน' }}</span>
+                    </td>
+                    <td data-label="จัดการ" class="text-right">
+                        <div class="flex gap-2" style="justify-content:flex-end;">
+                            <a href="{{ route('admin.announcements.edit', $item->id) }}" class="btn btn-outline btn-sm">แก้ไข</a>
+                        </div>
+                    </td>
+                </tr>
+                @empty
+                <tr><td colspan="6" class="text-center text-muted" style="padding:2rem;">ยังไม่มีประกาศ</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
+
 {{-- Modal สร้างกิจกรรมด่วน --}}
 <div id="quickModal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
     <div class="modal">

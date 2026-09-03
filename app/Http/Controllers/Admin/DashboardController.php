@@ -9,6 +9,7 @@ use App\Models\Activity;
 use App\Models\ActivityCategory;
 use App\Models\ActivityFeedback;
 use App\Models\AdminAuditLog;
+use App\Models\Announcement;
 use App\Models\Attendance;
 use App\Models\JobListing;
 use App\Models\Message;
@@ -108,14 +109,34 @@ class DashboardController extends Controller
             $recentAuditLogsQuery->where('user_id', $userId);
         }
         $recentAuditLogs = $recentAuditLogsQuery->take(6)->get();
-        
+
+        // 4. Recent job listings (latest 5, with applicant counts — no N+1)
+        $recentJobsQuery = JobListing::query()->withCount('applications')->orderByDesc('created_at');
+        if ($isStaff) {
+            $recentJobsQuery->where('created_by', $userId);
+        }
+        $recentJobs = $recentJobsQuery
+            ->take(5)
+            ->get(['id', 'title', 'position', 'job_type', 'status', 'image_path', 'quota', 'start_date', 'created_at']);
+
+        // 5. Recent announcements (latest 5)
+        $recentAnnouncementsQuery = Announcement::query()->orderByDesc('created_at');
+        if ($isStaff) {
+            $recentAnnouncementsQuery->where('created_by', $userId);
+        }
+        $recentAnnouncements = $recentAnnouncementsQuery
+            ->take(5)
+            ->get(['id', 'title', 'type', 'target_faculty', 'image_path', 'is_active', 'published_at', 'created_at']);
+
         return view('admin.dashboard', compact(
             'stats',
             'recentActivities',
             'pendingRegistrations',
             'pendingAttendances',
             'categories',
-            'recentAuditLogs'
+            'recentAuditLogs',
+            'recentJobs',
+            'recentAnnouncements'
         ));
     }
 }
