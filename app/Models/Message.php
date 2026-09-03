@@ -16,11 +16,13 @@ class Message extends Model
         'user_id',
         'body',
         'type',
+        'is_edited',
         'attachments',
         'read_by',
     ];
 
     protected $casts = [
+        'is_edited' => 'boolean',
         'attachments' => 'array',
         'read_by' => 'array',
     ];
