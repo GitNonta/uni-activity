@@ -529,6 +529,167 @@
     #cfMsgInput {
         resize: none !important;
     }
+
+    /* ══════════════════════════════════════════════
+       NATIVE CHAT UI — floating widget on phones/tablets
+       ══════════════════════════════════════════════ */
+    @media (max-width: 1024px) {
+        /* Panel overlays the whole screen; launcher stays in place behind it */
+        #chatFloatPanel {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100% !important;
+            height: 100dvh !important;
+            max-height: 100dvh !important;
+            z-index: 8501 !important;
+            border-radius: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+            animation: cf-fullscreen-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes cf-fullscreen-in {
+            from { opacity: 0; transform: translateY(14px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* ── Native gradient header ── */
+        #cfHeader {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 55%, #c2410c 100%) !important;
+            padding: 0.65rem 0.75rem !important;
+            padding-top: calc(0.65rem + env(safe-area-inset-top));
+            box-shadow: 0 2px 8px rgba(194, 65, 12, 0.35);
+        }
+
+        #cfBackBtn,
+        #cfHeader + div ~ div button[onclick="closeChatWidget()"],
+        #cfHeader button[onclick="closeChatWidget()"] {
+            width: 34px !important;
+            height: 34px !important;
+            min-width: 34px !important;
+            border-radius: 50% !important;
+            background: rgba(255, 255, 255, 0.18) !important;
+            border: 1px solid rgba(255, 255, 255, 0.28) !important;
+            opacity: 1 !important;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem !important;
+        }
+
+        #cfHeaderTitle {
+            font-size: 0.95rem !important;
+            font-weight: 700 !important;
+        }
+
+        /* ── Thread list: full-bleed rows ── */
+        .chat-list-item {
+            margin: 4px 8px !important;
+            border-radius: 14px !important;
+            padding: 0.7rem 0.75rem !important;
+        }
+
+        /* ── Chat canvas ── */
+        #cfChatWindow {
+            background:
+                radial-gradient(circle at 15% 8%, rgba(249, 115, 22, 0.05), transparent 42%),
+                radial-gradient(circle at 88% 92%, rgba(249, 115, 22, 0.04), transparent 42%),
+                #f8fafc !important;
+            padding: 0.7rem 0.6rem 0.2rem !important;
+            gap: 0.35rem !important;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* ── Composer: floating pill ── */
+        .cf-chat-input-area {
+            padding: 0.45rem 0.55rem !important;
+            padding-bottom: calc(0.45rem + env(safe-area-inset-bottom)) !important;
+            border-top: 1px solid #e2e8f0 !important;
+            box-shadow: 0 -2px 10px rgba(15, 23, 42, 0.06);
+        }
+
+        #cfChatForm {
+            gap: 0.4rem !important;
+        }
+
+        .cf-attach-label {
+            width: 40px !important;
+            height: 40px !important;
+            min-width: 40px !important;
+            border-radius: 50% !important;
+            border: none !important;
+            background: #f1f5f9 !important;
+            color: #64748b !important;
+        }
+
+        .cf-input-field {
+            min-height: 40px !important;
+            max-height: 96px !important;
+            border-radius: 20px !important;
+            padding: 0.55rem 0.9rem !important;
+            font-size: 0.9rem !important;
+            background: #f8fafc !important;
+            border: 1.5px solid transparent !important;
+            transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+        }
+
+        .cf-input-field:focus {
+            background: #ffffff !important;
+            border-color: #ea580c !important;
+            box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.12) !important;
+        }
+
+        #cfSendBtn {
+            width: 40px !important;
+            height: 40px !important;
+            min-width: 40px !important;
+            padding: 0 !important;
+            border-radius: 50% !important;
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+            box-shadow: 0 3px 8px rgba(234, 88, 12, 0.35);
+        }
+
+        #cfSendBtn:active {
+            transform: scale(0.92);
+        }
+
+        /* ── Dark theme ── */
+        html[data-theme="dark"] #cfHeader {
+            background: linear-gradient(135deg, #c2410c 0%, #9a3412 100%) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+        }
+
+        html[data-theme="dark"] #cfChatWindow {
+            background:
+                radial-gradient(circle at 15% 8%, rgba(249, 115, 22, 0.06), transparent 42%),
+                radial-gradient(circle at 88% 92%, rgba(249, 115, 22, 0.05), transparent 42%),
+                #121214 !important;
+        }
+
+        html[data-theme="dark"] .cf-chat-input-area {
+            border-top-color: #27272a !important;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.35);
+        }
+
+        html[data-theme="dark"] .cf-input-field {
+            background: #27272a !important;
+            color: #f4f4f5 !important;
+        }
+
+        html[data-theme="dark"] .cf-input-field:focus {
+            background: #18181b !important;
+            border-color: #f97316 !important;
+        }
+
+        html[data-theme="dark"] .cf-attach-label {
+            background: #27272a !important;
+            color: #a1a1aa !important;
+        }
+    }
     </style>
     
     <div id="chatFloatWidget" style="position:fixed;bottom:5.5rem;right:1.1rem;z-index:8500;display:flex;flex-direction:column;align-items:flex-end;gap:.5rem;">
