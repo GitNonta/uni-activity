@@ -26,7 +26,7 @@
     </div>
     <div class="todo-scroll">
         @foreach($todos as $todo)
-        <div class="todo-card" style="background:{{ $todo['bg'] }};border:1.5px solid {{ $todo['color'] }}22;border-left:4px solid {{ $todo['color'] }};--todo-color: {{ $todo['color'] }};--todo-glow: {{ $todo['color'] }}33;">
+        <div class="todo-card" style="background:{{ $todo['bg'] }};border:1.5px solid {{ $todo['color'] }}22;border-left:4px solid {{ $todo['color'] }};--todo-color: {{ $todo['color'] }};--todo-glow: {{ $todo['color'] }}33;--todo-bg-soft: {{ $todo['color'] }}14;">
             {{-- Icon + label --}}
             <div class="flex items-center gap-2 mb-2">
                 @if($todo['icon'] === 'check')
@@ -48,7 +48,7 @@
                 @endif
                 <span style="font-size:.78rem;font-weight:700;color:{{ $todo['color'] }};">{{ $todo['label'] }}</span>
             </div>
-            <p class="font-semi text-sm" style="margin-bottom:.35rem;color:#1e293b;line-height:1.3;">{{ $todo['activity']->title }}</p>
+            <p class="todo-title" style="margin-bottom:.35rem;line-height:1.35;">{{ $todo['activity']->title }}</p>
             <p class="text-xs text-muted" style="margin-bottom:.6rem;">
                 <svg style="width:14px;height:14px;display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> {{ $todo['activity']->activity_date->format('d/m/Y') }}
                 · <svg style="width:14px;height:14px;display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> {{ $todo['activity']->location }}
@@ -235,11 +235,31 @@
     }
     .todo-icon svg { width: 15px; height: 15px; }
 
-    .todo-card .font-semi {
+    .todo-title {
+        font-size: .92rem;
+        font-weight: 700;
+        color: #1e293b;
+        letter-spacing: -0.01em;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
+    }
+
+    /* ── Dark theme: cards follow the app surface, tinted by the accent ── */
+    html[data-theme="dark"] .todo-card {
+        background: #1c1c1f !important;
+        background-image: linear-gradient(0deg, var(--todo-bg-soft), var(--todo-bg-soft));
+        border-color: var(--todo-glow) !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+    }
+    html[data-theme="dark"] .todo-title { color: #f4f4f5 !important; }
+    html[data-theme="dark"] .todo-card .btn {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+    }
+    html[data-theme="dark"] .todo-scroll {
+        background:
+            linear-gradient(90deg, #27272a 0%, #52525b 50%, #27272a 100%) no-repeat bottom / 72px 4px;
     }
     .todo-card .text-xs.text-muted svg { vertical-align: -2px; }
     .todo-card .text-xs.text-muted {
