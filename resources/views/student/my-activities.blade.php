@@ -287,11 +287,39 @@
         .todo-card .btn:hover { filter: brightness(1.06); }
     }
 
-    /* phones: cards snap almost full-width, content bleeds past the frame */
-    @media (max-width: 640px) {
-        .todo-scroll { margin: 0 -24px; padding: .25rem 24px .9rem; }
-        .todo-card { flex: 1 0 84%; min-width: 0; }
+    /* phones & tablets: one full-screen card per swipe, centered, amber style */
+    @media (max-width: 1024px) {
+        .todo-scroll {
+            margin: 0 -24px;
+            padding: .25rem 0 .9rem;
+            gap: 0;
+            scroll-padding-left: 0;
+            scroll-snap-stop: always;
+        }
+        .todo-card {
+            flex: 0 0 100%;
+            min-width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            border-radius: 0;
+            background: #fef3c7 !important;
+            border: 1.5px solid #b4530922 !important;
+            border-left: 4px solid #b45309 !important;
+            --todo-color: #b45309;
+            --todo-glow: #b4530933;
+            --todo-bg-soft: #b4530914;
+        }
         .todo-card:active { transform: scale(.98); }
+
+        /* the cream card is intentional — keep it in dark theme too */
+        html[data-theme="dark"] .todo-card {
+            background: #fef3c7 !important;
+            background-image: none !important;
+            border-color: #b4530922 !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+        }
+        html[data-theme="dark"] .todo-card .todo-title { color: #1e293b !important; }
+        html[data-theme="dark"] .todo-scroll { background: none; }
     }
 </style>
 @endpush
