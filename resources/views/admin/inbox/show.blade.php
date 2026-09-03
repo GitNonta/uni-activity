@@ -1,8 +1,20 @@
 {{-- Admin: หน้าแชทกับนักศึกษาคนหนึ่ง (จาก Inbox) --}}
 @extends('layouts.admin')
+@push('meta')
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+@endpush
 @section('title', ($student->full_name ?? 'นักศึกษา') . ' — ' . ($job->title ?? 'กล่องข้อความ'))
 
 @section('content')
+    <style>
+        /* Mobile native chat: make entire page a flex column */
+        @media (max-width: 1024px) {
+            .sb-main { display: flex !important; flex-direction: column !important; }
+        }
+        @media (max-width: 640px) {
+            .sb-main { height: 100dvh !important; overflow: hidden !important; }
+        }
+    </style>
     @if(request('widget'))
     <style>
         html, body { overflow: hidden !important; height: 100vh !important; margin: 0 !important; padding: 0 !important; }
@@ -282,11 +294,239 @@
             50% { transform: translateY(-4px); }
         }
     </style>
+        /* ══════════════════════════════════════════════════════════
+           NATIVE MOBILE/TABLET CHAT UI
+           ══════════════════════════════════════════════════════════ */
+
+        /* Tablet breakpoint */
+        @media (max-width: 1024px) {
+            .chat-header-card {
+                border-radius: 0;
+                margin-bottom: 0;
+                border-left: none;
+                border-right: none;
+                border-top: none;
+                padding: 0.6rem 1rem;
+            }
+            #chatWindow {
+                border-radius: 0;
+                border-left: none;
+                border-right: none;
+                margin-bottom: 0;
+            }
+            form#chatForm {
+                border-radius: 0;
+                border-left: none;
+                border-right: none;
+            }
+        }
+
+        /* Mobile breakpoint — native messenger feel */
+        @media (max-width: 640px) {
+            /* ── Full-screen layout ── */
+            .sb-shell, .sb-content, .sb-main {
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+            }
+
+            /* ── Sticky header bar ── */
+            .chat-header-card {
+                position: sticky;
+                top: 0;
+                z-index: 50;
+                border-radius: 0;
+                margin-bottom: 0;
+                border: none;
+                border-bottom: 1px solid #e2e8f0;
+                padding: 0.5rem 0.75rem;
+                box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+                flex-wrap: nowrap;
+                gap: 0.4rem;
+            }
+
+            .chat-header-card .back-btn {
+                width: 36px;
+                height: 36px;
+                min-width: 36px;
+            }
+
+            .chat-header-card h2 {
+                font-size: 0.95rem !important;
+                flex-wrap: nowrap;
+            }
+
+            .chat-header-card h2 span:last-child {
+                display: none !important;
+            }
+
+            .chat-header-card > div > div > div:last-child {
+                display: none !important;
+            }
+
+            /* ── Chat window fills remaining space ── */
+            #chatWindow {
+                flex: 1;
+                height: 0;
+                border: none;
+                border-radius: 0;
+                margin: 0;
+                padding: 0.75rem;
+                gap: 0.5rem;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* ── Message bubbles — native style ── */
+            .msg-bubble-container {
+                gap: 0.35rem;
+            }
+
+            .msg-bubble-container > div:last-child {
+                max-width: 85% !important;
+            }
+
+            .msg-bubble-mine > div:last-child {
+                align-items: flex-end !important;
+            }
+
+            .msg-bubble-theirs > div:last-child {
+                align-items: flex-start !important;
+            }
+
+            div[id^="bubble-"] {
+                padding: 0.45rem 0.7rem !important;
+                font-size: 0.88rem !important;
+                line-height: 1.4;
+            }
+
+            /* Hide sender label on mobile */
+            .msg-bubble-container > div:last-child > span:first-child {
+                display: none !important;
+            }
+
+            /* ── Avatar smaller on mobile ── */
+            .msg-bubble-theirs > div:first-child > div,
+            .msg-bubble-theirs > div:first-child > img {
+                width: 26px !important;
+                height: 26px !important;
+            }
+
+            /* ── Action buttons — visible, below bubble ── */
+            .msg-actions {
+                position: static !important;
+                display: flex !important;
+                gap: 0.3rem;
+                margin-top: 0.2rem;
+                background: transparent;
+                border: none;
+                box-shadow: none;
+                padding: 0;
+                justify-content: flex-end;
+            }
+
+            .msg-bubble-mine .msg-actions {
+                justify-content: flex-end;
+            }
+
+            .msg-bubble-theirs .msg-actions {
+                justify-content: flex-start;
+            }
+
+            /* ── Fixed bottom input bar ── */
+            form#chatForm {
+                position: sticky;
+                bottom: 0;
+                z-index: 50;
+                border-radius: 0;
+                border: none;
+                border-top: 1px solid #e2e8f0;
+                padding: 0.5rem 0.6rem;
+                box-shadow: 0 -1px 4px rgba(0,0,0,0.04);
+                margin-bottom: 0;
+            }
+
+            form#chatForm > div:last-child {
+                gap: 0.35rem;
+            }
+
+            form#chatForm label[title*="แนบไฟล์"] {
+                width: 36px !important;
+                height: 36px !important;
+                min-width: 36px;
+                border-radius: 50% !important;
+            }
+
+            #msgInput {
+                border-radius: 20px !important;
+                padding: 0.5rem 0.85rem !important;
+                font-size: 0.9rem !important;
+                max-height: 100px;
+            }
+
+            #sendBtn {
+                width: 38px !important;
+                height: 38px !important;
+                min-width: 38px;
+                border-radius: 50% !important;
+            }
+
+            .attachment-img {
+                max-height: 200px;
+            }
+
+            #adminTypingBar {
+                padding: 0 0.75rem;
+            }
+
+            /* ── Light theme mobile ── */
+            html[data-theme="light"] .chat-header-card {
+                background: #ffffff;
+                border-bottom-color: #e2e8f0;
+            }
+            html[data-theme="light"] form#chatForm {
+                background: #ffffff;
+                border-top-color: #e2e8f0;
+            }
+            html[data-theme="light"] #chatWindow {
+                background: #f8fafc;
+            }
+
+            /* ── Dark theme mobile ── */
+            html[data-theme="dark"] .chat-header-card {
+                background: #18181b;
+                border-bottom-color: #27272a;
+            }
+            html[data-theme="dark"] form#chatForm {
+                background: #18181b;
+                border-top-color: #27272a;
+            }
+            html[data-theme="dark"] #chatWindow {
+                background: #121214;
+            }
+            html[data-theme="dark"] div[id^="bubble-"] {
+                border-color: #3f3f46 !important;
+            }
+        }
+
+        /* ── Safe area for notched phones ── */
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+            form#chatForm {
+                padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+            }
+        }
+
+        /* ── Mobile flex layout for full-height chat ── */
+        @media (max-width: 1024px) {
+            .sb-main { display: flex !important; flex-direction: column !important; }
+        }
+        @media (max-width: 640px) {
+            .sb-main { height: 100dvh !important; overflow: hidden !important; }
+        }
 
     {{-- Header --}}
     <div class="chat-header-card chat-header-container">
         <div style="display:flex;align-items:center;gap:0.75rem;">
-            <a href="{{ route('admin.inbox.index') }}" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:#f1f5f9;color:#64748b;text-decoration:none;" title="กลับไปกล่องข้อความ">
+            <a href="{{ route('admin.inbox.index') }}" class="back-btn" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:#f1f5f9;color:#64748b;text-decoration:none;" title="กลับไปกล่องข้อความ">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
             </a>
             <div>
