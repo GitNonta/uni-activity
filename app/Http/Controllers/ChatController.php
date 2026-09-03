@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\EditMessageRequest;
 use App\Http\Requests\SendMessageRequest;
 use App\Models\Message;
+use App\Models\User;
 use App\Services\ChatService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

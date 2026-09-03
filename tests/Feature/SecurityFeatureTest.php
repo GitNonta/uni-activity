@@ -274,10 +274,11 @@ class SecurityFeatureTest extends TestCase
 
     public function test_health_and_up_endpoints_return_ok_without_cors_allow_origin_star(): void
     {
-        // Test /health
+        // Test /health — returns {status: healthy, checks: {...}} on success
         $healthResponse = $this->get('/health');
         $healthResponse->assertOk();
-        $healthResponse->assertJson(['status' => 'ok', 'service' => 'uni-activity']);
+        $healthResponse->assertJson(['status' => 'healthy']);
+        $healthResponse->assertJsonStructure(['checks' => ['database', 'cache', 'queue', 'storage']]);
         $this->assertNull(
             $healthResponse->headers->get('Access-Control-Allow-Origin'),
             'Health endpoint should not expose Access-Control-Allow-Origin: * header'

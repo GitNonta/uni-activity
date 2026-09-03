@@ -133,7 +133,6 @@
         </div>
     @endif
 </div>
-@endsection
 
 {{-- ═══ Modal ═══ --}}
 <div id="backupModal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.4); align-items:center; justify-content:center; padding:1rem;">
