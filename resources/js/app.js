@@ -48,4 +48,10 @@ window.addEventListener('pageshow', (event) => {
 	}
 });
 
-Alpine.start();
+// ป้องกัน Alpine.start() รันก่อน document.body พร้อม
+// (เกิดได้เมื่อ script โหลดจาก <head> โดยไม่มี defer)
+if (document.readyState === 'loading') {
+	document.addEventListener('DOMContentLoaded', () => Alpine.start());
+} else {
+	Alpine.start();
+}
