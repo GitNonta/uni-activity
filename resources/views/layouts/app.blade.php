@@ -338,8 +338,35 @@
     {{-- ── Floating Chat Widget ── --}}
     {{-- ── Floating Chat Widget Styles ── --}}
     <style nonce="{{ request()->attributes->get('csp_nonce') }}">
-    .chat-list-item { background: transparent; transition: all .15s ease; margin: 6px 8px; border-radius: 12px; border: 1px solid #f1f5f9; }
+    .chat-list-item { background: transparent; transition: all .15s ease; margin: 6px 8px; border-radius: 14px; border: 1px solid #f1f5f9; }
     .chat-list-item:hover { background: #f8fafc; border-color: #e2e8f0; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+
+    /* Desktop widget entrance + header button feedback */
+    #chatFloatPanel.cf-anim {
+        animation: cf-desktop-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes cf-desktop-in {
+        from { opacity: 0; transform: translateY(16px) scale(0.96); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    #cfHeader button:hover {
+        background: rgba(255, 255, 255, 0.32) !important;
+    }
+    #cfHeader button:active {
+        transform: scale(0.94);
+    }
+    #cfChatWindow {
+        background:
+            radial-gradient(circle at 15% 8%, rgba(249, 115, 22, 0.04), transparent 42%),
+            radial-gradient(circle at 88% 92%, rgba(249, 115, 22, 0.03), transparent 42%),
+            #f8fafc;
+    }
+    html[data-theme="dark"] #cfChatWindow {
+        background:
+            radial-gradient(circle at 15% 8%, rgba(249, 115, 22, 0.05), transparent 42%),
+            radial-gradient(circle at 88% 92%, rgba(249, 115, 22, 0.04), transparent 42%),
+            #121214;
+    }
     .chat-list-item.unread { background: #FF9933; border-color: #FF9933; } /* Requested #FF9933 orange background */
     .chat-list-item.unread:hover { background: #e68a2e; border-color: #e68a2e; }
     .chat-list-item.unread .chat-title, .chat-list-item.unread .chat-preview { color: #000 !important; }
@@ -369,38 +396,52 @@
     /* Input & Bottom Bar Elements */
     .cf-chat-input-area {
         border-top: 1px solid #e2e8f0;
-        padding: .5rem .75rem;
+        padding: .5rem .6rem;
+        padding-bottom: calc(.5rem + env(safe-area-inset-bottom, 0px));
         background: #fff;
         flex-shrink: 0;
     }
     .cf-input-field {
         flex: 1;
         resize: none;
-        border: 1px solid #cbd5e1;
-        border-radius: 8px;
-        padding: .45rem .65rem;
+        border: 1.5px solid transparent;
+        border-radius: 20px;
+        padding: .5rem .85rem;
         font-size: .85rem;
         line-height: 1.4;
         outline: none;
         font-family: inherit;
         max-height: 80px;
         overflow-y: auto;
-        background: #fff;
+        background: #f8fafc;
         color: #1e293b;
+        transition: border-color .15s, background .15s, box-shadow .15s;
+    }
+    .cf-input-field:focus {
+        background: #fff;
+        border-color: #ea580c;
+        box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.14);
     }
     .cf-attach-label {
         cursor: pointer;
-        padding: .45rem .65rem;
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        border-radius: 50%;
         background: #f1f5f9;
-        border: 1px solid #cbd5e1;
-        border-radius: 8px;
+        border: none;
         font-size: .9rem;
         line-height: 1;
         flex-shrink: 0;
-        color: #475569;
+        color: #64748b;
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        transition: border-color .15s, color .15s, background .15s;
+    }
+    .cf-attach-label:hover {
+        background: #fff7ed;
+        color: #ea580c;
     }
 
     .chat-link {
@@ -693,11 +734,11 @@
     </style>
     
     <div id="chatFloatWidget" style="position:fixed;bottom:5.5rem;right:1.1rem;z-index:8500;display:flex;flex-direction:column;align-items:flex-end;gap:.5rem;">
-        <div id="chatFloatPanel" style="display:none;width:330px;height:480px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.2);overflow:hidden;flex-direction:column;">
-            <div id="cfHeader" style="background:#ea580c;padding:.7rem 1rem;display:flex;align-items:center;gap:.5rem;flex-shrink:0;">
-                <button id="cfBackBtn" onclick="cfBackToList()" style="display:none;background:none;border:none;color:#fff;font-size:1rem;cursor:pointer;padding:.1rem .3rem;line-height:1;opacity:.85;">←</button>
-                <span id="cfHeaderTitle" style="color:#fff;font-weight:700;font-size:.88rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><svg style="width:16px;height:16px;display:inline;vertical-align:-3px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg> ข้อความของฉัน</span>
-                <button onclick="closeChatWidget()" style="background:none;border:none;color:#fff;font-size:1.1rem;cursor:pointer;line-height:1;padding:.1rem .3rem;opacity:.85;">✕</button>
+        <div id="chatFloatPanel" style="display:none;width:360px;height:520px;background:#fff;border-radius:20px;box-shadow:0 12px 40px rgba(0,0,0,.18),0 4px 12px rgba(0,0,0,.08);overflow:hidden;flex-direction:column;">
+            <div id="cfHeader" style="background:linear-gradient(135deg,#f97316 0%,#ea580c 55%,#c2410c 100%);padding:.6rem .85rem;display:flex;align-items:center;gap:.5rem;flex-shrink:0;box-shadow:0 2px 8px rgba(194,65,12,.35);">
+                <button id="cfBackBtn" onclick="cfBackToList()" style="display:none;width:30px;height:30px;min-width:30px;align-items:center;justify-content:center;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);color:#fff;font-size:1rem;cursor:pointer;padding:0;line-height:1;border-radius:50%;">←</button>
+                <span id="cfHeaderTitle" style="color:#fff;font-weight:700;font-size:.88rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:.5rem;"><span style="width:30px;height:30px;min-width:30px;border-radius:50%;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;"><svg style="width:15px;height:15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg></span> <span style="overflow:hidden;text-overflow:ellipsis;">ข้อความของฉัน</span></span>
+                <button onclick="closeChatWidget()" style="width:30px;height:30px;min-width:30px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);color:#fff;font-size:.95rem;cursor:pointer;line-height:1;padding:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;transition:background .15s;">✕</button>
             </div>
             <div id="cfViewList" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;">
                 <div id="cfListContent" style="flex:1;">
@@ -718,7 +759,7 @@
                             <svg style="width:16px;height:16px;display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg><input type="file" id="cfFileInput" name="attachments[]" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.zip,.txt" style="display:none;">
                         </label>
                         <textarea id="cfMsgInput" class="cf-input-field" name="message" rows="1" placeholder="พิมพ์ข้อความ..."></textarea>
-                        <button type="submit" id="cfSendBtn" style="padding:.45rem .85rem;background:#ea580c;color:#fff;border:none;border-radius:8px;font-size:.82rem;cursor:pointer;font-weight:500;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+                        <button type="submit" id="cfSendBtn" style="width:38px;height:38px;min-width:38px;padding:0;background:linear-gradient(135deg,#f97316 0%,#ea580c 100%);color:#fff;border:none;border-radius:50%;font-size:.82rem;cursor:pointer;font-weight:500;flex-shrink:0;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(234,88,12,.35);transition:transform .15s ease,box-shadow .15s ease;">
                             <svg style="width:16px;height:16px;transform:rotate(45deg);margin-left:-2px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                         </button>
                     </form>
@@ -753,7 +794,9 @@
         };
         window.openChatWidget = function() {
             panelOpen = true;
-            document.getElementById('chatFloatPanel').style.display = 'flex';
+            var panel = document.getElementById('chatFloatPanel');
+            panel.style.display = 'flex';
+            panel.classList.add('cf-anim');
             document.getElementById('chatFloatBtn').style.transform = 'scale(1.1)';
             showListView();
             loadThreads();
