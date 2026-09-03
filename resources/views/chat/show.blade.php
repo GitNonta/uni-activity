@@ -48,9 +48,9 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 38px;
-        height: 38px;
-        border-radius: 10px;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
         background: #f1f5f9;
         color: var(--chat-text-muted);
         text-decoration: none;
@@ -85,23 +85,20 @@
     }
 
     .date-separator {
-        display: flex;
-        align-items: center;
-        text-align: center;
-        margin: 1rem 0;
+        align-self: center;
+        background: rgba(100, 116, 139, 0.12);
+        border-radius: 999px;
+        padding: 0.25rem 0.95rem;
+        margin: 0.75rem 0 0.35rem;
         color: var(--chat-text-muted);
-        font-size: 0.75rem;
+        font-size: 0.72rem;
         font-weight: 600;
     }
 
     .date-separator::before,
     .date-separator::after {
-        content: '';
-        flex: 1;
-        border-bottom: 1px solid var(--chat-border);
+        display: none;
     }
-    .date-separator:not(:empty)::before { margin-right: 1rem; }
-    .date-separator:not(:empty)::after { margin-left: 1rem; }
 
     .message-wrapper {
         display: flex;
@@ -167,7 +164,7 @@
     .message-mine .message-bubble {
         background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
         color: var(--chat-bubble-text-mine);
-        border-bottom-right-radius: 4px;
+        border-radius: 16px 4px 16px 16px;
         border: none;
         box-shadow: 0 2px 8px rgba(234, 88, 12, 0.3);
     }
@@ -175,7 +172,7 @@
     .message-theirs .message-bubble {
         background: var(--chat-bubble-theirs);
         color: var(--chat-bubble-text-theirs);
-        border-bottom-left-radius: 4px;
+        border-radius: 4px 16px 16px 16px;
         border: 1px solid var(--chat-border);
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     }
@@ -257,10 +254,10 @@
 
     .input-area {
         background: white;
-        padding: 0.85rem 1rem;
-        border-radius: 16px;
+        padding: 0.75rem 1rem;
+        border-radius: 14px;
         margin-top: 0.75rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.03);
         border: 1px solid var(--chat-border);
     }
 
