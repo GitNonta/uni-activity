@@ -37,36 +37,41 @@ class ChatRepository
      */
     public function sendMessage(Room $room, User $user, string $body, string $type = 'text', array $attachments = []): Message
     {
-        return DB::transaction(function () use ($room, $user, $body, $type, $attachments): Message {
-            $message = $room->messages()->create([
+        // Only save to DB inside transaction — broadcasting must be outside
+        // so a Reverb failure never rolls back the message.
+        $message = DB::transaction(function () use ($room, $user, $body, $type, $attachments): Message {
+            return $room->messages()->create([
                 'user_id'     => $user->id,
                 'body'        => $body,
                 'type'        => $type,
                 'attachments' => $attachments,
             ]);
-
-            // Broadcast ไปยังคนอื่นในห้องผ่าน Reverb WebSocket ทันที
-            broadcast(new MessageSent($message->load('user:id,full_name,profile_photo')))->toOthers();
-
-            // Publish เข้าสู่ Dragonfly PubSub Backbone สำหรับ Microservices / Event Stream
-            try {
-                app(\App\Services\DragonflyPubSubService::class)->publishChatEvent(
-                    $room->id,
-                    'MessageSent',
-                    [
-                        'id'          => $message->id,
-                        'room_id'     => $room->id,
-                        'user_id'     => $user->id,
-                        'user_name'   => $user->full_name,
-                        'message'     => $body,
-                        'attachments' => $attachments,
-                        'created_at'  => $message->created_at?->toISOString(),
-                    ]
-                );
-            } catch (\Throwable $e) {}
-
-            return $message;
         });
+
+        // Broadcast ไปยังคนอื่นในห้องผ่าน Reverb WebSocket ทันที
+        // Wrapped in try-catch so broadcasting failure never kills the request
+        try {
+            broadcast(new MessageSent($message->load('user:id,full_name,profile_photo')))->toOthers();
+        } catch (\Throwable $e) {}
+
+        // Publish เข้าสู่ Dragonfly PubSub Backbone สำหรับ Microservices / Event Stream
+        try {
+            app(\App\Services\DragonflyPubSubService::class)->publishChatEvent(
+                $room->id,
+                'MessageSent',
+                [
+                    'id'          => $message->id,
+                    'room_id'     => $room->id,
+                    'user_id'     => $user->id,
+                    'user_name'   => $user->full_name,
+                    'message'     => $body,
+                    'attachments' => $attachments,
+                    'created_at'  => $message->created_at?->toISOString(),
+                ]
+            );
+        } catch (\Throwable $e) {}
+
+        return $message;
     }
 
     /**

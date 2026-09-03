@@ -1,0 +1,41 @@
+#!/usr/bin/env python3
+"""Confirm watchdog process + locate Valkey 9 multi-part AOF files."""
+
+import paramiko
+
+ssh = paramiko.SSHClient()
+ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+ssh.connect("192.168.1.222", 8022, "u0_a175", "A2345678", timeout=20)
+
+
+def run(cmd, timeout=60):
+    _, o, e = ssh.exec_command(cmd, timeout=timeout)
+    out = o.read().decode("utf-8", errors="ignore").strip()
+    err = e.read().decode("utf-8", errors="ignore").strip()
+    return out or err or "(no output)"
+
+
+print("[1] Watchdog process")
+print(run("pgrep -af 'watch_valkey' || echo NOT-RUNNING"))
+print()
+
+print("[2] AOF config paths from server itself")
+print(run(
+    "valkey-cli -p 6379 -a 'UniActivityRedis2026!' --no-auth-warning CONFIG GET appendonlydir appendfilename; "
+    "echo ---; "
+    "valkey-cli -p 6380 -a 'UniActivityRedis2026!' --no-auth-warning CONFIG GET appendonlydir appendfilename"
+))
+print()
+
+print("[3] Find actual AOF files on disk")
+print(run("find $HOME/valkey-data $HOME/valkey-queue-data -name '*aof*' 2>/dev/null | head; ls -la $HOME/valkey-data/appendonlydir $HOME/valkey-queue-data/appendonlydir 2>/dev/null"))
+print()
+
+print("[4] AOF status (aof_enabled, size)")
+print(run(
+    "valkey-cli -p 6379 -a 'UniActivityRedis2026!' --no-auth-warning INFO persistence | grep -E 'aof_enabled|aof_current_size'; "
+    "echo ---; "
+    "valkey-cli -p 6380 -a 'UniActivityRedis2026!' --no-auth-warning INFO persistence | grep -E 'aof_enabled|aof_current_size'"
+))
+
+ssh.close()

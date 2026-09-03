@@ -1,0 +1,189 @@
+
+===== [autostart.sh] =====
+#!/data/data/com.termux/files/usr/bin/bash
+
+LOGFILE="$HOME/start_services.log"
+echo -e "\n[START] $(date)" >> "$LOGFILE"
+
+# 1. Nginx
+if ! pgrep -f "nginx: master" > /dev/null 2>&1; then
+    nginx && echo "[OK] Nginx started" >> "$LOGFILE" || echo "[ERR] Nginx failed" >> "$LOGFILE"
+fi
+
+# 2. Filebrowser
+if ! pgrep -f filebrowser > /dev/null 2>&1; then
+    nohup filebrowser -r ~/ --address 127.0.0.1 --port 8181 > /dev/null 2>&1 &
+    echo "[OK] Filebrowser restarted" >> "$LOGFILE"
+fi
+
+# 3. SSHD
+if ! pgrep -f sshd > /dev/null 2>&1; then
+    sshd && echo "[OK] SSHD started" >> "$LOGFILE" || echo "[ERR] SSHD failed" >> "$LOGFILE"
+fi
+
+# 4. SSH Guard
+if ! pgrep -f ssh-brute-guard.sh > /dev/null 2>&1; then
+    nohup bash ~/ssh-brute-guard.sh > /data/data/com.termux/files/home/brute-guard.log 2>&1 &
+fi
+
+# 5. PHP-FPM
+if ! pgrep -f "php-fpm: master" > /dev/null 2>&1 || [ ! -S /data/data/com.termux/files/usr/var/run/php-fpm.sock ]; then
+    php-fpm --fpm-config /data/data/com.termux/files/usr/etc/php-fpm.conf --daemonize > /dev/null 2>&1
+    echo "[$(date)] php-fpm started" >> ~/autostart.log
+fi
+
+# 6. PostgreSQL
+if ! pgrep -f "postgres -D" > /dev/null 2>&1; then
+    pg_ctl start -D /data/data/com.termux/files/usr/var/lib/postgresql -l /data/data/com.termux/files/usr/var/lib/postgresql/postgresql.log > /dev/null 2>&1
+    echo "[$(date)] postgresql started" >> ~/autostart.log
+fi
+
+===== [watchdog.sh] =====
+#!/data/data/com.termux/files/usr/bin/bash
+# UNI-ACTIVITY Watchdog — auto-heal dead services
+HOME_DIR="/data/data/com.termux/files/home"
+LOG="$HOME_DIR/watchdog.log"
+ts() { date '+%H:%M:%S'; }
+log() { echo "$(ts) [$1] $2" | tee -a "$LOG"; }
+
+# Keep Android awake
+termux-wake-lock 2>/dev/null
+
+# Redis
+if ! redis-cli ping >/dev/null 2>&1; then
+    log "HEAL" "Redis DOWN"
+    redis-server --daemonize yes --port 6379 --bind 127.0.0.1 --requirepass UniActivityRedis2026! --logfile "$HOME_DIR/redis.log" 2>/dev/null
+    sleep 2
+    redis-cli ping >/dev/null 2>&1 && log "OK" "Redis restored" || log "FAIL" "Redis still down"
+fi
+
+# PostgreSQL
+if ! pg_ctl status -D "/data/data/com.termux/files/usr/var/lib/postgresql" >/dev/null 2>&1; then
+    log "HEAL" "PostgreSQL DOWN"
+    pg_ctl start -D "/data/data/com.termux/files/usr/var/lib/postgresql" -l "/data/data/com.termux/files/usr/var/lib/postgresql/postgresql.log" -w >/dev/null 2>&1
+fi
+
+# Nginx
+if ! pgrep -x nginx >/dev/null; then
+    log "HEAL" "Nginx DOWN"
+    nginx 2>/dev/null
+fi
+
+# PHP-FPM
+if ! pgrep -f "php-fpm: master" >/dev/null; then
+    log "HEAL" "PHP-FPM DOWN"
+    php-fpm -D 2>/dev/null
+fi
+
+# tmux sessions for Laravel services
+for svc in reverb queue cloudflared schedule keepalive auto_updater; do
+    if ! tmux has-session -t "$svc" 2>/dev/null; then
+        log "HEAL" "tmux:$svc GONE — recreating"
+        tmux new-session -d -s "$svc" "bash $HOME_DIR/svc_$svc.sh"
+    fi
+done
+
+# Trim log
+tail -300 "$LOG" > "$LOG.tmp" && mv "$LOG.tmp" "$LOG" 2>/dev/null
+
+===== [start.sh] =====
+qemu-system-x86_64 -m 2048 -smp 2 -nographic \
+-drive file=alpine-disk.qcow2,format=qcow2 \
+-netdev user,id=net0,hostfwd=tcp::2222-:22,hostfwd=tcp::8080-:80,hostfwd=tcp::3000-:3000 \
+,hostfwd=tcp::27017-:27017\
+-device virtio-net-pci,netdev=net0
+
+===== [restart_services.sh] =====
+#!/data/data/com.termux/files/usr/bin/bash
+# UNI-ACTIVITY Complete Auto-Start with Laravel Horizon Orchestration
+
+echo "🚀 Starting UNI-ACTIVITY Enterprise Dual-Datastore + Horizon Stack..."
+echo "$(date): Auto-start triggered" >> /tmp/autostart.log
+
+sleep 3
+
+PROJECT_PATH="/data/data/com.termux/files/home/uni-activity"
+
+# 1. Start Dual Datastores
+echo "▶️  1. Starting In-Memory Engine (:6380)..."
+redis-server --port 6380 --save "" --appendonly no --daemonize yes --bind 127.0.0.1 --requirepass UniActivityRedis2026! 2>/dev/null
+sleep 1
+
+echo "▶️  2. Starting Persistent Zero-Data-Loss Engine (:6379)..."
+mkdir -p /data/data/com.termux/files/home/redis_persistent
+redis-server --port 6379 --dir /data/data/com.termux/files/home/redis_persistent --appendonly yes --appendfsync everysec --daemonize yes --bind 127.0.0.1 --requirepass UniActivityRedis2026! 2>/dev/null
+sleep 1
+
+# 2. Start AI Microservice (:8001)
+echo "▶️  3. Starting AI Microservice (:8001)..."
+tmux kill-session -t ai_service 2>/dev/null
+tmux new-session -d -s ai_service "proot-distro login ubuntu -- bash -c 'cd $PROJECT_PATH/ai_service && /root/ai_project/venv/bin/python server.py'"
+sleep 2
+
+# 3. Start Laravel Octane (:8000)
+echo "▶️  4. Starting Laravel Octane (:8000)..."
+tmux kill-session -t octane 2>/dev/null
+tmux new-session -d -s octane "proot-distro login ubuntu -- bash -c 'cd $PROJECT_PATH && php artisan octane:start --server=frankenphp --host=127.0.0.1 --port=8000 --workers=auto'"
+sleep 3
+
+# 4. Start Nginx Edge (:8080)
+echo "▶️  5. Starting Nginx Edge (:8080)..."
+nginx -c $PREFIX/etc/nginx/nginx.conf 2>/dev/null || nginx -s reload
+sleep 1
+
+# 5. Start Laravel Reverb (:8082)
+echo "▶️  6. Starting Laravel Reverb (:8082)..."
+tmux kill-session -t reverb 2>/dev/null
+tmux new-session -d -s reverb "cd $PROJECT_PATH && php artisan reverb:start --host=127.0.0.1 --port=8082"
+sleep 2
+
+# 6. Start Laravel Horizon (Redis Queue Supervisor & Auto-Scaler)
+echo "▶️  7. Starting Laravel Horizon Supervisor..."
+tmux kill-session -t horizon 2>/dev/null
+pkill -f 'artisan queue:work' 2>/dev/null
+tmux new-session -d -s horizon "cd $PROJECT_PATH && php artisan horizon"
+sleep 2
+
+# 7. Start Cloudflare Tunnel
+echo "▶️  8. Starting Cloudflare Tunnel..."
+if ! pgrep cloudflared > /dev/null; then
+    nohup cloudflared tunnel --url http://127.0.0.1:8080 --no-autoupdate > /tmp/cloudflared.log 2>&1 &
+fi
+
+echo "✅ All Dual Datastores, Horizon & Core Services Online!"
+
+===== [valkey proc cmdline] =====
+PID 26130:
+/data/data/com.termux/files/usr/bin/zsh -c for p in $(pgrep -f valkey-server); do echo "PID $p:"; tr '\0' ' ' < /proc/$p/cmdline; echo; done 
+PID 29858:
+valkey-server 0.0.0.0:6380                                                                                                                                                                                                                              
+PID 31189:
+valkey-server 0.0.0.0:6379
+
+===== [valkey6379 config used] =====
+appendonly
+no
+dbfilename
+dump.rdb
+dir
+/data/data/com.termux/files/home/valkey-data
+logfile
+
+requirepass
+UniActivityRedis2026!
+save
+3600 1 300 100 60 10000
+
+===== [valkey6380 config used] =====
+appendonly
+no
+dbfilename
+dump.rdb
+dir
+/data/data/com.termux/files/home/valkey-queue-data
+logfile
+
+requirepass
+UniActivityRedis2026!
+save
+3600 1 300 100 60 10000

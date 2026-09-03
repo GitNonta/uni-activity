@@ -1,0 +1,99 @@
+======================================================================
+S1 (192.168.1.222)
+======================================================================
+
+--- [supervisord configs]
+---
+done
+
+--- [supervisor conf.d]
+(no output)
+
+--- [supervisorctl status]
+unix:///data/data/com.termux/files/home/supervisor.sock no such file
+FAIL
+
+--- [valkey startup.log]
+29155:M 21 Aug 2026 16:34:34.875 * oO0OoO0OoO0Oo Valkey is starting oO0OoO0OoO0Oo
+29155:M 21 Aug 2026 16:34:34.875 * Valkey version=9.1.1, bits=64, commit=00000000, modified=1, pid=29155, just started
+29155:M 21 Aug 2026 16:34:34.875 * Configuration loaded
+29155:M 21 Aug 2026 16:34:34.879 # You requested maxclients of 10000 requiring at least 10032 max file descriptors.
+29155:M 21 Aug 2026 16:34:34.879 # Server can't set maximum open files to 10032 because of OS error: Operation not permitted.
+29155:M 21 Aug 2026 16:34:34.879 # Current maximum open files is 4096. maxclients has been reduced to 4064 to compensate for low ulimit. If you need higher maxclients increase 'ulimit -n'.
+29155:M 21 Aug 2026 16:34:34.879 * monotonic clock: ARM CNTVCT @ 19 ticks/us
+29155:M 21 Aug 2026 16:34:34.880 * Running mode=standalone, port=6379.
+29155:M 21 Aug 2026 16:34:34.880 # WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.
+29155:M 21 Aug 2026 16:34:34.882 * Static Module 'lua' successfully loaded
+29155:M 21 Aug 2026 16:34:34.883 * Server initialized
+29155:M 21 Aug 2026 16:34:34.883 * Cleaning slot migration log in anticipation of a load operation.
+29155:M 21 Aug 2026 16:34:34.886 # Can't handle RDB format version 14
+29155:M 21 Aug 2026 16:34:34.887 # Fatal error loading the DB, check server logs. Exiting.
+
+--- [how started]
+autostart.sh
+restart_services.sh
+restart_services.sh.bak.20260819173704
+s2-watchdog.log
+start-sshd.sh
+start.sh
+start_filebrowser.sh
+start_phone2_services.sh
+start_services.log
+start_services.sh
+start_uni_activity.sh
+start_uni_activity.sh.bak.20260819173704
+start_web_workers.sh
+valkey-data
+valkey-queue-data
+watchdog.log
+watchdog.sh
+watchdog.sh.bak.20260819173704
+done
+
+--- [watchdog scripts]
+*/5 * * * * bash ~/autostart.sh
+*/3 * * * * bash /data/data/com.termux/files/home/watchdog.sh >> /data/data/com.termux/files/home/watchdog.log 2>&1
+done
+
+--- [bash profile autostart]
+/data/data/com.termux/files/home/.zshrc:109:# Auto-start queue watchdog
+/data/data/com.termux/files/home/.zshrc:110:nohup /data/data/com.termux/files/home/uni-activity/start-workers.sh >> /data/data/com.termux/files/home/uni-activity/storage/logs/watchdog.log 2>&1 &
+done
+
+--- [dpkg redis leftovers]
+/data
+/data/data
+/data/data/com.termux
+/data/data/com.termux/files
+/data/data/com.termux/files/usr
+/data/data/com.termux/files/usr/etc
+/data/data/com.termux/files/usr/etc/redis.conf
+(Reading database ... 78399 files and directories currently installed.)
+Would remove or purge redis (1:8.8.1-1) ...
+done
+
+======================================================================
+S2 (192.168.1.140)
+======================================================================
+
+--- [php version/modules]
+PHP 8.5.1 (cli) (built: Dec 22 2025 00:03:00) (NTS)
+Copyright (c) The PHP Group
+NO-PHPREDIS-MODULE
+
+--- [php-redis pkg files]
+/data/data/com.termux/files/usr/lib/php/redis.so
+done
+
+--- [php ini scan]
+Configuration File (php.ini) Path: "/data/data/com.termux/files/usr/etc/php"
+Loaded Configuration File:         (none)
+Scan for additional .ini files in: "/data/data/com.termux/files/usr/etc/php/conf.d"
+Additional .ini files parsed:      /data/data/com.termux/files/usr/etc/php/conf.d/pdo_pgsql.ini,
+/data/data/com.termux/files/usr/etc/php/conf.d/pgsql.ini
+
+--- [can reach S1 valkey]
+ext-not-available: Class "Redis" not found
+
+--- [predis test to S1]
+CACHE=ok

@@ -1,0 +1,147 @@
+======================================================================
+S1 (192.168.1.222)
+======================================================================
+
+--- [processes]
+u0_a175   6468  0.4  0.3 178184 12124 pts/0    S+    1970  23:25 php /data/data/com.termux/files/home/uni-activity/artisan queue:work redis --queue=ai,notifications,exports,line-notifications,sync,stats,images,default --sleep=3 --tries=3 --timeout=90 --no-interaction
+u0_a175  29858  0.6  0.0  59368  2068 ?        Ssl   1970  32:29 valkey-server 0.0.0.0:6380
+u0_a175  31189  0.5  0.0  57320  2624 ?        Ssl   1970  26:07 valkey-server 0.0.0.0:6379
+
+--- [binaries]
+-rwx------.  1 u0_a175 u0_a175    379976 Aug  9 12:40 valkey-benchmark
+-rwx------.  1 u0_a175 u0_a175    662352 Aug  9 12:40 valkey-cli
+-rwx------.  1 u0_a175 u0_a175   3163528 Aug  9 12:40 valkey-server
+
+--- [dpkg packages]
+rc redis 1:8.8.1-1
+ii valkey 9.1.1-3
+
+--- [valkey configs]
+-rw-------. 1 u0_a175 u0_a175 129277 Aug  9 12:40 /data/data/com.termux/files/usr/etc/valkey.conf
+
+/data/data/com.termux/files/home/valkey-data:
+total 428
+drwx------.  2 u0_a175 u0_a175   3488 Aug 25 03:35 .
+drwx------. 37 u0_a175 u0_a175  20480 Aug 25 02:37 ..
+-rw-------.  1 u0_a175 u0_a175 409606 Aug 25 03:35 dump.rdb
+-rw-------.  1 u0_a175 u0_a175   1391 Aug 21 16:34 startup.log
+
+/data/data/com.termux/files/home/valkey-queue-data:
+total 28
+drwx------.  2 u0_a175 u0_a175  3488 Aug 25 03:35 .
+drwx------. 37 u0_a175 u0_a175 20480 Aug 25 02:37 ..
+-rw-------.  1 u0_a175 u0_a175   742 Aug 25 03:35 dump.rdb
+-rw-------.  1 u0_a175 u0_a175     6 Aug 21 17:24 valkey6380.pid
+
+--- [runit services]
+zsh:1: no matches found: /data/data/com.termux/files/home/sv/*/
+
+--- [supervisord?]
+/data/data/com.termux/files/usr/bin/supervisord
+/data/data/com.termux/files/usr/bin/supervisorctl
+done
+
+--- [crontab/boot]
+done
+
+--- [ports listening]
+tcp        0      0 0.0.0.0:6379            0.0.0.0:*               LISTEN      31189/valkey-server 
+tcp        0      0 0.0.0.0:6380            0.0.0.0:*               LISTEN      29858/valkey-server
+
+--- [ping 6379]
+PONG
+
+--- [info 6379 server]
+redis_version:7.2.4
+valkey_version:9.1.1
+process_id:31189
+tcp_port:6379
+
+--- [ping 6380]
+PONG
+
+--- [info 6380 server]
+redis_version:7.2.4
+valkey_version:9.1.1
+process_id:29858
+tcp_port:6380
+
+--- [env valkey/redis lines]
+18:BROADCAST_CONNECTION=reverb
+20:QUEUE_CONNECTION=redis
+21:SESSION_DRIVER=redis
+22:SESSION_SECURE_COOKIE=true
+23:CACHE_STORE=redis
+24:REDIS_CLIENT=predis
+25:REDIS_HOST=127.0.0.1
+26:REDIS_PASSWORD="UniActivityRedis2026!"
+27:REDIS_PORT=6379
+
+--- [composer predis]
+20:        "predis/predis": "^3.5",
+
+--- [php modules]
+NO-PHPREDIS
+
+--- [queue worker cmd]
+u0_a175   6468  0.4  0.3 178184 12124 pts/0    S+    1970  23:25 php /data/data/com.termux/files/home/uni-activity/artisan queue:work redis --queue=ai,notifications,exports,line-notifications,sync,stats,images,default --sleep=3 --tries=3 --timeout=90 --no-interaction
+
+======================================================================
+S2 (192.168.1.140)
+======================================================================
+
+--- [processes]
+u0_a138  23703  0.6  1.6 139324 60000 ?        S<s   1970   0:07 php artisan queue:work redis --queue=ai,notifications,exports,line-notifications,sync,stats,images,default --sleep=3 --tries=3 --timeout=90 --no-interaction
+
+--- [binaries]
+NONE
+
+--- [dpkg packages]
+ii php-redis 6.3.0RC1
+
+--- [valkey configs]
+-rwxr-xr-x. 1 u0_a138 u0_a138 540 Aug 21 16:13 /data/data/com.termux/files/home/valkey-status.sh
+
+--- [runit services]
+--- /data/data/com.termux/files/home/sv/*/
+
+--- [supervisord?]
+done
+
+--- [crontab/boot]
+done
+
+--- [ports listening]
+NONE
+
+--- [ping 6379]
+FAIL
+
+--- [info 6379 server]
+FAIL
+
+--- [ping 6380]
+FAIL
+
+--- [info 6380 server]
+FAIL
+
+--- [env valkey/redis lines]
+18:BROADCAST_CONNECTION=reverb
+20:QUEUE_CONNECTION=redis
+21:SESSION_DRIVER=redis
+22:SESSION_SECURE_COOKIE=true
+23:CACHE_STORE=redis
+24:REDIS_CLIENT=predis
+25:REDIS_HOST=192.168.1.222
+26:REDIS_PASSWORD=UniActivityRedis2026!
+27:REDIS_PORT=6379
+
+--- [composer predis]
+20:        "predis/predis": "^3.5",
+
+--- [php modules]
+NO-PHPREDIS
+
+--- [queue worker cmd]
+u0_a138  23703  0.6  1.6 139324 60000 ?        S<s   1970   0:07 php artisan queue:work redis --queue=ai,notifications,exports,line-notifications,sync,stats,images,default --sleep=3 --tries=3 --timeout=90 --no-interaction

@@ -41,3 +41,6 @@ Route::middleware(['auth:sanctum', 'throttle:api-general'])->group(function () {
     Route::delete('/failed-jobs/flush', [\App\Http\Controllers\Admin\FailedJobsController::class, 'flush']);
     Route::delete('/failed-jobs/{id}', [\App\Http\Controllers\Admin\FailedJobsController::class, 'destroy']);
 });
+
+
+Route::post("/face/test-compare", [App\Http\Controllers\Api\TestFaceController::class, "compare"])->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class]);
