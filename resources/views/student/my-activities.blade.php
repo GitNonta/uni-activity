@@ -287,10 +287,20 @@
         .todo-card .btn:hover { filter: brightness(1.06); }
     }
 
-    /* phones & tablets: identical card structure to the website — same
-       pastel colors, radius, glow and layout; only touch ergonomics added */
+    /* phones & tablets: same width as every other card on the page —
+       one task per swipe, exact container width, website card styling */
     @media (max-width: 1024px) {
-        .todo-card { scroll-snap-stop: always; }
+        .todo-scroll {
+            margin: 0;
+            padding: .25rem 0 .9rem;
+            scroll-padding-left: 0;
+        }
+        .todo-card {
+            flex: 0 0 100%;
+            min-width: 100%;
+            max-width: 100%;
+            scroll-snap-stop: always;
+        }
         .todo-card:active { transform: scale(.98); }
     }
 </style>
