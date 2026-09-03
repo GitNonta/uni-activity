@@ -68,8 +68,9 @@ class LineService
         }
 
         try {
-            $response = Http::withToken($this->accessToken)
-                ->timeout(10)
+            $response = Http::withOptions(['proxy' => env('FORWARD_PROXY')])
+                ->withToken($this->accessToken)
+                ->timeout(15)
                 ->post("{$this->apiBase}/message/push", [
                     'to'       => $lineUserId,
                     'messages' => $messages,
@@ -101,7 +102,8 @@ class LineService
         // ส่งได้สูงสุด 500 คนต่อ request
         foreach (array_chunk($lineUserIds, 500) as $chunk) {
             try {
-                $response = Http::withToken($this->accessToken)
+                $response = Http::withOptions(['proxy' => env('FORWARD_PROXY')])
+                    ->withToken($this->accessToken)
                     ->timeout(15)
                     ->post("{$this->apiBase}/message/multicast", [
                         'to'       => array_values($chunk),
@@ -535,8 +537,9 @@ class LineService
     public function exchangeToken(string $code, string $redirectUri): ?array
     {
         try {
-            $response = Http::asForm()
-                ->timeout(10)
+            $response = Http::withOptions(['proxy' => env('FORWARD_PROXY')])
+                ->asForm()
+                ->timeout(15)
                 ->post('https://api.line.me/oauth2/v2.1/token', [
                     'grant_type'    => 'authorization_code',
                     'code'          => $code,
