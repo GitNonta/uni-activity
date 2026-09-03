@@ -41,6 +41,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 }
                 return $next($request);
             },
+            'strip-hpp' => \App\Http\Middleware\StripHppParams::class,
             \App\Http\Middleware\AuditLogMiddleware::class,
         ]);
         $middleware->appendToGroup('web', \App\Http\Middleware\UpdateLastSeen::class);

@@ -203,7 +203,7 @@ Route::get('/certificates/verify/{code}', [\App\Http\Controllers\Public\Certific
 Route::match(['get', 'post'], '/line/webhook', [LineController::class, 'webhook'])->name('line.webhook');
 
 // ── เส้นทางหลังบ้าน (staff + admin เข้าได้) ───────────
-Route::middleware(['auth', 'role:staff'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:staff', 'strip-hpp'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', fn() => redirect()->route('admin.dashboard'));
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
