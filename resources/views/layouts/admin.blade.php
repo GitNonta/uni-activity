@@ -1133,7 +1133,7 @@ html[data-theme="dark"] .admin-chat-widget {
 window.AdminChatManager = (function() {
     let openChats = {};
 
-    function openChat(url, title, chatId) {
+    function openChat(url, title, chatId, photoUrl) {
         if (openChats[chatId]) {
             openChats[chatId].classList.remove('minimized');
             return;
@@ -1153,9 +1153,13 @@ window.AdminChatManager = (function() {
             }
         };
 
+        const avatarContent = photoUrl
+            ? '<img src="' + photoUrl + '" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">'
+            : '<svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>';
+
         const titleSpan = document.createElement('span');
         titleSpan.className = 'acw-title';
-        titleSpan.innerHTML = '<span class="acw-avatar"><svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg></span>'
+        titleSpan.innerHTML = '<span class="acw-avatar">' + avatarContent + '</span>'
             + '<span class="acw-title-text"><span class="acw-title-name">' + title + '</span>'
             + '<span class="acw-title-sub"><span class="acw-live-dot"></span>แชทสด</span></span>';
 

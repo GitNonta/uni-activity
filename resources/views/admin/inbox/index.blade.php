@@ -42,7 +42,7 @@ html[data-theme="dark"] .inbox-read-text { color: #a1a1aa !important; }
         $unread = $thread['unread'] ?? 0;
         $time   = $thread['last_time'];
     @endphp
-    <a href="javascript:void(0)" onclick="if(window.AdminChatManager) window.AdminChatManager.openChat('{{ route('admin.inbox.show', [$thread['job_id'], $thread['student_id']]) }}', '{{ addslashes($thread['student_name']) }}', '{{ $thread['job_id'] }}_{{ $thread['student_id'] }}'); else window.location.href='{{ route('admin.inbox.show', [$thread['job_id'], $thread['student_id']]) }}';"
+    <a href="javascript:void(0)" onclick="if(window.AdminChatManager) window.AdminChatManager.openChat('{{ route('admin.inbox.show', [$thread['job_id'], $thread['student_id']]) }}', '{{ addslashes($thread['student_name']) }}', '{{ $thread['job_id'] }}_{{ $thread['student_id'] }}', '{{ $thread['student_photo'] ?? '' }}'); else window.location.href='{{ route('admin.inbox.show', [$thread['job_id'], $thread['student_id']]) }}';"
        class="inbox-thread-item {{ $unread > 0 ? 'unread' : '' }}"
        style="display:flex;align-items:center;gap:1rem;padding:.9rem 1.25rem;border-bottom:1px solid #f1f5f9;text-decoration:none;color:inherit;">
 
