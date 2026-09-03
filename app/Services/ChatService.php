@@ -535,9 +535,17 @@ class ChatService
 
     /**
      * แก้ไขข้อความพร้อมส่ง Broadcast Event
+     *
+     * อนุญาตให้แก้ไขได้เฉพาะข้อความล่าสุดของห้องเท่านั้น
      */
     public function editMessage(Message $message, string $newBody): array
     {
+        $latestId = (int) Message::where('room_id', $message->room_id)->max('id');
+
+        if ($latestId !== (int) $message->id) {
+            abort(422, 'แก้ไขได้เฉพาะข้อความล่าสุดเท่านั้น');
+        }
+
         $message->body = $newBody;
         $message->save();
 

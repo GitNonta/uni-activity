@@ -721,12 +721,14 @@
                 </div>
                 @endif
 
-                {{-- Actions --}}
+                {{-- Actions — edit only on the latest message --}}
                 @if($isMine)
                 <div class="msg-actions admin-chat-actions">
-                    <button class="msg-action-btn" onclick="editAdminMessage('{{ $msg->id }}')" title="แก้ไข">
+                    @if($msg->id == $lastMsg?->id)
+                    <button class="msg-action-btn msg-edit-btn" onclick="editAdminMessage('{{ $msg->id }}')" title="แก้ไข">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                     </button>
+                    @endif
                     <button class="msg-action-btn" onclick="deleteAdminMessage('{{ $msg->id }}')" title="ลบ">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                     </button>
@@ -1014,11 +1016,14 @@ document.addEventListener('DOMContentLoaded', function () {
         const timeStr = msg.time_formatted || new Date(msg.created_at).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
         const safeMessage = linkify(msg.message || msg.body || '', isMine);
 
+        // Only the latest message can be edited — strip stale edit buttons
+        document.querySelectorAll('.msg-edit-btn').forEach(b => b.remove());
+
         let actionsHtml = '';
         if (isMine && !String(msg.id).startsWith('tmp-')) {
             actionsHtml = `
                 <div class="msg-actions admin-chat-actions">
-                    <button class="msg-action-btn" onclick="editAdminMessage('${msg.id}')" title="แก้ไข">
+                    <button class="msg-action-btn msg-edit-btn" onclick="editAdminMessage('${msg.id}')" title="แก้ไข">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                     </button>
                     <button class="msg-action-btn" onclick="deleteAdminMessage('${msg.id}')" title="ลบ">
@@ -1189,7 +1194,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>';
                 btn.style.background = '#10b981';
             })
-            .catch(() => alert('ไม่สามารถโหลดข้อความล่าสุดได้'));
+            .catch(err => alert(err?.response?.data?.message || 'ไม่สามารถโหลดข้อความล่าสุดได้'));
     };
 
     function cancelEditMode() {

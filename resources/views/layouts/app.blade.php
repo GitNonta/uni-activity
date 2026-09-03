@@ -905,6 +905,8 @@
 
             // Always remove previous read status so it disappears when other user replies
             document.querySelectorAll('.cf-read-status').forEach(function(el){ el.remove(); });
+            // Only the latest message can be edited — strip stale edit menus
+            document.querySelectorAll('#cfChatWindow .msg-actions').forEach(function(el){ el.remove(); });
 
             var row = document.createElement('div');
             row.id = 'cf-msg-' + msg.id;
@@ -996,7 +998,7 @@
             
             col.appendChild(bubble);
 
-            if (!isTemp && mine) {
+            if (!isTemp && mine && isLastMine) {
                 col.style.position = 'relative';
                 var actions = document.createElement('div');
                 actions.className = 'msg-actions';
@@ -1064,7 +1066,7 @@
             col.appendChild(statusDiv);
 
             // Append actions inside col as absolute positioned element
-            if (!isTemp && mine) {
+            if (!isTemp && mine && isLastMine) {
                 col.appendChild(actions);
             }
 
@@ -1358,35 +1360,45 @@
         window.editStudentMessage = function(id) {
             var el = document.getElementById('cf-msg-' + id);
             if (!el) return;
-            var p = el.querySelector('p');
-            if (!p) return;
-            
-            var currentText = p.textContent.replace('(แก้ไขแล้ว)', '').trim();
             var msgInput = document.getElementById('cfMsgInput');
-            msgInput.value = currentText;
-            msgInput.focus();
-            
-            currentEditId = id;
-            
-            var btn = document.getElementById('cfSendBtn');
-            btn.innerHTML = '<svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> บันทึก';
-            btn.style.background = '#10b981';
-            
-            if (!document.getElementById('cfCancelEditBtn')) {
-                var cancelBtn = document.createElement('button');
-                cancelBtn.id = 'cfCancelEditBtn';
-                cancelBtn.type = 'button';
-                cancelBtn.innerHTML = 'ยกเลิก';
-                cancelBtn.style.cssText = 'background:#ef4444; color:#fff; border:none; border-radius:12px; padding:0 1rem; font-weight:500; font-size:.95rem; cursor:pointer; height:42px; margin-right:4px;';
-                cancelBtn.onclick = function() {
-                    currentEditId = null;
-                    msgInput.value = '';
-                    btn.innerHTML = '<svg style="width:16px;height:16px;transform:rotate(45deg);margin-left:-2px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';
-                    btn.style.background = '#ea580c';
-                    this.remove();
-                };
-                btn.parentNode.insertBefore(cancelBtn, btn);
-            }
+
+            // Fetch the latest content from the server so editing always starts
+            // from the current version, even if a real-time update was missed.
+            fetch('/chat/messages/' + id, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function(r) { return r.json(); })
+                .then(function(res) {
+                    if (!res || !res.success) return;
+                    var latest = res.message.body || '';
+
+                    var p = el.querySelector('p');
+                    if (p) p.textContent = latest;
+
+                    msgInput.value = latest;
+                    msgInput.focus();
+
+                    currentEditId = id;
+
+                    var btn = document.getElementById('cfSendBtn');
+                    btn.innerHTML = '<svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> บันทึก';
+                    btn.style.background = '#10b981';
+
+                    if (!document.getElementById('cfCancelEditBtn')) {
+                        var cancelBtn = document.createElement('button');
+                        cancelBtn.id = 'cfCancelEditBtn';
+                        cancelBtn.type = 'button';
+                        cancelBtn.innerHTML = 'ยกเลิก';
+                        cancelBtn.style.cssText = 'background:#ef4444; color:#fff; border:none; border-radius:12px; padding:0 1rem; font-weight:500; font-size:.95rem; cursor:pointer; height:42px; margin-right:4px;';
+                        cancelBtn.onclick = function() {
+                            currentEditId = null;
+                            msgInput.value = '';
+                            btn.innerHTML = '<svg style="width:16px;height:16px;transform:rotate(45deg);margin-left:-2px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';
+                            btn.style.background = '#ea580c';
+                            this.remove();
+                        };
+                        btn.parentNode.insertBefore(cancelBtn, btn);
+                    }
+                })
+                .catch(function() { alert('ไม่สามารถโหลดข้อความล่าสุดได้'); });
         };
 
         // โหลดข้อมูลล่าสุดตอนโหลดหน้าเว็บ เพื่ออัปเดตตัวเลขแจ้งเตือนที่ปุ่มแชท
