@@ -70,6 +70,22 @@
             border-color: #3f3f46 !important;
             color: #a1a1aa !important;
         }
+
+        /* Widget mode on desktop: show edit/delete tools only on bubble hover.
+           ID specificity wins over the shared always-visible rule below.
+           Touch devices and the full admin panel are unaffected. */
+        @media (hover: hover) and (pointer: fine) {
+            #chatWindow .admin-chat-actions {
+                visibility: hidden !important;
+                opacity: 0 !important;
+                transition: opacity 0.15s ease;
+            }
+            #chatWindow .msg-bubble-container:hover .admin-chat-actions,
+            #chatWindow .admin-chat-actions:focus-within {
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+        }
     </style>
     @endif
 
@@ -218,14 +234,15 @@
 
         .admin-chat-actions {
             display: flex !important;
+            flex-direction: column;
             align-items: center;
-            gap: 0.25rem;
+            gap: 0.15rem;
             position: absolute;
             top: -12px;
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            border-radius: 20px;
-            padding: 2px 6px;
+            border-radius: 12px;
+            padding: 3px 4px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.08);
             z-index: 10;
         }
@@ -237,6 +254,9 @@
         .admin-chat-actions .msg-action-btn {
             visibility: visible !important;
             opacity: 1 !important;
+            width: 22px;
+            height: 22px;
+            padding: 2px;
         }
 
         .msg-action-btn {
@@ -420,7 +440,8 @@
             .admin-chat-actions {
                 position: static !important;
                 display: flex !important;
-                gap: 0.3rem;
+                flex-direction: column;
+                gap: 0.2rem;
                 margin-top: 0.2rem;
                 background: transparent;
                 border: none;
