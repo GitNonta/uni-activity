@@ -34,49 +34,32 @@ class NewPasswordController extends Controller
         ]);
 
         $email       = strtolower((string) $request->email);
-        $emailHash   = md5($email);
-        $lockKey     = "password_reset_otp_lock_{$emailHash}";
-        $cooldownKey = "password_reset_otp_cooldown_{$emailHash}";
+        $cooldownKey = "password_reset_otp_cooldown_" . md5($email);
+        $otp         = (string) random_int(100000, 999999);
+        $expiryMinutes = 10;
 
-        Cache::lock($lockKey, 10)->block(5, function () use ($request, $email, $cooldownKey): void {
-            // หากเพิ่งส่งไปภายใน 60 วินาที และมี OTP เดิมอยู่ ให้ข้ามการส่งซ้ำ
-            if (Cache::has($cooldownKey)) {
-                $existing = DB::table('password_reset_otps')
-                    ->where('email', $email)
-                    ->where('expires_at', '>', now())
-                    ->first();
+        // บันทึก OTP ลงฐานข้อมูล (ไม่ใช้ Cache::lock เพื่อป้องกัน lock failure)
+        DB::table('password_reset_otps')->updateOrInsert(
+            ['email' => $email],
+            [
+                'otp'        => $otp,
+                'expires_at' => now()->addMinutes($expiryMinutes),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
 
-                if ($existing) {
-                    return;
-                }
-            }
+        // บันทึก Cooldown 60 วินาที (ป้องกันส่งซ้ำ)
+        Cache::put($cooldownKey, true, now()->addSeconds(60));
 
-            $otp = (string) random_int(100000, 999999);
-            $expiryMinutes = 10;
-
-            // บันทึก OTP ลงฐานข้อมูล
-            DB::table('password_reset_otps')->updateOrInsert(
-                ['email' => $email],
-                [
-                    'otp'        => $otp,
-                    'expires_at' => now()->addMinutes($expiryMinutes),
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]
+        // ส่งอีเมล OTP
+        try {
+            Mail::to($email)->send(
+                new \App\Mail\PasswordResetOtpMail($otp, $expiryMinutes)
             );
-
-            // บันทึก Cooldown 60 วินาที
-            Cache::put($cooldownKey, true, now()->addSeconds(60));
-
-            // ส่งอีเมล OTP
-            try {
-                Mail::to($email)->send(
-                    new \App\Mail\PasswordResetOtpMail($otp, $expiryMinutes)
-                );
-            } catch (\Throwable $e) {
-                Log::error('Password Reset OTP Mail Error: ' . $e->getMessage());
-            }
-        });
+        } catch (\Throwable $e) {
+            Log::error('Password Reset OTP Mail Error: ' . $e->getMessage());
+        }
 
         // เก็บข้อมูลรหัสผ่านใหม่ไว้ใน Session ชั่วคราว
         session([

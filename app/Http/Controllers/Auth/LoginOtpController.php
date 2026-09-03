@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -163,68 +164,65 @@ class LoginOtpController extends Controller
      */
     public function sendOtp(User $user, Request $request, bool $force = false): bool
     {
-        $lockKey     = "otp_send_lock_{$user->id}";
         $cooldownKey = "otp_cooldown_{$user->id}";
 
-        // ใช้ Atomic Lock ป้องกัน Race Condition เมื่อมีการ Submit ฟอร์มพร้อมกัน
-        return (bool) Cache::lock($lockKey, 10)->block(5, function () use ($user, $request, $cooldownKey, $force): bool {
-            // หากไม่ได้เป็นการกดขอใหม่โดยตรง (force) และเพิ่งส่งไปภายใน 60 วินาที
-            if (!$force && Cache::has($cooldownKey)) {
-                $existing = DB::table('password_reset_otps')
-                    ->where('email', $user->email)
-                    ->where('expires_at', '>', now())
-                    ->first();
+        // ตรวจสอบ Cooldown (ป้องกันส่งซ้ำภายใน 60 วินาที)
+        if (!$force && Cache::has($cooldownKey)) {
+            $existing = DB::table('password_reset_otps')
+                ->where('email', $user->email)
+                ->where('expires_at', '>', now())
+                ->first();
 
-                // มี OTP ที่ยังไม่หมดอายุและเพิ่งส่งไปแล้ว ให้ข้ามการส่งซ้ำ
-                if ($existing) {
-                    return true;
-                }
+            if ($existing) {
+                return true;
             }
+        }
 
-            // สุ่ม OTP ด้วย CSPRNG (Cryptographically Secure Pseudo-Random Number Generator)
-            $otp = (string) random_int(100000, 999999);
-            $ip  = (string) $request->ip();
+        // สุ่ม OTP
+        $otp = (string) random_int(100000, 999999);
+        $ip  = (string) $request->ip();
 
-            // ดึงพิกัดจาก IP โดยใช้ Cache 24 ชม. เพื่อลด Latency จาก API ภายนอก
-            $location = Cache::remember("geoip_loc_{$ip}", 86400, function () use ($ip): string {
-                if (in_array($ip, ['127.0.0.1', '::1'], true) || str_starts_with($ip, '192.168.')) {
-                    return 'Local Network (LAN)';
+        // ดึงพิกัดจาก IP
+        $location = Cache::remember("geoip_loc_{$ip}", 86400, function () use ($ip): string {
+            if (in_array($ip, ['127.0.0.1', '::1'], true) || str_starts_with($ip, '192.168.')) {
+                return 'Local Network (LAN)';
+            }
+            try {
+                $response = Http::timeout(2)->get("http://ip-api.com/json/{$ip}?fields=status,city,regionName,country");
+                if ($response->successful() && $response->json('status') === 'success') {
+                    $data = $response->json();
+                    return "{$data['city']}, {$data['regionName']}, {$data['country']}";
                 }
+            } catch (\Throwable) {}
+            return 'ไม่ทราบตำแหน่ง';
+        });
 
-                try {
-                    $response = Http::timeout(2)->get("http://ip-api.com/json/{$ip}?fields=status,city,regionName,country");
-                    if ($response->successful() && $response->json('status') === 'success') {
-                        $data = $response->json();
-                        return "{$data['city']}, {$data['regionName']}, {$data['country']}";
-                    }
-                } catch (\Throwable) {}
+        // บันทึก OTP ลงฐานข้อมูล (ไม่ใช้ Cache::lock เพื่อป้องกัน lock failure)
+        DB::table('password_reset_otps')->updateOrInsert(
+            ['email' => $user->email],
+            [
+                'otp'        => $otp,
+                'expires_at' => now()->addMinutes(10),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
 
-                return 'ไม่ทราบตำแหน่ง';
-            });
+        // บันทึก Cooldown 60 วินาที
+        Cache::put($cooldownKey, true, now()->addSeconds(60));
 
-            // บันทึก OTP ลงฐานข้อมูล
-            DB::table('password_reset_otps')->updateOrInsert(
-                ['email' => $user->email],
-                [
-                    'otp'        => $otp,
-                    'expires_at' => now()->addMinutes(10),
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]
-            );
-
-            // บันทึก Cooldown 60 วินาที
-            Cache::put($cooldownKey, true, now()->addSeconds(60));
-
-            // ส่งอีเมล OTP
+        // ส่งอีเมล OTP
+        try {
             Mail::to($user->email)->send(new \App\Mail\LoginOtpMail(
                 $otp,
                 $user->full_name,
                 $ip,
                 $location
             ));
+        } catch (\Throwable $e) {
+            Log::error('Login OTP Mail Error: ' . $e->getMessage());
+        }
 
-            return true;
-        });
+        return true;
     }
 }
