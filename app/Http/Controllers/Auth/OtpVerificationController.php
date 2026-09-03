@@ -37,7 +37,7 @@ class OtpVerificationController extends Controller
             'otp'   => ['required', 'string', 'size:6'],
         ]);
 
-        $email       = (string) $request->email;
+        $email       = strtolower((string) $request->email);
         $emailHash   = md5(strtolower($email));
         $lockoutKey  = "pwd_otp_locked_{$emailHash}";
         $attemptsKey = "pwd_otp_failed_attempts_{$emailHash}";
