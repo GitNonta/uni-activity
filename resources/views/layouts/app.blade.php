@@ -1141,8 +1141,9 @@
 
             // Always remove previous read status so it disappears when other user replies
             document.querySelectorAll('.cf-read-status').forEach(function(el){ el.remove(); });
-            // Only the latest message can be edited — strip stale edit menus
-            document.querySelectorAll('#cfChatWindow .msg-actions').forEach(function(el){ el.remove(); });
+            // Only the latest message can be edited — strip stale edit items,
+            // but keep the delete menu on older own messages
+            document.querySelectorAll('#cfChatWindow .cf-edit-item').forEach(function(el){ el.remove(); });
 
             var row = document.createElement('div');
             row.id = 'cf-msg-' + msg.id;
@@ -1234,7 +1235,7 @@
             
             col.appendChild(bubble);
 
-            if (!isTemp && mine && isLastMine) {
+            if (!isTemp && mine) {
                 col.style.position = 'relative';
                 var actions = document.createElement('div');
                 actions.className = 'msg-actions';
@@ -1262,7 +1263,11 @@
                     return item;
                 };
 
-                menu.appendChild(createItem('แก้ไข', function() { window.editStudentMessage(msg.id); }));
+                if (isLastMine) {
+                    var editItem = createItem('แก้ไข', function() { window.editStudentMessage(msg.id); });
+                    editItem.className = 'cf-edit-item';
+                    menu.appendChild(editItem);
+                }
                 menu.appendChild(createItem('ยกเลิกการส่ง', function() { window.deleteStudentMessage(msg.id); }));
                 
                 moreBtn.onclick = function(e) {
@@ -1302,7 +1307,7 @@
             col.appendChild(statusDiv);
 
             // Append actions inside col as absolute positioned element
-            if (!isTemp && mine && isLastMine) {
+            if (!isTemp && mine) {
                 col.appendChild(actions);
             }
 
