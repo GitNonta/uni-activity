@@ -104,11 +104,14 @@
                 <label class="form-label">รูปภาพประกอบ</label>
                 <input type="file" name="image" accept="image/*" class="form-control">
                 <small class="text-xs text-muted">ขนาดไม่เกิน 5 MB (JPG, PNG, WEBP)</small>
-                <div id="imageUploadStatus" style="display:none;align-items:center;gap:.5rem;margin-top:.5rem;padding:.45rem .65rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;">
+                <div id="imageUploadWrap" style="display:none;margin-top:.5rem;">
+                    <img id="imageUploadPreview" src="" alt="ตัวอย่างรูป" style="max-width:180px;max-height:130px;object-fit:cover;border-radius:10px;border:1px solid #e2e8f0;display:block;box-shadow:0 1px 4px rgba(0,0,0,.08);">
+                    <div id="imageUploadStatus" style="display:flex;align-items:center;gap:.5rem;margin-top:.4rem;padding:.45rem .65rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;">
                     <svg style="width:16px;height:16px;flex-shrink:0;" fill="none" stroke="#16a34a" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                     <span id="imageUploadName" style="font-size:.78rem;font-weight:600;color:#15803d;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></span>
                     <span id="imageUploadSize" style="font-size:.72rem;color:#16a34a;flex-shrink:0;"></span>
                     <button type="button" onclick="clearImageSelection()" title="ลบรูปที่เลือก" style="background:transparent;border:none;color:#dc2626;cursor:pointer;font-size:.85rem;line-height:1;padding:2px 4px;border-radius:4px;">✕</button>
+                    </div>
                 </div>
             </div>
 
@@ -276,17 +279,30 @@ document.addEventListener('DOMContentLoaded', function() {
         return bytes + ' B';
     }
 
+    var wrap = document.getElementById('imageUploadWrap');
+    var preview = document.getElementById('imageUploadPreview');
+    var objectUrl = null;
+
+    function resetPreview() {
+        if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = null; }
+        preview.src = '';
+    }
+
     input.addEventListener('change', function () {
         var f = input.files && input.files[0];
-        if (!f) { status.style.display = 'none'; return; }
+        if (!f) { resetPreview(); wrap.style.display = 'none'; return; }
+        resetPreview();
+        objectUrl = URL.createObjectURL(f);
+        preview.src = objectUrl;
         nameEl.textContent = f.name;
         sizeEl.textContent = fmtSize(f.size);
-        status.style.display = 'flex';
+        wrap.style.display = 'block';
     });
 
     window.clearImageSelection = function () {
         input.value = '';
-        status.style.display = 'none';
+        resetPreview();
+        wrap.style.display = 'none';
     };
 })();
 </script>
