@@ -540,13 +540,19 @@ class ChatService
      */
     public function editMessage(Message $message, string $newBody): array
     {
-        $latestId = (int) Message::where('room_id', $message->room_id)->max('id');
+        // ULID-safe latest check: message ids are strings, so compare as strings.
+        // (An (int) cast turns every ULID into 1, silently disabling the guard.)
+        $latestId = (string) Message::where('room_id', $message->room_id)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->value('id');
 
-        if ($latestId !== (int) $message->id) {
+        if ($latestId !== (string) $message->id) {
             abort(422, 'แก้ไขได้เฉพาะข้อความล่าสุดเท่านั้น');
         }
 
         $message->body = $newBody;
+        $message->is_edited = true;
         $message->save();
 
         broadcast(new MessageEdited($message));
