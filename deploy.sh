@@ -100,6 +100,11 @@ ssh -p $SERVER_PORT $SERVER_USER@$SERVER_HOST << 'REMOTE_COMMANDS'
     echo "🧹 Clearing cache..."
     docker-compose -f docker-compose.prod.yml exec -T app php artisan cache:clear || true
     docker-compose -f docker-compose.prod.yml exec -T app php artisan config:clear || true
+    docker-compose -f docker-compose.prod.yml exec -T app php artisan route:clear || true
+    docker-compose -f docker-compose.prod.yml exec -T app php artisan view:clear || true
+    
+    echo "🔨 Pre-compiling Blade views..."
+    docker-compose -f docker-compose.prod.yml exec -T app php artisan view:cache || true
     
     echo "✅ Deployment complete!"
     
