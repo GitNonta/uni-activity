@@ -34,10 +34,11 @@ class ChatController extends Controller
             : ($data['room']->users->where('id', '!=', Auth::id())->first() ?? User::whereIn('role', ['admin', 'staff'])->orderBy('id')->first());
 
         return view('chat.show', [
-            'job'       => $data['job'],
-            'messages'  => $data['messages'],
-            'room'      => $data['room'],
-            'staffUser' => $staffUser,
+            'job'        => $data['job'],
+            'messages'   => $data['messages'],
+            'room'       => $data['room'],
+            'staffUser'  => $staffUser,
+            'jobDeleted' => $data['room']->isJobDeleted(),
         ]);
     }
 

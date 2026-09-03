@@ -66,8 +66,8 @@ html[data-theme="dark"] .inbox-read-text { color: #a1a1aa !important; }
                     <span class="{{ $unread > 0 ? 'inbox-unread-text' : '' }}" style="font-weight:{{ $unread > 0 ? '700' : '600' }};font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;">
                         {{ $thread['student_name'] }}
                     </span>
-                    <span class="inbox-job-title" style="font-size:.8rem;color:#f97316;font-weight:500;flex-shrink:0;">
-                        [{{ $thread['job_title'] }}]
+                    <span class="inbox-job-title" style="font-size:.8rem;color:{{ ($thread['job_deleted'] ?? false) ? '#b45309' : '#f97316' }};font-weight:500;flex-shrink:0;">
+                        [{{ $thread['job_title'] }}]@if($thread['job_deleted'] ?? false) <span style="font-size:.62rem;color:#b45309;background:#fef3c7;border:1px solid #fcd34d;border-radius:999px;padding:1px 6px;margin-left:2px;">ลบแล้ว</span>@endif
                     </span>
                 </div>
                 <span class="student-status-text student-status-text-{{ $thread['student_id'] }}" data-student-id="{{ $thread['student_id'] }}" style="font-size:0.72rem;color:#10b981;font-weight:600;flex-shrink:0;"></span>

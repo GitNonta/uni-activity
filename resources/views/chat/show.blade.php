@@ -862,7 +862,10 @@
                 }
             }
         @endphp
-        <div style="display:flex;align-items:center;gap:0.5rem;">
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+                @if(!empty($jobDeleted))
+                    <span style="display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;color:#b45309;background:#fef3c7;border:1px solid #fcd34d;border-radius:999px;padding:2px 10px;font-weight:600;">ประกาศถูกลบ</span>
+                @endif
             <span id="onlineStatusLabel" data-last-seen="{{ $staffLastSeen?->toISOString() }}" style="font-size:0.75rem;color:var(--chat-text-muted);font-weight:500;">
                 <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>{{ $offlineText }}
             </span>
@@ -996,7 +999,7 @@
 
     {{-- Input Area --}}
     <div class="input-area">
-        <form id="chatForm" enctype="multipart/form-data">
+        <form id="chatForm" enctype="multipart/form-data" @if(!empty($jobDeleted)) style="display:none;" @endif>
             @csrf
             <div id="attachPreview" class="preview-container" style="display:none;"></div>
             
@@ -1016,6 +1019,12 @@
                 <span>ผู้ดูแลกำลังพิมพ์...</span>
             </div>
         </form>
+        @if(!empty($jobDeleted))
+        <div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:0.9rem 1rem;background:var(--chat-surface, #fff);border-top:1px solid var(--chat-border, #e2e8f0);color:#b45309;font-size:0.85rem;font-weight:500;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 5 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 5-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+            ประกาศงานนี้ถูกลบแล้ว — ดูได้เฉพาะประวัติการแชทเท่านั้น
+        </div>
+        @endif
     </div>
 </div>
 

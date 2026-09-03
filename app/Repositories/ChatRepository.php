@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Events\MessageSent;
+use App\Models\JobListing;
 use App\Models\Message;
 use App\Models\Room;
 use App\Models\User;
@@ -24,6 +25,9 @@ class ChatRepository
                 'type'       => $type,
                 'job_id'     => $jobId,
                 'created_by' => auth()->id() ?? $userIds[0],
+                // Snapshot of the job creator so the thread stays visible to
+                // staff even after the job/announcement is deleted.
+                'creator_id' => $jobId !== null ? JobListing::find($jobId)?->created_by : null,
             ]);
 
             $room->users()->attach($userIds);

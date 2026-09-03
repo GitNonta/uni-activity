@@ -18,6 +18,7 @@ class Room extends Model
         'type',
         'job_id',
         'created_by',
+        'creator_id',
     ];
 
     /**
@@ -52,5 +53,25 @@ class Room extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Snapshot of the job creator at room creation time — survives job
+     * deletion so staff can still see their archived chat threads.
+     */
+    public function jobCreator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'creator_id');
+    }
+
+    /**
+     * True when the room belongs to a job/announcement that has been
+     * deleted: job_id is still set but the job row no longer exists.
+     * Archived rooms are read-only — history stays viewable.
+     */
+    public function isJobDeleted(): bool
+    {
+        return $this->job_id !== null
+            && ($this->relationLoaded('job') ? $this->job === null : !$this->job()->exists());
     }
 }

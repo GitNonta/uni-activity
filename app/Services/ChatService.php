@@ -44,10 +44,16 @@ class ChatService
         } else {
             $job = $jobId === 0
                 ? (object)['id' => 0, 'title' => 'ติดต่อสอบถามเจ้าหน้าที่']
-                : JobListing::findOrFail($jobId);
+                : JobListing::find($jobId);
         }
 
         $room = $this->findRoom($userId, $jobId, $defaultAdminId);
+
+        // Job deleted but a room exists → archived room: keep history
+        // viewable (read-only) with the title snapshotted on the room.
+        if ($jobId > 0 && $job === null && $room) {
+            $job = (object)['id' => $jobId, 'title' => $room->name ?? "งาน #{$jobId}"];
+        }
 
         if (!$room) {
             if ($jobId < 0) {
@@ -89,6 +95,36 @@ class ChatService
     }
 
     /**
+     * Archived room (job deleted) for Admin/Staff — read-only history view.
+     * Access requires the job-creator snapshot or an admin role.
+     *
+     * @return array{room: Room, job: object, student: User, messages: Collection}
+     */
+    public function getArchivedRoomForAdmin(User $admin, int $jobId, int $studentId): array
+    {
+        $student = User::findOrFail($studentId);
+
+        $room = Room::where('job_id', $jobId)
+            ->whereHas('users', fn($q) => $q->where('users.id', $studentId))
+            ->whereDoesntHave('job')
+            ->with(['users', 'jobCreator'])
+            ->firstOrFail();
+
+        if (!$admin->isAdmin() && $room->creator_id !== $admin->id) {
+            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงแชทนี้');
+        }
+
+        $messages = $this->chatRepository->getRecentMessages($room);
+
+        return [
+            'room'     => $room,
+            'job'      => (object)['id' => $jobId, 'title' => $room->name ?? "งาน #{$jobId}"],
+            'student'  => $student,
+            'messages' => $messages,
+        ];
+    }
+
+    /**
      * ส่งข้อความพร้อมไฟล์แนบ (ถ้ามี)
      *
      * @param  array<UploadedFile>  $uploadedFiles
@@ -109,6 +145,11 @@ class ChatService
                 $job = JobListing::findOrFail($jobId);
                 $room = $this->chatRepository->createRoom([$userId, $job->created_by], 'direct', $job->title, $jobId);
             }
+        }
+
+        // Archived room: the job was deleted — history is viewable but sending is locked.
+        if ($room->isJobDeleted()) {
+            abort(423, 'ประกาศงานนี้ถูกลบแล้ว จึงไม่สามารถส่งข้อความเพิ่มได้');
         }
 
         $attachments = [];
@@ -209,7 +250,9 @@ class ChatService
                 }
             }
 
-            $staffUser = $otherUser ?? $job?->creator ?? User::where('role', 'admin')->orderBy('id')->first();
+            $staffUser = $otherUser ?? $job?->creator ?? $room->jobCreator ?? User::where('role', 'admin')->orderBy('id')->first();
+
+            $isDeletedJobRoom = $room->isJobDeleted();
 
             return [
                 'job_id'           => $jobId,
@@ -223,6 +266,7 @@ class ChatService
                 'last_time'        => $lastMsg?->created_at?->toISOString(),
                 'last_time_human'  => $lastMsg?->created_at?->diffForHumans(),
                 'unread'           => $unread,
+                'job_deleted'      => $isDeletedJobRoom,
                 'thread_room'      => 'chat.room.' . $room->id,
                 'thread_token'     => null,
             ];
@@ -252,7 +296,15 @@ class ChatService
                 $q->where(function ($sub) use ($admin, $currentUserId) {
                     $sub->whereNotNull('job_id')
                         ->when($admin->isStaff(), function ($inner) use ($currentUserId) {
-                            $inner->whereHas('job', fn($jq) => $jq->where('created_by', $currentUserId));
+                            // Job still exists → must belong to this staff.
+                            // Job deleted (archived room) → fall back to the
+                            // creator snapshot so old threads stay visible.
+                            $inner->where(function ($jobQ) use ($currentUserId) {
+                                $jobQ->whereHas('job', fn($jq) => $jq->where('created_by', $currentUserId))
+                                    ->orWhere(fn($arch) => $arch
+                                        ->whereDoesntHave('job')
+                                        ->where('creator_id', $currentUserId));
+                            });
                         });
                 })->orWhere(function ($sub) use ($currentUserId) {
                     $sub->whereNull('job_id')
@@ -282,6 +334,7 @@ class ChatService
                 'student_last_seen' => $student?->last_seen_at?->toISOString(),
                 'last_message'      => $lastMsg?->body ?? '',
                 'last_time'         => $lastMsg?->created_at,
+                'job_deleted'       => $room->isJobDeleted(),
                 'unread'            => $room->messages()
                     ->where('user_id', '!=', $currentUserId)
                     ->where('created_at', '>', $me?->pivot?->last_read_at ?? '1970-01-01')
@@ -305,7 +358,7 @@ class ChatService
      */
     public function getOrCreateRoomForAdmin(User $admin, int $jobId, int $studentId): array
     {
-        $job     = $jobId === 0 ? (object) ['id' => 0, 'title' => 'ติดต่อสอบถามเจ้าหน้าที่'] : JobListing::findOrFail($jobId);
+        $job     = $jobId === 0 ? (object) ['id' => 0, 'title' => 'ติดต่อสอบถามเจ้าหน้าที่'] : JobListing::find($jobId);
         $student = User::findOrFail($studentId);
 
         $roomQuery = Room::whereHas('users', fn($q) => $q->where('users.id', $studentId));
@@ -316,6 +369,12 @@ class ChatService
             $roomQuery->where('job_id', $jobId);
         }
         $room = $roomQuery->first();
+
+        // Job deleted but a room exists → archived room: keep history
+        // viewable (read-only) with the title snapshotted on the room.
+        if ($jobId > 0 && $job === null && $room) {
+            $job = (object)['id' => $jobId, 'title' => $room->name ?? "งาน #{$jobId}"];
+        }
 
         if (!$room) {
             if ($jobId === 0) {
@@ -336,10 +395,17 @@ class ChatService
         }
 
         $room->loadMissing(['users', 'job']);
-        $isOwnJob = $room->job_id && ($room->job->created_by === $admin->id || $admin->isAdmin());
-        $isParticipant = !$room->job_id && $room->users->contains($admin->id);
-        if (!$isOwnJob && !$isParticipant) {
-            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงแชทนี้');
+        if ($room->isJobDeleted()) {
+            // Archived room (job deleted): the creator snapshot decides access.
+            if (!$admin->isAdmin() && $room->creator_id !== $admin->id) {
+                abort(403, 'คุณไม่มีสิทธิ์เข้าถึงแชทนี้');
+            }
+        } else {
+            $isOwnJob = $room->job_id && ($room->job?->created_by === $admin->id || $admin->isAdmin());
+            $isParticipant = !$room->job_id && $room->users->contains($admin->id);
+            if (!$isOwnJob && !$isParticipant) {
+                abort(403, 'คุณไม่มีสิทธิ์เข้าถึงแชทนี้');
+            }
         }
 
         $messages = $this->chatRepository->getRecentMessages($room);
@@ -388,6 +454,11 @@ class ChatService
                     $jobId
                 );
             }
+        }
+
+        // Archived room: the job was deleted — history is viewable but sending is locked.
+        if ($room->isJobDeleted()) {
+            abort(423, 'ประกาศงานนี้ถูกลบแล้ว จึงไม่สามารถส่งข้อความเพิ่มได้');
         }
 
         $room->loadMissing(['users', 'job']);

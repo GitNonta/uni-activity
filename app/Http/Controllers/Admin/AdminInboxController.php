@@ -51,10 +51,27 @@ class AdminInboxController extends Controller
         $data = $this->chatService->getOrCreateRoomForAdmin(Auth::user(), $jobId, $studentId);
 
         return view('admin.inbox.show', [
-            'job'      => $data['job'],
-            'student'  => $data['student'],
-            'messages' => $data['messages'],
-            'room'     => $data['room'],
+            'job'        => $data['job'],
+            'student'    => $data['student'],
+            'messages'   => $data['messages'],
+            'room'       => $data['room'],
+            'jobDeleted' => $data['room']->isJobDeleted(),
+        ]);
+    }
+
+    /**
+     * Archived thread (job deleted) — read-only history view
+     */
+    public function archived(int|string $jobId, int|string $userId): View
+    {
+        $data = $this->chatService->getArchivedRoomForAdmin(Auth::user(), (int) $jobId, (int) $userId);
+
+        return view('admin.inbox.show', [
+            'job'        => $data['job'],
+            'student'    => $data['student'],
+            'messages'   => $data['messages'],
+            'room'       => $data['room'],
+            'jobDeleted' => true,
         ]);
     }
 

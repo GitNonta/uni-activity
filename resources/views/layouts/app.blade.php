@@ -910,6 +910,8 @@
             }
             el.innerHTML = supportChatHtml + activeThreads.map(function(t) {
                 var isUnread = (t.unread || 0) > 0;
+                var isArchived = !!t.job_deleted;
+                var titlePrefix = isArchived ? '<span style="font-size:.6rem;color:#b45309;background:#fef3c7;border:1px solid #fcd34d;border-radius:999px;padding:1px 6px;margin-right:4px;vertical-align:1px;">ลบแล้ว</span>' : '';
                 var preview = t.last_message ? (t.last_message.length > 32 ? t.last_message.slice(0,32)+'…' : t.last_message) : '<svg style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> ไฟล์แนบ';
                 var safeTitle = (t.job_title || 'งานกิจกรรม').replace(/'/g, "\\'").replace(/"/g, '&quot;');
                 var threadLastSeen = t.staff_last_seen || null;
@@ -933,7 +935,7 @@
                     + '</div>'
                     + '<div style="flex:1;min-width:0;">'
                     + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;">'
-                    + '<div class="chat-title" style="font-size:.82rem;font-weight:' + (isUnread?'700':'500') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#1e293b;max-width:150px;">' + safeTitle + '</div>'
+                    + '<div class="chat-title" style="font-size:.82rem;font-weight:' + (isUnread?'700':'500') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:' + (isArchived ? '#94a3b8' : '#1e293b') + ';max-width:150px;">' + titlePrefix + safeTitle + '</div>'
                     + '<div class="cf-thread-status cf-thread-status-' + t.job_id + '" data-job-id="' + t.job_id + '" data-staff-id="' + (t.staff_id || '') + '" data-last-seen="' + (threadLastSeen || '') + '" style="font-size:.65rem;flex-shrink:0;">' + threadStatusHtml + '</div>'
                     + '</div>'
                     + '<div class="chat-preview" style="font-size:.7rem;color:' + (isUnread?'#1e293b':'#64748b') + ';font-weight:' + (isUnread?'700':'400') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + preview + '</div>'
@@ -1131,7 +1133,36 @@
                     win.scrollTop = win.scrollHeight;
                     if (msgs.length && msgs[msgs.length - 1].created_at) { cfLastMsgTs = msgs[msgs.length - 1].created_at; }
                     resetFloatingReadGuard();
+                    // Archived thread (job deleted): hide composer, show notice
+                    applyFloatingReadOnly(threads.find(function(t) { return t.job_id == jobId; }));
                 });
+        }
+
+        var cfNotice = null;
+        function applyFloatingReadOnly(thread) {
+            var form = document.getElementById('cfChatForm');
+            var bar = form ? form.parentNode : null;
+            if (!form || !bar) return;
+            if (thread && thread.job_deleted) {
+                form.style.display = 'none';
+                var old = document.getElementById('cfArchivedNotice');
+                if (!old) {
+                    cfNotice = document.createElement('div');
+                    cfNotice.id = 'cfArchivedNotice';
+                    cfNotice.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:6px;padding:.7rem .9rem;background:#f8fafc;font-size:.75rem;color:#b45309;font-weight:500;';
+                    cfNotice.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 5 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 5-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg> ประกาศงานนี้ถูกลบแล้ว — ดูได้เฉพาะประวัติการแชท';
+                    bar.parentNode.insertBefore(cfNotice, bar);
+                    bar.style.display = 'none';
+                    cfNotice.parentNode.style.borderTop = '1px solid rgba(148,163,184,.25)';
+                } else {
+                    bar.style.display = 'none';
+                }
+            } else {
+                form.style.display = '';
+                bar.style.display = '';
+                var n = document.getElementById('cfArchivedNotice');
+            if (n) n.remove();
+            }
         }
 
         function buildBubble(msg, isLastMine) {
@@ -1462,6 +1493,8 @@
                     if (!msgs.length) return;
                     var last = msgs[msgs.length - 1];
                     if (last.created_at) cfLastMsgTs = last.created_at;
+                    // Archived thread may have just been deleted — keep composer state fresh
+                    applyFloatingReadOnly(threads.find(function(t) { return t.job_id == currentJobId; }));
                     var win = document.getElementById('cfChatWindow');
                     msgs.forEach(function(m) {
                         if (document.getElementById('cf-msg-' + m.id)) return;

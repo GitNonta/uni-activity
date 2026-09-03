@@ -801,7 +801,7 @@
     </div>
 
     {{-- Form --}}
-    <form id="chatForm" enctype="multipart/form-data" style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:0.75rem 1rem;box-shadow:0 2px 6px rgba(0,0,0,0.03);">
+    <form id="chatForm" enctype="multipart/form-data" style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:0.75rem 1rem;box-shadow:0 2px 6px rgba(0,0,0,0.03);@if(!empty($jobDeleted)) display:none; @endif">
         @csrf
         <div id="attachPreview" style="display:none;gap:.4rem;flex-wrap:wrap;margin-bottom:.5rem;"></div>
         
@@ -818,6 +818,13 @@
             </button>
         </div>
     </form>
+
+    @if(!empty($jobDeleted))
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:0.9rem 1rem;background:#fff;border:1px solid #e2e8f0;border-radius:14px;color:#b45309;font-size:0.85rem;font-weight:500;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 5 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 5-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+        ประกาศงานนี้ถูกลบแล้ว — ดูได้เฉพาะประวัติการแชทเท่านั้น
+    </div>
+    @endif
 
     {{-- Lightbox Modal --}}
     <div id="chatLightbox" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out;" onclick="this.style.display='none'">
