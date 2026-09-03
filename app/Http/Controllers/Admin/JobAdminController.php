@@ -11,6 +11,7 @@ use App\Models\JobApplication;
 use App\Models\JobComment;
 use App\Models\JobListing;
 use App\Services\ImageOptimizationService;
+use App\Services\ListCache;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -90,6 +91,9 @@ class JobAdminController extends Controller
 
         $job = JobListing::create($validated);
 
+        // New post must appear on /jobs and the map immediately.
+        ListCache::bump(ListCache::GROUP_JOBS);
+
         // ยิง event เพื่อส่ง LINE notification แบบ async
         JobPublished::dispatch($job);
 
@@ -158,6 +162,8 @@ class JobAdminController extends Controller
 
         $job->update($validated);
 
+        ListCache::bump(ListCache::GROUP_JOBS);
+
         return redirect()->route('admin.jobs.show', $job->id)->with('success', 'อัปเดตประกาศงานเรียบร้อย');
     }
 
@@ -172,6 +178,8 @@ class JobAdminController extends Controller
 
         $job->delete();
 
+        ListCache::bump(ListCache::GROUP_JOBS);
+
         return redirect()->route('admin.jobs.index')->with('success', 'ลบประกาศงานเรียบร้อย');
     }
 
@@ -182,6 +190,8 @@ class JobAdminController extends Controller
 
         $request->validate(['status' => 'required|in:open,closed,completed']);
         $job->update(['status' => $request->status]);
+
+        ListCache::bump(ListCache::GROUP_JOBS);
 
         $labels = ['open' => 'เปิดรับสมัคร', 'closed' => 'ปิดรับสมัคร', 'completed' => 'เสร็จสิ้น'];
         return back()->with('success', 'เปลี่ยนสถานะเป็น "' . $labels[$request->status] . '" เรียบร้อย');

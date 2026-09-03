@@ -197,11 +197,16 @@ class Activity extends Model
      */
     public function scopeActive($query)
     {
-        $query->where(function ($q) {
+        // Cutoff computed in PHP (not SQL `interval`) so the comparison is
+        // portable across PostgreSQL/SQLite/MySQL and can use the
+        // activity_date index instead of forcing a full scan.
+        $cutoffDate = now()->subDays(7)->toDateString();
+
+        $query->where(function ($q) use ($cutoffDate) {
             $q->where('status', '!=', 'done')
-              ->orWhere(function ($sq) {
+              ->orWhere(function ($sq) use ($cutoffDate) {
                   $sq->where('status', 'done')
-                     ->whereRaw("(activity_date + interval '7 days') >= ?", [now()->toDateString()]);
+                     ->where('activity_date', '>=', $cutoffDate);
               });
         });
     }
@@ -212,7 +217,7 @@ class Activity extends Model
     public function scopeOldCompleted($query)
     {
         $query->where('status', 'done')
-              ->whereRaw("(activity_date + interval '7 days') < ?", [now()->toDateString()]);
+              ->where('activity_date', '<', now()->subDays(7)->toDateString());
     }
 
     /** นับจำนวนผู้ลงทะเบียนทั้งหมด (pending + approved) */

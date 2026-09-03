@@ -13,6 +13,7 @@ use App\Http\Requests\StoreActivityRequest;
 use App\Models\Activity;
 use App\Models\ActivityCategory;
 use App\Services\ImageOptimizationService;
+use App\Services\ListCache;
 use App\Services\QrCodeService;
 use App\Traits\LogsAdminActivity;
 use Carbon\Carbon;
@@ -122,8 +123,27 @@ class ActivityAdminController extends Controller
             $data['checkout_close_at'] = null;
         }
 
+        // Auto-derive status from activity date & time
+        $activityDate = Carbon::parse($data['activity_date']);
+        $checkinOpen  = isset($data['checkin_open_at']) ? Carbon::parse($data['checkin_open_at']) : null;
+        $checkinClose = isset($data['checkin_close_at']) ? Carbon::parse($data['checkin_close_at']) : null;
+        $now          = now();
+
+        if ($checkinClose && $now->greaterThan($checkinClose)) {
+            $data['status'] = 'done';
+        } elseif ($checkinOpen && $now->greaterThanOrEqualTo($checkinOpen)) {
+            $data['status'] = 'ongoing';
+        } elseif ($activityDate->isToday() || $activityDate->isPast()) {
+            $data['status'] = 'open';
+        } else {
+            $data['status'] = 'upcoming';
+        }
+
         $activity = Activity::create($data);
         $this->auditCreate($activity, "สร้างกิจกรรม \"{$activity->title}\"");
+
+        // New post must be visible immediately on /activities and the map.
+        ListCache::bump(ListCache::GROUP_ACTIVITIES);
 
         // Broadcast event เพื่อส่ง LINE notification แบบ async
         ActivityPublished::dispatch($activity);
@@ -206,6 +226,8 @@ class ActivityAdminController extends Controller
         $activity->update($data);
         $this->auditUpdate($activity, $oldValues, "แก้ไขกิจกรรม \"{$activity->title}\"");
 
+        ListCache::bump(ListCache::GROUP_ACTIVITIES);
+
         return redirect()->route('admin.activities.index')->with('success', 'อัปเดตกิจกรรมสำเร็จ!');
     }
 
@@ -218,6 +240,8 @@ class ActivityAdminController extends Controller
 
         $this->auditDelete($activity, "ลบกิจกรรม \"{$activity->title}\"");
         $activity->delete();
+
+        ListCache::bump(ListCache::GROUP_ACTIVITIES);
 
         return redirect()->route('admin.activities.index')->with('success', 'ลบกิจกรรมสำเร็จ');
     }
@@ -246,6 +270,8 @@ class ActivityAdminController extends Controller
         ]));
 
         $this->auditCreate($activity, "สร้างกิจกรรมด่วน \"{$activity->title}\"");
+
+        ListCache::bump(ListCache::GROUP_ACTIVITIES);
 
         return redirect()->route('admin.dashboard')->with('success', 'สร้างกิจกรรมด่วนสำเร็จ!');
     }
@@ -350,6 +376,8 @@ class ActivityAdminController extends Controller
 
         $newActivity = Activity::create($cloneData);
         $this->auditLog('clone_activity', "คัดลอกกิจกรรม #{$activity->id} \"{$activity->title}\" เป็น #{$newActivity->id}", Activity::class, $newActivity->id);
+
+        ListCache::bump(ListCache::GROUP_ACTIVITIES);
 
         return redirect()->route('admin.activities.edit', $newActivity)
             ->with('success', "คัดลอกกิจกรรม \"{$activity->title}\" สำเร็จ! กรุณาตั้งวันเวลาและตรวจสอบข้อมูลก่อนเผยแพร่");

@@ -9,6 +9,7 @@ use App\Models\ActivityCategory;
 use App\Models\Attendance;
 use App\Models\Registration;
 use App\Services\ActivityStatusService;
+use App\Services\ListCache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
@@ -28,12 +29,12 @@ class ActivityController extends Controller
         $userDept = $user?->department ?? '';
 
         // Cache categories (rarely changes, 1 hour)
-        $categories = Cache::remember('activities:categories', 3600, fn() =>
+        $categories = ListCache::remember(ListCache::GROUP_ACTIVITY_CATEGORIES, 'all', 3600, fn() =>
             ActivityCategory::query()->orderBy('name')->get()
         );
 
         // Build cache key based on request params
-        $cacheKey = 'activities:list:' . md5(serialize([
+        $cacheSuffix = md5(serialize([
             'sort' => $sort,
             'status' => $request->input('status'),
             'category' => $request->input('category'),
@@ -45,8 +46,9 @@ class ActivityController extends Controller
             'dept' => $userDept,
         ]));
 
-        // Cache main activity list (5 minutes)
-        $activities = Cache::remember($cacheKey, 300, function () use ($sort, $request, $userFaculty, $userDept) {
+        // Cache main activity list (5 minutes) — versioned per group so a new
+        // post invalidates every filter combination in one cache write.
+        $activities = ListCache::remember(ListCache::GROUP_ACTIVITIES, "list_{$cacheSuffix}", 300, function () use ($sort, $request, $userFaculty, $userDept) {
             $nowStr = now()->toDateTimeString();
             $threeDaysLaterStr = now()->addDays(3)->toDateTimeString();
             $todayStr = now()->toDateString();
@@ -151,8 +153,9 @@ class ActivityController extends Controller
             );
         }
 
-        // Cache geo activities (10 minutes)
-        $geoActivities = Cache::remember('activities:geo:map', 600, fn() =>
+        // Cache geo activities (10 minutes) — same group as the list so newly
+        // posted activities land on the map without waiting out the TTL.
+        $geoActivities = ListCache::remember(ListCache::GROUP_ACTIVITIES, 'geo_map', 600, fn() =>
             Activity::query()
                 ->select(['id', 'title', 'location', 'latitude', 'longitude', 'activity_date', 'start_time', 'end_time', 'activity_hours', 'image_path'])
                 ->whereNotNull('latitude')
@@ -174,7 +177,7 @@ class ActivityController extends Controller
 
         // Cache completed activities (5 minutes per page)
         $completedPage = $request->input('completed_page', 1);
-        $completedActivities = Cache::remember("activities:completed:{$completedPage}", 300, fn() =>
+        $completedActivities = ListCache::remember(ListCache::GROUP_ACTIVITIES, "completed_{$completedPage}", 300, fn() =>
             Activity::query()
                 ->with('category')
                 ->oldCompleted()

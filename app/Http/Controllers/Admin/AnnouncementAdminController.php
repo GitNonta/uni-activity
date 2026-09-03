@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Announcement;
 use App\Models\User;
 use App\Services\ImageOptimizationService;
+use App\Services\ListCache;
 use App\Traits\LogsAdminActivity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -70,10 +71,13 @@ class AnnouncementAdminController extends Controller
         $data['created_by'] = auth()->id();
         $data['is_active'] = $request->has('is_active');
         $data['published_at'] = $request->filled('published_at') ? $request->input('published_at') : null;
-        $data['published_at'] = $request->filled('published_at') ? $request->input('published_at') : null;
 
         $announcement = Announcement::create($data);
         $this->auditCreate($announcement, "สร้างประกาศ \"{$announcement->title}\"");
+
+        // New post must be visible immediately — bump the list-cache version
+        // so every cached announcements page is invalidated in one write.
+        ListCache::bump(ListCache::GROUP_ANNOUNCEMENTS);
 
         // ยิง event เพื่อส่ง LINE notification แบบ async (เฉพาะกรณีเผยแพร่ทันที)
         if ($announcement->published_at === null || $announcement->published_at->isPast()) {
@@ -119,6 +123,8 @@ class AnnouncementAdminController extends Controller
         $announcement->update($data);
         $this->auditUpdate($announcement, $oldValues, "แก้ไขประกาศ \"{$announcement->title}\"");
 
+        ListCache::bump(ListCache::GROUP_ANNOUNCEMENTS);
+
         return redirect()->route('admin.announcements.index')->with('success', 'อัปเดตประกาศสำเร็จ!');
     }
 
@@ -130,6 +136,8 @@ class AnnouncementAdminController extends Controller
         $this->auditDelete($announcement, "ลบประกาศ \"{$announcement->title}\"");
         $announcement->delete();
 
+        ListCache::bump(ListCache::GROUP_ANNOUNCEMENTS);
+
         return redirect()->route('admin.announcements.index')->with('success', 'ลบประกาศสำเร็จ');
     }
 
@@ -140,6 +148,8 @@ class AnnouncementAdminController extends Controller
 
         $announcement->update(['is_active' => !$announcement->is_active]);
         $status = $announcement->is_active ? 'เปิด' : 'ปิด';
+
+        ListCache::bump(ListCache::GROUP_ANNOUNCEMENTS);
         $this->auditToggle($announcement, "{$status}การใช้งานประกาศ \"{$announcement->title}\"");
 
         return back()->with('success', "{$status}การใช้งานประกาศเรียบร้อยแล้ว");

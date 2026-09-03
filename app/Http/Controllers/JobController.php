@@ -8,6 +8,7 @@ use App\Models\JobComment;
 use App\Models\Message;
 use App\Models\Room;
 use App\Repositories\ChatRepository;
+use App\Services\ListCache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
@@ -21,9 +22,20 @@ class JobController extends Controller
     /** แสดงรายการประกาศงานทั้งหมด (พร้อม filter/search/map) */
     public function index(Request $request)
     {
-        $cacheKey = 'jobs_page_' . md5($request->fullUrl());
-        
-        $data = \Illuminate\Support\Facades\Cache::remember($cacheKey, 60, function () use ($request) {
+        $user = auth()->user();
+
+        // Cache key must capture every input that changes the query result:
+        // filters, pagination AND the viewer's gender ('recommended' ranking
+        // is gender-aware — omitting it served one user's ranking to others).
+        $cacheSuffix = md5(serialize([
+            'q'        => $request->query(),
+            'page'     => $request->input('page', 1),
+            'gender'   => $user?->gender ?? '',
+            'faculty'  => $user?->faculty ?? '',
+            'dept'     => $user?->department ?? '',
+        ]));
+
+        $data = ListCache::remember(ListCache::GROUP_JOBS, "list_{$cacheSuffix}", 60, function () use ($request) {
             $query = JobListing::query()->withCount(['applications', 'comments']);
 
             // ค้นหาด้วยชื่องาน / ตำแหน่ง / คำอธิบาย / หมายเหตุ / แฮชแท็ก
@@ -124,8 +136,9 @@ class JobController extends Controller
 
         $jobs = $data;
 
-        // ข้อมูลสำหรับแผนที่ (เฉพาะงานที่มีพิกัด)
-        $geoJobs = \Illuminate\Support\Facades\Cache::remember('jobs_geo_all', 300, function () {
+        // ข้อมูลสำหรับแผนที่ (เฉพาะงานที่มีพิกัด) — same group as the list so
+        // posting/closing a job refreshes the map instantly too.
+        $geoJobs = ListCache::remember(ListCache::GROUP_JOBS, 'geo_all', 300, function () {
             return JobListing::whereNotNull('latitude')
                 ->whereNotNull('longitude')
                 ->where('status', 'open')

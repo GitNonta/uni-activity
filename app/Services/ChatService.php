@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Repositories\ChatRepository;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -35,7 +36,7 @@ class ChatService
     public function getOrCreateRoomForJob(User $user, int $jobId): array
     {
         $userId = $user->id;
-        $defaultAdminId = User::where('role', 'admin')->orderBy('id')->value('id') ?? 1;
+        $defaultAdminId = $this->defaultAdminId();
 
         if ($jobId < 0) {
             $otherUserId = abs($jobId);
@@ -132,7 +133,7 @@ class ChatService
     public function sendMessage(User $user, int $jobId, ?string $body = null, array $uploadedFiles = []): array
     {
         $userId = $user->id;
-        $defaultAdminId = User::where('role', 'admin')->orderBy('id')->value('id') ?? 1;
+        $defaultAdminId = $this->defaultAdminId();
         $room = $this->findRoom($userId, $jobId, $defaultAdminId);
 
         if (!$room) {
@@ -184,7 +185,7 @@ class ChatService
      */
     public function getRecentMessagesForJob(User $user, int $jobId): array
     {
-        $defaultAdminId = User::where('role', 'admin')->orderBy('id')->value('id') ?? 1;
+        $defaultAdminId = $this->defaultAdminId();
         $room = $this->findRoom($user->id, $jobId, $defaultAdminId);
 
         if (!$room) {
@@ -211,7 +212,7 @@ class ChatService
     public function getStudentThreads(User $user): array
     {
         $userId = $user->id;
-        $defaultAdminId = User::where('role', 'admin')->orderBy('id')->value('id') ?? 1;
+        $defaultAdminId = $this->defaultAdminId();
 
         $rooms = Room::whereHas('users', function ($q) use ($userId) {
                 $q->where('users.id', $userId);
@@ -510,7 +511,7 @@ class ChatService
      */
     public function markAsRead(User $user, int $jobId, ?int $targetUserId = null): void
     {
-        $defaultAdminId = $targetUserId ?? (User::where('role', 'admin')->orderBy('id')->value('id') ?? 1);
+        $defaultAdminId = $targetUserId ?? $this->defaultAdminId();
         $room = $this->findRoom($user->id, $jobId, $defaultAdminId);
 
         if ($room) {
@@ -562,7 +563,7 @@ class ChatService
      */
     public function checkAdminOnlineStatus(User $user, int $jobId): bool
     {
-        $defaultAdminId = User::where('role', 'admin')->orderBy('id')->value('id') ?? 1;
+        $defaultAdminId = $this->defaultAdminId();
         $room = $this->findRoom($user->id, $jobId, $defaultAdminId);
 
         if (!$room) {
@@ -727,6 +728,20 @@ class ChatService
             'created_at'  => $msg->created_at?->toISOString() ?? now()->toISOString(),
             'time_formatted' => $msg->created_at ? $msg->created_at->format('H:i') : date('H:i'),
         ];
+    }
+
+    /**
+     * Default admin that receives "ติดต่อสอบถามเจ้าหน้าที่" (job_id = 0) rooms.
+     *
+     * Cached for 60s because this lookup used to run on EVERY chat send,
+     * read-poll and mark-read — the hottest query in the chat system — while
+     * the value virtually never changes.
+     */
+    private function defaultAdminId(): int
+    {
+        return (int) (Cache::remember('chat:default_admin_id', 60, fn () =>
+            User::where('role', 'admin')->orderBy('id')->value('id') ?? 1
+        ));
     }
 
     /**
