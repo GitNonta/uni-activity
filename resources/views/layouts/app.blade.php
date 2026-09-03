@@ -658,6 +658,7 @@
         }
 
         #cfChatForm {
+            display: flex !important;
             gap: 0.4rem !important;
             flex-wrap: nowrap !important;
             align-items: flex-end !important;
@@ -1168,15 +1169,16 @@
                     cfNotice.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 5 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 5-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg> ประกาศงานนี้ถูกลบแล้ว — ดูได้เฉพาะประวัติการแชท';
                     bar.parentNode.insertBefore(cfNotice, bar);
                     bar.style.display = 'none';
-                    cfNotice.parentNode.style.borderTop = '1px solid rgba(148,163,184,.25)';
                 } else {
                     bar.style.display = 'none';
                 }
             } else {
-                form.style.display = '';
+                // Restore the flex row layout — an empty string would drop the
+                // inline display:flex and stack the composer vertically
+                form.style.display = 'flex';
                 bar.style.display = '';
                 var n = document.getElementById('cfArchivedNotice');
-            if (n) n.remove();
+                if (n) n.remove();
             }
         }
 
