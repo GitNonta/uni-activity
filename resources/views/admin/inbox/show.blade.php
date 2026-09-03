@@ -216,8 +216,8 @@
             flex-direction: row-reverse;
         }
 
-        .msg-actions {
-            display: none;
+        .admin-chat-actions {
+            display: flex !important;
             align-items: center;
             gap: 0.25rem;
             position: absolute;
@@ -229,9 +229,15 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.08);
             z-index: 10;
         }
-        .msg-bubble-mine .msg-actions { right: 8px; }
-        .msg-bubble-theirs .msg-actions { left: 36px; }
-        .msg-bubble-container:hover .msg-actions { display: flex; }
+        .msg-bubble-mine .admin-chat-actions { right: 8px; }
+        .msg-bubble-theirs .admin-chat-actions { left: 36px; }
+
+        /* Admin edit/delete tools stay visible on desktop and touch devices. */
+        .admin-chat-actions,
+        .admin-chat-actions .msg-action-btn {
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
 
         .msg-action-btn {
             background: none;
@@ -293,7 +299,6 @@
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-4px); }
         }
-    </style>
         /* ══════════════════════════════════════════════════════════
            NATIVE MOBILE/TABLET CHAT UI
            ══════════════════════════════════════════════════════════ */
@@ -412,7 +417,7 @@
             }
 
             /* ── Action buttons — visible, below bubble ── */
-            .msg-actions {
+            .admin-chat-actions {
                 position: static !important;
                 display: flex !important;
                 gap: 0.3rem;
@@ -424,11 +429,11 @@
                 justify-content: flex-end;
             }
 
-            .msg-bubble-mine .msg-actions {
+            .msg-bubble-mine .admin-chat-actions {
                 justify-content: flex-end;
             }
 
-            .msg-bubble-theirs .msg-actions {
+            .msg-bubble-theirs .admin-chat-actions {
                 justify-content: flex-start;
             }
 
@@ -522,6 +527,7 @@
         @media (max-width: 640px) {
             .sb-main { height: 100dvh !important; overflow: hidden !important; }
         }
+    </style>
 
     {{-- Header --}}
     <div class="chat-header-card chat-header-container">
@@ -616,7 +622,7 @@
 
                 {{-- Actions --}}
                 @if($isMine)
-                <div class="msg-actions">
+                <div class="msg-actions admin-chat-actions">
                     <button class="msg-action-btn" onclick="editAdminMessage('{{ $msg->id }}')" title="แก้ไข">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                     </button>
@@ -910,7 +916,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let actionsHtml = '';
         if (isMine && !String(msg.id).startsWith('tmp-')) {
             actionsHtml = `
-                <div class="msg-actions">
+                <div class="msg-actions admin-chat-actions">
                     <button class="msg-action-btn" onclick="editAdminMessage('${msg.id}')" title="แก้ไข">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                     </button>
