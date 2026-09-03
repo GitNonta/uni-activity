@@ -177,6 +177,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/jobs/{id}/chat/read', [ChatController::class, 'markRead'])->name('chat.read');
     Route::get('/jobs/{id}/admin-online', [ChatController::class, 'adminOnlineStatus'])->middleware('throttle:status')->name('chat.admin-online');
     Route::delete('/chat/messages/{message}', [ChatController::class, 'deleteMessage'])->name('chat.messages.delete');
+    Route::get('/chat/messages/{message}', [ChatController::class, 'showMessage'])->name('chat.messages.show');
     Route::put('/chat/messages/{message}', [ChatController::class, 'editMessage'])->name('chat.messages.edit');
     // ── User status (online/last seen) ──
     Route::middleware('auth')->post('/user/ping', [UserStatusController::class, 'ping'])->middleware('throttle:status')->name('user.ping');
@@ -253,6 +254,7 @@ Route::middleware(['auth', 'role:staff'])->prefix('admin')->name('admin.')->grou
     Route::post('inbox/{jobId}/{userId}', [AdminInboxController::class, 'send'])->middleware('throttle:chat-send')->name('inbox.send');
     Route::post('inbox/{jobId}/{userId}/read', [AdminInboxController::class, 'markRead'])->name('inbox.read');
     Route::delete('inbox/messages/{message}', [AdminInboxController::class, 'deleteMessage'])->name('inbox.messages.delete');
+    Route::get('inbox/messages/{message}', [AdminInboxController::class, 'showMessage'])->name('inbox.messages.show');
     Route::put('inbox/messages/{message}', [AdminInboxController::class, 'editMessage'])->name('inbox.messages.edit');
     Route::delete('inbox/{jobId}/{userId}', [AdminInboxController::class, 'deleteChat'])->name('inbox.delete');
     Route::get('students', [StudentAdminController::class, 'index'])->name('students.index');

@@ -103,6 +103,24 @@ class AdminInboxController extends Controller
     }
 
     /**
+     * ดึงเนื้อหาล่าสุดของข้อความ (ใช้ก่อนเปิดหน้าจอแก้ไข)
+     */
+    public function showMessage(Message $message): JsonResponse
+    {
+        $message->loadMissing(['room.users']);
+        Gate::authorize('view', $message);
+
+        return response()->json([
+            'success' => true,
+            'message' => [
+                'id'        => $message->id,
+                'body'      => $message->body,
+                'is_edited' => (bool) $message->is_edited,
+            ],
+        ]);
+    }
+
+    /**
      * แก้ไขข้อความในห้องแชท
      */
     public function editMessage(\App\Http\Requests\EditMessageRequest $request, Message $message): JsonResponse

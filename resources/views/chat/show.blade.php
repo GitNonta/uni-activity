@@ -1095,14 +1095,27 @@ document.addEventListener('DOMContentLoaded', () => {
     window.editMyMessage = function(id) {
         const bubble = document.getElementById('bubble-' + id);
         if (!bubble) return;
-        const textEl = bubble.querySelector('.msg-text-body');
-        if (!textEl) return;
 
-        isEditingId = id;
-        msgInput.value = textEl.textContent.trim();
-        msgInput.focus();
-        sendBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-        sendBtn.style.background = '#10b981';
+        // Fetch the latest content from the server so editing always starts
+        // from the current version, even if a real-time update was missed.
+        window.axios.get('/chat/messages/' + id)
+            .then(res => {
+                if (!res.data.success) return;
+                const latest = res.data.message.body ?? '';
+
+                // Sync the DOM bubble so it matches what's being edited
+                const bodyEl = bubble.querySelector('.msg-text-body');
+                if (bodyEl) bodyEl.innerHTML = linkify(latest, true);
+
+                isEditingId = id;
+                msgInput.value = latest;
+                msgInput.focus();
+                msgInput.style.height = 'auto';
+                msgInput.style.height = msgInput.scrollHeight + 'px';
+                sendBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                sendBtn.style.background = '#10b981';
+            })
+            .catch(() => alert('ไม่สามารถโหลดข้อความล่าสุดได้'));
     };
 
     function cancelEditMode() {
