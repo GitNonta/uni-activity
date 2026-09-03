@@ -180,7 +180,11 @@
                 <label class="form-label">รูปภาพ</label>
                 <input type="file" name="image" accept="image/*" class="form-control">
                 <div id="imageUploadWrap" style="display:none;margin-top:.5rem;">
-                    <img id="imageUploadPreview" src="" alt="ตัวอย่างรูป" style="max-width:180px;max-height:130px;object-fit:cover;border-radius:10px;border:1px solid #e2e8f0;display:block;box-shadow:0 1px 4px rgba(0,0,0,.08);">
+                    <div class="imgup-thumb" id="imageUploadThumb">
+                        <img id="imageUploadPreview" src="" alt="ตัวอย่างรูป">
+                        <span class="imgup-pct" id="imageUploadPct">0%</span>
+                        <div class="imgup-progress"><span id="imageUploadBarFill"></span></div>
+                    </div>
                     <div id="imageUploadStatus" style="display:flex;align-items:center;gap:.5rem;margin-top:.4rem;padding:.45rem .65rem;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;">
                     <svg style="width:16px;height:16px;flex-shrink:0;" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                     <span id="imageUploadName" style="font-size:.78rem;font-weight:600;color:#c2410c;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></span>
@@ -558,6 +562,21 @@ function toggleCustomHours(cb) {
     }
 }
 </script>
+<style>
+    .imgup-thumb { position: relative; width: 180px; height: 130px; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 1px 4px rgba(0,0,0,.08); background: #ffedd5; }
+    .imgup-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; filter: blur(18px); opacity: .35; transform: scale(1.12); transition: filter .22s linear, opacity .22s linear, transform .22s linear; }
+    .imgup-progress { position: absolute; left: 0; right: 0; bottom: 0; height: 5px; height: 5px; background: rgba(254, 215, 170, .6); transition: opacity .35s ease .25s; }
+    .imgup-progress span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #f97316, #ea580c); }
+    .imgup-thumb:not(.done) .imgup-progress span {
+        background-image: linear-gradient(45deg, rgba(255,255,255,.28) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.28) 50%, rgba(255,255,255,.28) 75%, transparent 75%), linear-gradient(90deg, #f97316, #ea580c);
+        background-size: 16px 16px, 100% 100%;
+        animation: imgup-stripes .5s linear infinite;
+    }
+    @keyframes imgup-stripes { from { background-position: 0 0, 0 0; } to { background-position: 32px 0, 0 0; } }
+    .imgup-pct { position: absolute; top: 6px; right: 6px; background: rgba(234, 88, 12, .92); color: #fff; font-size: .68rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; transition: opacity .3s ease .2s; }
+    .imgup-thumb.done .imgup-progress, .imgup-thumb.done .imgup-pct { opacity: 0; }
+    .imgup-thumb.done img { filter: blur(0); opacity: 1; transform: scale(1); }
+</style>
 <script>
 (function () {
     var input = document.querySelector('input[type="file"][name="image"]');
@@ -574,11 +593,51 @@ function toggleCustomHours(cb) {
 
     var wrap = document.getElementById('imageUploadWrap');
     var preview = document.getElementById('imageUploadPreview');
+    var thumb = document.getElementById('imageUploadThumb');
+    var pctEl = document.getElementById('imageUploadPct');
+    var barFill = document.getElementById('imageUploadBarFill');
     var objectUrl = null;
+    var loadTimer = null;
+
+    function stopLoad() {
+        if (loadTimer) { clearTimeout(loadTimer); loadTimer = null; }
+    }
+
+    function resetVisual() {
+        stopLoad();
+        thumb.classList.remove('done');
+        barFill.style.width = '0%';
+        pctEl.textContent = '0%';
+    }
 
     function resetPreview() {
+        resetVisual();
         if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = null; }
         preview.src = '';
+        preview.style.filter = '';
+        preview.style.opacity = '';
+        preview.style.transform = '';
+    }
+
+    // Blur-up progressive reveal: the preview sharpens as the progress advances
+    function playLoadAnimation() {
+        resetVisual();
+        var pct = 0;
+        (function step() {
+            pct += Math.max(2.5, (100 - pct) * 0.16 * (0.55 + Math.random() * 0.9));
+            if (pct >= 100) pct = 100;
+            var p = pct / 100;
+            barFill.style.width = pct + '%';
+            pctEl.textContent = Math.round(pct) + '%';
+            preview.style.filter = 'blur(' + (18 * (1 - p)).toFixed(1) + 'px)';
+            preview.style.opacity = (0.35 + 0.65 * p).toFixed(2);
+            preview.style.transform = 'scale(' + (1.12 - 0.12 * p).toFixed(3) + ')';
+            if (pct < 100) {
+                loadTimer = setTimeout(step, 80 + Math.random() * 120);
+            } else {
+                thumb.classList.add('done');
+            }
+        })();
     }
 
     input.addEventListener('change', function () {
@@ -590,6 +649,7 @@ function toggleCustomHours(cb) {
         nameEl.textContent = f.name;
         sizeEl.textContent = fmtSize(f.size);
         wrap.style.display = 'block';
+        playLoadAnimation();
     });
 
     window.clearImageSelection = function () {
