@@ -11,31 +11,28 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
-    environment: production
-    if: ${{ secrets.DEPLOY_HOST != '' }}
+    runs-on: [self-hosted, termux]
 
     steps:
       - name: Deploy latest main revision
-        uses: appleboy/ssh-action@v1.2.2
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          port: ${{ secrets.DEPLOY_PORT }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          script: |
-            set -eu
-            cd /data/data/com.termux/files/home/uni-activity
-            git pull --ff-only origin main
-            if command -v composer >/dev/null 2>&1; then
-              composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
-            fi
-            if command -v npm >/dev/null 2>&1; then
-              npm ci --prefer-offline
-              npm run build
-            fi
-            php artisan optimize:clear
-            php artisan view:cache
-            php artisan octane:reload
-            test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"
-            echo "Deployed $(git rev-parse --short HEAD)"
+        run: |
+          set -eu
+          cd /data/data/com.termux/files/home/uni-activity
+          git pull --ff-only origin main
+          if [ -x /data/data/com.termux/files/usr/bin/composer ]; then
+            /data/data/com.termux/files/usr/bin/composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
+          elif command -v composer >/dev/null 2>&1; then
+            composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
+          fi
+          if [ -x /data/data/com.termux/files/usr/bin/npm ]; then
+            /data/data/com.termux/files/usr/bin/npm ci --prefer-offline
+            /data/data/com.termux/files/usr/bin/npm run build
+          elif command -v npm >/dev/null 2>&1; then
+            npm ci --prefer-offline
+            npm run build
+          fi
+          /data/data/com.termux/files/usr/bin/php artisan optimize:clear
+          /data/data/com.termux/files/usr/bin/php artisan view:cache
+          /data/data/com.termux/files/usr/bin/php artisan octane:reload
+          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"
+          echo "Deployed $(git rev-parse --short HEAD)"
