@@ -18,7 +18,8 @@ jobs:
         run: |
           set -eu
           cd /data/data/com.termux/files/home/uni-activity
-          git pull --ff-only origin main
+          git fetch origin main
+          git reset --hard origin/main
           if [ -x /data/data/com.termux/files/usr/bin/composer ]; then
             /data/data/com.termux/files/usr/bin/composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
           elif command -v composer >/dev/null 2>&1; then
