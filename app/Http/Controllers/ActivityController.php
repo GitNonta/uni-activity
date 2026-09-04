@@ -191,7 +191,7 @@ class ActivityController extends Controller
 
     public function show(Activity $activity): View
     {
-        $activity->loadMissing(['category', 'creator'])
+        $activity->loadMissing(['category', 'creator', 'days'])
             ->loadCount([
                 'registrations as registered_count' => fn($query) => $query->whereIn('status', ['pending', 'approved']),
             ]);

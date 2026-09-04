@@ -98,6 +98,81 @@
             </div>
         </div>
 
+        @if($activity->is_multiday && $activity->days && $activity->days->isNotEmpty())
+            <div style="margin-top:1.25rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:1rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; border-bottom:1px solid #e2e8f0; padding-bottom:0.5rem; flex-wrap:wrap; gap:0.5rem;">
+                    <h4 style="margin:0; font-size:0.9rem; font-weight:700; color:#0f172a; display:flex; align-items:center; gap:0.45rem;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        กำหนดการเช็คอิน-เช็คเอาต์ และชั่วโมงกิจกรรมรายวัน (Daily Schedule & Hours)
+                    </h4>
+                    <span style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-size:0.75rem; font-weight:700; padding:0.2rem 0.55rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.3rem;">
+                        รวม {{ (float)$activity->activity_hours }} ชม.
+                    </span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:0.6rem;">
+                    @foreach($activity->days as $day)
+                        <div style="background:#ffffff; border:1px solid #f1f5f9; border-radius:8px; padding:0.75rem; display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:0.6rem; align-items:center;">
+                            <div>
+                                <span style="background:#2563eb; color:#ffffff; font-size:0.7rem; font-weight:700; padding:0.15rem 0.45rem; border-radius:4px; display:inline-flex; align-items:center; gap:0.25rem;">
+                                    วันที่ {{ $day->day_number }}
+                                </span>
+                                <strong style="font-size:0.85rem; color:#1e293b; margin-left:0.4rem;">{{ $day->date->format('d/m/Y') }}</strong>
+                                @if($day->start_time && $day->end_time)
+                                    <div style="font-size:0.75rem; color:#64748b; margin-top:0.25rem; display:flex; align-items:center; gap:0.3rem;">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <polyline points="12 6 12 12 16 14"></polyline>
+                                        </svg>
+                                        {{ \Carbon\Carbon::parse($day->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($day->end_time)->format('H:i') }} น.
+                                    </div>
+                                @endif
+                            </div>
+                            <div>
+                                <span style="font-size:0.72rem; color:#166534; font-weight:600; display:flex; align-items:center; gap:0.25rem;">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                                        <polyline points="10 17 15 12 10 7"></polyline>
+                                        <line x1="15" y1="12" x2="3" y2="12"></line>
+                                    </svg>
+                                    เช็คอิน (เข้างาน):
+                                </span>
+                                <div style="font-size:0.78rem; color:#334155; margin-top:0.15rem;">
+                                    {{ $day->checkin_open_at ? $day->checkin_open_at->format('H:i') : '-' }} - {{ $day->checkin_close_at ? $day->checkin_close_at->format('H:i') : '-' }} น.
+                                </div>
+                            </div>
+                            <div>
+                                <span style="font-size:0.72rem; color:#991b1b; font-weight:600; display:flex; align-items:center; gap:0.25rem;">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                        <polyline points="16 17 21 12 16 7"></polyline>
+                                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                                    </svg>
+                                    เช็คเอาต์ (ออกงาน):
+                                </span>
+                                <div style="font-size:0.78rem; color:#334155; margin-top:0.15rem;">
+                                    {{ $day->checkout_open_at ? $day->checkout_open_at->format('H:i') : '-' }} - {{ $day->checkout_close_at ? $day->checkout_close_at->format('H:i') : '-' }} น.
+                                </div>
+                            </div>
+                            <div style="text-align:right;">
+                                <span style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; font-size:0.75rem; font-weight:700; padding:0.25rem 0.55rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.25rem;">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <polyline points="12 6 12 12 16 14"></polyline>
+                                    </svg>
+                                    {{ (float)$day->activity_hours }} ชม.
+                                </span>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
         <hr class="divider">
 
         {{-- แถบแสดงจำนวนผู้ลงทะเบียน --}}

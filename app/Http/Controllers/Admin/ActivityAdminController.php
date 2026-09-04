@@ -12,6 +12,7 @@ use App\Http\Requests\Admin\UpdateActivityRequest;
 use App\Http\Requests\StoreActivityRequest;
 use App\Models\Activity;
 use App\Models\ActivityCategory;
+use App\Models\ActivityDay;
 use App\Services\ImageOptimizationService;
 use App\Services\ListCache;
 use App\Services\QrCodeService;
@@ -21,6 +22,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 
@@ -139,7 +141,43 @@ class ActivityAdminController extends Controller
             $data['status'] = 'upcoming';
         }
 
-        $activity = Activity::create($data);
+        $daysData = $data['days'] ?? [];
+        unset($data['days']);
+
+        $activity = DB::transaction(function () use ($data, $daysData) {
+            $activity = Activity::create($data);
+
+            if ($activity->is_multiday && !empty($daysData)) {
+                $totalHours = 0.0;
+                foreach ($daysData as $index => $day) {
+                    if (empty($day['date'])) {
+                        continue;
+                    }
+                    $dayDate = Carbon::parse($day['date']);
+                    $dayHours = isset($day['activity_hours']) && $day['activity_hours'] !== '' ? (float)$day['activity_hours'] : 0.0;
+                    $totalHours += $dayHours;
+
+                    $activity->days()->create([
+                        'day_number'        => $day['day_number'] ?? ($index + 1),
+                        'date'              => $dayDate->toDateString(),
+                        'start_time'        => !empty($day['start_time']) ? $day['start_time'] : null,
+                        'end_time'          => !empty($day['end_time']) ? $day['end_time'] : null,
+                        'activity_hours'    => $dayHours,
+                        'checkin_open_at'   => !empty($day['checkin_open_at']) ? Carbon::parse($day['checkin_open_at']) : null,
+                        'checkin_close_at'  => !empty($day['checkin_close_at']) ? Carbon::parse($day['checkin_close_at']) : null,
+                        'checkout_open_at'  => !empty($day['checkout_open_at']) ? Carbon::parse($day['checkout_open_at']) : null,
+                        'checkout_close_at' => !empty($day['checkout_close_at']) ? Carbon::parse($day['checkout_close_at']) : null,
+                    ]);
+                }
+
+                if ($totalHours > 0) {
+                    $activity->update(['activity_hours' => $totalHours]);
+                }
+            }
+
+            return $activity;
+        });
+
         $this->auditCreate($activity, "สร้างกิจกรรม \"{$activity->title}\"");
 
         // New post must be visible immediately on /activities and the map.
@@ -157,7 +195,7 @@ class ActivityAdminController extends Controller
     public function show(Activity $activity): View
     {
         Gate::authorize('view', $activity);
-        $activity->loadMissing(['category', 'registrations.user', 'attendances.user']);
+        $activity->loadMissing(['category', 'registrations.user', 'attendances.user', 'days']);
 
         return view('admin.activities.show', compact('activity'));
     }
@@ -168,6 +206,7 @@ class ActivityAdminController extends Controller
     public function edit(Activity $activity): View
     {
         Gate::authorize('update', $activity);
+        $activity->load('days');
 
         $categories = ActivityCategory::all();
         $faculties = Activity::whereNotNull('faculty')->distinct()->pluck('faculty')->sort()->values();
@@ -222,8 +261,46 @@ class ActivityAdminController extends Controller
             $data['checkout_close_at'] = null;
         }
 
+        $daysData = $data['days'] ?? [];
+        unset($data['days']);
+
         $oldValues = $activity->only(['title', 'location', 'activity_date', 'status', 'activity_hours']);
-        $activity->update($data);
+
+        DB::transaction(function () use ($activity, $data, $daysData) {
+            $activity->update($data);
+
+            if ($activity->is_multiday && !empty($daysData)) {
+                $activity->days()->delete();
+                $totalHours = 0.0;
+                foreach ($daysData as $index => $day) {
+                    if (empty($day['date'])) {
+                        continue;
+                    }
+                    $dayDate = Carbon::parse($day['date']);
+                    $dayHours = isset($day['activity_hours']) && $day['activity_hours'] !== '' ? (float)$day['activity_hours'] : 0.0;
+                    $totalHours += $dayHours;
+
+                    $activity->days()->create([
+                        'day_number'        => $day['day_number'] ?? ($index + 1),
+                        'date'              => $dayDate->toDateString(),
+                        'start_time'        => !empty($day['start_time']) ? $day['start_time'] : null,
+                        'end_time'          => !empty($day['end_time']) ? $day['end_time'] : null,
+                        'activity_hours'    => $dayHours,
+                        'checkin_open_at'   => !empty($day['checkin_open_at']) ? Carbon::parse($day['checkin_open_at']) : null,
+                        'checkin_close_at'  => !empty($day['checkin_close_at']) ? Carbon::parse($day['checkin_close_at']) : null,
+                        'checkout_open_at'  => !empty($day['checkout_open_at']) ? Carbon::parse($day['checkout_open_at']) : null,
+                        'checkout_close_at' => !empty($day['checkout_close_at']) ? Carbon::parse($day['checkout_close_at']) : null,
+                    ]);
+                }
+
+                if ($totalHours > 0) {
+                    $activity->update(['activity_hours' => $totalHours]);
+                }
+            } elseif (!$activity->is_multiday) {
+                $activity->days()->delete();
+            }
+        });
+
         $this->auditUpdate($activity, $oldValues, "แก้ไขกิจกรรม \"{$activity->title}\"");
 
         ListCache::bump(ListCache::GROUP_ACTIVITIES);

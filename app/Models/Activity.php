@@ -87,6 +87,12 @@ class Activity extends Model
         ];
     }
 
+    /** ความสัมพันธ์: กำหนดการรายวันของกิจกรรม (สำหรับกิจกรรมหลายวัน) */
+    public function days(): HasMany
+    {
+        return $this->hasMany(ActivityDay::class)->orderBy('date')->orderBy('day_number');
+    }
+
     /** ความสัมพันธ์: กิจกรรมมีการลงทะเบียนหลายรายการ */
     public function registrations(): HasMany
     {

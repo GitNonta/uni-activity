@@ -69,9 +69,9 @@
                         </label>
                     </div>
                     <div style="display:flex; gap:0.5rem; align-items:center;">
-                        <input type="date" name="activity_date" id="activityDate" value="{{ old('activity_date') }}" class="form-control" required style="flex:1;" onchange="autoFillDates()">
+                        <input type="date" name="activity_date" id="activityDate" value="{{ old('activity_date') }}" class="form-control" required style="flex:1;" onchange="autoFillDates(); renderMultidaySchedule();">
                         <span id="endDateSeparator" style="display:none;">ถึง</span>
-                        <input type="date" name="end_date" id="endDate" value="{{ old('end_date') }}" class="form-control" style="flex:1; display:none;">
+                        <input type="date" name="end_date" id="endDate" value="{{ old('end_date') }}" class="form-control" style="flex:1; display:none;" onchange="renderMultidaySchedule();">
                     </div>
                 </div>
                 <div class="form-group">
@@ -107,7 +107,7 @@
                 <input type="number" name="max_participants" value="{{ old('max_participants', 50) }}" min="1" class="form-control" required>
             </div>
             <div class="form-group" style="padding:.6rem .8rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;margin-bottom:.75rem;">
-                <p class="text-xs" style="color:#16a34a;margin:0;" id="autoFillHint">💡 เลือกวันที่จัดกิจกรรมแล้วระบบจะตั้งค่าเวลาลงทะเบียน / เช็คอิน / เช็คเอาต์ ให้อัตโนมัติ</p>
+                <p class="text-xs" style="color:#16a34a;margin:0;display:flex;align-items:center;gap:0.35rem;" id="autoFillHint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.5 4.5 3 6h8c1.5-1.5 3-3.5 3-6a7 7 0 0 0-7-7z"/></svg> เลือกวันที่จัดกิจกรรมแล้วระบบจะตั้งค่าเวลาลงทะเบียน / เช็คอิน / เช็คเอาต์ ให้อัตโนมัติ</p>
             </div>
             <div class="form-row">
                 <div class="form-group">
@@ -151,6 +151,43 @@
                     <span class="text-muted text-sm">ชั่วโมง (0 = ไม่มีขั้นต่ำ, สามารถบันทึกออกงานได้ทันที)</span>
                 </div>
             </div>
+
+            <!-- Multi-Day Daily Schedule & Hours Section -->
+            <div id="multidayScheduleSection" style="display:none; margin-top:1.25rem; margin-bottom:1.5rem; padding:1.25rem; background:#f8fafc; border:1px solid #cbd5e1; border-radius:12px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1rem; border-bottom:1px solid #e2e8f0; padding-bottom:0.75rem;">
+                    <div>
+                        <h4 style="margin:0; font-size:0.95rem; font-weight:700; color:#0f172a; display:flex; align-items:center; gap:0.5rem;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            กำหนดการเช็คอิน-เช็คเอาต์ และชั่วโมงกิจกรรมแยกรายวัน (Daily Schedule & Hours)
+                        </h4>
+                        <p style="margin:0.25rem 0 0 0; font-size:0.75rem; color:#64748b;">
+                            ระบุเวลาเปิด-ปิดเช็คอิน เช็คเอาต์ และชั่วโมงกิจกรรมสำหรับแต่ละวันของกิจกรรม
+                        </p>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <button type="button" onclick="applyDay1ToAll()" class="btn btn-outline btn-sm" style="font-size:0.75rem; display:inline-flex; align-items:center; gap:0.35rem; padding:0.35rem 0.65rem;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            ใช้เวลาวันแรกกับทุกวัน
+                        </button>
+                        <span id="multidayTotalHoursBadge" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-size:0.75rem; font-weight:700; padding:0.35rem 0.65rem; border-radius:8px; display:inline-flex; align-items:center; gap:0.35rem;">
+                            รวมชั่วโมงกิจกรรม: <span id="multidayTotalHoursText" style="font-weight:800; font-size:0.85rem; margin-left:2px;">0</span> ชม.
+                        </span>
+                    </div>
+                </div>
+
+                <div id="multidayDaysContainer" style="display:flex; flex-direction:column; gap:0.85rem;">
+                    <!-- Daily rows generated dynamically via JavaScript -->
+                </div>
+            </div>
+
             <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #e2e8f0;">
                 <p class="font-semi text-sm mb-2">ปักพิกัดสถานที่จัดกิจกรรม (สำหรับเช็คอินอัตโนมัติ)</p>
                 <p class="text-xs text-muted mb-3">คลิกบนแผนที่เพื่อปักหมุด หรือกดปุ่มตำแหน่งปัจจุบัน — นักศึกษาที่อยู่ในรัศมีจะได้รับอนุมัติอัตโนมัติ</p>
@@ -473,6 +510,233 @@ document.addEventListener('DOMContentLoaded', function() {
     toggleNoCheckout();
 });
 
+const INITIAL_DAYS = @json(old('days', []));
+
+function getDatesBetween(startDateStr, endDateStr) {
+    let dates = [];
+    if (!startDateStr || !endDateStr) return dates;
+    let curr = new Date(startDateStr);
+    let last = new Date(endDateStr);
+    if (curr > last) return dates;
+    
+    let count = 0;
+    while (curr <= last && count < 31) {
+        let y = curr.getFullYear();
+        let m = String(curr.getMonth() + 1).padStart(2, '0');
+        let d = String(curr.getDate()).padStart(2, '0');
+        dates.push(`${y}-${m}-${d}`);
+        curr.setDate(curr.getDate() + 1);
+        count++;
+    }
+    return dates;
+}
+
+function offsetTime(timeStr, offsetMinutes) {
+    if (!timeStr) return '09:00';
+    var p = timeStr.split(':');
+    var mins = parseInt(p[0]) * 60 + parseInt(p[1]) + offsetMinutes;
+    if (mins < 0) mins += 1440;
+    if (mins >= 1440) mins -= 1440;
+    var h = String(Math.floor(mins / 60)).padStart(2, '0');
+    var m = String(mins % 60).padStart(2, '0');
+    return h + ':' + m;
+}
+
+function renderMultidaySchedule() {
+    var isMulti = document.getElementById('isMultidayCheck').checked;
+    var section = document.getElementById('multidayScheduleSection');
+    var container = document.getElementById('multidayDaysContainer');
+    var startDateStr = document.getElementById('activityDate').value;
+    var endDateStr = document.getElementById('endDate').value;
+    
+    if (!isMulti || !startDateStr || !endDateStr) {
+        if (section) section.style.display = 'none';
+        return;
+    }
+    
+    var dates = getDatesBetween(startDateStr, endDateStr);
+    if (dates.length <= 0) {
+        if (section) section.style.display = 'none';
+        return;
+    }
+    
+    if (section) section.style.display = 'block';
+    
+    var defaultStartTime = document.getElementById('startTime').value || '09:00';
+    var defaultEndTime   = document.getElementById('endTime').value || '12:00';
+    var defaultHours     = parseFloat(document.getElementById('activityHours').value) || 3.0;
+
+    var daysData = (typeof INITIAL_DAYS !== 'undefined' && Array.isArray(INITIAL_DAYS)) ? INITIAL_DAYS : [];
+
+    var html = '';
+    dates.forEach(function(dateStr, idx) {
+        var dayNum = idx + 1;
+        var existing = daysData.find(function(d) { return d.date === dateStr; }) || daysData[idx] || {};
+        
+        var startTime = existing.start_time || defaultStartTime;
+        var endTime   = existing.end_time || defaultEndTime;
+        var hours     = (existing.activity_hours !== undefined && existing.activity_hours !== null && existing.activity_hours !== '') ? existing.activity_hours : defaultHours;
+        
+        var checkinOpen  = existing.checkin_open_at || (dateStr + 'T' + offsetTime(startTime, -30));
+        var checkinClose = existing.checkin_close_at || (dateStr + 'T' + offsetTime(startTime, 60));
+        var checkoutOpen = existing.checkout_open_at || (dateStr + 'T' + startTime);
+        var checkoutClose = existing.checkout_close_at || (dateStr + 'T' + offsetTime(endTime, 60));
+        
+        var dParts = dateStr.split('-');
+        var displayDate = dParts[2] + '/' + dParts[1] + '/' + dParts[0];
+        
+        html += `
+        <div class="day-card" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:1rem; box-shadow:0 1px 2px rgba(0,0,0,0.03);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; border-bottom:1px solid #f1f5f9; padding-bottom:0.5rem; flex-wrap:wrap; gap:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <span style="background:#2563eb; color:#ffffff; font-size:0.75rem; font-weight:700; padding:0.2rem 0.55rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.35rem;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                        </svg>
+                        วันที่ ${dayNum}
+                    </span>
+                    <strong style="font-size:0.85rem; color:#1e293b;">${displayDate}</strong>
+                </div>
+                <div style="display:flex; align-items:center; gap:0.4rem;">
+                    <label style="margin:0; font-size:0.75rem; color:#64748b; font-weight:600;">ชั่วโมงกิจกรรมวันนี้:</label>
+                    <input type="number" name="days[${idx}][activity_hours]" value="${hours}" step="0.5" min="0" max="100" 
+                        class="form-control day-hours-input" style="width:80px; padding:0.25rem 0.5rem; font-size:0.8rem; font-weight:700; color:#1d4ed8; background:#f0f9ff; border:1px solid #bae6fd; border-radius:6px;" 
+                        oninput="calculateMultidayTotalHours()" required>
+                    <span style="font-size:0.75rem; color:#64748b;">ชม.</span>
+                </div>
+            </div>
+
+            <input type="hidden" name="days[${idx}][day_number]" value="${dayNum}">
+            <input type="hidden" name="days[${idx}][date]" value="${dateStr}">
+
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:0.75rem;">
+                <div style="background:#f8fafc; padding:0.6rem 0.75rem; border-radius:8px; border:1px solid #f1f5f9;">
+                    <div style="font-size:0.72rem; font-weight:700; color:#475569; margin-bottom:0.35rem; display:flex; align-items:center; gap:0.3rem;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        เวลาจัดกิจกรรม
+                    </div>
+                    <div style="display:flex; gap:0.35rem; align-items:center;">
+                        <input type="time" name="days[${idx}][start_time]" value="${startTime}" class="form-control" style="font-size:0.75rem; padding:0.25rem 0.4rem;">
+                        <span style="font-size:0.7rem; color:#94a3b8;">ถึง</span>
+                        <input type="time" name="days[${idx}][end_time]" value="${endTime}" class="form-control" style="font-size:0.75rem; padding:0.25rem 0.4rem;">
+                    </div>
+                </div>
+
+                <div style="background:#f0fdf4; padding:0.6rem 0.75rem; border-radius:8px; border:1px solid #bbf7d0;">
+                    <div style="font-size:0.72rem; font-weight:700; color:#166534; margin-bottom:0.35rem; display:flex; align-items:center; gap:0.3rem;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                            <polyline points="10 17 15 12 10 7"></polyline>
+                            <line x1="15" y1="12" x2="3" y2="12"></line>
+                        </svg>
+                        ช่วงเวลาเช็คอิน (เข้างาน)
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.3rem;">
+                        <input type="datetime-local" name="days[${idx}][checkin_open_at]" value="${checkinOpen}" class="form-control" style="font-size:0.75rem; padding:0.25rem 0.4rem;" required>
+                        <input type="datetime-local" name="days[${idx}][checkin_close_at]" value="${checkinClose}" class="form-control" style="font-size:0.75rem; padding:0.25rem 0.4rem;" required>
+                    </div>
+                </div>
+
+                <div style="background:#fef2f2; padding:0.6rem 0.75rem; border-radius:8px; border:1px solid #fecaca;">
+                    <div style="font-size:0.72rem; font-weight:700; color:#991b1b; margin-bottom:0.35rem; display:flex; align-items:center; gap:0.3rem;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        ช่วงเวลาเช็คเอาต์ (ออกงาน)
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.3rem;">
+                        <input type="datetime-local" name="days[${idx}][checkout_open_at]" value="${checkoutOpen}" class="form-control" style="font-size:0.75rem; padding:0.25rem 0.4rem;">
+                        <input type="datetime-local" name="days[${idx}][checkout_close_at]" value="${checkoutClose}" class="form-control" style="font-size:0.75rem; padding:0.25rem 0.4rem;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+    calculateMultidayTotalHours();
+}
+
+function calculateMultidayTotalHours() {
+    var isMulti = document.getElementById('isMultidayCheck').checked;
+    if (!isMulti) return;
+    var inputs = document.querySelectorAll('.day-hours-input');
+    var total = 0;
+    inputs.forEach(function(inp) {
+        var v = parseFloat(inp.value);
+        if (!isNaN(v)) total += v;
+    });
+    var txt = document.getElementById('multidayTotalHoursText');
+    if (txt) txt.textContent = total.toFixed(1);
+    
+    var mainHoursInput = document.getElementById('activityHours');
+    if (mainHoursInput && total > 0) {
+        mainHoursInput.value = total.toFixed(1);
+    }
+}
+
+function applyDay1ToAll() {
+    var cards = document.querySelectorAll('.day-card');
+    if (cards.length <= 1) return;
+    
+    var day0Hours = document.querySelector('input[name="days[0][activity_hours]"]')?.value;
+    var day0Start = document.querySelector('input[name="days[0][start_time]"]')?.value;
+    var day0End   = document.querySelector('input[name="days[0][end_time]"]')?.value;
+    var day0CheckinOpen = document.querySelector('input[name="days[0][checkin_open_at]"]')?.value;
+    var day0CheckinClose = document.querySelector('input[name="days[0][checkin_close_at]"]')?.value;
+    var day0CheckoutOpen = document.querySelector('input[name="days[0][checkout_open_at]"]')?.value;
+    var day0CheckoutClose = document.querySelector('input[name="days[0][checkout_close_at]"]')?.value;
+
+    cards.forEach(function(card, idx) {
+        if (idx === 0) return;
+        var dateVal = card.querySelector(`input[name="days[${idx}][date]"]`)?.value;
+        if (!dateVal) return;
+        
+        if (day0Hours !== undefined) {
+            var hInp = card.querySelector(`input[name="days[${idx}][activity_hours]"]`);
+            if (hInp) hInp.value = day0Hours;
+        }
+        if (day0Start) {
+            var sInp = card.querySelector(`input[name="days[${idx}][start_time]"]`);
+            if (sInp) sInp.value = day0Start;
+        }
+        if (day0End) {
+            var eInp = card.querySelector(`input[name="days[${idx}][end_time]"]`);
+            if (eInp) eInp.value = day0End;
+        }
+        if (day0CheckinOpen) {
+            var timePart = day0CheckinOpen.split('T')[1] || '08:30';
+            var inp = card.querySelector(`input[name="days[${idx}][checkin_open_at]"]`);
+            if (inp) inp.value = dateVal + 'T' + timePart;
+        }
+        if (day0CheckinClose) {
+            var timePart = day0CheckinClose.split('T')[1] || '10:00';
+            var inp = card.querySelector(`input[name="days[${idx}][checkin_close_at]"]`);
+            if (inp) inp.value = dateVal + 'T' + timePart;
+        }
+        if (day0CheckoutOpen) {
+            var timePart = day0CheckoutOpen.split('T')[1] || '09:00';
+            var inp = card.querySelector(`input[name="days[${idx}][checkout_open_at]"]`);
+            if (inp) inp.value = dateVal + 'T' + timePart;
+        }
+        if (day0CheckoutClose) {
+            var timePart = day0CheckoutClose.split('T')[1] || '13:00';
+            var inp = card.querySelector(`input[name="days[${idx}][checkout_close_at]"]`);
+            if (inp) inp.value = dateVal + 'T' + timePart;
+        }
+    });
+    
+    calculateMultidayTotalHours();
+}
+
 function toggleMultiday() {
     var isMulti = document.getElementById('isMultidayCheck').checked;
     var endDateInput = document.getElementById('endDate');
@@ -490,6 +754,7 @@ function toggleMultiday() {
         if (crossDayHint) crossDayHint.style.display = 'block';
         if (minHoursGroup) minHoursGroup.style.display = 'block';
         if (noCheckoutGroup) noCheckoutGroup.style.display = 'block';
+        renderMultidaySchedule();
     } else {
         endDateInput.style.display = 'none';
         separator.style.display = 'none';
@@ -507,6 +772,8 @@ function toggleMultiday() {
                 toggleNoCheckout();
             }
         }
+        var section = document.getElementById('multidayScheduleSection');
+        if (section) section.style.display = 'none';
     }
 }
 

@@ -49,6 +49,16 @@ class UpdateActivityRequest extends FormRequest
             'face_scan_method' => 'nullable|string|in:python,js',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
             'is_no_checkout' => 'nullable|boolean',
+            'days' => 'nullable|array',
+            'days.*.date' => 'required_with:days|date',
+            'days.*.day_number' => 'nullable|integer|min:1',
+            'days.*.start_time' => 'nullable|date_format:H:i',
+            'days.*.end_time' => 'nullable|date_format:H:i',
+            'days.*.activity_hours' => 'nullable|numeric|min:0|max:999',
+            'days.*.checkin_open_at' => 'nullable|date',
+            'days.*.checkin_close_at' => 'nullable|date',
+            'days.*.checkout_open_at' => 'nullable|date',
+            'days.*.checkout_close_at' => 'nullable|date',
         ];
     }
 }
