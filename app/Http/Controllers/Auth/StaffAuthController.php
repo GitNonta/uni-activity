@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AdminLoginRequest;
 use App\Models\User;
 use App\Services\SecurityService;
 use Illuminate\Http\RedirectResponse;
@@ -37,28 +38,27 @@ class StaffAuthController extends Controller
      * ดำเนินการเข้าสู่ระบบเจ้าหน้าที่
      * ตรวจสอบ email + password → ส่ง OTP → ไปหน้ายืนยัน
      */
-    public function login(Request $request, LoginOtpController $otpController): RedirectResponse
+    public function login(AdminLoginRequest $request, LoginOtpController $otpController): RedirectResponse
     {
-        $request->validate([
-            'email'    => 'required|email',
-            'password' => 'required|string',
-        ]);
+        $validated = $request->validated();
+        $email = (string) $validated['email'];
+        $password = (string) $validated['password'];
 
         // ค้นหาเจ้าหน้าที่จาก email ที่ยังเปิดใช้งานอยู่ (ทั้ง staff และ admin)
-        $user = User::where('email', $request->email)
+        $user = User::where('email', $email)
                     ->whereIn('role', ['staff', 'admin'])
                     ->where('is_active', true)
                     ->first();
 
         // ตรวจสอบ email และ password
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (!$user || !Hash::check($password, $user->password)) {
             // บันทึก failed login เพื่อ security monitoring
             $this->security->logEvent(
                 eventType: 'staff_login_failed',
                 userId:    $user?->id,
                 request:   $request,
                 details:   [
-                    'email'   => $request->email,
+                    'email'   => $email,
                     'reason'  => $user ? 'wrong_password' : 'email_not_found',
                     'message' => 'Staff login attempt failed',
                 ],
