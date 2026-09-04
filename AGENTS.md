@@ -56,3 +56,7 @@
 - ใช้ `Event::fake()` เมื่อ test ที่มี broadcasting
 - ใช้ `RefreshDatabase` trait ทุก test class
 - Test naming: `test_[subject]_can/cannot_[action]()`
+
+## Git & Deployment Rules (Commit & Push ทุกครั้ง — บังคับ)
+
+- **ต้อง Commit และ Push ทุกครั้งที่ทำงานเสร็จสิ้น**: ทุกครั้งที่ทำงานเสร็จ, เพิ่มฟีเจอร์, แก้ไขบั๊ก หรือปรับปรุงระบบ และผ่านการทดสอบแล้ว ระบบต้องรัน `git add`, `git commit` ด้วยข้อความที่สื่อความหมายชัดเจน และ `git push` ขึ้น repository ทุกครั้ง ห้ามค้างการเปลี่ยนแปลงไว้บน local เด็ดขาด

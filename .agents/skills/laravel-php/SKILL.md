@@ -33,6 +33,7 @@ description: >
 - ใช้ **env()** เสมอ — ห้าม hardcode credentials, keys, หรือ URLs
 - Eager load relationships ด้วย `with()` เพื่อป้องกัน N+1 query
 - **ใช้ SVG เท่านั้น สำหรับ UI ทั้งหมด**: เมื่อแก้ไขหรือสร้างส่วนติดต่อผู้ใช้ (Blade views, React/Vue Dashboard, UI components) ให้ใช้ SVG (Inline SVG หรือ SVG component) สำหรับทุกไอคอนและกราฟิกเท่านั้น
+- **Commit & Push ทุกครั้งที่ทำงานเสร็จสิ้น**: เมื่อสร้างไฟล์ใหม่, แก้ไขโค้ด, หรือเพิ่มฟีเจอร์เสร็จสิ้นและผ่านการทดสอบแล้ว ต้องรัน `git add`, `git commit` และ `git push` ขึ้น repository ทุกครั้ง ห้ามค้างไว้บน local
 
 ### สิ่งที่ห้ามทำ
 - ห้าม validate ใน Controller โดยตรง (`$request->validate(...)` ใน method)

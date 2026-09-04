@@ -9,6 +9,7 @@
 - **Parallel agents** — ใช้ parallel agents สำหรับงานที่แยกกันได้ เช่น สร้าง Controller + Test พร้อมกัน
 - **ขอ approval** ก่อนรันคำสั่งที่ drop หรือ modify database
 - **ใช้ SVG เท่านั้น สำหรับ UI ทั้งหมด** — เมื่อแก้ไขหรือเพิ่มคอมโพเนนต์ UI, Blade template, หรือ Dashboard ทุกจุด ต้องใช้ SVG (Inline SVG หรือ SVG Component) เท่านั้น ห้ามใช้ Emoji หรือ raster image สำหรับไอคอนโดยเด็ดขาด
+- **Commit & Push ทุกครั้งที่ทำงานเสร็จสิ้น** — เมื่องาน, ฟีเจอร์, หรือการแก้ไขเสร็จสิ้นและทดสอบเรียบร้อยแล้ว ต้องทำ `git add`, `git commit` และ `git push` ทุกครั้ง ห้ามปล่อยค้างไว้บน local เด็ดขาด
 
 ## Artifact Requirements
 

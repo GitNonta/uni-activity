@@ -42,6 +42,7 @@ Quality criteria and completion checks
 - Saved file path must follow `.agents/skills/<skill-name>/SKILL.md`.
 - Provide at least two example prompts and one minimal test/checklist.
 - UI & Graphics Standard: ถ้าระบบแก้อะไรหรือเพิ่มอะไรใน UI, Dashboard, หรือ Views ต้องใช้ SVG เท่านั้น สำหรับไอคอนและกราฟิกทั้งหมด ห้ามใช้ Emoji หรือ Raster Image แทนไอคอนเด็ดขาด
+- Commit & Push Standard: ทุกครั้งที่ทำงานเสร็จสิ้นและทดสอบเรียบร้อยแล้ว ต้องทำ git add, git commit และ git push ขึ้น repository เสมอ ห้ามปล่อยค้างไว้บน local
 
 Template (use this when drafting)
 --------------------------------
