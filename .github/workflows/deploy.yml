@@ -26,16 +26,13 @@ jobs:
             composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader --ignore-platform-reqs
           fi
           if [ -x /data/data/com.termux/files/usr/bin/npm ]; then
-            /data/data/com.termux/files/usr/bin/npm ci --prefer-offline
             /data/data/com.termux/files/usr/bin/npm run build
           elif command -v npm >/dev/null 2>&1; then
-            npm ci --prefer-offline
             npm run build
           fi
           /data/data/com.termux/files/usr/bin/php artisan optimize:clear
-          if /data/data/com.termux/files/usr/bin/php artisan octane:status 2>/dev/null | grep -q "running"; then
-            /data/data/com.termux/files/usr/bin/php artisan octane:reload
-          fi
+          /data/data/com.termux/files/usr/bin/php artisan view:cache
+          /data/data/com.termux/files/usr/bin/php artisan octane:reload 2>/dev/null || true
           pkill -USR2 -f "php-fpm: master" 2>/dev/null || true
           /data/data/com.termux/files/usr/bin/php artisan reverb:restart 2>/dev/null || true
           test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"
