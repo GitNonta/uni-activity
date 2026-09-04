@@ -142,6 +142,27 @@ class ActivityAdminController extends Controller
         }
 
         $daysData = $data['days'] ?? [];
+        if (!empty($data['is_multiday']) && !empty($daysData)) {
+            $validDays = array_values(array_filter($daysData, fn($d) => !empty($d['date'])));
+            if (!empty($validDays)) {
+                $firstDay = $validDays[0];
+                $lastDay = end($validDays);
+                if (!empty($firstDay['checkin_open_at'])) {
+                    $data['checkin_open_at'] = $firstDay['checkin_open_at'];
+                }
+                if (!empty($lastDay['checkin_close_at'])) {
+                    $data['checkin_close_at'] = $lastDay['checkin_close_at'];
+                } elseif (!empty($firstDay['checkin_close_at'])) {
+                    $data['checkin_close_at'] = $firstDay['checkin_close_at'];
+                }
+                if (!empty($firstDay['checkout_open_at'])) {
+                    $data['checkout_open_at'] = $firstDay['checkout_open_at'];
+                }
+                if (!empty($lastDay['checkout_close_at'])) {
+                    $data['checkout_close_at'] = $lastDay['checkout_close_at'];
+                }
+            }
+        }
         unset($data['days']);
 
         $activity = DB::transaction(function () use ($data, $daysData) {
@@ -262,6 +283,27 @@ class ActivityAdminController extends Controller
         }
 
         $daysData = $data['days'] ?? [];
+        if (!empty($data['is_multiday']) && !empty($daysData)) {
+            $validDays = array_values(array_filter($daysData, fn($d) => !empty($d['date'])));
+            if (!empty($validDays)) {
+                $firstDay = $validDays[0];
+                $lastDay = end($validDays);
+                if (!empty($firstDay['checkin_open_at'])) {
+                    $data['checkin_open_at'] = $firstDay['checkin_open_at'];
+                }
+                if (!empty($lastDay['checkin_close_at'])) {
+                    $data['checkin_close_at'] = $lastDay['checkin_close_at'];
+                } elseif (!empty($firstDay['checkin_close_at'])) {
+                    $data['checkin_close_at'] = $firstDay['checkin_close_at'];
+                }
+                if (!empty($firstDay['checkout_open_at'])) {
+                    $data['checkout_open_at'] = $firstDay['checkout_open_at'];
+                }
+                if (!empty($lastDay['checkout_close_at'])) {
+                    $data['checkout_close_at'] = $lastDay['checkout_close_at'];
+                }
+            }
+        }
         unset($data['days']);
 
         $oldValues = $activity->only(['title', 'location', 'activity_date', 'status', 'activity_hours']);
