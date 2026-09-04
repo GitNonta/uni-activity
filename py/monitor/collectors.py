@@ -1381,50 +1381,157 @@ def get_proxy_status():
     except:
         pass
 
-    # Top client IPs (from Squid access log)
+    DEVICE_MAP = {
+        '192.168.1.118': 'Mobile Phone',
+        '192.168.1.44': 'iPad',
+        '192.168.1.57': 'PC / Laptop',
+        '192.168.1.140': 'Server 2',
+        '192.168.1.222': 'Server 1',
+        '127.0.0.1': 'Localhost',
+    }
+
+    # Top client IPs and Live Request Logs (Squid + SOCKS5)
+    recent_traffic = []
+    raw_traffic_lines = []
+
+    # Read Squid access log
     try:
         access_log = os.path.expanduser('~/uni-activity/storage/logs/squid-access.log')
         if os.path.exists(access_log):
-            client_ips = {}
-            client_bytes = {}
             with open(access_log, 'rb') as f:
                 f.seek(0, 2)
-                file_size = f.tell()
-                read_size = min(200000, file_size)
-                f.seek(max(0, file_size - read_size))
+                f_sz = f.tell()
+                f.seek(max(0, f_sz - 120000))
                 data = f.read().decode('utf-8', errors='ignore')
-
-            lines = data.strip().split('\n')[-500:]
-            for line in lines:
-                try:
-                    parts = line.split()
-                    if len(parts) < 5:
-                        continue
-                    # Format: timestamp elapsed client code size method url
-                    client = parts[2]
-                    if client.startswith('192.168.') or client.startswith('127.'):
-                        client_ips[client] = client_ips.get(client, 0) + 1
-                        try:
-                            size = int(parts[4])
-                            client_bytes[client] = client_bytes.get(client, 0) + size
-                        except:
-                            pass
-                except:
-                    continue
-
-            # Sort by request count
-            sorted_clients = sorted(client_ips.items(), key=lambda x: x[1], reverse=True)
-            connections['top_clients'] = [
-                {
-                    'ip': ip,
-                    'requests': count,
-                    'bytes': client_bytes.get(ip, 0),
-                    'bytes_human': _human_bytes(client_bytes.get(ip, 0)),
-                }
-                for ip, count in sorted_clients[:10]
-            ]
-    except:
+                for line in data.strip().split('\n'):
+                    if line.strip():
+                        raw_traffic_lines.append(('squid', line.strip()))
+    except Exception:
         pass
+
+    # Read SOCKS5 access log
+    try:
+        socks5_log = os.path.expanduser('~/uni-activity/storage/logs/socks5-access.log')
+        if os.path.exists(socks5_log):
+            with open(socks5_log, 'rb') as f:
+                f.seek(0, 2)
+                f_sz = f.tell()
+                f.seek(max(0, f_sz - 50000))
+                data = f.read().decode('utf-8', errors='ignore')
+                for line in data.strip().split('\n'):
+                    if line.strip():
+                        raw_traffic_lines.append(('socks5', line.strip()))
+    except Exception:
+        pass
+
+    device_stats_map = {}
+    parsed_items = []
+
+    for proto, line in raw_traffic_lines:
+        try:
+            parts = line.split()
+            if len(parts) < 7:
+                continue
+            ts = float(parts[0])
+            elapsed_ms = int(float(parts[1])) if parts[1].replace('.', '', 1).isdigit() else 0
+            client = parts[2]
+            code = parts[3]
+            size = int(parts[4]) if parts[4].isdigit() else 0
+            method = parts[5]
+            url = parts[6]
+            remote_info = parts[8] if len(parts) > 8 else '-'
+
+            # Destination & Port
+            dst_host = url.split(':')[0]
+            dst_port = url.split(':')[1] if ':' in url else ('443' if method == 'CONNECT' else '80')
+            dev_name = DEVICE_MAP.get(client, 'Device')
+
+            # Status category
+            if 'DENIED' in code or 'ERR' in code:
+                cat = 'blocked'
+            elif 'HIT' in code:
+                cat = 'cached'
+            elif 'MISS' in code:
+                cat = 'miss'
+            elif elapsed_ms > 4000:
+                cat = 'slow'
+            else:
+                cat = 'tunnel'
+
+            # Track device stats
+            if client not in device_stats_map:
+                device_stats_map[client] = {
+                    'ip': client,
+                    'device': dev_name,
+                    'requests': 0,
+                    'bytes': 0,
+                    'last_seen': ts,
+                    'last_target': dst_host,
+                    'errors': 0,
+                }
+            device_stats_map[client]['requests'] += 1
+            device_stats_map[client]['bytes'] += size
+            if ts > device_stats_map[client]['last_seen']:
+                device_stats_map[client]['last_seen'] = ts
+                device_stats_map[client]['last_target'] = dst_host
+            if cat == 'blocked':
+                device_stats_map[client]['errors'] += 1
+
+            parsed_items.append({
+                'id': f"{ts}-{client}-{dst_host}",
+                'time': time.strftime('%H:%M:%S', time.localtime(ts)),
+                'epoch': ts,
+                'client_ip': client,
+                'device': dev_name,
+                'protocol': 'SOCKS5' if proto == 'socks5' else 'HTTP',
+                'method': method,
+                'destination': url,
+                'domain': dst_host,
+                'port': dst_port,
+                'status': code,
+                'status_type': cat,
+                'bytes': size,
+                'bytes_human': _human_bytes(size),
+                'duration_ms': elapsed_ms,
+                'remote_ip': remote_info.replace('HIER_DIRECT/', ''),
+            })
+        except Exception:
+            continue
+
+    # Sort parsed items by epoch descending (newest first)
+    parsed_items.sort(key=lambda x: x['epoch'], reverse=True)
+    recent_traffic = parsed_items[:60]
+
+    # Format device breakdown
+    now_ts = time.time()
+    device_breakdown = []
+    for ip, stat in sorted(device_stats_map.items(), key=lambda x: x[1]['requests'], reverse=True):
+        device_breakdown.append({
+            'ip': ip,
+            'device': stat['device'],
+            'requests': stat['requests'],
+            'bytes': stat['bytes'],
+            'bytes_human': _human_bytes(stat['bytes']),
+            'last_seen_time': time.strftime('%H:%M:%S', time.localtime(stat['last_seen'])),
+            'last_target': stat['last_target'],
+            'errors': stat['errors'],
+            'active': (now_ts - stat['last_seen']) < 300,
+        })
+
+    result['recent_traffic'] = recent_traffic
+    result['device_breakdown'] = device_breakdown
+
+    connections['top_clients'] = [
+        {
+            'ip': d['ip'],
+            'device': d['device'],
+            'requests': d['requests'],
+            'bytes': d['bytes'],
+            'bytes_human': d['bytes_human'],
+            'active': d['active'],
+        }
+        for d in device_breakdown[:10]
+    ]
 
     result['connections'] = connections
 

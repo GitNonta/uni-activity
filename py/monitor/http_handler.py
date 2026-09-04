@@ -8,7 +8,7 @@ from monitor.telegram import tg_send
 from monitor.alerts import collect_stats
 from monitor.speedtest import start_ext_speedtest, run_ext_speedtest_thread, run_speedtest_thread
 from monitor.threads import ws_handshake, ws_client_thread
-from monitor.collectors import get_cf_url
+from monitor.collectors import get_cf_url, get_proxy_status
 from pathlib import Path
 
 
@@ -560,6 +560,26 @@ class MonitorHandler(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(err_data)
                 return
+
+        if self.path == "/api/proxy/traffic" or self.path.startswith("/api/proxy/traffic?"):
+            proxy_data = get_proxy_status()
+            payload = {
+                "ok": True,
+                "recent_traffic": proxy_data.get("recent_traffic", []),
+                "device_breakdown": proxy_data.get("device_breakdown", []),
+                "traffic": proxy_data.get("traffic", {}),
+                "connections": proxy_data.get("connections", {}),
+                "security": proxy_data.get("security", {}),
+                "timestamp": time.time(),
+            }
+            data = json.dumps(payload).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(data)))
+            self._cors_headers()
+            self.end_headers()
+            self.wfile.write(data)
+            return
 
         if self.path == "/api/stats" or self.path.startswith("/api/stats?"):
             data = json.dumps(collect_stats()).encode("utf-8")

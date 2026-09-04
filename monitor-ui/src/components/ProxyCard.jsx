@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 
 const STATUS_COLORS = {
   Running: { bg: '#dcfce7', color: '#15803d', border: '#bbf7d0', dot: '#10b981' },
@@ -118,6 +118,383 @@ function TrafficDashboard({ traffic }) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function LiveProxyTraffic({ recentTraffic = [], deviceBreakdown = [], traffic = {} }) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedDevice, setSelectedDevice] = useState('ALL');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [isPaused, setIsPaused] = useState(false);
+  const [displayedLogs, setDisplayedLogs] = useState([]);
+
+  useEffect(() => {
+    if (!isPaused && recentTraffic && recentTraffic.length > 0) {
+      setDisplayedLogs(recentTraffic);
+    }
+  }, [recentTraffic, isPaused]);
+
+  const filteredLogs = useMemo(() => {
+    return displayedLogs.filter(item => {
+      // Device filter
+      if (selectedDevice !== 'ALL' && item.client_ip !== selectedDevice) {
+        return false;
+      }
+      // Status filter
+      if (statusFilter !== 'ALL') {
+        if (statusFilter === 'blocked' && item.status_type !== 'blocked') return false;
+        if (statusFilter === 'cached' && item.status_type !== 'cached') return false;
+        if (statusFilter === 'slow' && item.status_type !== 'slow') return false;
+        if (statusFilter === 'success' && !['tunnel', 'cached', 'success'].includes(item.status_type)) return false;
+      }
+      // Search term
+      if (searchTerm.trim()) {
+        const q = searchTerm.toLowerCase();
+        const matchDomain = item.domain?.toLowerCase().includes(q);
+        const matchDest = item.destination?.toLowerCase().includes(q);
+        const matchIp = item.client_ip?.toLowerCase().includes(q);
+        const matchDev = item.device?.toLowerCase().includes(q);
+        const matchStatus = item.status?.toLowerCase().includes(q);
+        if (!matchDomain && !matchDest && !matchIp && !matchDev && !matchStatus) return false;
+      }
+      return true;
+    });
+  }, [displayedLogs, selectedDevice, statusFilter, searchTerm]);
+
+  const getStatusBadge = (status, statusType, durationMs) => {
+    if (statusType === 'blocked') {
+      return (
+        <span style={{
+          background: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca',
+          fontSize: '0.7rem', fontWeight: 700, padding: '0.15rem 0.45rem', borderRadius: 4,
+          display: 'inline-flex', alignItems: 'center', gap: '0.3rem'
+        }}>
+          <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#ef4444' }}></span>
+          {status}
+        </span>
+      );
+    }
+    if (statusType === 'cached') {
+      return (
+        <span style={{
+          background: '#f0fdf4', color: '#15803d', border: '1px solid #bbf7d0',
+          fontSize: '0.7rem', fontWeight: 700, padding: '0.15rem 0.45rem', borderRadius: 4,
+          display: 'inline-flex', alignItems: 'center', gap: '0.3rem'
+        }}>
+          <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#10b981' }}></span>
+          {status}
+        </span>
+      );
+    }
+    if (durationMs > 4000) {
+      return (
+        <span style={{
+          background: '#fffbeb', color: '#b45309', border: '1px solid #fde68a',
+          fontSize: '0.7rem', fontWeight: 700, padding: '0.15rem 0.45rem', borderRadius: 4,
+          display: 'inline-flex', alignItems: 'center', gap: '0.3rem'
+        }}>
+          <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#f59e0b' }}></span>
+          {status}
+        </span>
+      );
+    }
+    return (
+      <span style={{
+        background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe',
+        fontSize: '0.7rem', fontWeight: 700, padding: '0.15rem 0.45rem', borderRadius: 4,
+        display: 'inline-flex', alignItems: 'center', gap: '0.3rem'
+      }}>
+        <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#3b82f6' }}></span>
+        {status}
+      </span>
+    );
+  };
+
+  const getDeviceIcon = (device) => {
+    if (device.includes('Mobile') || device.includes('Phone')) return '📱';
+    if (device.includes('iPad') || device.includes('Tablet')) return '📱';
+    if (device.includes('PC') || device.includes('Computer')) return '💻';
+    if (device.includes('Server')) return '🖥️';
+    return '🔌';
+  };
+
+  return (
+    <div style={{
+      background: '#fff', border: '1px solid #e2e8f0', borderRadius: 14,
+      padding: '1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+      display: 'flex', flexDirection: 'column', gap: '1rem'
+    }}>
+      {/* Header & Controls */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+        <div>
+          <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ position: 'relative', display: 'flex', height: 10, width: 10 }}>
+              {!isPaused && (
+                <span style={{
+                  position: 'absolute', display: 'inline-flex', height: '100%', width: '100%',
+                  borderRadius: '50%', background: '#10b981', opacity: 0.75,
+                  animation: 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite'
+                }}></span>
+              )}
+              <span style={{ position: 'relative', display: 'inline-flex', borderRadius: '50%', height: 10, width: 10, background: isPaused ? '#f59e0b' : '#10b981' }}></span>
+            </span>
+            ทราฟฟิกการใช้พร็อกซีสด (Live Proxy Traffic Stream)
+          </h3>
+          <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem', color: '#64748b' }}>
+            ติดตามการเชื่อมต่อและโดเมนที่อุปกรณ์ใน LAN เรียกใช้งานผ่าน Squid & SOCKS5 แบบ Real-time
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <button
+            onClick={() => setIsPaused(!isPaused)}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+              padding: '0.45rem 0.85rem', borderRadius: 8, fontSize: '0.8rem', fontWeight: 600,
+              cursor: 'pointer', border: '1px solid',
+              background: isPaused ? '#ecfdf5' : '#fef3c7',
+              borderColor: isPaused ? '#a7f3d0' : '#fde68a',
+              color: isPaused ? '#065f46' : '#92400e',
+              transition: 'all 0.15s'
+            }}
+          >
+            {isPaused ? (
+              <>
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                เล่นต่อ (Resume Stream)
+              </>
+            ) : (
+              <>
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
+                หยุดชั่วคราว (Pause)
+              </>
+            )}
+          </button>
+          <span style={{
+            fontSize: '0.75rem', fontWeight: 700, background: '#f1f5f9', color: '#475569',
+            padding: '0.45rem 0.75rem', borderRadius: 8, border: '1px solid #e2e8f0'
+          }}>
+            {filteredLogs.length} รายการ
+          </span>
+        </div>
+      </div>
+
+      {/* Device Breakdown Mini Cards */}
+      {deviceBreakdown && deviceBreakdown.length > 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.65rem' }}>
+          {deviceBreakdown.slice(0, 5).map((dev, i) => (
+            <div
+              key={i}
+              onClick={() => setSelectedDevice(selectedDevice === dev.ip ? 'ALL' : dev.ip)}
+              style={{
+                background: selectedDevice === dev.ip ? '#eff6ff' : '#f8fafc',
+                border: `1px solid ${selectedDevice === dev.ip ? '#60a5fa' : '#e2e8f0'}`,
+                borderRadius: 10, padding: '0.75rem', cursor: 'pointer',
+                transition: 'all 0.15s', position: 'relative'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.35rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <span style={{ fontSize: '1.1rem' }}>{getDeviceIcon(dev.device)}</span>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '0.82rem', color: '#0f172a' }}>{dev.device}</div>
+                    <div style={{ fontSize: '0.68rem', fontFamily: 'monospace', color: '#64748b' }}>{dev.ip}</div>
+                  </div>
+                </div>
+                <span style={{
+                  width: 8, height: 8, borderRadius: '50%',
+                  background: dev.active ? '#10b981' : '#cbd5e1',
+                  boxShadow: dev.active ? '0 0 6px #10b981' : 'none'
+                }}></span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', marginTop: '0.4rem', borderTop: '1px dashed #e2e8f0', paddingTop: '0.4rem' }}>
+                <span style={{ color: '#64748b' }}>{dev.requests} คำขอ</span>
+                <strong style={{ color: '#2563eb' }}>{dev.bytes_human}</strong>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Filters & Search Row */}
+      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center', background: '#f8fafc', padding: '0.75rem', borderRadius: 10, border: '1px solid #e2e8f0' }}>
+        {/* Search Input */}
+        <div style={{ flex: '1 1 200px', minWidth: 180, position: 'relative' }}>
+          <input
+            type="text"
+            placeholder="ค้นหาโดเมน, IP, หรือคำขอ (เช่น github, google)..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: '100%', padding: '0.45rem 0.75rem', borderRadius: 7, border: '1px solid #cbd5e1',
+              fontSize: '0.8rem', background: '#fff', outline: 'none'
+            }}
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              style={{
+                position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
+                background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: '0.8rem'
+              }}
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+        {/* Device Filter */}
+        <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginRight: '0.2rem' }}>อุปกรณ์:</span>
+          <button
+            onClick={() => setSelectedDevice('ALL')}
+            style={{
+              padding: '0.3rem 0.6rem', borderRadius: 6, fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
+              border: '1px solid',
+              background: selectedDevice === 'ALL' ? '#0f172a' : '#fff',
+              borderColor: selectedDevice === 'ALL' ? '#0f172a' : '#cbd5e1',
+              color: selectedDevice === 'ALL' ? '#fff' : '#475569'
+            }}
+          >
+            ทั้งหมด
+          </button>
+          {deviceBreakdown.map((dev, i) => (
+            <button
+              key={i}
+              onClick={() => setSelectedDevice(dev.ip)}
+              style={{
+                padding: '0.3rem 0.6rem', borderRadius: 6, fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
+                border: '1px solid',
+                background: selectedDevice === dev.ip ? '#2563eb' : '#fff',
+                borderColor: selectedDevice === dev.ip ? '#2563eb' : '#cbd5e1',
+                color: selectedDevice === dev.ip ? '#fff' : '#475569'
+              }}
+            >
+              {dev.device.split(' ')[0]} ({dev.ip.split('.').slice(-1)[0]})
+            </button>
+          ))}
+        </div>
+
+        {/* Status Filter */}
+        <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', marginLeft: 'auto', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginRight: '0.2rem' }}>สถานะ:</span>
+          {[
+            { id: 'ALL', label: 'ทั้งหมด' },
+            { id: 'success', label: 'ผ่าน (OK)' },
+            { id: 'cached', label: 'แคช (HIT)' },
+            { id: 'slow', label: 'ช้า (>4s)' },
+            { id: 'blocked', label: 'บล็อก (DENIED)' }
+          ].map(st => (
+            <button
+              key={st.id}
+              onClick={() => setStatusFilter(st.id)}
+              style={{
+                padding: '0.3rem 0.55rem', borderRadius: 6, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer',
+                border: '1px solid',
+                background: statusFilter === st.id ? '#0f172a' : '#fff',
+                borderColor: statusFilter === st.id ? '#0f172a' : '#cbd5e1',
+                color: statusFilter === st.id ? '#fff' : '#475569'
+              }}
+            >
+              {st.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Traffic Table */}
+      <div style={{ border: '1px solid #e2e8f0', borderRadius: 10, overflow: 'hidden' }}>
+        <div style={{ overflowX: 'auto', maxHeight: '420px', overflowY: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.78rem' }}>
+            <thead style={{ background: '#f8fafc', position: 'sticky', top: 0, zIndex: 2, borderBottom: '1px solid #e2e8f0' }}>
+              <tr>
+                <th style={{ padding: '0.65rem 0.8rem', color: '#475569', fontWeight: 700, width: 85 }}>เวลา</th>
+                <th style={{ padding: '0.65rem 0.8rem', color: '#475569', fontWeight: 700, width: 140 }}>อุปกรณ์ (Client)</th>
+                <th style={{ padding: '0.65rem 0.8rem', color: '#475569', fontWeight: 700, width: 90 }}>โปรโตคอล</th>
+                <th style={{ padding: '0.65rem 0.8rem', color: '#475569', fontWeight: 700 }}>เป้าหมาย (Destination Domain)</th>
+                <th style={{ padding: '0.65rem 0.8rem', color: '#475569', fontWeight: 700, width: 140 }}>สถานะ</th>
+                <th style={{ padding: '0.65rem 0.8rem', color: '#475569', fontWeight: 700, textAlign: 'right', width: 90 }}>ขนาด</th>
+                <th style={{ padding: '0.65rem 0.8rem', color: '#475569', fontWeight: 700, textAlign: 'right', width: 85 }}>ความเร็ว</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredLogs.length > 0 ? (
+                filteredLogs.map((item, idx) => (
+                  <tr
+                    key={item.id || idx}
+                    style={{
+                      borderBottom: '1px solid #f1f5f9',
+                      background: idx % 2 === 0 ? '#fff' : '#fafafa',
+                      transition: 'background 0.1s'
+                    }}
+                  >
+                    <td style={{ padding: '0.55rem 0.8rem', fontFamily: 'monospace', color: '#64748b' }}>
+                      {item.time}
+                    </td>
+                    <td style={{ padding: '0.55rem 0.8rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <span>{getDeviceIcon(item.device)}</span>
+                        <div>
+                          <div style={{ fontWeight: 600, color: '#0f172a' }}>{item.device}</div>
+                          <div style={{ fontSize: '0.65rem', fontFamily: 'monospace', color: '#94a3b8' }}>{item.client_ip}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td style={{ padding: '0.55rem 0.8rem' }}>
+                      <span style={{
+                        fontSize: '0.68rem', fontWeight: 700, padding: '0.12rem 0.4rem', borderRadius: 4,
+                        background: item.protocol === 'SOCKS5' ? '#faf5ff' : '#f1f5f9',
+                        color: item.protocol === 'SOCKS5' ? '#7c3aed' : '#334155',
+                        border: `1px solid ${item.protocol === 'SOCKS5' ? '#e9d5ff' : '#e2e8f0'}`
+                      }}>
+                        {item.protocol} {item.method}
+                      </span>
+                    </td>
+                    <td style={{ padding: '0.55rem 0.8rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <span style={{
+                          fontFamily: 'monospace', fontWeight: 600,
+                          color: item.domain.includes('github') ? '#0969da' : (item.domain.includes('line') ? '#06c755' : '#0f172a'),
+                          maxWidth: 320, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+                        }}>
+                          {item.domain}
+                        </span>
+                        {item.port && item.port !== '443' && (
+                          <span style={{ fontSize: '0.65rem', color: '#94a3b8', fontFamily: 'monospace' }}>:{item.port}</span>
+                        )}
+                      </div>
+                      {item.remote_ip && item.remote_ip !== '-' && (
+                        <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontFamily: 'monospace' }}>IP: {item.remote_ip}</div>
+                      )}
+                    </td>
+                    <td style={{ padding: '0.55rem 0.8rem' }}>
+                      {getStatusBadge(item.status, item.status_type, item.duration_ms)}
+                    </td>
+                    <td style={{ padding: '0.55rem 0.8rem', textAlign: 'right', fontWeight: 600, color: '#334155', fontFamily: 'monospace' }}>
+                      {item.bytes_human}
+                    </td>
+                    <td style={{
+                      padding: '0.55rem 0.8rem', textAlign: 'right', fontWeight: 600,
+                      fontFamily: 'monospace',
+                      color: item.duration_ms > 4000 ? '#b45309' : (item.duration_ms > 1000 ? '#475569' : '#15803d')
+                    }}>
+                      {item.duration_ms > 0 ? (item.duration_ms >= 1000 ? `${(item.duration_ms / 1000).toFixed(1)}s` : `${item.duration_ms}ms`) : '—'}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={7} style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>
+                    <div style={{ fontSize: '1.5rem', marginBottom: '0.35rem' }}>🔍</div>
+                    ไม่พบข้อมูลทราฟฟิกตามเงื่อนไขที่เลือก (หรือยังไม่มีคำขอใหม่วิ่งผ่าน Proxy)
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
@@ -727,6 +1104,13 @@ export function ProxyCard({ proxy }) {
 
       {/* Traffic Dashboard */}
       <TrafficDashboard traffic={proxy.traffic} />
+
+      {/* Live Proxy Traffic Stream */}
+      <LiveProxyTraffic
+        recentTraffic={proxy.recent_traffic}
+        deviceBreakdown={proxy.device_breakdown}
+        traffic={proxy.traffic}
+      />
 
       {/* Connection Dashboard */}
       <ConnectionDashboard connections={proxy.connections} />

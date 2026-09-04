@@ -160,6 +160,9 @@ def _dispatch_command(text: str) -> None:
         "/tunnel_stop"         : _cmd_tunnel_stop,
         "/tunnel_log"          : _cmd_tunnel_log,
         "/tunnel_help"         : _cmd_tunnel_seturl,
+        # ── Proxy Traffic ──────────────────────────────
+        "/proxy"               : _cmd_proxy,
+        "/proxy_traffic"       : _cmd_proxy,
     }
 
     fn = handlers.get(cmd)
@@ -1153,5 +1156,43 @@ def _cmd_force_report() -> None:
         tg_daily_report(s)
     else:
         tg_send("⏳ กำลังรวบรวมข้อมูล รอสักครู่...")
+
+
+def _cmd_proxy() -> None:
+    """แสดงสถานะและทราฟฟิก Proxy ปัจจุบัน"""
+    from monitor.collectors import get_proxy_status
+    p = get_proxy_status()
+    sq = p.get('squid', {})
+    s5 = p.get('socks5', {})
+    tr = p.get('traffic', {})
+    recent = p.get('recent_traffic', [])[:6]
+    devices = p.get('device_breakdown', [])
+
+    lines = [
+        "🌐 <b>Proxy System Status & Traffic</b>",
+        "━━━━━━━━━━━━━━━━━━━━",
+        f"🦑 <b>Squid HTTP (:3128):</b> {sq.get('status', 'Stopped')} ({sq.get('connections', 0)} active conns)",
+        f"🧦 <b>SOCKS5 (:1080):</b> {s5.get('status', 'Stopped')} ({s5.get('connections', 0)} active conns)",
+        f"⚡ <b>RPS:</b> {tr.get('rps', 0)} req/s | <b>Cache Hit:</b> {tr.get('cache_hit_ratio', 0)}%",
+        f"📦 <b>Total Traffic:</b> {tr.get('total_bytes_human', '0 KB')}",
+        "",
+        "📱 <b>Devices on Proxy:</b>",
+    ]
+
+    for d in devices[:4]:
+        st_dot = "🟢" if d.get('active') else "⚪"
+        lines.append(f"  {st_dot} {d.get('device')}: <code>{d.get('ip')}</code> — {d.get('requests')} reqs ({d.get('bytes_human')})")
+
+    if recent:
+        lines.append("")
+        lines.append("🕒 <b>Recent Proxy Requests:</b>")
+        for r in recent:
+            st = "✅" if r.get('status_type') in ('tunnel', 'cached', 'success') else ("⏳" if r.get('status_type') == 'slow' else "❌")
+            dest = html.escape(r.get('destination', ''))[:28]
+            lines.append(f"  {st} <code>{r.get('time')}</code> <b>{r.get('device')}</b> → <code>{dest}</code> ({r.get('bytes_human')})")
+
+    lines.append("\n💡 <i>ดูแบบ Real-time Dashboard ได้ที่แท็บ Proxy Management (:9999/#proxy)</i>")
+    tg_send("\n".join(lines))
+
 
 
