@@ -132,6 +132,26 @@ def _dispatch_command(text: str) -> None:
         return
     cmd = parts[0].lower().split("@")[0]
 
+    if cmd == "/proxy_test":
+        target = parts[1] if len(parts) > 1 else "https://github.com"
+        _run_handler(cmd, lambda: _cmd_proxy_test(target))
+        return
+    if cmd == "/proxy_block":
+        if len(parts) < 2:
+            tg_send("⚠️ ระบุโดเมนหรือ IP ที่ต้องการบล็อค เช่น: <code>/proxy_block tiktok.com</code>")
+            return
+        target = parts[1]
+        reason = " ".join(parts[2:]) if len(parts) > 2 else "Block via Telegram"
+        _run_handler(cmd, lambda: _cmd_proxy_block(target, reason))
+        return
+    if cmd == "/proxy_unblock":
+        if len(parts) < 2:
+            tg_send("⚠️ ระบุโดเมนหรือ IP ที่ต้องการปลดบล็อค เช่น: <code>/proxy_unblock tiktok.com</code>")
+            return
+        target = parts[1]
+        _run_handler(cmd, lambda: _cmd_proxy_unblock(target))
+        return
+
     handlers = {
         "/start"          : _cmd_start,
         "/help"           : _cmd_help,
@@ -1193,6 +1213,53 @@ def _cmd_proxy() -> None:
 
     lines.append("\n💡 <i>ดูแบบ Real-time Dashboard ได้ที่แท็บ Proxy Management (:9999/#proxy)</i>")
     tg_send("\n".join(lines))
+
+
+def _cmd_proxy_test(target: str) -> None:
+    """ทดสอบการเข้าถึงเว็บไซต์ผ่าน Proxy และ Direct"""
+    from monitor.proxy_manager import test_all_proxies
+    tg_send(f"🔍 <b>กำลังทดสอบการเข้าถึง:</b> <code>{html.escape(target)}</code>\nกรุณารอสักครู่ (ยิงผ่าน Squid, SOCKS5, และ Direct)...")
+    res = test_all_proxies(target, timeout=5)
+    r = res.get("results", {})
+
+    sq = r.get("squid", {})
+    s5 = r.get("socks5", {})
+    dr = r.get("direct", {})
+
+    def format_ch(title, ch):
+        icon = "✅" if ch.get("result") == "success" else ("🚫" if ch.get("result") == "blocked" else "❌")
+        return f"{icon} <b>{title}:</b> {ch.get('status_text')} ({ch.get('latency_ms', 0)}ms)"
+
+    msg = [
+        "🎯 <b>Proxy Reachability Test Result</b>",
+        "━━━━━━━━━━━━━━━━━━━━",
+        f"🌐 <b>Target:</b> <code>{html.escape(target)}</code>",
+        "",
+        format_ch("Squid HTTP (:3128)", sq),
+        format_ch("SOCKS5 (:1080)", s5),
+        format_ch("Direct Connection", dr),
+    ]
+    tg_send("\n".join(msg))
+
+
+def _cmd_proxy_block(target: str, reason: str) -> None:
+    """สั่งบล็อคโดเมนหรือ IP"""
+    from monitor.proxy_manager import add_block_target
+    ok, res = add_block_target(target, reason=reason)
+    if ok:
+        tg_send(f"🚫 <b>บล็อคสำเร็จ:</b> <code>{html.escape(target)}</code>\nนโยบายมีผลทันทีบนทั้ง Squid และ SOCKS5")
+    else:
+        tg_send(f"⚠️ ไม่สามารถบล็อคได้: {html.escape(str(res))}")
+
+
+def _cmd_proxy_unblock(target: str) -> None:
+    """สั่งปลดบล็อคโดเมนหรือ IP"""
+    from monitor.proxy_manager import remove_block_target
+    ok, res = remove_block_target(target)
+    if ok:
+        tg_send(f"✅ <b>ปลดบล็อคสำเร็จ:</b> <code>{html.escape(target)}</code>\nทั้ง Squid และ SOCKS5 กลับมาอนุญาตการเข้าถึงแล้ว")
+    else:
+        tg_send(f"⚠️ ไม่สามารถปลดบล็อคได้: {html.escape(str(res))}")
 
 
 

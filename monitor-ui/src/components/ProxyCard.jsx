@@ -557,6 +557,486 @@ function LiveProxyTraffic({ recentTraffic = [], deviceBreakdown = [], traffic = 
   );
 }
 
+function ProxyTester() {
+  const [targetUrl, setTargetUrl] = useState('https://github.com');
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState(null);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const runTest = async (overrideUrl) => {
+    const target = overrideUrl || targetUrl;
+    if (!target.trim()) return;
+    setTesting(true);
+    setErrorMsg('');
+    try {
+      const res = await fetch('/api/proxy/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target: target.trim(), timeout: 5 })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setTestResult(data);
+      } else {
+        setErrorMsg(data.error || 'การทดสอบล้มเหลว');
+      }
+    } catch (err) {
+      setErrorMsg(err.message || 'Network error');
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const PRESETS = [
+    { label: 'GitHub', url: 'https://github.com' },
+    { label: 'LINE', url: 'https://line.me' },
+    { label: 'Google', url: 'https://google.com' },
+    { label: 'Cloudflare', url: 'https://1.1.1.1' },
+    { label: 'TikTok (Block Test)', url: 'https://tiktok.com' },
+  ];
+
+  return (
+    <div style={{
+      background: '#fff', border: '1px solid #e2e8f0', borderRadius: 14,
+      padding: '1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+      display: 'flex', flexDirection: 'column', gap: '1rem'
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+        <div>
+          <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <svg width="20" height="20" fill="none" stroke="#2563eb" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+              <line x1="2" y1="12" x2="22" y2="12" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            ทดสอบการเข้าถึงเว็บไซต์ผ่าน Proxy (Proxy Reachability Tester)
+          </h3>
+          <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem', color: '#64748b' }}>
+            ยิงคำขอทดสอบเปรียบเทียบการเข้าถึงพร้อมกัน 3 ช่องทาง (Squid :3128, SOCKS5 :1080, และ Direct)
+          </p>
+        </div>
+      </div>
+
+      {/* Input & Controls */}
+      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+        <input
+          type="text"
+          value={targetUrl}
+          onChange={(e) => setTargetUrl(e.target.value)}
+          placeholder="ระบุ URL หรือโดเมนที่ต้องการทดสอบ เช่น https://github.com..."
+          style={{
+            flex: '1 1 260px', padding: '0.5rem 0.85rem', borderRadius: 8,
+            border: '1px solid #cbd5e1', fontSize: '0.85rem', outline: 'none',
+            fontFamily: 'monospace'
+          }}
+          onKeyDown={(e) => e.key === 'Enter' && runTest()}
+        />
+        <button
+          onClick={() => runTest()}
+          disabled={testing}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
+            padding: '0.5rem 1.1rem', borderRadius: 8, fontSize: '0.85rem', fontWeight: 600,
+            background: testing ? '#94a3b8' : '#2563eb', color: '#fff', border: 'none',
+            cursor: testing ? 'not-allowed' : 'pointer', transition: 'all 0.15s'
+          }}
+        >
+          {testing ? (
+            <>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite' }}>
+                <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
+                <path d="M12 2a10 10 0 0 1 10 10" />
+              </svg>
+              กำลังทดสอบ...
+            </>
+          ) : (
+            <>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
+              ทดสอบการเชื่อมต่อ
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Presets */}
+      <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
+        <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>ทางลัด:</span>
+        {PRESETS.map((p, idx) => (
+          <button
+            key={idx}
+            onClick={() => { setTargetUrl(p.url); runTest(p.url); }}
+            disabled={testing}
+            style={{
+              padding: '0.25rem 0.55rem', borderRadius: 6, fontSize: '0.72rem',
+              border: '1px solid #e2e8f0', background: '#f8fafc', color: '#334155',
+              cursor: 'pointer', fontWeight: 500
+            }}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+
+      {errorMsg && (
+        <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', padding: '0.65rem 0.85rem', borderRadius: 8, fontSize: '0.8rem' }}>
+          {errorMsg}
+        </div>
+      )}
+
+      {/* Test Results Grid */}
+      {testResult && (
+        <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '0.85rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155' }}>
+              ผลการทดสอบ: <code style={{ color: '#2563eb' }}>{testResult.target}</code> ({testResult.time_str})
+            </span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.75rem' }}>
+            {[
+              { key: 'squid', name: 'Squid HTTP Proxy', port: '3128' },
+              { key: 'socks5', name: 'Python SOCKS5 Proxy', port: '1080' },
+              { key: 'direct', name: 'Direct Connection', port: 'No Proxy' }
+            ].map(ch => {
+              const res = testResult.results?.[ch.key] || {};
+              const isSuccess = res.result === 'success';
+              const isBlocked = res.result === 'blocked';
+              const bg = isSuccess ? '#f0fdf4' : (isBlocked ? '#fef2f2' : '#fffbeb');
+              const border = isSuccess ? '#bbf7d0' : (isBlocked ? '#fecaca' : '#fde68a');
+              const textCol = isSuccess ? '#15803d' : (isBlocked ? '#b91c1c' : '#b45309');
+
+              return (
+                <div key={ch.key} style={{
+                  background: bg, border: `1px solid ${border}`, borderRadius: 10,
+                  padding: '0.85rem', display: 'flex', flexDirection: 'column', gap: '0.45rem'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#0f172a' }}>{ch.name}</div>
+                    <span style={{ fontSize: '0.65rem', background: '#fff', border: `1px solid ${border}`, padding: '0.1rem 0.35rem', borderRadius: 4, color: '#64748b', fontFamily: 'monospace' }}>
+                      {ch.port}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.2rem' }}>
+                    {isSuccess ? (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                        <polyline points="22 4 12 14.01 9 11.01" />
+                      </svg>
+                    ) : isBlocked ? (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+                      </svg>
+                    ) : (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                      </svg>
+                    )}
+                    <span style={{ fontWeight: 700, fontSize: '0.88rem', color: textCol }}>
+                      {res.status_code > 0 ? `HTTP ${res.status_code}` : res.result?.toUpperCase()}
+                    </span>
+                    <span style={{ fontSize: '0.75rem', color: textCol, marginLeft: 'auto', fontWeight: 600 }}>
+                      {res.latency_ms > 0 ? `${res.latency_ms} ms` : '—'}
+                    </span>
+                  </div>
+
+                  <div style={{ fontSize: '0.72rem', color: '#475569' }}>
+                    {res.status_text}
+                  </div>
+
+                  {res.remote_ip && res.remote_ip !== '-' && (
+                    <div style={{ fontSize: '0.68rem', fontFamily: 'monospace', color: '#64748b', borderTop: `1px dashed ${border}`, paddingTop: '0.3rem' }}>
+                      Remote IP: {res.remote_ip}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProxyBlocklistManager() {
+  const [blocklist, setBlocklist] = useState({ items: [], blocked_domains: [], blocked_ips: [] });
+  const [loading, setLoading] = useState(false);
+  const [newTarget, setNewTarget] = useState('');
+  const [newReason, setNewReason] = useState('');
+  const [targetType, setTargetType] = useState('domain');
+  const [actionMsg, setActionMsg] = useState('');
+
+  const fetchBlocklist = async () => {
+    try {
+      const res = await fetch('/api/proxy/blocklist');
+      const data = await res.json();
+      if (data.ok && data.blocklist) {
+        setBlocklist(data.blocklist);
+      }
+    } catch (err) {}
+  };
+
+  useEffect(() => {
+    fetchBlocklist();
+  }, []);
+
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    if (!newTarget.trim()) return;
+    setLoading(true);
+    try {
+      const res = await fetch('/api/proxy/blocklist/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target: newTarget.trim(), type: targetType, reason: newReason.trim() })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setBlocklist(data.blocklist);
+        setNewTarget('');
+        setNewReason('');
+        setActionMsg('เพิ่มเป้าหมายลงใน Blocklist เรียบร้อยแล้ว (มีผลทันทีบนทั้ง Squid & SOCKS5)');
+        setTimeout(() => setActionMsg(''), 4000);
+      } else {
+        alert(data.error || 'ไม่สามารถเพิ่มได้');
+      }
+    } catch (err) {
+      alert('Error: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemove = async (id, target) => {
+    if (!confirm(`ยืนยันการปลดบล็อค "${target}"?`)) return;
+    try {
+      const res = await fetch('/api/proxy/blocklist/remove', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, target })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setBlocklist(data.blocklist);
+        setActionMsg(`ปลดบล็อค ${target} สำเร็จ`);
+        setTimeout(() => setActionMsg(''), 4000);
+      }
+    } catch (err) {}
+  };
+
+  const handleToggle = async (id) => {
+    try {
+      const res = await fetch('/api/proxy/blocklist/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setBlocklist(data.blocklist);
+      }
+    } catch (err) {}
+  };
+
+  const items = blocklist.items || [];
+
+  return (
+    <div style={{
+      background: '#fff', border: '1px solid #e2e8f0', borderRadius: 14,
+      padding: '1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+      display: 'flex', flexDirection: 'column', gap: '1rem'
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+        <div>
+          <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <svg width="20" height="20" fill="none" stroke="#dc2626" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            ระบบบล็อคเว็บไซต์และ IP (Domain & IP Blocklist / Access Control)
+          </h3>
+          <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem', color: '#64748b' }}>
+            ควบคุมการเข้าถึงเว็บไซต์และไอพีปลายทาง บังคับใช้บน Squid HTTP Proxy (:3128) และ Python SOCKS5 (:1080)
+          </p>
+        </div>
+        <span style={{
+          fontSize: '0.75rem', fontWeight: 700, background: '#fee2e2', color: '#991b1b',
+          padding: '0.35rem 0.65rem', borderRadius: 8, border: '1px solid #fecaca',
+          display: 'inline-flex', alignItems: 'center', gap: '0.35rem'
+        }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+          </svg>
+          บล็อคอยู่ {items.filter(it => it.enabled !== false).length} รายการ
+        </span>
+      </div>
+
+      {actionMsg && (
+        <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#166534', padding: '0.55rem 0.8rem', borderRadius: 8, fontSize: '0.78rem' }}>
+          {actionMsg}
+        </div>
+      )}
+
+      {/* Add Form */}
+      <form onSubmit={handleAdd} style={{
+        display: 'flex', gap: '0.5rem', flexWrap: 'wrap',
+        background: '#f8fafc', padding: '0.85rem', borderRadius: 10, border: '1px solid #e2e8f0'
+      }}>
+        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+          <select
+            value={targetType}
+            onChange={(e) => setTargetType(e.target.value)}
+            style={{
+              padding: '0.45rem 0.6rem', borderRadius: 7, border: '1px solid #cbd5e1',
+              fontSize: '0.8rem', background: '#fff', outline: 'none'
+            }}
+          >
+            <option value="domain">โดเมน (Domain)</option>
+            <option value="ip">ไอพี (IP Address)</option>
+          </select>
+        </div>
+
+        <input
+          type="text"
+          value={newTarget}
+          onChange={(e) => setNewTarget(e.target.value)}
+          placeholder={targetType === 'domain' ? "เช่น tiktok.com หรือ badsite.org" : "เช่น 157.240.22.35"}
+          style={{
+            flex: '1 1 200px', minWidth: 160, padding: '0.45rem 0.75rem', borderRadius: 7,
+            border: '1px solid #cbd5e1', fontSize: '0.8rem', outline: 'none',
+            fontFamily: 'monospace'
+          }}
+          required
+        />
+
+        <input
+          type="text"
+          value={newReason}
+          onChange={(e) => setNewReason(e.target.value)}
+          placeholder="เหตุผลในการบล็อค (ไม่บังคับ)"
+          style={{
+            flex: '1 1 180px', minWidth: 140, padding: '0.45rem 0.75rem', borderRadius: 7,
+            border: '1px solid #cbd5e1', fontSize: '0.8rem', outline: 'none'
+          }}
+        />
+
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+            padding: '0.45rem 0.95rem', borderRadius: 7, fontSize: '0.8rem', fontWeight: 600,
+            background: '#dc2626', color: '#fff', border: 'none', cursor: loading ? 'not-allowed' : 'pointer'
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          เพิ่มรายการบล็อค
+        </button>
+      </form>
+
+      {/* Blocklist Table */}
+      <div style={{ border: '1px solid #e2e8f0', borderRadius: 10, overflow: 'hidden' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.78rem' }}>
+          <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+            <tr>
+              <th style={{ padding: '0.6rem 0.8rem', color: '#475569', fontWeight: 700 }}>เป้าหมาย (Domain/IP)</th>
+              <th style={{ padding: '0.6rem 0.8rem', color: '#475569', fontWeight: 700, width: 90 }}>ประเภท</th>
+              <th style={{ padding: '0.6rem 0.8rem', color: '#475569', fontWeight: 700 }}>เหตุผล</th>
+              <th style={{ padding: '0.6rem 0.8rem', color: '#475569', fontWeight: 700, width: 90, textAlign: 'center' }}>สถานะ</th>
+              <th style={{ padding: '0.6rem 0.8rem', color: '#475569', fontWeight: 700, width: 80, textAlign: 'center' }}>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.length > 0 ? (
+              items.map((it, idx) => (
+                <tr key={it.id || idx} style={{ borderBottom: '1px solid #f1f5f9', background: idx % 2 === 0 ? '#fff' : '#fafafa' }}>
+                  <td style={{ padding: '0.55rem 0.8rem', fontFamily: 'monospace', fontWeight: 600, color: '#0f172a' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                      {it.type === 'ip' ? (
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="2" y="2" width="20" height="8" rx="2" />
+                          <rect x="2" y="14" width="20" height="8" rx="2" />
+                          <line x1="6" y1="6" x2="6.01" y2="6" />
+                          <line x1="6" y1="18" x2="6.01" y2="18" />
+                        </svg>
+                      ) : (
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10" />
+                          <line x1="2" y1="12" x2="22" y2="12" />
+                          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                        </svg>
+                      )}
+                      <span>{it.target}</span>
+                    </div>
+                  </td>
+                  <td style={{ padding: '0.55rem 0.8rem' }}>
+                    <span style={{
+                      fontSize: '0.68rem', fontWeight: 700, padding: '0.12rem 0.4rem', borderRadius: 4,
+                      background: it.type === 'ip' ? '#eff6ff' : '#fef2f2',
+                      color: it.type === 'ip' ? '#1d4ed8' : '#b91c1c',
+                      border: `1px solid ${it.type === 'ip' ? '#bfdbfe' : '#fecaca'}`
+                    }}>
+                      {it.type?.toUpperCase()}
+                    </span>
+                  </td>
+                  <td style={{ padding: '0.55rem 0.8rem', color: '#64748b' }}>
+                    {it.reason || '—'}
+                  </td>
+                  <td style={{ padding: '0.55rem 0.8rem', textAlign: 'center' }}>
+                    <button
+                      onClick={() => handleToggle(it.id)}
+                      style={{
+                        border: 'none', background: 'none', cursor: 'pointer',
+                        padding: '0.2rem 0.4rem', borderRadius: 4,
+                        fontSize: '0.7rem', fontWeight: 600,
+                        color: it.enabled !== false ? '#15803d' : '#94a3b8'
+                      }}
+                      title={it.enabled !== false ? "คลิกเพื่อระงับการบล็อคชั่วคราว" : "คลิกเพื่อเปิดใช้งานการบล็อค"}
+                    >
+                      {it.enabled !== false ? 'เปิดบล็อค' : 'ปิดชั่วคราว'}
+                    </button>
+                  </td>
+                  <td style={{ padding: '0.55rem 0.8rem', textAlign: 'center' }}>
+                    <button
+                      onClick={() => handleRemove(it.id, it.target)}
+                      style={{
+                        background: '#fee2e2', border: '1px solid #fecaca', color: '#b91c1c',
+                        borderRadius: 6, padding: '0.25rem 0.45rem', cursor: 'pointer',
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
+                      }}
+                      title="ปลดบล็อครายการนี้"
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={5} style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>
+                  ยังไม่มีรายการบล็อคในระบบ
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function WorkerGrid({ workers }) {
   if (!workers || workers.length === 0) return null;
   return (
@@ -1164,6 +1644,12 @@ export function ProxyCard({ proxy }) {
           extra={<span style={{ fontSize: '0.65rem', background: '#f1f5f9', padding: '0.1rem 0.35rem', borderRadius: 4, color: '#475569' }}>Public IP: {proxy.public_ip || 'N/A'}</span>}
         />
       </div>
+
+      {/* Proxy Reachability & Connectivity Tester */}
+      <ProxyTester />
+
+      {/* Domain & IP Blocklist Manager */}
+      <ProxyBlocklistManager />
 
       {/* Traffic Dashboard */}
       <TrafficDashboard traffic={proxy.traffic} />

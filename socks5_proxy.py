@@ -15,6 +15,42 @@ BIND_IP = sys.argv[2] if len(sys.argv) > 2 else "0.0.0.0"
 BUFFER_SIZE = 16384
 TIMEOUT = 60
 LOG_FILE = os.path.expanduser("~/uni-activity/storage/logs/socks5-access.log")
+BLOCKLIST_FILE = os.path.expanduser("~/uni-activity/storage/proxy_blocklist.json")
+_cached_blocklist = {"domains": set(), "ips": set(), "last_mtime": 0}
+
+def get_blocklist():
+    """Read blocked domains and IPs from json with automatic file mtime cache."""
+    try:
+        if not os.path.exists(BLOCKLIST_FILE):
+            return set(), set()
+        mtime = os.path.getmtime(BLOCKLIST_FILE)
+        if mtime != _cached_blocklist["last_mtime"]:
+            import json
+            with open(BLOCKLIST_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            domains = set(d.lower().strip() for d in data.get("blocked_domains", []))
+            ips = set(ip.strip() for ip in data.get("blocked_ips", []))
+            _cached_blocklist["domains"] = domains
+            _cached_blocklist["ips"] = ips
+            _cached_blocklist["last_mtime"] = mtime
+        return _cached_blocklist["domains"], _cached_blocklist["ips"]
+    except Exception:
+        return _cached_blocklist["domains"], _cached_blocklist["ips"]
+
+def is_target_blocked(dst_addr, resolved_ip=None):
+    """Check if destination address or resolved IP is blocked."""
+    domains, ips = get_blocklist()
+    addr_lower = dst_addr.lower().strip()
+    if addr_lower in domains:
+        return True
+    for d in domains:
+        if d and (addr_lower == d or addr_lower.endswith("." + d)):
+            return True
+    if dst_addr in ips:
+        return True
+    if resolved_ip and resolved_ip in ips:
+        return True
+    return False
 
 def log_access(client_ip, target, status_code, bytes_transferred, duration_ms):
     """Log SOCKS5 traffic in a format compatible with Squid access log."""
@@ -74,6 +110,13 @@ def handle_client(client_socket, addr):
 
         target_str = f"{dst_addr}:{dst_port}"
 
+        # 1. Blocklist check on destination host/domain
+        if is_target_blocked(dst_addr):
+            # 0x02 = connection not allowed by ruleset
+            client_socket.sendall(b'\x05\x02\x00\x01\x00\x00\x00\x00\x00\x00')
+            log_access(client_ip, target_str, "403", 0, (time.time() - start_time) * 1000)
+            return
+
         # Resolve destination (prefer IPv4 to avoid broken IPv6 routes)
         resolved_addr = None
         try:
@@ -92,6 +135,12 @@ def handle_client(client_socket, addr):
                 client_socket.sendall(b'\x05\x04\x00\x01\x00\x00\x00\x00\x00\x00')
                 status_code = "502"
                 return
+
+        # 2. Blocklist check on resolved IP
+        if resolved_addr and is_target_blocked(dst_addr, resolved_addr[0]):
+            client_socket.sendall(b'\x05\x02\x00\x01\x00\x00\x00\x00\x00\x00')
+            log_access(client_ip, target_str, "403", 0, (time.time() - start_time) * 1000)
+            return
 
         # Connect to target
         family = socket.AF_INET6 if ':' in resolved_addr[0] else socket.AF_INET

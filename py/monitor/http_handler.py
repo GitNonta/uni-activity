@@ -9,6 +9,10 @@ from monitor.alerts import collect_stats
 from monitor.speedtest import start_ext_speedtest, run_ext_speedtest_thread, run_speedtest_thread
 from monitor.threads import ws_handshake, ws_client_thread
 from monitor.collectors import get_cf_url, get_proxy_status
+from monitor.proxy_manager import (
+    load_blocklist, add_block_target, remove_block_target,
+    toggle_block_target, test_all_proxies
+)
 from pathlib import Path
 
 
@@ -327,6 +331,101 @@ class MonitorHandler(BaseHTTPRequestHandler):
                 self.wfile.write(err_data)
                 return
 
+        # ── /api/proxy/blocklist (POST) ──
+        if self.path == "/api/proxy/blocklist/add":
+            content_length = int(self.headers.get("Content-Length", 0))
+            body = self.rfile.read(content_length) if content_length > 0 else b"{}"
+            try:
+                params = json.loads(body.decode("utf-8"))
+            except Exception:
+                params = {}
+            target = params.get("target", "")
+            target_type = params.get("type", "domain")
+            reason = params.get("reason", "")
+            success, result = add_block_target(target, target_type, reason)
+            resp = json.dumps({
+                "ok": success,
+                "item": result if success else None,
+                "error": None if success else result,
+                "blocklist": load_blocklist()
+            }).encode("utf-8")
+            self.send_response(200 if success else 400)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(resp)))
+            self._cors_headers()
+            self.end_headers()
+            self.wfile.write(resp)
+            return
+
+        if self.path == "/api/proxy/blocklist/remove":
+            content_length = int(self.headers.get("Content-Length", 0))
+            body = self.rfile.read(content_length) if content_length > 0 else b"{}"
+            try:
+                params = json.loads(body.decode("utf-8"))
+            except Exception:
+                params = {}
+            target_or_id = params.get("id") or params.get("target", "")
+            success, result = remove_block_target(target_or_id)
+            resp = json.dumps({
+                "ok": success,
+                "removed": result if success else None,
+                "error": None if success else result,
+                "blocklist": load_blocklist()
+            }).encode("utf-8")
+            self.send_response(200 if success else 400)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(resp)))
+            self._cors_headers()
+            self.end_headers()
+            self.wfile.write(resp)
+            return
+
+        if self.path == "/api/proxy/blocklist/toggle":
+            content_length = int(self.headers.get("Content-Length", 0))
+            body = self.rfile.read(content_length) if content_length > 0 else b"{}"
+            try:
+                params = json.loads(body.decode("utf-8"))
+            except Exception:
+                params = {}
+            item_id = params.get("id", "")
+            success, result = toggle_block_target(item_id)
+            resp = json.dumps({
+                "ok": success,
+                "item": result if success else None,
+                "blocklist": load_blocklist()
+            }).encode("utf-8")
+            self.send_response(200 if success else 400)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(resp)))
+            self._cors_headers()
+            self.end_headers()
+            self.wfile.write(resp)
+            return
+
+        # ── /api/proxy/test (POST) ──
+        if self.path == "/api/proxy/test":
+            content_length = int(self.headers.get("Content-Length", 0))
+            body = self.rfile.read(content_length) if content_length > 0 else b"{}"
+            try:
+                params = json.loads(body.decode("utf-8"))
+            except Exception:
+                params = {}
+            target_url = params.get("target", "").strip()
+            timeout = int(params.get("timeout", 5))
+            if not target_url:
+                resp = json.dumps({"ok": False, "error": "Missing target URL"}).encode("utf-8")
+                self.send_response(400)
+            else:
+                test_result = test_all_proxies(target_url, timeout=timeout)
+                resp = json.dumps(test_result).encode("utf-8")
+                self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(resp)))
+            self._cors_headers()
+            self.end_headers()
+            self.wfile.write(resp)
+            return
+
         self.send_response(404)
         self.end_headers()
         self.wfile.write(b"Not Found")
@@ -573,6 +672,16 @@ class MonitorHandler(BaseHTTPRequestHandler):
                 "timestamp": time.time(),
             }
             data = json.dumps(payload).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(data)))
+            self._cors_headers()
+            self.end_headers()
+            self.wfile.write(data)
+            return
+
+        if self.path == "/api/proxy/blocklist" or self.path.startswith("/api/proxy/blocklist?"):
+            data = json.dumps({"ok": True, "blocklist": load_blocklist()}).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Content-Length", str(len(data)))
