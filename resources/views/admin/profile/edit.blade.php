@@ -18,9 +18,7 @@
                         @if($user->profile_photo)
                             <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="{{ $user->full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
                         @else
-                            <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800;">
-                                {{ strtoupper(substr($user->full_name ?? 'A', 0, 1)) }}
-                            </div>
+                            <x-avatar :user="$user" size="88" style="width: 100%; height: 100%;" />
                         @endif
                         <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s;" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0">
                             <svg width="22" height="22" fill="none" stroke="#fff" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>
@@ -60,6 +58,8 @@
                         <span>•</span>
                         <span>{{ $user->email }}</span>
                         <span>•</span>
+                        <span>เพศ: <strong style="color: #cbd5e1;">{{ $user->gender_label }}</strong></span>
+                        <span>•</span>
                         <span>สังกัด: <strong style="color: #cbd5e1;">{{ $user->organization ?: ($user->position ?: 'หน่วยงานส่วนกลาง') }}</strong></span>
                     </div>
                 </div>
@@ -67,9 +67,19 @@
 
             {{-- Action Buttons --}}
             <div style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;">
+                @if($user->profile_photo)
+                    <form method="POST" action="{{ route('profile.photo.destroy') }}" style="margin:0;" onsubmit="return confirm('คุณต้องการลบรูปภาพโปรไฟล์ และเปลี่ยนไปใช้รูปอวตาร SVG ตามเพศ ({{ $user->gender_label }}) หรือไม่?');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" style="display: inline-flex; align-items: center; gap: 0.45rem; background: rgba(239, 68, 68, 0.18); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); padding: 0.55rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s;" onmouseenter="this.style.background='rgba(239, 68, 68, 0.3)'" onmouseleave="this.style.background='rgba(239, 68, 68, 0.18)'">
+                            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            <span>ใช้อวตารตามเพศ (ลบรูปถ่าย)</span>
+                        </button>
+                    </form>
+                @endif
                 <a href="{{ route('admin.settings.index', ['tab' => 'privacy']) }}" style="display: inline-flex; align-items: center; gap: 0.45rem; background: #ea580c; color: #fff; padding: 0.55rem 1.1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; text-decoration: none; box-shadow: 0 2px 8px rgba(234, 88, 12, 0.3); transition: all 0.2s;" onmouseenter="this.style.background='#c2410c'" onmouseleave="this.style.background='#ea580c'">
                     <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                    <span>แก้ไขข้อมูลส่วนตัว & รหัสผ่าน</span>
+                    <span>แก้ไขข้อมูลส่วนตัว & เพศ & รหัสผ่าน</span>
                 </a>
             </div>
         </div>
@@ -193,6 +203,14 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.8rem; background: #fafbfc; border-radius: 8px; border: 1px solid #f1f5f9;">
                         <span style="font-size: 0.8rem; color: #64748b;">หน่วยงาน / สังกัด</span>
                         <strong style="color: #0f172a; font-size: 0.875rem;">{{ $user->organization ?: 'หน่วยงานส่วนกลาง' }}</strong>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.8rem; background: #fafbfc; border-radius: 8px; border: 1px solid #f1f5f9;">
+                        <span style="font-size: 0.8rem; color: #64748b;">เพศ (สำหรับอวตาร SVG)</span>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <x-avatar :user="$user" size="22" />
+                            <strong style="color: #0f172a; font-size: 0.875rem;">{{ $user->gender_label }}</strong>
+                        </div>
                     </div>
                 </div>
             </div>

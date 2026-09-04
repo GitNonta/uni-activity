@@ -762,14 +762,7 @@ html[data-theme="light"] {
         <div class="sb-footer">
             <div class="sb-user">
                 <a href="{{ route('admin.profile.edit') }}" class="sb-user" style="padding:0; background:none; flex:1;">
-                    @if(auth()->user()->profile_photo)
-                        <img src="{{ asset('storage/' . auth()->user()->profile_photo) }}" alt="profile"
-                            style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.15); flex-shrink: 0;">
-                    @else
-                        <div class="sb-avatar">
-                            {{ strtoupper(substr(auth()->user()->full_name ?? 'A', 0, 1)) }}
-                        </div>
-                    @endif
+                    <x-avatar :user="auth()->user()" size="38" style="border: 2px solid rgba(255,255,255,0.25); box-shadow: 0 2px 6px rgba(0,0,0,0.2);" />
                     <div class="sb-user-info sb-link-text">
                         <div class="sb-user-name">{{ auth()->user()->full_name ?? 'ผู้ใช้' }}</div>
                         <div class="sb-user-role">{{ auth()->user()->isAdmin() ? 'ผู้ดูแลระบบ' : 'เจ้าหน้าที่' }}</div>

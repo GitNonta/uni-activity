@@ -7,13 +7,7 @@
 @endphp
 
 <div class="creator-youtube-badge" style="margin: 0.85rem 0; display: inline-flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.85rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
-    @if($creatorPhoto)
-        <img src="{{ $creatorPhoto }}" alt="{{ $creatorName }}" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1.5px solid #e2e8f0; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
-    @else
-        <div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #ea580c, #f97316); color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem; flex-shrink: 0; box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);">
-            {{ mb_substr($creatorName, 0, 1, 'UTF-8') }}
-        </div>
-    @endif
+    <x-avatar :user="$creator" size="38" style="border: 1.5px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.08);" />
     <div style="display: flex; flex-direction: column; justify-content: center;">
         <div style="display: flex; align-items: center; gap: 0.35rem;">
             <span style="font-weight: 700; font-size: 0.875rem; color: #1e293b; line-height: 1.2;">{{ $creatorName }}</span>

@@ -47,6 +47,18 @@
                 @error('email') <div class="text-xs" style="color:#dc2626;margin-top:.25rem;">{{ $message }}</div> @enderror
             </div>
 
+            {{-- เพศสภาพสำหรับรูปอวตาร --}}
+            <div class="mb-3">
+                <label class="form-label">เพศ (สำหรับแสดงรูปอวตาร SVG เมื่อไม่ได้ตั้งรูปโปรไฟล์)</label>
+                <select name="gender" class="form-control">
+                    <option value="" {{ old('gender', $user->gender) == '' ? 'selected' : '' }}>ไม่ระบุ / อื่นๆ (Neutral)</option>
+                    <option value="male" {{ old('gender', $user->gender) == 'male' ? 'selected' : '' }}>ชาย (Male)</option>
+                    <option value="female" {{ old('gender', $user->gender) == 'female' ? 'selected' : '' }}>หญิง (Female)</option>
+                    <option value="other" {{ old('gender', $user->gender) == 'other' ? 'selected' : '' }}>อื่นๆ (Other)</option>
+                </select>
+                @error('gender') <div class="text-xs" style="color:#dc2626;margin-top:.25rem;">{{ $message }}</div> @enderror
+            </div>
+
             @if($user->role === 'student')
                 {{-- รหัสนักศึกษา --}}
                 <div class="mb-3">

@@ -1,15 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\Announcement;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use App\Traits\LogsAdminActivity;
 use Illuminate\Support\Facades\Http;
+use Illuminate\View\View;
 
 class ProfileAdminController extends Controller
 {
@@ -18,7 +22,7 @@ class ProfileAdminController extends Controller
     /**
      * แสดงหน้าจัดการโปรไฟล์ของ staff / admin
      */
-    public function edit()
+    public function edit(): View
     {
         $user = auth()->user();
 
@@ -81,7 +85,7 @@ class ProfileAdminController extends Controller
     /**
      * อัปเดตข้อมูลโปรไฟล์และรหัสผ่าน
      */
-    public function update(Request $request)
+    public function update(Request $request): RedirectResponse
     {
         $user = auth()->user();
 
@@ -90,6 +94,7 @@ class ProfileAdminController extends Controller
             'full_name'    => 'required|string|max:255',
             'english_name' => 'required|string|max:255',
             'email'        => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
+            'gender'       => 'nullable|string|in:male,female,other',
             'phone'        => 'nullable|string|max:20',
             'position'     => 'nullable|string|max:100',
             'organization' => 'nullable|string|max:150',
@@ -110,12 +115,13 @@ class ProfileAdminController extends Controller
         ]);
 
         // บันทึกค่าเก่าเพื่อ Audit Log
-        $oldValues = $user->only(['full_name', 'english_name', 'email', 'phone', 'position', 'organization']);
+        $oldValues = $user->only(['full_name', 'english_name', 'email', 'gender', 'phone', 'position', 'organization']);
 
         // อัปเดตข้อมูลส่วนตัว
         $user->full_name    = $data['full_name'];
         $user->english_name = $data['english_name'];
         $user->email        = $data['email'];
+        $user->gender       = $data['gender'] ?? null;
         $user->phone        = $data['phone'] ?? null;
         $user->position     = $data['position'] ?? null;
         $user->organization = $data['organization'] ?? null;

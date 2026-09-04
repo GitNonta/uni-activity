@@ -53,6 +53,45 @@
                         </div>
                     </div>
 
+                    {{-- ตัวเลือกเพศ (Gender & Avatar Preview) --}}
+                    <div class="mb-4">
+                        <label class="form-label" style="font-weight:600; font-size:0.875rem; color:#1e293b; display:block; margin-bottom:0.5rem;">
+                            เพศสภาพ (สำหรับรูปอวตาร SVG อัตโนมัติ กรณีไม่ได้ตั้งรูปโปรไฟล์)
+                        </label>
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem;">
+                            {{-- เพศชาย --}}
+                            <label style="cursor:pointer; display:flex; align-items:center; gap:0.75rem; padding:0.75rem 1rem; border:2px solid {{ old('gender', $user->gender) === 'male' ? '#2563eb' : '#e2e8f0' }}; border-radius:10px; background: {{ old('gender', $user->gender) === 'male' ? '#eff6ff' : '#ffffff' }}; transition:all 0.2s;" id="genderLabelMale">
+                                <input type="radio" name="gender" value="male" {{ old('gender', $user->gender) === 'male' ? 'checked' : '' }} style="margin:0;" onchange="updateGenderStyles()">
+                                <x-avatar gender="male" size="36" />
+                                <div>
+                                    <div style="font-weight:700; font-size:0.875rem; color:#1e293b;">เพศชาย</div>
+                                    <div style="font-size:0.75rem; color:#64748b;">Male Avatar</div>
+                                </div>
+                            </label>
+
+                            {{-- เพศหญิง --}}
+                            <label style="cursor:pointer; display:flex; align-items:center; gap:0.75rem; padding:0.75rem 1rem; border:2px solid {{ old('gender', $user->gender) === 'female' ? '#ec4899' : '#e2e8f0' }}; border-radius:10px; background: {{ old('gender', $user->gender) === 'female' ? '#fdf2f8' : '#ffffff' }}; transition:all 0.2s;" id="genderLabelFemale">
+                                <input type="radio" name="gender" value="female" {{ old('gender', $user->gender) === 'female' ? 'checked' : '' }} style="margin:0;" onchange="updateGenderStyles()">
+                                <x-avatar gender="female" size="36" />
+                                <div>
+                                    <div style="font-weight:700; font-size:0.875rem; color:#1e293b;">เพศหญิง</div>
+                                    <div style="font-size:0.75rem; color:#64748b;">Female Avatar</div>
+                                </div>
+                            </label>
+
+                            {{-- อื่นๆ / ไม่ระบุ --}}
+                            <label style="cursor:pointer; display:flex; align-items:center; gap:0.75rem; padding:0.75rem 1rem; border:2px solid {{ in_array(old('gender', $user->gender), ['other', null, '']) ? '#ea580c' : '#e2e8f0' }}; border-radius:10px; background: {{ in_array(old('gender', $user->gender), ['other', null, '']) ? '#fff7ed' : '#ffffff' }}; transition:all 0.2s;" id="genderLabelOther">
+                                <input type="radio" name="gender" value="other" {{ in_array(old('gender', $user->gender), ['other', null, '']) ? 'checked' : '' }} style="margin:0;" onchange="updateGenderStyles()">
+                                <x-avatar gender="neutral" size="36" />
+                                <div>
+                                    <div style="font-weight:700; font-size:0.875rem; color:#1e293b;">อื่นๆ / ทั่วไป</div>
+                                    <div style="font-size:0.75rem; color:#64748b;">Neutral Avatar</div>
+                                </div>
+                            </label>
+                        </div>
+                        @error('gender') <div class="form-error">{{ $message }}</div> @enderror
+                    </div>
+
                     <div class="grid-2 mb-4">
                         <div>
                             <label class="form-label">อีเมลติดต่อ <span class="text-danger">*</span></label>
@@ -352,7 +391,27 @@
         domainInput.addEventListener('input', updatePreview);
         
         // Initial preview
-        updatePreview();
+        if (prefixInput && domainInput && preview) {
+            updatePreview();
+        }
     });
+
+    function updateGenderStyles() {
+        const selected = document.querySelector('input[name="gender"]:checked')?.value;
+        const maleLabel = document.getElementById('genderLabelMale');
+        const femaleLabel = document.getElementById('genderLabelFemale');
+        const otherLabel = document.getElementById('genderLabelOther');
+        if (!maleLabel || !femaleLabel || !otherLabel) return;
+
+        maleLabel.style.borderColor = selected === 'male' ? '#2563eb' : '#e2e8f0';
+        maleLabel.style.background = selected === 'male' ? '#eff6ff' : '#ffffff';
+
+        femaleLabel.style.borderColor = selected === 'female' ? '#ec4899' : '#e2e8f0';
+        femaleLabel.style.background = selected === 'female' ? '#fdf2f8' : '#ffffff';
+
+        otherLabel.style.borderColor = (selected === 'other' || !selected) ? '#ea580c' : '#e2e8f0';
+        otherLabel.style.background = (selected === 'other' || !selected) ? '#fff7ed' : '#ffffff';
+    }
+    window.updateGenderStyles = updateGenderStyles;
 </script>
 @endsection

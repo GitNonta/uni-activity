@@ -37,6 +37,7 @@ class User extends Authenticatable
         'year',
         'program',
         'role',
+        'gender',
         'is_active',
         'profile_photo',
         'last_seen_at',
@@ -143,6 +144,27 @@ class User extends Authenticatable
             // กรณีบทบาทอื่น (เช่น นักศึกษา) ให้ใช้ระบบปกติของ Laravel (ถ้ามีการตั้งค่าไว้)
             parent::sendPasswordResetNotification($token);
         }
+    }
+
+    /** ข้อความแสดงผลของเพศ */
+    public function getGenderLabelAttribute(): string
+    {
+        return match ($this->gender) {
+            'male'   => 'ชาย',
+            'female' => 'หญิง',
+            'other'  => 'อื่นๆ / ไม่ระบุ',
+            default  => 'ไม่ระบุ',
+        };
+    }
+
+    /** ประเภทอวตาร (male, female, neutral) */
+    public function getAvatarTypeAttribute(): string
+    {
+        return match ($this->gender) {
+            'male'   => 'male',
+            'female' => 'female',
+            default  => 'neutral',
+        };
     }
 
     /**

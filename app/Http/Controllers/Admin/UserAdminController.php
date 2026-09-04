@@ -69,6 +69,7 @@ class UserAdminController extends Controller
         $rules = [
             'role'      => 'required|in:student,staff,admin',
             'full_name' => 'required|string|max:255',
+            'gender'    => 'nullable|string|in:male,female,other',
             'is_active' => 'boolean',
         ];
 
@@ -91,6 +92,7 @@ class UserAdminController extends Controller
         $userData = [
             'role'      => $data['role'],
             'full_name' => $data['full_name'],
+            'gender'    => $request->input('gender') ?: null,
             'is_active' => $request->boolean('is_active', true),
         ];
 
@@ -134,6 +136,7 @@ class UserAdminController extends Controller
         $rules = [
             'full_name' => 'required|string|max:255',
             'email'     => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
+            'gender'    => 'nullable|string|in:male,female,other',
             'is_active' => 'boolean',
         ];
 
@@ -150,6 +153,7 @@ class UserAdminController extends Controller
         $data = $request->validate($rules);
 
         $user->full_name = $data['full_name'];
+        $user->gender    = $request->input('gender') ?: null;
         $user->is_active = $request->boolean('is_active', true);
         if ($user->role === 'student') {
             $user->student_id = $data['student_id'];
