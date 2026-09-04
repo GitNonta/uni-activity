@@ -788,23 +788,38 @@ function ProxyBlocklistManager() {
 
   const handleAdd = async (e) => {
     e.preventDefault();
-    if (!newTarget.trim()) return;
+    let raw = newTarget.trim();
+    if (!raw) return;
+
+    // Client-side cleanup of URLs
+    let clean = raw;
+    try {
+      if (clean.includes('://')) {
+        const u = new URL(clean);
+        clean = u.hostname || clean;
+      } else if (clean.includes('/') && !/^\d{1,3}(\.\d{1,3}){3}\/\d{1,2}$/.test(clean)) {
+        const u = new URL('http://' + clean);
+        clean = u.hostname || clean;
+      }
+    } catch (_) {}
+    clean = clean.replace(/^\*\.?/, '').replace(/\/?$/, '');
+
     setLoading(true);
     try {
       const res = await fetch('/api/proxy/blocklist/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ target: newTarget.trim(), type: targetType, reason: newReason.trim() })
+        body: JSON.stringify({ target: clean || raw, type: targetType, reason: newReason.trim() })
       });
       const data = await res.json();
       if (data.ok) {
         setBlocklist(data.blocklist);
         setNewTarget('');
         setNewReason('');
-        setActionMsg('เพิ่มเป้าหมายลงใน Blocklist เรียบร้อยแล้ว (มีผลทันทีบนทั้ง Squid & SOCKS5)');
+        setActionMsg(`เพิ่ม "${clean || raw}" ลงในรายการบล็อคแล้ว (มีผลทันทีบน Squid & SOCKS5)`);
         setTimeout(() => setActionMsg(''), 4000);
       } else {
-        alert(data.error || 'ไม่สามารถเพิ่มได้');
+        alert(data.error || 'ไม่สามารถเพิ่มรายการได้');
       }
     } catch (err) {
       alert('Error: ' + err.message);
@@ -814,34 +829,44 @@ function ProxyBlocklistManager() {
   };
 
   const handleRemove = async (id, target) => {
-    if (!confirm(`ยืนยันการปลดบล็อค "${target}"?`)) return;
+    if (!confirm(`ยืนยันการปลดบล็อคและลบ "${target}" ออกจากระบบ?`)) return;
     try {
       const res = await fetch('/api/proxy/blocklist/remove', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, target })
+        body: JSON.stringify({ id: id || target, target })
       });
       const data = await res.json();
       if (data.ok) {
         setBlocklist(data.blocklist);
-        setActionMsg(`ปลดบล็อค ${target} สำเร็จ`);
+        setActionMsg(`ปลดบล็อคและลบ "${target}" เรียบร้อยแล้ว (มีผลทันที)`);
         setTimeout(() => setActionMsg(''), 4000);
+      } else {
+        alert(data.error || 'ไม่สามารถปลดบล็อคได้');
       }
-    } catch (err) {}
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
   };
 
-  const handleToggle = async (id) => {
+  const handleToggle = async (id, target, currentEnabled) => {
     try {
       const res = await fetch('/api/proxy/blocklist/toggle', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id })
+        body: JSON.stringify({ id: id || target, target })
       });
       const data = await res.json();
       if (data.ok) {
         setBlocklist(data.blocklist);
+        setActionMsg(currentEnabled ? `ระงับการบล็อค "${target}" ชั่วคราวแล้ว (Squid & SOCKS5 ปลดบล็อคแล้ว)` : `เปิดใช้งานการบล็อค "${target}" แล้ว`);
+        setTimeout(() => setActionMsg(''), 4000);
+      } else {
+        alert(data.error || 'ไม่สามารถเปลี่ยนสถานะได้');
       }
-    } catch (err) {}
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
   };
 
   const items = blocklist.items || [];
@@ -906,7 +931,7 @@ function ProxyBlocklistManager() {
           type="text"
           value={newTarget}
           onChange={(e) => setNewTarget(e.target.value)}
-          placeholder={targetType === 'domain' ? "เช่น tiktok.com หรือ badsite.org" : "เช่น 157.240.22.35"}
+          placeholder={targetType === 'domain' ? "เช่น tiktok.com, https://badsite.com/ หรือโดเมนอื่น" : "เช่น 157.240.22.35 หรือ 10.0.0.0/8"}
           style={{
             flex: '1 1 200px', minWidth: 160, padding: '0.45rem 0.75rem', borderRadius: 7,
             border: '1px solid #cbd5e1', fontSize: '0.8rem', outline: 'none',
@@ -951,7 +976,7 @@ function ProxyBlocklistManager() {
               <th style={{ padding: '0.6rem 0.8rem', color: '#475569', fontWeight: 700 }}>เป้าหมาย (Domain/IP)</th>
               <th style={{ padding: '0.6rem 0.8rem', color: '#475569', fontWeight: 700, width: 90 }}>ประเภท</th>
               <th style={{ padding: '0.6rem 0.8rem', color: '#475569', fontWeight: 700 }}>เหตุผล</th>
-              <th style={{ padding: '0.6rem 0.8rem', color: '#475569', fontWeight: 700, width: 90, textAlign: 'center' }}>สถานะ</th>
+              <th style={{ padding: '0.6rem 0.8rem', color: '#475569', fontWeight: 700, width: 95, textAlign: 'center' }}>สถานะ</th>
               <th style={{ padding: '0.6rem 0.8rem', color: '#475569', fontWeight: 700, width: 80, textAlign: 'center' }}>จัดการ</th>
             </tr>
           </thead>
@@ -975,7 +1000,9 @@ function ProxyBlocklistManager() {
                           <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                         </svg>
                       )}
-                      <span>{it.target}</span>
+                      <span style={{ textDecoration: it.enabled === false ? 'line-through' : 'none', color: it.enabled === false ? '#94a3b8' : '#0f172a' }}>
+                        {it.target}
+                      </span>
                     </div>
                   </td>
                   <td style={{ padding: '0.55rem 0.8rem' }}>
@@ -993,15 +1020,22 @@ function ProxyBlocklistManager() {
                   </td>
                   <td style={{ padding: '0.55rem 0.8rem', textAlign: 'center' }}>
                     <button
-                      onClick={() => handleToggle(it.id)}
+                      onClick={() => handleToggle(it.id, it.target, it.enabled !== false)}
                       style={{
-                        border: 'none', background: 'none', cursor: 'pointer',
-                        padding: '0.2rem 0.4rem', borderRadius: 4,
-                        fontSize: '0.7rem', fontWeight: 600,
-                        color: it.enabled !== false ? '#15803d' : '#94a3b8'
+                        border: `1px solid ${it.enabled !== false ? '#bbf7d0' : '#e2e8f0'}`,
+                        background: it.enabled !== false ? '#f0fdf4' : '#f8fafc',
+                        cursor: 'pointer',
+                        padding: '0.22rem 0.55rem', borderRadius: 6,
+                        fontSize: '0.72rem', fontWeight: 700,
+                        color: it.enabled !== false ? '#15803d' : '#64748b',
+                        display: 'inline-flex', alignItems: 'center', gap: '0.35rem'
                       }}
-                      title={it.enabled !== false ? "คลิกเพื่อระงับการบล็อคชั่วคราว" : "คลิกเพื่อเปิดใช้งานการบล็อค"}
+                      title={it.enabled !== false ? "คลิกเพื่อปลดบล็อคชั่วคราว" : "คลิกเพื่อเปิดใช้งานการบล็อค"}
                     >
+                      <span style={{
+                        width: 7, height: 7, borderRadius: '50%',
+                        background: it.enabled !== false ? '#22c55e' : '#94a3b8'
+                      }}></span>
                       {it.enabled !== false ? 'เปิดบล็อค' : 'ปิดชั่วคราว'}
                     </button>
                   </td>

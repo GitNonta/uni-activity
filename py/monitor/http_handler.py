@@ -364,7 +364,7 @@ class MonitorHandler(BaseHTTPRequestHandler):
                 params = json.loads(body.decode("utf-8"))
             except Exception:
                 params = {}
-            target_or_id = params.get("id") or params.get("target", "")
+            target_or_id = params.get("id") or params.get("target") or params.get("item_id") or params.get("domain") or ""
             success, result = remove_block_target(target_or_id)
             resp = json.dumps({
                 "ok": success,
@@ -387,11 +387,12 @@ class MonitorHandler(BaseHTTPRequestHandler):
                 params = json.loads(body.decode("utf-8"))
             except Exception:
                 params = {}
-            item_id = params.get("id", "")
+            item_id = params.get("id") or params.get("item_id") or params.get("target") or ""
             success, result = toggle_block_target(item_id)
             resp = json.dumps({
                 "ok": success,
                 "item": result if success else None,
+                "error": None if success else result,
                 "blocklist": load_blocklist()
             }).encode("utf-8")
             self.send_response(200 if success else 400)

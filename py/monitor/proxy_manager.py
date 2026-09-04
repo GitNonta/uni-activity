@@ -56,8 +56,90 @@ def load_blocklist():
         return get_default_blocklist()
 
 
+def normalize_target(raw_target):
+    """
+    Extract pure hostname or IP from raw_target (supporting URLs, schemes, ports, paths, etc.).
+    Returns (cleaned_target, detected_type)
+    """
+    import re
+    from urllib.parse import urlparse
+
+    t = str(raw_target or "").strip()
+    if not t:
+        return "", "domain"
+
+    # CIDR IP check e.g. 192.168.1.0/24
+    if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/\d{1,2}$", t):
+        return t, "ip"
+
+    # Parse URL if scheme or path present
+    if "://" in t:
+        try:
+            parsed = urlparse(t)
+            host = parsed.hostname or parsed.netloc or ""
+        except Exception:
+            host = t.split("://")[-1].split("/")[0]
+    elif "/" in t:
+        try:
+            parsed = urlparse("http://" + t)
+            host = parsed.hostname or parsed.netloc or ""
+        except Exception:
+            host = t.split("/")[0]
+    else:
+        host = t
+
+    # Strip port if present e.g. host:8080 (unless IPv6)
+    if ":" in host and not host.startswith("["):
+        host = host.split(":")[0]
+
+    host = host.strip().lower().rstrip("/")
+    # Clean wildcards or dots
+    host = host.lstrip("*.")
+
+    if not host:
+        return "", "domain"
+
+    if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", host):
+        return host, "ip"
+
+    return host, "domain"
+
+
+def rebuild_blocklist_arrays(data):
+    """
+    Synchronize data['blocked_domains'] and data['blocked_ips'] with data['items'].
+    ONLY items with enabled: True are included, ensuring Squid and SOCKS5 unblock disabled items.
+    """
+    active_domains = []
+    active_ips = []
+    cleaned_items = []
+
+    for it in data.get("items", []):
+        raw_target = it.get("target", "")
+        clean_target, detected_type = normalize_target(raw_target)
+        if not clean_target:
+            continue
+        it["target"] = clean_target
+        if it.get("type") not in ["domain", "ip"]:
+            it["type"] = detected_type
+        cleaned_items.append(it)
+
+        if it.get("enabled", True):
+            if it.get("type") == "ip":
+                if clean_target not in active_ips:
+                    active_ips.append(clean_target)
+            else:
+                if clean_target not in active_domains:
+                    active_domains.append(clean_target)
+
+    data["items"] = cleaned_items
+    data["blocked_domains"] = active_domains
+    data["blocked_ips"] = active_ips
+
+
 def save_blocklist(data):
     """Save blocklist configuration and sync to Squid & SOCKS5."""
+    rebuild_blocklist_arrays(data)
     data["updated_at"] = int(time.time())
     BLOCKLIST_JSON.parent.mkdir(parents=True, exist_ok=True)
     with open(BLOCKLIST_JSON, "w", encoding="utf-8") as f:
@@ -70,29 +152,19 @@ def sync_squid_files(data=None):
     if data is None:
         data = load_blocklist()
 
-    enabled_items = [it for it in data.get("items", []) if it.get("enabled", True)]
-    domains = [it["target"].strip().lower() for it in enabled_items if it.get("type") == "domain"]
-    ips = [it["target"].strip() for it in enabled_items if it.get("type") == "ip"]
-
-    # Also include standalone lists if any
-    for d in data.get("blocked_domains", []):
-        d = d.strip().lower()
-        if d and d not in domains:
-            domains.append(d)
-    for ip in data.get("blocked_ips", []):
-        ip = ip.strip()
-        if ip and ip not in ips:
-            ips.append(ip)
+    # Domains & IPs come strictly from active enabled targets (rebuild_blocklist_arrays)
+    domains = [d.strip().lower() for d in data.get("blocked_domains", []) if d.strip()]
+    ips = [ip.strip() for ip in data.get("blocked_ips", []) if ip.strip()]
 
     # 1. Write Squid domain list (.domain matches domain and subdomains in squid dstdomain)
     try:
         SQUID_BLOCKED_DOMAINS.parent.mkdir(parents=True, exist_ok=True)
         lines = []
         for d in domains:
-            d = d.strip().lower()
-            if not d:
+            clean_d, _ = normalize_target(d)
+            if not clean_d:
                 continue
-            dot_domain = f".{d.lstrip('.')}"
+            dot_domain = f".{clean_d.lstrip('.')}"
             if dot_domain not in lines:
                 lines.append(dot_domain)
         with open(SQUID_BLOCKED_DOMAINS, "w", encoding="utf-8") as f:
@@ -149,88 +221,111 @@ def ensure_squid_conf_acl():
 
 
 def add_block_target(target, target_type=None, reason=""):
-    """Add a new target (domain or IP) to blocklist."""
-    target = target.strip().lower()
-    if not target:
-        return False, "Target cannot be empty"
+    """Add a new target (domain, IP, or URL) to blocklist."""
+    clean_target, detected_type = normalize_target(target)
+    if not clean_target:
+        return False, "เป้าหมาย (Domain/IP/URL) ไม่ถูกต้องหรือว่างเปล่า"
+
+    final_type = target_type if target_type in ["domain", "ip"] else detected_type
 
     data = load_blocklist()
     items = data.get("items", [])
 
     # Check duplicate
     for it in items:
-        if it["target"].lower() == target:
-            return False, f"'{target}' is already in the blocklist"
-
-    # Auto-detect type
-    import re
-    if target_type not in ["domain", "ip"]:
-        if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(/\d{1,2})?$", target):
-            target_type = "ip"
-        else:
-            target_type = "domain"
+        it_clean, _ = normalize_target(it.get("target", ""))
+        if it_clean == clean_target:
+            if not it.get("enabled", True):
+                it["enabled"] = True
+                if reason:
+                    it["reason"] = reason
+                save_blocklist(data)
+                return True, it
+            return False, f"'{clean_target}' มีอยู่ในรายการบล็อคแล้ว"
 
     new_item = {
         "id": f"blk-{uuid.uuid4().hex[:8]}",
-        "target": target,
-        "type": target_type,
+        "target": clean_target,
+        "type": final_type,
         "reason": reason or "Administrative block",
         "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
         "enabled": True
     }
     items.append(new_item)
-
-    if target_type == "domain" and target not in data["blocked_domains"]:
-        data["blocked_domains"].append(target)
-    elif target_type == "ip" and target not in data["blocked_ips"]:
-        data["blocked_ips"].append(target)
-
     data["items"] = items
+
     save_blocklist(data)
     return True, new_item
 
 
 def remove_block_target(target_or_id):
-    """Remove a target by ID or domain/IP from blocklist."""
-    target_or_id = target_or_id.strip()
+    """Remove a target by ID, exact URL, domain, or IP from blocklist."""
+    raw = str(target_or_id or "").strip()
+    if not raw:
+        return False, "Target or ID cannot be empty"
+
+    clean_target, _ = normalize_target(raw)
     data = load_blocklist()
     items = data.get("items", [])
     
     removed = None
     new_items = []
     for it in items:
-        if it.get("id") == target_or_id or it.get("target").lower() == target_or_id.lower():
+        it_id = str(it.get("id", "")).strip()
+        it_target = str(it.get("target", "")).strip()
+        it_clean, _ = normalize_target(it_target)
+
+        # Matching checks
+        match_id = (it_id and it_id.lower() == raw.lower())
+        match_exact = (it_target and it_target.lower() == raw.lower())
+        match_clean = bool(clean_target and (it_clean == clean_target or it_target.lower() == clean_target))
+        match_url = (len(raw) > 3 and (raw.lower() in it_target.lower() or it_target.lower() in raw.lower()))
+
+        if not removed and (match_id or match_exact or match_clean or match_url):
             removed = it
         else:
             new_items.append(it)
 
     if not removed:
-        return False, "Item not found"
+        # Check standalone arrays
+        if clean_target and clean_target in [d.lower() for d in data.get("blocked_domains", [])]:
+            data["blocked_domains"] = [d for d in data.get("blocked_domains", []) if d.lower() != clean_target]
+            removed = {"id": "", "target": clean_target, "type": "domain", "enabled": False}
+        elif raw in data.get("blocked_ips", []):
+            data["blocked_ips"] = [ip for ip in data.get("blocked_ips", []) if ip != raw]
+            removed = {"id": "", "target": raw, "type": "ip", "enabled": False}
+
+    if not removed:
+        return False, f"ไม่พบรายการ '{raw}' ในระบบ"
 
     data["items"] = new_items
-    tgt = removed["target"].lower()
-    if tgt in data.get("blocked_domains", []):
-        data["blocked_domains"].remove(tgt)
-    if removed["target"] in data.get("blocked_ips", []):
-        data["blocked_ips"].remove(removed["target"])
-
     save_blocklist(data)
     return True, removed
 
 
 def toggle_block_target(target_id):
     """Enable or disable a blocklist item."""
+    raw = str(target_id or "").strip()
+    if not raw:
+        return False, "Target ID cannot be empty"
+
+    clean_target, _ = normalize_target(raw)
     data = load_blocklist()
     items = data.get("items", [])
     found = None
+
     for it in items:
-        if it.get("id") == target_id:
+        it_id = str(it.get("id", "")).strip()
+        it_target = str(it.get("target", "")).strip()
+        it_clean, _ = normalize_target(it_target)
+
+        if (it_id and it_id.lower() == raw.lower()) or (it_target and it_target.lower() == raw.lower()) or (clean_target and it_clean == clean_target):
             it["enabled"] = not it.get("enabled", True)
             found = it
             break
 
     if not found:
-        return False, "Item not found"
+        return False, f"ไม่พบรายการ '{raw}' ในระบบ"
 
     save_blocklist(data)
     return True, found
