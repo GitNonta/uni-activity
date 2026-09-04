@@ -41,6 +41,7 @@ Quality criteria and completion checks
 - SKILL.md must include: purpose, triggers, inputs, outputs, step-by-step process, examples, and ambiguous points to confirm.
 - Saved file path must follow `.agents/skills/<skill-name>/SKILL.md`.
 - Provide at least two example prompts and one minimal test/checklist.
+- UI & Graphics Standard: ถ้าระบบแก้อะไรหรือเพิ่มอะไรใน UI, Dashboard, หรือ Views ต้องใช้ SVG เท่านั้น สำหรับไอคอนและกราฟิกทั้งหมด ห้ามใช้ Emoji หรือ Raster Image แทนไอคอนเด็ดขาด
 
 Template (use this when drafting)
 --------------------------------

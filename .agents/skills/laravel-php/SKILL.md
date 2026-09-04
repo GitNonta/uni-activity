@@ -32,6 +32,7 @@ description: >
 - ใช้ `DB::transaction()` ทุกครั้งที่มีการเขียนข้อมูลหลายขั้นตอน
 - ใช้ **env()** เสมอ — ห้าม hardcode credentials, keys, หรือ URLs
 - Eager load relationships ด้วย `with()` เพื่อป้องกัน N+1 query
+- **ใช้ SVG เท่านั้น สำหรับ UI ทั้งหมด**: เมื่อแก้ไขหรือสร้างส่วนติดต่อผู้ใช้ (Blade views, React/Vue Dashboard, UI components) ให้ใช้ SVG (Inline SVG หรือ SVG component) สำหรับทุกไอคอนและกราฟิกเท่านั้น
 
 ### สิ่งที่ห้ามทำ
 - ห้าม validate ใน Controller โดยตรง (`$request->validate(...)` ใน method)
@@ -39,6 +40,8 @@ description: >
 - ห้ามใช้ `->get()` โดยไม่มี limit บน collection ขนาดใหญ่
 - ห้ามใช้ `Auth::user()` แล้วไม่เช็ค null
 - ห้าม `@php` ใน Blade ถ้าสามารถทำใน Controller/ViewModel ได้
+- **ห้ามใช้ Emoji เป็นไอคอน UI โดยเด็ดขาด** (เช่น 📱, 💻, 🖥️, 🔍, ⏳, ⏸, ▶, ✕) — ถ้าระบบแก้อะไรหรือเพิ่มอะไรใน UI ต้องใช้ SVG เท่านั้น
+- **ห้ามใช้ Raster Image (PNG, JPG) หรือ Icon Font สำหรับไอคอน UI** — ให้ใช้ SVG เท่านั้น
 
 ---
 

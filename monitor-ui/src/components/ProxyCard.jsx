@@ -212,11 +212,55 @@ function LiveProxyTraffic({ recentTraffic = [], deviceBreakdown = [], traffic = 
   };
 
   const getDeviceIcon = (device) => {
-    if (device.includes('Mobile') || device.includes('Phone')) return '📱';
-    if (device.includes('iPad') || device.includes('Tablet')) return '📱';
-    if (device.includes('PC') || device.includes('Computer')) return '💻';
-    if (device.includes('Server')) return '🖥️';
-    return '🔌';
+    if (device.includes('Mobile') || device.includes('Phone')) {
+      return (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+          <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+          <line x1="12" y1="18" x2="12.01" y2="18" />
+        </svg>
+      );
+    }
+    if (device.includes('iPad') || device.includes('Tablet')) {
+      return (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+          <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
+          <line x1="12" y1="18" x2="12.01" y2="18" />
+        </svg>
+      );
+    }
+    if (device.includes('PC') || device.includes('Computer')) {
+      return (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+          <line x1="8" y1="21" x2="16" y2="21" />
+          <line x1="12" y1="17" x2="12" y2="21" />
+        </svg>
+      );
+    }
+    if (device.includes('Server')) {
+      return (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+          <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+          <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+          <line x1="6" y1="6" x2="6.01" y2="6" />
+          <line x1="6" y1="18" x2="6.01" y2="18" />
+        </svg>
+      );
+    }
+    return (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+        <rect x="4" y="4" width="16" height="16" rx="2" />
+        <rect x="9" y="9" width="6" height="6" />
+        <line x1="9" y1="1" x2="9" y2="4" />
+        <line x1="15" y1="1" x2="15" y2="4" />
+        <line x1="9" y1="20" x2="9" y2="23" />
+        <line x1="15" y1="20" x2="15" y2="23" />
+        <line x1="20" y1="9" x2="23" y2="9" />
+        <line x1="20" y1="14" x2="23" y2="14" />
+        <line x1="1" y1="9" x2="4" y2="9" />
+        <line x1="1" y1="14" x2="4" y2="14" />
+      </svg>
+    );
   };
 
   return (
@@ -295,8 +339,10 @@ function LiveProxyTraffic({ recentTraffic = [], deviceBreakdown = [], traffic = 
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.35rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <span style={{ fontSize: '1.1rem' }}>{getDeviceIcon(dev.device)}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', color: selectedDevice === dev.ip ? '#2563eb' : '#64748b' }}>
+                    {getDeviceIcon(dev.device)}
+                  </span>
                   <div>
                     <div style={{ fontWeight: 700, fontSize: '0.82rem', color: '#0f172a' }}>{dev.device}</div>
                     <div style={{ fontSize: '0.68rem', fontFamily: 'monospace', color: '#64748b' }}>{dev.ip}</div>
@@ -336,10 +382,15 @@ function LiveProxyTraffic({ recentTraffic = [], deviceBreakdown = [], traffic = 
               onClick={() => setSearchTerm('')}
               style={{
                 position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
-                background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: '0.8rem'
+                background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 2
               }}
+              title="ล้างคำค้นหา"
             >
-              ✕
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
             </button>
           )}
         </div>
@@ -433,8 +484,10 @@ function LiveProxyTraffic({ recentTraffic = [], deviceBreakdown = [], traffic = 
                       {item.time}
                     </td>
                     <td style={{ padding: '0.55rem 0.8rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                        <span>{getDeviceIcon(item.device)}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', color: '#64748b' }}>
+                          {getDeviceIcon(item.device)}
+                        </span>
                         <div>
                           <div style={{ fontWeight: 600, color: '#0f172a' }}>{item.device}</div>
                           <div style={{ fontSize: '0.65rem', fontFamily: 'monospace', color: '#94a3b8' }}>{item.client_ip}</div>
@@ -485,8 +538,13 @@ function LiveProxyTraffic({ recentTraffic = [], deviceBreakdown = [], traffic = 
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>
-                    <div style={{ fontSize: '1.5rem', marginBottom: '0.35rem' }}>🔍</div>
+                  <td colSpan={7} style={{ padding: '2.5rem', textAlign: 'center', color: '#94a3b8' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.6rem' }}>
+                      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                      </svg>
+                    </div>
                     ไม่พบข้อมูลทราฟฟิกตามเงื่อนไขที่เลือก (หรือยังไม่มีคำขอใหม่วิ่งผ่าน Proxy)
                   </td>
                 </tr>
@@ -1014,9 +1072,14 @@ function _human_bytes(size) {
 export function ProxyCard({ proxy }) {
   if (!proxy) {
     return (
-      <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>
-        <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>⏳</div>
-        Waiting for proxy data...
+      <div style={{ padding: '2.5rem', textAlign: 'center', color: '#94a3b8' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite' }}>
+            <circle cx="12" cy="12" r="10" strokeOpacity="0.2" />
+            <path d="M12 2a10 10 0 0 1 10 10" />
+          </svg>
+        </div>
+        กำลังโหลดข้อมูล Proxy...
       </div>
     );
   }

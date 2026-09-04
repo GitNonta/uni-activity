@@ -42,6 +42,14 @@
 - `.listen()` ต้องมี dot นำหน้าชื่อ event: `.listen('.MessageSent', ...)`
 - `laravel-echo` และ `pusher-js` ต้องอยู่ใน `dependencies` (ไม่ใช่ devDependencies)
 
+## UI & Graphics Rules (SVG เท่านั้น — บังคับทุกที่)
+
+- **ใช้ SVG เท่านั้น** สำหรับทุกไอคอน (Icons), กราฟิก (Graphics), สัญลักษณ์สถานะ, และองค์ประกอบ UI ในระบบ
+- **ถ้าระบบแก้อะไรหรือเพิ่มอะไรในส่วน UI, Web, Dashboard, หรือ Template ต้องใช้ SVG เท่านั้น**
+- **ห้ามใช้ Emoji** เป็นไอคอน UI หรือสัญลักษณ์แสดงผลโดยเด็ดขาด (เช่น ห้ามใช้ 📱, 💻, 🖥️, 🔍, ⏳, ⏸, ▶, ✕ — ให้เขียนเป็น SVG เสมอ)
+- **ห้ามใช้ Raster Image (PNG, JPG, GIF)** สำหรับไอคอน UI
+- **ห้ามใช้ Icon Font** (เช่น FontAwesome webfonts) — ใช้ Inline SVG หรือ SVG component เสมอ เพื่อความคมชัด น้ำหนักเบา และปรับแต่งผ่าน CSS ได้สมบูรณ์
+
 ## Testing Rules
 
 - ทุก feature ต้องมี Feature Test

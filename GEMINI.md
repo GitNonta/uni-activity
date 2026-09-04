@@ -8,6 +8,7 @@
 - **บันทึก Knowledge Items** — เมื่อพบ pattern ใหม่หรือแก้ bug สำคัญ ให้บันทึกลง Knowledge Items
 - **Parallel agents** — ใช้ parallel agents สำหรับงานที่แยกกันได้ เช่น สร้าง Controller + Test พร้อมกัน
 - **ขอ approval** ก่อนรันคำสั่งที่ drop หรือ modify database
+- **ใช้ SVG เท่านั้น สำหรับ UI ทั้งหมด** — เมื่อแก้ไขหรือเพิ่มคอมโพเนนต์ UI, Blade template, หรือ Dashboard ทุกจุด ต้องใช้ SVG (Inline SVG หรือ SVG Component) เท่านั้น ห้ามใช้ Emoji หรือ raster image สำหรับไอคอนโดยเด็ดขาด
 
 ## Artifact Requirements
 
