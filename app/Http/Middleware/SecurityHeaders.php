@@ -12,6 +12,26 @@ class SecurityHeaders
 {
     public function handle(Request $request, Closure $next): Response
     {
+        $origin = (string) $request->header('Origin', '');
+        $isAllowedOrigin = $origin !== '' && (
+            str_ends_with($origin, 'github.io')
+            || str_ends_with($origin, '.trycloudflare.com')
+            || str_contains($origin, 'localhost')
+            || str_contains($origin, '127.0.0.1')
+            || str_contains($origin, '192.168.1.')
+        );
+
+        if ($request->isMethod('OPTIONS')) {
+            $preflight = response('', 204);
+            if ($isAllowedOrigin) {
+                $preflight->header('Access-Control-Allow-Origin', $origin);
+                $preflight->header('Access-Control-Allow-Methods', 'GET, HEAD, POST, PUT, DELETE, OPTIONS');
+                $preflight->header('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With, Authorization, X-CSRF-TOKEN, Accept');
+                $preflight->header('Access-Control-Allow-Credentials', 'true');
+            }
+            return $preflight;
+        }
+
         $isDirectIpRequest = filter_var($request->getHost(), FILTER_VALIDATE_IP) !== false;
         $isHttps = !$isDirectIpRequest && ($request->isSecure()
             || $request->header('x-forwarded-proto') === 'https'
@@ -22,6 +42,13 @@ class SecurityHeaders
         $response = $next($request);
 
         if (method_exists($response, 'header')) {
+            if ($isAllowedOrigin) {
+                $response->header('Access-Control-Allow-Origin', $origin);
+                $response->header('Access-Control-Allow-Methods', 'GET, HEAD, POST, PUT, DELETE, OPTIONS');
+                $response->header('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With, Authorization, X-CSRF-TOKEN, Accept');
+                $response->header('Access-Control-Allow-Credentials', 'true');
+            }
+
             $response->header('X-Frame-Options', 'SAMEORIGIN');
             $response->header('X-Content-Type-Options', 'nosniff');
             $response->header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');

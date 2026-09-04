@@ -17,6 +17,7 @@
             --primary-light: #f97316;
             --primary-bg: #fff7ed;
             --bg-color: #ffffff;
+            --text-color: #0f172a;
         }
         * {
             box-sizing: border-box;
@@ -25,7 +26,7 @@
         }
         body {
             background-color: var(--bg-color);
-            color: #0f172a;
+            color: var(--text-color);
             font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             min-height: 100vh;
             display: flex;
@@ -44,10 +45,18 @@
             .progress-container {
                 background-color: #334155 !important;
             }
+            .direct-btn {
+                background: #ea580c !important;
+                color: #ffffff !important;
+            }
+            .external-btn {
+                color: #cbd5e1 !important;
+                border-color: #475569 !important;
+            }
         }
         .splash-container {
             width: 100%;
-            max-width: 320px;
+            max-width: 340px;
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -55,10 +64,10 @@
             justify-content: center;
         }
         .app-logo {
-            width: 100px;
-            height: 100px;
+            width: 90px;
+            height: 90px;
             object-fit: contain;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.25rem;
             filter: drop-shadow(0 6px 12px rgba(234, 88, 12, 0.15));
             animation: float-logo 2.5s ease-in-out infinite;
         }
@@ -67,7 +76,7 @@
             50% { transform: translateY(-6px); }
         }
         .loading-text {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             font-weight: 500;
             color: #64748b;
             margin-bottom: 1.25rem;
@@ -80,6 +89,7 @@
             border-radius: 999px;
             overflow: hidden;
             position: relative;
+            margin-bottom: 1.5rem;
         }
         .progress-bar {
             height: 100%;
@@ -88,10 +98,55 @@
             border-radius: 999px;
             transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        .actions-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: none;
+        }
+        .actions-container.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        .direct-btn {
+            display: inline-block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: #ea580c;
+            color: #ffffff;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);
+            transition: background 0.2s, transform 0.1s;
+        }
+        .direct-btn:active {
+            transform: scale(0.98);
+        }
+        .external-btn {
+            display: inline-block;
+            width: 100%;
+            padding: 0.65rem 1rem;
+            background: transparent;
+            color: #64748b;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-decoration: none;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            transition: background 0.2s;
+        }
     </style>
     <script>
         (function() {
-            const DEFAULT_ROUTE = ''; // default to root
+            const FALLBACK_DEFAULT_URL = 'https://standard-headphones-nato-inflation.trycloudflare.com';
+            const DEFAULT_ROUTE = '';
 
             function setProgress(targetPercent, text) {
                 targetPercent = Math.min(100, Math.max(0, targetPercent));
@@ -102,7 +157,8 @@
             }
 
             function getTargetUrl(baseUrl, searchStr, defaultTarget) {
-                const params = new URLSearchParams(searchStr);
+                baseUrl = (baseUrl || FALLBACK_DEFAULT_URL).trim().replace(/\/+$/, '');
+                const params = new URLSearchParams(searchStr || '');
                 params.delete('url');
                 params.delete('reset');
 
@@ -135,122 +191,138 @@
 
                 const cleanPath = dest.startsWith('/') ? dest.slice(1) : dest;
                 const extraQuery = params.toString();
-                let target = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
-                target += cleanPath;
+                let target = baseUrl;
+                if (cleanPath) {
+                    target += '/' + cleanPath;
+                }
                 if (extraQuery) {
                     target += (target.includes('?') ? '&' : '?') + extraQuery;
                 }
                 return target;
             }
 
-            const searchParams = new URLSearchParams(window.location.search);
-            const overrideUrl = searchParams.get('url');
-            const forceReset = searchParams.get('reset');
-
-            if (forceReset) {
-                sessionStorage.removeItem('active_tunnel_url');
+            async function fetchWithTimeout(url, timeoutMs) {
+                const controller = new AbortController();
+                const id = setTimeout(() => controller.abort(), timeoutMs);
+                try {
+                    const res = await fetch(url, { signal: controller.signal, cache: 'no-store' });
+                    clearTimeout(id);
+                    return res;
+                } catch (e) {
+                    clearTimeout(id);
+                    throw e;
+                }
             }
 
-            async function isUrlAlive(baseUrl) {
-                if (!baseUrl || typeof baseUrl !== 'string' || !baseUrl.startsWith('http')) {
-                    return false;
-                }
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000);
+            function showFallbackActions(targetUrl) {
+                const actions = document.getElementById('actions-container');
+                const directBtn = document.getElementById('direct-btn');
+                const externalBtn = document.getElementById('external-btn');
 
-                try {
-                    const res = await fetch(baseUrl.replace(/\/$/, '') + '/up', {
-                        method: 'GET',
-                        mode: 'cors',
-                        cache: 'no-store',
-                        signal: controller.signal
-                    });
-                    clearTimeout(timeoutId);
-                    return res.ok || res.status < 500;
-                } catch (e) {
-                    clearTimeout(timeoutId);
-                    const controller2 = new AbortController();
-                    const timeoutId2 = setTimeout(() => controller2.abort(), 5000);
-                    try {
-                        await fetch(baseUrl, {
-                            method: 'HEAD',
-                            mode: 'no-cors',
-                            cache: 'no-store',
-                            signal: controller2.signal
-                        });
-                        clearTimeout(timeoutId2);
-                        return true;
-                    } catch (e2) {
-                        clearTimeout(timeoutId2);
-                        // If both checks fail, still try to redirect (proxy may block /up)
-                        return true;
-                    }
+                if (directBtn) directBtn.href = targetUrl;
+                if (externalBtn) {
+                    const extUrl = targetUrl + (targetUrl.includes('?') ? '&' : '?') + 'openExternalBrowser=1';
+                    externalBtn.href = extUrl;
                 }
+                if (actions) actions.classList.add('visible');
             }
 
             async function resolveAndRedirect() {
                 const searchStr = window.location.search;
+                const searchParams = new URLSearchParams(searchStr);
+                const overrideUrl = searchParams.get('url');
+                const forceReset = searchParams.get('reset');
                 const targetRoute = window.TARGET_ROUTE || DEFAULT_ROUTE;
 
-                setProgress(25, 'กำลังเชื่อมต่อระบบ...');
-
-                // 1. Override URL
-                if (overrideUrl) {
-                    setProgress(50, 'กำลังตรวจสอบเซิร์ฟเวอร์...');
-                    if (await isUrlAlive(overrideUrl)) {
-                        setProgress(100, 'กำลังเปิดหน้าเว็บ...');
-                        sessionStorage.setItem('active_tunnel_url', overrideUrl);
-                        setTimeout(() => window.location.replace(getTargetUrl(overrideUrl, searchStr, targetRoute)), 150);
-                        return;
-                    }
+                if (forceReset) {
+                    sessionStorage.removeItem('active_tunnel_url');
                 }
 
-                // 2. Cached URL
-                const cachedUrl = sessionStorage.getItem('active_tunnel_url');
-                if (cachedUrl) {
-                    setProgress(60, 'กำลังเชื่อมต่อไปยังเซิร์ฟเวอร์...');
-                    if (await isUrlAlive(cachedUrl)) {
-                        setProgress(100, 'กำลังเปิดหน้าเว็บ...');
-                        setTimeout(() => window.location.replace(getTargetUrl(cachedUrl, searchStr, targetRoute)), 150);
-                        return;
-                    } else {
-                        sessionStorage.removeItem('active_tunnel_url');
-                    }
-                }
+                setProgress(35, 'กำลังเชื่อมต่อระบบ...');
 
-                // 3. Fetch active_url.json
-                setProgress(80, 'กำลังค้นหาเซิร์ฟเวอร์ที่พร้อมใช้งาน...');
-                try {
-                    const res = await fetch('active_url.json?t=' + Date.now());
-                    const data = await res.json();
-
-                    if (data && data.url) {
-                        setProgress(95, 'กำลังเปิดหน้าเว็บ...');
-                        if (await isUrlAlive(data.url)) {
-                            setProgress(100, 'สำเร็จ!');
-                            sessionStorage.setItem('active_tunnel_url', data.url);
-                            setTimeout(() => window.location.replace(getTargetUrl(data.url, searchStr, targetRoute)), 150);
-                            return;
-                        }
-                    }
-                } catch (err) {
-                    console.warn('active_url.json fetch failed:', err);
-                }
-
-                // 4. Retry with fallback redirect
-                setProgress(30, 'กำลังรอเซิร์ฟเวอร์ตอบรับ...');
-                retryCount = (retryCount || 0) + 1;
-                if (retryCount >= 3) {
-                    // After 3 retries, redirect anyway (proxy may block health checks)
+                // 1. Explicit query override
+                if (overrideUrl && overrideUrl.startsWith('http')) {
+                    const target = getTargetUrl(overrideUrl, searchStr, targetRoute);
                     setProgress(100, 'กำลังเปิดหน้าเว็บ...');
-                    window.location.replace('https://forgotten-camera-placed-twist.trycloudflare.com/');
+                    sessionStorage.setItem('active_tunnel_url', overrideUrl);
+                    showFallbackActions(target);
+                    window.location.replace(target);
                     return;
                 }
-                setTimeout(resolveAndRedirect, 2500);
+
+                let finalUrl = null;
+
+                // 2. Try fetching active_url.json (GitHub Pages)
+                setProgress(60, 'กำลังค้นหาเซิร์ฟเวอร์...');
+                try {
+                    const res = await fetchWithTimeout('active_url.json?t=' + Date.now(), 2500);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data && data.url && data.url.startsWith('http')) {
+                            finalUrl = data.url;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('active_url.json fetch failed, trying fallback...');
+                }
+
+                // 3. Fallback: Try sessionStorage cached URL
+                if (!finalUrl) {
+                    const cachedUrl = sessionStorage.getItem('active_tunnel_url');
+                    if (cachedUrl && cachedUrl.startsWith('http')) {
+                        finalUrl = cachedUrl;
+                    }
+                }
+
+                // 4. Fallback: Try raw GitHub content
+                if (!finalUrl) {
+                    try {
+                        const rawUrl = 'https://raw.githubusercontent.com/GitNonta/uni-activity/main/docs/active_url.json?t=' + Date.now();
+                        const res = await fetchWithTimeout(rawUrl, 2500);
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data && data.url && data.url.startsWith('http')) {
+                                finalUrl = data.url;
+                            }
+                        }
+                    } catch (e2) {
+                        console.warn('raw github fetch failed');
+                    }
+                }
+
+                // 5. Ultimate fallback: Known default live URL
+                if (!finalUrl) {
+                    finalUrl = FALLBACK_DEFAULT_URL;
+                }
+
+                sessionStorage.setItem('active_tunnel_url', finalUrl);
+                const targetRedirect = getTargetUrl(finalUrl, searchStr, targetRoute);
+
+                setProgress(100, 'กำลังเปิดหน้าเว็บ...');
+                showFallbackActions(targetRedirect);
+
+                // Redirect immediately
+                window.location.replace(targetRedirect);
+
+                // Fallback timeout: if still here after 1.5s, try window.location.href
+                setTimeout(function() {
+                    window.location.href = targetRedirect;
+                }, 1500);
             }
 
-            var retryCount = 0;
-            document.addEventListener('DOMContentLoaded', resolveAndRedirect);
+            // Reveal fallback action buttons if redirect takes more than 2 seconds
+            setTimeout(function() {
+                const searchStr = window.location.search;
+                const targetRoute = window.TARGET_ROUTE || DEFAULT_ROUTE;
+                const cached = sessionStorage.getItem('active_tunnel_url') || FALLBACK_DEFAULT_URL;
+                showFallbackActions(getTargetUrl(cached, searchStr, targetRoute));
+            }, 2000);
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', resolveAndRedirect);
+            } else {
+                resolveAndRedirect();
+            }
         })();
     </script>
 </head>
@@ -260,6 +332,14 @@
         <p class="loading-text" id="status-text">กำลังเชื่อมต่อระบบ...</p>
         <div class="progress-container">
             <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="actions-container" id="actions-container">
+            <a id="direct-btn" href="https://standard-headphones-nato-inflation.trycloudflare.com" class="direct-btn">
+                แตะเพื่อเข้าสู่ระบบ UNI Activity
+            </a>
+            <a id="external-btn" href="#" class="external-btn">
+                เปิดด้วยเบราว์เซอร์ภายนอก (Chrome / Safari)
+            </a>
         </div>
     </div>
 </body>
