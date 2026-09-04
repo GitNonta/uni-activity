@@ -21,9 +21,9 @@ jobs:
           git fetch origin main
           git reset --hard origin/main
           if [ -x /data/data/com.termux/files/usr/bin/composer ]; then
-            /data/data/com.termux/files/usr/bin/composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
+            /data/data/com.termux/files/usr/bin/composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader --ignore-platform-reqs
           elif command -v composer >/dev/null 2>&1; then
-            composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
+            composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader --ignore-platform-reqs
           fi
           if [ -x /data/data/com.termux/files/usr/bin/npm ]; then
             /data/data/com.termux/files/usr/bin/npm ci --prefer-offline
@@ -33,7 +33,10 @@ jobs:
             npm run build
           fi
           /data/data/com.termux/files/usr/bin/php artisan optimize:clear
-          /data/data/com.termux/files/usr/bin/php artisan view:cache
-          /data/data/com.termux/files/usr/bin/php artisan octane:reload
+          if /data/data/com.termux/files/usr/bin/php artisan octane:status 2>/dev/null | grep -q "running"; then
+            /data/data/com.termux/files/usr/bin/php artisan octane:reload
+          fi
+          pkill -USR2 -f "php-fpm: master" 2>/dev/null || true
+          /data/data/com.termux/files/usr/bin/php artisan reverb:restart 2>/dev/null || true
           test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"
           echo "Deployed $(git rev-parse --short HEAD)"
