@@ -133,15 +133,11 @@
         :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
         .footer { width: 100%; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--faint); font-size: .82rem; text-align: center; }
         .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-        @keyframes float-cap { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(2deg); } }
-        @keyframes pencil-write { 0%, 100% { transform: rotate(-8deg) translate(0, 0); } 50% { transform: rotate(-3deg) translate(3px, -2px); } }
-        @keyframes page-wave { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(2deg); } }
-        @keyframes dot-pulse { 0%, 100% { opacity: .25; transform: scale(.8); } 50% { opacity: 1; transform: scale(1); } }
-        @keyframes status-pulse { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
-        .cap { animation: float-cap 3.2s ease-in-out infinite; transform-origin: 140px 44px; }
-        .pencil { animation: pencil-write 2.4s ease-in-out infinite; transform-origin: 206px 125px; }
-        .page { animation: page-wave 3s ease-in-out infinite; transform-origin: 140px 142px; }
-        .dot { animation: dot-pulse 2s ease-in-out infinite; transform-origin: center; }
+        @keyframes event-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+        @keyframes activity-pulse { 0%, 100% { opacity: .35; transform: scale(.85); } 50% { opacity: 1; transform: scale(1); } }
+        @keyframes status-pulse { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+        .event-board { animation: event-float 3.2s ease-in-out infinite; transform-origin: 140px 108px; }
+        .activity-dot { animation: activity-pulse 2s ease-in-out infinite; transform-origin: center; }
         .status-mark { animation: status-pulse 2s ease-in-out infinite; }
         @media (max-width: 640px) {
             body { padding: .75rem; }
@@ -164,63 +160,49 @@
     <main class="page-shell">
         <section class="card" aria-labelledby="error-title">
             <div class="art-panel">
-                <svg viewBox="0 0 280 210" role="img" aria-labelledby="education-art-title" xmlns="http://www.w3.org/2000/svg">
-                    <title id="education-art-title">ภาพประกอบการเรียนรู้สำหรับข้อผิดพลาด {{ $code }}</title>
-                    <circle cx="32" cy="34" r="4" fill="var(--accent)" class="dot"/>
-                    <circle cx="246" cy="42" r="5" fill="var(--primary)" class="dot" style="animation-delay:.5s"/>
-                    <circle cx="224" cy="178" r="3" fill="var(--accent)" class="dot" style="animation-delay:1s"/>
-                    <path d="M30 160h220" stroke="var(--border)" stroke-width="3" stroke-linecap="round"/>
-                    <g class="page">
-                        <path d="M45 139c30-12 61-12 95 2v35c-34-14-65-14-95-2v-35Z" fill="var(--surface)" stroke="var(--primary)" stroke-width="3"/>
-                        <path d="M235 139c-30-12-61-12-95 2v35c34-14 65-14 95-2v-35Z" fill="var(--surface)" stroke="var(--primary)" stroke-width="3"/>
-                        <path d="M63 148h54m-54 10h42m58-10h54m-54 10h42" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"/>
-                        <path d="M137 145h6v33h-6z" fill="var(--accent)"/>
+                <svg viewBox="0 0 280 210" role="img" aria-labelledby="activity-art-title" xmlns="http://www.w3.org/2000/svg">
+                    <title id="activity-art-title">ภาพประกอบระบบกิจกรรมสำหรับข้อผิดพลาด {{ $code }}</title>
+                    <circle cx="32" cy="35" r="4" fill="var(--accent)" class="activity-dot"/>
+                    <circle cx="246" cy="42" r="5" fill="var(--primary)" class="activity-dot" style="animation-delay:.5s"/>
+                    <circle cx="228" cy="177" r="3" fill="var(--accent)" class="activity-dot" style="animation-delay:1s"/>
+                    <path d="M30 174h220" stroke="var(--border)" stroke-width="3" stroke-linecap="round"/>
+                    <g class="event-board">
+                        <rect x="52" y="48" width="176" height="116" rx="14" fill="var(--surface)" stroke="var(--primary)" stroke-width="3"/>
+                        <path d="M52 77h176" stroke="var(--primary)" stroke-width="3"/>
+                        <path d="M78 38v20M202 38v20" stroke="var(--accent)" stroke-width="7" stroke-linecap="round"/>
+                        <circle cx="75" cy="63" r="5" fill="var(--accent)"/>
+                        <path d="M91 63h76" stroke="var(--muted)" stroke-width="4" stroke-linecap="round"/>
+                        <rect x="74" y="92" width="38" height="12" rx="4" fill="var(--accent-soft)"/>
+                        <rect x="120" y="92" width="80" height="12" rx="4" fill="var(--surface-soft)"/>
+                        <rect x="74" y="115" width="62" height="12" rx="4" fill="var(--surface-soft)"/>
+                        <rect x="144" y="115" width="56" height="12" rx="4" fill="var(--accent-soft)"/>
+                        <path d="m80 145 7 7 14-16" fill="none" stroke="var(--primary)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M116 148h76" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"/>
                     </g>
-                    <g class="cap">
-                        <path d="m140 22 66 28-66 28-66-28 66-28Z" fill="var(--primary)" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/>
-                        <path d="M94 69v20c23 17 69 17 92 0V69" fill="var(--surface-soft)" stroke="var(--primary)" stroke-width="3"/>
-                        <path d="M206 50v39" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>
-                        <circle cx="206" cy="94" r="7" fill="var(--accent)"/>
-                    </g>
-                    <g class="pencil">
-                        <path d="m183 123 31-31 12 12-31 31-16 4 4-16Z" fill="var(--accent)" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/>
-                        <path d="m214 92 6-6 12 12-6 6" fill="var(--primary)" stroke="var(--ink)" stroke-width="2"/>
-                        <path d="m183 123-4 16 16-4" fill="var(--surface)" stroke="var(--ink)" stroke-width="2"/>
-                        <path d="m179 139 6-6" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/>
-                    </g>
+                    <g class="status-mark">
                     @if ($code === '403')
-                        <g class="status-mark">
-                            <circle cx="52" cy="88" r="24" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3"/>
-                            <rect x="43" y="87" width="18" height="15" rx="3" fill="var(--accent)"/>
-                            <path d="M47 87v-5a5 5 0 0 1 10 0v5" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
-                            <circle cx="52" cy="94" r="2" fill="var(--surface)"/>
-                        </g>
+                        <circle cx="43" cy="112" r="22" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3"/>
+                        <rect x="34" y="111" width="18" height="14" rx="3" fill="var(--accent)"/>
+                        <path d="M38 111v-5a5 5 0 0 1 10 0v5" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
                     @elseif ($code === '404')
-                        <g class="status-mark">
-                            <circle cx="50" cy="85" r="15" fill="none" stroke="var(--accent)" stroke-width="4"/>
-                            <path d="m61 96 12 12" stroke="var(--accent)" stroke-width="5" stroke-linecap="round"/>
-                        </g>
+                        <circle cx="43" cy="112" r="17" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3"/>
+                        <path d="m55 124 12 12" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>
                     @elseif ($code === '419')
-                        <g class="status-mark">
-                            <circle cx="50" cy="87" r="18" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3"/>
-                            <path d="M50 77v11l7 4" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                        </g>
+                        <circle cx="43" cy="112" r="19" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3"/>
+                        <path d="M43 101v11l7 4" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
                     @elseif ($code === '500')
-                        <g class="status-mark">
-                            <path d="m50 68 20 35H30l20-35Z" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round"/>
-                            <path d="M50 80v10m0 6v1" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
-                        </g>
+                        <path d="m43 91 20 35H23l20-35Z" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round"/>
+                        <path d="M43 103v10m0 6v1" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
                     @else
-                        <g class="status-mark">
-                            <circle cx="50" cy="87" r="19" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3"/>
-                            <path d="M41 87h18M50 78v18" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
-                        </g>
+                        <circle cx="43" cy="112" r="19" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3"/>
+                        <path d="M34 112h18M43 103v18" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
                     @endif
+                    </g>
                 </svg>
             </div>
 
             <div class="content">
-                <p class="eyebrow">UniActivity · พื้นที่การเรียนรู้</p>
+                <p class="eyebrow">UniActivity · ศูนย์รวมกิจกรรม</p>
                 <p class="status" aria-label="รหัสข้อผิดพลาด {{ $code }}">{{ $code }}</p>
                 <h1 id="error-title">{{ $title }}</h1>
                 <p class="message">{{ $message }}</p>
@@ -247,7 +229,7 @@
                     </button>
                 </div>
             </div>
-            <p class="footer">ระบบกิจกรรมนักศึกษา · เรียนรู้ เติบโต และก้าวไปด้วยกัน</p>
+            <p class="footer">ระบบกิจกรรมนักศึกษา · ค้นหา ลงทะเบียน และร่วมกิจกรรม</p>
         </section>
     </main>
 
