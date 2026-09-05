@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Foundation\Exceptions\RegisterErrorViewPaths;
 use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -13,6 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
         channels: __DIR__.'/../routes/channels.php',
         health: '/up',
         then: function () {
+            // Register error view paths so errors::404, errors::403, etc. are resolved
+            (new RegisterErrorViewPaths)();
+
             // Test error pages routes (remove in production)
             if (config('app.env') === 'local' && file_exists(base_path('routes/test-errors.php'))) {
                 Route::middleware('web')
@@ -37,7 +41,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 if ($whitelist) {
                     $allowedIps = array_map('trim', explode(',', $whitelist));
                     if (!in_array($request->ip(), $allowedIps, strict: true)) {
-                        return response()->view('errors.403', ['message' => 'Access to admin panel is restricted.'], 403);
+                        return response()->view('errors::403', ['errors' => new \Illuminate\Support\ViewErrorBag, 'exception' => new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException('Access to admin panel is restricted.')], 403);
                     }
                 }
                 return $next($request);
@@ -114,6 +118,40 @@ return Application::configure(basePath: dirname(__DIR__))
             ]);
         });
 
+        // Custom 404 page
+        $exceptions->renderable(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, $request) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Not Found'], 404);
+            }
+            return response()->view('errors::404', [
+                'errors' => new \Illuminate\Support\ViewErrorBag,
+                'exception' => $e,
+            ], 404);
+        });
+
+        // Custom 403 page
+        $exceptions->renderable(function (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e, $request) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Forbidden'], 403);
+            }
+            return response()->view('errors::403', [
+                'errors' => new \Illuminate\Support\ViewErrorBag,
+                'exception' => $e,
+            ], 403);
+        });
+
+        // Custom 500 page for any unhandled exception
+        $exceptions->renderable(function (\Throwable $e, $request) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Server Error'], 500);
+            }
+            $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
+            return response()->view('errors::' . $statusCode, [
+                'errors' => new \Illuminate\Support\ViewErrorBag,
+                'exception' => $e,
+            ], $statusCode);
+        });
+
         // ❌ FIX: Handle Redis connection failures gracefully — prevent 500 on every page
         $exceptions->renderable(function (\Predis\Connection\ConnectionException $e, $request) {
             \Illuminate\Support\Facades\Log::error('Redis connection failed: ' . $e->getMessage());
@@ -127,7 +165,6 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         // Handle CSRF Token Mismatch (419 Page Expired) gracefully
-
         $exceptions->renderable(function (\Illuminate\Session\TokenMismatchException $e, $request) {
             if ($request->is('logout') || $request->is('admin/logout')) {
                 return redirect('/');
@@ -137,6 +174,9 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json(['message' => 'CSRF token mismatch.'], 419);
             }
 
-            return redirect()->back()->withInput($request->except('_token'))->with('error', 'เซสชันของคุณหมดอายุแล้ว โปรดโหลดหน้าเว็บใหม่และลองอีกครั้ง');
+            return response()->view('errors::419', [
+                'errors' => new \Illuminate\Support\ViewErrorBag,
+                'exception' => $e,
+            ], 419);
         });
     })->create();
