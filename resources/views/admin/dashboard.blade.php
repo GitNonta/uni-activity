@@ -115,9 +115,8 @@
                     <span class="text-xs text-muted" style="font-weight:400;"> · {{ $item['sid'] }}</span>
                     @if($item['faculty']) <span class="text-xs text-muted"> · {{ $item['faculty'] }}</span> @endif
                 </div>
-                <div class="text-xs text-muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:4px;">
-                    <svg style="width:12px;height:12px;color:#94a3b8;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                    {{ $item['activity'] }} &nbsp;·&nbsp; {{ $item['detail'] }} &nbsp;·&nbsp; {{ $item['time']->diffForHumans() }}
+                <div class="text-xs text-muted" style="margin-top:2px;">
+                    <span title="{{ $item['activity'] }}">{{ Str::limit($item['activity'], 35, '...') }}</span> &nbsp;·&nbsp; {{ $item['detail'] }} &nbsp;·&nbsp; {{ $item['time']->diffForHumans() }}
                 </div>
             </div>
             {{-- Actions --}}
@@ -275,7 +274,7 @@
             <tbody>
                 @forelse($recentActivities as $act)
                 <tr>
-                    <td data-label="ชื่อกิจกรรม" class="font-semi">{{ $act->title }}</td>
+                    <td data-label="ชื่อกิจกรรม" class="font-semi" title="{{ $act->title }}"><a href="{{ route('admin.activities.show', $act->id) }}" class="text-primary font-semi">{{ Str::limit($act->title, 40, '...') }}</a></td>
                     <td data-label="วันที่" class="text-center text-muted">{{ $act->activity_date->format('d/m/Y') }}</td>
                     <td data-label="สถานะ" class="text-center">@include('components.status-badge', ['status' => $act->computed_status])</td>
                     <td data-label="ผู้เข้าร่วม" class="text-center">
@@ -412,7 +411,7 @@
                     </td>
                     <td data-label="หัวข้อ" class="truncate" style="max-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                         <div class="truncate" style="min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                            <div class="font-semi text-sm truncate" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{{ $item->title }}">{{ $item->title }}</div>
+                            <div class="font-semi text-sm truncate" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{{ $item->title }}">{{ Str::limit($item->title, 40, '...') }}</div>
                             <div class="text-xs text-muted truncate" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ $item->created_at->format('d/m/Y H:i') }}</div>
                         </div>
                     </td>

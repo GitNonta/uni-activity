@@ -41,7 +41,7 @@
                 @forelse($announcements as $item)
                 <tr>
                     <td data-label="หัวข้อ">
-                        <span class="font-semi text-sm" style="display:block;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ $item->title }}">{{ $item->title }}</span>
+                        <span class="font-semi text-sm" style="display:block;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ $item->title }}">{{ Str::limit($item->title, 40, '...') }}</span>
                         <div class="text-xs text-muted">{{ $item->created_at->format('d/m/Y H:i') }}</div>
                     </td>
                     <td data-label="กลุ่มเป้าหมาย">
