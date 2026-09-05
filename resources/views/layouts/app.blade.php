@@ -95,43 +95,59 @@
                 </span>
 
                 <!-- SVG Theme Toggle Button (Desktop Auth) -->
-                <button type="button" data-theme-toggle class="navbar-theme-toggle-btn" title="สลับโหมดมืด / สว่าง (Dark / Light Mode)">
+                <button type="button" data-theme-toggle class="navbar-icon-btn navbar-theme-toggle-btn" title="สลับโหมดมืด / สว่าง (Dark / Light Mode)">
                     <svg class="theme-icon-sun" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        <circle cx="12" cy="12" r="4"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
                     </svg>
                     <svg class="theme-icon-moon" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display:none;">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>
                     </svg>
                 </button>
 
                 <form method="POST" action="{{ route('logout') }}" style="margin:0">
                     @csrf
-                    <button type="submit" class="btn btn-outline btn-sm">ออก</button>
+                    <button type="submit" class="navbar-logout-btn" title="ออกจากระบบ">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                        <span>ออก</span>
+                    </button>
                 </form>
             </div>
-            {{-- Mobile: แสดงชื่อ + ปุ่มออก --}}
+            {{-- Mobile: แสดงชื่อ + ปุ่มไอคอน + ปุ่มออก --}}
             <div class="navbar-mobile-right">
                 <!-- SVG Theme Toggle Button (Mobile Auth) -->
-                <button type="button" data-theme-toggle class="navbar-theme-toggle-btn" style="width:32px; height:32px;" title="สลับโหมดมืด / สว่าง">
-                    <svg class="theme-icon-sun" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                <button type="button" data-theme-toggle class="navbar-icon-btn navbar-theme-toggle-btn" title="สลับโหมดมืด / สว่าง">
+                    <svg class="theme-icon-sun" width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="4"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
                     </svg>
-                    <svg class="theme-icon-moon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display:none;">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                    <svg class="theme-icon-moon" width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display:none;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>
                     </svg>
                 </button>
-                <a href="{{ route('map.index') }}" class="btn btn-sm btn-outline" style="border:none;padding:.25rem .5rem;" title="แผนที่">
-                    <svg class="icon" style="margin:0;color:{{ request()->routeIs('map.*') ? '#ea580c' : '#f97316' }};" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                <a href="{{ route('map.index') }}" class="navbar-icon-btn {{ request()->routeIs('map.*') ? 'active' : '' }}" title="แผนที่">
+                    <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5.764v15M9 3.236v15"/>
+                    </svg>
                 </a>
-                <a href="{{ route('jobs.index') }}" class="btn btn-sm btn-outline" style="border:none;padding:.25rem .5rem;" title="หางาน">
-                    <svg class="icon" style="margin:0;color:{{ request()->routeIs('jobs.*') ? '#ea580c' : '#f97316' }};" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <a href="{{ route('jobs.index') }}" class="navbar-icon-btn {{ request()->routeIs('jobs.*') ? 'active' : '' }}" title="หางาน / ฝึกงาน">
+                    <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <rect width="20" height="14" x="2" y="7" rx="2" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><circle cx="12" cy="13" r="1" fill="currentColor"/>
+                    </svg>
                 </a>
-                <a href="{{ route('announcements.index') }}" class="btn btn-sm btn-outline" style="border:none;padding:.25rem .5rem;" title="ประกาศ">
-                    <svg class="icon" style="margin:0;color:#f97316;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+                <a href="{{ route('announcements.index') }}" class="navbar-icon-btn {{ request()->routeIs('announcements.*') ? 'active' : '' }}" title="ประกาศข่าวสาร">
+                    <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m3 11 18-5v12L3 14v-3z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>
+                    </svg>
                 </a>
                 <form method="POST" action="{{ route('logout') }}" style="margin:0">
                     @csrf
-                    <button type="submit" class="btn btn-outline btn-sm">ออก</button>
+                    <button type="submit" class="navbar-logout-btn" title="ออกจากระบบ">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                        <span>ออก</span>
+                    </button>
                 </form>
             </div>
             @elseif(!request()->routeIs('login*', 'admin.login*', 'register*', 'password.*', 'admin.password.*'))
@@ -176,18 +192,20 @@
             {{-- Guest Mobile Header Right --}}
             <div class="navbar-mobile-right">
                 <!-- SVG Theme Toggle Button (Mobile Guest) -->
-                <button type="button" data-theme-toggle class="navbar-theme-toggle-btn" style="width:32px; height:32px;" title="สลับโหมดมืด / สว่าง">
-                    <svg class="theme-icon-sun" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                <button type="button" data-theme-toggle class="navbar-icon-btn navbar-theme-toggle-btn" title="สลับโหมดมืด / สว่าง">
+                    <svg class="theme-icon-sun" width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="4"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
                     </svg>
-                    <svg class="theme-icon-moon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display:none;">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                    <svg class="theme-icon-moon" width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display:none;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>
                     </svg>
                 </button>
-                <a href="{{ route('map.index') }}" class="btn btn-sm btn-outline" style="border:none;padding:.25rem .5rem;" title="แผนที่">
-                    <svg class="icon" style="margin:0;color:{{ request()->routeIs('map.*') ? '#ea580c' : '#f97316' }};" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                <a href="{{ route('map.index') }}" class="navbar-icon-btn {{ request()->routeIs('map.*') ? 'active' : '' }}" title="แผนที่">
+                    <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5.764v15M9 3.236v15"/>
+                    </svg>
                 </a>
-                <a href="{{ route('login') }}" class="btn btn-sm btn-primary" style="padding:.3rem .65rem; font-size:.8rem; display:inline-flex; align-items:center; gap:4px;">
+                <a href="{{ route('login') }}" class="btn btn-sm btn-primary" style="padding:.35rem .75rem; font-size:.8rem; display:inline-flex; align-items:center; gap:5px; border-radius:9px;">
                     <svg class="icon-sm" style="width:14px; height:14px; margin:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
                     เข้าสู่ระบบ
                 </a>
