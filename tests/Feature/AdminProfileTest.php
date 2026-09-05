@@ -55,4 +55,86 @@ class AdminProfileTest extends TestCase
             'position'     => 'Director of IT',
         ]);
     }
+
+    public function test_admin_profile_displays_male_svg_avatar_when_gender_is_male(): void
+    {
+        $admin = User::factory()->create([
+            'role'          => 'admin',
+            'full_name'     => 'สมชาย ใจดี',
+            'email'         => 'somchai@test.ac.th',
+            'gender'        => 'male',
+            'profile_photo' => null,
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('admin.profile.edit'));
+
+        $response->assertStatus(200);
+        $response->assertSee('aria-label="อวตารเพศชาย"', false);
+        $response->assertSee('mBg_', false);
+        $response->assertSee('เพศ: <strong style="color: #cbd5e1;">ชาย</strong>', false);
+    }
+
+    public function test_admin_profile_displays_female_svg_avatar_when_gender_is_female(): void
+    {
+        $admin = User::factory()->create([
+            'role'          => 'admin',
+            'full_name'     => 'สมหญิง สวยงาม',
+            'email'         => 'somying@test.ac.th',
+            'gender'        => 'female',
+            'profile_photo' => null,
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('admin.profile.edit'));
+
+        $response->assertStatus(200);
+        $response->assertSee('aria-label="อวตารเพศหญิง"', false);
+        $response->assertSee('fBg_', false);
+        $response->assertSee('เพศ: <strong style="color: #cbd5e1;">หญิง</strong>', false);
+    }
+
+    public function test_admin_profile_displays_neutral_svg_avatar_when_gender_is_unspecified(): void
+    {
+        $admin = User::factory()->create([
+            'role'          => 'admin',
+            'full_name'     => 'ผู้ดูแล ทั่วไป',
+            'email'         => 'general@test.ac.th',
+            'gender'        => null,
+            'profile_photo' => null,
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('admin.profile.edit'));
+
+        $response->assertStatus(200);
+        $response->assertSee('aria-label="อวตารทั่วไป"', false);
+        $response->assertSee('nBg_', false);
+        $response->assertSee('เพศ: <strong style="color: #cbd5e1;">ไม่ระบุ</strong>', false);
+    }
+
+    public function test_admin_can_update_gender_to_female_and_avatar_updates(): void
+    {
+        $admin = User::factory()->create([
+            'role'          => 'admin',
+            'full_name'     => 'ผู้ดูแลระบบ',
+            'english_name'  => 'Admin User',
+            'email'         => 'admin_gender@test.ac.th',
+            'gender'        => 'male',
+            'profile_photo' => null,
+        ]);
+
+        $response = $this->actingAs($admin)->patch(route('admin.profile.update'), [
+            'full_name'    => 'ผู้ดูแลระบบ',
+            'english_name' => 'Admin User',
+            'email'        => 'admin_gender@test.ac.th',
+            'gender'       => 'female',
+        ]);
+
+        $response->assertRedirect(route('admin.profile.edit'));
+        $this->assertDatabaseHas('users', [
+            'id'     => $admin->id,
+            'gender' => 'female',
+        ]);
+
+        $viewResponse = $this->actingAs($admin->fresh())->get(route('admin.profile.edit'));
+        $viewResponse->assertSee('aria-label="อวตารเพศหญิง"', false);
+    }
 }
