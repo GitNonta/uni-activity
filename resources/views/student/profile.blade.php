@@ -369,20 +369,14 @@
             <!-- ID Card Structure (Exact Original PKRU Theme with 3D Depth & Gloss) -->
             <div id="studentIdCard" class="student-id-card">
                 
-                <!-- Dynamic Specular Glare Reflection Layer -->
-                <div class="student-card-glare"></div>
-
-                <!-- Holographic Rainbow Foil Sheen Layer -->
-                <div class="student-card-hologram"></div>
-
-                <!-- Diagonal Gloss Sweep -->
-                <div class="student-card-gloss-sweep"></div>
-
-                <!-- Top Diagonal (confined to header so it never touches photo) -->
+                <!-- Background Base & Sheen (strictly z-index: 1-2, BEHIND all content and photo) -->
                 <div style="position: absolute; top: 0; left: 0; width: 100%; height: 75px; background: linear-gradient(105deg, var(--theme-primary) 38%, #fff 38.5%); z-index: 1;"></div>
                 
-                <!-- Content Wrapper -->
-                <div style="position: relative; z-index: 2; display: flex; flex-direction: column; height: 100%;">
+                <!-- Card Background Specular Sheen (Subtle, smooth card reflection, strictly z-index: 2) -->
+                <div class="student-card-bg-sheen"></div>
+
+                <!-- Content Wrapper (Strictly on top of all card sheens: z-index: 10) -->
+                <div style="position: relative; z-index: 10; display: flex; flex-direction: column; height: 100%;">
                     
                     <!-- Header (Logo & Univ Name) -->
                     <div style="display: flex; align-items: center; padding: 15px 15px 0 15px; gap: 8px;">
@@ -395,11 +389,11 @@
                         </div>
                     </div>
 
-                    <!-- Photo (elevated to z-index: 30 so glare/shadow/hologram never overlays the photo) -->
-                    <div style="width: 100%; display: flex; justify-content: center; margin-top: 15px; position: relative; z-index: 30;">
-                        <div style="background: #ffffff; padding: 2px; border-radius: 4px; box-shadow: 0 3px 8px rgba(0,0,0,0.15); display: inline-block;">
+                    <!-- Photo (Opaque frame with raised shadow, z-index: 20, 100% immune to glare/sheen) -->
+                    <div style="width: 100%; display: flex; justify-content: center; margin-top: 15px; position: relative; z-index: 20;">
+                        <div style="background: #ffffff; padding: 3px; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.18); display: inline-block;">
                             @if($user->profile_photo)
-                                <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="profile" style="width: 125px; height: 160px; object-fit: cover; border-radius: 2px; display: block;">
+                                <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="profile" style="width: 125px; height: 160px; object-fit: cover; border-radius: 2px; display: block; filter: none !important; opacity: 1 !important;">
                             @else
                                 <div style="width: 125px; height: 160px; background: #ea580c; display: flex; align-items: center; justify-content: center; border-radius: 2px; color: #fff;">
                                     <svg width="50" height="50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
@@ -420,7 +414,7 @@
                             <div style="font-size: 12px; font-weight: 600; color: #94a3b8; margin-bottom: 6px; font-style: italic;">(No English Name)</div>
                         @endif
                         
-                        <!-- Thin black divider -->
+                        <!-- Thin divider -->
                         <div style="width: 100%; height: 1px; background: #64748b; margin: 8px 0; opacity: 0.5;"></div>
                         
                         <div style="font-size: 14px; font-weight: 700; color: #1e293b;">สาขา{{ $user->department ?? 'วิทยาการคอมพิวเตอร์' }}</div>
@@ -430,7 +424,7 @@
                 </div>
 
                 <!-- Bottom slanted area -->
-                <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 120px; overflow: visible; z-index: 1;">
+                <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 120px; overflow: visible; z-index: 12;">
                     <div style="position: absolute; top: 35px; left: -20px; right: -20px; bottom: -20px; background: var(--theme-secondary); transform: rotate(-7deg); border-top: 14px solid var(--theme-primary); box-shadow: 0 -2px 5px rgba(0,0,0,0.08);"></div>
                     
                     <!-- Bottom content overlay -->
@@ -506,64 +500,24 @@
     will-change: transform;
     transition: transform 0.12s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.25s ease;
     box-shadow: 
-        0 28px 60px -12px rgba(0, 0, 0, 0.45),
-        0 14px 28px -8px rgba(0, 0, 0, 0.25),
+        0 26px 54px -12px rgba(0, 0, 0, 0.42),
+        0 14px 28px -8px rgba(0, 0, 0, 0.22),
         inset 0 1px 2px rgba(255, 255, 255, 0.95),
-        inset 0 -1px 2px rgba(0, 0, 0, 0.18);
-    border: 1px solid rgba(255, 255, 255, 0.7);
+        inset 0 -1px 2px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.8);
     outline: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-/* Dynamic Specular Glass Glare Reflection */
-.student-card-glare {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 25;
-    border-radius: 16px;
-    mix-blend-mode: overlay;
-    opacity: 0.9;
-    background: radial-gradient(circle 350px at var(--mouse-x, 50%) var(--mouse-y, 30%), rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.3) 35%, rgba(255,255,255,0) 70%);
-    transition: opacity 0.3s ease;
-}
-
-/* Holographic Rainbow Foil Sheen */
-.student-card-hologram {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 24;
-    border-radius: 16px;
-    mix-blend-mode: color-dodge;
-    opacity: 0.5;
-    background: linear-gradient(115deg, transparent 0%, rgba(255, 0, 128, 0.14) 16%, rgba(255, 215, 0, 0.18) 32%, rgba(0, 255, 128, 0.16) 48%, rgba(0, 195, 255, 0.18) 64%, rgba(180, 0, 255, 0.14) 80%, transparent 100%);
-    background-size: 220% 220%;
-    background-position: var(--holo-x, 50%) var(--holo-y, 50%);
-}
-
-/* Diagonal Specular Gloss Sweeper */
-.student-card-gloss-sweep {
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    pointer-events: none;
-    z-index: 23;
-    border-radius: 16px;
-    background: linear-gradient(135deg, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0.12) 20%, transparent 45%, rgba(255,255,255,0.08) 70%, transparent 100%);
-    transform: rotate(-12deg);
-}
-
-/* Micro Security Pattern Overlay */
-.student-card-security-pattern {
+/* Card Background Specular Sheen (Subtle, smooth, strictly z-index: 2 behind Content Wrapper) */
+.student-card-bg-sheen {
     position: absolute;
     inset: 0;
     pointer-events: none;
     z-index: 2;
-    opacity: 0.08;
-    background-image: radial-gradient(rgba(255,255,255,0.7) 1px, transparent 1px);
-    background-size: 8px 8px;
+    border-radius: 16px;
+    opacity: 0.6;
+    background: radial-gradient(circle 300px at var(--mouse-x, 50%) var(--mouse-y, 30%), rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.12) 40%, transparent 75%);
+    transition: opacity 0.2s ease;
 }
 
 
@@ -628,8 +582,6 @@
         studentCard.style.transform = 'perspective(1200px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
         studentCard.style.setProperty('--mouse-x', '50%');
         studentCard.style.setProperty('--mouse-y', '30%');
-        studentCard.style.setProperty('--holo-x', '50%');
-        studentCard.style.setProperty('--holo-y', '50%');
     }
 
     function handleCardMove(e) {
@@ -643,14 +595,12 @@
 
         if (x < 0 || x > 1 || y < 0 || y > 1) return;
 
-        const rotateX = ((y - 0.5) * -24).toFixed(2);
-        const rotateY = ((x - 0.5) * 24).toFixed(2);
+        const rotateX = ((y - 0.5) * -20).toFixed(2);
+        const rotateY = ((x - 0.5) * 20).toFixed(2);
 
-        studentCard.style.transform = `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.025, 1.025, 1.025)`;
+        studentCard.style.transform = `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
         studentCard.style.setProperty('--mouse-x', `${(x * 100).toFixed(1)}%`);
         studentCard.style.setProperty('--mouse-y', `${(y * 100).toFixed(1)}%`);
-        studentCard.style.setProperty('--holo-x', `${(x * 200 - 50).toFixed(1)}%`);
-        studentCard.style.setProperty('--holo-y', `${(y * 200 - 50).toFixed(1)}%`);
     }
 
     if (studentCard) {
