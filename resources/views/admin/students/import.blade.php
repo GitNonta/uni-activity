@@ -29,8 +29,9 @@
     </div>
 
     @if(session('import_error'))
-        <div style="background:#fee2e2; border:1px solid #fca5a5; color:#b91c1c; padding:1rem; border-radius:10px; margin-bottom:1.5rem; font-size:0.9rem;">
-            <strong>✕ เกิดข้อผิดพลาดในการนำเข้า:</strong> {{ session('import_error') }}
+        <div style="background:#fee2e2; border:1px solid #fca5a5; color:#b91c1c; padding:1rem; border-radius:10px; margin-bottom:1.5rem; font-size:0.9rem; display:flex; align-items:flex-start; gap:.5rem; line-height:1.6;">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:2px;"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            <span><strong>เกิดข้อผิดพลาดในการนำเข้า:</strong> {{ session('import_error') }}</span>
         </div>
     @endif
 

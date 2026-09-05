@@ -2088,18 +2088,40 @@ html[data-theme="dark"] .navbar-logout-btn:hover {
    - Native-like Responsive Typography across Mobile, Tablet, Desktop
    ══════════════════════════════════════════════════════════════ */
 
-/* 1. Baseline Typography & Line Height (>= 1.5 - 1.6) */
-p, li, dd, dt, blockquote, figcaption {
+/* 1. Baseline Typography & Line Height (>= 1.5 — WCAG 2.1 Success Criterion 1.4.8) */
+p, li, dd, dt, blockquote, figcaption,
+.card-body p, .modal p, .alert p,
+.card p, .desc p, .meta-text, .activity-desc {
     line-height: 1.6;
     text-align: left;
 }
 
+/* Body-level running text inside components must meet 1.6 */
+.card-body, .modal-body, .announcement-body,
+.tab-content, .panel-body, .content-body {
+    line-height: 1.6;
+}
+
+/* Headings: 1.4 is acceptable for short multi-line headings (display text) */
 h1, h2, h3, h4, h5, h6 {
     font-family: inherit;
     font-weight: 700;
     color: #0f172a;
-    line-height: 1.35;
+    line-height: 1.4;
     text-align: left;
+}
+
+/* Activity / todo titles rendered as clamped text blocks */
+.todo-title, .activity-title, .event-title, .item-title {
+    line-height: 1.5 !important;
+}
+
+/* Label text in walkin forms, metadata lines */
+.walkin-header .activity-name,
+.walkin-header .meta,
+.nav-instruction,
+.gmap-nav-instruction {
+    line-height: 1.6 !important;
 }
 
 /* 2. User Content, Articles, Descriptions, Comments */

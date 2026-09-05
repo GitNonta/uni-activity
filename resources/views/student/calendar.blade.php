@@ -42,8 +42,10 @@
     <div class="modal" style="max-width:380px;border-radius:16px;overflow:hidden;">
         <div id="eventModalHeader" style="padding:1rem 1.25rem .75rem;position:relative;">
             <div id="eventModalCategory" style="font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem;opacity:.8;"></div>
-            <h3 id="eventModalTitle" style="font-size:1.05rem;font-weight:700;margin:0;color:#1e293b;line-height:1.3;padding-right:2rem;"></h3>
-            <button onclick="closeEventModal()" style="position:absolute;top:.9rem;right:1rem;background:none;border:none;font-size:1.25rem;cursor:pointer;color:#94a3b8;line-height:1;">✕</button>
+            <h3 id="eventModalTitle" style="font-size:1.05rem;font-weight:700;margin:0;color:#1e293b;line-height:1.4;padding-right:2rem;"></h3>
+            <button onclick="closeEventModal()" style="position:absolute;top:.9rem;right:1rem;background:none;border:none;cursor:pointer;color:#94a3b8;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;transition:background .15s;" aria-label="ปิด">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
         </div>
         <div class="modal-body" style="padding-top:.5rem;">
             <div style="display:grid;gap:.5rem;margin-bottom:1rem;">

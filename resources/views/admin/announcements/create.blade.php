@@ -39,7 +39,9 @@
                     <svg style="width:16px;height:16px;flex-shrink:0;" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                     <span id="imageUploadName" style="font-size:.78rem;font-weight:600;color:#c2410c;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></span>
                     <span id="imageUploadSize" style="font-size:.72rem;color:#ea580c;flex-shrink:0;"></span>
-                    <button type="button" onclick="clearImageSelection()" title="ลบรูปที่เลือก" style="background:transparent;border:none;color:#dc2626;cursor:pointer;font-size:.85rem;line-height:1;padding:2px 4px;border-radius:4px;">✕</button>
+                    <button type="button" onclick="clearImageSelection()" title="ลบรูปที่เลือก" style="background:transparent;border:none;color:#dc2626;cursor:pointer;padding:3px;border-radius:4px;display:flex;align-items:center;justify-content:center;" aria-label="ลบรูป">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
                 </div>
             </div>
             </div>

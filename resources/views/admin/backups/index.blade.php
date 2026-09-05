@@ -122,7 +122,10 @@
                                     <form action="{{ route('admin.backups.destroy', $b['filename']) }}" method="POST" style="display:inline;" onsubmit="return confirm('ลบ {{ $b['filename'] }}?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm" title="ลบ">✕</button>
+                                        <button type="submit" class="btn btn-danger btn-sm" title="ลบ" style="display:inline-flex;align-items:center;justify-content:center;gap:.3rem;">
+                                            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                            ลบ
+                                        </button>
                                     </form>
                                 </div>
                             </td>
@@ -139,7 +142,9 @@
     <div class="card" style="width:100%; max-width:420px;">
         <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
             <span>สร้างการสำรองข้อมูล</span>
-            <button onclick="closeModal()" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:1.2rem; line-height:1;">✕</button>
+            <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;color:#94a3b8;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;transition:background .15s;" aria-label="ปิด">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
         </div>
         <div class="card-body">
             <form action="{{ route('admin.backups.store') }}" method="POST">

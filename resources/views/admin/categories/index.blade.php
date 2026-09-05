@@ -55,7 +55,10 @@
             </div>
         </div>
         @if(session('success'))
-        <p class="text-sm" style="color:#16a34a;margin-top:.75rem;padding-top:.75rem;border-top:1px solid #f1f5f9;">✓ {{ session('success') }}</p>
+        <p class="text-sm" style="color:#16a34a;margin-top:.75rem;padding-top:.75rem;border-top:1px solid #f1f5f9;display:flex;align-items:center;gap:.4rem;">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            {{ session('success') }}
+        </p>
         @endif
     </div>
 </div>

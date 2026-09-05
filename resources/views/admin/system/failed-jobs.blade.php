@@ -51,18 +51,21 @@
 
     <!-- Alert Notifications -->
     @if(session('success'))
-        <div style="background:#dcfce7; border:1px solid #86efac; color:#15803d; padding:0.75rem 1rem; border-radius:8px; margin-bottom:1rem; font-size:0.875rem;">
-            ✓ {{ session('success') }}
+        <div style="background:#dcfce7; border:1px solid #86efac; color:#15803d; padding:0.75rem 1rem; border-radius:8px; margin-bottom:1rem; font-size:0.875rem; display:flex; align-items:center; gap:.5rem; line-height:1.6;">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            {{ session('success') }}
         </div>
     @endif
     @if(session('error'))
-        <div style="background:#fee2e2; border:1px solid #fca5a5; color:#b91c1c; padding:0.75rem 1rem; border-radius:8px; margin-bottom:1rem; font-size:0.875rem;">
-            ✕ {{ session('error') }}
+        <div style="background:#fee2e2; border:1px solid #fca5a5; color:#b91c1c; padding:0.75rem 1rem; border-radius:8px; margin-bottom:1rem; font-size:0.875rem; display:flex; align-items:center; gap:.5rem; line-height:1.6;">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            {{ session('error') }}
         </div>
     @endif
     @if(session('info'))
-        <div style="background:#e0f2fe; border:1px solid #7dd3fc; color:#0369a1; padding:0.75rem 1rem; border-radius:8px; margin-bottom:1rem; font-size:0.875rem;">
-            ℹ {{ session('info') }}
+        <div style="background:#e0f2fe; border:1px solid #7dd3fc; color:#0369a1; padding:0.75rem 1rem; border-radius:8px; margin-bottom:1rem; font-size:0.875rem; display:flex; align-items:center; gap:.5rem; line-height:1.6;">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01"/></svg>
+            {{ session('info') }}
         </div>
     @endif
 
