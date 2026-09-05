@@ -19,7 +19,7 @@
 ::selection { background: #ea580c; color: #ffffff; }
 ::-moz-selection { background: #ea580c; color: #ffffff; }
 html { font-size: 16px; -webkit-text-size-adjust: 100%; }
-body { font-family: 'Sarabun', 'Segoe UI', sans-serif; color: #1e293b; background: #f1f5f9; line-height: 1.6; min-height: 100vh; overflow-x: hidden; max-width: 100%; word-wrap: break-word; overflow-wrap: break-word; text-align: left; }
+body { font-family: 'Sarabun', 'Segoe UI', sans-serif; color: #1e293b; background: #f1f5f9; line-height: 1.5; min-height: 100vh; overflow-x: hidden; max-width: 100%; word-wrap: break-word; overflow-wrap: break-word; text-align: left; }
 html { overflow-x: hidden; width: 100%; -webkit-overflow-scrolling: touch; }
 a { color: #ea580c; text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -579,7 +579,7 @@ a.stat-card:hover { text-decoration: none; }
 /* ── สถานะว่าง: แสดงเมื่อไม่มีข้อมูล ──────
 * สถานะว่างที่แสดงเมื่อไม่มีข้อมูล
 */
-.empty-state { text-align: center; padding: 3rem 1rem; color: #94a3b8; }
+.empty-state { text-align: center; padding: 3rem 1rem; color: #64748b; }
 .empty-state .icon { width: 48px; height: 48px; margin: 0 auto 1rem; }
 
 /* ── ไอคอน SVG: ขนาด sm/lg/xl สำหรับใช้กับ inline SVG ──────
@@ -1089,7 +1089,7 @@ html[data-theme="dark"] .cf-msg-bubble-other { background: #36383a !important; c
 /* ── Description Auto-Formatting & Typography ── */
 .desc-content {
     font-size: 0.9375rem;
-    line-height: 1.75;
+    line-height: 1.5;
     color: #334155;
     word-break: break-word;
     letter-spacing: 0.01em;
@@ -1097,7 +1097,7 @@ html[data-theme="dark"] .cf-msg-bubble-other { background: #36383a !important; c
 .desc-content p {
     margin-top: 0;
     margin-bottom: 0.75rem;
-    line-height: 1.75;
+    line-height: 1.5;
 }
 .desc-content p:last-child {
     margin-bottom: 0;
@@ -1108,7 +1108,7 @@ html[data-theme="dark"] .cf-msg-bubble-other { background: #36383a !important; c
 }
 .desc-content li {
     margin-bottom: 0.3rem;
-    line-height: 1.65;
+    line-height: 1.5;
 }
 .desc-content strong {
     color: #0f172a;
@@ -1946,7 +1946,7 @@ html[data-theme="dark"] .notif-banner-text {
     color: #a1a1aa;
 }
 html[data-theme="dark"] .notif-banner-close {
-    color: #71717a;
+    color: #a1a1aa;
 }
 html[data-theme="dark"] .notif-banner-close:hover {
     background: rgba(255, 255, 255, 0.1);
@@ -2092,14 +2092,14 @@ html[data-theme="dark"] .navbar-logout-btn:hover {
 p, li, dd, dt, blockquote, figcaption,
 .card-body p, .modal p, .alert p,
 .card p, .desc p, .meta-text, .activity-desc {
-    line-height: 1.6;
+    line-height: 1.5;
     text-align: left;
 }
 
 /* Body-level running text inside components must meet 1.6 */
 .card-body, .modal-body, .announcement-body,
 .tab-content, .panel-body, .content-body {
-    line-height: 1.6;
+    line-height: 1.5;
 }
 
 /* Headings: 1.4 is acceptable for short multi-line headings (display text) */
@@ -2121,12 +2121,12 @@ h1, h2, h3, h4, h5, h6 {
 .walkin-header .meta,
 .nav-instruction,
 .gmap-nav-instruction {
-    line-height: 1.6 !important;
+    line-height: 1.5 !important;
 }
 
 /* 2. User Content, Articles, Descriptions, Comments */
 .desc-content, .prose, .user-content, .comment-body, .announcement-body {
-    line-height: 1.65 !important;
+    line-height: 1.5 !important;
     text-align: left !important;
     word-break: break-word;
 }
@@ -2165,7 +2165,7 @@ input::placeholder, textarea::placeholder {
 @media (max-width: 768px) {
     body {
         font-size: 15.5px;
-        line-height: 1.6;
+        line-height: 1.5;
     }
     input, select, textarea {
         font-size: 16px !important; /* Prevents auto-zoom on iOS */
@@ -2394,6 +2394,30 @@ html.dark .empty-state-title {
 }
 html[data-theme="dark"] .empty-state-desc,
 html.dark .empty-state-desc {
+    color: #a1a1aa;
+}
+html[data-theme="dark"] .empty-state,
+html.dark .empty-state {
+    color: #a1a1aa;
+}
+html[data-theme="dark"] .empty-state-row-title,
+html.dark .empty-state-row-title {
+    color: #a1a1aa;
+}
+html[data-theme="dark"] .empty-state-row-desc,
+html.dark .empty-state-row-desc {
+    color: #a1a1aa;
+}
+html[data-theme="dark"] .bs-meta-label,
+html.dark .bs-meta-label {
+    color: #a1a1aa;
+}
+html[data-theme="dark"] .nav-hud-label,
+html.dark .nav-hud-label {
+    color: #d4d4d8;
+}
+html[data-theme="dark"] .notif-banner-close,
+html.dark .notif-banner-close {
     color: #a1a1aa;
 }
 html[data-theme="dark"] .empty-state-circle,
