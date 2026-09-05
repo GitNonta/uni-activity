@@ -54,7 +54,7 @@
             font-family: 'Sarabun', sans-serif;
             line-height: 1.5;
         }
-        .page-shell { width: min(100%, 760px); position: relative; }
+        .page-shell { width: min(100%, 680px); position: relative; }
         .theme-toggle {
             position: fixed;
             top: 1rem;
@@ -72,18 +72,20 @@
         }
         .theme-toggle:hover, .theme-toggle:focus-visible { color: var(--primary); border-color: var(--primary); }
         .card {
-            display: grid;
-            grid-template-columns: minmax(220px, .9fr) minmax(0, 1.1fr);
-            gap: 1.5rem;
+            display: flex;
+            flex-direction: column;
             align-items: center;
-            padding: clamp(1.25rem, 4vw, 2.5rem);
+            gap: 1.25rem;
+            padding: clamp(1.25rem, 5vw, 3rem);
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 24px;
             box-shadow: 0 18px 50px var(--shadow);
+            text-align: center;
         }
         .art-panel {
-            min-height: 230px;
+            width: min(100%, 360px);
+            min-height: 220px;
             display: grid;
             place-items: center;
             padding: 1rem;
@@ -91,23 +93,24 @@
             border: 1px solid var(--border);
             border-radius: 20px;
         }
-        .art-panel svg { width: min(100%, 280px); height: auto; overflow: visible; }
+        .art-panel svg { display: block; width: min(100%, 300px); height: auto; overflow: visible; }
+        .content { width: 100%; display: flex; flex-direction: column; align-items: center; }
         .eyebrow {
             display: inline-flex;
             align-items: center;
             gap: .5rem;
-            margin: 0 0 .6rem;
+            margin: 0;
             color: var(--accent);
             font-size: .78rem;
             font-weight: 800;
             letter-spacing: .08em;
             text-transform: uppercase;
         }
-        .eyebrow::before { content: ''; width: 28px; height: 3px; border-radius: 99px; background: var(--accent); }
-        .status { margin: 0; color: var(--primary); font-size: clamp(2.5rem, 8vw, 4.5rem); font-weight: 800; line-height: 1; }
-        h1 { margin: .65rem 0 .5rem; font-size: clamp(1.35rem, 3vw, 1.85rem); line-height: 1.3; }
+        .eyebrow::before, .eyebrow::after { content: ''; width: 28px; height: 3px; border-radius: 99px; background: var(--accent); }
+        .status { margin: .3rem 0 0; color: var(--primary); font-size: clamp(2.5rem, 8vw, 4.5rem); font-weight: 800; line-height: 1; }
+        h1 { max-width: 36rem; margin: .65rem 0 .5rem; font-size: clamp(1.35rem, 3vw, 1.85rem); line-height: 1.3; }
         .message { max-width: 38rem; margin: 0 0 1.35rem; color: var(--muted); font-size: 1rem; }
-        .actions { display: flex; flex-wrap: wrap; gap: .7rem; }
+        .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: .7rem; }
         .button {
             min-height: 44px;
             display: inline-flex;
@@ -127,7 +130,8 @@
         .button-primary:hover, .button-primary:focus-visible { background: var(--primary-hover); }
         .button-secondary { color: var(--ink); background: transparent; border-color: var(--border); }
         .button-secondary:hover, .button-secondary:focus-visible { color: var(--primary); border-color: var(--primary); }
-        .footer { grid-column: 1 / -1; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--faint); font-size: .82rem; text-align: center; }
+        :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+        .footer { width: 100%; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--faint); font-size: .82rem; text-align: center; }
         .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
         @keyframes float-cap { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(2deg); } }
         @keyframes pencil-write { 0%, 100% { transform: rotate(-8deg) translate(0, 0); } 50% { transform: rotate(-3deg) translate(3px, -2px); } }
@@ -141,10 +145,9 @@
         .status-mark { animation: status-pulse 2s ease-in-out infinite; }
         @media (max-width: 640px) {
             body { padding: .75rem; }
-            .card { grid-template-columns: 1fr; gap: 1rem; padding: 1rem; }
+            .card { gap: 1rem; padding: 1rem; }
             .art-panel { min-height: 190px; }
-            .footer { grid-column: auto; }
-            .actions { flex-direction: column; }
+            .actions { width: 100%; flex-direction: column; }
             .button { width: 100%; }
         }
         @media (prefers-reduced-motion: reduce) {
@@ -160,9 +163,9 @@
 
     <main class="page-shell">
         <section class="card" aria-labelledby="error-title">
-            <div class="art-panel" aria-hidden="true">
-                <svg viewBox="0 0 280 210" role="img" xmlns="http://www.w3.org/2000/svg">
-                    <title>ภาพประกอบการเรียนรู้</title>
+            <div class="art-panel">
+                <svg viewBox="0 0 280 210" role="img" aria-labelledby="education-art-title" xmlns="http://www.w3.org/2000/svg">
+                    <title id="education-art-title">ภาพประกอบการเรียนรู้สำหรับข้อผิดพลาด {{ $code }}</title>
                     <circle cx="32" cy="34" r="4" fill="var(--accent)" class="dot"/>
                     <circle cx="246" cy="42" r="5" fill="var(--primary)" class="dot" style="animation-delay:.5s"/>
                     <circle cx="224" cy="178" r="3" fill="var(--accent)" class="dot" style="animation-delay:1s"/>
@@ -218,7 +221,7 @@
 
             <div class="content">
                 <p class="eyebrow">UniActivity · พื้นที่การเรียนรู้</p>
-                <p class="status" aria-hidden="true">{{ $code }}</p>
+                <p class="status" aria-label="รหัสข้อผิดพลาด {{ $code }}">{{ $code }}</p>
                 <h1 id="error-title">{{ $title }}</h1>
                 <p class="message">{{ $message }}</p>
                 <div class="actions">
