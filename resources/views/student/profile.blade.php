@@ -379,15 +379,13 @@
                 <!-- Diagonal Gloss Specular Line -->
                 <div class="student-card-gloss-sweep"></div>
 
-                <!-- Micro Security Guilloche Pattern Overlay -->
+                <!-- Micro Security Pattern Overlay -->
                 <div class="student-card-security-pattern"></div>
 
-                <!-- Top Diagonal Accent with Shimmer -->
-                <div class="student-card-top-accent"></div>
-
-                <!-- Main Content Body -->
+                <!-- Card Structure (Header, Clean Plaque for Photo & Info, Footer) -->
                 <div class="student-card-body">
-                    <!-- Header: University Logo & Name & Chip info -->
+                    
+                    <!-- 1. Header Bar: University Brand & Official Badge -->
                     <div class="student-card-header">
                         <div class="student-card-logo-badge">
                             <img src="{{ asset('images/pkru-logo.png') }}" alt="PKRU Logo" class="student-card-logo-img">
@@ -396,7 +394,6 @@
                             <div class="student-card-univ-th">มหาวิทยาลัยราชภัฏภูเก็ต</div>
                             <div class="student-card-univ-en">PHUKET RAJABHAT UNIVERSITY</div>
                         </div>
-                        <!-- Verified Hologram Stamp Icon -->
                         <div class="student-card-hologram-stamp" title="PKRU Official Identity">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                                 <path d="M12 2L4 5V11.5C4 16.5 7.4 21.1 12 22.3C16.6 21.1 20 16.5 20 11.5V5L12 2Z" fill="url(#pkruHoloGrad)" stroke="rgba(255,255,255,0.9)" stroke-width="1.2"/>
@@ -412,68 +409,63 @@
                         </div>
                     </div>
 
-                    <!-- Photo Section with 3D Frame & Inner Bevel -->
-                    <div class="student-card-photo-wrapper">
+                    <!-- 2. Protected White Plaque: Ensures background NEVER touches photo or text -->
+                    <div class="student-card-inner-plaque">
+                        <!-- Student Photo -->
                         <div class="student-card-photo-frame">
                             @if($user->profile_photo)
                                 <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="profile" class="student-card-photo">
                             @else
                                 <div class="student-card-photo-placeholder">
-                                    <svg width="52" height="52" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                    <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                                 </div>
                             @endif
-                            <!-- Verified Photo Seal Overlap -->
+                            <!-- Verified Photo Seal -->
                             <div class="student-card-photo-seal" title="Identity Verified">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
                                     <polyline points="20 6 9 17 4 12"></polyline>
                                 </svg>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Details Section -->
-                    <div class="student-card-info">
-                        <div class="student-card-label">รหัสนักศึกษา / STUDENT ID</div>
-                        <div class="student-card-id-number">{{ $user->student_id }}</div>
-                        
-                        <div class="student-card-name-th">{{ $user->full_name }}</div>
-                        @if($user->english_name)
-                            <div class="student-card-name-en">{{ strtoupper($user->english_name) }}</div>
-                        @else
-                            <div class="student-card-name-en" style="color: #94a3b8; font-style: italic;">(No English Name)</div>
-                        @endif
+                        <!-- Student Details: 100% Crisp & High Contrast -->
+                        <div class="student-card-info">
+                            <div class="student-card-label">รหัสนักศึกษา / STUDENT ID</div>
+                            <div class="student-card-id-number">{{ $user->student_id }}</div>
+                            
+                            <div class="student-card-name-th">{{ $user->full_name }}</div>
+                            @if($user->english_name)
+                                <div class="student-card-name-en">{{ strtoupper($user->english_name) }}</div>
+                            @else
+                                <div class="student-card-name-en" style="color: #94a3b8; font-style: italic;">(No English Name)</div>
+                            @endif
 
-                        <div class="student-card-divider"></div>
+                            <div class="student-card-divider"></div>
 
-                        <div class="student-card-dept-row">
-                            <span class="student-card-dept-label">สาขาวิชา</span>
-                            <span class="student-card-dept-val">{{ $user->department ?? 'วิทยาการคอมพิวเตอร์' }}</span>
+                            <div class="student-card-dept-badge">
+                                <span class="student-card-dept-prefix">สาขาวิชา:</span>
+                                <span class="student-card-dept-val">{{ $user->department ?? 'วิทยาการคอมพิวเตอร์' }}</span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Bottom Slanted Area & Security Foil -->
-                <div class="student-card-bottom-plate">
-                    <div class="student-card-bottom-skew"></div>
-                    
-                    <div class="student-card-bottom-content">
-                        <!-- Left: Student Status -->
+                    <!-- 3. Bottom Security Plate -->
+                    <div class="student-card-bottom-plate">
+                        <!-- Left: Status -->
                         <div class="student-card-meta">
                             <div class="student-card-type-th">บัตรประจำตัวนักศึกษา</div>
-                            <div class="student-card-type-en">STUDENT IDENTIFICATION</div>
+                            <div class="student-card-type-en">STUDENT ID CARD</div>
                         </div>
 
-                        <!-- Center: High-Definition Gold EMV Smart Chip -->
+                        <!-- Center: Realistic Gold EMV Smart Chip -->
                         <div class="student-card-emv-container">
                             <div class="student-card-emv-chip" title="PKRU Smart Chip">
-                                <svg width="44" height="34" viewBox="0 0 44 34" fill="none" class="student-card-chip-svg">
+                                <svg width="42" height="32" viewBox="0 0 44 34" fill="none" class="student-card-chip-svg">
                                     <rect x="0.5" y="0.5" width="43" height="33" rx="5.5" stroke="#b45309" stroke-opacity="0.7"/>
-                                    <!-- Chip circuit tracks -->
                                     <line x1="0" y1="17" x2="44" y2="17" stroke="#b45309" stroke-width="1.2" stroke-opacity="0.85"/>
                                     <line x1="15" y1="0" x2="15" y2="34" stroke="#b45309" stroke-width="1.2" stroke-opacity="0.85"/>
                                     <line x1="29" y1="0" x2="29" y2="34" stroke="#b45309" stroke-width="1.2" stroke-opacity="0.85"/>
                                     <rect x="14" y="8.5" width="16" height="17" rx="3" fill="#fef08a" fill-opacity="0.45" stroke="#b45309" stroke-width="1.2" stroke-opacity="0.9"/>
-                                    <!-- Chip micro notch -->
                                     <path d="M0 13C2.5 13 3.5 15 3.5 17C3.5 19 2.5 21 0 21" fill="#b45309" fill-opacity="0.35"/>
                                 </svg>
                             </div>
@@ -481,12 +473,13 @@
 
                         <!-- Right: Contactless & VISA Foil -->
                         <div class="student-card-network">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="student-card-contactless">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="student-card-contactless">
                                 <path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/>
                             </svg>
                             <div class="student-card-visa-foil">VISA</div>
                         </div>
                     </div>
+
                 </div>
 
             </div>
@@ -526,9 +519,9 @@
 
 .student-id-card {
     width: 320px;
-    height: 512px;
-    background-color: #ffffff;
-    background-image: var(--theme-bg-image);
+    height: 520px;
+    background: linear-gradient(180deg, var(--theme-primary) 0%, var(--theme-secondary) 100%);
+    background-image: var(--theme-bg-image, none);
     background-size: cover;
     background-position: center;
     border-radius: 18px;
@@ -540,12 +533,13 @@
     will-change: transform;
     transition: transform 0.12s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.25s ease;
     box-shadow: 
-        0 30px 65px -15px rgba(0, 0, 0, 0.48),
-        0 15px 30px -10px rgba(0, 0, 0, 0.32),
+        0 30px 65px -15px rgba(0, 0, 0, 0.5),
+        0 15px 30px -10px rgba(0, 0, 0, 0.35),
         inset 0 1px 2px rgba(255, 255, 255, 0.9),
-        inset 0 -1px 2px rgba(0, 0, 0, 0.25);
+        inset 0 -1px 2px rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.65);
-    outline: 1px solid rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
 }
 
 /* Dynamic Specular Glass Glare Reflection */
@@ -589,26 +583,15 @@
     transform: rotate(-12deg);
 }
 
-/* Micro Security Guilloche Pattern */
+/* Micro Security Pattern Overlay */
 .student-card-security-pattern {
     position: absolute;
     inset: 0;
     pointer-events: none;
     z-index: 2;
-    opacity: 0.04;
-    background-image: radial-gradient(#000 1px, transparent 1px);
-    background-size: 7px 7px;
-}
-
-/* Top Diagonal Accent */
-.student-card-top-accent {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 132px;
-    background: linear-gradient(106deg, var(--theme-primary) 38%, #ffffff 38.5%);
-    z-index: 3;
+    opacity: 0.08;
+    background-image: radial-gradient(rgba(255,255,255,0.7) 1px, transparent 1px);
+    background-size: 8px 8px;
 }
 
 /* Main Content Body */
@@ -618,24 +601,29 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+    width: 100%;
 }
 
+/* 1. Header Bar */
 .student-card-header {
     display: flex;
     align-items: center;
-    padding: 14px 16px 0 16px;
-    gap: 10px;
+    padding: 10px 14px;
+    gap: 9px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.08) 100%);
+    border-bottom: 1px solid rgba(255,255,255,0.25);
+    flex-shrink: 0;
 }
 
 .student-card-logo-badge {
-    width: 46px;
-    height: 46px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2.5px solid #ffffff;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.18), inset 0 1px 2px rgba(255,255,255,0.9);
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
     background: #ffffff;
     flex-shrink: 0;
 }
@@ -649,53 +637,62 @@
 
 .student-card-header-titles {
     line-height: 1.2;
-    margin-top: -3px;
     flex: 1;
 }
 
 .student-card-univ-th {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 700;
-    color: #0f172a;
+    color: #ffffff;
     letter-spacing: -0.2px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.35);
 }
 
 .student-card-univ-en {
-    font-size: 8.5px;
+    font-size: 8px;
     font-weight: 600;
-    color: #475569;
+    color: rgba(255,255,255,0.9);
     letter-spacing: 0.3px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
 
 .student-card-hologram-stamp {
     flex-shrink: 0;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
 }
 
-/* Photo Section */
-.student-card-photo-wrapper {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    margin-top: 14px;
-    position: relative;
-}
-
-.student-card-photo-frame {
-    width: 126px;
-    height: 160px;
-    border-radius: 4px;
-    padding: 3px;
+/* 2. Protected White Plaque: Completely isolates photo & text from background graphics */
+.student-card-inner-plaque {
+    margin: 8px 12px 6px 12px;
+    padding: 10px 12px 10px 12px;
     background: #ffffff;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06), inset 0 1px 2px rgba(255,255,255,0.9);
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.18), inset 0 1px 1px rgba(255,255,255,0.9);
+    border: 1px solid rgba(255,255,255,0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+}
+
+/* Photo inside protected plaque */
+.student-card-photo-frame {
+    width: 114px;
+    height: 144px;
+    border-radius: 5px;
+    padding: 2.5px;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.06);
     position: relative;
+    margin-bottom: 6px;
+    flex-shrink: 0;
 }
 
 .student-card-photo {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 2px;
+    border-radius: 3px;
     display: block;
 }
 
@@ -706,119 +703,114 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 2px;
+    border-radius: 3px;
     color: #ffffff;
 }
 
 .student-card-photo-seal {
     position: absolute;
-    bottom: -6px;
-    right: -6px;
-    width: 24px;
-    height: 24px;
+    bottom: -5px;
+    right: -5px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     background: linear-gradient(135deg, #10b981, #059669);
     border: 2px solid #ffffff;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-/* Info Section */
+/* Info Section inside protected plaque */
 .student-card-info {
-    padding: 12px 24px;
-    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
 }
 
 .student-card-label {
-    font-size: 10px;
-    color: #475569;
+    font-size: 9px;
+    color: #64748b;
     font-weight: 700;
-    letter-spacing: 0.6px;
-    margin-bottom: 1px;
+    letter-spacing: 0.8px;
+    margin-bottom: 0px;
 }
 
 .student-card-id-number {
-    font-size: 23px;
+    font-size: 21px;
     font-weight: 800;
     letter-spacing: 2px;
     color: #0f172a;
     line-height: 1.1;
     font-family: 'Courier New', monospace;
-    text-shadow: 0 1px 1px rgba(255,255,255,0.9), 0 -1px 1px rgba(0,0,0,0.25);
-    margin-bottom: 6px;
-}
-
-.student-card-name-th {
-    font-size: 19px;
-    font-weight: 700;
-    color: #0f172a;
-    line-height: 1.15;
-    letter-spacing: -0.3px;
-}
-
-.student-card-name-en {
-    font-size: 13.5px;
-    font-weight: 700;
-    color: #334155;
+    text-shadow: 0 1px 1px rgba(255,255,255,0.9), 0 -1px 1px rgba(0,0,0,0.2);
     margin-bottom: 4px;
 }
 
+.student-card-name-th {
+    font-size: 16.5px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.2;
+    letter-spacing: -0.2px;
+}
+
+.student-card-name-en {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    margin-top: 1px;
+    letter-spacing: 0.2px;
+}
+
 .student-card-divider {
-    width: 100%;
+    width: 80%;
     height: 1px;
-    background: #cbd5e1;
+    background: #e2e8f0;
     margin: 6px 0;
 }
 
-.student-card-dept-row {
-    display: flex;
+.student-card-dept-badge {
+    display: inline-flex;
     align-items: center;
-    gap: 6px;
-    font-size: 13.5px;
-    font-weight: 700;
+    gap: 5px;
+    padding: 2px 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    font-size: 11px;
     color: #1e293b;
+    max-width: 95%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.student-card-dept-label {
+.student-card-dept-prefix {
     color: #64748b;
     font-weight: 600;
-    font-size: 12px;
 }
 
-/* Bottom Plate & Chip */
+.student-card-dept-val {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+/* 3. Bottom Security Plate */
 .student-card-bottom-plate {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 120px;
-    z-index: 3;
-}
-
-.student-card-bottom-skew {
-    position: absolute;
-    top: 35px;
-    left: -20px;
-    right: -20px;
-    bottom: -20px;
+    height: 64px;
+    padding: 8px 14px;
     background: var(--theme-secondary);
-    transform: rotate(-7deg);
-    border-top: 14px solid var(--theme-primary);
-    box-shadow: 0 -3px 10px rgba(0,0,0,0.12);
-}
-
-.student-card-bottom-content {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    padding: 14px 20px;
+    border-top: 3px solid var(--theme-primary);
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
-    z-index: 5;
+    align-items: center;
+    flex-shrink: 0;
+    margin-top: auto;
+    position: relative;
 }
 
 .student-card-meta {
@@ -827,64 +819,54 @@
 }
 
 .student-card-type-th {
-    font-size: 11px;
+    font-size: 10px;
     color: #cbd5e1;
     font-weight: 600;
     letter-spacing: 0.2px;
 }
 
 .student-card-type-en {
-    font-size: 8px;
+    font-size: 7.5px;
     color: #94a3b8;
     font-weight: 600;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.6px;
 }
 
-/* Realistic Gold Metallic EMV Smart Chip */
 .student-card-emv-container {
-    position: absolute;
-    left: 50%;
-    bottom: 56px;
-    transform: translateX(-50%);
-    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .student-card-emv-chip {
-    width: 44px;
-    height: 34px;
+    width: 42px;
+    height: 32px;
     background: linear-gradient(135deg, #fef08a 0%, #fde047 25%, #d97706 60%, #fef08a 80%, #b45309 100%);
     border-radius: 6px;
     position: relative;
     overflow: hidden;
     border: 1px solid #b45309;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.35), inset 0 1px 2px rgba(255,255,255,0.95), inset 0 -1px 2px rgba(0,0,0,0.4);
-}
-
-.student-card-chip-svg {
-    display: block;
-    width: 100%;
-    height: 100%;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.95), inset 0 -1px 2px rgba(0,0,0,0.4);
 }
 
 .student-card-network {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 2px;
+    gap: 1px;
 }
 
 .student-card-contactless {
     transform: rotate(90deg);
-    margin-right: 6px;
-    margin-bottom: 2px;
+    margin-right: 4px;
     filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));
 }
 
 .student-card-visa-foil {
-    font-size: 26px;
+    font-size: 22px;
     font-weight: 900;
     font-style: italic;
-    letter-spacing: 1.5px;
+    letter-spacing: 1.2px;
     line-height: 1;
     background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 50%, #ffffff 100%);
     -webkit-background-clip: text;
