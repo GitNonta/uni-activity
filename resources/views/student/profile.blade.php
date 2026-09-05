@@ -358,7 +358,7 @@
 @push('scripts')
 <!-- ID Card Modal -->
 <div id="idCardModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);">
-    <div id="idCardContainer" style="--theme-primary: #ea580c; --theme-secondary: #27272a; --theme-bg-image: none; position: relative; animation: slideUp 0.3s ease-out; display: flex; flex-direction: column; align-items: center;">
+    <div id="idCardContainer" style="position: relative; animation: slideUp 0.3s ease-out; display: flex; flex-direction: column; align-items: center;">
         <!-- Close button -->
         <button onclick="closeCardModal()" style="position: absolute; top: -15px; right: -15px; width: 32px; height: 32px; background: #fff; border: none; border-radius: 50%; box-shadow: 0 2px 10px rgba(0,0,0,0.25); cursor: pointer; z-index: 30; display: flex; align-items: center; justify-content: center; color: #333; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -366,11 +366,11 @@
 
         <!-- 3D Perspective Stage Wrapper -->
         <div class="student-card-stage">
-            <!-- ID Card Structure (Exact Original PKRU Theme with 3D Depth & Gloss) -->
+            <!-- ID Card Structure (Authentic Fixed PKRU Official Theme) -->
             <div id="studentIdCard" class="student-id-card">
                 
                 <!-- Background Base & Sheen (strictly z-index: 1-2, BEHIND all content and photo) -->
-                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 75px; background: linear-gradient(105deg, var(--theme-primary) 38%, #fff 38.5%); z-index: 1;"></div>
+                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 75px; background: linear-gradient(105deg, #ea580c 38%, #ffffff 38.5%); z-index: 1;"></div>
                 
                 <!-- Card Background Specular Sheen (Subtle, smooth card reflection, strictly z-index: 2) -->
                 <div class="student-card-bg-sheen"></div>
@@ -384,8 +384,8 @@
                             <img src="{{ asset('images/pkru-logo.png') }}" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;" alt="PKRU Logo">
                         </div>
                         <div style="line-height: 1.2; margin-top: -5px; z-index: 2;">
-                            <div style="font-size: 16px; font-weight: 700; color: #1e293b; letter-spacing: -0.2px;">มหาวิทยาลัยราชภัฏภูเก็ต</div>
-                            <div style="font-size: 8.5px; font-weight: 600; color: #334155; letter-spacing: 0.3px;">PHUKET RAJABHAT UNIVERSITY</div>
+                            <div style="font-size: 16px; font-weight: 700; color: #1e293b !important; letter-spacing: -0.2px;">มหาวิทยาลัยราชภัฏภูเก็ต</div>
+                            <div style="font-size: 8.5px; font-weight: 600; color: #334155 !important; letter-spacing: 0.3px;">PHUKET RAJABHAT UNIVERSITY</div>
                         </div>
                     </div>
 
@@ -404,20 +404,20 @@
 
                     <!-- Details -->
                     <div style="padding: 15px 25px; z-index: 2; position: relative;">
-                        <div style="font-size: 11px; color: #1e293b; font-weight: 700; margin-bottom: 0px;">รหัสนักศึกษา :</div>
-                        <div style="font-size: 24px; font-weight: 700; letter-spacing: 1px; color: #0f172a; margin-bottom: 8px; line-height: 1;">{{ $user->student_id }}</div>
+                        <div style="font-size: 11px; color: #1e293b !important; font-weight: 700; margin-bottom: 0px;">รหัสนักศึกษา :</div>
+                        <div style="font-size: 24px; font-weight: 700; letter-spacing: 1px; color: #0f172a !important; margin-bottom: 8px; line-height: 1;">{{ $user->student_id }}</div>
                         
-                        <div style="font-size: 20px; font-weight: 700; color: #0f172a; line-height: 1.1; letter-spacing: -0.3px;">{{ $user->full_name }}</div>
+                        <div style="font-size: 20px; font-weight: 700; color: #0f172a !important; line-height: 1.1; letter-spacing: -0.3px;">{{ $user->full_name }}</div>
                         @if($user->english_name)
-                            <div style="font-size: 14px; font-weight: 700; color: #334155; margin-bottom: 6px;">{{ strtoupper($user->english_name) }}</div>
+                            <div style="font-size: 14px; font-weight: 700; color: #334155 !important; margin-bottom: 6px;">{{ strtoupper($user->english_name) }}</div>
                         @else
-                            <div style="font-size: 12px; font-weight: 600; color: #94a3b8; margin-bottom: 6px; font-style: italic;">(No English Name)</div>
+                            <div style="font-size: 12px; font-weight: 600; color: #94a3b8 !important; margin-bottom: 6px; font-style: italic;">(No English Name)</div>
                         @endif
                         
                         <!-- Thin divider -->
                         <div style="width: 100%; height: 1px; background: #64748b; margin: 8px 0; opacity: 0.5;"></div>
                         
-                        <div style="font-size: 14px; font-weight: 700; color: #1e293b;">สาขา{{ $user->department ?? 'วิทยาการคอมพิวเตอร์' }}</div>
+                        <div style="font-size: 14px; font-weight: 700; color: #1e293b !important;">สาขา{{ $user->department ?? 'วิทยาการคอมพิวเตอร์' }}</div>
                     </div>
 
                     <div style="flex: 1;"></div>
@@ -425,13 +425,13 @@
 
                 <!-- Bottom slanted area -->
                 <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 120px; overflow: visible; z-index: 12;">
-                    <div style="position: absolute; top: 35px; left: -20px; right: -20px; bottom: -20px; background: var(--theme-secondary); transform: rotate(-7deg); border-top: 14px solid var(--theme-primary); box-shadow: 0 -2px 5px rgba(0,0,0,0.08);"></div>
+                    <div style="position: absolute; top: 35px; left: -20px; right: -20px; bottom: -20px; background: #27272a; transform: rotate(-7deg); border-top: 14px solid #ea580c; box-shadow: 0 -2px 5px rgba(0,0,0,0.08);"></div>
                     
                     <!-- Bottom content overlay -->
                     <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 15px 20px; display: flex; justify-content: space-between; align-items: flex-end; z-index: 3;">
                         
                         <!-- Left: text -->
-                        <div style="font-size: 11px; color: #a1a1aa; font-weight: 500; margin-bottom: 2px;">บัตรประจำตัวนักศึกษา</div>
+                        <div style="font-size: 11px; color: #a1a1aa !important; font-weight: 500; margin-bottom: 2px;">บัตรประจำตัวนักศึกษา</div>
                         
                         <!-- Center: Chip (Enhanced Realistic Gold EMV Smart Chip) -->
                         <div style="position: absolute; left: 50%; bottom: 60px; transform: translateX(-50%) rotate(0deg); z-index: 10;">
@@ -449,22 +449,13 @@
                         <!-- Right: Contactless & VISA -->
                         <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0px;">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4d4d8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(90deg); margin-right: 8px; margin-bottom: 4px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
-                            <div style="font-size: 28px; font-weight: 900; font-style: italic; color: #fff; letter-spacing: 1px; line-height: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));">VISA</div>
+                            <div style="font-size: 28px; font-weight: 900; font-style: italic; color: #fff !important; letter-spacing: 1px; line-height: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));">VISA</div>
                         </div>
 
                     </div>
                 </div>
 
             </div>
-        </div>
-
-        <!-- Theme Selector -->
-        <div style="margin-top: 20px; display: flex; gap: 12px; justify-content: center; z-index: 10; flex-wrap: wrap; max-width: 320px;">
-            <button onclick="setCardTheme('#ea580c', '#27272a')" style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #ea580c 50%, #27272a 50%); border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="PKRU Default"></button>
-            <button onclick="setCardTheme('#0ea5e9', '#0f172a')" style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #0ea5e9 50%, #0f172a 50%); border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Ocean Blue"></button>
-            <button onclick="setCardTheme('#10b981', '#064e3b')" style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #10b981 50%, #064e3b 50%); border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Emerald Green"></button>
-            <button onclick="setCardTheme('#a855f7', '#3b0764')" style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #a855f7 50%, #3b0764 50%); border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Amethyst Purple"></button>
-            <button onclick="setCardTheme('#e11d48', '#4c0519')" style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #e11d48 50%, #4c0519 50%); border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Crimson Red"></button>
         </div>
     </div>
 </div>
@@ -484,13 +475,17 @@
     padding: 10px;
 }
 
+/* Ensure the Student ID card is NEVER affected by system dark/light mode */
+#studentIdCard,
+#studentIdCard * {
+    color-scheme: light !important;
+}
+
 .student-id-card {
     width: 320px;
     height: 504px;
-    background-color: #ffffff;
-    background-image: var(--theme-bg-image);
-    background-size: cover;
-    background-position: center;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
     border-radius: 16px;
     overflow: hidden;
     position: relative;
@@ -610,25 +605,12 @@
         studentCard.addEventListener('touchend', resetCardTilt);
     }
 
-    // Theme Management
-    function setCardTheme(primary, secondary, bgImage = 'none') {
-        const container = document.getElementById('idCardContainer');
-        container.style.setProperty('--theme-primary', primary);
-        container.style.setProperty('--theme-secondary', secondary);
-        container.style.setProperty('--theme-bg-image', bgImage);
-        localStorage.setItem('idCardThemePrimary', primary);
-        localStorage.setItem('idCardThemeSecondary', secondary);
-        localStorage.setItem('idCardThemeBgImage', bgImage);
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const p = localStorage.getItem('idCardThemePrimary');
-        const s = localStorage.getItem('idCardThemeSecondary');
-        const bg = localStorage.getItem('idCardThemeBgImage');
-        if (p && s) {
-            setCardTheme(p, s, bg || 'none');
-        }
-    });
+    // Ensure no legacy theme overrides remain
+    try {
+        localStorage.removeItem('idCardThemePrimary');
+        localStorage.removeItem('idCardThemeSecondary');
+        localStorage.removeItem('idCardThemeBgImage');
+    } catch(e) {}
 
     // Edit English Name
     function editEnglishName(currentName) {
