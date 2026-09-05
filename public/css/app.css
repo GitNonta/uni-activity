@@ -19,7 +19,7 @@
 ::selection { background: #ea580c; color: #ffffff; }
 ::-moz-selection { background: #ea580c; color: #ffffff; }
 html { font-size: 16px; -webkit-text-size-adjust: 100%; }
-body { font-family: 'Sarabun', 'Segoe UI', sans-serif; color: #1e293b; background: #f1f5f9; line-height: 1.5; min-height: 100vh; overflow-x: hidden; max-width: 100%; word-wrap: break-word; overflow-wrap: break-word; }
+body { font-family: 'Sarabun', 'Segoe UI', sans-serif; color: #1e293b; background: #f1f5f9; line-height: 1.6; min-height: 100vh; overflow-x: hidden; max-width: 100%; word-wrap: break-word; overflow-wrap: break-word; text-align: left; }
 html { overflow-x: hidden; width: 100%; -webkit-overflow-scrolling: touch; }
 a { color: #ea580c; text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -72,7 +72,7 @@ table th { font-weight: 600; color: #475569; background: #f8fafc; }
 .text-right { text-align: right; }
 .text-sm { font-size: .875rem; }
 .text-xs { font-size: .75rem; }
-.text-muted { color: #64748b; }
+.text-muted { color: #475569; }
 .text-danger { color: #dc2626; }
 .text-success { color: #16a34a; }
 .text-primary { color: #ea580c; }
@@ -2079,6 +2079,152 @@ html[data-theme="dark"] .navbar-logout-btn:hover {
     color: #f87171;
     border-color: rgba(239, 68, 68, 0.35);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   STRICT TYPOGRAPHY & VISUAL ACCESSIBILITY (WCAG 2.1 AA)
+   - Contrast Ratio >= 4.5:1 (Normal Text) / >= 3.0:1 (Large/Bold)
+   - Line Height >= 1.5 - 1.65 (Paragraphs, Body, Descriptions, Tables)
+   - Strict Left Alignment (Forbid Justify / Eliminate Rivers of White)
+   - Native-like Responsive Typography across Mobile, Tablet, Desktop
+   ══════════════════════════════════════════════════════════════ */
+
+/* 1. Baseline Typography & Line Height (>= 1.5 - 1.6) */
+p, li, dd, dt, blockquote, figcaption {
+    line-height: 1.6;
+    text-align: left;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: inherit;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.35;
+    text-align: left;
+}
+
+/* 2. User Content, Articles, Descriptions, Comments */
+.desc-content, .prose, .user-content, .comment-body, .announcement-body {
+    line-height: 1.65 !important;
+    text-align: left !important;
+    word-break: break-word;
+}
+
+/* 3. Strict Prevention of Justification (Eliminate Rivers of White in Thai & English) */
+[style*="text-align: justify"], 
+[style*="text-align:justify"],
+[style*="text-align: justify !important"],
+.text-justify, 
+.justify-text {
+    text-align: left !important;
+}
+
+/* 4. Enhanced Contrast Tokens - Light Theme (WCAG AA >= 4.5:1) */
+.text-muted {
+    color: #475569 !important; /* Slate 600: Contrast 5.9:1 on #ffffff */
+}
+.text-secondary {
+    color: #334155 !important; /* Slate 700: Contrast 9.5:1 on #ffffff */
+}
+.text-dark, .text-main {
+    color: #0f172a !important; /* Slate 900: Contrast 19.4:1 on #ffffff */
+}
+
+/* 5. Form Controls & Inputs Accessibility */
+input, textarea, select {
+    line-height: 1.5;
+    text-align: left;
+    color: #0f172a;
+}
+input::placeholder, textarea::placeholder {
+    color: #64748b; /* Contrast 4.6:1 on #ffffff */
+}
+
+/* 6. Mobile & Touch Viewports Native Scale */
+@media (max-width: 768px) {
+    body {
+        font-size: 15.5px;
+        line-height: 1.6;
+    }
+    input, select, textarea {
+        font-size: 16px !important; /* Prevents auto-zoom on iOS */
+    }
+    .card-header {
+        font-size: 1rem;
+        line-height: 1.4;
+    }
+    .btn {
+        min-height: 44px; /* WCAG touch target >= 44px */
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DARK MODE TYPOGRAPHY & ACCESSIBILITY (WCAG 2.1 AA)
+   ══════════════════════════════════════════════════════════════ */
+html[data-theme="dark"], html.dark {
+    color-scheme: dark;
+}
+html[data-theme="dark"] body, html.dark body {
+    background: #09090b !important;
+    color: #f4f4f5 !important; /* Contrast > 15:1 */
+}
+html[data-theme="dark"] h1, html[data-theme="dark"] h2, 
+html[data-theme="dark"] h3, html[data-theme="dark"] h4, 
+html[data-theme="dark"] h5, html[data-theme="dark"] h6,
+html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark h6 {
+    color: #f8fafc !important;
+}
+html[data-theme="dark"] .card, html.dark .card {
+    background: #18181b !important;
+    border-color: #27272a !important;
+    color: #f4f4f5 !important;
+}
+html[data-theme="dark"] .card-header, html.dark .card-header {
+    background: #18181b !important;
+    border-color: #27272a !important;
+    color: #f8fafc !important;
+}
+html[data-theme="dark"] .text-muted, html.dark .text-muted {
+    color: #cbd5e1 !important; /* Slate 300: Contrast 11.0:1 on #18181b */
+}
+html[data-theme="dark"] .text-secondary, html.dark .text-secondary {
+    color: #e2e8f0 !important; /* Slate 200: Contrast 13.5:1 on #18181b */
+}
+html[data-theme="dark"] table th, html.dark table th {
+    background: #1f1f23 !important;
+    color: #cbd5e1 !important;
+    border-color: #27272a !important;
+}
+html[data-theme="dark"] table td, html.dark table td {
+    border-color: #27272a !important;
+    color: #f4f4f5 !important;
+}
+html[data-theme="dark"] .form-control, html.dark .form-control {
+    background: #18181b !important;
+    border-color: #3f3f46 !important;
+    color: #f4f4f5 !important;
+}
+html[data-theme="dark"] .form-control:focus, html.dark .form-control:focus {
+    border-color: #ea580c !important;
+    background: #1c1c20 !important;
+}
+html[data-theme="dark"] .form-label, html.dark .form-label {
+    color: #e4e4e7 !important;
+}
+html[data-theme="dark"] .btn-outline, html.dark .btn-outline {
+    border-color: #3f3f46 !important;
+    color: #cbd5e1 !important;
+}
+html[data-theme="dark"] .btn-outline:hover, html.dark .btn-outline:hover {
+    background: #27272a !important;
+    color: #ffffff !important;
+}
+html[data-theme="dark"] input::placeholder, 
+html[data-theme="dark"] textarea::placeholder,
+html.dark input::placeholder, 
+html.dark textarea::placeholder {
+    color: #a1a1aa !important; /* Zinc 400: Contrast 5.5:1 on dark */
+}
+
 
 
 

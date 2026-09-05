@@ -91,8 +91,8 @@
     --adm-page-title: #f4f4f5;
     --adm-sidebar-bg: #18181b;
     --adm-sidebar-border: #27272a;
-    --adm-section-label: #a1a1aa;
-    --adm-link-text: #e4e4e7;
+    --adm-section-label: #cbd5e1;
+    --adm-link-text: #f4f4f5;
     --adm-link-icon: #a1a1aa;
     --adm-link-hover-bg: #27272a;
     --adm-link-hover-text: #ffffff;
@@ -101,12 +101,12 @@
     --adm-link-active-text: #ffffff;
     --adm-btn-bg: #27272a;
     --adm-btn-border: #3f3f46;
-    --adm-btn-text: #d4d4d8;
+    --adm-btn-text: #f4f4f5;
     --adm-btn-hover-bg: #ea580c;
     --adm-btn-hover-text: #ffffff;
     --adm-search-bg: #27272a;
     --adm-search-border: #3f3f46;
-    --adm-search-text: #a1a1aa;
+    --adm-search-text: #cbd5e1;
     --adm-search-hover-bg: #27272a;
     --adm-search-hover-border: #ea580c;
     --adm-search-kbd-bg: #18181b;
@@ -117,21 +117,21 @@
     --adm-user-hover-bg: #27272a;
     --adm-user-hover-border: #3f3f46;
     --adm-user-name: #f4f4f5;
-    --adm-user-role: #a1a1aa;
+    --adm-user-role: #cbd5e1;
     --adm-content-bg: #121214;
 }
 
 html[data-theme="light"] {
-    /* Light Theme (Clean Crisp Slate / High Contrast) */
+    /* Light Theme (Clean Crisp Slate / High Contrast WCAG 2.1 AA) */
     --adm-topbar-bg: #ffffff;
     --adm-topbar-border: #e2e8f0;
     --adm-brand-text: #0f172a;
     --adm-page-title: #0f172a;
     --adm-sidebar-bg: #ffffff;
     --adm-sidebar-border: #e2e8f0;
-    --adm-section-label: #64748b;
-    --adm-link-text: #334155;
-    --adm-link-icon: #64748b;
+    --adm-section-label: #475569;
+    --adm-link-text: #1e293b;
+    --adm-link-icon: #475569;
     --adm-link-hover-bg: #ffedd5;
     --adm-link-hover-text: #c2410c;
     --adm-link-hover-icon: #ea580c;
@@ -139,23 +139,23 @@ html[data-theme="light"] {
     --adm-link-active-text: #ffffff;
     --adm-btn-bg: #f8fafc;
     --adm-btn-border: #cbd5e1;
-    --adm-btn-text: #334155;
+    --adm-btn-text: #1e293b;
     --adm-btn-hover-bg: #ea580c;
     --adm-btn-hover-text: #ffffff;
     --adm-search-bg: #f8fafc;
     --adm-search-border: #cbd5e1;
-    --adm-search-text: #475569;
+    --adm-search-text: #334155;
     --adm-search-hover-bg: #ffffff;
     --adm-search-hover-border: #ea580c;
     --adm-search-kbd-bg: #e2e8f0;
-    --adm-search-kbd-text: #1e293b;
+    --adm-search-kbd-text: #0f172a;
     --adm-footer-bg: #f8fafc;
     --adm-footer-border: #e2e8f0;
     --adm-user-bg: #ffffff;
     --adm-user-hover-bg: #f1f5f9;
     --adm-user-hover-border: #cbd5e1;
     --adm-user-name: #0f172a;
-    --adm-user-role: #64748b;
+    --adm-user-role: #475569;
     --adm-content-bg: #f8fafc;
 }
 
@@ -169,6 +169,25 @@ html[data-theme="light"] {
 }
 
 *, *::before, *::after { box-sizing: border-box; }
+
+/* ── Typography & Accessibility Standard (WCAG 2.1 AA) ── */
+body {
+    font-family: 'Sarabun', 'Segoe UI', sans-serif;
+    line-height: 1.6 !important;
+    text-align: left !important;
+}
+
+p, li, dd, dt, th, td, label {
+    line-height: 1.6;
+    text-align: left;
+}
+
+/* Strict Prevention of Justification (Eliminate Rivers of White) */
+[style*="text-align: justify"], 
+[style*="text-align:justify"],
+.text-justify {
+    text-align: left !important;
+}
 
 /* ════════════════════════════
    UNIFIED SEAMLESS TOP HEADER

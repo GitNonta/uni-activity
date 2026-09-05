@@ -411,11 +411,11 @@
                         @if($user->english_name)
                             <div style="font-size: 14px; font-weight: 700; color: #334155 !important; margin-bottom: 6px;">{{ strtoupper($user->english_name) }}</div>
                         @else
-                            <div style="font-size: 12px; font-weight: 600; color: #94a3b8 !important; margin-bottom: 6px; font-style: italic;">(No English Name)</div>
+                            <div style="font-size: 12px; font-weight: 600; color: #475569 !important; margin-bottom: 6px; font-style: italic;">(No English Name)</div>
                         @endif
                         
                         <!-- Thin divider -->
-                        <div style="width: 100%; height: 1px; background: #64748b; margin: 8px 0; opacity: 0.5;"></div>
+                        <div style="width: 100%; height: 1px; background: #e2e8f0; margin: 8px 0;"></div>
                         
                         <div style="font-size: 14px; font-weight: 700; color: #1e293b !important;">สาขา{{ $user->department ?? 'วิทยาการคอมพิวเตอร์' }}</div>
                     </div>
