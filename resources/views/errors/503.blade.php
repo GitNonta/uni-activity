@@ -216,6 +216,29 @@
             font-weight: 700;
         }
 
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed; top: 1rem; right: 1rem;
+            width: 36px; height: 36px; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--surface);
+            color: var(--sub); cursor: pointer; display: flex;
+            align-items: center; justify-content: center; transition: all 0.2s;
+            z-index: 10;
+        }
+        .theme-toggle:hover { color: var(--orange); border-color: var(--orange); }
+
+        html[data-theme="light"] {
+            --bg: #f8fafc; --surface: #fff; --border: #e2e8f0;
+            --text: #0f172a; --sub: #475569; --orange: #ea580c;
+            --orange-l: #ea580c; --orange-d: #c2410c;
+            --glow: rgba(234,88,12,0.15);
+        }
+        html[data-theme="light"] body::before {
+            background:
+                radial-gradient(ellipse 60% 50% at 20% -10%, rgba(234,88,12,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 80% 110%, rgba(234,88,12,0.04) 0%, transparent 55%);
+        }
+
         /* Mobile */
         @media (max-width: 480px) {
             .card { padding: 2rem 1.25rem; border-radius: 18px; }
@@ -223,6 +246,10 @@
     </style>
 </head>
 <body>
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+        <svg class="sun-icon" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        <svg class="moon-icon" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display:none"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+    </button>
     <div class="page">
         <div class="card">
             <!-- Gear illustration -->
@@ -320,6 +347,14 @@
         setTimeout(function tryReload() {
             location.reload();
         }, 30000);
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            document.querySelector('.sun-icon').style.display = isDark ? 'block' : 'none';
+            document.querySelector('.moon-icon').style.display = isDark ? 'none' : 'block';
+        }
     </script>
 </body>
 </html>

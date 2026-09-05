@@ -1,171 +1,126 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>500 - ENGINE FAILURE</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>500 - ระบบขัดข้อง</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        ::selection { background: #ea580c; color: #fff; }
+
         :root {
-            --color-bg: #020617;
-            --color-amber: #f59e0b;
+            --bg: #f8fafc; --surface: #fff; --border: #e2e8f0;
+            --text: #0f172a; --sub: #475569; --muted: #64748b;
+            --orange: #ea580c; --orange-hover: #c2410c;
+            --icon-bg: #fff7ed; --icon-border: #fed7aa;
+            --btn-outline-bg: #fff; --btn-outline-border: #cbd5e1;
+            --btn-outline-hover: #f8fafc; --divider: #e2e8f0;
         }
-
+        html[data-theme="dark"] {
+            --bg: #09090b; --surface: #18181b; --border: #27272a;
+            --text: #f4f4f5; --sub: #a1a1aa; --muted: #71717a;
+            --orange: #f97316; --orange-hover: #fb923c;
+            --icon-bg: rgba(234,88,12,0.12); --icon-border: rgba(234,88,12,0.25);
+            --btn-outline-bg: transparent; --btn-outline-border: #3f3f46;
+            --btn-outline-hover: #27272a; --divider: #27272a;
+        }
         body {
-            font-family: 'Outfit', sans-serif;
-            background-color: var(--color-bg);
-            margin: 0;
-            overflow: hidden;
-            color: white;
+            font-family: 'Sarabun', 'Segoe UI', sans-serif;
+            background: var(--bg); color: var(--text);
+            min-height: 100vh; display: flex; align-items: center;
+            justify-content: center; padding: 1.5rem;
         }
-
-        /* --- Full Screen Video Background --- */
-        .video-background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -2;
-            overflow: hidden;
+        .card {
+            max-width: 440px; width: 100%; text-align: center;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 20px; padding: 3rem 2rem;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
         }
-
-        .video-background video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0.35;
-            filter: grayscale(0.5) brightness(0.6);
+        html[data-theme="dark"] .card { box-shadow: 0 4px 32px rgba(0,0,0,0.4); }
+        .icon-wrap {
+            width: 88px; height: 88px; margin: 0 auto 1.5rem;
+            background: var(--icon-bg); border: 1px solid var(--icon-border);
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; color: var(--orange);
+            filter: drop-shadow(0 8px 16px rgba(234,88,12,0.15));
         }
-
-        .video-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to bottom, rgba(2,6,23,0.4) 0%, var(--color-bg) 100%);
-            z-index: -1;
+        .code {
+            font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--orange);
+            margin-bottom: 0.75rem; font-family: monospace;
         }
-
-        .orbitron { font-family: 'Orbitron', sans-serif; }
-        
-        .stars-container {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1;
-            pointer-events: none;
+        h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem; }
+        .desc { color: var(--sub); font-size: 0.9rem; line-height: 1.5; margin-bottom: 2rem; max-width: 340px; margin-left: auto; margin-right: auto; }
+        .actions { display: flex; flex-direction: column; gap: 0.75rem; }
+        @media (min-width: 480px) { .actions { flex-direction: row; justify-content: center; } }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 8px; padding: 0.65rem 1.5rem; border-radius: 10px;
+            font-size: 0.875rem; font-weight: 600; text-decoration: none;
+            cursor: pointer; transition: all 0.15s ease; border: none;
+            font-family: inherit; min-height: 44px;
         }
-
-        .star {
-            position: absolute;
-            background: white;
-            border-radius: 50%;
-            animation: twinkle var(--duration) infinite ease-in-out;
+        .btn-primary { background: var(--orange); color: #fff; }
+        .btn-primary:hover { background: var(--orange-hover); transform: translateY(-1px); }
+        .btn-secondary {
+            background: var(--btn-outline-bg); color: var(--text);
+            border: 1px solid var(--btn-outline-border);
         }
-
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.1; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(1.2); }
+        .btn-secondary:hover { background: var(--btn-outline-hover); }
+        .divider { border: none; border-top: 1px solid var(--divider); margin: 1.5rem 0; }
+        .footer { font-size: 0.75rem; color: var(--muted); }
+        .theme-toggle {
+            position: fixed; top: 1rem; right: 1rem;
+            width: 36px; height: 36px; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--surface);
+            color: var(--muted); cursor: pointer; display: flex;
+            align-items: center; justify-content: center; transition: all 0.2s;
         }
-
-        .readable-shadow {
-            text-shadow: 0 4px 12px rgba(0,0,0,0.8);
-        }
-
-        .btn-action {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .btn-action:hover {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: var(--color-amber);
-            transform: translateY(-3px);
-        }
-
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: rgba(245, 158, 11, 0.2);
-            border-radius: 10px;
-        }
+        .theme-toggle:hover { color: var(--orange); border-color: var(--orange); }
     </style>
 </head>
-<body class="min-h-screen items-center justify-center p-6 flex flex-col text-center">
-    <!-- Video Background -->
-    <div class="video-background">
-        <video autoplay loop muted playsinline>
-            <source src="/images/errors/500.mp4" type="video/mp4">
-        </video>
-    </div>
-    <div class="video-overlay"></div>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+        <svg class="sun-icon" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        <svg class="moon-icon" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display:none"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+    </button>
 
-    <div class="stars-container" id="stars-container"></div>
-
-    <main class="max-w-3xl w-full z-10">
-        <div class="mb-6">
-            <div class="inline-block px-4 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 mb-8">
-                <span class="orbitron text-amber-500 tracking-[0.4em] text-xs font-bold uppercase">System Critical</span>
-            </div>
+    <div class="card">
+        <div class="icon-wrap">
+            <svg width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+            </svg>
         </div>
-
-        <h2 class="orbitron text-4xl md:text-6xl font-bold text-white mb-6 tracking-tight readable-shadow uppercase">
-            Engine Core Failure
-        </h2>
-        
-        <p class="text-slate-300 text-lg md:text-xl mb-12 max-w-2xl mx-auto leading-relaxed readable-shadow">
-            ขออภัย! ระบบวิศวกรรมหลักขัดข้องกระทันหัน<br class="hidden md:block">
-            ทีมซ่อมบำรุงกำลังเร่งแก้ไขสถานการณ์ฉุกเฉินนี้
+        <div class="code">Error 500 — Internal Server Error</div>
+        <h1>ระบบขัดข้องชั่วคราว</h1>
+        <p class="desc">
+            ขออภัย ระบบเกิดข้อผิดพลาดภายใน ทีมงานกำลังเร่งแก้ไข
+            กรุณาลองใหม่อีกครั้งในอีกสักครู่
         </p>
-
-        @if(config('app.debug') && isset($exception))
-            <div class="mb-12 p-6 bg-black/40 backdrop-blur-md border border-amber-500/10 rounded-2xl text-left max-w-xl mx-auto shadow-2xl">
-                <p class="orbitron text-xs font-bold text-amber-500/60 mb-3 uppercase tracking-widest">Diagnostic Log:</p>
-                <div class="text-[10px] md:text-xs text-amber-200/50 font-mono overflow-auto max-h-32 leading-relaxed custom-scrollbar">
-                    {{ $exception->getMessage() }}
-                </div>
-            </div>
-        @endif
-
-        <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <button onclick="location.reload()" class="btn-action w-full sm:w-auto px-10 py-4 rounded-full text-white font-bold flex items-center justify-center bg-gradient-to-r from-amber-600/80 to-orange-600/80 hover:from-amber-600 hover:to-orange-600 shadow-lg shadow-amber-900/20">
-                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                </svg>
+        <div class="actions">
+            <button onclick="location.reload()" class="btn btn-primary">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                 ลองใหม่อีกครั้ง
             </button>
-            <a href="/" class="btn-action w-full sm:w-auto px-10 py-4 rounded-full text-white font-semibold flex items-center justify-center group">
-                <svg class="w-5 h-5 mr-3 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                </svg>
-                กลับสู่แดชบอร์ด
+            <a href="/" class="btn btn-secondary">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
+                กลับสู่หน้าหลัก
             </a>
         </div>
-
-        <div class="mt-20 flex items-center justify-center space-x-6 text-slate-500 text-[10px] md:text-sm font-medium tracking-widest">
-            <span class="orbitron uppercase">STATUS: EMERGENCY</span>
-            <span class="w-1 h-1 bg-slate-700 rounded-full"></span>
-            <span class="orbitron uppercase">ERR: 500</span>
-        </div>
-    </main>
+        <hr class="divider">
+        <div class="footer">UniActivity &mdash; ระบบกิจกรรมนักศึกษา</div>
+    </div>
 
     <script>
-        const container = document.getElementById('stars-container');
-        for (let i = 0; i < 120; i++) {
-            const star = document.createElement('div');
-            star.className = 'star';
-            const size = Math.random() * 1.5 + 0.5;
-            star.style.width = star.style.height = `${size}px`;
-            star.style.left = `${Math.random() * 100}%`;
-            star.style.top = `${Math.random() * 100}%`;
-            star.style.setProperty('--duration', `${Math.random() * 3 + 2}s`);
-            star.style.animationDelay = `${Math.random() * 5}s`;
-            container.appendChild(star);
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            document.querySelector('.sun-icon').style.display = isDark ? 'block' : 'none';
+            document.querySelector('.moon-icon').style.display = isDark ? 'none' : 'block';
         }
     </script>
 </body>
