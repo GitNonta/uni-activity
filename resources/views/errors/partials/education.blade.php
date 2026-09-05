@@ -84,7 +84,7 @@
             text-align: center;
         }
         .art-panel {
-            width: min(100%, 360px);
+            width: min(100%, 36rem);
             min-height: 220px;
             display: grid;
             place-items: center;
@@ -94,7 +94,7 @@
             border-radius: 20px;
         }
         .art-panel svg { display: block; width: min(100%, 300px); height: auto; overflow: visible; }
-        .content { width: 100%; display: flex; flex-direction: column; align-items: center; }
+        .content { width: min(100%, 36rem); display: flex; flex-direction: column; align-items: center; }
         .eyebrow {
             display: inline-flex;
             align-items: center;
@@ -241,7 +241,7 @@
                             กลับหน้าหลัก
                         </a>
                     @endif
-                    <button class="button button-secondary" type="button" onclick="history.back()">
+                    <button class="button button-secondary" type="button" onclick="goBack()">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5m7 7-7-7 7-7"/></svg>
                         ย้อนกลับ
                     </button>
@@ -252,6 +252,15 @@
     </main>
 
     <script>
+        function goBack() {
+            if (window.history.length > 1 && document.referrer && document.referrer !== window.location.href) {
+                window.history.back();
+                return;
+            }
+
+            window.location.assign(@json(url('/')));
+        }
+
         function toggleTheme() {
             const html = document.documentElement;
             const dark = html.getAttribute('data-theme') === 'dark';
