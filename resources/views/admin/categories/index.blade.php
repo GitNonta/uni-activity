@@ -79,7 +79,7 @@
                     <td data-label="หมวดหมู่">
                         <div class="flex items-center gap-2">
                             <div style="width:12px;height:12px;border-radius:50%;background:{{ $cat->color ?? '#3B82F6' }};flex-shrink:0;"></div>
-                            <span class="font-semi">{{ $cat->name }}</span>
+                            <span class="font-semi" title="{{ $cat->name }}">{{ Str::limit($cat->name, 40, '...') }}</span>
                         </div>
                     </td>
                     <td data-label="คำอธิบาย" class="text-sm text-muted line-clamp-1">{{ $cat->description ?? '-' }}</td>

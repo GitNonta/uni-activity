@@ -17,7 +17,7 @@
                     <div class="flex gap-3">
                         <div style="flex:1;">
                             <div class="flex justify-between items-start mb-1">
-                                <h3 class="font-semi text-sm" style="color:#1e293b;">{{ $item->title }}</h3>
+                                <h3 class="font-semi text-sm" style="color:#1e293b;" title="{{ $item->title }}">{{ Str::limit($item->title, 45, '...') }}</h3>
                                 <span class="text-xs text-muted">{{ $item->created_at->diffForHumans() }}</span>
                             </div>
                             <p class="text-xs text-muted line-clamp-2" style="margin-bottom:.5rem;">{{ Str::limit(strip_tags($item->content), 100) }}</p>

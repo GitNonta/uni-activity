@@ -103,8 +103,8 @@
                 @forelse($feedbacks as $fb)
                     <tr style="border-bottom:1px solid #27272a; transition: background 0.15s;">
                         <td style="padding:1.1rem 1.5rem;">
-                            <a href="{{ route('admin.feedbacks.show', $fb->activity_id) }}" class="font-semi" style="color:#ea580c; text-decoration:none; display:block;">
-                                {{ Str::limit($fb->activity->title, 40) }}
+                            <a href="{{ route('admin.feedbacks.show', $fb->activity_id) }}" class="font-semi" style="color:#ea580c; text-decoration:none; display:block;" title="{{ $fb->activity->title }}">
+                                {{ Str::limit($fb->activity->title, 40, '...') }}
                             </a>
                         </td>
                         <td style="padding:1.1rem 1.5rem;">
@@ -114,7 +114,7 @@
                                     ไม่เปิดเผยตัวตน
                                 </span>
                             @else
-                                <span class="font-semi" style="color:#f4f4f5;">{{ $fb->user->full_name ?? '-' }}</span>
+                                <span class="font-semi" style="color:#f4f4f5;" title="{{ $fb->user->full_name ?? '-' }}">{{ Str::limit($fb->user->full_name ?? '-', 35, '...') }}</span>
                             @endif
                         </td>
                         <td style="padding:1.1rem 1.5rem;">

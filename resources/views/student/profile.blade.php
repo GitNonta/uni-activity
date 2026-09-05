@@ -232,7 +232,7 @@
             @forelse($recentAttendances as $att)
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border: 1px solid #f1f5f9; border-radius: 10px; background: #fafafa;">
                 <div style="flex: 1; min-width: 0; padding-right: 1rem;">
-                    <p style="font-size: 0.95rem; font-weight: 600; color: #1e293b; margin: 0 0 0.2rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $att->activity->title }}</p>
+                    <p style="font-size: 0.95rem; font-weight: 600; color: #1e293b; margin: 0 0 0.2rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $att->activity->title }}">{{ Str::limit($att->activity->title, 45, '...') }}</p>
                     <div style="display: flex; align-items: center; gap: 0.5rem; color: #64748b; font-size: 0.75rem;">
                         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                         <span>{{ $att->checked_in_at?->format('d/m/Y H:i') ?? '-' }}</span>

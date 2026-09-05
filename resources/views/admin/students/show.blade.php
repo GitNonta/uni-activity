@@ -169,7 +169,7 @@
                 @forelse($attendances as $att)
                 <tr>
                     <td>
-                        <span class="text-sm font-semi">{{ $att->activity->title ?? '-' }}</span>
+                        <span class="text-sm font-semi" title="{{ $att->activity->title ?? '-' }}">{{ Str::limit($att->activity->title ?? '-', 40, '...') }}</span>
                     </td>
                     <td class="text-xs text-muted">{{ $att->activity->category->name ?? '-' }}</td>
                     <td style="text-align:center;">

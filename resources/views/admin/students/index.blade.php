@@ -143,7 +143,7 @@
                 @endphp
                 <tr>
                     <td>
-                        <div class="font-semi text-sm">{{ $student->full_name }}</div>
+                        <div class="font-semi text-sm" title="{{ $student->full_name }}">{{ Str::limit($student->full_name, 35, '...') }}</div>
                         <div class="text-xs text-muted">{{ $student->student_id }}</div>
                     </td>
                     <td>

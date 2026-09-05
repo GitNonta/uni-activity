@@ -59,14 +59,14 @@
                 <tr>
                     <td>{{ $log->id }}</td>
                     <td>{{ $log->user_id }}</td>
-                    <td>{{ $log->user->full_name ?? '-' }}</td>
-                    <td>{{ $log->user->email ?? '-' }}</td>
+                    <td title="{{ $log->user->full_name ?? '-' }}">{{ Str::limit($log->user->full_name ?? '-', 30, '...') }}</td>
+                    <td title="{{ $log->user->email ?? '-' }}">{{ Str::limit($log->user->email ?? '-', 25, '...') }}</td>
                     <td>{{ $log->user->role ?? '-' }}</td>
                     <td>{{ $log->user->is_active ? 'Active' : 'Inactive' }}</td>
                     <td>{{ $log->action }}</td>
-                    <td>{{ $log->description ?? '-' }}</td>
+                    <td title="{{ $log->description ?? '-' }}">{{ Str::limit($log->description ?? '-', 45, '...') }}</td>
                     <td>{{ $log->ip_address }}</td>
-                    <td style="font-size:0.85rem;color:#475569;">{{ $log->user_agent }}</td>
+                    <td style="font-size:0.85rem;color:#475569;" title="{{ $log->user_agent }}">{{ Str::limit($log->user_agent, 35, '...') }}</td>
                     <td style="white-space:nowrap;">{{ $log->created_at->format('Y-m-d H:i:s') }}</td>
                 </tr>
             @empty

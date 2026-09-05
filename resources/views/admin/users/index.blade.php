@@ -83,7 +83,7 @@
                 @forelse($users as $user)
                 <tr>
                     <td data-label="ชื่อ">
-                        <div class="font-semi text-sm">{{ $user->full_name }}</div>
+                        <div class="font-semi text-sm" title="{{ $user->full_name }}">{{ Str::limit($user->full_name, 35, '...') }}</div>
                     </td>
                     <td data-label="บทบาท">
                         @if($user->role === 'staff')

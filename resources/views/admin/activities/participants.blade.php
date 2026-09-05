@@ -26,7 +26,7 @@
                 @forelse($activity->registrations as $reg)
                 <tr>
                     <td style="font-family:monospace;">{{ $reg->user->student_id }}</td>
-                    <td>{{ $reg->user->full_name }}</td>
+                    <td title="{{ $reg->user->full_name }}">{{ Str::limit($reg->user->full_name, 35, '...') }}</td>
                     <td class="text-muted">{{ $reg->user->faculty }}</td>
                     <td class="text-sm">
                         @if($reg->user->program)
@@ -91,8 +91,8 @@
                 @forelse($walkInAttendances as $att)
                 <tr style="background:#fef3c7;">
                     <td style="font-family:monospace;">{{ $att->user->student_id }}</td>
-                    <td>
-                        {{ $att->user->full_name }}
+                    <td title="{{ $att->user->full_name }}">
+                        {{ Str::limit($att->user->full_name, 35, '...') }}
                         <span style="background:#f59e0b;color:white;padding:2px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;margin-left:0.5rem;">Walk-in</span>
                     </td>
                     <td class="text-muted">{{ $att->user->faculty }}</td>

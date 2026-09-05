@@ -41,7 +41,7 @@
 
             {{-- ชื่องาน --}}
             <h3 class="font-semi line-clamp-2 act-card-title">
-                <a href="{{ route('jobs.show', $job->id) }}" style="color:inherit;text-decoration:none;">{{ $job->title }}</a>
+                <a href="{{ route('jobs.show', $job->id) }}" style="color:inherit;text-decoration:none;" title="{{ $job->title }}">{{ Str::limit($job->title, 55, '...') }}</a>
             </h3>
 
             {{-- ข้อมูลย่อ --}}

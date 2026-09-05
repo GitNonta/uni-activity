@@ -51,13 +51,13 @@
                             <img src="{{ Storage::url($job->image_path) }}" alt="" style="width:40px; height:40px; object-fit:cover; border-radius:8px; background:#f1f5f9;">
                         @endif
                     </td>
-                    <td><a href="{{ route('admin.jobs.show', $job->id) }}" class="text-primary font-semi">{{ Str::limit($job->title, 40) }}</a></td>
+                    <td title="{{ $job->title }}"><a href="{{ route('admin.jobs.show', $job->id) }}" class="text-primary font-semi">{{ Str::limit($job->title, 40, '...') }}</a></td>
                     <td>
                         <span class="badge {{ $job->job_type === 'parttime' ? 'job-badge-parttime' : 'job-badge-general' }}">
                             {{ $job->job_type === 'parttime' ? 'Part-time' : 'งานทั่วไป' }}
                         </span>
                     </td>
-                    <td>{{ $job->position }}</td>
+                    <td title="{{ $job->position }}">{{ Str::limit($job->position, 30, '...') }}</td>
                     <td>
                         @if($job->status === 'open')
                             <span class="badge badge-green">เปิด</span>

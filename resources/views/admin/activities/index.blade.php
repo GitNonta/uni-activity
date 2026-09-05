@@ -65,8 +65,8 @@
                         @endif
                     </td>
                     <td data-label="ชื่อ">
-                        <a href="{{ route('admin.activities.show', $act->id) }}" class="font-semi">{{ $act->title }}</a>
-                        <p class="text-xs text-muted">{{ $act->category->name ?? '-' }}</p>
+                        <a href="{{ route('admin.activities.show', $act->id) }}" class="font-semi" title="{{ $act->title }}">{{ Str::limit($act->title, 40, '...') }}</a>
+                        <p class="text-xs text-muted" title="{{ $act->category->name ?? '-' }}">{{ Str::limit($act->category->name ?? '-', 30, '...') }}</p>
                     </td>
                     <td data-label="วันที่" class="text-center text-muted">{{ $act->activity_date->format('d/m/Y') }}</td>
                     <td data-label="สถานะ" class="text-center">@include('components.status-badge', ['status' => $act->computed_status])</td>
@@ -134,8 +134,8 @@
                             @endif
                         </td>
                         <td>
-                            <a href="{{ route('admin.activities.show', $act->id) }}" class="font-semi">{{ $act->title }}</a>
-                            <p class="text-xs text-muted">{{ $act->category->name ?? '-' }}</p>
+                            <a href="{{ route('admin.activities.show', $act->id) }}" class="font-semi" title="{{ $act->title }}">{{ Str::limit($act->title, 40, '...') }}</a>
+                            <p class="text-xs text-muted" title="{{ $act->category->name ?? '-' }}">{{ Str::limit($act->category->name ?? '-', 30, '...') }}</p>
                         </td>
                         <td class="text-center text-muted">{{ $act->activity_date->format('d/m/Y') }}</td>
                         <td class="text-center">{{ $act->getRegisteredCount() }}</td>
