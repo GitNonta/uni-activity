@@ -45,13 +45,12 @@
         </div>
 
         @if($certificates->isEmpty())
-            <div style="text-align:center; padding:3rem 1rem; color:#94a3b8;">
-                <div style="width:48px; height:48px; background:#f1f5f9; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 0.75rem auto; color:#64748b;">
-                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                </div>
-                <div style="font-weight:600; color:#475569; margin-bottom:0.25rem;">ยังไม่มีใบรับรองที่ออก</div>
-                <div style="font-size:0.85rem;">เมื่อเข้าร่วมกิจกรรมและสะสมชั่วโมงครบตามเกณฑ์ คุณสามารถกดขอรับใบรับรองได้ที่นี่</div>
-            </div>
+            <x-empty-state
+                icon="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                title="ยังไม่มีใบรับรองที่ออก"
+                description="เมื่อสะสมชั่วโมงกิจกรรมครบตามเกณฑ์ในหมวดหมู่ที่กำหนด กดปุ่มขอรับใบรับรองได้เลย"
+                size="md"
+            />
         @else
             <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:1rem; padding:1.25rem;">
                 @foreach($certificates as $cert)

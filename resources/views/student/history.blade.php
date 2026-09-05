@@ -46,9 +46,13 @@
         </div>
     </div>
 @empty
-    <div class="empty-state">
-        <svg class="icon-xl" style="margin:0 auto 1rem;color:#94a3b8;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        <p>ยังไม่มีประวัติ</p>
-    </div>
+    <x-empty-state
+        icon="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+        title="ยังไม่มีประวัติการเข้าร่วม"
+        description="เมื่อคุณเข้าร่วมกิจกรรมและได้รับการอนุมัติ ประวัติจะปรากฏที่นี่"
+        actionLabel="ดูกิจกรรมทั้งหมด"
+        actionUrl="{{ route('activities.index') }}"
+        size="lg"
+    />
 @endforelse
 @endsection

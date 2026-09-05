@@ -102,6 +102,12 @@
         </div>
     </div>
 @empty
+    <x-empty-state
+        icon="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+        title="ยังไม่มีกิจกรรม Walk-in"
+        description="Walk-in คือการเช็คอินกิจกรรมโดยตรงโดยไม่ต้องลงทะเบียนล่วงหน้า"
+        size="sm"
+    />
 @endforelse
 
 {{-- ── กิจกรรมที่ลงทะเบียนปกติ ── --}}
@@ -171,13 +177,14 @@
         </div>
     </div>
 @empty
-    <div class="empty-state">
-        <svg class="icon-xl" style="margin:0 auto 1rem;color:#94a3b8;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-        </svg>
-        <p>ยังไม่มีกิจกรรมที่ลงทะเบียน</p>
-        <a href="{{ route('activities.index') }}" class="btn btn-primary btn-sm mt-4">ดูกิจกรรมทั้งหมด</a>
-    </div>
+    <x-empty-state
+        icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+        title="ยังไม่มีกิจกรรมที่ลงทะเบียน"
+        description="เริ่มต้นสะสมชั่วโมงกิจกรรมโดยการลงทะเบียนกิจกรรมที่สนใจ"
+        actionLabel="ดูกิจกรรมทั้งหมด"
+        actionUrl="{{ route('activities.index') }}"
+        size="lg"
+    />
 @endforelse
 @endsection
 

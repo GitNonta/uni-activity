@@ -20,7 +20,7 @@
 
 {{-- ชั่วโมงแยกตามหมวดพร้อม progress bar: เขียว/เหลือง/แดง ตามสัดส่วน --}}
 <h2 class="font-bold mb-2">ชั่วโมงแยกตามหมวดหมู่</h2>
-@foreach($byCategory as $cat)
+@forelse($byCategory as $cat)
     <div class="card mb-2">
         <div class="card-body" style="padding:.75rem 1rem;">
             @php $p = $cat['required'] > 0 ? min(100, ($cat['hours']/$cat['required'])*100) : 0; @endphp
@@ -49,5 +49,14 @@
             </div>
         </div>
     </div>
-@endforeach
+@empty
+    <x-empty-state
+        icon="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+        title="ยังไม่มีข้อมูลหมวดหมู่"
+        description="เริ่มเข้าร่วมกิจกรรมเพื่อสะสมชั่วโมงในแต่ละหมวดหมู่"
+        actionLabel="ดูกิจกรรมทั้งหมด"
+        actionUrl="{{ route('activities.index') }}"
+        size="md"
+    />
+@endforelse
 @endsection
