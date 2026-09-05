@@ -199,14 +199,32 @@
     {{-- Notification Banner (กิจกรรมเร่งด่วน) --}}
     @auth
     @if(!in_array(auth()->user()->role ?? 'student', ['admin','staff']))
-    <div id="notif-banner" style="display:none;background:linear-gradient(90deg,#ea580c,#ef4444);color:#fff;padding:.55rem 1rem;font-size:.82rem;cursor:pointer;position:sticky;top:0;z-index:999;box-shadow:0 2px 8px rgba(234,88,12,.3);">
-        <div style="max-width:100%;padding: 0 16px;margin:0 auto;display:flex;align-items:center;gap:.75rem;">
-            <span id="notif-banner-icon" style="flex-shrink:0;display:flex;align-items:center;">
-                <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-            </span>
-            <span id="notif-banner-text" style="flex:1;"></span>
-            <a id="notif-banner-link" href="#" style="color:#fed7aa;font-weight:600;font-size:.8rem;flex-shrink:0;text-decoration:none;">ไปเลย →</a>
-            <button onclick="document.getElementById('notif-banner').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,.7);font-size:1.1rem;cursor:pointer;flex-shrink:0;line-height:1;">✕</button>
+    <div id="notif-banner" class="notif-banner-wrapper" style="display:none;">
+        <div class="container notif-banner-container">
+            <div class="notif-banner-card">
+                <div class="notif-banner-main">
+                    <div class="notif-banner-icon-box">
+                        <span class="notif-banner-pulse"></span>
+                        <svg class="notif-banner-icon-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                    </div>
+                    <div class="notif-banner-content">
+                        <div class="notif-banner-title-row">
+                            <span class="notif-banner-badge" id="notif-banner-badge">กิจกรรมด่วน</span>
+                            <span id="notif-banner-title" class="notif-banner-title"></span>
+                        </div>
+                        <span id="notif-banner-text" class="notif-banner-text"></span>
+                    </div>
+                </div>
+                <div class="notif-banner-actions">
+                    <a id="notif-banner-link" href="#" class="notif-banner-btn">
+                        <span id="notif-banner-btn-text">ไปที่กิจกรรม</span>
+                        <svg class="notif-banner-btn-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    </a>
+                    <button type="button" onclick="document.getElementById('notif-banner').style.display='none'" class="notif-banner-close" aria-label="ปิดการแจ้งเตือน" title="ปิด">
+                        <svg class="notif-banner-close-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
     @endif
@@ -312,9 +330,27 @@
                     var urgent = alerts.filter(function(a) { return a.type === 'checkin_open' || a.type === 'checkin_soon'; });
                     if (urgent.length && banner) {
                         var first = urgent[0];
-                        document.getElementById('notif-banner-icon').textContent = first.icon;
-                        document.getElementById('notif-banner-text').textContent = first.title + ' — ' + first.body;
-                        document.getElementById('notif-banner-link').href = first.url;
+                        var badgeEl = document.getElementById('notif-banner-badge');
+                        var titleEl = document.getElementById('notif-banner-title');
+                        var textEl = document.getElementById('notif-banner-text');
+                        var linkEl = document.getElementById('notif-banner-link');
+                        var btnTextEl = document.getElementById('notif-banner-btn-text');
+
+                        if (badgeEl) {
+                            badgeEl.textContent = first.type === 'checkin_open' ? 'เช็คอินได้แล้ว' : 'ใกล้เปิดเช็คอิน';
+                        }
+                        if (titleEl) {
+                            titleEl.textContent = first.title;
+                        }
+                        if (textEl) {
+                            textEl.textContent = first.body;
+                        }
+                        if (linkEl) {
+                            linkEl.href = first.url;
+                        }
+                        if (btnTextEl) {
+                            btnTextEl.textContent = first.type === 'checkin_open' ? 'เช็คอินทันที' : 'ไปที่กิจกรรม';
+                        }
                         banner.style.display = 'block';
                     }
                 })
