@@ -378,8 +378,8 @@
                 <!-- Diagonal Gloss Sweep -->
                 <div class="student-card-gloss-sweep"></div>
 
-                <!-- Top Diagonal -->
-                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 130px; background: linear-gradient(105deg, var(--theme-primary) 38%, #fff 38.5%); z-index: 1;"></div>
+                <!-- Top Diagonal (confined to header so it never touches photo) -->
+                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 75px; background: linear-gradient(105deg, var(--theme-primary) 38%, #fff 38.5%); z-index: 1;"></div>
                 
                 <!-- Content Wrapper -->
                 <div style="position: relative; z-index: 2; display: flex; flex-direction: column; height: 100%;">
@@ -395,15 +395,17 @@
                         </div>
                     </div>
 
-                    <!-- Photo -->
-                    <div style="width: 100%; display: flex; justify-content: center; margin-top: 15px; position: relative; z-index: 2;">
-                        @if($user->profile_photo)
-                            <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="profile" style="width: 125px; height: 160px; object-fit: cover; border-radius: 2px; box-shadow: 0 4px 6px rgba(0,0,0,0.15); border: 2px solid #ffffff;">
-                        @else
-                            <div style="width: 125px; height: 160px; background: #ea580c; display: inline-flex; align-items: center; justify-content: center; border-radius: 2px; box-shadow: 0 4px 6px rgba(0,0,0,0.15); color: #fff; margin: 0 auto; border: 2px solid #ffffff;">
-                                <svg width="50" height="50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                            </div>
-                        @endif
+                    <!-- Photo (elevated to z-index: 30 so glare/shadow/hologram never overlays the photo) -->
+                    <div style="width: 100%; display: flex; justify-content: center; margin-top: 15px; position: relative; z-index: 30;">
+                        <div style="background: #ffffff; padding: 2px; border-radius: 4px; box-shadow: 0 3px 8px rgba(0,0,0,0.15); display: inline-block;">
+                            @if($user->profile_photo)
+                                <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="profile" style="width: 125px; height: 160px; object-fit: cover; border-radius: 2px; display: block;">
+                            @else
+                                <div style="width: 125px; height: 160px; background: #ea580c; display: flex; align-items: center; justify-content: center; border-radius: 2px; color: #fff;">
+                                    <svg width="50" height="50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                </div>
+                            @endif
+                        </div>
                     </div>
 
                     <!-- Details -->
