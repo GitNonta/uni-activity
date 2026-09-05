@@ -119,6 +119,9 @@ table th { font-weight: 600; color: #475569; background: #f8fafc; }
 }
 .line-clamp-1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; max-height: 2.8em; }
+.truncate { overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; }
+.table-fixed { table-layout: fixed !important; width: 100% !important; }
+.table-wrap.table-fixed { width: 100% !important; max-width: 100% !important; }
 
 /* ── การ์ด: กล่องสีขาวมุมมนใช้แสดงเนื้อหาทั่วไป ──────
 * การ์ดที่มีสีขาวและมุมมน ใช้สำหรับแสดงเนื้อหาทั่วไป

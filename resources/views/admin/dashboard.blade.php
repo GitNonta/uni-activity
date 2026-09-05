@@ -386,16 +386,16 @@
     </a>
 </div>
 <div class="card">
-    <div class="table-wrap">
-        <table class="responsive-table">
+    <div class="table-wrap table-fixed" style="width: 100%; max-width: 100%; overflow-x: auto;">
+        <table class="responsive-table table-fixed" style="table-layout: fixed; width: 100%;">
             <thead>
                 <tr>
                     <th style="width:50px;"></th>
-                    <th>หัวข้อ</th>
-                    <th>กลุ่มเป้าหมาย</th>
-                    <th>ประเภท</th>
-                    <th class="text-center">สถานะ</th>
-                    <th class="text-right">จัดการ</th>
+                    <th class="truncate">หัวข้อ</th>
+                    <th style="width:140px;">กลุ่มเป้าหมาย</th>
+                    <th style="width:100px;">ประเภท</th>
+                    <th style="width:120px;" class="text-center">สถานะ</th>
+                    <th style="width:90px;" class="text-right">จัดการ</th>
                 </tr>
             </thead>
             <tbody>
@@ -410,10 +410,10 @@
                             </div>
                         @endif
                     </td>
-                    <td data-label="หัวข้อ">
-                        <div style="min-width:0;">
-                            <div class="font-semi text-sm line-clamp-1">{{ $item->title }}</div>
-                            <div class="text-xs text-muted">{{ $item->created_at->format('d/m/Y H:i') }}</div>
+                    <td data-label="หัวข้อ" class="truncate" style="max-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                        <div class="truncate" style="min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                            <div class="font-semi text-sm truncate" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{{ $item->title }}">{{ $item->title }}</div>
+                            <div class="text-xs text-muted truncate" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ $item->created_at->format('d/m/Y H:i') }}</div>
                         </div>
                     </td>
                     <td data-label="กลุ่มเป้าหมาย"><span class="badge badge-orange">{{ $item->target_faculty ?? 'ทุกคน' }}</span></td>

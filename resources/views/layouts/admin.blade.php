@@ -527,6 +527,9 @@ html[data-theme="light"] {
 .sb-content.collapsed { margin-left: 80px; }
 
 .sb-main { padding: 28px 32px; max-width: 1400px; margin: 0 auto; }
+.truncate { overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; }
+.table-fixed { table-layout: fixed !important; width: 100% !important; }
+.table-wrap.table-fixed { width: 100% !important; max-width: 100% !important; }
 
 /* Tablet Auto-Collapse (769px - 1024px) */
 @media (min-width: 769px) and (max-width: 1024px) {
