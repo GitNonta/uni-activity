@@ -1,4 +1,4 @@
-@include('errors.partials.education', [
+@include('errors.partials.activity', [
     'code' => '419',
     'title' => 'เซสชันกิจกรรมหมดอายุ',
     'message' => 'เพื่อความปลอดภัย เซสชันของคุณหมดอายุแล้ว กรุณาเข้าสู่ระบบใหม่ก่อนดำเนินการต่อ',

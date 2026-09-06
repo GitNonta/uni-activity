@@ -1,4 +1,4 @@
-@include('errors.partials.education', [
+@include('errors.partials.activity', [
     'code' => '404',
     'title' => 'ไม่พบกิจกรรมหรือหน้าที่ต้องการ',
     'message' => 'หน้านี้อาจถูกย้าย ลบออก หรือยังไม่มีในระบบ ลองกลับไปที่หน้าหลักเพื่อค้นหากิจกรรมอื่น',

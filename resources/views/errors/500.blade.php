@@ -1,4 +1,4 @@
-@include('errors.partials.education', [
+@include('errors.partials.activity', [
     'code' => '500',
     'title' => 'ระบบกิจกรรมขัดข้องชั่วคราว',
     'message' => 'ระบบพบข้อผิดพลาดภายใน ทีมงานกำลังตรวจสอบอยู่ กรุณาลองใหม่อีกครั้งในอีกสักครู่',

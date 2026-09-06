@@ -65,35 +65,27 @@
             display: grid;
             place-items: center;
             color: var(--muted);
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
+            background: transparent;
+            border: 0;
+            border-radius: 999px;
             cursor: pointer;
         }
-        .theme-toggle:hover, .theme-toggle:focus-visible { color: var(--primary); border-color: var(--primary); }
-        .card {
+        .theme-toggle:hover, .theme-toggle:focus-visible { color: var(--primary); background: var(--accent-soft); }
+        .error-layout {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 1.25rem;
-            padding: clamp(1.25rem, 5vw, 3rem);
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            box-shadow: 0 18px 50px var(--shadow);
+            padding: clamp(1rem, 5vw, 2.5rem);
             text-align: center;
         }
-        .art-panel {
+        .illustration {
             width: min(100%, 36rem);
             min-height: 220px;
             display: grid;
             place-items: center;
-            padding: 1rem;
-            background: var(--surface-soft);
-            border: 1px solid var(--border);
-            border-radius: 20px;
         }
-        .art-panel svg { display: block; width: min(100%, 300px); height: auto; overflow: visible; }
+        .illustration svg { display: block; width: min(100%, 300px); height: auto; overflow: visible; }
         .content { width: min(100%, 36rem); display: flex; flex-direction: column; align-items: center; }
         .eyebrow {
             display: inline-flex;
@@ -131,18 +123,22 @@
         .button-secondary { color: var(--ink); background: transparent; border-color: var(--border); }
         .button-secondary:hover, .button-secondary:focus-visible { color: var(--primary); border-color: var(--primary); }
         :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
-        .footer { width: 100%; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--faint); font-size: .82rem; text-align: center; }
+        .footer { width: 100%; padding-top: 1rem; color: var(--faint); font-size: .82rem; text-align: center; }
         .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-        @keyframes event-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+        @keyframes character-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        @keyframes character-wave { 0%, 100% { transform: rotate(8deg); } 50% { transform: rotate(-18deg); } }
+        @keyframes character-blink { 0%, 92%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.12); } }
         @keyframes activity-pulse { 0%, 100% { opacity: .35; transform: scale(.85); } 50% { opacity: 1; transform: scale(1); } }
         @keyframes status-pulse { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
-        .event-board { animation: event-float 3.2s ease-in-out infinite; transform-origin: 140px 108px; }
+        .character { animation: character-bob 3.2s ease-in-out infinite; transform-origin: 140px 142px; }
+        .character-arm { animation: character-wave 2.4s ease-in-out infinite; transform-origin: 183px 112px; }
+        .character-eye { animation: character-blink 4s ease-in-out infinite; transform-origin: center; }
         .activity-dot { animation: activity-pulse 2s ease-in-out infinite; transform-origin: center; }
         .status-mark { animation: status-pulse 2s ease-in-out infinite; }
         @media (max-width: 640px) {
             body { padding: .75rem; }
-            .card { gap: 1rem; padding: 1rem; }
-            .art-panel { min-height: 190px; }
+            .error-layout { gap: 1rem; padding: 1rem 0; }
+            .illustration { min-height: 190px; }
             .actions { width: 100%; flex-direction: column; }
             .button { width: 100%; }
         }
@@ -158,44 +154,44 @@
     </button>
 
     <main class="page-shell">
-        <section class="card" aria-labelledby="error-title">
-            <div class="art-panel">
+        <section class="error-layout" aria-labelledby="error-title">
+            <div class="illustration">
                 <svg viewBox="0 0 280 210" role="img" aria-labelledby="activity-art-title" xmlns="http://www.w3.org/2000/svg">
-                    <title id="activity-art-title">ภาพประกอบระบบกิจกรรมสำหรับข้อผิดพลาด {{ $code }}</title>
-                    <circle cx="32" cy="35" r="4" fill="var(--accent)" class="activity-dot"/>
-                    <circle cx="246" cy="42" r="5" fill="var(--primary)" class="activity-dot" style="animation-delay:.5s"/>
-                    <circle cx="228" cy="177" r="3" fill="var(--accent)" class="activity-dot" style="animation-delay:1s"/>
-                    <path d="M30 174h220" stroke="var(--border)" stroke-width="3" stroke-linecap="round"/>
-                    <g class="event-board">
-                        <rect x="52" y="48" width="176" height="116" rx="14" fill="var(--surface)" stroke="var(--primary)" stroke-width="3"/>
-                        <path d="M52 77h176" stroke="var(--primary)" stroke-width="3"/>
-                        <path d="M78 38v20M202 38v20" stroke="var(--accent)" stroke-width="7" stroke-linecap="round"/>
-                        <circle cx="75" cy="63" r="5" fill="var(--accent)"/>
-                        <path d="M91 63h76" stroke="var(--muted)" stroke-width="4" stroke-linecap="round"/>
-                        <rect x="74" y="92" width="38" height="12" rx="4" fill="var(--accent-soft)"/>
-                        <rect x="120" y="92" width="80" height="12" rx="4" fill="var(--surface-soft)"/>
-                        <rect x="74" y="115" width="62" height="12" rx="4" fill="var(--surface-soft)"/>
-                        <rect x="144" y="115" width="56" height="12" rx="4" fill="var(--accent-soft)"/>
-                        <path d="m80 145 7 7 14-16" fill="none" stroke="var(--primary)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M116 148h76" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"/>
+                    <title id="activity-art-title">ตัวการ์ตูนระบบกิจกรรมสำหรับข้อผิดพลาด {{ $code }}</title>
+                    <circle cx="38" cy="44" r="4" fill="var(--accent)" class="activity-dot"/>
+                    <circle cx="242" cy="57" r="5" fill="var(--primary)" class="activity-dot" style="animation-delay:.5s"/>
+                    <circle cx="222" cy="165" r="3" fill="var(--accent)" class="activity-dot" style="animation-delay:1s"/>
+                    <path d="M72 178h136" stroke="var(--border)" stroke-width="3" stroke-linecap="round"/>
+                    <g class="character">
+                        <path d="M98 142c0-26 18-43 42-43s42 17 42 43v20H98v-20Z" fill="var(--primary)"/>
+                        <path d="M111 158v20M169 158v20" stroke="var(--ink)" stroke-width="8" stroke-linecap="round"/>
+                        <path d="M102 116 80 132" stroke="var(--primary)" stroke-width="13" stroke-linecap="round"/>
+                        <path class="character-arm" d="M178 116 202 96" stroke="var(--primary)" stroke-width="13" stroke-linecap="round"/>
+                        <circle cx="140" cy="76" r="31" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3"/>
+                        <path d="M114 67c5-22 47-25 53 1-10-6-36-7-53-1Z" fill="var(--accent)"/>
+                        <ellipse class="character-eye" cx="129" cy="78" rx="3" ry="5" fill="var(--ink)"/>
+                        <ellipse class="character-eye" cx="151" cy="78" rx="3" ry="5" fill="var(--ink)" style="animation-delay:.15s"/>
+                        <path d="M133 91c5 5 10 5 15 0" fill="none" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M187 91h28v22h-28z" fill="var(--surface)" stroke="var(--primary)" stroke-width="3"/>
+                        <path d="M193 98h16M193 104h11" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
                     </g>
                     <g class="status-mark">
                     @if ($code === '403')
-                        <circle cx="43" cy="112" r="22" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3"/>
-                        <rect x="34" y="111" width="18" height="14" rx="3" fill="var(--accent)"/>
-                        <path d="M38 111v-5a5 5 0 0 1 10 0v5" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+                        <rect x="48" y="105" width="28" height="28" rx="8" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3"/>
+                        <rect x="56" y="117" width="12" height="10" rx="2" fill="var(--accent)"/>
+                        <path d="M58 117v-4a4 4 0 0 1 8 0v4" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
                     @elseif ($code === '404')
-                        <circle cx="43" cy="112" r="17" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3"/>
-                        <path d="m55 124 12 12" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>
+                        <circle cx="61" cy="119" r="15" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3"/>
+                        <path d="m71 130 10 10" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>
                     @elseif ($code === '419')
-                        <circle cx="43" cy="112" r="19" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3"/>
-                        <path d="M43 101v11l7 4" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="61" cy="119" r="16" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3"/>
+                        <path d="M61 110v9l6 4" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
                     @elseif ($code === '500')
-                        <path d="m43 91 20 35H23l20-35Z" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round"/>
-                        <path d="M43 103v10m0 6v1" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+                        <path d="m61 99 18 32H43l18-32Z" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round"/>
+                        <path d="M61 110v9m0 5v1" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
                     @else
-                        <circle cx="43" cy="112" r="19" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3"/>
-                        <path d="M34 112h18M43 103v18" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+                        <circle cx="61" cy="119" r="16" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3"/>
+                        <path d="M53 119h16M61 111v16" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
                     @endif
                     </g>
                 </svg>

@@ -1,4 +1,4 @@
-@include('errors.partials.education', [
+@include('errors.partials.activity', [
     'code' => '403',
     'title' => 'ไม่สามารถเข้าถึงหน้านี้ได้',
     'message' => 'บัญชีของคุณไม่มีสิทธิ์เข้าถึงกิจกรรมนี้ หากคิดว่าเป็นข้อผิดพลาด กรุณาติดต่อผู้ดูแลระบบ',
