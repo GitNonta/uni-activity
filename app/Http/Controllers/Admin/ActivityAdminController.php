@@ -357,8 +357,10 @@ class ActivityAdminController extends Controller
     {
         Gate::authorize('delete', $activity);
 
-        $this->auditDelete($activity, "ลบกิจกรรม \"{$activity->title}\"");
-        $activity->delete();
+        DB::transaction(function () use ($activity): void {
+            $this->auditDelete($activity, "ลบกิจกรรม \"{$activity->title}\"");
+            $activity->delete();
+        });
 
         ListCache::bump(ListCache::GROUP_ACTIVITIES);
 

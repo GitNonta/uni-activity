@@ -96,6 +96,26 @@ class AdminPoliciesTest extends TestCase
         $response->assertOk();
     }
 
+    public function test_staff_can_delete_owned_activity_with_attendance_records(): void
+    {
+        $staff = User::factory()->create(['role' => 'staff']);
+        $student = User::factory()->create(['role' => 'student']);
+        $activity = $this->createActivity($staff);
+
+        $attendance = Attendance::create([
+            'user_id'     => $student->id,
+            'activity_id' => $activity->id,
+            'method'      => 'manual',
+            'status'      => 'pending',
+        ]);
+
+        $response = $this->actingAs($staff)->delete(route('admin.activities.destroy', $activity));
+
+        $response->assertRedirect(route('admin.activities.index'));
+        $this->assertDatabaseMissing('activities', ['id' => $activity->id]);
+        $this->assertDatabaseMissing('attendances', ['id' => $attendance->id]);
+    }
+
     public function test_registration_policy_protects_approvals(): void
     {
         $staffA = User::factory()->create(['role' => 'staff']);
