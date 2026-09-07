@@ -18,16 +18,16 @@
 
 {{-- Legend --}}
 <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem;">
-    <div style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:#475569;">
+    <div style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--text-muted, #475569);">
         <span style="width:12px;height:12px;border-radius:3px;background:#f97316;display:inline-block;flex-shrink:0;"></span> ลงทะเบียนแล้ว
     </div>
-    <div style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:#475569;">
+    <div style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--text-muted, #475569);">
         <span style="width:12px;height:12px;border-radius:3px;background:#16a34a;display:inline-block;flex-shrink:0;"></span> เช็คอินแล้ว
     </div>
-    <div style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:#475569;">
+    <div style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--text-muted, #475569);">
         <span style="width:12px;height:12px;border-radius:3px;background:#0ea5e9;display:inline-block;flex-shrink:0;"></span> เปิดรับสมัคร
     </div>
-    <div style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:#475569;">
+    <div style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--text-muted, #475569);">
         <span style="width:12px;height:12px;border-radius:3px;background:#94a3b8;display:inline-block;flex-shrink:0;"></span> อื่นๆ
     </div>
 </div>
@@ -42,22 +42,22 @@
     <div class="modal" style="max-width:380px;border-radius:16px;overflow:hidden;">
         <div id="eventModalHeader" style="padding:1rem 1.25rem .75rem;position:relative;">
             <div id="eventModalCategory" style="font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem;opacity:.8;"></div>
-            <h3 id="eventModalTitle" style="font-size:1.05rem;font-weight:700;margin:0;color:#1e293b;line-height:1.5;padding-right:2rem;"></h3>
-            <button onclick="closeEventModal()" style="position:absolute;top:.9rem;right:1rem;background:none;border:none;cursor:pointer;color:#475569;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;transition:background .15s;" aria-label="ปิด">
+            <h3 id="eventModalTitle" style="font-size:1.05rem;font-weight:700;margin:0;color:var(--text-main, #1e293b);line-height:1.5;padding-right:2rem;"></h3>
+            <button onclick="closeEventModal()" style="position:absolute;top:.9rem;right:1rem;background:none;border:none;cursor:pointer;color:var(--text-muted, #475569);display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;transition:background .15s;" aria-label="ปิด">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
         <div class="modal-body" style="padding-top:.5rem;">
             <div style="display:grid;gap:.5rem;margin-bottom:1rem;">
-                <div style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;color:#374151;">
+                <div style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;color:var(--text-main, #374151);">
                     <svg style="width:15px;height:15px;color:#f97316;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                     <span id="eventModalDate"></span>
                 </div>
-                <div style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;color:#374151;">
+                <div style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;color:var(--text-main, #374151);">
                     <svg style="width:15px;height:15px;color:#f97316;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     <span id="eventModalLocation"></span>
                 </div>
-                <div style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;color:#374151;">
+                <div style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;color:var(--text-main, #374151);">
                     <svg style="width:15px;height:15px;color:#f97316;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     <span id="eventModalHours"></span>
                 </div>
@@ -168,7 +168,30 @@ function closeEventModal() {
 .fc .fc-event { cursor: pointer; border-radius: 6px !important; font-size: .75rem !important; border: none !important; }
 .fc .fc-event:hover { filter: brightness(1.1); }
 .fc .fc-daygrid-day-number { font-size: .8rem !important; }
-.fc .fc-list-event:hover td { background: #f8fafc !important; cursor: pointer; }
+.fc .fc-list-event:hover td { background: var(--surface-hover, #f8fafc) !important; cursor: pointer; }
+html[data-theme="dark"] .fc-theme-standard td,
+html[data-theme="dark"] .fc-theme-standard th {
+    border-color: #27272a !important;
+}
+html[data-theme="dark"] .fc-theme-standard .fc-scrollgrid {
+    border-color: #27272a !important;
+}
+html[data-theme="dark"] .fc .fc-toolbar-title,
+html[data-theme="dark"] .fc .fc-col-header-cell-cushion,
+html[data-theme="dark"] .fc .fc-daygrid-day-number,
+html[data-theme="dark"] .fc-list-day-text,
+html[data-theme="dark"] .fc-list-day-side-text,
+html[data-theme="dark"] .fc-list-event-title,
+html[data-theme="dark"] .fc-list-event-time {
+    color: #f4f4f5 !important;
+}
+html[data-theme="dark"] .fc-list-day-cushion {
+    background-color: #27272a !important;
+}
+html[data-theme="dark"] .fc .fc-list-event:hover td {
+    background: #27272a !important;
+    color: #f8fafc !important;
+}
 @media (max-width: 480px) {
     .fc .fc-toolbar { flex-direction: column; gap: .5rem; }
     .fc .fc-toolbar-chunk { display: flex; justify-content: center; }

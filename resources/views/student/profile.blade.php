@@ -35,8 +35,180 @@
     animation: swap-avatar-badge 5s ease-in-out infinite 2.5s;
     opacity: 0;
 }
+
+/* Student Profile Dark Theme & Card Components */
+.student-stat-pill {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.75rem 1.25rem;
+    text-align: center;
+    flex: 1;
+    min-width: 100px;
+}
+html[data-theme="dark"] .student-stat-pill,
+html.dark .student-stat-pill {
+    background: #141416 !important;
+    border-color: #27272a !important;
+}
+html[data-theme="dark"] .student-stat-pill p,
+html.dark .student-stat-pill p {
+    color: #f4f4f5 !important;
+}
+
+.student-idcard-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.875rem;
+    background: #ffffff;
+    color: #c2410c;
+    border: 1px solid #fed7aa;
+    border-radius: 10px;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    transition: background 0.2s, border-color 0.2s;
+    cursor: pointer;
+    line-height: 1.5;
+}
+.student-idcard-btn:hover {
+    background: #fff7ed;
+    border-color: #f97316;
+}
+html[data-theme="dark"] .student-idcard-btn,
+html.dark .student-idcard-btn {
+    background: #1c1c1f !important;
+    border-color: #3f3f46 !important;
+    color: #fb923c !important;
+}
+html[data-theme="dark"] .student-idcard-btn:hover,
+html.dark .student-idcard-btn:hover {
+    background: #27272a !important;
+    border-color: #ea580c !important;
+}
+
+.recent-attendance-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid #f1f5f9;
+    border-radius: 10px;
+    background: #fafafa;
+    transition: background 0.2s;
+}
+html[data-theme="dark"] .recent-attendance-item,
+html.dark .recent-attendance-item {
+    background: #141416 !important;
+    border-color: #27272a !important;
+}
+
+.pdf-download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.5rem;
+    background: #ffffff;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    transition: all 0.2s;
+}
+.pdf-download-btn:hover {
+    background: #f8fafc;
+    color: #1e293b;
+}
+html[data-theme="dark"] .pdf-download-btn,
+html.dark .pdf-download-btn {
+    background: #1c1c1f !important;
+    border-color: #27272a !important;
+    color: #cbd5e1 !important;
+}
+html[data-theme="dark"] .pdf-download-btn:hover,
+html.dark .pdf-download-btn:hover {
+    background: #27272a !important;
+    color: #f8fafc !important;
+    border-color: #3f3f46 !important;
+}
+
+.line-feature-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem;
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    border-radius: 8px;
+}
+html[data-theme="dark"] .line-feature-pill,
+html.dark .line-feature-pill {
+    background: #141416 !important;
+    border-color: #27272a !important;
+}
+html[data-theme="dark"] .line-feature-pill span,
+html.dark .line-feature-pill span {
+    color: #cbd5e1 !important;
+}
+
+.line-notify-toggle-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    margin-bottom: 0.75rem;
+}
+html[data-theme="dark"] .line-notify-toggle-box,
+html.dark .line-notify-toggle-box {
+    background: #141416 !important;
+    border-color: #27272a !important;
+}
+
+.line-unlink-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.6rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #fafafa;
+    color: #475569;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1.5;
+}
+.line-unlink-btn:hover {
+    color: #ef4444;
+    border-color: #fecaca;
+    background: #fef2f2;
+}
+html[data-theme="dark"] .line-unlink-btn,
+html.dark .line-unlink-btn {
+    background: #141416 !important;
+    border-color: #27272a !important;
+    color: #94a3b8 !important;
+}
+html[data-theme="dark"] .line-unlink-btn:hover,
+html.dark .line-unlink-btn:hover {
+    background: rgba(239, 68, 68, 0.15) !important;
+    color: #fca5a5 !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+}
 </style>
-<div style="background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); padding: 1.5rem; margin-bottom: 1.5rem; border: 1px solid #f1f5f9;">
+<div class="card mb-4" style="padding: 1.5rem;">
     <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; justify-content: space-between;">
         
         {{-- Profile Info (Left) --}}
@@ -79,7 +251,7 @@
             </div>
             <div style="flex: 1; min-width: 0;">
                 <div style="display: flex; align-items: center; gap: 8px; margin: 0 0 0.25rem 0;">
-                    <h1 style="font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 0; line-height: 1.5;">{{ $user->full_name }}</h1>
+                    <h1 style="font-size: 1.25rem; font-weight: 700; color: var(--text-main, #1e293b); margin: 0; line-height: 1.5;">{{ $user->full_name }}</h1>
                     @if($user->line_user_id)
                         <span title="ผูกบัญชี LINE เรียบร้อยแล้ว" style="display: inline-flex; align-items: center; justify-content: center;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="#06c755">
@@ -112,16 +284,16 @@
 
         {{-- Stats (Right) --}}
         <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.75rem 1.25rem; text-align: center; flex: 1; min-width: 100px;">
+            <div class="student-stat-pill">
                 <p style="font-size: 1.5rem; font-weight: 700; color: #c2410c; line-height: 1.5; margin: 0;">{{ number_format($totalHours, 1) }}</p>
                 <p style="font-size: 0.75rem; color: #475569; margin-top: 0.35rem; font-weight: 500; line-height: 1.5;">ชั่วโมงรวม</p>
             </div>
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.75rem 1.25rem; text-align: center; flex: 1; min-width: 100px;">
-                <p style="font-size: 1.5rem; font-weight: 700; color: #1e293b; line-height: 1.5; margin: 0;">{{ $totalActivities }}</p>
+            <div class="student-stat-pill">
+                <p style="font-size: 1.5rem; font-weight: 700; color: var(--text-main, #1e293b); line-height: 1.5; margin: 0;">{{ $totalActivities }}</p>
                 <p style="font-size: 0.75rem; color: #475569; margin-top: 0.35rem; font-weight: 500; line-height: 1.5;">กิจกรรม</p>
             </div>
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.75rem 1.25rem; text-align: center; flex: 1; min-width: 100px;">
-                <p style="font-size: 1.5rem; font-weight: 700; color: #1e293b; line-height: 1.5; margin: 0;">{{ number_format($totalRequired, 0) }}</p>
+            <div class="student-stat-pill">
+                <p style="font-size: 1.5rem; font-weight: 700; color: var(--text-main, #1e293b); line-height: 1.5; margin: 0;">{{ number_format($totalRequired, 0) }}</p>
                 <p style="font-size: 0.75rem; color: #475569; margin-top: 0.35rem; font-weight: 500; line-height: 1.5;">เป้าหมาย (ชม.)</p>
             </div>
         </div>
@@ -130,16 +302,16 @@
 
 {{-- QR Code Button (Changed to Modal Popup) --}}
 <div style="margin-bottom: 1.5rem;">
-    <button onclick="openCardModal()" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 0.875rem; background: #ffffff; color: #c2410c; border: 1px solid #fed7aa; border-radius: 10px; font-weight: 600; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: background 0.2s; cursor: pointer; line-height: 1.5;">
+    <button onclick="openCardModal()" class="student-idcard-btn">
         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
         บัตรประจำตัวนักศึกษา
     </button>
 </div>
 
 {{-- 2. ข้อมูลส่วนตัว --}}
-<div class="card mb-4" style="background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border: 1px solid #f1f5f9;">
+<div class="card mb-4">
     <div class="card-body" style="padding: 1.5rem;">
-        <h2 class="font-bold mb-4" style="font-size: 1.1rem; color: #1e293b; display: flex; align-items: center; gap: 0.5rem;">
+        <h2 class="font-bold mb-4" style="font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
             <svg width="20" height="20" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
             ข้อมูลประวัตินักศึกษา
         </h2>
@@ -150,7 +322,7 @@
                 </div>
                 <div>
                     <p class="text-xs text-muted" style="margin-bottom: 0.15rem; font-weight: 500;">คณะ</p>
-                    <p class="text-sm" style="font-weight: 600; color: #334155;">{{ $user->faculty ?? '-' }}</p>
+                    <p class="text-sm" style="font-weight: 600; color: var(--text-main, #334155);">{{ $user->faculty ?? '-' }}</p>
                 </div>
             </div>
             <div style="display: flex; gap: 0.75rem;">
@@ -159,7 +331,7 @@
                 </div>
                 <div>
                     <p class="text-xs text-muted" style="margin-bottom: 0.15rem; font-weight: 500;">สาขา</p>
-                    <p class="text-sm" style="font-weight: 600; color: #334155;">{{ $user->department ?? '-' }}</p>
+                    <p class="text-sm" style="font-weight: 600; color: var(--text-main, #334155);">{{ $user->department ?? '-' }}</p>
                 </div>
             </div>
             <div style="display: flex; gap: 0.75rem;">
@@ -168,7 +340,7 @@
                 </div>
                 <div>
                     <p class="text-xs text-muted" style="margin-bottom: 0.15rem; font-weight: 500;">ชั้นปี</p>
-                    <p class="text-sm" style="font-weight: 600; color: #334155;">{{ $user->year ? 'ปี ' . $user->year : '-' }}</p>
+                    <p class="text-sm" style="font-weight: 600; color: var(--text-main, #334155);">{{ $user->year ? 'ปี ' . $user->year : '-' }}</p>
                 </div>
             </div>
             <div style="display: flex; gap: 0.75rem;">
@@ -177,7 +349,7 @@
                 </div>
                 <div>
                     <p class="text-xs text-muted" style="margin-bottom: 0.15rem; font-weight: 500;">อีเมล</p>
-                    <p class="text-sm" style="font-weight: 600; color: #334155;">{{ $user->email ?? '-' }}</p>
+                    <p class="text-sm" style="font-weight: 600; color: var(--text-main, #334155);">{{ $user->email ?? '-' }}</p>
                 </div>
             </div>
         </div>
@@ -185,9 +357,9 @@
 </div>
 
 {{-- 3. ชั่วโมงแยกตามหมวดหมู่ --}}
-<div class="card mb-4" style="background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border: 1px solid #f1f5f9;">
+<div class="card mb-4">
     <div class="card-body" style="padding: 1.5rem;">
-        <h2 class="font-bold mb-4" style="font-size: 1.1rem; color: #1e293b; display: flex; align-items: center; gap: 0.5rem;">
+        <h2 class="font-bold mb-4" style="font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
             <svg width="20" height="20" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
             ความคืบหน้าตามหมวดหมู่
         </h2>
@@ -200,7 +372,7 @@
             @endphp
             <div>
                 <div class="flex justify-between items-center mb-2">
-                    <span class="text-sm" style="font-weight: 600; color: #334155;">{{ $cat['name'] }}</span>
+                    <span class="text-sm" style="font-weight: 600; color: var(--text-main, #334155);">{{ $cat['name'] }}</span>
                     <span class="text-sm" style="font-weight: 500; color: {{ $isCompleted ? '#16a34a' : '#64748b' }};">
                         {{ number_format($cat['hours'], 1) }} / {{ number_format($cat['required'], 0) }} ชม.
                     </span>
@@ -218,10 +390,10 @@
 </div>
 
 {{-- 4. ประวัติกิจกรรมล่าสุด --}}
-<div class="card mb-4" style="background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border: 1px solid #f1f5f9;">
+<div class="card mb-4">
     <div class="card-body" style="padding: 1.5rem;">
         <div class="flex items-center justify-between mb-4">
-            <h2 class="font-bold" style="font-size: 1.1rem; color: #1e293b; display: flex; align-items: center; gap: 0.5rem;">
+            <h2 class="font-bold" style="font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
                 <svg width="20" height="20" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 ประวัติกิจกรรมล่าสุด
             </h2>
@@ -230,9 +402,9 @@
         
         <div style="display: flex; flex-direction: column; gap: 0.75rem;">
             @forelse($recentAttendances as $att)
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border: 1px solid #f1f5f9; border-radius: 10px; background: #fafafa;">
+            <div class="recent-attendance-item">
                 <div style="flex: 1; min-width: 0; padding-right: 1rem;">
-                    <p style="font-size: 0.95rem; font-weight: 600; color: #1e293b; margin: 0 0 0.2rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $att->activity->title }}">{{ Str::limit($att->activity->title, 45, '...') }}</p>
+                    <p style="font-size: 0.95rem; font-weight: 600; color: var(--text-main, #1e293b); margin: 0 0 0.2rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $att->activity->title }}">{{ Str::limit($att->activity->title, 45, '...') }}</p>
                     <div style="display: flex; align-items: center; gap: 0.5rem; color: #64748b; font-size: 0.75rem;">
                         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                         <span>{{ $att->checked_in_at?->format('d/m/Y H:i') ?? '-' }}</span>
@@ -273,9 +445,9 @@
 </div>
 
 {{-- 5. การแจ้งเตือนผ่าน LINE --}}
-<div class="card mb-4" style="background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border: 1px solid #f1f5f9;">
+<div class="card mb-4">
     <div class="card-body" style="padding: 1.5rem;">
-        <h2 class="font-bold mb-4" style="font-size: 1.1rem; color: #1e293b; display: flex; align-items: center; gap: 0.5rem;">
+        <h2 class="font-bold mb-4" style="font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
             <img src="{{ asset('images/line-logo.png') }}" alt="LINE" style="width: 22px; height: 22px; object-fit: contain; flex-shrink: 0;">
             การแจ้งเตือนผ่าน LINE
         </h2>
@@ -293,11 +465,11 @@
                 <svg width="18" height="18" fill="none" stroke="#16a34a" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
             </div>
 
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 0.75rem;">
+            <div class="line-notify-toggle-box">
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
                     <svg width="16" height="16" fill="none" stroke="#64748b" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                     </svg>
-                    <span style="font-size: 0.9rem; font-weight: 600; color: #334155;">รับการแจ้งเตือน</span>
+                    <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-main, #334155);">รับการแจ้งเตือน</span>
                 </div>
                 <form method="POST" action="{{ route('line.toggle-notify') }}" style="margin: 0;">
                     @csrf
@@ -318,7 +490,7 @@
 
             <form method="POST" action="{{ route('line.unlink') }}" onsubmit="return confirm('ต้องการยกเลิกการผูกบัญชี LINE ใช่หรือไม่?')">
                 @csrf
-                <button type="submit" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 10px; background: #fafafa; color: #475569; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.2s; line-height: 1.5;" onmouseover="this.style.color='#ef4444'; this.style.borderColor='#fecaca'; this.style.background='#fef2f2';" onmouseout="this.style.color='#475569'; this.style.borderColor='#cbd5e1'; this.style.background='#fafafa';">
+                <button type="submit" class="line-unlink-btn">
                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
                     ยกเลิกการเชื่อมต่อ LINE
                 </button>
@@ -333,7 +505,7 @@
                     ['icon'=>'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z', 'text'=>'ข่าวประกาศ'],
                     ['icon'=>'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 'text'=>'Reminder 1 วันก่อน'],
                 ] as $item)
-                <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem; background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 8px;">
+                <div class="line-feature-pill">
                     <svg width="14" height="14" fill="none" stroke="#06c755" viewBox="0 0 24 24" style="flex-shrink: 0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="{{ $item['icon'] }}"/></svg>
                     <span style="font-size: 0.75rem; font-weight: 500; color: #475569; line-height: 1.5;">{{ $item['text'] }}</span>
                 </div>
@@ -351,7 +523,7 @@
 
 {{-- 6. ปุ่มดาวน์โหลด PDF --}}
 <div style="margin: 2rem 0; text-align: center;">
-    <a href="{{ route('student.summary.pdf') }}" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.8rem 1.5rem; background: #ffffff; color: #475569; border: 1px solid #cbd5e1; border-radius: 999px; font-weight: 600; font-size: 0.9rem; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'; this.style.color='#1e293b';" onmouseout="this.style.background='#ffffff'; this.style.color='#475569';">
+    <a href="{{ route('student.summary.pdf') }}" class="pdf-download-btn">
         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
         ดาวน์โหลดใบแสดงผลกิจกรรม (PDF)
     </a>

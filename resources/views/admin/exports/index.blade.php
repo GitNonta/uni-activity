@@ -1,6 +1,26 @@
 @extends('layouts.admin')
 @section('title', 'ส่งออกรายงาน')
 
+@section('styles')
+<style>
+.export-field-label {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    cursor: pointer;
+    padding: .4rem .6rem;
+    border-radius: 8px;
+    transition: background .15s;
+}
+.export-field-label:hover {
+    background: #ffedd5;
+}
+html[data-theme="dark"] .export-field-label:hover {
+    background: rgba(249, 115, 22, 0.15);
+}
+</style>
+@endsection
+
 @section('content')
 <div class="flex flex-col mb-6">
     <h1 class="font-bold" style="font-size:1.5rem;">ส่งออกรายงาน</h1>
@@ -60,9 +80,9 @@
                     </div>
                 </div>
                 {{-- Field Selector --}}
-                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:1rem;margin-bottom:1.25rem;">
+                <div style="background:var(--surface-hover, #f8fafc);border:1px solid var(--border, #e2e8f0);border-radius:10px;padding:1rem;margin-bottom:1.25rem;">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;">
-                        <p class="font-semi text-sm" style="color:#334155;">เลือก Field ที่ต้องการ Export</p>
+                        <p class="font-semi text-sm" style="color:var(--text-main, #334155);">เลือก Field ที่ต้องการ Export</p>
                         <div style="display:flex;gap:.5rem;">
                             <button type="button" onclick="toggleAllFields(true)"  class="btn btn-outline btn-sm" style="font-size:.75rem;">เลือกทั้งหมด</button>
                             <button type="button" onclick="toggleAllFields(false)" class="btn btn-outline btn-sm" style="font-size:.75rem;">ยกเลิกทั้งหมด</button>
@@ -85,13 +105,12 @@
                             ];
                         @endphp
                         @foreach($availableFields as $key => $label)
-                        <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;padding:.4rem .6rem;border-radius:8px;transition:background .15s;"
-                               onmouseover="this.style.background='#ffedd5'" onmouseout="this.style.background='transparent'">
+                        <label class="export-field-label">
                             <input type="checkbox" name="fields[]" value="{{ $key }}" checked
                                    class="field-checkbox"
                                    style="width:16px;height:16px;accent-color:#f97316;cursor:pointer;"
                                    onchange="updateFieldCount()">
-                            <span style="font-size:.85rem;color:#374151;">{{ $label }}</span>
+                            <span style="font-size:.85rem;color:var(--text-main, #374151);">{{ $label }}</span>
                         </label>
                         @endforeach
                     </div>

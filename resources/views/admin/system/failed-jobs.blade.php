@@ -9,7 +9,7 @@
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
         <div>
             <div style="display:flex; align-items:center; gap:0.5rem;">
-                <h1 style="font-size:1.6rem; font-weight:800; color:#0f172a; margin:0; display:flex; align-items:center; gap:0.5rem;">
+                <h1 style="font-size:1.6rem; font-weight:800; color:var(--text-main, #0f172a); margin:0; display:flex; align-items:center; gap:0.5rem;">
                     <svg style="width:24px; height:24px; color:#ef4444;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                     Failed Queue Jobs
                 </h1>
@@ -23,7 +23,7 @@
         </div>
 
         <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
-            <a href="{{ route('admin.system.cluster') }}" class="btn btn-outline btn-sm" style="background:#fff;">
+            <a href="{{ route('admin.system.cluster') }}" class="btn btn-outline btn-sm">
                 <svg style="width:16px; height:16px; margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                 Cluster Telemetry
             </a>
@@ -70,7 +70,7 @@
     @endif
 
     <!-- Filters Card -->
-    <div style="background:#fff; border-radius:12px; padding:1rem 1.25rem; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.05); margin-bottom:1.5rem;">
+    <div class="card mb-6" style="border-radius:12px; padding:1rem 1.25rem;">
         <form method="GET" action="{{ route('admin.system.failed-jobs.index') }}" style="display:flex; gap:1rem; flex-wrap:wrap; align-items:center;">
             <div style="flex:1; min-width:220px;">
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="ค้นหาจาก Job Name, Error, หรือ UUID..." class="form-control" style="font-size:0.875rem; border-radius:8px; border:1px solid #cbd5e1; padding:0.45rem 0.75rem; width:100%; line-height:1.5;">
@@ -95,13 +95,13 @@
     </div>
 
     <!-- Failed Jobs Table -->
-    <div style="background:#fff; border-radius:12px; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.05); overflow:hidden;">
+    <div class="card" style="border-radius:12px; overflow:hidden;">
         @if($failedJobs->isEmpty())
             <div style="text-align:center; padding:3rem 1rem;">
                 <div style="width:48px; height:48px; background:#dcfce7; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem auto; color:#166534;">
                     <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 </div>
-                <h3 style="font-size:1.1rem; font-weight:700; color:#0f172a; margin-bottom:0.25rem; line-height:1.5;">ระบบทำงานราบรื่น ไม่มีงานที่ล้มเหลว</h3>
+                <h3 style="font-size:1.1rem; font-weight:700; color:var(--text-main, #0f172a); margin-bottom:0.25rem; line-height:1.5;">ระบบทำงานราบรื่น ไม่มีงานที่ล้มเหลว</h3>
                 <p style="color:#475569; font-size:0.875rem; margin:0; line-height:1.5;">คิวประมวลผลเบื้องหลังทั้งหมด (Dragonfly Queue) กำลังทำงานอย่างสมบูรณ์แบบ</p>
             </div>
         @else
@@ -120,7 +120,7 @@
                         @foreach($failedJobs as $job)
                         <tr style="border-bottom:1px solid #f1f5f9; font-size:0.875rem;">
                             <td style="padding:0.75rem 1rem;">
-                                <div style="font-weight:700; color:#0f172a; line-height:1.5;">{{ $job->display_name }}</div>
+                                <div style="font-weight:700; color:var(--text-main, #0f172a); line-height:1.5;">{{ $job->display_name }}</div>
                                 <div style="font-size:0.75rem; font-family:monospace; color:#475569; line-height:1.5;">{{ $job->uuid }}</div>
                             </td>
                             <td style="padding:0.75rem 1rem;">
@@ -175,9 +175,9 @@
 
 <!-- Exception Detail Modal -->
 <div id="jobDetailModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(15,23,42,0.6); z-index:9999; align-items:center; justify-content:center; padding:1.5rem;">
-    <div style="background:#fff; border-radius:12px; max-width:800px; width:100%; max-height:85vh; display:flex; flex-direction:column; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1); overflow:hidden;">
-        <div style="padding:1.25rem; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
-            <h3 id="modalJobTitle" style="font-size:1.1rem; font-weight:700; color:#0f172a; margin:0; line-height:1.5;">รายละเอียด Exception Stack Trace</h3>
+    <div class="modal-content" style="max-width:800px; width:100%; max-height:85vh; display:flex; flex-direction:column; border-radius:12px; overflow:hidden; box-shadow:0 20px 25px -5px rgba(0,0,0,0.3);">
+        <div style="padding:1.25rem; border-bottom:1px solid var(--border-color, #e2e8f0); display:flex; justify-content:space-between; align-items:center;">
+            <h3 id="modalJobTitle" style="font-size:1.1rem; font-weight:700; color:var(--text-main, #0f172a); margin:0; line-height:1.5;">รายละเอียด Exception Stack Trace</h3>
             <button onclick="closeJobModal()" style="background:none; border:none; font-size:1.25rem; color:#475569; cursor:pointer;">&times;</button>
         </div>
         <div style="padding:1.25rem; overflow-y:auto; flex:1;">
@@ -188,11 +188,11 @@
                 <div><strong>Connection:</strong> <span id="modalConnection" style="color:#475569;"></span></div>
             </div>
             <div>
-                <strong style="font-size:0.875rem; color:#0f172a; display:block; margin-bottom:0.35rem; line-height:1.5;">Exception Stack Trace:</strong>
+                <strong style="font-size:0.875rem; color:var(--text-main, #0f172a); display:block; margin-bottom:0.35rem; line-height:1.5;">Exception Stack Trace:</strong>
                 <pre id="modalException" style="background:#0f172a; color:#f8fafc; padding:1rem; border-radius:8px; font-size:0.75rem; max-height:350px; overflow-x:auto; white-space:pre-wrap; font-family:monospace; line-height:1.5;"></pre>
             </div>
         </div>
-        <div style="padding:1rem 1.25rem; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end; gap:0.5rem; background:#f8fafc;">
+        <div style="padding:1rem 1.25rem; border-top:1px solid var(--border-color, #e2e8f0); display:flex; justify-content:flex-end; gap:0.5rem; background:var(--surface-hover, #f8fafc);">
             <button onclick="closeJobModal()" class="btn btn-outline btn-sm">ปิด</button>
         </div>
     </div>

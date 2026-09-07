@@ -633,11 +633,11 @@
     {{-- Header --}}
     <div class="chat-header-card chat-header-container">
         <div style="display:flex;align-items:center;gap:0.75rem;">
-            <a href="{{ route('admin.inbox.index') }}" class="back-btn" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:#f1f5f9;color:#334155;text-decoration:none;" title="กลับไปกล่องข้อความ">
+            <a href="{{ route('admin.inbox.index') }}" class="back-btn" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:var(--surface-hover, #f1f5f9);color:var(--text-main, #334155);text-decoration:none;" title="กลับไปกล่องข้อความ">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
             </a>
             <div>
-                <h2 style="margin:0;font-size:1.05rem;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:.4rem;line-height:1.5;">
+                <h2 style="margin:0;font-size:1.05rem;font-weight:700;color:var(--text-main, #1e293b);display:flex;align-items:center;gap:.4rem;line-height:1.5;">
                     <span>{{ $student->full_name }}</span>
                     <span id="adminOnlineDot" style="display:none;width:8px;height:8px;background:#059669;border-radius:50%;box-shadow:0 0 0 2px #fff;" title="ออนไลน์"></span>
                     <span style="font-size:.85rem;color:#c2410c;font-weight:500;">[{{ $job->title }}]</span>
@@ -788,7 +788,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
                     </svg>
                 </div>
-                <div style="font-weight:600;font-size:.95rem;color:#1e293b;margin-bottom:.25rem;" class="empty-state-title-text">ยังไม่มีประวัติการสนทนา</div>
+                <div style="font-weight:600;font-size:.95rem;color:var(--text-main, #1e293b);margin-bottom:.25rem;" class="empty-state-title-text">ยังไม่มีประวัติการสนทนา</div>
                 <div style="font-size:.85rem;color:#64748b;">พิมพ์ข้อความด้านล่างเพื่อเริ่มคุยกับนักศึกษาได้ทันที</div>
             </div>
         @endforelse
@@ -806,7 +806,7 @@
     </div>
 
     {{-- Form --}}
-    <form id="chatForm" enctype="multipart/form-data" style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:0.75rem 1rem;box-shadow:0 2px 6px rgba(0,0,0,0.03);@if(!empty($jobDeleted)) display:none; @endif">
+    <form id="chatForm" enctype="multipart/form-data" style="border-radius:14px;padding:0.75rem 1rem;box-shadow:0 2px 6px rgba(0,0,0,0.03);@if(!empty($jobDeleted)) display:none; @endif">
         @csrf
         <div id="attachPreview" style="display:none;gap:.4rem;flex-wrap:wrap;margin-bottom:.5rem;"></div>
         
@@ -825,7 +825,7 @@
     </form>
 
     @if(!empty($jobDeleted))
-    <div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:0.9rem 1rem;background:#fff;border:1px solid #e2e8f0;border-radius:14px;color:#b45309;font-size:0.85rem;font-weight:500;">
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:0.9rem 1rem;background:var(--surface, #fff);border:1px solid var(--border, #e2e8f0);border-radius:14px;color:#f59e0b;font-size:0.85rem;font-weight:500;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 5 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 5-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
         ประกาศงานนี้ถูกลบแล้ว — ดูได้เฉพาะประวัติการแชทเท่านั้น
     </div>

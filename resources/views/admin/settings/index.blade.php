@@ -4,7 +4,7 @@
 @section('content')
 <div class="flex items-center justify-between mb-6">
     <div>
-        <h1 class="font-bold flex items-center gap-3" style="font-size:1.5rem; color:#1e293b;">
+        <h1 class="font-bold flex items-center gap-3" style="font-size:1.5rem;">
             <svg style="width:28px; height:28px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -35,9 +35,9 @@
             @method('PATCH')
 
             {{-- 1. ข้อมูลส่วนตัว --}}
-            <div class="card mb-6" style="border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); border-radius:12px; background:#fff;">
-                <div class="card-header" style="background:#fff; border-bottom:1px solid #f1f5f9; padding:1rem 1.5rem;">
-                    <h3 class="font-semi" style="font-size:1rem; color:#1e293b;">ข้อมูลส่วนตัว</h3>
+            <div class="card mb-6" style="border-radius:12px;">
+                <div class="card-header" style="padding:1rem 1.5rem;">
+                    <h3 class="font-semi" style="font-size:1rem;">ข้อมูลส่วนตัว</h3>
                 </div>
                 <div class="card-body" style="padding:1.5rem;">
                     <div class="grid-2 mb-4">
@@ -55,7 +55,7 @@
 
                     {{-- ตัวเลือกเพศ (Gender & Avatar Preview) --}}
                     <div class="mb-4">
-                        <label class="form-label" style="font-weight:600; font-size:0.875rem; color:#1e293b; display:block; margin-bottom:0.5rem;">
+                        <label class="form-label" style="font-weight:600; font-size:0.875rem; display:block; margin-bottom:0.5rem;">
                             เพศสภาพ (สำหรับรูปอวตาร SVG อัตโนมัติ กรณีไม่ได้ตั้งรูปโปรไฟล์)
                         </label>
                         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem;">
@@ -121,11 +121,11 @@
             </div>
 
             {{-- 2. ความปลอดภัยและรหัสผ่าน --}}
-            <div class="card mb-6" style="border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); border-radius:12px; background:#fff;">
-                <div class="card-header" style="background:#fff; border-bottom:1px solid #f1f5f9; padding:1rem 1.5rem;">
+            <div class="card mb-6" style="border-radius:12px;">
+                <div class="card-header" style="padding:1rem 1.5rem;">
                     <div class="flex items-center gap-2">
                         <svg style="width:20px; height:20px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                        <h3 class="font-semi" style="font-size:1rem; color:#1e293b;">ความปลอดภัยและรหัสผ่าน</h3>
+                        <h3 class="font-semi" style="font-size:1rem;">ความปลอดภัยและรหัสผ่าน</h3>
                     </div>
                     <p class="text-xs text-muted mt-1" style="font-weight:normal;">ปล่อยช่องรหัสผ่านใหม่ว่างไว้ หากไม่ต้องการเปลี่ยนแปลง</p>
                 </div>
@@ -151,12 +151,12 @@
             </div>
 
             {{-- 3. API Keys & Tokens (ตั้งค่าความเป็นส่วนตัว) --}}
-            <div class="card mb-6" style="border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); border-radius:12px; background:#fff;">
-                <div class="card-header" style="background:#fff; border-bottom:1px solid #f1f5f9; padding:1rem 1.5rem;">
+            <div class="card mb-6" style="border-radius:12px;">
+                <div class="card-header" style="padding:1rem 1.5rem;">
                     <div class="flex items-center gap-2">
                         <svg style="width:20px; height:20px; color:#059669;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
                         <div>
-                            <h3 class="font-semi" style="font-size:1rem; color:#1e293b;">API Keys & Tokens (ตั้งค่าความเป็นส่วนตัว)</h3>
+                            <h3 class="font-semi" style="font-size:1rem;">API Keys & Tokens (ตั้งค่าความเป็นส่วนตัว)</h3>
                             <p class="text-xs text-muted mt-0.5" style="font-weight:normal;">จัดการ Personal Access Token สำหรับการเชื่อมต่อแอปพลิเคชันหรือระบบภายนอกอย่างปลอดภัย</p>
                         </div>
                     </div>
@@ -221,7 +221,7 @@
 
             {{-- Action Buttons --}}
             <div class="flex justify-end gap-2 mt-4">
-                <a href="{{ route('admin.dashboard') }}" class="btn btn-outline" style="background:#fff;">ยกเลิก</a>
+                <a href="{{ route('admin.dashboard') }}" class="btn btn-outline">ยกเลิก</a>
                 <button type="submit" class="btn btn-primary" style="background:#ea580c; color:white; border-radius:8px; font-weight:600; border:none; padding:0.6rem 1.5rem; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
                     <svg style="width:16px; height:16px; margin-right:6px; display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                     บันทึกข้อมูล
@@ -241,9 +241,9 @@
     {{-- ═══ คอลัมน์ซ้าย: การฟอร์แมตอีเมล SSO (2 ส่วนบนหน้าจอใหญ่) ═══ --}}
     <div style="grid-column: span 2; display: flex; flex-direction: column; gap: 1.5rem;">
         
-        <div class="card" style="border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); background:#fff; border-radius:12px;">
-            <div class="card-header" style="background:#fff; border-bottom:1px solid #f1f5f9; padding:1.25rem 1.5rem;">
-                <h3 class="font-semi flex items-center gap-2" style="font-size:1.05rem; color:#1e293b; margin:0;">
+        <div class="card" style="box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-radius:12px;">
+            <div class="card-header" style="padding:1.25rem 1.5rem;">
+                <h3 class="font-semi flex items-center gap-2" style="font-size:1.05rem; margin:0;">
                     <svg style="width:20px; height:20px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                     </svg>
@@ -289,7 +289,7 @@
                     </div>
 
                     <div class="flex justify-end gap-2">
-                        <a href="{{ route('admin.dashboard') }}" class="btn btn-outline" style="background:#fff; border-radius:8px;">ยกเลิก</a>
+                        <a href="{{ route('admin.dashboard') }}" class="btn btn-outline" style="border-radius:8px;">ยกเลิก</a>
                         <button type="submit" class="btn btn-primary" style="background:#ea580c; color:white; border-radius:8px; font-weight:600; border:none; padding:0.6rem 1.5rem; box-shadow:0 2px 4px rgba(234,88,12,0.2);">
                             บันทึกการตั้งค่า
                         </button>
@@ -304,8 +304,8 @@
     <div style="display: flex; flex-direction: column; gap: 1.5rem;">
         
         {{-- การ์ด LINE Bot Integration --}}
-        <div class="card" style="border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background:#fff; border-radius:12px;">
-            <div class="card-header flex items-center gap-2" style="background:#f8fafc; border-bottom:1px solid #f1f5f9; padding:1rem 1.25rem;">
+        <div class="card" style="box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-radius:12px;">
+            <div class="card-header flex items-center gap-2" style="padding:1rem 1.25rem;">
                 <svg style="width:20px; height:20px; color:#06c755;" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M24 10.3c0-4.8-5.4-8.8-12-8.8S0 5.5 0 10.3c0 4.3 4.3 7.9 10.1 8.7.4.1.9.3 1 .7.1.3.1.8 0 1.1l-.4 1.7c-.1.4-.4 1.7 1.1.9s8.1-4.8 11-8.2c.8-1.2 1.2-2.8 1.2-4.2zm-16.7 2H5.7c-.3 0-.5-.2-.5-.5v-4c0-.3.2-.5.5-.5h1.6c.3 0 .5.2.5.5v3.5h.5c.3 0 .5.2.5.5s-.2.5-.5.5zm3.7 0c0 .3-.2.5-.5.5h-1.6c-.3 0-.5-.2-.5-.5v-4c0-.3.2-.5.5-.5h1.6c.3 0 .5.2.5.5s-.2.5-.5.5h-1.1v1h1.1c.3 0 .5.2.5.5s-.2.5-.5.5h-1.1v1h1.1c.3 0 .5.2.5.5s-.2.5-.5.5zm4.8 0c0 .3-.2.5-.5.5h-1.6c-.3 0-.5-.2-.5-.5v-4c0-.3.2-.5.5-.5h.5c.3 0 .5.2.5.5v2.8l1-2.9c.1-.2.3-.4.5-.4h.6c.4 0 .6.4.4.7l-1.3 3c-.1.2-.2.3-.4.3zm5 0c0 .3-.2.5-.5.5h-1.6c-.3 0-.5-.2-.5-.5v-4c0-.3.2-.5.5-.5h1.6c.3 0 .5.2.5.5s-.2.5-.5.5H19v1h1.1c.3 0 .5.2.5.5s-.2.5-.5.5H19v1h1.1c.3 0 .5.2.5.5s-.2.5-.5.5z"/>
                 </svg>
@@ -337,8 +337,8 @@
         </div>
 
         {{-- การ์ด Diagnostics --}}
-        <div class="card" style="border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background:#fff; border-radius:12px;">
-            <div class="card-header flex items-center gap-2" style="background:#f8fafc; border-bottom:1px solid #f1f5f9; padding:1rem 1.25rem;">
+        <div class="card" style="box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-radius:12px;">
+            <div class="card-header flex items-center gap-2" style="padding:1rem 1.25rem;">
                 <svg style="width:20px; height:20px; color:#475569;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                 </svg>

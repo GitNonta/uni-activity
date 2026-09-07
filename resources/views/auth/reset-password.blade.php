@@ -7,8 +7,8 @@
     <div class="card">
         <div class="card-body" style="padding:2rem;">
             <div style="text-align:center;margin-bottom:1.5rem;">
-                <h1 style="font-size:1.5rem;font-weight:700;color:#1e293b;margin-bottom:.5rem;">รีเซ็ตรหัสผ่าน</h1>
-                <p style="color:#64748b;font-size:.9rem;">ตั้งรหัสผ่านใหม่สำหรับบัญชีของคุณ</p>
+                <h1 style="font-size:1.5rem;font-weight:700;margin-bottom:.5rem;line-height:1.5;">รีเซ็ตรหัสผ่าน</h1>
+                <p class="text-muted" style="font-size:.9rem;line-height:1.5;">ตั้งรหัสผ่านใหม่สำหรับบัญชีของคุณ</p>
             </div>
 
             @if(session('status'))

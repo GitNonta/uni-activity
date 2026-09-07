@@ -1,6 +1,56 @@
 @extends('layouts.admin')
 @section('title', 'จัดการโปรไฟล์ผู้ใช้')
 
+@section('styles')
+<style>
+.avatar-hover-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
+    opacity: 1;
+}
+.avatar-camera-btn {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 28px;
+    height: 28px;
+    background: #c2410c;
+    border: 2.5px solid #27272a;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    transition: transform 0.15s, background 0.15s;
+    z-index: 2;
+}
+.avatar-camera-btn:hover {
+    transform: scale(1.15);
+    background: #9a3412;
+}
+.admin-activity-link {
+    font-weight: 700;
+    color: var(--text-main, #0f172a);
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: color 0.15s;
+}
+.admin-activity-link:hover {
+    color: #ea580c !important;
+}
+</style>
+@endsection
+
 @section('content')
 <div style="display: flex; flex-direction: column; gap: 1.5rem; width: 100%; max-width: 100%;">
 
@@ -20,13 +70,13 @@
                         @else
                             <x-avatar :user="$user" size="88" style="width: 100%; height: 100%;" />
                         @endif
-                        <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s;" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0">
+                        <div class="avatar-hover-overlay">
                             <svg width="22" height="22" fill="none" stroke="#fff" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>
                         </div>
                     </label>
 
                     {{-- Camera Badge on Bottom-Right Edge --}}
-                    <label for="profilePhotoInput" style="position: absolute; bottom: -2px; right: -2px; width: 28px; height: 28px; background: #c2410c; border: 2.5px solid #27272a; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: transform 0.15s, background 0.15s; z-index: 2;" title="เปลี่ยนรูปโปรไฟล์" onmouseenter="this.style.transform='scale(1.15)'; this.style.background='#9a3412';" onmouseleave="this.style.transform='scale(1)'; this.style.background='#c2410c';">
+                    <label for="profilePhotoInput" class="avatar-camera-btn" title="เปลี่ยนรูปโปรไฟล์">
                         <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>
                     </label>
 
@@ -71,13 +121,13 @@
                     <form method="POST" action="{{ route('profile.photo.destroy') }}" style="margin:0;" onsubmit="return confirm('คุณต้องการลบรูปภาพโปรไฟล์ และเปลี่ยนไปใช้รูปอวตาร SVG ตามเพศ ({{ $user->gender_label }}) หรือไม่?');">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" style="display: inline-flex; align-items: center; gap: 0.45rem; background: rgba(239, 68, 68, 0.18); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); padding: 0.55rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s;" onmouseenter="this.style.background='rgba(239, 68, 68, 0.3)'" onmouseleave="this.style.background='rgba(239, 68, 68, 0.18)'">
+                        <button type="submit" class="btn btn-sm btn-outline" style="color: #fca5a5; border-color: rgba(239, 68, 68, 0.4); font-weight: 700;">
                             <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                             <span>ใช้อวตารตามเพศ (ลบรูปถ่าย)</span>
                         </button>
                     </form>
                 @endif
-                <a href="{{ route('admin.settings.index', ['tab' => 'privacy']) }}" style="display: inline-flex; align-items: center; gap: 0.45rem; background: #c2410c; color: #fff; padding: 0.55rem 1.1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; text-decoration: none; box-shadow: 0 2px 8px rgba(194, 65, 12, 0.3); transition: all 0.2s; line-height: 1.5;" onmouseenter="this.style.background='#9a3412'" onmouseleave="this.style.background='#c2410c'">
+                <a href="{{ route('admin.settings.index', ['tab' => 'privacy']) }}" class="btn btn-primary btn-sm" style="font-weight: 700; line-height: 1.5;">
                     <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                     <span>แก้ไขข้อมูลส่วนตัว & เพศ & รหัสผ่าน</span>
                 </a>
@@ -162,9 +212,9 @@
         <div style="display: flex; flex-direction: column; gap: 1.25rem;">
 
             {{-- Profile & Organization Overview Card --}}
-            <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+            <div class="card" style="border-radius: 14px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid #f1f5f9;">
-                    <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 0.5rem;">
+                    <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
                         <svg width="18" height="18" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                         ข้อมูลสังกัดและข้อมูลติดต่อ
                     </h3>
@@ -216,9 +266,9 @@
             </div>
 
             {{-- Access Rights & System Privileges Card --}}
-            <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+            <div class="card" style="border-radius: 14px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid #f1f5f9;">
-                    <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 0.5rem;">
+                    <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
                         <svg width="18" height="18" fill="none" stroke="#10b981" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                         สิทธิ์การเข้าถึงระบบ (Role Privileges)
                     </h3>
@@ -273,10 +323,10 @@
         <div style="display: flex; flex-direction: column; gap: 1.25rem;">
 
             {{-- Recent Activities Created by User Card --}}
-            <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+            <div class="card" style="border-radius: 14px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid #f1f5f9;">
                     <div>
-                        <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 0.5rem;">
+                        <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
                             <svg width="18" height="18" fill="none" stroke="#c2410c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                             กิจกรรมที่คุณสร้างล่าสุด
                         </h3>
@@ -293,9 +343,9 @@
                 @if(isset($recentActivities) && $recentActivities->count() > 0)
                     <div style="display: flex; flex-direction: column; gap: 0.65rem;">
                         @foreach($recentActivities as $activity)
-                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; background: #fafbfc; border-radius: 10px; border: 1px solid #f1f5f9; flex-wrap: wrap; gap: 0.5rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; background: var(--surface-hover, #fafbfc); border-radius: 10px; border: 1px solid var(--border, #f1f5f9); flex-wrap: wrap; gap: 0.5rem;">
                                 <div>
-                                    <a href="{{ route('admin.activities.show', $activity->id) }}" style="font-weight: 700; color: #0f172a; font-size: 0.9rem; text-decoration: none;" onmouseenter="this.style.color='#ea580c'" onmouseleave="this.style.color='#0f172a'">
+                                    <a href="{{ route('admin.activities.show', $activity->id) }}" class="admin-activity-link">
                                         {{ $activity->title }}
                                     </a>
                                     <div style="display: flex; align-items: center; gap: 0.65rem; margin-top: 0.2rem; font-size: 0.75rem; color: #64748b;">
@@ -318,10 +368,10 @@
             </div>
 
             {{-- Recent Audit Activity Timeline Card --}}
-            <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+            <div class="card" style="border-radius: 14px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid #f1f5f9;">
                     <div>
-                        <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 0.5rem;">
+                        <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
                             <svg width="18" height="18" fill="none" stroke="#6366f1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             ไทม์ไลน์บันทึกการปฏิบัติงานล่าสุด (Audit Trail)
                         </h3>

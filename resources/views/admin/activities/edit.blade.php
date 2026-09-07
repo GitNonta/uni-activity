@@ -212,7 +212,7 @@
                 <div style="display:flex;gap:.5rem;margin-bottom:.75rem;flex-wrap:wrap;">
                     <div style="flex:1;min-width:180px;position:relative;">
                         <input type="text" id="mapSearch" class="form-control" placeholder="ค้นหาสถานที่..." autocomplete="off">
-                        <div id="searchResults" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.1);max-height:300px;overflow-y:auto;z-index:1000;margin-top:4px;"></div>
+                        <div id="searchResults" class="location-search-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.1);max-height:300px;overflow-y:auto;z-index:1000;margin-top:4px;"></div>
                     </div>
                     <button type="button" class="btn btn-outline btn-sm" onclick="goToMyLocation()">
                         <svg class="icon-sm" style="display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -412,9 +412,7 @@ function displaySearchResults(data) {
     container.innerHTML = '';
     data.forEach(function(item) {
         var div = document.createElement('div');
-        div.style.cssText = 'padding:10px 12px;cursor:pointer;border-bottom:1px solid #f1f5f9;transition:background .15s;';
-        div.onmouseover = function() { this.style.background = '#f8fafc'; };
-        div.onmouseout = function() { this.style.background = '#fff'; };
+        div.className = 'location-search-item';
         
         var name = item.display_name;
         var distText = '';
@@ -422,7 +420,7 @@ function displaySearchResults(data) {
             distText = '<span style="color:#64748b;font-size:.8rem;margin-left:8px;">(' + formatDistance(item.distance) + ')</span>';
         }
         
-        div.innerHTML = '<div style="font-size:.9rem;color:#1e293b;">' + escapeHtml(name) + distText + '</div>';
+        div.innerHTML = '<div class="item-title" style="font-size:.9rem;color:var(--text-main, #1e293b);">' + escapeHtml(name) + distText + '</div>';
         div.onclick = function() {
             selectPlace(parseFloat(item.lat), parseFloat(item.lon), name);
         };

@@ -189,6 +189,89 @@ p, li, dd, dt, th, td, label {
     text-align: left !important;
 }
 
+/* ── Dark Mode Admin Table, Card & Modal Styling ── */
+html[data-theme="dark"] table,
+html.dark table {
+    color: #f4f4f5 !important;
+}
+html[data-theme="dark"] table th,
+html.dark table th {
+    background: #1c1c1f !important;
+    color: #f4f4f5 !important;
+    border-color: #27272a !important;
+}
+html[data-theme="dark"] table td,
+html.dark table td {
+    color: #f4f4f5 !important;
+    border-color: #27272a !important;
+}
+html[data-theme="dark"] table tbody tr,
+html.dark table tbody tr {
+    background: #1c1c1f !important;
+    color: #f4f4f5 !important;
+    border-color: #27272a !important;
+}
+html[data-theme="dark"] table tbody tr:hover,
+html[data-theme="dark"] table tbody tr:hover td,
+html[data-theme="dark"] tr:hover,
+html[data-theme="dark"] tr:hover td,
+html.dark table tbody tr:hover,
+html.dark table tbody tr:hover td,
+html.dark tr:hover,
+html.dark tr:hover td {
+    background: #27272a !important;
+    color: #f8fafc !important;
+}
+html[data-theme="dark"] tr:has(.empty-state-row):hover,
+html[data-theme="dark"] tr:has(.empty-state-row):hover td,
+html.dark tr:has(.empty-state-row):hover,
+html.dark tr:has(.empty-state-row):hover td {
+    background: transparent !important;
+}
+
+/* Modals in Admin Dark Theme */
+html[data-theme="dark"] .modal,
+html.dark .modal {
+    background: #18181b !important;
+    border: 1px solid #27272a !important;
+    color: #f4f4f5 !important;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.6) !important;
+}
+html[data-theme="dark"] .modal-header,
+html.dark .modal-header {
+    background: #18181b !important;
+    border-bottom: 1px solid #27272a !important;
+    color: #f8fafc !important;
+}
+html[data-theme="dark"] .modal-header h2,
+html[data-theme="dark"] .modal-header h3,
+html.dark .modal-header h2,
+html.dark .modal-header h3 {
+    color: #f8fafc !important;
+}
+html[data-theme="dark"] .modal-close,
+html.dark .modal-close {
+    color: #a1a1aa !important;
+}
+html[data-theme="dark"] .modal-close:hover,
+html.dark .modal-close:hover {
+    color: #ffffff !important;
+}
+html[data-theme="dark"] .modal-body,
+html.dark .modal-body {
+    background: #18181b !important;
+    color: #f4f4f5 !important;
+}
+html[data-theme="dark"] .modal-body .form-label,
+html.dark .modal-body .form-label {
+    color: #e4e4e7 !important;
+    font-weight: 600;
+}
+html[data-theme="dark"] .modal-body .text-muted,
+html.dark .modal-body .text-muted {
+    color: #cbd5e1 !important;
+}
+
 /* ════════════════════════════
    UNIFIED SEAMLESS TOP HEADER
    ════════════════════════════ */
@@ -588,8 +671,19 @@ p, li, dd, dt, th, td, label {
 
 /* Small phones */
 @media (max-width: 480px) {
-    #adminChatWidgetContainer { right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); left: 12px; justify-content: flex-end; }
     .admin-chat-widget { width: min(340px, 100%); height: min(480px, 65vh); }
+}
+
+/* Quick Omnisearch result item hover */
+.admin-search-result-row {
+    transition: background 0.15s ease;
+}
+.admin-search-result-row:hover {
+    background: #f1f5f9;
+}
+html[data-theme="dark"] .admin-search-result-row:hover,
+html.dark .admin-search-result-row:hover {
+    background: #27272a !important;
 }
 </style>
 
@@ -1396,13 +1490,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 let html = '';
                 data.results.forEach((item, index) => {
                     html += `
-                        <a href="${item.url}" style="display:flex; align-items:center; justify-content:space-between; padding:0.75rem 1rem; border-radius:10px; text-decoration:none; color:inherit; margin-bottom:4px; transition:background .15s; line-height:1.5;" onmouseover="this.style.background='#f1f5f9';" onmouseout="this.style.background='transparent';">
+                        <a href="${item.url}" class="admin-search-result-row" style="display:flex; align-items:center; justify-content:space-between; padding:0.75rem 1rem; border-radius:10px; text-decoration:none; color:inherit; margin-bottom:4px; line-height:1.5;">
                             <div>
-                                <div style="font-weight:600; font-size:0.9rem; color:#0f172a; display:flex; align-items:center; gap:8px; line-height:1.5;">
+                                <div style="font-weight:600; font-size:0.9rem; color:var(--adm-brand-text, #0f172a); display:flex; align-items:center; gap:8px; line-height:1.5;">
                                     <span>${escapeSearchHtml(item.title)}</span>
                                     <span style="font-size:0.7rem; font-weight:700; background:${item.badge_color}15; color:${item.badge_color}; padding:2px 8px; border-radius:6px; line-height:1.5;">${escapeSearchHtml(item.type_label)}</span>
                                 </div>
-                                <div style="font-size:0.8rem; color:#475569; margin-top:2px; line-height:1.5;">${escapeSearchHtml(item.subtitle)}</div>
+                                <div style="font-size:0.8rem; color:var(--adm-section-label, #475569); margin-top:2px; line-height:1.5;">${escapeSearchHtml(item.subtitle)}</div>
                             </div>
                             <svg width="16" height="16" fill="none" stroke="#64748b" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         </a>

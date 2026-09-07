@@ -2,6 +2,58 @@
 @extends('layouts.admin')
 @section('title', 'ภาพรวมระบบ')
 
+@section('styles')
+<style>
+.dashboard-audit-row {
+    transition: background .15s;
+}
+.dashboard-audit-row:hover {
+    background: #fafbfe;
+}
+html[data-theme="dark"] .dashboard-audit-row:hover,
+html.dark .dashboard-audit-row:hover {
+    background: #27272a !important;
+}
+html[data-theme="dark"] .dashboard-audit-row:hover span,
+html.dark .dashboard-audit-row:hover span {
+    color: #f8fafc !important;
+}
+.dashboard-view-all-logs-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-size: .78rem;
+    font-weight: 600;
+    color: #c2410c;
+    background: #ffedd5;
+    border: 1px solid #fed7aa;
+    text-decoration: none;
+    transition: all .2s;
+    line-height: 1.5;
+}
+.dashboard-view-all-logs-btn:hover {
+    background: #c2410c;
+    color: #fff;
+    border-color: #c2410c;
+    box-shadow: 0 2px 8px rgba(194,65,12,.25);
+}
+html[data-theme="dark"] .dashboard-view-all-logs-btn,
+html.dark .dashboard-view-all-logs-btn {
+    color: #fdba74;
+    background: rgba(194, 65, 12, 0.2);
+    border-color: rgba(194, 65, 12, 0.4);
+}
+html[data-theme="dark"] .dashboard-view-all-logs-btn:hover,
+html.dark .dashboard-view-all-logs-btn:hover {
+    background: #ea580c;
+    color: #fff;
+    border-color: #ea580c;
+}
+</style>
+@endsection
+
 @section('content')
 <div class="flex items-center justify-between mb-6">
     <h1 class="font-bold" style="font-size:1.5rem;">ภาพรวมระบบ</h1>
@@ -171,11 +223,11 @@
                 <svg style="width:18px;height:18px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01"/></svg>
             </div>
             <div>
-                <h2 class="font-bold" style="font-size:1.05rem;color:#0f172a;letter-spacing:-0.01em;">ประวัติการดำเนินงานล่าสุด</h2>
+                <h2 class="font-bold" style="font-size:1.05rem;letter-spacing:-0.01em;">ประวัติการดำเนินงานล่าสุด</h2>
                 <p class="text-xs text-muted" style="margin-top:1px;">Audit Logs — บันทึกการเปลี่ยนแปลงในระบบ</p>
             </div>
         </div>
-        <a href="{{ route('admin.audit-logs.index') }}" style="display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:10px;font-size:.78rem;font-weight:600;color:#c2410c;background:#ffedd5;border:1px solid #fed7aa;text-decoration:none;transition:all .2s;line-height:1.5;" onmouseover="this.style.background='#c2410c';this.style.color='#fff';this.style.borderColor='#c2410c';this.style.boxShadow='0 2px 8px rgba(194,65,12,.25)'" onmouseout="this.style.background='#ffedd5';this.style.color='#c2410c';this.style.borderColor='#fed7aa';this.style.boxShadow='none'">
+        <a href="{{ route('admin.audit-logs.index') }}" class="dashboard-view-all-logs-btn">
             ดูประวัติทั้งหมด
             <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
         </a>
@@ -215,8 +267,8 @@
             };
         @endphp
         <a href="{{ route('admin.audit-logs.show', $log->id) }}"
-           style="display:flex;align-items:center;gap:.875rem;padding:.875rem 1.25rem;border-bottom:1px solid #f1f5f9;text-decoration:none;color:inherit;transition:background .15s;"
-           onmouseover="this.style.background='#fafbfe'" onmouseout="this.style.background='transparent'">
+           class="dashboard-audit-row"
+           style="display:flex;align-items:center;gap:.875rem;padding:.875rem 1.25rem;border-bottom:1px solid #f1f5f9;text-decoration:none;color:inherit;">
             {{-- Action Icon --}}
             <div style="width:36px;height:36px;border-radius:10px;background:{{ $actionGradient }};display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.08);">
                 <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24">{!! $actionSvg !!}</svg>
@@ -224,7 +276,7 @@
             {{-- Content --}}
             <div style="flex:1;min-width:0;">
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:3px;">
-                    <span style="font-size:.85rem;font-weight:700;color:#1e293b;">{{ $log->user->full_name ?? 'System' }}</span>
+                    <span style="font-size:.85rem;font-weight:700;color:var(--text-main, #1e293b);">{{ $log->user->full_name ?? 'System' }}</span>
                     <span style="font-size:.68rem;color:#94a3b8;white-space:nowrap;flex-shrink:0;">{{ $log->created_at->diffForHumans() }}</span>
                 </div>
                 <p style="font-size:.8rem;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0;">{{ $log->description }}</p>

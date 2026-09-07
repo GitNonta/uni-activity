@@ -20,10 +20,10 @@
             <span class="text-xs text-muted">{{ $announcement->created_at->format('d/m/Y H:i') }}</span>
         </div>
         
-        <h1 class="font-bold text-xl mb-4" style="color:#0f172a;line-height:1.5;">{{ $announcement->title }}</h1>
+        <h1 class="font-bold text-xl mb-4" style="color:var(--text-main, #0f172a);line-height:1.5;">{{ $announcement->title }}</h1>
 
         @if($announcement->image_path)
-            <div class="mb-5 rounded-lg overflow-hidden" style="border:1px solid #f1f5f9;background:#f8fafc;">
+            <div class="mb-5 rounded-lg overflow-hidden" style="border:1px solid var(--border, #f1f5f9);background:var(--surface-hover, #f8fafc);">
                 <img src="{{ Storage::url($announcement->image_path) }}" alt="{{ $announcement->title }}" class="w-full h-auto" style="max-height:500px;object-fit:contain;display:block;margin:0 auto; cursor:zoom-in;" onclick="openImageModal(this.src || this.dataset.src)">
             </div>
         @endif

@@ -7,8 +7,8 @@
     <div class="card">
         <div class="card-body" style="padding:2rem;">
             <div style="text-align:center;margin-bottom:1.5rem;">
-                <h1 style="font-size:1.5rem;font-weight:700;color:#1e293b;margin-bottom:.5rem;">ลืมรหัสผ่าน</h1>
-                <p style="color:#64748b;font-size:.9rem;">กรอกอีเมลเพื่อรับลิงก์รีเซ็ตรหัสผ่าน</p>
+                <h1 style="font-size:1.5rem;font-weight:700;margin-bottom:.5rem;line-height:1.5;">ลืมรหัสผ่าน</h1>
+                <p class="text-muted" style="font-size:.9rem;line-height:1.5;">กรอกอีเมลเพื่อรับลิงก์รีเซ็ตรหัสผ่าน</p>
             </div>
 
             @if(session('status'))

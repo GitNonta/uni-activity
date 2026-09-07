@@ -2,14 +2,22 @@
 
 @section('title', 'ยืนยันการเข้าสู่ระบบ')
 
+@section('styles')
+<style>
+    .auth-container { background: #ffffff; border: 1px solid #e2e8f0; }
+    html[data-theme="dark"] .auth-container, html.dark .auth-container { background: #18181b !important; border-color: #27272a !important; color: #f4f4f5 !important; }
+    html[data-theme="dark"] .otp-box, html.dark .otp-box { background: #141416 !important; border-color: #27272a !important; color: #f4f4f5 !important; }
+</style>
+@endsection
+
 @section('content')
-<div class="auth-container" style="max-width: 400px; margin: 4rem auto; padding: 2rem; background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+<div class="auth-container" style="max-width: 400px; margin: 4rem auto; padding: 2rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
     <div style="text-align: center; margin-bottom: 2rem;">
         <div style="width: 64px; height: 64px; background: #fff7ed; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
             <svg style="width: 32px; height: 32px; color: #ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
         </div>
-        <h1 style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">ยืนยันรหัส OTP</h1>
-        <p style="color: #64748b; font-size: 0.875rem; margin-top: 0.5rem;">
+        <h1 style="font-size: 1.5rem; font-weight: 700;">ยืนยันรหัส OTP</h1>
+        <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.5rem; line-height: 1.5;">
             ป้อนรหัส 6 หลักที่ส่งไปยัง <br>
             <strong>{{ $email }}</strong>
         </p>

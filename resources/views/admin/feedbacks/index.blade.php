@@ -1,6 +1,14 @@
 @extends('layouts.admin')
 @section('title', 'การประเมินกิจกรรม')
 
+@section('styles')
+<style>
+    html[data-theme="dark"] tr:hover td { background: #27272a !important; color: #f8fafc !important; }
+    html[data-theme="dark"] tr:has(.empty-state-row):hover,
+    html[data-theme="dark"] tr:has(.empty-state-row):hover td { background: transparent !important; }
+</style>
+@endsection
+
 @section('content')
 <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
     <div>
@@ -141,14 +149,14 @@
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="6">
-                            <div class="empty-state-row">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <tr style="background: transparent !important;">
+                        <td colspan="6" style="background: transparent !important; border: none;">
+                            <div class="empty-state-row" style="background: transparent !important;">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: #a1a1aa;">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                 </svg>
-                                <div class="empty-state-row-title">ไม่พบข้อมูลการประเมิน</div>
-                                <div class="empty-state-row-desc">เมื่อนักศึกษาส่งแบบประเมินกิจกรรม จะปรากฏที่นี่</div>
+                                <div class="empty-state-row-title" style="color: #f4f4f5;">ไม่พบข้อมูลการประเมิน</div>
+                                <div class="empty-state-row-desc" style="color: #cbd5e1;">เมื่อนักศึกษาส่งแบบประเมินกิจกรรม จะปรากฏที่นี่</div>
                             </div>
                         </td>
                     </tr>

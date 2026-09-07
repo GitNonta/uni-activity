@@ -7,8 +7,47 @@
     <title>เข้าสู่ระบบผู้จัดกิจกรรม</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <script>
+        (function() {
+            var saved = localStorage.getItem('app-theme');
+            var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            var theme = saved || (prefersDark ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
     <style>
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    html[data-theme="dark"] body, html.dark body {
+        background: #09090b !important;
+        color: #f4f4f5 !important;
+    }
+    html[data-theme="dark"] h1, html.dark h1 {
+        color: #f8fafc !important;
+    }
+    html[data-theme="dark"] .text-muted, html.dark .text-muted {
+        color: #cbd5e1 !important;
+    }
+    html[data-theme="dark"] .card, html.dark .card {
+        background: #18181b !important;
+        border-color: #27272a !important;
+    }
+    html[data-theme="dark"] .form-label, html.dark .form-label,
+    html[data-theme="dark"] .checkbox-label, html.dark .checkbox-label {
+        color: #e4e4e7 !important;
+    }
+    html[data-theme="dark"] .form-control, html.dark .form-control {
+        background: #141416 !important;
+        border-color: #27272a !important;
+        color: #f4f4f5 !important;
+    }
+    html[data-theme="dark"] a:not([class*="btn"]), html.dark a:not([class*="btn"]) {
+        color: #fb923c !important;
+    }
     </style>
 </head>
 <body>

@@ -224,8 +224,8 @@
 
 {{-- Modal แก้ไขบันทึก --}}
 <div id="editModal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.4);align-items:center;justify-content:center;">
-    <div style="background:#fff;border-radius:12px;padding:1.5rem;width:100%;max-width:400px;margin:1rem;">
-        <h3 class="font-bold mb-4" style="font-size:1rem;">แก้ไขบันทึกกิจกรรม</h3>
+    <div class="modal-content" style="background:var(--surface, #fff);border:1px solid var(--border, #e2e8f0);border-radius:12px;padding:1.5rem;width:100%;max-width:400px;margin:1rem;">
+        <h3 class="font-bold mb-4" style="font-size:1rem;color:var(--text-main, #1e293b);">แก้ไขบันทึกกิจกรรม</h3>
         <form id="editForm" method="POST">
             @csrf @method('PATCH')
             <div class="form-group">
@@ -250,9 +250,9 @@
 
 {{-- Modal เลือกเรื่องที่ต้องการสนทนา (เมื่อมีหลายหัวข้อ) --}}
 <div id="chatSelectionModal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.4);align-items:center;justify-content:center;">
-    <div style="background:#fff;border-radius:12px;padding:1.5rem;width:100%;max-width:450px;margin:1rem;box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);">
+    <div class="modal-content" style="background:var(--surface, #fff);border:1px solid var(--border, #e2e8f0);border-radius:12px;padding:1.5rem;width:100%;max-width:450px;margin:1rem;box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="font-bold text-slate-800" style="font-size:1rem;margin:0;color:#1e293b;">เลือกเรื่องที่จะติดต่อกับ {{ $student->full_name }}</h3>
+            <h3 class="font-bold text-slate-800" style="font-size:1rem;margin:0;color:var(--text-main, #1e293b);">เลือกเรื่องที่จะติดต่อกับ {{ $student->full_name }}</h3>
             <button type="button" onclick="closeChatSelectionModal()" style="background:none;border:none;color:#94a3b8;cursor:pointer;display:flex;align-items:center;justify-content:center;">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
@@ -265,7 +265,7 @@
             $chatJobs = $chatJobsQuery->get(['id', 'title', 'position']);
         @endphp
         <div class="form-group mb-3">
-            <label class="form-label" style="font-weight:600;font-size:.8rem;color:#475569;margin-bottom:.35rem;display:block;">เลือกเรื่องที่ต้องการติดต่อ</label>
+            <label class="form-label" style="font-weight:600;font-size:.8rem;color:var(--text-muted, #475569);margin-bottom:.35rem;display:block;">เลือกเรื่องที่ต้องการติดต่อ</label>
             <select id="chatJobSelect" class="form-control" style="width:100%;">
                 <option value="0">ติดต่อสอบถามทั่วไป (General Inquiry)</option>
                 @foreach($chatJobs as $cj)

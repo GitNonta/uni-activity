@@ -2,11 +2,20 @@
 
 @section('title', 'ยืนยัน OTP')
 
+@section('styles')
+<style>
+    .auth-container { background: #ffffff; border: 1px solid #e2e8f0; }
+    html[data-theme="dark"] .auth-container, html.dark .auth-container { background: #18181b !important; border-color: #27272a !important; color: #f4f4f5 !important; }
+    html[data-theme="dark"] .otp-box, html.dark .otp-box { background: #141416 !important; border-color: #27272a !important; color: #f4f4f5 !important; }
+    html[data-theme="dark"] .form-group label { color: #cbd5e1 !important; }
+</style>
+@endsection
+
 @section('content')
-<div class="auth-container" style="max-width: 400px; margin: 4rem auto; padding: 2rem; background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+<div class="auth-container" style="max-width: 400px; margin: 4rem auto; padding: 2rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
     <div style="text-align: center; margin-bottom: 2rem;">
-        <h1 style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">ยืนยันรหัส OTP</h1>
-        <p style="color: #64748b; font-size: 0.875rem; margin-top: 0.5rem;">
+        <h1 style="font-size: 1.5rem; font-weight: 700;">ยืนยันรหัส OTP</h1>
+        <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.5rem; line-height: 1.5;">
             เราได้ส่งรหัสยืนยัน 6 หลักไปที่ <br>
             <strong>{{ $email }}</strong>
         </p>

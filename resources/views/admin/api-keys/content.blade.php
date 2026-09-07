@@ -29,9 +29,9 @@
     
     {{-- Form สร้าง API Key --}}
     <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-        <div class="card" style="border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background:#fff; border-radius:12px;">
-            <div class="card-header" style="background:#fff; border-bottom:1px solid #f1f5f9; padding:1.25rem 1.5rem;">
-                <h3 class="font-semi flex items-center gap-2" style="font-size:1.05rem; color:#1e293b; margin:0;">
+        <div class="card" style="box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-radius:12px;">
+            <div class="card-header" style="padding:1.25rem 1.5rem;">
+                <h3 class="font-semi flex items-center gap-2" style="font-size:1.05rem; margin:0;">
                     <svg style="width:20px; height:20px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
@@ -60,9 +60,9 @@
 
     {{-- รายการ API Keys (2 ส่วนบนหน้าจอใหญ่) --}}
     <div style="grid-column: span 2; display: flex; flex-direction: column; gap: 1.5rem;">
-        <div class="card" style="border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background:#fff; border-radius:12px;">
-            <div class="card-header" style="background:#fff; border-bottom:1px solid #f1f5f9; padding:1.25rem 1.5rem;">
-                <h3 class="font-semi flex items-center gap-2" style="font-size:1.05rem; color:#1e293b; margin:0;">
+        <div class="card" style="box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-radius:12px;">
+            <div class="card-header" style="padding:1.25rem 1.5rem;">
+                <h3 class="font-semi flex items-center gap-2" style="font-size:1.05rem; margin:0;">
                     <svg style="width:20px; height:20px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
                     </svg>
@@ -87,7 +87,7 @@
                     <div style="overflow-x:auto;">
                         <table style="width:100%; border-collapse:collapse; margin:0;">
                             <thead>
-                                <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0; color:#475569; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em;">
+                                <tr style="background:var(--surface-hover, #f8fafc); border-bottom:1px solid var(--border, #e2e8f0); color:var(--text-muted, #475569); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em;">
                                     <th style="padding:1rem 1.5rem; text-align:left; font-weight:700;">ชื่อ / วัตถุประสงค์</th>
                                     <th style="padding:1rem 1.5rem; text-align:left; font-weight:700;">ใช้งานล่าสุด</th>
                                     <th style="padding:1rem 1.5rem; text-align:left; font-weight:700;">วันที่สร้าง</th>
@@ -96,11 +96,11 @@
                             </thead>
                             <tbody>
                                 @foreach($tokens as $token)
-                                    <tr style="border-bottom:1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background='transparent'">
+                                    <tr class="api-key-row" style="border-bottom:1px solid var(--border-color, #f1f5f9); transition: background 0.15s;">
                                         <td style="padding:1.1rem 1.5rem;">
                                             <div style="display:flex; align-items:center; gap:10px;">
                                                 <div style="width:8px; height:8px; border-radius:50%; background:#ea580c;"></div>
-                                                <span style="font-size:0.9rem; font-weight:600; color:#1e293b;">{{ $token->name }}</span>
+                                                <span style="font-size:0.9rem; font-weight:600; color:var(--text-main, #1e293b);">{{ $token->name }}</span>
                                             </div>
                                         </td>
                                         <td style="padding:1.1rem 1.5rem; color:#475569; font-size:0.825rem;">
@@ -119,7 +119,7 @@
                                             <form action="{{ route('admin.api-keys.destroy', $token->id) }}" method="POST" onsubmit="return confirm('ยืนยันการลบ API Key นี้? หากยกเลิกแล้ว บริการหรือภายนอกที่กำลังใช้คีย์นี้จะไม่สามารถเชื่อมต่อได้อีกทันที')">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" style="background:#fee2e2; color:#be123c; border:1px solid #fecdd3; padding:0.4rem 0.85rem; border-radius:8px; font-size:0.775rem; font-weight:600; cursor:pointer; transition:all 0.2s; line-height:1.5;" onmouseover="this.style.background='#fecdd3'" onmouseout="this.style.background='#fee2e2'">
+                                                <button type="submit" class="btn btn-danger btn-sm" style="padding:0.4rem 0.85rem; border-radius:8px; font-size:0.775rem; font-weight:600; cursor:pointer; line-height:1.5;">
                                                     ยกเลิกสิทธิ์ (Revoke)
                                                 </button>
                                             </form>
@@ -137,6 +137,20 @@
 </div>
 
 <style>
+.api-key-row {
+    transition: background 0.15s ease;
+}
+.api-key-row:hover {
+    background: #fafafa;
+}
+html[data-theme="dark"] .api-key-row:hover,
+html.dark .api-key-row:hover {
+    background: #27272a !important;
+}
+html[data-theme="dark"] .api-key-row:hover td,
+html.dark .api-key-row:hover td {
+    color: #f8fafc !important;
+}
 @keyframes slideIn {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }

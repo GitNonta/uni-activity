@@ -12,11 +12,19 @@
     --background: #f8fafc;
     --border: #e2e8f0;
     --text-main: #0f172a;
-    --text-muted: #64748b;
+    --text-muted: #475569;
     --danger: #ef4444;
     --warning: #f59e0b;
     --success: #10b981;
     --info: #ea580c;
+}
+
+html[data-theme="dark"], html.dark {
+    --surface: #1c1c1f;
+    --background: #121214;
+    --border: #27272a;
+    --text-main: #f4f4f5;
+    --text-muted: #cbd5e1;
 }
 
 .sec-header {
@@ -186,6 +194,39 @@
 }
 .log-table tr:last-child td { border-bottom: none; }
 .log-table tr:hover td { background: #f8fafc; }
+
+html[data-theme="dark"] .log-table th,
+html.dark .log-table th {
+    background: #141416;
+    color: #a1a1aa;
+    border-bottom-color: #27272a;
+}
+html[data-theme="dark"] .log-table td,
+html.dark .log-table td {
+    border-bottom-color: #27272a;
+    color: #f4f4f5;
+}
+html[data-theme="dark"] .log-table tr:hover td,
+html.dark .log-table tr:hover td {
+    background: #27272a !important;
+}
+html[data-theme="dark"] .filter-input,
+html.dark .filter-input {
+    background: #141416;
+    color: #f4f4f5;
+    border-color: #27272a;
+}
+html[data-theme="dark"] .btn-secondary,
+html.dark .btn-secondary {
+    background: #27272a;
+    color: #f4f4f5;
+    border-color: #3f3f46;
+}
+html[data-theme="dark"] .btn-secondary:hover,
+html.dark .btn-secondary:hover {
+    background: #3f3f46;
+    color: #ffffff;
+}
 
 .badge {
     display: inline-flex;

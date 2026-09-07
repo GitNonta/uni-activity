@@ -7,9 +7,9 @@
     <div class="card">
         <div class="card-body" style="padding:1.5rem;">
             <div style="text-align:center;margin-bottom:1.5rem;">
-                <h1 style="font-size:1.5rem;font-weight:700;color:#1e293b;margin-bottom:.5rem;line-height:1.5;">ประเมินกิจกรรม</h1>
-                <p style="color:#475569;font-size:.9rem;line-height:1.5;">{{ $activity->title }}</p>
-                <p style="color:#475569;font-size:.8rem;line-height:1.5;">{{ $activity->category->name ?? '-' }} | {{ $activity->activity_date->format('d/m/Y') }}</p>
+                <h1 style="font-size:1.5rem;font-weight:700;color:var(--text-main, #1e293b);margin-bottom:.5rem;line-height:1.5;">ประเมินกิจกรรม</h1>
+                <p style="color:var(--text-muted, #475569);font-size:.9rem;line-height:1.5;">{{ $activity->title }}</p>
+                <p style="color:var(--text-muted, #475569);font-size:.8rem;line-height:1.5;">{{ $activity->category->name ?? '-' }} | {{ $activity->activity_date->format('d/m/Y') }}</p>
             </div>
 
             <form method="POST" action="{{ route('feedback.store', $activity->id) }}">
@@ -36,8 +36,8 @@
                 </div>
 
                 {{-- คะแนนแยกตามหัวข้อ --}}
-                <div style="background:#f8fafc;padding:1rem;border-radius:8px;margin-bottom:1.5rem;">
-                    <p style="font-weight:600;margin-bottom:1rem;font-size:.9rem;">ประเมินรายละเอียด (ไม่บังคับ)</p>
+                <div style="background:var(--surface-hover, #f8fafc);border:1px solid var(--border, #e2e8f0);padding:1rem;border-radius:8px;margin-bottom:1.5rem;">
+                    <p style="font-weight:600;margin-bottom:1rem;font-size:.9rem;color:var(--text-main, #1e293b);">ประเมินรายละเอียด (ไม่บังคับ)</p>
                     
                     <div style="margin-bottom:.75rem;">
                         <label class="form-label" style="font-size:.85rem;">เนื้อหากิจกรรม</label>

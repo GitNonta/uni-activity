@@ -970,24 +970,117 @@ html[data-theme="dark"] .form-control, html[data-theme="dark"] .form-control:foc
     border-color: #27272a !important; 
     color: #f4f4f5 !important; 
 }
-html[data-theme="dark"] table th { 
+html[data-theme="dark"] table,
+html.dark table { 
+    color: #f4f4f5 !important; 
+}
+html[data-theme="dark"] table th,
+html.dark table th { 
     background: #1c1c1f !important; 
     color: #f4f4f5 !important; 
     border-bottom-color: #27272a !important; 
 }
-html[data-theme="dark"] table td { 
+html[data-theme="dark"] table td,
+html.dark table td { 
     border-bottom-color: rgba(255, 255, 255, 0.05) !important; 
     color: #e4e4e7 !important; 
 }
-html[data-theme="dark"] .responsive-table tbody tr { 
+html[data-theme="dark"] table tbody tr,
+html[data-theme="dark"] .table tbody tr,
+html[data-theme="dark"] .responsive-table tbody tr,
+html.dark table tbody tr,
+html.dark .table tbody tr,
+html.dark .responsive-table tbody tr { 
     background: #1c1c1f !important; 
     border-color: #27272a !important; 
+    color: #f4f4f5 !important;
 }
-html[data-theme="dark"] .responsive-table tbody tr:hover { 
-    background: #242428 !important; 
+
+/* Universal Dark Mode Table Row Hover — Fixes White-on-White Bug */
+html[data-theme="dark"] table tbody tr:hover,
+html[data-theme="dark"] table tbody tr:hover td,
+html[data-theme="dark"] .table tbody tr:hover,
+html[data-theme="dark"] .table tbody tr:hover td,
+html[data-theme="dark"] .responsive-table tbody tr:hover,
+html[data-theme="dark"] .responsive-table tbody tr:hover td,
+html[data-theme="dark"] .log-table tr:hover td,
+html[data-theme="dark"] .audit-table-card tbody tr:hover,
+html[data-theme="dark"] .data-table tbody tr:hover,
+html[data-theme="dark"] tr:hover,
+html[data-theme="dark"] tr:hover td,
+html.dark table tbody tr:hover,
+html.dark table tbody tr:hover td,
+html.dark .table tbody tr:hover,
+html.dark .table tbody tr:hover td,
+html.dark .responsive-table tbody tr:hover,
+html.dark .responsive-table tbody tr:hover td,
+html.dark .log-table tr:hover td,
+html.dark .audit-table-card tbody tr:hover,
+html.dark .data-table tbody tr:hover,
+html.dark tr:hover,
+html.dark tr:hover td { 
+    background: #27272a !important; 
+    color: #f8fafc !important;
 }
-html[data-theme="dark"] .responsive-table td { 
-    border-bottom-color: rgba(255, 255, 255, 0.05) !important; 
+
+/* Do not color empty state rows on hover */
+html[data-theme="dark"] tr:has(.empty-state-row):hover,
+html[data-theme="dark"] tr:has(.empty-state-row):hover td,
+html.dark tr:has(.empty-state-row):hover,
+html.dark tr:has(.empty-state-row):hover td {
+    background: transparent !important;
+}
+
+/* Universal Dark Mode Modals */
+html[data-theme="dark"] .modal,
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .modal-dialog,
+html.dark .modal,
+html.dark .modal-content,
+html.dark .modal-dialog {
+    background: #18181b !important;
+    border: 1px solid #27272a !important;
+    color: #f4f4f5 !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6) !important;
+}
+html[data-theme="dark"] .modal-header,
+html.dark .modal-header {
+    background: #18181b !important;
+    border-bottom: 1px solid #27272a !important;
+    color: #f8fafc !important;
+}
+html[data-theme="dark"] .modal-header h2,
+html[data-theme="dark"] .modal-header h3,
+html.dark .modal-header h2,
+html.dark .modal-header h3 {
+    color: #f8fafc !important;
+}
+html[data-theme="dark"] .modal-close,
+html.dark .modal-close {
+    color: #a1a1aa !important;
+}
+html[data-theme="dark"] .modal-close:hover,
+html.dark .modal-close:hover {
+    color: #ffffff !important;
+}
+html[data-theme="dark"] .modal-body,
+html.dark .modal-body {
+    background: #18181b !important;
+    color: #f4f4f5 !important;
+}
+html[data-theme="dark"] .modal-body .form-label,
+html.dark .modal-body .form-label {
+    color: #e4e4e7 !important;
+    font-weight: 600;
+}
+html[data-theme="dark"] .modal-body .text-muted,
+html.dark .modal-body .text-muted {
+    color: #cbd5e1 !important;
+}
+html[data-theme="dark"] .modal-footer,
+html.dark .modal-footer {
+    background: #141416 !important;
+    border-top: 1px solid #27272a !important;
 }
 html[data-theme="dark"] .btn-outline { 
     border-color: #27272a !important; 
@@ -2318,6 +2411,58 @@ html.dark textarea::placeholder {
     opacity: 1 !important;
 }
 
+/* ── Universal Dark Mode Text Inversion (Invert Hardcoded Inline Dark Colors) ── */
+html[data-theme="dark"] [style*="color:#0f172a" i],
+html[data-theme="dark"] [style*="color: #0f172a" i],
+html[data-theme="dark"] [style*="color:#1e293b" i],
+html[data-theme="dark"] [style*="color: #1e293b" i],
+html[data-theme="dark"] [style*="color:#1e40af" i],
+html[data-theme="dark"] [style*="color: #1e40af" i],
+html[data-theme="dark"] [style*="color:#1d4ed8" i],
+html[data-theme="dark"] [style*="color: #1d4ed8" i],
+html[data-theme="dark"] [style*="color:#334155" i],
+html[data-theme="dark"] [style*="color: #334155" i],
+html.dark [style*="color:#0f172a" i],
+html.dark [style*="color: #0f172a" i],
+html.dark [style*="color:#1e293b" i],
+html.dark [style*="color: #1e293b" i],
+html.dark [style*="color:#1e40af" i],
+html.dark [style*="color: #1e40af" i],
+html.dark [style*="color:#1d4ed8" i],
+html.dark [style*="color: #1d4ed8" i],
+html.dark [style*="color:#334155" i],
+html.dark [style*="color: #334155" i] {
+    color: #f8fafc !important; /* High contrast crisp white on dark */
+}
+
+/* ── Universal Dark Mode Container Inversion (Invert Hardcoded Inline White Backgrounds) ── */
+html[data-theme="dark"] .card[style*="background:#fff" i],
+html[data-theme="dark"] .card[style*="background: #fff" i],
+html[data-theme="dark"] .card[style*="background:#ffffff" i],
+html[data-theme="dark"] .card[style*="background: #ffffff" i],
+html[data-theme="dark"] .card[style*="background:white" i],
+html[data-theme="dark"] .card[style*="background: white" i],
+html[data-theme="dark"] .auth-container,
+html[data-theme="dark"] .auth-container[style*="background"],
+html[data-theme="dark"] .stat-card,
+html[data-theme="dark"] .filter-bar,
+html[data-theme="dark"] .table-container,
+html.dark .card[style*="background:#fff" i],
+html.dark .card[style*="background: #fff" i],
+html.dark .card[style*="background:#ffffff" i],
+html.dark .card[style*="background: #ffffff" i],
+html.dark .card[style*="background:white" i],
+html.dark .card[style*="background: white" i],
+html.dark .auth-container,
+html.dark .auth-container[style*="background"],
+html.dark .stat-card,
+html.dark .filter-bar,
+html.dark .table-container {
+    background: #1c1c1f !important;
+    border-color: #27272a !important;
+    color: #f4f4f5 !important;
+}
+
 
 /* ══════════════════════════════════════════════════════════════════
    Empty State System — Component ที่ใช้ทั่วทั้งระบบ
@@ -2747,5 +2892,38 @@ html[data-theme="dark"] .badge-red, html.dark .badge-red {
     color: #fca5a5 !important;
     border-color: rgba(248, 113, 113, 0.3) !important;
 }
+
+/* ── Location Autocomplete Dropdown ── */
+.location-search-dropdown {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+}
+html[data-theme="dark"] .location-search-dropdown,
+html.dark .location-search-dropdown {
+    background: #18181b !important;
+    border-color: #27272a !important;
+}
+.location-search-item {
+    padding: 10px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background .15s ease;
+}
+.location-search-item:hover {
+    background: #f8fafc;
+}
+html[data-theme="dark"] .location-search-item,
+html.dark .location-search-item {
+    border-bottom-color: #27272a !important;
+}
+html[data-theme="dark"] .location-search-item:hover,
+html.dark .location-search-item:hover {
+    background: #27272a !important;
+}
+html[data-theme="dark"] .location-search-item .item-title,
+html.dark .location-search-item .item-title {
+    color: #f8fafc !important;
+}
+
 
 

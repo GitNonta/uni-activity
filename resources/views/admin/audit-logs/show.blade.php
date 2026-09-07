@@ -150,7 +150,7 @@
     transition: background .15s;
 }
 .data-table tbody tr:last-child { border-bottom: none; }
-.data-table tbody tr:hover { background: #fafbfe; }
+.data-table tbody tr:hover { background: var(--surface-hover, #fafbfe); }
 .data-table tbody td {
     padding: .625rem 1rem;
     vertical-align: top;
@@ -177,6 +177,50 @@
     .info-grid { grid-template-columns: 1fr; }
     .detail-header { flex-direction: column; align-items: flex-start; }
 }
+
+/* ═══════════════════════════════
+   DARK THEME OVERRIDES
+   ═══════════════════════════════ */
+html[data-theme="dark"] .detail-back-link,
+html.dark .detail-back-link { background: #27272a; border-color: #3f3f46; color: #fb923c; }
+html[data-theme="dark"] .detail-title,
+html.dark .detail-title { color: #f8fafc; }
+html[data-theme="dark"] .detail-id,
+html.dark .detail-id { color: #94a3b8; }
+html[data-theme="dark"] .detail-card,
+html.dark .detail-card { background: #1c1c1f; border-color: #27272a; }
+html[data-theme="dark"] .detail-card-header,
+html.dark .detail-card-header { border-bottom-color: #27272a; color: #f8fafc; }
+html[data-theme="dark"] .info-label,
+html.dark .info-label { color: #94a3b8; }
+html[data-theme="dark"] .info-value,
+html.dark .info-value { color: #f8fafc; }
+html[data-theme="dark"] .info-value-muted,
+html.dark .info-value-muted { color: #cbd5e1; }
+html[data-theme="dark"] .desc-block,
+html.dark .desc-block { border-top-color: #27272a; }
+html[data-theme="dark"] .desc-text,
+html.dark .desc-text { color: #f8fafc; }
+html[data-theme="dark"] .data-table-card,
+html.dark .data-table-card { background: #1c1c1f; border-color: #27272a; }
+html[data-theme="dark"] .data-table-header,
+html.dark .data-table-header { border-bottom-color: #27272a; }
+html[data-theme="dark"] .data-table thead th,
+html.dark .data-table thead th { background: #141416; border-bottom-color: #27272a; color: #94a3b8; }
+html[data-theme="dark"] .data-table tbody tr,
+html.dark .data-table tbody tr { border-bottom-color: #27272a; }
+html[data-theme="dark"] .data-table tbody tr:hover,
+html.dark .data-table tbody tr:hover { background: #27272a !important; }
+html[data-theme="dark"] .data-table tbody tr:hover td,
+html.dark .data-table tbody tr:hover td { color: #f8fafc !important; }
+html[data-theme="dark"] .data-table tbody td,
+html.dark .data-table tbody td { color: #cbd5e1; }
+html[data-theme="dark"] .data-table .field-name,
+html.dark .data-table .field-name { color: #cbd5e1; }
+html[data-theme="dark"] .diff-old,
+html.dark .diff-old { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+html[data-theme="dark"] .diff-new,
+html.dark .diff-new { background: rgba(34, 197, 94, 0.2); color: #86efac; }
 </style>
 @endsection
 

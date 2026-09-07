@@ -6,6 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Walk-in เช็คอิน — {{ $activity->title }}</title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <script>
+        (function() {
+            var theme = localStorage.getItem('app-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+            if (theme === 'dark') document.documentElement.classList.add('dark');
+        })();
+    </script>
     <style>
         /* Mobile-first responsive design */
         body { 
@@ -289,8 +296,44 @@
             .walkin-container { padding: 1.5rem; }
             .walkin-header { padding: 2rem; }
             .walkin-header h1 { font-size: 1.3rem; }
-            .walkin-header .activity-name { font-size: 1.4rem; }
+        .walkin-hero-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: .75rem;
+            padding: .5rem 1rem;
+            background: rgba(255,255,255,.2);
+            color: #fff;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: .85rem;
+            font-weight: 500;
+            transition: all .2s;
         }
+        .walkin-hero-btn:hover {
+            background: rgba(255,255,255,.3);
+            transform: translateY(-1px);
+        }
+
+        /* Dark Mode Support */
+        @media (prefers-color-scheme: dark) {
+            body { background: #121214; color: #f4f4f5; }
+            .walkin-form-card, .attendee-item { background: #18181b; border: 1px solid #27272a; color: #f4f4f5; }
+            .walkin-form-card label { color: #f4f4f5; }
+            .walkin-input-row input { background: #27272a; border-color: #3f3f46; color: #f4f4f5; }
+            .attendee-item .name { color: #f4f4f5; }
+            .attendee-item .sid, .attendee-item .faculty, .attendee-item .time, .empty-attendees { color: #a1a1aa; }
+            .attendee-item .order { background: #27272a; border: 1px solid #3f3f46; color: #fb923c; }
+            .attendee-item:hover { background: #27272a; }
+        }
+        html[data-theme="dark"] body { background: #121214; color: #f4f4f5; }
+        html[data-theme="dark"] .walkin-form-card, html[data-theme="dark"] .attendee-item { background: #18181b; border: 1px solid #27272a; color: #f4f4f5; }
+        html[data-theme="dark"] .walkin-form-card label { color: #f4f4f5; }
+        html[data-theme="dark"] .walkin-input-row input { background: #27272a; border-color: #3f3f46; color: #f4f4f5; }
+        html[data-theme="dark"] .attendee-item .name { color: #f4f4f5; }
+        html[data-theme="dark"] .attendee-item .sid, html[data-theme="dark"] .attendee-item .faculty, html[data-theme="dark"] .attendee-item .time, html[data-theme="dark"] .empty-attendees { color: #a1a1aa; }
+        html[data-theme="dark"] .attendee-item .order { background: #27272a; border: 1px solid #3f3f46; color: #fb923c; }
+        html[data-theme="dark"] .attendee-item:hover { background: #27272a; }
     </style>
 </head>
 <body>
@@ -319,10 +362,7 @@
             </svg>
             {{ $activity->activity_hours }} ชม.
         </div>
-        <a href="{{ route('activities.show', $activity->id) }}" 
-           style="display:inline-flex;align-items:center;gap:0.5rem;margin-top:.75rem;padding:.5rem 1rem;background:rgba(255,255,255,.2);color:#fff;border-radius:8px;text-decoration:none;font-size:.85rem;font-weight:500;transition:all .2s;"
-           onmouseover="this.style.background='rgba(255,255,255,.3);this.style.transform='translateY(-1px)'"
-           onmouseout="this.style.background='rgba(255,255,255,.2);this.style.transform='translateY(0)'">
+        <a href="{{ route('activities.show', $activity->id) }}" class="walkin-hero-btn">
             <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 14px; height: 14px;">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>

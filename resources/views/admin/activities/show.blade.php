@@ -119,8 +119,8 @@
         </div>
 
         {{-- QR Code Section --}}
-        <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid #e2e8f0;">
-            <h3 class="font-bold mb-3" style="font-size:1.1rem;color:#1e293b;">ระบบคิวอาร์โค้ด (QR Codes)</h3>
+        <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border, #e2e8f0);">
+            <h3 class="font-bold mb-3" style="font-size:1.1rem;color:var(--text-main, #1e293b);">ระบบคิวอาร์โค้ด (QR Codes)</h3>
 
             @if($activity->isCompleted())
                 <div class="alert mb-3" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.75rem 1rem;border-radius:6px;display:flex;align-items:center;gap:0.5rem;">
@@ -138,7 +138,7 @@
                     <div class="card-body" style="padding:1rem;">
                         @if($activity->qr_token)
                             <div class="flex items-center gap-2 mb-3" style="flex-wrap:wrap;">
-                                <code id="entry-url" class="text-xs" style="background:#f1f5f9;padding:.375rem;border-radius:4px;flex:1;word-break:break-all;">{{ url('/check-in/' . $activity->qr_token) }}</code>
+                                <code id="entry-url" class="text-xs" style="background:var(--surface-hover, #f1f5f9);color:var(--text-main, #0f172a);padding:.375rem;border-radius:4px;flex:1;word-break:break-all;">{{ url('/check-in/' . $activity->qr_token) }}</code>
                                 <button onclick="copyToClipboard('entry-url')" class="btn btn-sm btn-outline" style="white-space:nowrap;" title="คัดลอก">คัดลอก</button>
                                 <button onclick="showQRModal('{{ url('/check-in/' . $activity->qr_token) }}', 'QR สำหรับเข้างาน')" class="btn btn-sm btn-outline" style="white-space:nowrap;">แสดง QR</button>
                             </div>
@@ -169,7 +169,7 @@
                     <div class="card-body" style="padding:1rem;">
                         @if($activity->qr_checkout_token)
                             <div class="flex items-center gap-2 mb-3" style="flex-wrap:wrap;">
-                                <code id="exit-url" class="text-xs" style="background:#f1f5f9;padding:.375rem;border-radius:4px;flex:1;word-break:break-all;">{{ url('/check-in/' . $activity->qr_checkout_token) }}</code>
+                                <code id="exit-url" class="text-xs" style="background:var(--surface-hover, #f1f5f9);color:var(--text-main, #0f172a);padding:.375rem;border-radius:4px;flex:1;word-break:break-all;">{{ url('/check-in/' . $activity->qr_checkout_token) }}</code>
                                 <button onclick="copyToClipboard('exit-url')" class="btn btn-sm btn-outline" style="white-space:nowrap;" title="คัดลอก">คัดลอก</button>
                                 <button onclick="showQRModal('{{ url('/check-in/' . $activity->qr_checkout_token) }}', 'QR สำหรับออกงาน (รับชั่วโมง)')" class="btn btn-sm btn-outline" style="white-space:nowrap;">แสดง QR</button>
                             </div>
@@ -201,7 +201,7 @@
                 <div class="card-body" style="padding:1rem;">
                     @if($activity->qr_token)
                         <div class="flex items-center gap-2" style="flex-wrap:wrap;">
-                            <code id="walkin-url" class="text-xs" style="background:#f1f5f9;padding:.375rem;border-radius:4px;flex:1;word-break:break-all;">{{ url('/walkin/' . $activity->qr_token) }}</code>
+                            <code id="walkin-url" class="text-xs" style="background:var(--surface-hover, #f1f5f9);color:var(--text-main, #0f172a);padding:.375rem;border-radius:4px;flex:1;word-break:break-all;">{{ url('/walkin/' . $activity->qr_token) }}</code>
                             <button onclick="copyToClipboard('walkin-url')" class="btn btn-sm btn-outline" style="white-space:nowrap;" title="คัดลอก">คัดลอก</button>
                             <button onclick="showQRModal('{{ url('/walkin/' . $activity->qr_token) }}', 'QR สำหรับ Walk-in')" class="btn btn-sm btn-outline" style="white-space:nowrap;">แสดง QR</button>
                             <a href="{{ route('checkin.walkin', $activity->qr_token) }}" target="_blank" class="btn btn-sm" style="background:#b45309;color:#fff;white-space:nowrap;line-height:1.5;">เปิดหน้า Walk-in</a>
@@ -225,14 +225,14 @@
         {{-- QR Code Modal --}}
         @if($activity->qr_token)
         <div id="qrModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.75);backdrop-filter:blur(4px);z-index:1000;justify-content:center;align-items:center;opacity:0;transition:opacity 0.2s ease;">
-            <div style="background:white;padding:2.5rem 2rem;border-radius:16px;max-width:420px;width:90%;text-align:center;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);transform:scale(0.95);transition:transform 0.2s ease;" id="qrModalContent">
-                <h3 style="margin-bottom:1.5rem;color:#1e293b;font-size:1.25rem;font-weight:700;">QR Code</h3>
+            <div class="modal-content" style="background:var(--surface, #ffffff);border:1px solid var(--border, #e2e8f0);padding:2.5rem 2rem;border-radius:16px;max-width:420px;width:90%;text-align:center;box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);transform:scale(0.95);transition:transform 0.2s ease;" id="qrModalContent">
+                <h3 style="margin-bottom:1.5rem;color:var(--text-main, #1e293b);font-size:1.25rem;font-weight:700;">QR Code</h3>
                 
-                <div style="background:#f8fafc;padding:1.5rem;border-radius:12px;display:inline-block;margin-bottom:1.5rem;border:1px solid #e2e8f0;">
+                <div style="background:#ffffff;padding:1.5rem;border-radius:12px;display:inline-block;margin-bottom:1.5rem;border:1px solid var(--border, #e2e8f0);">
                     <div id="qr-code" style="display:flex;justify-content:center;"></div>
                 </div>
                 
-                <p style="font-size:0.95rem;color:#64748b;margin-bottom:2rem;line-height:1.5;">ให้นักศึกษาสแกน QR Code นี้<br>เพื่อดำเนินการผ่านระบบ</p>
+                <p style="font-size:0.95rem;color:var(--text-muted, #64748b);margin-bottom:2rem;line-height:1.5;">ให้นักศึกษาสแกน QR Code นี้<br>เพื่อดำเนินการผ่านระบบ</p>
                 
                 <button onclick="closeQRModal()" class="btn btn-outline" style="width:100%;padding:0.6rem;font-size:1rem;border-radius:8px;font-weight:600;">ปิดหน้าต่าง</button>
             </div>
