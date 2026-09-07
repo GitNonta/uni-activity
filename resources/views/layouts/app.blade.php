@@ -466,7 +466,7 @@
         border-radius: 20px;
         padding: .5rem .85rem;
         font-size: .85rem;
-        line-height: 1.4;
+        line-height: 1.5;
         outline: none;
         font-family: inherit;
         max-height: 80px;
@@ -489,9 +489,9 @@
         background: #f1f5f9;
         border: none;
         font-size: .9rem;
-        line-height: 1;
+        line-height: 1.5;
         flex-shrink: 0;
-        color: #64748b;
+        color: #475569;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -738,7 +738,7 @@
             /* 16px prevents iOS Safari auto-zoom on focus, which distorts
                the fixed fullscreen panel layout */
             font-size: 16px !important;
-            line-height: 1.4 !important;
+            line-height: 1.5 !important;
             min-width: 0 !important;
             flex: 1 1 auto !important;
             background: #f8fafc !important;
@@ -812,7 +812,7 @@
             </div>
             <div id="cfViewList" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;">
                 <div id="cfListContent" style="flex:1;">
-                    <div style="padding:1.5rem;text-align:center;font-size:.85rem;color:#94a3b8;">กำลังโหลด...</div>
+                    <div style="padding:1.5rem;text-align:center;font-size:.85rem;color:#475569;line-height:1.5;">กำลังโหลด...</div>
                 </div>
             </div>
             <div id="cfViewChat" style="display:none;flex-direction:column;flex:1;min-height:0;">
@@ -955,27 +955,27 @@
             var isSupOnline = isStaffMemberOnline(0);
             var supportStatusHtml = isSupOnline 
                 ? '<span style="color:#10b981;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#10b981;display:inline-block;"></span> กำลังใช้งาน</span>' 
-                : '<span style="color:#94a3b8;">' + formatLastSeen(supportLastSeen) + '</span>';
+                : '<span style="color:#475569;">' + formatLastSeen(supportLastSeen) + '</span>';
             
             var supportChatHtml = '<div onclick="showChatView(0, \'ติดต่อสอบถามเจ้าหน้าที่\')" style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;cursor:pointer;" class="chat-list-item ' + (isSupportUnread ? 'unread' : '') + '">'
                 + '<div style="position:relative;flex-shrink:0;">'
-                + '<div style="width:34px;height:34px;border-radius:50%;background:#ffedd5;color:#ea580c;display:flex;align-items:center;justify-content:center;">'
+                + '<div style="width:34px;height:34px;border-radius:50%;background:#ffedd5;color:#c2410c;display:flex;align-items:center;justify-content:center;">'
                 + '<svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.05 2a9 9 0 0 1 8 7.94"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.05 6A5 5 0 0 1 18 10"/></svg>'
                 + '</div>'
                 + '<span class="cf-staff-online-dot cf-staff-online-dot-0" data-job-id="0" data-staff-id="0" style="display:' + (isSupOnline ? 'block' : 'none') + ';position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="กำลังใช้งาน"></span>'
                 + '</div>'
                 + '<div style="flex:1;min-width:0;">'
                 + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;">'
-                + '<div class="chat-title" style="font-size:.82rem;font-weight:' + (isSupportUnread?'700':'500') + ';color:#1e293b;">ติดต่อสอบถามเจ้าหน้าที่</div>'
-                + '<div class="cf-thread-status cf-thread-status-0" data-job-id="0" data-staff-id="0" data-last-seen="' + (supportLastSeen || '') + '" style="font-size:.65rem;flex-shrink:0;">' + supportStatusHtml + '</div>'
+                + '<div class="chat-title" style="font-size:.82rem;font-weight:' + (isSupportUnread?'700':'500') + ';color:#1e293b;line-height:1.5;">ติดต่อสอบถามเจ้าหน้าที่</div>'
+                + '<div class="cf-thread-status cf-thread-status-0" data-job-id="0" data-staff-id="0" data-last-seen="' + (supportLastSeen || '') + '" style="font-size:.65rem;flex-shrink:0;line-height:1.5;">' + supportStatusHtml + '</div>'
                 + '</div>'
-                + '<div class="chat-preview" style="font-size:.7rem;color:' + (isSupportUnread?'#1e293b':'#64748b') + ';font-weight:' + (isSupportUnread?'700':'400') + ';">' + supportPreview + '</div>'
+                + '<div class="chat-preview" style="font-size:.7rem;color:' + (isSupportUnread?'#1e293b':'#475569') + ';font-weight:' + (isSupportUnread?'700':'400') + ';line-height:1.5;">' + supportPreview + '</div>'
                 + '</div>'
                 + (isSupportUnread ? '<div style="min-width:18px;height:18px;border-radius:9px;background:#ef4444;color:#fff;font-size:.6rem;font-weight:700;line-height:18px;text-align:center;padding:0 4px;">' + supportThread.unread + '</div>' : '')
                 + '</div>';
 
             if (!activeThreads.length) {
-                el.innerHTML = supportChatHtml + '<div style="padding:2rem 1rem;text-align:center;font-size:.83rem;color:#94a3b8;">ยังไม่มีข้อความเกี่ยวกับงาน</div>';
+                el.innerHTML = supportChatHtml + '<div style="padding:2rem 1rem;text-align:center;font-size:.83rem;color:#475569;line-height:1.5;">ยังไม่มีข้อความเกี่ยวกับงาน</div>';
                 return;
             }
             el.innerHTML = supportChatHtml + activeThreads.map(function(t) {
@@ -988,7 +988,7 @@
                 var isJobOnline = isStaffMemberOnline(t.staff_id);
                 var threadStatusHtml = isJobOnline 
                     ? '<span style="color:#10b981;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#10b981;display:inline-block;"></span> กำลังใช้งาน</span>' 
-                    : '<span style="color:#94a3b8;">' + formatLastSeen(threadLastSeen) + '</span>';
+                    : '<span style="color:#475569;">' + formatLastSeen(threadLastSeen) + '</span>';
                 
                 var avatarHtml = '';
                 if (t.avatar) {
@@ -1005,10 +1005,10 @@
                     + '</div>'
                     + '<div style="flex:1;min-width:0;">'
                     + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;">'
-                    + '<div class="chat-title" style="font-size:.82rem;font-weight:' + (isUnread?'700':'500') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:' + (isArchived ? '#94a3b8' : '#1e293b') + ';max-width:150px;">' + titlePrefix + safeTitle + '</div>'
-                    + '<div class="cf-thread-status cf-thread-status-' + t.job_id + '" data-job-id="' + t.job_id + '" data-staff-id="' + (t.staff_id || '') + '" data-last-seen="' + (threadLastSeen || '') + '" style="font-size:.65rem;flex-shrink:0;">' + threadStatusHtml + '</div>'
+                    + '<div class="chat-title" style="font-size:.82rem;font-weight:' + (isUnread?'700':'500') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:' + (isArchived ? '#475569' : '#1e293b') + ';max-width:150px;line-height:1.5;">' + titlePrefix + safeTitle + '</div>'
+                    + '<div class="cf-thread-status cf-thread-status-' + t.job_id + '" data-job-id="' + t.job_id + '" data-staff-id="' + (t.staff_id || '') + '" data-last-seen="' + (threadLastSeen || '') + '" style="font-size:.65rem;flex-shrink:0;line-height:1.5;">' + threadStatusHtml + '</div>'
                     + '</div>'
-                    + '<div class="chat-preview" style="font-size:.7rem;color:' + (isUnread?'#1e293b':'#64748b') + ';font-weight:' + (isUnread?'700':'400') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + preview + '</div>'
+                    + '<div class="chat-preview" style="font-size:.7rem;color:' + (isUnread?'#1e293b':'#475569') + ';font-weight:' + (isUnread?'700':'400') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5;">' + preview + '</div>'
                     + '</div>'
                     + (isUnread ? '<div style="min-width:18px;height:18px;border-radius:9px;background:#ef4444;color:#fff;font-size:.6rem;font-weight:700;line-height:18px;text-align:center;padding:0 4px;">' + t.unread + '</div>' : '')
                     + '</div>';
@@ -1180,7 +1180,7 @@
 
         function loadMessages(jobId) {
             var win = document.getElementById('cfChatWindow');
-            win.innerHTML = '<div style="padding:1.5rem;text-align:center;font-size:.82rem;color:#94a3b8;">กำลังโหลด...</div>';
+            win.innerHTML = '<div style="padding:1.5rem;text-align:center;font-size:.82rem;color:#475569;line-height:1.5;">กำลังโหลด...</div>';
             fetch('/jobs/' + jobId + '/chat/messages', { headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' } })
                 .then(function(r){ return r.json(); })
                 .then(function(data) {
@@ -1253,7 +1253,7 @@
             
             if (!mine) {
                 var avatarDiv = document.createElement('div');
-                avatarDiv.style.cssText = 'width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#94a3b8;color:#fff;font-size:0.65rem;font-weight:700;position:relative;';
+                avatarDiv.style.cssText = 'width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#475569;color:#fff;font-size:0.65rem;font-weight:700;position:relative;';
                 var photo = msg.user && msg.user.photo ? msg.user.photo : null;
                 var label = msg.user && msg.user.name ? msg.user.name : 'ผู้ดูแล';
                 if (photo) {
@@ -1280,12 +1280,12 @@
                 bubble.style.cssText = 'border-radius:' + (mine?'14px 4px 14px 14px':'4px 14px 14px 14px') + ';background:transparent;padding:0;box-shadow:none;display:flex;flex-direction:column;gap:4px;';
             } else {
                 if (!mine) bubble.className = 'cf-msg-bubble-other';
-                bubble.style.cssText = 'padding:.45rem .75rem;border-radius:' + (mine?'14px 4px 14px 14px':'4px 14px 14px 14px') + ';background:' + (mine?'#ea580c':'#fff') + ';color:' + (mine?'#ffffff':'#1e293b') + ';font-size:.82rem;line-height:1.45;box-shadow:0 1px 2px rgba(0,0,0,.08);word-break:break-word;white-space:pre-wrap;';
+                bubble.style.cssText = 'padding:.45rem .75rem;border-radius:' + (mine?'14px 4px 14px 14px':'4px 14px 14px 14px') + ';background:' + (mine?'#ea580c':'#fff') + ';color:' + (mine?'#ffffff':'#1e293b') + ';font-size:.82rem;line-height:1.5;box-shadow:0 1px 2px rgba(0,0,0,.08);word-break:break-word;white-space:pre-wrap;';
             }
             
             if (msg.message) {
                 var p = document.createElement('p');
-                p.style.cssText = 'margin:0;padding:0;line-height:1.45;color:inherit;font-size:inherit;font-family:inherit;';
+                p.style.cssText = 'margin:0;padding:0;line-height:1.5;color:inherit;font-size:inherit;font-family:inherit;';
                 p.innerHTML = linkifyText(msg.message, mine);
                 bubble.appendChild(p);
             }
@@ -1345,7 +1345,7 @@
                 
                 var moreBtn = document.createElement('button');
                 moreBtn.innerHTML = '<svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>';
-                moreBtn.style.cssText = 'background:transparent; border:none; cursor:pointer; padding:4px; color:#94a3b8; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:all .2s; margin:0 4px;';
+                moreBtn.style.cssText = 'background:transparent; border:none; cursor:pointer; padding:4px; color:#475569; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:all .2s; margin:0 4px;';
                 
                 var menu = document.createElement('div');
                 menu.className = 'msg-dropdown';
@@ -1392,7 +1392,7 @@
             var timeStr = new Date(msg.created_at).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
             var statusDiv = document.createElement('div');
             statusDiv.style.cssText = 'display:flex;align-items:center;gap:.25rem;margin-top:.1rem;';
-            statusDiv.innerHTML = '<span style="font-size:.6rem;color:#94a3b8;">' + timeStr + '</span>';
+            statusDiv.innerHTML = '<span style="font-size:.6rem;color:#475569;line-height:1.5;">' + timeStr + '</span>';
             
             if (mine && isLastMine) {
                 var readText = isTemp ? 'กำลังส่ง...' : formatReadStatus(msg.read_at, msg.is_read);
@@ -1402,7 +1402,7 @@
                 if (msg.read_at) {
                     statusText.setAttribute('data-read-at', msg.read_at);
                 }
-                statusText.style.cssText = 'font-size:.6rem;color:' + (isTemp ? '#94a3b8' : '#f97316') + ';';
+                statusText.style.cssText = 'font-size:.6rem;color:' + (isTemp ? '#475569' : '#f97316') + ';line-height:1.5;';
                 statusText.textContent = readText;
                 statusDiv.appendChild(statusText);
             }
@@ -1671,7 +1671,7 @@
                         st.innerHTML = '<span style="color:#10b981;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#10b981;display:inline-block;"></span> กำลังใช้งาน</span>';
                     } else {
                         var lastSeen = st.getAttribute('data-last-seen');
-                        st.innerHTML = '<span style="color:#94a3b8;">' + formatLastSeen(lastSeen) + '</span>';
+                        st.innerHTML = '<span style="color:#475569;line-height:1.5;">' + formatLastSeen(lastSeen) + '</span>';
                     }
                 });
 

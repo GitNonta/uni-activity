@@ -42,12 +42,12 @@
             font-size: 1.1rem; /* Slightly smaller for mobile */
             font-weight: 700; 
             margin: .5rem 0; 
-            line-height: 1.3;
+            line-height: 1.5;
         }
         .walkin-header .meta { 
             font-size: .8rem; /* Smaller for mobile */
             opacity: .85; 
-            line-height: 1.4;
+            line-height: 1.5;
         }
         .walkin-form-card {
             background: #fff;
@@ -177,18 +177,20 @@
             margin-bottom: 0.25rem;
         }
         .attendee-item .faculty { 
-            color: #94a3b8; 
+            color: #475569; 
             font-size: .8rem; 
             display: block;
             margin-top: 0.25rem;
+            line-height: 1.5;
         }
         .attendee-item .time {
             text-align: right;
             font-size: .8rem;
-            color: #64748b;
+            color: #475569;
             white-space: nowrap;
             flex-shrink: 0;
             margin-left: 0.75rem;
+            line-height: 1.5;
         }
         .attendee-item .order {
             width: 32px; /* Larger */
@@ -208,8 +210,9 @@
         .empty-attendees {
             text-align: center;
             padding: 3rem 1rem; /* More padding */
-            color: #94a3b8;
+            color: #475569;
             font-size: .95rem;
+            line-height: 1.5;
         }
         .live-dot {
             display: inline-block;
@@ -399,7 +402,7 @@
             <h4 style="margin:0 0 1rem;font-size:1.1rem;color:#1f2937;text-align:center;">
                 ช่วยประเมินกิจกรรมหน่อยนะครับ/คะ
             </h4>
-            <p style="margin:0 0 1.5rem;color:#6b7280;text-align:center;font-size:0.9rem;line-height:1.4;">
+            <p style="margin:0 0 1.5rem;color:#475569;text-align:center;font-size:0.9rem;line-height:1.5;">
                 ความคิดเห็นของคุณจะช่วยให้เราพัฒนากิจกรรมในครั้งต่อไป
             </p>
 

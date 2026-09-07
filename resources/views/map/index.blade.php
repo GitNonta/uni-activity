@@ -373,7 +373,7 @@
                 </button>
             </div>
             <div id="gmapNearbyList" class="gmap-drawer-body">
-                <div style="padding:2rem;text-align:center;color:#94a3b8;">กำลังโหลดรายการสถานที่...</div>
+                <div style="padding:2rem;text-align:center;color:#475569;line-height:1.5;">กำลังโหลดรายการสถานที่...</div>
             </div>
         </div>
     </div>
@@ -644,7 +644,7 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
 .gmap-nav-turn-dist {
     font-size: 1.18rem;
     font-weight: 800;
-    line-height: 1.2;
+    line-height: 1.5;
     letter-spacing: -0.3px;
 }
 .gmap-nav-instruction {
@@ -1174,7 +1174,7 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
 .gmap-btn-icon-label {
     font-size: 0.78rem;
     font-weight: 600;
-    line-height: 1;
+    line-height: 1.5;
 }
 /* Hide label on desktop where space is tight */
 @media (min-width: 768px) {
@@ -1307,7 +1307,7 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
 .gmap-route-subtitle {
     font-size: 0.72rem;
     font-weight: 700;
-    color: #64748b;
+    color: #475569;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -1316,7 +1316,7 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     font-weight: 800;
     color: #0f172a;
     margin: 2px 0 0;
-    line-height: 1.3;
+    line-height: 1.5;
 }
 .gmap-travel-modes-row {
     display: flex;
@@ -3599,7 +3599,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
         }
 
         if (filtered.length === 0) {
-            listEl.innerHTML = '<div style="padding:2rem;text-align:center;color:#94a3b8;font-size:0.88rem;">ไม่พบสถานที่ตามเงื่อนไข</div>';
+            listEl.innerHTML = '<div style="padding:2rem;text-align:center;color:#475569;font-size:0.88rem;line-height:1.5;">ไม่พบสถานที่ตามเงื่อนไข</div>';
             return;
         }
 
@@ -3617,8 +3617,8 @@ html[data-theme="dark"] .gmap-sheet-handle {
                         ${loc.image ? `<img src="${loc.image}" alt="">` : `<div class="gmap-thumb-fallback"><svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg></div>`}
                     </div>
                     <div style="flex:1;min-width:0;">
-                        <div style="font-weight:700;font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#0f172a;">${loc.title}</div>
-                        <div style="font-size:0.75rem;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${loc.location_name}</div>
+                        <div style="font-weight:700;font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#0f172a;line-height:1.5;">${loc.title}</div>
+                        <div style="font-size:0.75rem;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5;">${loc.location_name}</div>
                     </div>
                     ${distText ? `<span class="gmap-distance-chip">${distText}</span>` : ''}
                 </div>

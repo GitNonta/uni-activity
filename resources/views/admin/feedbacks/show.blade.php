@@ -713,7 +713,7 @@ document.addEventListener('DOMContentLoaded', function() {
     color: #f4f4f5;
     margin: 0 0 6px;
     letter-spacing: -0.02em;
-    line-height: 1.3;
+    line-height: 1.5;
 }
 .gform-subtitle {
     font-size: 0.875rem;

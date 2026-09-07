@@ -99,9 +99,9 @@
             text-transform: uppercase;
         }
         .eyebrow::before, .eyebrow::after { content: ''; width: 28px; height: 3px; border-radius: 99px; background: var(--accent); }
-        .status { margin: .3rem 0 0; color: var(--primary); font-size: clamp(2.5rem, 8vw, 4.5rem); font-weight: 800; line-height: 1; }
-        h1 { max-width: 36rem; margin: .65rem 0 .5rem; font-size: clamp(1.35rem, 3vw, 1.85rem); line-height: 1.3; }
-        .message { max-width: 38rem; margin: 0 0 1.35rem; color: var(--muted); font-size: 1rem; }
+        .status { margin: .3rem 0 0; color: var(--primary); font-size: clamp(2.5rem, 8vw, 4.5rem); font-weight: 800; line-height: 1.5; }
+        h1 { max-width: 36rem; margin: .65rem 0 .5rem; font-size: clamp(1.35rem, 3vw, 1.85rem); line-height: 1.5; }
+        .message { max-width: 38rem; margin: 0 0 1.35rem; color: var(--muted); font-size: 1rem; line-height: 1.5; }
         .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: .7rem; }
         .button {
             min-height: 44px;

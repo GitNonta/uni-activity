@@ -501,7 +501,7 @@
             div[id^="bubble-"] {
                 padding: 0.45rem 0.7rem !important;
                 font-size: 0.88rem !important;
-                line-height: 1.4;
+                line-height: 1.5 !important;
             }
 
             /* Hide sender label on mobile */
@@ -811,12 +811,12 @@
         <div id="attachPreview" style="display:none;gap:.4rem;flex-wrap:wrap;margin-bottom:.5rem;"></div>
         
         <div style="display:flex;align-items:flex-end;gap:.5rem;">
-            <label style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;cursor:pointer;color:#64748b;" title="แนบไฟล์ (หรือวางภาพ Ctrl+V)">
+            <label style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;cursor:pointer;color:#475569;" title="แนบไฟล์ (หรือวางภาพ Ctrl+V)">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
                 <input type="file" id="fileInput" name="attachments[]" multiple style="display:none;">
             </label>
 
-            <textarea id="msgInput" name="message" rows="1" style="flex:1;border:1px solid #e2e8f0;border-radius:10px;padding:.65rem .85rem;font-size:.92rem;resize:none;outline:none;max-height:120px;line-height:1.4;" placeholder="พิมพ์ข้อความ..."></textarea>
+            <textarea id="msgInput" name="message" rows="1" style="flex:1;border:1px solid #e2e8f0;border-radius:10px;padding:.65rem .85rem;font-size:.92rem;resize:none;outline:none;max-height:120px;line-height:1.5;" placeholder="พิมพ์ข้อความ..."></textarea>
 
             <button type="submit" id="sendBtn" style="width:40px;height:40px;background:#ea580c;color:#fff;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;" title="ส่งข้อความ">
                 <svg style="width:18px;height:18px;transform:rotate(45deg);margin-left:-2px;" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>

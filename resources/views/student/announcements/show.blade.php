@@ -20,7 +20,7 @@
             <span class="text-xs text-muted">{{ $announcement->created_at->format('d/m/Y H:i') }}</span>
         </div>
         
-        <h1 class="font-bold text-xl mb-4" style="color:#0f172a;line-height:1.4;">{{ $announcement->title }}</h1>
+        <h1 class="font-bold text-xl mb-4" style="color:#0f172a;line-height:1.5;">{{ $announcement->title }}</h1>
 
         @if($announcement->image_path)
             <div class="mb-5 rounded-lg overflow-hidden" style="border:1px solid #f1f5f9;background:#f8fafc;">

@@ -17,7 +17,7 @@
                     {{ $totalFailed }} งานที่ล้มเหลว
                 </span>
             </div>
-            <p style="color:#64748b; font-size:0.9rem; margin:0.25rem 0 0 0;">
+            <p style="color:#475569; font-size:0.9rem; margin:0.25rem 0 0 0; line-height:1.5;">
                 รายการงานเบื้องหลัง (LINE Notify, AI Extraction, PDF/Excel Exports) ที่ประมวลผลไม่สำเร็จ สามารถตรวจสอบสาเหตุและกด Retry ได้ทันที
             </p>
         </div>
@@ -101,14 +101,14 @@
                 <div style="width:48px; height:48px; background:#dcfce7; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem auto; color:#16a34a;">
                     <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 </div>
-                <h3 style="font-size:1.1rem; font-weight:700; color:#0f172a; margin-bottom:0.25rem;">ระบบทำงานราบรื่น ไม่มีงานที่ล้มเหลว</h3>
-                <p style="color:#64748b; font-size:0.875rem; margin:0;">คิวประมวลผลเบื้องหลังทั้งหมด (Dragonfly Queue) กำลังทำงานอย่างสมบูรณ์แบบ</p>
+                <h3 style="font-size:1.1rem; font-weight:700; color:#0f172a; margin-bottom:0.25rem; line-height:1.5;">ระบบทำงานราบรื่น ไม่มีงานที่ล้มเหลว</h3>
+                <p style="color:#475569; font-size:0.875rem; margin:0; line-height:1.5;">คิวประมวลผลเบื้องหลังทั้งหมด (Dragonfly Queue) กำลังทำงานอย่างสมบูรณ์แบบ</p>
             </div>
         @else
             <div style="overflow-x:auto;">
                 <table class="table" style="width:100%; border-collapse:collapse; margin:0;">
                     <thead>
-                        <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0; text-align:left; font-size:0.8rem; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">
+                        <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0; text-align:left; font-size:0.8rem; color:#475569; text-transform:uppercase; letter-spacing:0.5px; line-height:1.5;">
                             <th style="padding:0.75rem 1rem;">Job Name</th>
                             <th style="padding:0.75rem 1rem;">Queue & Driver</th>
                             <th style="padding:0.75rem 1rem;">Exception Excerpt</th>
@@ -120,21 +120,21 @@
                         @foreach($failedJobs as $job)
                         <tr style="border-bottom:1px solid #f1f5f9; font-size:0.875rem;">
                             <td style="padding:0.75rem 1rem;">
-                                <div style="font-weight:700; color:#0f172a;">{{ $job->display_name }}</div>
-                                <div style="font-size:0.75rem; font-family:monospace; color:#64748b;">{{ $job->uuid }}</div>
+                                <div style="font-weight:700; color:#0f172a; line-height:1.5;">{{ $job->display_name }}</div>
+                                <div style="font-size:0.75rem; font-family:monospace; color:#475569; line-height:1.5;">{{ $job->uuid }}</div>
                             </td>
                             <td style="padding:0.75rem 1rem;">
-                                <span class="badge" style="background:#e0e7ff; color:#4338ca; font-weight:600; font-size:0.75rem; padding:2px 8px; border-radius:4px;">
+                                <span class="badge" style="background:#e0e7ff; color:#4338ca; font-weight:600; font-size:0.75rem; padding:2px 8px; border-radius:4px; line-height:1.5;">
                                     queue:{{ $job->queue }}
                                 </span>
-                                <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">{{ $job->connection }}</div>
+                                <div style="font-size:0.75rem; color:#475569; margin-top:2px; line-height:1.5;">{{ $job->connection }}</div>
                             </td>
                             <td style="padding:0.75rem 1rem; max-width:360px;">
-                                <div style="color:#ef4444; font-family:monospace; font-size:0.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                                <div style="color:#ef4444; font-family:monospace; font-size:0.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; line-height:1.5;">
                                     {{ $job->exception_summary }}
                                 </div>
                             </td>
-                            <td style="padding:0.75rem 1rem; color:#64748b; font-size:0.8rem; white-space:nowrap;">
+                            <td style="padding:0.75rem 1rem; color:#475569; font-size:0.8rem; white-space:nowrap; line-height:1.5;">
                                 {{ $job->failed_at }}
                             </td>
                             <td style="padding:0.75rem 1rem; text-align:right; white-space:nowrap;">
@@ -177,19 +177,19 @@
 <div id="jobDetailModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(15,23,42,0.6); z-index:9999; align-items:center; justify-content:center; padding:1.5rem;">
     <div style="background:#fff; border-radius:12px; max-width:800px; width:100%; max-height:85vh; display:flex; flex-direction:column; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1); overflow:hidden;">
         <div style="padding:1.25rem; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
-            <h3 id="modalJobTitle" style="font-size:1.1rem; font-weight:700; color:#0f172a; margin:0;">รายละเอียด Exception Stack Trace</h3>
-            <button onclick="closeJobModal()" style="background:none; border:none; font-size:1.25rem; color:#64748b; cursor:pointer;">&times;</button>
+            <h3 id="modalJobTitle" style="font-size:1.1rem; font-weight:700; color:#0f172a; margin:0; line-height:1.5;">รายละเอียด Exception Stack Trace</h3>
+            <button onclick="closeJobModal()" style="background:none; border:none; font-size:1.25rem; color:#475569; cursor:pointer;">&times;</button>
         </div>
         <div style="padding:1.25rem; overflow-y:auto; flex:1;">
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem; font-size:0.85rem;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem; font-size:0.85rem; line-height:1.5;">
                 <div><strong>UUID:</strong> <span id="modalUuid" style="font-family:monospace; color:#475569;"></span></div>
                 <div><strong>Queue:</strong> <span id="modalQueue" style="color:#4338ca; font-weight:600;"></span></div>
-                <div><strong>Failed At:</strong> <span id="modalFailedAt" style="color:#64748b;"></span></div>
-                <div><strong>Connection:</strong> <span id="modalConnection" style="color:#64748b;"></span></div>
+                <div><strong>Failed At:</strong> <span id="modalFailedAt" style="color:#475569;"></span></div>
+                <div><strong>Connection:</strong> <span id="modalConnection" style="color:#475569;"></span></div>
             </div>
             <div>
-                <strong style="font-size:0.875rem; color:#0f172a; display:block; margin-bottom:0.35rem;">Exception Stack Trace:</strong>
-                <pre id="modalException" style="background:#0f172a; color:#f8fafc; padding:1rem; border-radius:8px; font-size:0.75rem; max-height:350px; overflow-x:auto; white-space:pre-wrap; font-family:monospace; line-height:1.4;"></pre>
+                <strong style="font-size:0.875rem; color:#0f172a; display:block; margin-bottom:0.35rem; line-height:1.5;">Exception Stack Trace:</strong>
+                <pre id="modalException" style="background:#0f172a; color:#f8fafc; padding:1rem; border-radius:8px; font-size:0.75rem; max-height:350px; overflow-x:auto; white-space:pre-wrap; font-family:monospace; line-height:1.5;"></pre>
             </div>
         </div>
         <div style="padding:1rem 1.25rem; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end; gap:0.5rem; background:#f8fafc;">

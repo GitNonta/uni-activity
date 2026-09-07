@@ -47,7 +47,7 @@
                         @error('name')
                             <p class="text-xs mt-1" style="color:#ef4444; font-weight:500;">{{ $message }}</p>
                         @enderror
-                        <p class="text-xs text-muted mt-2" style="line-height:1.4;">ระบุชื่อที่ชัดเจนเพื่อให้คุณจดจำได้ว่าคีย์นี้ใช้เชื่อมต่อกับแอปพลิเคชันหรือบริการใด</p>
+                        <p class="text-xs text-muted mt-2" style="line-height:1.5; color:#475569;">ระบุชื่อที่ชัดเจนเพื่อให้คุณจดจำได้ว่าคีย์นี้ใช้เชื่อมต่อกับแอปพลิเคชันหรือบริการใด</p>
                     </div>
                     
                     <button type="submit" class="btn btn-primary" style="background:#ea580c; color:white; border-radius:8px; font-weight:600; border:none; padding:0.65rem 1rem; width:100%; box-shadow:0 2px 4px rgba(234,88,12,0.15);">
@@ -73,7 +73,7 @@
                 
                 @if(($tokens ?? collect())->isEmpty())
                     <div style="padding:3rem 1.5rem; text-align:center; display:flex; flex-direction:column; align-items:center; gap:12px;">
-                        <div style="background:#f1f5f9; color:#94a3b8; border-radius:50%; width:56px; height:56px; display:flex; align-items:center; justify-content:center;">
+                        <div style="background:#f1f5f9; color:#475569; border-radius:50%; width:56px; height:56px; display:flex; align-items:center; justify-content:center;">
                             <svg style="width:28px; height:28px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
                             </svg>
@@ -109,10 +109,10 @@
                                                     {{ $token->last_used_at->translatedFormat('d M Y H:i') }}
                                                 </span>
                                             @else
-                                                <span style="color:#64748b; font-style:italic;">ยังไม่เคยใช้งาน</span>
+                                                <span style="color:#475569; font-style:italic; line-height:1.5;">ยังไม่เคยใช้งาน</span>
                                             @endif
                                         </td>
-                                        <td style="padding:1.1rem 1.5rem; color:#64748b; font-size:0.825rem;">
+                                        <td style="padding:1.1rem 1.5rem; color:#475569; font-size:0.825rem; line-height:1.5;">
                                             {{ $token->created_at->translatedFormat('d M Y') }}
                                         </td>
                                         <td style="padding:1.1rem 1.5rem; text-align:right;">

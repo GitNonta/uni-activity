@@ -1126,7 +1126,7 @@ html[data-theme="dark"] .admin-chat-widget {
     cursor: pointer;
     margin: 0;
     padding: 0;
-    line-height: 1;
+    line-height: 1.5;
     transition: background 0.15s ease, transform 0.15s ease;
 }
 .acw-actions button:hover {
@@ -1344,7 +1344,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const input = document.getElementById('globalSearchInput');
         input.value = '';
         input.focus();
-        document.getElementById('globalSearchResults').innerHTML = '<div style="padding:2rem 1rem; text-align:center; color:#94a3b8; font-size:0.875rem;">พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหาข้อมูลข้ามระบบ</div>';
+        document.getElementById('globalSearchResults').innerHTML = '<div style="padding:2rem 1rem; text-align:center; color:#475569; font-size:0.875rem; line-height:1.5;">พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหาข้อมูลข้ามระบบ</div>';
     }
 
     function closeGlobalSearch() {
@@ -1377,11 +1377,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const resultsContainer = document.getElementById('globalSearchResults');
 
         if (query.length < 2) {
-            resultsContainer.innerHTML = '<div style="padding:2rem 1rem; text-align:center; color:#94a3b8; font-size:0.875rem;">พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหาข้อมูลข้ามระบบ</div>';
+            resultsContainer.innerHTML = '<div style="padding:2rem 1rem; text-align:center; color:#475569; font-size:0.875rem; line-height:1.5;">พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหาข้อมูลข้ามระบบ</div>';
             return;
         }
 
-        resultsContainer.innerHTML = '<div style="padding:2rem 1rem; text-align:center; color:#64748b; font-size:0.875rem;">กำลังค้นหา...</div>';
+        resultsContainer.innerHTML = '<div style="padding:2rem 1rem; text-align:center; color:#475569; font-size:0.875rem; line-height:1.5;">กำลังค้นหา...</div>';
 
         searchDebounceTimer = setTimeout(async () => {
             try {
@@ -1389,22 +1389,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await res.json();
 
                 if (!data.results || data.results.length === 0) {
-                    resultsContainer.innerHTML = `<div style="padding:2rem 1rem; text-align:center; color:#64748b; font-size:0.875rem;">ไม่พบข้อมูลที่ตรงกับ "${query}"</div>`;
+                    resultsContainer.innerHTML = `<div style="padding:2rem 1rem; text-align:center; color:#475569; font-size:0.875rem; line-height:1.5;">ไม่พบข้อมูลที่ตรงกับ "${query}"</div>`;
                     return;
                 }
 
                 let html = '';
                 data.results.forEach((item, index) => {
                     html += `
-                        <a href="${item.url}" style="display:flex; align-items:center; justify-content:space-between; padding:0.75rem 1rem; border-radius:10px; text-decoration:none; color:inherit; margin-bottom:4px; transition:background .15s;" onmouseover="this.style.background='#f1f5f9';" onmouseout="this.style.background='transparent';">
+                        <a href="${item.url}" style="display:flex; align-items:center; justify-content:space-between; padding:0.75rem 1rem; border-radius:10px; text-decoration:none; color:inherit; margin-bottom:4px; transition:background .15s; line-height:1.5;" onmouseover="this.style.background='#f1f5f9';" onmouseout="this.style.background='transparent';">
                             <div>
-                                <div style="font-weight:600; font-size:0.9rem; color:#0f172a; display:flex; align-items:center; gap:8px;">
+                                <div style="font-weight:600; font-size:0.9rem; color:#0f172a; display:flex; align-items:center; gap:8px; line-height:1.5;">
                                     <span>${escapeSearchHtml(item.title)}</span>
-                                    <span style="font-size:0.7rem; font-weight:700; background:${item.badge_color}15; color:${item.badge_color}; padding:2px 8px; border-radius:6px;">${escapeSearchHtml(item.type_label)}</span>
+                                    <span style="font-size:0.7rem; font-weight:700; background:${item.badge_color}15; color:${item.badge_color}; padding:2px 8px; border-radius:6px; line-height:1.5;">${escapeSearchHtml(item.type_label)}</span>
                                 </div>
-                                <div style="font-size:0.8rem; color:#64748b; margin-top:2px;">${escapeSearchHtml(item.subtitle)}</div>
+                                <div style="font-size:0.8rem; color:#475569; margin-top:2px; line-height:1.5;">${escapeSearchHtml(item.subtitle)}</div>
                             </div>
-                            <svg width="16" height="16" fill="none" stroke="#94a3b8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            <svg width="16" height="16" fill="none" stroke="#64748b" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         </a>
                     `;
                 });

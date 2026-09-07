@@ -39,16 +39,16 @@
     </div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;">
         <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:.65rem .75rem;text-align:center;">
-            <p style="font-size:1.4rem;font-weight:700;line-height:1;">{{ number_format($totalHours, 1) }}</p>
-            <p style="font-size:.7rem;color:rgba(255,255,255,.75);margin-top:.15rem;">ชั่วโมงรวม</p>
+            <p style="font-size:1.4rem;font-weight:700;line-height:1.5;">{{ number_format($totalHours, 1) }}</p>
+            <p style="font-size:.7rem;color:rgba(255,255,255,.9);margin-top:.15rem;line-height:1.5;">ชั่วโมงรวม</p>
         </div>
         <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:.65rem .75rem;text-align:center;">
-            <p style="font-size:1.4rem;font-weight:700;line-height:1;">{{ $attendances->where('status','approved')->count() }}</p>
-            <p style="font-size:.7rem;color:rgba(255,255,255,.75);margin-top:.15rem;">กิจกรรมที่ผ่าน</p>
+            <p style="font-size:1.4rem;font-weight:700;line-height:1.5;">{{ $attendances->where('status','approved')->count() }}</p>
+            <p style="font-size:.7rem;color:rgba(255,255,255,.9);margin-top:.15rem;line-height:1.5;">กิจกรรมที่ผ่าน</p>
         </div>
         <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:.65rem .75rem;text-align:center;">
-            <p style="font-size:1.4rem;font-weight:700;line-height:1;">{{ number_format($totalRequired, 0) }}</p>
-            <p style="font-size:.7rem;color:rgba(255,255,255,.75);margin-top:.15rem;">เป้าหมาย ชม.</p>
+            <p style="font-size:1.4rem;font-weight:700;line-height:1.5;">{{ number_format($totalRequired, 0) }}</p>
+            <p style="font-size:.7rem;color:rgba(255,255,255,.9);margin-top:.15rem;line-height:1.5;">เป้าหมาย ชม.</p>
         </div>
     </div>
 </div>

@@ -14,7 +14,7 @@
     }
     .nav-hud.active { visibility: visible; opacity: 1; }
     .nav-hud-item { text-align: center; }
-    .nav-hud-value { font-size: 1.1rem; font-weight: 700; line-height: 1.2; }
+    .nav-hud-value { font-size: 1.1rem; font-weight: 700; line-height: 1.5; }
     .nav-hud-label { font-size: 0.6rem; opacity: 0.7; text-transform: uppercase; }
     .nav-hud-divider { width: 1px; height: 28px; background: rgba(255,255,255,0.2); }
     .nav-me-dot {
@@ -48,13 +48,13 @@
         box-shadow: 0 8px 40px rgba(0,0,0,0.3); max-width: 280px; display: none;
     }
     .dir-panel { margin-top: 1rem; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; display: none; }
-    .dir-header { padding: 1rem; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-weight: 700; }
+    .dir-header { padding: 1rem; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-weight: 700; line-height: 1.5; }
     .dir-steps { list-style: none; padding: 0; margin: 0; max-height: 250px; overflow-y: auto; }
-    .dir-step { padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9; display: flex; gap: 0.75rem; font-size: 0.8rem; }
+    .dir-step { padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9; display: flex; gap: 0.75rem; font-size: 0.8rem; line-height: 1.5; }
     .dir-step-active { background: #eff6ff; border-left: 3px solid #ea580c; }
     .dir-step-icon { width: 28px; height: 28px; background: #e0f2fe; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .dir-step-text { flex: 1; line-height: 1.4; }
-    .dir-step-dist { color: #64748b; font-size: 0.75rem; margin-top: 2px; }
+    .dir-step-text { flex: 1; line-height: 1.5; }
+    .dir-step-dist { color: #475569; font-size: 0.75rem; margin-top: 2px; line-height: 1.5; }
 </style>
 
 <a href="{{ route('jobs.index') }}" class="text-sm text-primary">&larr; กลับรายการงาน</a>

@@ -97,8 +97,8 @@
 .stat-icon.orange { background: #ffedd5; color: #ea580c; }
 
 .stat-info { flex: 1; }
-.stat-num  { font-size: 1.75rem; font-weight: 700; color: var(--text-main); line-height: 1.2; }
-.stat-label { font-size: 0.8125rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
+.stat-num  { font-size: 1.75rem; font-weight: 700; color: var(--text-main); line-height: 1.5; }
+.stat-label { font-size: 0.8125rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; line-height: 1.5; }
 
 .filter-bar {
     background: var(--surface);

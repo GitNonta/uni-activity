@@ -90,8 +90,8 @@
 .stat-icon-blue { background: #eff6ff; color: #c2410c; }
 
 .stat-info { min-width: 0; }
-.stat-number { font-size: 1.35rem; font-weight: 800; color: #0f172a; line-height: 1.2; }
-.stat-label { font-size: .72rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: .04em; }
+.stat-number { font-size: 1.35rem; font-weight: 800; color: #0f172a; line-height: 1.5; }
+.stat-label { font-size: .72rem; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: .04em; line-height: 1.5; }
 
 /* Filter Section */
 .audit-filter-card {

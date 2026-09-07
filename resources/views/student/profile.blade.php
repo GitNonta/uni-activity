@@ -48,7 +48,7 @@
                             style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #f8fafc; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                     @else
                         <div style="width: 80px; height: 80px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; border: 3px solid #f8fafc; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                            <svg width="40" height="40" fill="none" stroke="#94a3b8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                            <svg width="40" height="40" fill="none" stroke="#64748b" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                         </div>
                     @endif
                     <div style="position: absolute; bottom: 0; right: 0; width: 28px; height: 28px; background: #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; overflow: hidden;">
@@ -79,7 +79,7 @@
             </div>
             <div style="flex: 1; min-width: 0;">
                 <div style="display: flex; align-items: center; gap: 8px; margin: 0 0 0.25rem 0;">
-                    <h1 style="font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 0; line-height: 1.2;">{{ $user->full_name }}</h1>
+                    <h1 style="font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 0; line-height: 1.5;">{{ $user->full_name }}</h1>
                     @if($user->line_user_id)
                         <span title="ผูกบัญชี LINE เรียบร้อยแล้ว" style="display: inline-flex; align-items: center; justify-content: center;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="#06c755">
@@ -113,16 +113,16 @@
         {{-- Stats (Right) --}}
         <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
             <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.75rem 1.25rem; text-align: center; flex: 1; min-width: 100px;">
-                <p style="font-size: 1.5rem; font-weight: 700; color: #ea580c; line-height: 1; margin: 0;">{{ number_format($totalHours, 1) }}</p>
-                <p style="font-size: 0.75rem; color: #64748b; margin-top: 0.35rem; font-weight: 500;">ชั่วโมงรวม</p>
+                <p style="font-size: 1.5rem; font-weight: 700; color: #c2410c; line-height: 1.5; margin: 0;">{{ number_format($totalHours, 1) }}</p>
+                <p style="font-size: 0.75rem; color: #475569; margin-top: 0.35rem; font-weight: 500; line-height: 1.5;">ชั่วโมงรวม</p>
             </div>
             <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.75rem 1.25rem; text-align: center; flex: 1; min-width: 100px;">
-                <p style="font-size: 1.5rem; font-weight: 700; color: #1e293b; line-height: 1; margin: 0;">{{ $totalActivities }}</p>
-                <p style="font-size: 0.75rem; color: #64748b; margin-top: 0.35rem; font-weight: 500;">กิจกรรม</p>
+                <p style="font-size: 1.5rem; font-weight: 700; color: #1e293b; line-height: 1.5; margin: 0;">{{ $totalActivities }}</p>
+                <p style="font-size: 0.75rem; color: #475569; margin-top: 0.35rem; font-weight: 500; line-height: 1.5;">กิจกรรม</p>
             </div>
             <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.75rem 1.25rem; text-align: center; flex: 1; min-width: 100px;">
-                <p style="font-size: 1.5rem; font-weight: 700; color: #1e293b; line-height: 1; margin: 0;">{{ number_format($totalRequired, 0) }}</p>
-                <p style="font-size: 0.75rem; color: #64748b; margin-top: 0.35rem; font-weight: 500;">เป้าหมาย (ชม.)</p>
+                <p style="font-size: 1.5rem; font-weight: 700; color: #1e293b; line-height: 1.5; margin: 0;">{{ number_format($totalRequired, 0) }}</p>
+                <p style="font-size: 0.75rem; color: #475569; margin-top: 0.35rem; font-weight: 500; line-height: 1.5;">เป้าหมาย (ชม.)</p>
             </div>
         </div>
     </div>
@@ -145,7 +145,7 @@
         </h2>
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.25rem;">
             <div style="display: flex; gap: 0.75rem;">
-                <div style="color: #94a3b8; margin-top: 0.1rem;">
+                <div style="color: #475569; margin-top: 0.1rem;">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                 </div>
                 <div>
@@ -154,7 +154,7 @@
                 </div>
             </div>
             <div style="display: flex; gap: 0.75rem;">
-                <div style="color: #94a3b8; margin-top: 0.1rem;">
+                <div style="color: #475569; margin-top: 0.1rem;">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                 </div>
                 <div>
@@ -163,7 +163,7 @@
                 </div>
             </div>
             <div style="display: flex; gap: 0.75rem;">
-                <div style="color: #94a3b8; margin-top: 0.1rem;">
+                <div style="color: #475569; margin-top: 0.1rem;">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
                 </div>
                 <div>
@@ -172,7 +172,7 @@
                 </div>
             </div>
             <div style="display: flex; gap: 0.75rem;">
-                <div style="color: #94a3b8; margin-top: 0.1rem;">
+                <div style="color: #475569; margin-top: 0.1rem;">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                 </div>
                 <div>
@@ -209,7 +209,7 @@
                     <div style="position: absolute; top: 0; left: 0; height: 100%; width: {{ $p }}%; background: {{ $isCompleted ? '#10b981' : '#ea580c' }}; border-radius: 999px; transition: width 0.5s ease;"></div>
                 </div>
                 @if(!$isCompleted && $cat['required'] > 0)
-                <p class="text-xs" style="color: #94a3b8; margin-top: 0.3rem; text-align: right;">ขาดอีก {{ number_format($cat['required'] - $cat['hours'], 1) }} ชม.</p>
+                <p class="text-xs" style="color: #475569; margin-top: 0.3rem; text-align: right; line-height: 1.5;">ขาดอีก {{ number_format($cat['required'] - $cat['hours'], 1) }} ชม.</p>
                 @endif
             </div>
             @endforeach
@@ -318,7 +318,7 @@
 
             <form method="POST" action="{{ route('line.unlink') }}" onsubmit="return confirm('ต้องการยกเลิกการผูกบัญชี LINE ใช่หรือไม่?')">
                 @csrf
-                <button type="submit" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.6rem; border: 1px solid #f1f5f9; border-radius: 10px; background: #fafafa; color: #94a3b8; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.color='#ef4444'; this.style.borderColor='#fecaca'; this.style.background='#fef2f2';" onmouseout="this.style.color='#94a3b8'; this.style.borderColor='#f1f5f9'; this.style.background='#fafafa';">
+                <button type="submit" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 10px; background: #fafafa; color: #475569; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.2s; line-height: 1.5;" onmouseover="this.style.color='#ef4444'; this.style.borderColor='#fecaca'; this.style.background='#fef2f2';" onmouseout="this.style.color='#475569'; this.style.borderColor='#cbd5e1'; this.style.background='#fafafa';">
                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
                     ยกเลิกการเชื่อมต่อ LINE
                 </button>
@@ -335,16 +335,16 @@
                 ] as $item)
                 <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem; background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 8px;">
                     <svg width="14" height="14" fill="none" stroke="#06c755" viewBox="0 0 24 24" style="flex-shrink: 0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="{{ $item['icon'] }}"/></svg>
-                    <span style="font-size: 0.75rem; font-weight: 500; color: #475569;">{{ $item['text'] }}</span>
+                    <span style="font-size: 0.75rem; font-weight: 500; color: #475569; line-height: 1.5;">{{ $item['text'] }}</span>
                 </div>
                 @endforeach
             </div>
 
-            <a href="{{ route('line.redirect') }}" style="display: flex; align-items: center; justify-content: center; gap: 0.55rem; width: 100%; padding: 0.8rem; background: #06c755; color: #fff; border-radius: 10px; font-weight: 600; font-size: 0.95rem; text-decoration: none; box-shadow: 0 4px 6px rgba(6, 199, 85, 0.2); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 8px rgba(6, 199, 85, 0.3)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(6, 199, 85, 0.2)';">
+            <a href="{{ route('line.redirect') }}" style="display: flex; align-items: center; justify-content: center; gap: 0.55rem; width: 100%; padding: 0.8rem; background: #06c755; color: #fff; border-radius: 10px; font-weight: 600; font-size: 0.95rem; text-decoration: none; box-shadow: 0 4px 6px rgba(6, 199, 85, 0.2); transition: transform 0.2s, box-shadow 0.2s; line-height: 1.5;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 8px rgba(6, 199, 85, 0.3)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(6, 199, 85, 0.2)';">
                 <img src="{{ asset('images/line-logo.png') }}" alt="LINE" style="width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; border-radius: 4px;">
                 เชื่อมต่อบัญชี LINE
             </a>
-            <p style="text-align: center; font-size: 0.75rem; color: #94a3b8; margin: 0.75rem 0 0 0;">รับข้อมูลข่าวสารรวดเร็วผ่าน LINE Official Account</p>
+            <p style="text-align: center; font-size: 0.75rem; color: #475569; margin: 0.75rem 0 0 0; line-height: 1.5;">รับข้อมูลข่าวสารรวดเร็วผ่าน LINE Official Account</p>
         @endif
     </div>
 </div>
@@ -387,9 +387,9 @@
                         <div style="width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.15); background: #fff;">
                             <img src="{{ asset('images/pkru-logo.png') }}" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;" alt="PKRU Logo">
                         </div>
-                        <div style="line-height: 1.2; margin-top: -5px; z-index: 2;">
-                            <div style="font-size: 16px; font-weight: 700; color: #1e293b !important; letter-spacing: -0.2px;">มหาวิทยาลัยราชภัฏภูเก็ต</div>
-                            <div style="font-size: 8.5px; font-weight: 600; color: #334155 !important; letter-spacing: 0.3px;">PHUKET RAJABHAT UNIVERSITY</div>
+                        <div style="line-height: 1.5; margin-top: -5px; z-index: 2;">
+                            <div style="font-size: 16px; font-weight: 700; color: #1e293b !important; letter-spacing: -0.2px; line-height: 1.5;">มหาวิทยาลัยราชภัฏภูเก็ต</div>
+                            <div style="font-size: 8.5px; font-weight: 600; color: #334155 !important; letter-spacing: 0.3px; line-height: 1.5;">PHUKET RAJABHAT UNIVERSITY</div>
                         </div>
                     </div>
 
@@ -408,10 +408,10 @@
 
                     <!-- Details -->
                     <div style="padding: 15px 25px; z-index: 2; position: relative;">
-                        <div style="font-size: 11px; color: #1e293b !important; font-weight: 700; margin-bottom: 0px;">รหัสนักศึกษา :</div>
-                        <div style="font-size: 24px; font-weight: 700; letter-spacing: 1px; color: #0f172a !important; margin-bottom: 8px; line-height: 1;">{{ $user->student_id }}</div>
+                        <div style="font-size: 11px; color: #1e293b !important; font-weight: 700; margin-bottom: 0px; line-height: 1.5;">รหัสนักศึกษา :</div>
+                        <div style="font-size: 24px; font-weight: 700; letter-spacing: 1px; color: #0f172a !important; margin-bottom: 8px; line-height: 1.5;">{{ $user->student_id }}</div>
                         
-                        <div style="font-size: 20px; font-weight: 700; color: #0f172a !important; line-height: 1.1; letter-spacing: -0.3px;">{{ $user->full_name }}</div>
+                        <div style="font-size: 20px; font-weight: 700; color: #0f172a !important; line-height: 1.5; letter-spacing: -0.3px;">{{ $user->full_name }}</div>
                         @if($user->english_name)
                             <div style="font-size: 14px; font-weight: 700; color: #334155 !important; margin-bottom: 6px;">{{ strtoupper($user->english_name) }}</div>
                         @else
@@ -453,7 +453,7 @@
                         <!-- Right: Contactless & VISA -->
                         <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0px;">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4d4d8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(90deg); margin-right: 8px; margin-bottom: 4px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
-                            <div style="font-size: 28px; font-weight: 900; font-style: italic; color: #fff !important; letter-spacing: 1px; line-height: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));">VISA</div>
+                            <div style="font-size: 28px; font-weight: 900; font-style: italic; color: #fff !important; letter-spacing: 1px; line-height: 1.5; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));">VISA</div>
                         </div>
 
                     </div>

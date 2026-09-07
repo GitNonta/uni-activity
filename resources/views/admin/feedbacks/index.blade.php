@@ -4,13 +4,13 @@
 @section('content')
 <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
     <div>
-        <h1 class="font-bold flex items-center gap-3" style="font-size:1.5rem; color:#f4f4f5; margin:0;">
+        <h1 class="font-bold flex items-center gap-3" style="font-size:1.5rem; color:#f4f4f5; margin:0; line-height:1.5;">
             <svg style="width:26px; height:26px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
             </svg>
             รายงานการประเมินความพึงพอใจกิจกรรม
         </h1>
-        <p class="text-sm text-muted mt-1">รายงานสรุปผลการประเมินความพึงพอใจและข้อเสนอแนะของผู้เข้าร่วมกิจกรรม</p>
+        <p class="text-sm text-muted mt-1" style="line-height:1.5;">รายงานสรุปผลการประเมินความพึงพอใจและข้อเสนอแนะของผู้เข้าร่วมกิจกรรม</p>
     </div>
     
     <div style="display:flex; gap:8px;">
@@ -34,9 +34,9 @@
         ['rating' => 1, 'count' => $stats['rating_1'], 'color' => '#ef4444', 'label' => 'ระดับ 1 (น้อยที่สุด)']
     ] as $rc)
         <div class="card" style="border: 1px solid #27272a; background: #1c1c1f; text-align:center; border-radius:10px; padding: 1rem 0.5rem;">
-            <p style="font-size:1.65rem; font-weight:800; color:{{ $rc['color'] }}; margin:0; line-height:1.1;">{{ number_format($rc['count']) }}</p>
+            <p style="font-size:1.65rem; font-weight:800; color:{{ $rc['color'] }}; margin:0; line-height:1.5;">{{ number_format($rc['count']) }}</p>
             <div style="display:flex; align-items:center; justify-content:center; gap:4px; margin-top:6px;">
-                <span class="text-xs font-bold" style="color:#d4d4d8;">{{ $rc['label'] }}</span>
+                <span class="text-xs font-bold" style="color:#d4d4d8; line-height:1.5;">{{ $rc['label'] }}</span>
             </div>
         </div>
     @endforeach

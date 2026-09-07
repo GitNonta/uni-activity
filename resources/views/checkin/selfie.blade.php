@@ -50,7 +50,7 @@
 
         .panel-logo { display:flex; align-items:center; gap:0.75rem; padding-bottom:0.25rem; }
         .panel-logo-icon { width:40px; height:40px; background:var(--blue); border-radius:10px; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px var(--blue-glow); flex-shrink:0; }
-        .panel-logo-text { font-size:0.8rem; color:var(--white-60); line-height:1.3; }
+        .panel-logo-text { font-size:0.8rem; color:var(--white-60); line-height:1.5; }
         .panel-logo-name { font-size:1rem; font-weight:700; color:var(--white); display:block; }
         .panel-divider { height:1px; background:var(--panel-border); }
         .panel-section {}
@@ -58,7 +58,7 @@
         .back-link { display:inline-flex; align-items:center; gap:0.4rem; color:var(--white-60); font-size:0.85rem; text-decoration:none; padding:0.45rem 0.75rem; border-radius:8px; border:1px solid var(--white-15); transition:background 0.2s,color 0.2s; }
         .back-link:hover { background:var(--white-08); color:var(--white); }
         .activity-card { background:var(--white-08); border:1px solid var(--panel-border); border-radius:12px; padding:1rem; }
-        .activity-title { font-size:0.95rem; font-weight:600; color:var(--white); margin-bottom:0.5rem; line-height:1.4; }
+        .activity-title { font-size:0.95rem; font-weight:600; color:var(--white); margin-bottom:0.5rem; line-height:1.5; }
         .activity-meta { display:flex; flex-direction:column; gap:0.35rem; }
         .activity-meta-row { display:flex; align-items:center; gap:0.5rem; font-size:0.8rem; color:var(--white-60); }
         .activity-meta-row svg { flex-shrink:0; opacity:0.7; }
@@ -78,7 +78,7 @@
         .score-value { font-weight:700; font-size:1rem; }
 
         .instructions-list { list-style:none; display:flex; flex-direction:column; gap:0.6rem; }
-        .instructions-list li { display:flex; align-items:flex-start; gap:0.6rem; font-size:0.82rem; color:var(--white-60); line-height:1.4; }
+        .instructions-list li { display:flex; align-items:flex-start; gap:0.6rem; font-size:0.82rem; color:var(--white-60); line-height:1.5; }
         .instructions-list li .num { flex-shrink:0; width:20px; height:20px; border-radius:50%; background:rgba(37,99,235,0.2); border:1px solid rgba(37,99,235,0.4); color:var(--blue-light); font-size:0.7rem; font-weight:700; display:flex; align-items:center; justify-content:center; }
 
         .btn-manual { display:none; width:100%; padding:0.7rem 1.25rem; border-radius:10px; border:1px solid var(--white-15); background:var(--white-08); color:var(--white); font-size:0.875rem; font-weight:500; cursor:pointer; transition:background 0.2s; font-family:inherit; }
@@ -124,7 +124,7 @@
         .mobile-header-title { font-size:0.9rem;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
 
         .mobile-status-box { background:rgba(10,22,40,0.75);border:1px solid var(--white-15);border-radius:14px;padding:0.85rem 1rem;backdrop-filter:blur(12px);text-align:center; }
-        .mobile-status-text { font-size:0.875rem;font-weight:500;color:var(--white);line-height:1.4; }
+        .mobile-status-text { font-size:0.875rem;font-weight:500;color:var(--white);line-height:1.5; }
         .mobile-score-row { display:none;align-items:center;justify-content:center;gap:0.5rem;margin-top:0.4rem; }
         .mobile-score-val { font-size:1rem;font-weight:700; }
         .mobile-score-label { font-size:0.75rem;color:var(--white-60); }

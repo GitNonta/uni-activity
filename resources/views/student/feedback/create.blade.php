@@ -7,9 +7,9 @@
     <div class="card">
         <div class="card-body" style="padding:1.5rem;">
             <div style="text-align:center;margin-bottom:1.5rem;">
-                <h1 style="font-size:1.5rem;font-weight:700;color:#1e293b;margin-bottom:.5rem;">ประเมินกิจกรรม</h1>
-                <p style="color:#64748b;font-size:.9rem;">{{ $activity->title }}</p>
-                <p style="color:#94a3b8;font-size:.8rem;">{{ $activity->category->name ?? '-' }} | {{ $activity->activity_date->format('d/m/Y') }}</p>
+                <h1 style="font-size:1.5rem;font-weight:700;color:#1e293b;margin-bottom:.5rem;line-height:1.5;">ประเมินกิจกรรม</h1>
+                <p style="color:#475569;font-size:.9rem;line-height:1.5;">{{ $activity->title }}</p>
+                <p style="color:#475569;font-size:.8rem;line-height:1.5;">{{ $activity->category->name ?? '-' }} | {{ $activity->activity_date->format('d/m/Y') }}</p>
             </div>
 
             <form method="POST" action="{{ route('feedback.store', $activity->id) }}">

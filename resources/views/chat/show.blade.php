@@ -314,7 +314,7 @@
         resize: none;
         outline: none;
         max-height: 120px;
-        line-height: 1.4;
+        line-height: 1.5;
         background: #f8fafc;
         transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
     }
@@ -1631,7 +1631,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (label) {
                         const lastSeen = label.getAttribute('data-last-seen');
                         if (lastSeen) {
-                            label.innerHTML = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>${formatLastSeen(lastSeen)}`;
+                            label.innerHTML = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#475569;margin-right:4px;"></span>${formatLastSeen(lastSeen)}`;
                         }
                     }
                 }

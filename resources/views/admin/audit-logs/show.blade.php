@@ -45,8 +45,8 @@
 .detail-header-icon-login { background: linear-gradient(135deg, #ea580c, #60a5fa); }
 .detail-header-icon-logout { background: linear-gradient(135deg, #6b7280, #9ca3af); }
 
-.detail-title { font-size: 1.2rem; font-weight: 800; color: #0f172a; }
-.detail-id { font-size: .8rem; color: #94a3b8; margin-top: 2px; }
+.detail-title { font-size: 1.2rem; font-weight: 800; color: #0f172a; line-height: 1.5; }
+.detail-id { font-size: .8rem; color: #475569; margin-top: 2px; line-height: 1.5; }
 
 /* Info Grid Card */
 .detail-card {
@@ -74,18 +74,21 @@
 .info-item {}
 .info-label {
     font-size: .68rem; font-weight: 700;
-    color: #94a3b8;
+    color: #475569;
     text-transform: uppercase;
     letter-spacing: .05em;
     margin-bottom: 4px;
+    line-height: 1.5;
 }
 .info-value {
     font-size: .88rem; font-weight: 600; color: #1e293b;
     word-break: break-word;
+    line-height: 1.5;
 }
 .info-value-muted {
-    font-size: .78rem; color: #64748b;
+    font-size: .78rem; color: #475569;
     word-break: break-all;
+    line-height: 1.5;
 }
 
 /* Description Block */
@@ -136,10 +139,11 @@
     padding: .625rem 1rem;
     font-size: .7rem;
     font-weight: 700;
-    color: #94a3b8;
+    color: #475569;
     text-transform: uppercase;
     letter-spacing: .05em;
     border-bottom: 1px solid #e2e8f0;
+    line-height: 1.5;
 }
 .data-table tbody tr {
     border-bottom: 1px solid #f1f5f9;
@@ -234,7 +238,7 @@
             </div>
             <div class="info-item">
                 <div class="info-label">ประเภท</div>
-                <div class="info-value">{{ $log->model_label }} @if($log->model_id) <span style="color:#94a3b8;font-size:.78rem;">#{{ $log->model_id }}</span> @endif</div>
+                <div class="info-value">{{ $log->model_label }} @if($log->model_id) <span style="color:#475569;font-size:.78rem;line-height:1.5;">#{{ $log->model_id }}</span> @endif</div>
             </div>
             <div class="info-item">
                 <div class="info-label">เวลา</div>
@@ -242,11 +246,11 @@
             </div>
             <div class="info-item">
                 <div class="info-label">IP Address</div>
-                <div class="info-value" style="font-family:'SF Mono','Monaco','Inconsolata',monospace;font-size:.82rem;color:#64748b;">{{ $log->ip_address ?? '-' }}</div>
+                <div class="info-value" style="font-family:'SF Mono','Monaco','Inconsolata',monospace;font-size:.82rem;color:#475569;line-height:1.5;">{{ $log->ip_address ?? '-' }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">User Agent</div>
-                <div class="info-value-muted" style="font-size:.72rem;line-height:1.4;">{{ $log->user_agent ?? '-' }}</div>
+                <div class="info-value-muted" style="font-size:.72rem;line-height:1.5;color:#475569;">{{ $log->user_agent ?? '-' }}</div>
             </div>
         </div>
 
