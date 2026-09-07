@@ -91,10 +91,10 @@
     justify-content: center;
 }
 
-.stat-icon.purple { background: #f3e8ff; color: #9333ea; }
-.stat-icon.red    { background: #fee2e2; color: #dc2626; }
+.stat-icon.purple { background: #f3e8ff; color: #7e22ce; }
+.stat-icon.red    { background: #fee2e2; color: #b91c1c; }
 .stat-icon.blue   { background: #ffedd5; color: #c2410c; }
-.stat-icon.orange { background: #ffedd5; color: #ea580c; }
+.stat-icon.orange { background: #ffedd5; color: #9a3412; }
 
 .stat-info { flex: 1; }
 .stat-num  { font-size: 1.75rem; font-weight: 700; color: var(--text-main); line-height: 1.5; }

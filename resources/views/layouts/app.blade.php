@@ -73,7 +73,7 @@
                 <a href="{{ route('student.my') }}" class="{{ request()->routeIs('student.my') ? 'active' : '' }}" style="position:relative;">
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                     ของฉัน
-                    <span id="nav-todo-badge" style="display:none;position:absolute;top:-4px;right:-6px;min-width:16px;height:16px;border-radius:8px;background:#ef4444;color:#fff;font-size:.6rem;font-weight:700;line-height:16px;text-align:center;padding:0 3px;"></span>
+                    <span id="nav-todo-badge" style="display:none;position:absolute;top:-4px;right:-6px;min-width:16px;height:16px;border-radius:8px;background:#b91c1c;color:#fff;font-size:.6rem;font-weight:700;line-height:16px;text-align:center;padding:0 3px;"></span>
                 </a>
                 <a href="{{ route('student.history') }}" class="{{ request()->routeIs('student.history') ? 'active' : '' }}">
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -264,7 +264,7 @@
         <a href="{{ route('student.my') }}" class="bottom-nav-item {{ request()->routeIs('student.my') ? 'active' : '' }}" style="position:relative;">
             <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             <span>กิจกรรม</span>
-            <span id="bottom-todo-badge" style="display:none;position:absolute;top:4px;right:calc(50% - 20px);min-width:16px;height:16px;border-radius:8px;background:#ef4444;color:#fff;font-size:.6rem;font-weight:700;line-height:16px;text-align:center;padding:0 3px;"></span>
+            <span id="bottom-todo-badge" style="display:none;position:absolute;top:4px;right:calc(50% - 20px);min-width:16px;height:16px;border-radius:8px;background:#b91c1c;color:#fff;font-size:.6rem;font-weight:700;line-height:16px;text-align:center;padding:0 3px;"></span>
         </a>
         <a href="{{ route('student.scanner') }}" class="bottom-nav-item scanner-nav-item {{ request()->routeIs('student.scanner') ? 'active' : '' }}">
             <div class="scanner-icon-wrap">
@@ -817,7 +817,7 @@
             </div>
             <div id="cfViewChat" style="display:none;flex-direction:column;flex:1;min-height:0;">
                 <div id="cfChatWindow" style="flex:1;overflow-y:auto;padding:.75rem;display:flex;flex-direction:column;gap:.45rem;background:#f8fafc;"></div>
-                <div id="cfTypingBar" style="display:none;align-items:center;padding:.4rem .75rem;background:#f8fafc;font-size:.72rem;color:#f97316;">
+                <div id="cfTypingBar" style="display:none;align-items:center;padding:.4rem .75rem;background:#f8fafc;font-size:.72rem;color:#c2410c;line-height:1.5;">
                     <svg style="width:12px;height:12px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                     ผู้ดูแลกำลังพิมพ์...
                 </div>
@@ -836,9 +836,9 @@
                 </div>
             </div>
         </div>
-        <button id="chatFloatBtn" onclick="toggleChatWidget()" style="width:52px;height:52px;border-radius:50%;background:#ea580c;color:#fff;border:none;cursor:pointer;box-shadow:0 4px 18px rgba(234,88,12,.45);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .15s;">
+        <button id="chatFloatBtn" onclick="toggleChatWidget()" style="width:52px;height:52px;border-radius:50%;background:#c2410c;color:#fff;border:none;cursor:pointer;box-shadow:0 4px 18px rgba(194,65,12,.45);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .15s;">
             <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-            <span id="chatFloatBadge" style="display:none;position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;border-radius:9px;background:#ef4444;color:#fff;font-size:.65rem;font-weight:700;line-height:18px;text-align:center;padding:0 4px;border:2px solid #fff;"></span>
+            <span id="chatFloatBadge" style="display:none;position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;border-radius:9px;background:#b91c1c;color:#fff;font-size:.65rem;font-weight:700;line-height:18px;text-align:center;padding:0 4px;border:2px solid #fff;"></span>
         </button>
     </div>
 
@@ -954,7 +954,7 @@
             var supportLastSeen = (supportThread && supportThread.staff_last_seen) ? supportThread.staff_last_seen : (threads.length > 0 && threads[0].staff_last_seen ? threads[0].staff_last_seen : null);
             var isSupOnline = isStaffMemberOnline(0);
             var supportStatusHtml = isSupOnline 
-                ? '<span style="color:#10b981;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#10b981;display:inline-block;"></span> กำลังใช้งาน</span>' 
+                ? '<span style="color:#047857;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#059669;display:inline-block;"></span> กำลังใช้งาน</span>' 
                 : '<span style="color:#475569;">' + formatLastSeen(supportLastSeen) + '</span>';
             
             var supportChatHtml = '<div onclick="showChatView(0, \'ติดต่อสอบถามเจ้าหน้าที่\')" style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;cursor:pointer;" class="chat-list-item ' + (isSupportUnread ? 'unread' : '') + '">'
@@ -962,7 +962,7 @@
                 + '<div style="width:34px;height:34px;border-radius:50%;background:#ffedd5;color:#c2410c;display:flex;align-items:center;justify-content:center;">'
                 + '<svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.05 2a9 9 0 0 1 8 7.94"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.05 6A5 5 0 0 1 18 10"/></svg>'
                 + '</div>'
-                + '<span class="cf-staff-online-dot cf-staff-online-dot-0" data-job-id="0" data-staff-id="0" style="display:' + (isSupOnline ? 'block' : 'none') + ';position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="กำลังใช้งาน"></span>'
+                + '<span class="cf-staff-online-dot cf-staff-online-dot-0" data-job-id="0" data-staff-id="0" style="display:' + (isSupOnline ? 'block' : 'none') + ';position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#059669;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #059669;" title="กำลังใช้งาน"></span>'
                 + '</div>'
                 + '<div style="flex:1;min-width:0;">'
                 + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;">'
@@ -971,7 +971,7 @@
                 + '</div>'
                 + '<div class="chat-preview" style="font-size:.7rem;color:' + (isSupportUnread?'#1e293b':'#475569') + ';font-weight:' + (isSupportUnread?'700':'400') + ';line-height:1.5;">' + supportPreview + '</div>'
                 + '</div>'
-                + (isSupportUnread ? '<div style="min-width:18px;height:18px;border-radius:9px;background:#ef4444;color:#fff;font-size:.6rem;font-weight:700;line-height:18px;text-align:center;padding:0 4px;">' + supportThread.unread + '</div>' : '')
+                + (isSupportUnread ? '<div style="min-width:18px;height:18px;border-radius:9px;background:#b91c1c;color:#fff;font-size:.6rem;font-weight:700;line-height:18px;text-align:center;padding:0 4px;">' + supportThread.unread + '</div>' : '')
                 + '</div>';
 
             if (!activeThreads.length) {
@@ -987,14 +987,14 @@
                 var threadLastSeen = t.staff_last_seen || null;
                 var isJobOnline = isStaffMemberOnline(t.staff_id);
                 var threadStatusHtml = isJobOnline 
-                    ? '<span style="color:#10b981;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#10b981;display:inline-block;"></span> กำลังใช้งาน</span>' 
+                    ? '<span style="color:#047857;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#059669;display:inline-block;"></span> กำลังใช้งาน</span>' 
                     : '<span style="color:#475569;">' + formatLastSeen(threadLastSeen) + '</span>';
                 
                 var avatarHtml = '';
                 if (t.avatar) {
                     avatarHtml = '<img src="' + t.avatar + '" style="width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;">';
                 } else {
-                    avatarHtml = '<div style="width:34px;height:34px;border-radius:50%;background:#ea580c;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0;">' + safeTitle.charAt(0).toUpperCase() + '</div>';
+                    avatarHtml = '<div style="width:34px;height:34px;border-radius:50%;background:#c2410c;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0;">' + safeTitle.charAt(0).toUpperCase() + '</div>';
                 }
 
                 return '<div onclick="showChatView(' + t.job_id + ',\'' + safeTitle + '\')" '
@@ -1010,7 +1010,7 @@
                     + '</div>'
                     + '<div class="chat-preview" style="font-size:.7rem;color:' + (isUnread?'#1e293b':'#475569') + ';font-weight:' + (isUnread?'700':'400') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5;">' + preview + '</div>'
                     + '</div>'
-                    + (isUnread ? '<div style="min-width:18px;height:18px;border-radius:9px;background:#ef4444;color:#fff;font-size:.6rem;font-weight:700;line-height:18px;text-align:center;padding:0 4px;">' + t.unread + '</div>' : '')
+                    + (isUnread ? '<div style="min-width:18px;height:18px;border-radius:9px;background:#b91c1c;color:#fff;font-size:.6rem;font-weight:700;line-height:18px;text-align:center;padding:0 4px;">' + t.unread + '</div>' : '')
                     + '</div>';
             }).join('');
         }
@@ -1668,7 +1668,7 @@
                     var jobId = st.getAttribute('data-job-id');
                     var online = isStaffMemberOnline(jobId === '0' ? 0 : staffId);
                     if (online) {
-                        st.innerHTML = '<span style="color:#10b981;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#10b981;display:inline-block;"></span> กำลังใช้งาน</span>';
+                        st.innerHTML = '<span style="color:#047857;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#059669;display:inline-block;"></span> กำลังใช้งาน</span>';
                     } else {
                         var lastSeen = st.getAttribute('data-last-seen');
                         st.innerHTML = '<span style="color:#475569;line-height:1.5;">' + formatLastSeen(lastSeen) + '</span>';
@@ -1750,12 +1750,12 @@
                         cancelBtn.id = 'cfCancelEditBtn';
                         cancelBtn.type = 'button';
                         cancelBtn.innerHTML = 'ยกเลิก';
-                        cancelBtn.style.cssText = 'background:#ef4444; color:#fff; border:none; border-radius:12px; padding:0 1rem; font-weight:500; font-size:.95rem; cursor:pointer; height:42px; margin-right:4px;';
+                        cancelBtn.style.cssText = 'background:#b91c1c; color:#fff; border:none; border-radius:12px; padding:0 1rem; font-weight:500; font-size:.95rem; cursor:pointer; height:42px; margin-right:4px;';
                         cancelBtn.onclick = function() {
                             currentEditId = null;
                             msgInput.value = '';
                             btn.innerHTML = '<svg style="width:16px;height:16px;transform:rotate(45deg);margin-left:-2px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';
-                            btn.style.background = '#ea580c';
+                            btn.style.background = '#c2410c';
                             this.remove();
                         };
                         btn.parentNode.insertBefore(cancelBtn, btn);

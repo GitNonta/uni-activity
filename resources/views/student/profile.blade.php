@@ -130,7 +130,7 @@
 
 {{-- QR Code Button (Changed to Modal Popup) --}}
 <div style="margin-bottom: 1.5rem;">
-    <button onclick="openCardModal()" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 0.875rem; background: #ffffff; color: #ea580c; border: 1px solid #fed7aa; border-radius: 10px; font-weight: 600; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: background 0.2s; cursor: pointer;">
+    <button onclick="openCardModal()" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 0.875rem; background: #ffffff; color: #c2410c; border: 1px solid #fed7aa; border-radius: 10px; font-weight: 600; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: background 0.2s; cursor: pointer; line-height: 1.5;">
         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
         บัตรประจำตัวนักศึกษา
     </button>
@@ -244,15 +244,15 @@
                 </div>
                 <div style="text-align: right; flex-shrink: 0;">
                     @if($att->status === 'approved')
-                        <span style="display: inline-flex; align-items: center; justify-content: center; background: #ecfdf5; color: #059669; font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 999px; border: 1px solid #a7f3d0;">
+                        <span style="display: inline-flex; align-items: center; justify-content: center; background: #ecfdf5; color: #047857; font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 999px; border: 1px solid #a7f3d0; line-height: 1.5;">
                             +{{ $att->activity->activity_hours }} ชม.
                         </span>
                     @elseif($att->status === 'pending')
-                        <span style="display: inline-flex; align-items: center; justify-content: center; background: #fffbeb; color: #d97706; font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 999px; border: 1px solid #fde68a;">
+                        <span style="display: inline-flex; align-items: center; justify-content: center; background: #fffbeb; color: #92400e; font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 999px; border: 1px solid #fde68a; line-height: 1.5;">
                             รออนุมัติ
                         </span>
                     @else
-                        <span style="display: inline-flex; align-items: center; justify-content: center; background: #fef2f2; color: #dc2626; font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 999px; border: 1px solid #fecaca;">
+                        <span style="display: inline-flex; align-items: center; justify-content: center; background: #fef2f2; color: #b91c1c; font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 999px; border: 1px solid #fecaca; line-height: 1.5;">
                             ปฏิเสธ
                         </span>
                     @endif
@@ -340,7 +340,7 @@
                 @endforeach
             </div>
 
-            <a href="{{ route('line.redirect') }}" style="display: flex; align-items: center; justify-content: center; gap: 0.55rem; width: 100%; padding: 0.8rem; background: #06c755; color: #fff; border-radius: 10px; font-weight: 600; font-size: 0.95rem; text-decoration: none; box-shadow: 0 4px 6px rgba(6, 199, 85, 0.2); transition: transform 0.2s, box-shadow 0.2s; line-height: 1.5;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 8px rgba(6, 199, 85, 0.3)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(6, 199, 85, 0.2)';">
+            <a href="{{ route('line.redirect') }}" style="display: flex; align-items: center; justify-content: center; gap: 0.55rem; width: 100%; padding: 0.8rem; background: #047857; color: #ffffff; border-radius: 10px; font-weight: 600; font-size: 0.95rem; text-decoration: none; box-shadow: 0 4px 6px rgba(4, 120, 87, 0.25); transition: transform 0.2s, box-shadow 0.2s; line-height: 1.5;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 8px rgba(4, 120, 87, 0.35)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(4, 120, 87, 0.25)';">
                 <img src="{{ asset('images/line-logo.png') }}" alt="LINE" style="width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; border-radius: 4px;">
                 เชื่อมต่อบัญชี LINE
             </a>
@@ -399,7 +399,7 @@
                             @if($user->profile_photo)
                                 <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="profile" style="width: 125px; height: 160px; object-fit: cover; border-radius: 2px; display: block; filter: none !important; opacity: 1 !important;">
                             @else
-                                <div style="width: 125px; height: 160px; background: #ea580c; display: flex; align-items: center; justify-content: center; border-radius: 2px; color: #fff;">
+                                <div style="width: 125px; height: 160px; background: #c2410c; display: flex; align-items: center; justify-content: center; border-radius: 2px; color: #ffffff;">
                                     <svg width="50" height="50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                                 </div>
                             @endif

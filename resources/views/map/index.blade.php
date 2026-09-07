@@ -1019,14 +1019,14 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     padding: 2px 8px;
     border-radius: 10px;
 }
-.badge-orange { background: #ffedd5; color: #ea580c; }
-.badge-blue { background: #e0f2fe; color: #0284c7; }
-.badge-green { background: #dcfce7; color: #16a34a; }
+.badge-orange { background: #ffedd5; color: #9a3412; }
+.badge-blue { background: #e0f2fe; color: #0369a1; }
+.badge-green { background: #dcfce7; color: #166534; }
 
 .gmap-distance-chip {
     font-size: 0.72rem;
     font-weight: 700;
-    color: #0284c7;
+    color: #0369a1;
     background: #f0f9ff;
     border: 1px solid #bae6fd;
     padding: 2px 8px;
@@ -1034,12 +1034,13 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     display: inline-flex;
     align-items: center;
     gap: 3px;
+    line-height: 1.5;
 }
 .gmap-sheet-title {
     font-size: 1.08rem;
     font-weight: 800;
     margin: 2px 0 4px;
-    line-height: 1.35;
+    line-height: 1.5;
     color: #0f172a;
     display: -webkit-box;
     -webkit-line-clamp: 2;

@@ -52,7 +52,7 @@ html[data-theme="dark"] .inbox-read-text { color: #a1a1aa !important; }
                 <img src="{{ $thread['student_photo'] }}" alt="{{ $thread['student_name'] }}"
                      style="width:42px;height:42px;border-radius:50%;object-fit:cover;">
             @else
-                <div style="width:42px;height:42px;border-radius:50%;background:#ea580c;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;">
+                <div style="width:42px;height:42px;border-radius:50%;background:#c2410c;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;">
                     {{ strtoupper(mb_substr($thread['student_name'], 0, 1)) }}
                 </div>
             @endif
@@ -66,20 +66,20 @@ html[data-theme="dark"] .inbox-read-text { color: #a1a1aa !important; }
                     <span class="{{ $unread > 0 ? 'inbox-unread-text' : '' }}" style="font-weight:{{ $unread > 0 ? '700' : '600' }};font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;">
                         {{ $thread['student_name'] }}
                     </span>
-                    <span class="inbox-job-title" style="font-size:.8rem;color:{{ ($thread['job_deleted'] ?? false) ? '#b45309' : '#f97316' }};font-weight:500;flex-shrink:0;">
+                    <span class="inbox-job-title" style="font-size:.8rem;color:{{ ($thread['job_deleted'] ?? false) ? '#b45309' : '#c2410c' }};font-weight:500;flex-shrink:0;">
                         [{{ $thread['job_title'] }}]@if($thread['job_deleted'] ?? false) <span style="font-size:.62rem;color:#b45309;background:#fef3c7;border:1px solid #fcd34d;border-radius:999px;padding:1px 6px;margin-left:2px;">ลบแล้ว</span>@endif
                     </span>
                 </div>
-                <span class="student-status-text student-status-text-{{ $thread['student_id'] }}" data-student-id="{{ $thread['student_id'] }}" style="font-size:0.72rem;color:#10b981;font-weight:600;flex-shrink:0;"></span>
+                <span class="student-status-text student-status-text-{{ $thread['student_id'] }}" data-student-id="{{ $thread['student_id'] }}" style="font-size:0.72rem;color:#047857;font-weight:600;flex-shrink:0;"></span>
             </div>
-            <p class="{{ $unread > 0 ? 'inbox-unread-text' : 'inbox-read-text' }}" style="margin:0;font-size:.82rem;color:{{ $unread > 0 ? '#1e293b' : '#64748b' }};font-weight:{{ $unread > 0 ? '700' : '400' }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+            <p class="{{ $unread > 0 ? 'inbox-unread-text' : 'inbox-read-text' }}" style="margin:0;font-size:.82rem;color:{{ $unread > 0 ? '#1e293b' : '#475569' }};font-weight:{{ $unread > 0 ? '700' : '400' }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5;">
                 {!! $thread['last_message'] ? e($thread['last_message']) : '<svg style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> ไฟล์แนบ' !!}
             </p>
         </div>
 
         {{-- Time + Unread --}}
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.3rem;flex-shrink:0;">
-            <span class="inbox-time" style="font-size:.72rem;color:#94a3b8;">
+            <span class="inbox-time" style="font-size:.72rem;color:#475569;line-height:1.5;">
                 @if($time)
                     @php
                         $msgSec  = (int) floor(max(0, $time->diffInSeconds(now())));
@@ -103,7 +103,7 @@ html[data-theme="dark"] .inbox-read-text { color: #a1a1aa !important; }
                 @endif
             </span>
             @if($unread > 0)
-            <span style="background:#ea580c;color:#fff;border-radius:999px;font-size:.7rem;font-weight:700;padding:.1rem .45rem;min-width:20px;text-align:center;">
+            <span style="background:#c2410c;color:#fff;border-radius:999px;font-size:.7rem;font-weight:700;padding:.1rem .45rem;min-width:20px;text-align:center;line-height:1.5;">
                 {{ $unread }}
             </span>
             @endif
@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.student-status-text').forEach(function(el) {
                 var match = el.className.match(/student-status-text-(\d+)/);
                 if (match && window.onlineStudentIds.has(String(match[1]))) {
-                    el.innerHTML = '<span style="color:#10b981;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#10b981;display:inline-block;"></span> ใช้งานอยู่</span>';
+                    el.innerHTML = '<span style="color:#047857;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#059669;display:inline-block;"></span> ใช้งานอยู่</span>';
                 } else {
                     el.innerHTML = '';
                 }

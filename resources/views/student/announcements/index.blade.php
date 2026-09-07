@@ -30,7 +30,7 @@
                     </div>
                     <div class="flex items-center gap-2 mt-2">
                         @if($item->target_faculty)
-                            <span class="text-xs font-medium" style="color:#ef4444;background:#fff5f5;padding:2px 6px;border-radius:4px;">คณะ{{ $item->target_faculty }}</span>
+                            <span class="text-xs font-medium" style="color:#b91c1c;background:#fee2e2;padding:2px 6px;border-radius:4px;border:1px solid #fecaca;line-height:1.5;">คณะ{{ $item->target_faculty }}</span>
                         @endif
                         <span class="text-xs text-muted">โดย {{ $item->creator->full_name }}</span>
                     </div>

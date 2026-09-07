@@ -17,11 +17,11 @@
 @if($todos->isNotEmpty())
 <div class="mb-5">
     <div class="flex items-center gap-2 mb-3">
-        <svg style="width:18px;height:18px;color:#f59e0b;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg style="width:18px;height:18px;color:#d97706;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 4h6m-6 4h4"/>
         </svg>
-        <h2 class="font-bold" style="font-size:1rem;">ภารกิจที่ต้องทำ
-            <span style="background:#f59e0b;color:#fff;border-radius:999px;padding:1px 8px;font-size:.75rem;margin-left:6px;">{{ $todos->count() }}</span>
+        <h2 class="font-bold" style="font-size:1rem; line-height:1.5;">ภารกิจที่ต้องทำ
+            <span style="background:#b45309;color:#fff;border-radius:999px;padding:1px 8px;font-size:.75rem;margin-left:6px;line-height:1.5;">{{ $todos->count() }}</span>
         </h2>
     </div>
     <div class="todo-scroll">

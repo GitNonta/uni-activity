@@ -101,7 +101,7 @@
                             @if($cat->activities_count === 0)
                             <form method="POST" action="{{ route('admin.categories.destroy', $cat->id) }}" onsubmit="return confirm('ลบหมวดหมู่ {{ $cat->name }} ?')" style="margin:0;">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-sm" style="font-size:.75rem;background:#fef2f2;color:#dc2626;border:none;">ลบ</button>
+                                <button type="submit" class="btn btn-sm" style="font-size:.75rem;background:#fee2e2;color:#b91c1c;border:none;line-height:1.5;">ลบ</button>
                             </form>
                             @endif
                         </div>
@@ -215,7 +215,7 @@ function addOptionRow(containerId, key = '', value = '') {
     row.innerHTML = `
         <input type="text" name="options[${optionIndex}][key]" value="${key}" placeholder="ชื่อตัวเลือก" class="form-control form-control-sm" style="flex:1;">
         <input type="text" name="options[${optionIndex}][value]" value="${value}" placeholder="ค่า" class="form-control form-control-sm" style="flex:1;">
-        <button type="button" onclick="this.parentElement.remove()" class="btn btn-sm" style="background:#fef2f2;color:#dc2626;border:1px solid #fca55a;padding:.3rem .5rem;">×</button>
+        <button type="button" onclick="this.parentElement.remove()" class="btn btn-sm" style="background:#fee2e2;color:#b91c1c;border:1px solid #fecaca;padding:.3rem .5rem;line-height:1.5;">×</button>
     `;
     container.appendChild(row);
     optionIndex++;

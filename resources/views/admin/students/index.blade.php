@@ -50,12 +50,12 @@
 <div class="flex" style="gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem;">
     @foreach($activeFilters as $filter)
     <a href="{{ request()->fullUrlWithoutQuery([$filter['key']]) }}"
-       style="display:inline-flex;align-items:center;gap:4px;background:#ffedd5;color:#6d28d9;border-radius:999px;padding:4px 12px;font-size:.78rem;font-weight:600;text-decoration:none;">
+       style="display:inline-flex;align-items:center;gap:4px;background:#ede9fe;color:#5b21b6;border-radius:999px;padding:4px 12px;font-size:.78rem;font-weight:600;text-decoration:none;line-height:1.5;">
         {{ $filter['label'] }}
         <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
     </a>
     @endforeach
-    <a href="{{ route('admin.students.index') }}" style="display:inline-flex;align-items:center;gap:4px;background:#f1f5f9;color:#64748b;border-radius:999px;padding:4px 12px;font-size:.78rem;text-decoration:none;">
+    <a href="{{ route('admin.students.index') }}" style="display:inline-flex;align-items:center;gap:4px;background:#e2e8f0;color:#334155;border-radius:999px;padding:4px 12px;font-size:.78rem;text-decoration:none;line-height:1.5;">
         ล้างทั้งหมด ×
     </a>
 </div>
@@ -154,8 +154,8 @@
                             <span style="font-size:.7rem;background:#f1f5f9;color:#475569;border-radius:4px;padding:1px 6px;">ปี {{ $student->year }}</span>
                             @endif
                             @if($student->program)
-                            <span style="font-size:.7rem;border-radius:4px;padding:1px 6px;
-                                {{ $student->program === 'กศ.บป.' ? 'background:#ffedd5;color:#ef4444;' : 'background:#ffedd5;color:#ea580c;' }}">
+                            <span style="font-size:.7rem;border-radius:4px;padding:1px 6px;line-height:1.5;
+                                {{ $student->program === 'กศ.บป.' ? 'background:#fee2e2;color:#991b1b;border:1px solid #fecaca;' : 'background:#ffedd5;color:#9a3412;border:1px solid #fed7aa;' }}">
                                 {{ $student->program }}
                             </span>
                             @endif

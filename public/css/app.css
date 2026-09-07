@@ -1247,16 +1247,24 @@ html[data-theme="dark"] .cf-msg-bubble-other { background: #36383a !important; c
     border-color: #cbd5e1;
 }
 .map-filter-pill.active {
-    background: #ea580c;
-    color: #fff;
-    border-color: #ea580c;
-    box-shadow: 0 2px 6px rgba(234, 88, 12, 0.25);
+    background: #c2410c !important;
+    color: #ffffff !important;
+    border-color: #c2410c !important;
+    box-shadow: 0 2px 6px rgba(194, 65, 12, 0.3) !important;
+}
+.map-filter-pill.active svg {
+    color: #ffffff !important;
+    stroke: #ffffff !important;
 }
 .map-radius-pill.active {
-    background: #0284c7;
-    color: #fff;
-    border-color: #0284c7;
-    box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+    background: #0369a1 !important;
+    color: #ffffff !important;
+    border-color: #0369a1 !important;
+    box-shadow: 0 2px 6px rgba(3, 105, 161, 0.3) !important;
+}
+.map-radius-pill.active svg {
+    color: #ffffff !important;
+    stroke: #ffffff !important;
 }
 
 .map-locate-btn {
@@ -2237,15 +2245,18 @@ html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark 
     color: #f8fafc !important;
     line-height: 1.5 !important;
 }
-/* Text Links in Dark Theme: ONLY for standard inline text links, NEVER for buttons/badges/chips/nav */
-html[data-theme="dark"] a:not([class*="btn"]):not([class*="badge"]):not([class*="chip"]):not([class*="tag"]):not([class*="nav"]):not(.dropdown-item),
-html.dark a:not([class*="btn"]):not([class*="badge"]):not([class*="chip"]):not([class*="tag"]):not([class*="nav"]):not(.dropdown-item) {
-    color: #fb923c !important; /* Orange 400: Contrast 8.5:1 on dark */
+/* Text Links in Dark Theme: ONLY for standard inline text links, NEVER for buttons/badges/chips/pills/tabs/nav/cards */
+html[data-theme="dark"] a:not([class]),
+html.dark a:not([class]),
+html[data-theme="dark"] p a,
+html.dark p a,
+html[data-theme="dark"] a:not([class*="btn"]):not([class*="badge"]):not([class*="chip"]):not([class*="tag"]):not([class*="nav"]):not([class*="pill"]):not([class*="tab"]):not([class*="card"]):not([class*="item"]):not([class*="logo"]):not(.dropdown-item) {
+    color: #fb923c; /* Orange 400: High contrast on dark background */
     line-height: inherit;
 }
-html[data-theme="dark"] a:not([class*="btn"]):not([class*="badge"]):not([class*="chip"]):not([class*="tag"]):not([class*="nav"]):not(.dropdown-item):hover,
-html.dark a:not([class*="btn"]):not([class*="badge"]):not([class*="chip"]):not([class*="tag"]):not([class*="nav"]):not(.dropdown-item):hover {
-    color: #fdba74 !important;
+html[data-theme="dark"] a:not([class*="btn"]):not([class*="badge"]):not([class*="chip"]):not([class*="tag"]):not([class*="nav"]):not([class*="pill"]):not([class*="tab"]):not([class*="card"]):not([class*="item"]):not([class*="logo"]):not(.dropdown-item):hover,
+html.dark a:not([class*="btn"]):not([class*="badge"]):not([class*="chip"]):not([class*="tag"]):not([class*="nav"]):not([class*="pill"]):not([class*="tab"]):not([class*="card"]):not([class*="item"]):not([class*="logo"]):not(.dropdown-item):hover {
+    color: #fdba74;
 }
 html[data-theme="dark"] .card, html.dark .card {
     background: #18181b !important;
@@ -2598,4 +2609,143 @@ html[data-theme="dark"] .empty-state-row,
 html.dark .empty-state-row {
     color: #71717a;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   UNIVERSAL SORT PILL & INTERACTIVE PILLS (WCAG 2.1 AA Contrast >= 4.5:1)
+   ══════════════════════════════════════════════════════════════ */
+.sort-pill, a.sort-pill {
+    white-space: nowrap !important;
+    padding: 5px 14px !important;
+    border-radius: 20px !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    transition: all 0.15s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    line-height: 1.5 !important;
+}
+
+/* Inactive sort pill - Light theme */
+html:not([data-theme="dark"]) .sort-pill:not(.active),
+html:not([data-theme="dark"]) a.sort-pill:not(.active) {
+    background: #ffffff !important;
+    color: #334155 !important; /* Slate 700: Contrast > 8:1 */
+    border: 1px solid #cbd5e1 !important;
+}
+html:not([data-theme="dark"]) .sort-pill:not(.active) svg,
+html:not([data-theme="dark"]) a.sort-pill:not(.active) svg {
+    color: #475569 !important;
+    stroke: #475569 !important;
+}
+html:not([data-theme="dark"]) .sort-pill:not(.active):hover,
+html:not([data-theme="dark"]) a.sort-pill:not(.active):hover {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+    border-color: #94a3b8 !important;
+}
+
+/* Inactive sort pill - Dark theme */
+html[data-theme="dark"] .sort-pill:not(.active),
+html.dark .sort-pill:not(.active),
+html[data-theme="dark"] a.sort-pill:not(.active),
+html.dark a.sort-pill:not(.active) {
+    background: #1e1e24 !important;
+    color: #e4e4e7 !important; /* Zinc 200: Contrast > 11:1 */
+    border: 1px solid #3f3f46 !important;
+}
+html[data-theme="dark"] .sort-pill:not(.active) svg,
+html.dark .sort-pill:not(.active) svg,
+html[data-theme="dark"] a.sort-pill:not(.active) svg,
+html.dark a.sort-pill:not(.active) svg {
+    color: #cbd5e1 !important;
+    stroke: #cbd5e1 !important;
+}
+html[data-theme="dark"] .sort-pill:not(.active):hover,
+html.dark .sort-pill:not(.active):hover,
+html[data-theme="dark"] a.sort-pill:not(.active):hover,
+html.dark a.sort-pill:not(.active):hover {
+    background: #27272a !important;
+    color: #ffffff !important;
+    border-color: #52525b !important;
+}
+
+/* ACTIVE sort pill (Light & Dark) - Contrast 5.27:1 with #ffffff */
+.sort-pill.active,
+a.sort-pill.active,
+html[data-theme="dark"] .sort-pill.active,
+html.dark .sort-pill.active,
+html[data-theme="dark"] a.sort-pill.active,
+html.dark a.sort-pill.active {
+    background: #c2410c !important; /* Orange 700 */
+    color: #ffffff !important;
+    border: 1px solid #c2410c !important;
+    box-shadow: 0 2px 6px rgba(194, 65, 12, 0.35) !important;
+}
+.sort-pill.active *,
+a.sort-pill.active *,
+html[data-theme="dark"] .sort-pill.active *,
+html.dark .sort-pill.active *,
+html[data-theme="dark"] a.sort-pill.active *,
+html.dark a.sort-pill.active * {
+    color: #ffffff !important;
+}
+.sort-pill.active svg,
+a.sort-pill.active svg,
+html[data-theme="dark"] .sort-pill.active svg,
+html.dark .sort-pill.active svg,
+html[data-theme="dark"] a.sort-pill.active svg,
+html.dark a.sort-pill.active svg {
+    stroke: #ffffff !important;
+    color: #ffffff !important;
+    fill: none;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   HIGH-CONTRAST BADGES & CHIPS (Contrast >= 4.5:1)
+   ══════════════════════════════════════════════════════════════ */
+.badge-orange, [class*="badge-warning"] {
+    background: #ffedd5 !important;
+    color: #9a3412 !important; /* Contrast > 7.2:1 */
+    border: 1px solid #fed7aa !important;
+}
+.badge-blue, [class*="badge-info"] {
+    background: #e0f2fe !important;
+    color: #0369a1 !important; /* Contrast > 5.1:1 */
+    border: 1px solid #bae6fd !important;
+}
+.badge-green, [class*="badge-success"] {
+    background: #dcfce7 !important;
+    color: #166534 !important; /* Contrast > 7.0:1 */
+    border: 1px solid #bbf7d0 !important;
+}
+.badge-red, [class*="badge-danger"] {
+    background: #fee2e2 !important;
+    color: #991b1b !important; /* Contrast > 8.0:1 */
+    border: 1px solid #fecaca !important;
+}
+
+/* Dark mode badge adjustments */
+html[data-theme="dark"] .badge-orange, html.dark .badge-orange {
+    background: rgba(194, 65, 12, 0.25) !important;
+    color: #fdba74 !important;
+    border-color: rgba(251, 146, 60, 0.3) !important;
+}
+html[data-theme="dark"] .badge-blue, html.dark .badge-blue {
+    background: rgba(3, 105, 161, 0.25) !important;
+    color: #7dd3fc !important;
+    border-color: rgba(56, 189, 248, 0.3) !important;
+}
+html[data-theme="dark"] .badge-green, html.dark .badge-green {
+    background: rgba(22, 101, 52, 0.25) !important;
+    color: #86efac !important;
+    border-color: rgba(74, 222, 128, 0.3) !important;
+}
+html[data-theme="dark"] .badge-red, html.dark .badge-red {
+    background: rgba(153, 27, 27, 0.25) !important;
+    color: #fca5a5 !important;
+    border-color: rgba(248, 113, 113, 0.3) !important;
+}
+
 

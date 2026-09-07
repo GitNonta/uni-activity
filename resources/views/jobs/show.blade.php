@@ -33,13 +33,13 @@
     }
     .nav-hud-instruction {
         position: absolute; top: 76px; left: 50%; transform: translateX(-50%); z-index: 1000;
-        background: rgba(234,88,12,0.95); color: #fff; border-radius: 12px; padding: 6px 14px;
-        font-size: 0.85rem; font-weight: 600; box-shadow: 0 4px 16px rgba(234,88,12,0.3);
+        background: rgba(194,65,12,0.98); color: #ffffff; border-radius: 12px; padding: 6px 14px;
+        font-size: 0.85rem; font-weight: 600; box-shadow: 0 4px 16px rgba(194,65,12,0.35);
         max-width: 90%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: none;
     }
     .nav-tunnel-badge {
         position: absolute; top: 12px; right: 12px; z-index: 1000;
-        background: #fbbf24; color: #92400e; border-radius: 8px; padding: 4px 10px;
+        background: #fef3c7; color: #78350f; border-radius: 8px; padding: 4px 10px;
         font-size: 0.75rem; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.15); display: none;
     }
     .nav-arrived {

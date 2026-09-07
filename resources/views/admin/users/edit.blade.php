@@ -21,9 +21,9 @@
                 <label class="form-label">บทบาท</label>
                 <div>
                     @if($user->role === 'staff')
-                        <span style="display:inline-block;padding:4px 12px;border-radius:12px;font-size:.85rem;background:#ffedd5;color:#ef4444;">เจ้าหน้าที่</span>
+                        <span style="display:inline-block;padding:4px 12px;border-radius:12px;font-size:.85rem;background:#fee2e2;color:#991b1b;border:1px solid #fecaca;line-height:1.5;font-weight:600;">เจ้าหน้าที่</span>
                     @else
-                        <span style="display:inline-block;padding:4px 12px;border-radius:12px;font-size:.85rem;background:#ffedd5;color:#1e40af;">นักศึกษา</span>
+                        <span style="display:inline-block;padding:4px 12px;border-radius:12px;font-size:.85rem;background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe;line-height:1.5;font-weight:600;">นักศึกษา</span>
                     @endif
                 </div>
             </div>

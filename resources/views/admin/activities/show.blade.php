@@ -204,7 +204,7 @@
                             <code id="walkin-url" class="text-xs" style="background:#f1f5f9;padding:.375rem;border-radius:4px;flex:1;word-break:break-all;">{{ url('/walkin/' . $activity->qr_token) }}</code>
                             <button onclick="copyToClipboard('walkin-url')" class="btn btn-sm btn-outline" style="white-space:nowrap;" title="คัดลอก">คัดลอก</button>
                             <button onclick="showQRModal('{{ url('/walkin/' . $activity->qr_token) }}', 'QR สำหรับ Walk-in')" class="btn btn-sm btn-outline" style="white-space:nowrap;">แสดง QR</button>
-                            <a href="{{ route('checkin.walkin', $activity->qr_token) }}" target="_blank" class="btn btn-sm" style="background:#f59e0b;color:#fff;white-space:nowrap;">เปิดหน้า Walk-in</a>
+                            <a href="{{ route('checkin.walkin', $activity->qr_token) }}" target="_blank" class="btn btn-sm" style="background:#b45309;color:#fff;white-space:nowrap;line-height:1.5;">เปิดหน้า Walk-in</a>
                         </div>
                     @else
                         <div class="alert" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem;border-radius:4px;">

@@ -8,7 +8,7 @@
     <div class="card mb-6" style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 1px solid #fde68a; box-shadow: 0 4px 12px rgba(245,158,11,0.05); border-radius: 12px; animation: slideIn 0.3s ease-out;">
         <div class="card-body" style="padding:1.5rem;">
             <div style="display:flex; align-items:start; gap:12px;">
-                <div style="background:#f59e0b; color:#fff; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:14px; font-weight:700;">!</div>
+                <div style="background:#b45309; color:#fff; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:14px; font-weight:700;">!</div>
                 <div style="flex:1;">
                     <h3 class="font-bold mb-1" style="color:#92400e; font-size:1.05rem;">สร้าง API Key สำเร็จ!</h3>
                     <p class="text-sm mb-4" style="color:#b45309; line-height:1.5;">กรุณาคัดลอกและเก็บ API Key ด้านล่างนี้ไว้ในที่ปลอดภัยทันที <strong>ระบบจะไม่แสดงรหัสเต็มนี้ให้เห็นอีกครั้ง:</strong></p>
@@ -119,7 +119,7 @@
                                             <form action="{{ route('admin.api-keys.destroy', $token->id) }}" method="POST" onsubmit="return confirm('ยืนยันการลบ API Key นี้? หากยกเลิกแล้ว บริการหรือภายนอกที่กำลังใช้คีย์นี้จะไม่สามารถเชื่อมต่อได้อีกทันที')">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" style="background:#fff1f2; color:#e11d48; border:1px solid #ffe4e6; padding:0.4rem 0.85rem; border-radius:8px; font-size:0.775rem; font-weight:600; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#ffe4e6'" onmouseout="this.style.background='#fff1f2'">
+                                                <button type="submit" style="background:#fee2e2; color:#be123c; border:1px solid #fecdd3; padding:0.4rem 0.85rem; border-radius:8px; font-size:0.775rem; font-weight:600; cursor:pointer; transition:all 0.2s; line-height:1.5;" onmouseover="this.style.background='#fecdd3'" onmouseout="this.style.background='#fee2e2'">
                                                     ยกเลิกสิทธิ์ (Revoke)
                                                 </button>
                                             </form>

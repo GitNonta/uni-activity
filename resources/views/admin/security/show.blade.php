@@ -41,15 +41,15 @@
 .related-card { background: #fff; border-radius: 14px; padding: 22px; box-shadow: 0 1px 8px rgba(0,0,0,.07); margin-bottom: 20px; }
 .related-card h3 { font-size: .9rem; font-weight: 700; color: #374151; margin: 0 0 14px; }
 .related-user { display: flex; align-items: center; gap: 12px; padding: 10px; background: #f8fafc; border-radius: 9px; margin-bottom: 8px; }
-.related-user-avatar { width: 36px; height: 36px; background: #f97316; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: .85rem; }
-.related-user-name { font-weight: 600; font-size: .875rem; }
-.related-user-sub { font-size: .78rem; color: #6b7280; }
+.related-user-avatar { width: 36px; height: 36px; background: #c2410c; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: .85rem; line-height: 1.5; }
+.related-user-name { font-weight: 600; font-size: .875rem; line-height: 1.5; }
+.related-user-sub { font-size: .78rem; color: #475569; line-height: 1.5; }
 
-.json-wrap { background: #1e1e2e; border-radius: 10px; padding: 16px; color: #cdd6f4; font-family: monospace; font-size: .8rem; overflow-x: auto; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto; }
+.json-wrap { background: #1e1e2e; border-radius: 10px; padding: 16px; color: #cdd6f4; font-family: monospace; font-size: .8rem; overflow-x: auto; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto; line-height: 1.5; }
 
 .review-section { background: #fff; border-radius: 14px; padding: 22px; box-shadow: 0 1px 8px rgba(0,0,0,.07); }
-.review-section h3 { font-size: .9rem; font-weight: 700; color: #374151; margin: 0 0 14px; }
-.btn-mark-reviewed { padding: 10px 24px; background: #10b981; color: #fff; border: none; border-radius: 9px; font-weight: 700; font-size: .9rem; cursor: pointer; }
+.review-section h3 { font-size: .9rem; font-weight: 700; color: #374151; margin: 0 0 14px; line-height: 1.5; }
+.btn-mark-reviewed { padding: 10px 24px; background: #047857; color: #fff; border: none; border-radius: 9px; font-weight: 700; font-size: .9rem; cursor: pointer; line-height: 1.5; }
 .reviewed-indicator { display: flex; align-items: center; gap: 8px; color: #166534; font-weight: 600; }
 </style>
 @endsection

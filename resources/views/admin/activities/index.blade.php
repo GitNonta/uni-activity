@@ -250,7 +250,7 @@ function loadPendingRequests(activityId) {
                                     </form>
                                     <form method="POST" action="/admin/${item.type}s/${item.id}/reject">
                                         <input type="hidden" name="_token" value="${document.querySelector('meta[name=\"csrf-token\"]').content}">
-                                        <button type="submit" class="btn btn-danger" style="padding:2px 10px; font-size:.7rem; background:#fee2e2; color:#dc2626; border-color:#fca5a5;">ปฏิเสธ</button>
+                                        <button type="submit" class="btn btn-danger" style="padding:2px 10px; font-size:.7rem; background:#fee2e2; color:#b91c1c; border-color:#fca5a5; line-height:1.5;">ปฏิเสธ</button>
                                     </form>
                                 </div>
                             </div>

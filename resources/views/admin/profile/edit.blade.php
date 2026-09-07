@@ -26,7 +26,7 @@
                     </label>
 
                     {{-- Camera Badge on Bottom-Right Edge --}}
-                    <label for="profilePhotoInput" style="position: absolute; bottom: -2px; right: -2px; width: 28px; height: 28px; background: #ea580c; border: 2.5px solid #27272a; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: transform 0.15s, background 0.15s; z-index: 2;" title="เปลี่ยนรูปโปรไฟล์" onmouseenter="this.style.transform='scale(1.15)'; this.style.background='#c2410c';" onmouseleave="this.style.transform='scale(1)'; this.style.background='#ea580c';">
+                    <label for="profilePhotoInput" style="position: absolute; bottom: -2px; right: -2px; width: 28px; height: 28px; background: #c2410c; border: 2.5px solid #27272a; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: transform 0.15s, background 0.15s; z-index: 2;" title="เปลี่ยนรูปโปรไฟล์" onmouseenter="this.style.transform='scale(1.15)'; this.style.background='#9a3412';" onmouseleave="this.style.transform='scale(1)'; this.style.background='#c2410c';">
                         <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>
                     </label>
 
@@ -77,7 +77,7 @@
                         </button>
                     </form>
                 @endif
-                <a href="{{ route('admin.settings.index', ['tab' => 'privacy']) }}" style="display: inline-flex; align-items: center; gap: 0.45rem; background: #ea580c; color: #fff; padding: 0.55rem 1.1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; text-decoration: none; box-shadow: 0 2px 8px rgba(234, 88, 12, 0.3); transition: all 0.2s;" onmouseenter="this.style.background='#c2410c'" onmouseleave="this.style.background='#ea580c'">
+                <a href="{{ route('admin.settings.index', ['tab' => 'privacy']) }}" style="display: inline-flex; align-items: center; gap: 0.45rem; background: #c2410c; color: #fff; padding: 0.55rem 1.1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; text-decoration: none; box-shadow: 0 2px 8px rgba(194, 65, 12, 0.3); transition: all 0.2s; line-height: 1.5;" onmouseenter="this.style.background='#9a3412'" onmouseleave="this.style.background='#c2410c'">
                     <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                     <span>แก้ไขข้อมูลส่วนตัว & เพศ & รหัสผ่าน</span>
                 </a>
@@ -99,37 +99,37 @@
         <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                 <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">กิจกรรมที่สร้าง</span>
-                <div style="width: 32px; height: 32px; border-radius: 8px; background: #fff7ed; color: #ea580c; display: flex; align-items: center; justify-content: center;">
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: #ffedd5; color: #9a3412; display: flex; align-items: center; justify-content: center;">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                 </div>
             </div>
             <div style="display: flex; align-items: baseline; gap: 0.4rem;">
                 <div style="font-size: 1.75rem; font-weight: 800; color: #0f172a;">{{ $stats['activities_count'] }}</div>
-                <span style="font-size: 0.85rem; color: #64748b; font-weight: 600;">รายการ</span>
+                <span style="font-size: 0.85rem; color: #475569; font-weight: 600;">รายการ</span>
             </div>
-            <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem;">กิจกรรมในระบบทั้งหมดที่คุณสร้าง</div>
+            <div style="font-size: 0.75rem; color: #475569; margin-top: 0.25rem; line-height: 1.5;">กิจกรรมในระบบทั้งหมดที่คุณสร้าง</div>
         </div>
 
         {{-- Card 2: Announcements --}}
         <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">ข่าวประกาศ</span>
-                <div style="width: 32px; height: 32px; border-radius: 8px; background: #eef2ff; color: #6366f1; display: flex; align-items: center; justify-content: center;">
+                <span style="font-size: 0.75rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1.5;">ข่าวประกาศ</span>
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: #e0e7ff; color: #4338ca; display: flex; align-items: center; justify-content: center;">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
                 </div>
             </div>
             <div style="display: flex; align-items: baseline; gap: 0.4rem;">
                 <div style="font-size: 1.75rem; font-weight: 800; color: #0f172a;">{{ $stats['announcements_count'] }}</div>
-                <span style="font-size: 0.85rem; color: #64748b; font-weight: 600;">ข่าวสาร</span>
+                <span style="font-size: 0.85rem; color: #475569; font-weight: 600;">ข่าวสาร</span>
             </div>
-            <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem;">ประกาศแจ้งเตือนนักศึกษา</div>
+            <div style="font-size: 0.75rem; color: #475569; margin-top: 0.25rem; line-height: 1.5;">ประกาศแจ้งเตือนนักศึกษา</div>
         </div>
 
         {{-- Card 3: Audit Logs --}}
         <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">ประวัติการทำงาน</span>
-                <div style="width: 32px; height: 32px; border-radius: 8px; background: #ecfdf5; color: #10b981; display: flex; align-items: center; justify-content: center;">
+                <span style="font-size: 0.75rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1.5;">ประวัติการทำงาน</span>
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: #dcfce7; color: #166534; display: flex; align-items: center; justify-content: center;">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
                 </div>
             </div>
@@ -277,14 +277,14 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid #f1f5f9;">
                     <div>
                         <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 0.5rem;">
-                            <svg width="18" height="18" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            <svg width="18" height="18" fill="none" stroke="#c2410c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                             กิจกรรมที่คุณสร้างล่าสุด
                         </h3>
-                        <p style="margin: 0.2rem 0 0 0; font-size: 0.8rem; color: #64748b;">
+                        <p style="margin: 0.2rem 0 0 0; font-size: 0.8rem; color: #475569; line-height: 1.5;">
                             รายการกิจกรรมมหาวิทยาลัยที่คุณเป็นผู้จัดและดูแล
                         </p>
                     </div>
-                    <a href="{{ route('admin.activities.create') }}" style="display: inline-flex; align-items: center; gap: 0.35rem; background: #ea580c; color: #fff; padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.775rem; font-weight: 700; text-decoration: none;">
+                    <a href="{{ route('admin.activities.create') }}" style="display: inline-flex; align-items: center; gap: 0.35rem; background: #c2410c; color: #fff; padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.775rem; font-weight: 700; text-decoration: none; line-height: 1.5;">
                         <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                         <span>สร้างกิจกรรมใหม่</span>
                     </a>

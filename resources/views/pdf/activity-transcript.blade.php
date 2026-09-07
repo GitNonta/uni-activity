@@ -261,7 +261,7 @@
                 @if($studentPhoto && file_exists($studentPhoto))
                     <img src="{{ $studentPhoto }}" style="width:100px;height:130px;object-fit:cover;border:1.5px solid #ccc;">
                 @else
-                    <div style="width:68px;height:85px;border:1.5px solid #ccc;background:#f1f5f9;text-align:center;line-height:85px;font-size:7pt;color:#94a3b8;">รูปนักศึกษา</div>
+                    <div style="width:68px;height:85px;border:1.5px solid #ccc;background:#f1f5f9;text-align:center;line-height:85px;font-size:7pt;color:#475569;">รูปนักศึกษา</div>
                 @endif
             </td>
         </tr>

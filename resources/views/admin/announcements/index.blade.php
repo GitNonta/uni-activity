@@ -75,7 +75,7 @@
                             <a href="{{ route('admin.announcements.edit', $item->id) }}" class="btn btn-outline btn-sm">แก้ไข</a>
                             <form method="POST" action="{{ route('admin.announcements.destroy', $item->id) }}" onsubmit="return confirm('ยืนยันลบประกาศนี้?')" style="margin:0;">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-sm" style="background:#fee2e2;color:#dc2626; border:none;">ลบ</button>
+                                <button type="submit" class="btn btn-sm" style="background:#fee2e2;color:#b91c1c; border:none; line-height:1.5;">ลบ</button>
                             </form>
                         </div>
                     </td>

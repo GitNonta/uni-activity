@@ -84,9 +84,9 @@
     flex-shrink: 0;
 }
 .stat-icon svg { width: 20px; height: 20px; }
-.stat-icon-green { background: #f0fdf4; color: #16a34a; }
-.stat-icon-yellow { background: #fefce8; color: #ca8a04; }
-.stat-icon-red { background: #fef2f2; color: #dc2626; }
+.stat-icon-green { background: #f0fdf4; color: #15803d; }
+.stat-icon-yellow { background: #fefce8; color: #a16207; }
+.stat-icon-red { background: #fef2f2; color: #b91c1c; }
 .stat-icon-blue { background: #eff6ff; color: #c2410c; }
 
 .stat-info { min-width: 0; }
@@ -248,16 +248,16 @@
     border-radius: 8px;
     border: 1px solid #e2e8f0;
     background: #fff;
-    color: #f97316;
+    color: #c2410c;
     font-size: .72rem;
     font-weight: 600;
     text-decoration: none;
     transition: all .2s;
 }
 .td-action-btn:hover {
-    background: #f97316; color: #fff; border-color: #f97316;
+    background: #c2410c; color: #fff; border-color: #c2410c;
     text-decoration: none;
-    box-shadow: 0 2px 8px rgba(249,115,22,.2);
+    box-shadow: 0 2px 8px rgba(194,65,12,.25);
 }
 .td-action-btn svg { width: 12px; height: 12px; }
 
@@ -271,12 +271,12 @@
 .action-badge svg { width: 12px; height: 12px; }
 .action-badge-create { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
 .action-badge-update { background: #fffbeb; color: #a16207; border: 1px solid #fde68a; }
-.action-badge-delete { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.action-badge-delete { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
 .action-badge-approve { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
-.action-badge-reject { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.action-badge-reject { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
 .action-badge-toggle { background: #fffbeb; color: #a16207; border: 1px solid #fde68a; }
-.action-badge-login { background: #eff6ff; color: #ea580c; border: 1px solid #bfdbfe; }
-.action-badge-logout { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
+.action-badge-login { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.action-badge-logout { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
 
 /* Model Type Tag */
 .model-tag {

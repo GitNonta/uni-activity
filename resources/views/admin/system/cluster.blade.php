@@ -323,13 +323,13 @@
             </div>
             <div style="display:flex; align-items:baseline; gap:0.5rem;">
                 <div style="font-size:1.35rem; font-weight:800; color:var(--text-primary);">Laravel Octane</div>
-                <span style="font-size:0.75rem; font-weight:700; color:#6366f1; background:#e0e7ff; padding:2px 6px; border-radius:4px;">
+                <span style="font-size:0.75rem; font-weight:700; color:#4338ca; background:#e0e7ff; padding:2px 6px; border-radius:4px; line-height:1.5;">
                     {{ strtoupper($status['app']['octane_server'] ?? 'SWOOLE') }}
                 </span>
             </div>
-            <div style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.4rem; display:flex; justify-content:space-between;">
+            <div style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.4rem; display:flex; justify-content:space-between; line-height:1.5;">
                 <span>สภาพแวดล้อม (Env): <strong style="color:var(--text-primary);">{{ strtoupper($status['app']['env']) }}</strong></span>
-                <span>Debug: <strong style="color:{{ $status['app']['debug'] ? '#ef4444' : '#10b981' }}">{{ $status['app']['debug'] ? 'เปิด (เตือน)' : 'ปิด (ปลอดภัย)' }}</strong></span>
+                <span>Debug: <strong style="color:{{ $status['app']['debug'] ? '#b91c1c' : '#166534' }}">{{ $status['app']['debug'] ? 'เปิด (เตือน)' : 'ปิด (ปลอดภัย)' }}</strong></span>
             </div>
             <div class="latency-bar-track">
                 <div class="latency-bar-fill" style="width: 100%; background: #6366f1;"></div>

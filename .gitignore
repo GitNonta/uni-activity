@@ -95,3 +95,4 @@ Thumbs.db
 /.claud/
 .phpunit.result.cache
 /.phpunit.cache/
+scratch/

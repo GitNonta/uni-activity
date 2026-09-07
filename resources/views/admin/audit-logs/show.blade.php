@@ -19,9 +19,9 @@
     transition: all .2s;
 }
 .detail-back-link:hover {
-    background: #f97316; color: #fff; border-color: #f97316;
+    background: #c2410c; color: #fff; border-color: #c2410c;
     text-decoration: none;
-    box-shadow: 0 2px 8px rgba(249,115,22,.2);
+    box-shadow: 0 2px 8px rgba(194,65,12,.25);
 }
 .detail-back-link svg { width: 14px; height: 14px; }
 

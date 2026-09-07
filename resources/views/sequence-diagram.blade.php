@@ -42,13 +42,13 @@
     .message-label {
         position: absolute; left: 50%; transform: translateX(-50%); top: -1.25rem;
         width: max-content; max-width: 190px; padding: .2rem .45rem; border-radius: 6px;
-        background: #fff; color: #7c2d12; font-size: .73rem; line-height: 1.25;
+        background: #fff; color: #7c2d12; font-size: .73rem; line-height: 1.5;
         text-align: center; box-shadow: 0 1px 3px #fed7aa;
     }
     .note {
         position: absolute; left: 8%; right: 8%; padding: .45rem .6rem; border-radius: 8px;
-        background: #fef3c7; border: 1px solid #f59e0b; color: #78350f; font-size: .72rem;
-        line-height: 1.35; text-align: center; z-index: 2;
+        background: #fef3c7; border: 1px solid #d97706; color: #78350f; font-size: .72rem;
+        line-height: 1.5; text-align: center; z-index: 2;
     }
     .phase {
         position: absolute; left: 4px; right: 4px; padding: .3rem .5rem; border-radius: 6px;

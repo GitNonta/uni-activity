@@ -174,11 +174,11 @@
 
 @section('styles')
 <style>
-    .filter-tab { padding:4px 10px; font-size:0.7rem; font-weight:600; border-radius:4px; border:1px solid #e2e8f0; background:#fff; color:#64748b; cursor:pointer; }
-    .filter-tab.active { background:#ea580c; color:#fff; border-color:#ea580c; }
-    .filter-tab:hover { border-color:#ea580c; color:#ea580c; }
-    .copy-btn { font-family:monospace; font-size:0.7rem; padding:2px 8px; border-radius:4px; background:#f1f5f9; border:1px solid #e2e8f0; color:#64748b; cursor:pointer; transition:background 0.15s; }
-    .copy-btn:hover { background:#ea580c; color:#fff; border-color:#ea580c; }
+    .filter-tab { padding:4px 10px; font-size:0.7rem; font-weight:600; border-radius:4px; border:1px solid #cbd5e1; background:#fff; color:#475569; cursor:pointer; line-height:1.5; }
+    .filter-tab.active { background:#c2410c; color:#fff; border-color:#c2410c; }
+    .filter-tab:hover { border-color:#c2410c; color:#c2410c; }
+    .copy-btn { font-family:monospace; font-size:0.7rem; padding:2px 8px; border-radius:4px; background:#f1f5f9; border:1px solid #cbd5e1; color:#334155; cursor:pointer; transition:all 0.15s; line-height:1.5; }
+    .copy-btn:hover { background:#c2410c; color:#fff; border-color:#c2410c; }
     .toast { padding:0.625rem 0.875rem; border-radius:6px; font-size:0.8rem; font-weight:600; box-shadow:0 2px 8px rgba(0,0,0,0.12); margin-bottom:6px; animation:fadeIn 0.2s ease; }
     .toast-success { background:#dcfce7; color:#166534; border:1px solid #bbf7d0; }
     .toast-error { background:#fee2e2; color:#991b1b; border:1px solid #fecaca; }

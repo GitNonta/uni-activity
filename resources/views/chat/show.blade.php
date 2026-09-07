@@ -154,7 +154,7 @@
         padding: 0.65rem 0.95rem;
         border-radius: 16px;
         font-size: 0.92rem;
-        line-height: 1.45;
+        line-height: 1.5;
         position: relative;
         box-shadow: 0 1px 3px rgba(0,0,0,0.04);
         word-break: break-word;
@@ -225,7 +225,7 @@
         align-items: center;
         justify-content: center;
     }
-    .msg-action-btn:hover { color: #ea580c; background: #f1f5f9; }
+    .msg-action-btn:hover { color: #c2410c; background: #ffedd5; }
 
     .attachment-img {
         max-width: 100%;
@@ -553,7 +553,7 @@
         .message-bubble {
             padding: 0.5rem 0.78rem;
             font-size: 0.9rem;
-            line-height: 1.42;
+            line-height: 1.5;
             border-radius: 18px;
         }
 
@@ -1614,7 +1614,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (dot) dot.style.display = isOnline ? 'inline-block' : 'none';
                 if (label) {
                     if (isOnline) {
-                        label.innerHTML = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 8px #10b981;margin-right:5px;"></span><span style="color:#10b981;font-weight:600;">กำลังใช้งาน</span>';
+                        label.innerHTML = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#059669;box-shadow:0 0 8px #059669;margin-right:5px;"></span><span style="color:#047857;font-weight:600;">กำลังใช้งาน</span>';
                     } else {
                         const lastSeen = label.getAttribute('data-last-seen');
                         label.innerHTML = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>${formatLastSeen(lastSeen)}`;

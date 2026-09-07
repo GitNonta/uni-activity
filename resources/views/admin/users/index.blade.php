@@ -10,7 +10,7 @@
             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             สร้างนักศึกษา
         </a>
-        <a href="{{ route('admin.users.create', ['type' => 'staff']) }}" class="btn btn-sm" style="background:#ef4444;color:#fff;">
+        <a href="{{ route('admin.users.create', ['type' => 'staff']) }}" class="btn btn-sm" style="background:#b91c1c;color:#fff;line-height:1.5;">
             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             สร้างเจ้าหน้าที่
         </a>
@@ -25,11 +25,11 @@
     </div>
     <div class="card" style="padding:.875rem 1rem;text-align:center;">
         <div class="text-xs text-muted">นักศึกษา</div>
-        <div class="font-bold" style="font-size:1.5rem;color:#16a34a;">{{ $counts['students'] }}</div>
+        <div class="font-bold" style="font-size:1.5rem;color:#166534;">{{ $counts['students'] }}</div>
     </div>
     <div class="card" style="padding:.875rem 1rem;text-align:center;">
         <div class="text-xs text-muted">เจ้าหน้าที่</div>
-        <div class="font-bold" style="font-size:1.5rem;color:#ef4444;">{{ $counts['staff'] }}</div>
+        <div class="font-bold" style="font-size:1.5rem;color:#b91c1c;">{{ $counts['staff'] }}</div>
     </div>
 </div>
 
@@ -121,7 +121,7 @@
                             @if($user->id !== auth()->id())
                             <form method="POST" action="{{ route('admin.users.destroy', $user->id) }}" style="margin:0;" onsubmit="return confirm('ยืนยันลบผู้ใช้ {{ $user->full_name }}?');">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-sm" style="background:#fee2e2;color:#dc2626;font-size:.75rem;border:none;">ลบ</button>
+                                <button type="submit" class="btn btn-sm" style="background:#fee2e2;color:#b91c1c;font-size:.75rem;border:none;line-height:1.5;">ลบ</button>
                             </form>
                             @endif
                         </div>

@@ -270,7 +270,7 @@
             align-items: center;
             justify-content: center;
         }
-        .msg-action-btn:hover { color: #ea580c; background: #f1f5f9; }
+        .msg-action-btn:hover { color: #c2410c; background: #ffedd5; }
 
         /* ── UI polish: bubbles, composer, buttons ── */
         .msg-bubble-mine div[id^="bubble-"] {
@@ -633,14 +633,14 @@
     {{-- Header --}}
     <div class="chat-header-card chat-header-container">
         <div style="display:flex;align-items:center;gap:0.75rem;">
-            <a href="{{ route('admin.inbox.index') }}" class="back-btn" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:#f1f5f9;color:#64748b;text-decoration:none;" title="กลับไปกล่องข้อความ">
+            <a href="{{ route('admin.inbox.index') }}" class="back-btn" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:#f1f5f9;color:#334155;text-decoration:none;" title="กลับไปกล่องข้อความ">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
             </a>
             <div>
-                <h2 style="margin:0;font-size:1.05rem;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:.4rem;">
+                <h2 style="margin:0;font-size:1.05rem;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:.4rem;line-height:1.5;">
                     <span>{{ $student->full_name }}</span>
-                    <span id="adminOnlineDot" style="display:none;width:8px;height:8px;background:#10b981;border-radius:50%;box-shadow:0 0 0 2px #fff;" title="ออนไลน์"></span>
-                    <span style="font-size:.85rem;color:#ea580c;font-weight:500;">[{{ $job->title }}]</span>
+                    <span id="adminOnlineDot" style="display:none;width:8px;height:8px;background:#059669;border-radius:50%;box-shadow:0 0 0 2px #fff;" title="ออนไลน์"></span>
+                    <span style="font-size:.85rem;color:#c2410c;font-weight:500;">[{{ $job->title }}]</span>
                 </h2>
                 <div style="font-size:0.75rem;color:#64748b;">
                     รหัสนักศึกษา: {{ $student->student_id ?? '-' }} | คณะ: {{ $student->faculty ?? '-' }}
@@ -818,7 +818,7 @@
 
             <textarea id="msgInput" name="message" rows="1" style="flex:1;border:1px solid #e2e8f0;border-radius:10px;padding:.65rem .85rem;font-size:.92rem;resize:none;outline:none;max-height:120px;line-height:1.5;" placeholder="พิมพ์ข้อความ..."></textarea>
 
-            <button type="submit" id="sendBtn" style="width:40px;height:40px;background:#ea580c;color:#fff;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;" title="ส่งข้อความ">
+            <button type="submit" id="sendBtn" style="width:40px;height:40px;background:#c2410c;color:#fff;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;" title="ส่งข้อความ">
                 <svg style="width:18px;height:18px;transform:rotate(45deg);margin-left:-2px;" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
             </button>
         </div>
@@ -926,7 +926,7 @@ document.addEventListener('DOMContentLoaded', function () {
             prev.style.display = 'flex';
             Array.from(fileIn.files).forEach(f => {
                 const item = document.createElement('div');
-                item.style.cssText = 'padding:0.3rem 0.65rem; background:#fff7ed; border:1px solid #fed7aa; border-radius:16px; font-size:0.75rem; color:#ea580c; display:flex; align-items:center; gap:4px;';
+                item.style.cssText = 'padding:0.3rem 0.65rem; background:#ffedd5; border:1px solid #fed7aa; border-radius:16px; font-size:0.75rem; color:#9a3412; display:flex; align-items:center; gap:4px; line-height:1.5;';
                 item.innerHTML = `
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
                     ${f.name.length > 18 ? f.name.substring(0, 18) + '...' : f.name}
@@ -1071,9 +1071,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!isMine) {
             const dotDisplay = window.isStudentOnline ? 'block' : 'none';
             if (photo) {
-                avatarHtml = `<img src="${photo}" alt="" style="width:30px;height:30px;border-radius:50%;object-fit:cover;"><span class="user-avatar-online-dot" style="display:${dotDisplay};position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="กำลังใช้งาน"></span>`;
+                avatarHtml = `<img src="${photo}" alt="" style="width:30px;height:30px;border-radius:50%;object-fit:cover;"><span class="user-avatar-online-dot" style="display:${dotDisplay};position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#059669;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #059669;" title="กำลังใช้งาน"></span>`;
             } else {
-                avatarHtml = `<div style="width:30px;height:30px;border-radius:50%;background:#64748b;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;">${label.charAt(0).toUpperCase()}</div><span class="user-avatar-online-dot" style="display:${dotDisplay};position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="กำลังใช้งาน"></span>`;
+                avatarHtml = `<div style="width:30px;height:30px;border-radius:50%;background:#475569;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;">${label.charAt(0).toUpperCase()}</div><span class="user-avatar-online-dot" style="display:${dotDisplay};position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#059669;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #059669;" title="กำลังใช้งาน"></span>`;
             }
         }
         
@@ -1382,7 +1382,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (headerDot) headerDot.style.display = isOnline ? 'inline-block' : 'none';
                 if (label) {
                     if (isOnline) {
-                        label.innerHTML = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 8px #10b981;margin-right:5px;"></span><span style="color:#10b981;font-weight:600;">กำลังใช้งาน</span>';
+                        label.innerHTML = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#059669;box-shadow:0 0 8px #059669;margin-right:5px;"></span><span style="color:#047857;font-weight:600;">กำลังใช้งาน</span>';
                     } else {
                         const lastSeen = label.getAttribute('data-last-seen');
                         label.innerHTML = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>${formatLastSeen(lastSeen)}`;

@@ -196,7 +196,7 @@
                                 </button>
                                 <form method="POST" action="{{ route('admin.students.attendances.delete', [$student->id, $att->id]) }}" onsubmit="return confirm('ลบบันทึกกิจกรรมนี้?')">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-sm" style="font-size:.75rem;padding:.25rem .5rem;background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;">ลบ</button>
+                                    <button type="submit" class="btn btn-sm" style="font-size:.75rem;padding:.25rem .5rem;background:#fee2e2;color:#b91c1c;border:1px solid #fecaca;line-height:1.5;">ลบ</button>
                                 </form>
                             @else
                                 <span class="text-xs text-muted" style="padding:.25rem .5rem;background:#f1f5f9;border-radius:4px;border:1px solid #e2e8f0;">ไม่อนุญาต</span>

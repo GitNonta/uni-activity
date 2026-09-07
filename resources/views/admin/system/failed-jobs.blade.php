@@ -40,7 +40,7 @@
                 <form action="{{ route('admin.system.failed-jobs.flush') }}" method="POST" onsubmit="return confirm('คุณแน่ใจหรือไม่ว่าต้องการล้างรายการงานที่ล้มเหลวทั้งหมด?');" style="display:inline;">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-danger btn-sm" style="background:#ef4444; border-color:#ef4444; color:#fff;">
+                    <button type="submit" class="btn btn-danger btn-sm" style="background:#b91c1c; border-color:#b91c1c; color:#fff; line-height:1.5;">
                         <svg style="width:16px; height:16px; margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                         ล้างทั้งหมด (Flush All)
                     </button>
@@ -73,11 +73,11 @@
     <div style="background:#fff; border-radius:12px; padding:1rem 1.25rem; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.05); margin-bottom:1.5rem;">
         <form method="GET" action="{{ route('admin.system.failed-jobs.index') }}" style="display:flex; gap:1rem; flex-wrap:wrap; align-items:center;">
             <div style="flex:1; min-width:220px;">
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="ค้นหาจาก Job Name, Error, หรือ UUID..." class="form-control" style="font-size:0.875rem; border-radius:8px; border:1px solid #cbd5e1; padding:0.45rem 0.75rem; width:100%;">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="ค้นหาจาก Job Name, Error, หรือ UUID..." class="form-control" style="font-size:0.875rem; border-radius:8px; border:1px solid #cbd5e1; padding:0.45rem 0.75rem; width:100%; line-height:1.5;">
             </div>
 
             <div style="min-width:160px;">
-                <select name="queue" class="form-select" style="font-size:0.875rem; border-radius:8px; border:1px solid #cbd5e1; padding:0.45rem 0.75rem; width:100%;">
+                <select name="queue" class="form-select" style="font-size:0.875rem; border-radius:8px; border:1px solid #cbd5e1; padding:0.45rem 0.75rem; width:100%; line-height:1.5;">
                     <option value="">-- ทุก Queue Channel --</option>
                     @foreach($queues as $q)
                         <option value="{{ $q }}" {{ request('queue') === $q ? 'selected' : '' }}>queue:{{ $q }}</option>
@@ -86,9 +86,9 @@
             </div>
 
             <div style="display:flex; gap:0.5rem;">
-                <button type="submit" class="btn btn-primary btn-sm" style="padding:0.45rem 1rem; border-radius:8px;">ค้นหา</button>
+                <button type="submit" class="btn btn-primary btn-sm" style="padding:0.45rem 1rem; border-radius:8px; line-height:1.5;">ค้นหา</button>
                 @if(request()->hasAny(['search', 'queue']))
-                    <a href="{{ route('admin.system.failed-jobs.index') }}" class="btn btn-outline btn-sm" style="padding:0.45rem 1rem; border-radius:8px;">ล้างตัวกรอง</a>
+                    <a href="{{ route('admin.system.failed-jobs.index') }}" class="btn btn-outline btn-sm" style="padding:0.45rem 1rem; border-radius:8px; line-height:1.5;">ล้างตัวกรอง</a>
                 @endif
             </div>
         </form>
@@ -98,7 +98,7 @@
     <div style="background:#fff; border-radius:12px; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.05); overflow:hidden;">
         @if($failedJobs->isEmpty())
             <div style="text-align:center; padding:3rem 1rem;">
-                <div style="width:48px; height:48px; background:#dcfce7; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem auto; color:#16a34a;">
+                <div style="width:48px; height:48px; background:#dcfce7; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem auto; color:#166534;">
                     <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 </div>
                 <h3 style="font-size:1.1rem; font-weight:700; color:#0f172a; margin-bottom:0.25rem; line-height:1.5;">ระบบทำงานราบรื่น ไม่มีงานที่ล้มเหลว</h3>
@@ -130,7 +130,7 @@
                                 <div style="font-size:0.75rem; color:#475569; margin-top:2px; line-height:1.5;">{{ $job->connection }}</div>
                             </td>
                             <td style="padding:0.75rem 1rem; max-width:360px;">
-                                <div style="color:#ef4444; font-family:monospace; font-size:0.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; line-height:1.5;">
+                                <div style="color:#b91c1c; font-family:monospace; font-size:0.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; line-height:1.5;">
                                     {{ $job->exception_summary }}
                                 </div>
                             </td>
@@ -138,13 +138,13 @@
                                 {{ $job->failed_at }}
                             </td>
                             <td style="padding:0.75rem 1rem; text-align:right; white-space:nowrap;">
-                                <button onclick="viewJobDetails('{{ $job->uuid }}')" class="btn btn-outline btn-sm" style="font-size:0.75rem; padding:3px 8px; margin-right:4px;" title="ดูรายละเอียด Exception">
+                                <button onclick="viewJobDetails('{{ $job->uuid }}')" class="btn btn-outline btn-sm" style="font-size:0.75rem; padding:3px 8px; margin-right:4px; line-height:1.5;" title="ดูรายละเอียด Exception">
                                     รายละเอียด
                                 </button>
 
                                 <form action="{{ route('admin.system.failed-jobs.retry', $job->id) }}" method="POST" style="display:inline;">
                                     @csrf
-                                    <button type="submit" class="btn btn-primary btn-sm" style="font-size:0.75rem; padding:3px 8px; background:#4f46e5; border-color:#4f46e5;" title="ส่งกลับเข้าคิวลองใหม่">
+                                    <button type="submit" class="btn btn-primary btn-sm" style="font-size:0.75rem; padding:3px 8px; background:#4338ca; border-color:#4338ca; line-height:1.5;" title="ส่งกลับเข้าคิวลองใหม่">
                                         ลองใหม่
                                     </button>
                                 </form>
@@ -152,7 +152,7 @@
                                 <form action="{{ route('admin.system.failed-jobs.destroy', $job->id) }}" method="POST" onsubmit="return confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?');" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-outline btn-sm" style="font-size:0.75rem; padding:3px 8px; color:#ef4444; border-color:#fca5a5;" title="ลบทิ้ง">
+                                    <button type="submit" class="btn btn-outline btn-sm" style="font-size:0.75rem; padding:3px 8px; color:#b91c1c; border-color:#fca5a5; line-height:1.5;" title="ลบทิ้ง">
                                         ลบ
                                     </button>
                                 </form>

@@ -90,9 +90,9 @@
             <svg style="width:20px;height:20px;color:#d97706;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            <h3 class="card-title" style="color:#92400e;">
+            <h3 class="card-title" style="color:#92400e;line-height:1.5;">
                 รออนุมัติทั้งหมด
-                <span id="queue-count" style="background:#f59e0b;color:#fff;border-radius:999px;padding:2px 10px;font-size:.8rem;margin-left:6px;">{{ $totalPending }}</span>
+                <span id="queue-count" style="background:#b45309;color:#fff;border-radius:999px;padding:2px 10px;font-size:.8rem;margin-left:6px;line-height:1.5;">{{ $totalPending }}</span>
             </h3>
         </div>
         <div class="flex gap-2">
@@ -175,7 +175,7 @@
                 <p class="text-xs text-muted" style="margin-top:1px;">Audit Logs — บันทึกการเปลี่ยนแปลงในระบบ</p>
             </div>
         </div>
-        <a href="{{ route('admin.audit-logs.index') }}" style="display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:10px;font-size:.78rem;font-weight:600;color:#f97316;background:#fff5f5;border:1px solid #ffedd5;text-decoration:none;transition:all .2s;" onmouseover="this.style.background='#f97316';this.style.color='#fff';this.style.borderColor='#f97316';this.style.boxShadow='0 2px 8px rgba(249,115,22,.25)'" onmouseout="this.style.background='#fff5f5';this.style.color='#f97316';this.style.borderColor='#ffedd5';this.style.boxShadow='none'">
+        <a href="{{ route('admin.audit-logs.index') }}" style="display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:10px;font-size:.78rem;font-weight:600;color:#c2410c;background:#ffedd5;border:1px solid #fed7aa;text-decoration:none;transition:all .2s;line-height:1.5;" onmouseover="this.style.background='#c2410c';this.style.color='#fff';this.style.borderColor='#c2410c';this.style.boxShadow='0 2px 8px rgba(194,65,12,.25)'" onmouseout="this.style.background='#ffedd5';this.style.color='#c2410c';this.style.borderColor='#fed7aa';this.style.boxShadow='none'">
             ดูประวัติทั้งหมด
             <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
         </a>
@@ -209,9 +209,9 @@
             $badgeBg = match($log->action) {
                 'create','approve' => 'background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;',
                 'update','toggle'  => 'background:#fffbeb;color:#a16207;border:1px solid #fde68a;',
-                'delete','reject'  => 'background:#fef2f2;color:#dc2626;border:1px solid #fecaca;',
-                'login'            => 'background:#eff6ff;color:#ea580c;border:1px solid #bfdbfe;',
-                default            => 'background:#f8fafc;color:#64748b;border:1px solid #e2e8f0;',
+                'delete','reject'  => 'background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;',
+                'login'            => 'background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;',
+                default            => 'background:#f8fafc;color:#475569;border:1px solid #e2e8f0;',
             };
         @endphp
         <a href="{{ route('admin.audit-logs.show', $log->id) }}"
