@@ -71,11 +71,11 @@
     {{-- CTA Button --}}
     @if($actionLabel && ($actionUrl || $actionOnclick))
         @if($actionUrl)
-            <a href="{{ $actionUrl }}" class="btn btn-primary btn-sm empty-state-cta">
+            <a href="{{ $actionUrl }}" class="btn btn-primary btn-sm empty-state-cta" style="background: #c2410c !important; color: #ffffff !important; border: 1px solid #c2410c !important; text-decoration: none !important;">
                 {{ $actionLabel }}
             </a>
         @else
-            <button type="button" onclick="{{ $actionOnclick }}" class="btn btn-primary btn-sm empty-state-cta">
+            <button type="button" onclick="{{ $actionOnclick }}" class="btn btn-primary btn-sm empty-state-cta" style="background: #c2410c !important; color: #ffffff !important; border: 1px solid #c2410c !important;">
                 {{ $actionLabel }}
             </button>
         @endif

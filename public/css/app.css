@@ -2166,11 +2166,11 @@ h1, h2, h3, h4, h5, h6 {
     color: #0f172a !important; /* Slate 900: Contrast 19.4:1 on #ffffff */
 }
 
-/* Links in Light Theme: Orange 700 (#c2410c) ensures >= 4.5:1 (5.2:1 on #ffffff) */
-a {
+/* Inline Links in Light Theme: Orange 700 (#c2410c) ensures >= 4.5:1 (5.2:1 on #ffffff) */
+a:not([class*="btn"]):not([class*="badge"]):not([class*="chip"]):not([class*="tag"]):not([class*="nav"]):not(.dropdown-item) {
     color: #c2410c;
 }
-a:hover {
+a:not([class*="btn"]):not([class*="badge"]):not([class*="chip"]):not([class*="tag"]):not([class*="nav"]):not(.dropdown-item):hover {
     color: #9a3412;
 }
 
@@ -2237,11 +2237,14 @@ html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark 
     color: #f8fafc !important;
     line-height: 1.5 !important;
 }
-html[data-theme="dark"] a, html.dark a {
+/* Text Links in Dark Theme: ONLY for standard inline text links, NEVER for buttons/badges/chips/nav */
+html[data-theme="dark"] a:not([class*="btn"]):not([class*="badge"]):not([class*="chip"]):not([class*="tag"]):not([class*="nav"]):not(.dropdown-item),
+html.dark a:not([class*="btn"]):not([class*="badge"]):not([class*="chip"]):not([class*="tag"]):not([class*="nav"]):not(.dropdown-item) {
     color: #fb923c !important; /* Orange 400: Contrast 8.5:1 on dark */
     line-height: inherit;
 }
-html[data-theme="dark"] a:hover, html.dark a:hover {
+html[data-theme="dark"] a:not([class*="btn"]):not([class*="badge"]):not([class*="chip"]):not([class*="tag"]):not([class*="nav"]):not(.dropdown-item):hover,
+html.dark a:not([class*="btn"]):not([class*="badge"]):not([class*="chip"]):not([class*="tag"]):not([class*="nav"]):not(.dropdown-item):hover {
     color: #fdba74 !important;
 }
 html[data-theme="dark"] .card, html.dark .card {
@@ -2380,18 +2383,106 @@ html.dark textarea::placeholder {
 }
 
 /* ── CTA Button ── */
-.empty-state-cta {
+.empty-state-cta,
+a.empty-state-cta,
+button.empty-state-cta,
+html[data-theme="dark"] .empty-state-cta,
+html[data-theme="dark"] a.empty-state-cta,
+html.dark .empty-state-cta,
+html.dark a.empty-state-cta {
     margin-top: 0.25rem;
     border-radius: 12px !important;
-    font-weight: 600;
-    padding: 0.5rem 1.25rem;
+    font-weight: 700;
+    padding: 0.55rem 1.35rem;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
     line-height: 1.5;
+    background: #c2410c !important; /* Orange 700: Contrast 5.53:1 with white */
+    color: #ffffff !important;      /* Pure white text: Contrast 5.53:1 */
+    border: 1px solid #c2410c !important;
+    text-decoration: none !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
-.empty-state-cta:hover {
+.empty-state-cta:hover,
+a.empty-state-cta:hover,
+button.empty-state-cta:hover,
+html[data-theme="dark"] .empty-state-cta:hover,
+html[data-theme="dark"] a.empty-state-cta:hover,
+html.dark .empty-state-cta:hover,
+html.dark a.empty-state-cta:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);
-    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(194, 65, 12, 0.4);
+    background: #9a3412 !important; /* Orange 800: Contrast 7.5:1 with white */
+    color: #ffffff !important;
+    border-color: #9a3412 !important;
+    text-decoration: none !important;
+}
+
+/* ═══ Universal Button High Contrast System (Light & Dark) ═══ */
+.btn-primary,
+a.btn-primary,
+button.btn-primary,
+input[type="submit"].btn-primary,
+html[data-theme="dark"] .btn-primary,
+html[data-theme="dark"] a.btn-primary,
+html[data-theme="dark"] button.btn-primary,
+html.dark .btn-primary,
+html.dark a.btn-primary,
+html.dark button.btn-primary {
+    background: #c2410c !important; /* Orange 700: Contrast 5.53:1 with pure white */
+    color: #ffffff !important;      /* Pure white text: Contrast 5.53:1 */
+    border: 1px solid #c2410c !important;
+    text-decoration: none !important;
+    line-height: 1.5 !important;
+}
+
+.btn-primary:hover,
+a.btn-primary:hover,
+button.btn-primary:hover,
+input[type="submit"].btn-primary:hover,
+html[data-theme="dark"] .btn-primary:hover,
+html[data-theme="dark"] a.btn-primary:hover,
+html[data-theme="dark"] button.btn-primary:hover,
+html.dark .btn-primary:hover,
+html.dark a.btn-primary:hover,
+html.dark button.btn-primary:hover {
+    background: #9a3412 !important; /* Orange 800: Contrast 7.5:1 with pure white */
+    color: #ffffff !important;
+    border-color: #9a3412 !important;
+    text-decoration: none !important;
+}
+
+.btn-success,
+a.btn-success,
+button.btn-success,
+html[data-theme="dark"] .btn-success,
+html[data-theme="dark"] a.btn-success,
+html[data-theme="dark"] button.btn-success,
+html.dark .btn-success,
+html.dark a.btn-success,
+html.dark button.btn-success {
+    background: #15803d !important;
+    color: #ffffff !important;
+    border: 1px solid #15803d !important;
+    text-decoration: none !important;
+    line-height: 1.5 !important;
+}
+
+.btn-danger,
+a.btn-danger,
+button.btn-danger,
+html[data-theme="dark"] .btn-danger,
+html[data-theme="dark"] a.btn-danger,
+html[data-theme="dark"] button.btn-danger,
+html.dark .btn-danger,
+html.dark a.btn-danger,
+html.dark button.btn-danger {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+    border: 1px solid #dc2626 !important;
+    text-decoration: none !important;
+    line-height: 1.5 !important;
 }
 
 /* ── Size Variants ── */
