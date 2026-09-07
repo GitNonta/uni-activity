@@ -70,7 +70,19 @@
                     <td style="white-space:nowrap;">{{ $log->created_at->format('Y-m-d H:i:s') }}</td>
                 </tr>
             @empty
-                <tr><td colspan="11" style="text-align:center;">No audit logs found.</td></tr>
+                <tr>
+                    <td colspan="11" style="text-align:center;padding:3rem 1rem;">
+                        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;">
+                            <div style="width:48px;height:48px;border-radius:50%;background:#e0e7ff;display:flex;align-items:center;justify-content:center;color:#4f46e5;">
+                                <svg style="width:24px;height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                            </div>
+                            <div style="font-weight:600;font-size:1rem;color:#1e293b;">ไม่พบประวัติการใช้งาน (No audit logs found)</div>
+                            <div style="font-size:0.875rem;color:#64748b;">ลองเปลี่ยนเงื่อนไขการค้นหาหรือกรองข้อมูลใหม่</div>
+                        </div>
+                    </td>
+                </tr>
             @endforelse
             </tbody>
         </table>

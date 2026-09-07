@@ -290,8 +290,14 @@
                             <p class="gform-text-body">{{ $tf->comment }}</p>
                         </div>
                     @empty
-                        <div style="text-align: center; padding: 2rem; color: #a1a1aa; font-style: italic;">
-                            ไม่มีผู้ตอบที่กรอกความคิดเห็นเพิ่มเติม
+                        <div class="empty-state empty-state-sm" style="padding:2.5rem 1.5rem; text-align:center;">
+                            <div class="empty-state-icon" style="margin-bottom:.75rem;">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:36px;height:36px;margin:0 auto;color:#a1a1aa;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                                </svg>
+                            </div>
+                            <div style="font-weight:600;font-size:.95rem;color:#71717a;">ไม่มีผู้ตอบที่กรอกความคิดเห็นเพิ่มเติม</div>
+                            <div style="font-size:.825rem;color:#a1a1aa;margin-top:.25rem;">ผู้ตอบแบบประเมินตอบเฉพาะระดับคะแนนตัวเลข</div>
                         </div>
                     @endforelse
                 </div>

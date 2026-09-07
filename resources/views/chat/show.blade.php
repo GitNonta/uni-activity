@@ -982,11 +982,14 @@
                 </div>
             </div>
         @empty
-            <div id="noMsg" style="margin:auto;text-align:center;color:var(--chat-text-muted);">
-                <div style="margin-bottom:0.75rem;color:#94a3b8;">
-                    <svg style="width:44px;height:44px;margin:0 auto;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+            <div id="noMsg" style="margin:auto;text-align:center;padding:2rem 1.5rem;">
+                <div style="width:48px;height:48px;margin:0 auto .75rem;border-radius:50%;background:rgba(234,88,12,0.1);display:flex;align-items:center;justify-content:center;color:#ea580c;">
+                    <svg style="width:24px;height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                    </svg>
                 </div>
-                <p style="margin:0;font-size:0.9rem;">ยังไม่มีข้อความ เริ่มต้นสนทนากับผู้ดูแลได้เลย</p>
+                <div style="font-weight:600;font-size:.95rem;color:var(--text-color, #1e293b);margin-bottom:.25rem;">ยังไม่มีข้อความ</div>
+                <div style="font-size:.85rem;color:var(--chat-text-muted, #64748b);">เริ่มต้นสนทนากับผู้ดูแลระบบได้เลย</div>
             </div>
         @endforelse
 

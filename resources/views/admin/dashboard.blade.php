@@ -239,12 +239,12 @@
             <svg style="width:16px;height:16px;color:#cbd5e1;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
         @empty
-        <div style="padding:2.5rem 1rem;text-align:center;">
-            <div style="width:48px;height:48px;background:#f8fafc;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto .75rem;">
-                <svg style="width:24px;height:24px;color:#cbd5e1;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        <div class="empty-state empty-state-sm" style="padding:2.5rem 1rem;">
+            <div class="empty-state-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             </div>
-            <p style="font-size:.85rem;font-weight:700;color:#64748b;margin-bottom:4px;">ไม่มีประวัติการดำเนินงานล่าสุด</p>
-            <p style="font-size:.78rem;color:#94a3b8;">ประวัติจะปรากฏที่นี่เมื่อมีการดำเนินการใดๆ ในระบบ</p>
+            <div class="empty-state-title">ไม่มีประวัติการดำเนินงานล่าสุด</div>
+            <div class="empty-state-desc">ประวัติจะปรากฏที่นี่เมื่อมีการดำเนินการใดๆ ในระบบ</div>
         </div>
         @endforelse
     </div>
@@ -295,7 +295,17 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="5" class="text-center text-muted" style="padding:2rem;">ยังไม่มีกิจกรรม</td></tr>
+                <tr>
+                    <td colspan="5">
+                        <div class="empty-state-row">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <div class="empty-state-row-title">ยังไม่มีกิจกรรม</div>
+                            <div class="empty-state-row-desc">กดปุ่ม สร้างใหม่ ด้านบนเพื่อสร้างกิจกรรมแรกของระบบ</div>
+                        </div>
+                    </td>
+                </tr>
                 @endforelse
             </tbody>
         </table>
@@ -366,7 +376,17 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="8" class="text-center text-muted" style="padding:2rem;">ยังไม่มีประกาศงาน</td></tr>
+                <tr>
+                    <td colspan="8">
+                        <div class="empty-state-row">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            <div class="empty-state-row-title">ยังไม่มีประกาศงาน</div>
+                            <div class="empty-state-row-desc">สร้างประกาศงานเพื่อให้นักศึกษาสมัครงานพาร์ทไทม์</div>
+                        </div>
+                    </td>
+                </tr>
                 @endforelse
             </tbody>
         </table>
@@ -436,7 +456,17 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="6" class="text-center text-muted" style="padding:2rem;">ยังไม่มีประกาศ</td></tr>
+                <tr>
+                    <td colspan="6">
+                        <div class="empty-state-row">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3-.204.904-.402 1.92-.402 3 0 1.08.198 2.096.402 3M2 9s1.5 2 2.5 2S7 9 7 9M2 9s1.5-2 2.5-2S7 9 7 9"/>
+                            </svg>
+                            <div class="empty-state-row-title">ยังไม่มีประกาศ</div>
+                            <div class="empty-state-row-desc">สร้างประกาศเพื่อแจ้งข้อมูลสำคัญให้นักศึกษาทราบ</div>
+                        </div>
+                    </td>
+                </tr>
                 @endforelse
             </tbody>
         </table>

@@ -782,9 +782,14 @@
                 </div>
             </div>
         @empty
-            <div id="noMsg" style="margin:auto;text-align:center;color:#94a3b8;font-size:.9rem;">
-                <svg style="width:40px;height:40px;margin:0 auto .5rem;color:#cbd5e1;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
-                ยังไม่มีประวัติการสนทนา เริ่มคุยกับนักศึกษาได้ทันที
+            <div id="noMsg" style="margin:auto;text-align:center;padding:2rem 1.5rem;">
+                <div style="width:48px;height:48px;margin:0 auto .75rem;border-radius:50%;background:rgba(234,88,12,0.1);display:flex;align-items:center;justify-content:center;color:#ea580c;">
+                    <svg style="width:24px;height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                    </svg>
+                </div>
+                <div style="font-weight:600;font-size:.95rem;color:#1e293b;margin-bottom:.25rem;" class="empty-state-title-text">ยังไม่มีประวัติการสนทนา</div>
+                <div style="font-size:.85rem;color:#64748b;">พิมพ์ข้อความด้านล่างเพื่อเริ่มคุยกับนักศึกษาได้ทันที</div>
             </div>
         @endforelse
 

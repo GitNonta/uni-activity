@@ -340,7 +340,15 @@
             @endauth
         </div>
         @empty
-            <p class="text-sm text-muted">ยังไม่มีความคิดเห็น</p>
+            <div class="empty-state empty-state-sm" style="padding:1.5rem;text-align:center;">
+                <div class="empty-state-icon" style="margin-bottom:.75rem;">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                    </svg>
+                </div>
+                <p class="empty-state-title">ยังไม่มีความคิดเห็น</p>
+                <p class="empty-state-desc">เป็นคนแรกที่แสดงความคิดเห็นเกี่ยวกับประกาศงานนี้</p>
+            </div>
         @endforelse
     </div>
 </div>

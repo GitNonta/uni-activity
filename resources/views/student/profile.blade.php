@@ -259,10 +259,14 @@
                 </div>
             </div>
             @empty
-            <div style="text-align: center; padding: 2.5rem 1rem; color: #94a3b8; background: #f8fafc; border-radius: 10px; border: 1px dashed #cbd5e1;">
-                <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 0.75rem auto;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <p style="font-size: 0.9rem;">ยังไม่มีประวัติการเข้าร่วมกิจกรรม</p>
-            </div>
+            <x-empty-state
+                icon="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                title="ยังไม่มีประวัติการเข้าร่วมกิจกรรม"
+                description="เริ่มลงทะเบียนและเข้าร่วมกิจกรรมเพื่อสะสมชั่วโมงกิจกรรม"
+                actionLabel="ดูกิจกรรมทั้งหมด"
+                actionUrl="{{ route('activities.index') }}"
+                size="sm"
+            />
             @endforelse
         </div>
     </div>

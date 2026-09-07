@@ -74,8 +74,6 @@
                 </tr>
                 @empty
                 {{-- ถ้าไม่มีการลงทะเบียน ให้แสดงเฉพาะ walk-in --}}
-                @endphp
-                @endphp
                 @endforelse
                 
                 {{-- ผู้เข้าร่วมผ่าน Walk-in Check-in --}}
@@ -129,12 +127,21 @@
                 </tr>
                 @empty
                     {{-- ถ้าไม่มี walk-in ก็ไม่ต้องแสดงอะไร --}}
-                @endphp
                 @endforelse
                 
                 {{-- ถ้าไม่มีผู้เข้าร่วมทั้งสองแบบ --}}
                 @if($activity->registrations->count() === 0 && $walkInAttendances->count() === 0)
-                <tr><td colspan="5" class="text-center text-muted" style="padding:2rem;">ยังไม่มีผู้เข้าร่วม</td></tr>
+                <tr>
+                    <td colspan="5">
+                        <div class="empty-state-row">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            </svg>
+                            <div class="empty-state-row-title">ยังไม่มีผู้เข้าร่วมกิจกรรม</div>
+                            <div class="empty-state-row-desc">เมื่อมีนักศึกษาลงทะเบียนหรือเช็คอิน จะแสดงรายชื่อที่นี่</div>
+                        </div>
+                    </td>
+                </tr>
                 @endif
             </tbody>
         </table>

@@ -70,10 +70,12 @@
     </div>
 
     @if(empty($backups))
-        <div style="padding:3rem; text-align:center;" class="text-muted">
-            <p style="font-size:0.95rem; margin:0 0 4px;">ยังไม่มีไฟล์สำรองข้อมูล</p>
-            <p style="font-size:0.8rem; margin:0;">คลิก "+ สำรองข้อมูลทันที" หรือรอตารางอัตโนมัติ</p>
-        </div>
+        <x-empty-state
+            icon="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
+            title="ยังไม่มีไฟล์สำรองข้อมูล"
+            description="คลิก + สำรองข้อมูลทันที เพื่อสร้างไฟล์สำรองแรก หรือรอระบบสำรองอัตโนมัติตามกำหนดเวลา"
+            size="md"
+        />
     @else
         <div class="table-wrap">
             <table class="responsive-table">

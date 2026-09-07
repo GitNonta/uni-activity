@@ -206,7 +206,15 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" style="text-align:center;padding:2rem;color:#94a3b8;">ยังไม่มีบันทึกกิจกรรม</td>
+                    <td colspan="7">
+                        <div class="empty-state-row">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <div class="empty-state-row-title">ยังไม่มีบันทึกกิจกรรม</div>
+                            <div class="empty-state-row-desc">นักศึกษายังไม่เคยลงทะเบียนหรือเข้าร่วมกิจกรรมใดๆ</div>
+                        </div>
+                    </td>
                 </tr>
                 @endforelse
             </tbody>

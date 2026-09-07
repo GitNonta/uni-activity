@@ -151,7 +151,17 @@
                         <td class="text-center">{{ $act->getRegisteredCount() }}</td>
                     </tr>
                     @empty
-                    <tr><td colspan="4" class="text-center text-muted" style="padding:1rem;">ไม่มีกิจกรรมเก่า</td></tr>
+                    <tr>
+                        <td colspan="4">
+                            <div class="empty-state-row" style="padding:2rem 1rem;">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <div class="empty-state-row-title">ไม่มีกิจกรรมที่สิ้นสุดแล้ว</div>
+                                <div class="empty-state-row-desc">กิจกรรมที่ผ่านพ้นไปแล้วจะแสดงที่นี่</div>
+                            </div>
+                        </td>
+                    </tr>
                     @endforelse
                 </tbody>
             </table>

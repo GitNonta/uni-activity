@@ -91,9 +91,15 @@
             'isAttended' => in_array($activity->id, $attendedActivityIds ?? []),
         ])
     @empty
-        <div class="empty-state" style="grid-column:1/-1;">
-            <svg class="icon-xl" style="margin:0 auto 1rem;color:#94a3b8;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-            <p>ไม่พบกิจกรรม</p>
+        <div style="grid-column:1/-1;">
+            <x-empty-state
+                icon="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                title="ไม่พบกิจกรรม"
+                description="ลองเปลี่ยนเงื่อนไขการค้นหาหรือเลือกหมวดหมู่อื่น"
+                actionLabel="ดูทุกกิจกรรม"
+                actionUrl="{{ route('activities.index') }}"
+                size="lg"
+            />
         </div>
     @endforelse
 </div>

@@ -116,12 +116,12 @@ html[data-theme="dark"] .inbox-read-text { color: #a1a1aa !important; }
         </div>
     </a>
     @empty
-    <div style="padding:3rem;text-align:center;color:#94a3b8;">
-        <div style="margin-bottom:.5rem;display:flex;justify-content:center;color:#94a3b8;">
-            <svg style="width:48px;height:48px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
-        </div>
-        <p style="margin:0;font-size:.95rem;">ยังไม่มีข้อความจากนักศึกษา</p>
-    </div>
+    <x-empty-state
+        icon="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+        title="ยังไม่มีข้อความจากนักศึกษา"
+        description="เมื่อนักศึกษาส่งข้อความสอบถามเกี่ยวกับงาน จะปรากฏที่นี่"
+        size="md"
+    />
     @endforelse
 </div>
 @endsection
