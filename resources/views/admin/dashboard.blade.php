@@ -527,28 +527,28 @@ html.dark .dashboard-view-all-logs-btn:hover {
 
 {{-- Modal สร้างกิจกรรมด่วน --}}
 <div id="quickModal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
-    <div class="modal">
-        <div class="modal-header">
-            <h2>
-                <svg class="icon-sm" style="display:inline;color:#16a34a;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+    <div class="modal" style="background: var(--surface, #ffffff); color: var(--text-main, #0f172a); border: 1px solid var(--border, #e2e8f0);">
+        <div class="modal-header" style="background: var(--surface, #ffffff); border-bottom: 1px solid var(--border, #e2e8f0);">
+            <h2 style="display:flex; align-items:center; gap:0.5rem; color: var(--text-main, #0f172a);">
+                <svg class="icon-sm" style="display:inline;color:#16a34a;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 บันทึกกิจกรรมด่วน
             </h2>
-            <button class="modal-close" onclick="document.getElementById('quickModal').classList.remove('open')">&times;</button>
+            <button class="modal-close" style="color: var(--text-muted, #64748b);" onclick="document.getElementById('quickModal').classList.remove('open')" aria-label="ปิด">&times;</button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body" style="background: var(--surface, #ffffff); color: var(--text-main, #0f172a);">
             <form method="POST" action="{{ route('admin.activities.quick-store') }}">
                 @csrf
                 <div class="form-group">
-                    <label class="form-label">ชื่อกิจกรรม</label>
+                    <label class="form-label" style="color: var(--text-main, #0f172a);">ชื่อกิจกรรม</label>
                     <input type="text" name="title" class="form-control" placeholder="เช่น ประชุมชมรม, อบรม Excel" required autofocus>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label">สถานที่</label>
+                        <label class="form-label" style="color: var(--text-main, #0f172a);">สถานที่</label>
                         <input type="text" name="location" class="form-control" placeholder="เช่น ห้อง 101" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">หมวดหมู่</label>
+                        <label class="form-label" style="color: var(--text-main, #0f172a);">หมวดหมู่</label>
                         <select name="category_id" class="form-control" required>
                             @foreach($categories as $cat)
                                 <option value="{{ $cat->id }}">{{ $cat->name }}</option>
@@ -558,25 +558,25 @@ html.dark .dashboard-view-all-logs-btn:hover {
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label">วันที่</label>
+                        <label class="form-label" style="color: var(--text-main, #0f172a);">วันที่</label>
                         <input type="date" name="activity_date" class="form-control" value="{{ now()->addDays(3)->format('Y-m-d') }}" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">ชั่วโมง</label>
+                        <label class="form-label" style="color: var(--text-main, #0f172a);">ชั่วโมง</label>
                         <input type="number" name="activity_hours" class="form-control" value="2" step="0.5" min="0.5" required>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label">เวลาเริ่ม</label>
+                        <label class="form-label" style="color: var(--text-main, #0f172a);">เวลาเริ่ม</label>
                         <input type="time" name="start_time" class="form-control" value="09:00" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">เวลาสิ้นสุด</label>
+                        <label class="form-label" style="color: var(--text-main, #0f172a);">เวลาสิ้นสุด</label>
                         <input type="time" name="end_time" class="form-control" value="12:00" required>
                     </div>
                 </div>
-                <p class="text-xs text-muted mb-4">* ค่าเริ่มต้น: รับสมัคร 50 คน, เปิดรับสมัครทันที</p>
+                <p class="text-xs text-muted mb-4" style="color: var(--text-muted, #64748b);">* ค่าเริ่มต้น: รับสมัคร 50 คน, เปิดรับสมัครทันที</p>
                 <div class="flex gap-2" style="justify-content:flex-end;">
                     <button type="button" class="btn btn-outline" onclick="document.getElementById('quickModal').classList.remove('open')">ยกเลิก</button>
                     <button type="submit" class="btn btn-success">

@@ -19,7 +19,7 @@
     {{ $attributes }}
 >
     <div style="min-height:100%;display:flex;align-items:center;justify-content:center;">
-        <div class="modal" style="width:100%;{{ $maxWidthClass }}">
+        <div class="modal" style="width:100%;background:var(--surface, #ffffff);color:var(--text-main, #0f172a);border:1px solid var(--border, #e2e8f0);{{ $maxWidthClass }}">
             {{ $slot }}
         </div>
     </div>

@@ -175,10 +175,10 @@
 
 <!-- Exception Detail Modal -->
 <div id="jobDetailModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(15,23,42,0.6); z-index:9999; align-items:center; justify-content:center; padding:1.5rem;">
-    <div class="modal-content" style="max-width:800px; width:100%; max-height:85vh; display:flex; flex-direction:column; border-radius:12px; overflow:hidden; box-shadow:0 20px 25px -5px rgba(0,0,0,0.3);">
-        <div style="padding:1.25rem; border-bottom:1px solid var(--border-color, #e2e8f0); display:flex; justify-content:space-between; align-items:center;">
+    <div class="modal-content" style="max-width:800px; width:100%; max-height:85vh; display:flex; flex-direction:column; border-radius:12px; overflow:hidden; box-shadow:0 20px 25px -5px rgba(0,0,0,0.3); background:var(--surface, #ffffff); border:1px solid var(--border, #e2e8f0); color:var(--text-main, #0f172a);">
+        <div style="padding:1.25rem; border-bottom:1px solid var(--border, #e2e8f0); display:flex; justify-content:space-between; align-items:center;">
             <h3 id="modalJobTitle" style="font-size:1.1rem; font-weight:700; color:var(--text-main, #0f172a); margin:0; line-height:1.5;">รายละเอียด Exception Stack Trace</h3>
-            <button onclick="closeJobModal()" style="background:none; border:none; font-size:1.25rem; color:#475569; cursor:pointer;">&times;</button>
+            <button onclick="closeJobModal()" style="background:none; border:none; font-size:1.25rem; color:var(--text-muted, #475569); cursor:pointer;">&times;</button>
         </div>
         <div style="padding:1.25rem; overflow-y:auto; flex:1;">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem; font-size:0.85rem; line-height:1.5;">

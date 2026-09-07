@@ -15,6 +15,27 @@
 }
 
 /* ── รีเซ็ตและสไตล์พื้นฐาน: box-sizing, ฟอนต์, สีพื้นหลัง ── */
+:root {
+    --bg-main: #f1f5f9;
+    --surface: #ffffff;
+    --surface-card: #ffffff;
+    --surface-hover: #f8fafc;
+    --border: #e2e8f0;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+}
+
+html[data-theme="dark"],
+html.dark {
+    --bg-main: #121214;
+    --surface: #18181b;
+    --surface-card: #18181b;
+    --surface-hover: #27272a;
+    --border: #27272a;
+    --text-main: #f4f4f5;
+    --text-muted: #a1a1aa;
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 ::selection { background: #ea580c; color: #ffffff; }
 ::-moz-selection { background: #ea580c; color: #ffffff; }
@@ -603,14 +624,65 @@ nav[role="navigation"] span[aria-current="page"] span { background: #ea580c; col
 /* ── หน้าต่าง Modal: overlay + กล่อง + header + body ──────
 * หน้าต่าง Modal ที่มี overlay, กล่อง, header และ body
 */
-.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(2px); }
 .modal-overlay.open { display: flex; }
-.modal { background: #fff; border-radius: 12px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
-.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid #e2e8f0; }
-.modal-header h2 { font-size: 1.1rem; font-weight: 700; line-height: 1.5; }
-.modal-close { background: none; border: none; cursor: pointer; padding: .25rem; color: #475569; font-size: 1.25rem; line-height: 1.5; }
-.modal-close:hover { color: #1e293b; }
-.modal-body { padding: 1.25rem; }
+.modal { 
+    background: var(--surface, #ffffff); 
+    color: var(--text-main, #0f172a); 
+    border: 1px solid var(--border, #e2e8f0); 
+    border-radius: 12px; 
+    width: 100%; 
+    max-width: 520px; 
+    max-height: 90vh; 
+    overflow-y: auto; 
+    box-shadow: 0 20px 60px rgba(0,0,0,.3); 
+}
+.modal-header { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    padding: 1rem 1.25rem; 
+    border-bottom: 1px solid var(--border, #e2e8f0); 
+    background: var(--surface, #ffffff);
+    color: var(--text-main, #0f172a);
+}
+.modal-header h2, .modal-header h3 { 
+    font-size: 1.1rem; 
+    font-weight: 700; 
+    line-height: 1.5; 
+    color: var(--text-main, #0f172a);
+}
+.modal-close { 
+    background: none; 
+    border: none; 
+    cursor: pointer; 
+    padding: .25rem; 
+    color: var(--text-muted, #475569); 
+    font-size: 1.25rem; 
+    line-height: 1.5; 
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: background .15s, color .15s;
+}
+.modal-close:hover { 
+    color: var(--text-main, #1e293b); 
+    background: var(--surface-hover, rgba(0,0,0,0.05));
+}
+.modal-body { 
+    padding: 1.25rem; 
+    background: var(--surface, #ffffff);
+    color: var(--text-main, #0f172a);
+}
+.modal-footer {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--border, #e2e8f0);
+    background: var(--surface, #ffffff);
+    display: flex;
+    justify-content: flex-end;
+    gap: .5rem;
+}
 
 /* ── สวิตช์ Toggle: ใช้สำหรับเปิด/ปิด เช็คอินก่อนเวลา ──────
 * สวิตช์ Toggle ที่ใช้สำหรับเปิด/ปิด เช็คอินก่อนเวลา
@@ -1037,59 +1109,88 @@ html[data-theme="dark"] .modal-content,
 html[data-theme="dark"] .modal-dialog,
 html.dark .modal,
 html.dark .modal-content,
-html.dark .modal-dialog {
+html.dark .modal-dialog,
+[data-theme="dark"] .modal,
+.dark .modal {
     background: #18181b !important;
+    background-color: #18181b !important;
     border: 1px solid #27272a !important;
     color: #f4f4f5 !important;
     box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6) !important;
 }
 html[data-theme="dark"] .modal-header,
-html.dark .modal-header {
+html.dark .modal-header,
+[data-theme="dark"] .modal-header,
+.dark .modal-header {
     background: #18181b !important;
+    background-color: #18181b !important;
     border-bottom: 1px solid #27272a !important;
     color: #f8fafc !important;
 }
 html[data-theme="dark"] .modal-header h2,
 html[data-theme="dark"] .modal-header h3,
 html.dark .modal-header h2,
-html.dark .modal-header h3 {
+html.dark .modal-header h3,
+[data-theme="dark"] .modal-header h2,
+.dark .modal-header h2 {
     color: #f8fafc !important;
 }
 html[data-theme="dark"] .modal-close,
-html.dark .modal-close {
+html.dark .modal-close,
+[data-theme="dark"] .modal-close,
+.dark .modal-close {
     color: #a1a1aa !important;
 }
 html[data-theme="dark"] .modal-close:hover,
-html.dark .modal-close:hover {
+html.dark .modal-close:hover,
+[data-theme="dark"] .modal-close:hover,
+.dark .modal-close:hover {
     color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.08) !important;
 }
 html[data-theme="dark"] .modal-body,
-html.dark .modal-body {
+html.dark .modal-body,
+[data-theme="dark"] .modal-body,
+.dark .modal-body {
     background: #18181b !important;
+    background-color: #18181b !important;
     color: #f4f4f5 !important;
 }
 html[data-theme="dark"] .modal-body .form-label,
-html.dark .modal-body .form-label {
+html.dark .modal-body .form-label,
+[data-theme="dark"] .modal-body .form-label,
+.dark .modal-body .form-label {
     color: #e4e4e7 !important;
     font-weight: 600;
 }
 html[data-theme="dark"] .modal-body .text-muted,
-html.dark .modal-body .text-muted {
+html.dark .modal-body .text-muted,
+[data-theme="dark"] .modal-body .text-muted,
+.dark .modal-body .text-muted {
     color: #cbd5e1 !important;
 }
 html[data-theme="dark"] .modal-footer,
-html.dark .modal-footer {
+html.dark .modal-footer,
+[data-theme="dark"] .modal-footer,
+.dark .modal-footer {
     background: #141416 !important;
+    background-color: #141416 !important;
     border-top: 1px solid #27272a !important;
 }
-html[data-theme="dark"] .btn-outline { 
-    border-color: #27272a !important; 
+html[data-theme="dark"] .btn-outline,
+html.dark .btn-outline,
+[data-theme="dark"] .btn-outline,
+.dark .btn-outline { 
+    border-color: #3f3f46 !important; 
     color: #e4e4e7 !important; 
-    background: rgba(255, 255, 255, 0.03) !important; 
+    background: rgba(255, 255, 255, 0.04) !important; 
 }
-html[data-theme="dark"] .btn-outline:hover { 
-    background: rgba(255, 255, 255, 0.08) !important; 
-    border-color: #3f3f46 !important;
+html[data-theme="dark"] .btn-outline:hover,
+html.dark .btn-outline:hover,
+[data-theme="dark"] .btn-outline:hover,
+.dark .btn-outline:hover { 
+    background: rgba(255, 255, 255, 0.1) !important; 
+    border-color: #52525b !important;
     color: #fff !important; 
 }
 html[data-theme="dark"] .badge-gray { 
