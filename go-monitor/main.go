@@ -188,6 +188,59 @@ var (
 	logSeqMu sync.Mutex
 )
 
+var countryNames = map[string]string{
+	"TH": "Thailand",
+	"US": "United States",
+	"SG": "Singapore",
+	"JP": "Japan",
+	"GB": "United Kingdom",
+	"DE": "Germany",
+	"FR": "France",
+	"AU": "Australia",
+	"NL": "Netherlands",
+	"HK": "Hong Kong",
+	"TW": "Taiwan",
+	"KR": "South Korea",
+	"CN": "China",
+	"VN": "Vietnam",
+	"MY": "Malaysia",
+	"ID": "Indonesia",
+	"PH": "Philippines",
+	"IN": "India",
+	"CA": "Canada",
+	"RU": "Russia",
+	"BR": "Brazil",
+	"SE": "Sweden",
+	"FI": "Finland",
+	"NO": "Norway",
+	"CH": "Switzerland",
+	"IE": "Ireland",
+}
+
+func resolveOrigin(ipStr string, countryCode string) (string, string, string) {
+	ip := net.ParseIP(ipStr)
+	if ip == nil || ip.IsLoopback() || ipStr == "127.0.0.1" || ipStr == "::1" || ipStr == "localhost" {
+		return "Localhost", "loopback", "Server Internal (Loopback)"
+	}
+
+	// Check Private / LAN ranges
+	if ip.IsPrivate() || strings.HasPrefix(ipStr, "192.168.") || strings.HasPrefix(ipStr, "10.") || strings.HasPrefix(ipStr, "172.16.") || strings.HasPrefix(ipStr, "172.17.") || strings.HasPrefix(ipStr, "172.18.") || strings.HasPrefix(ipStr, "172.19.") || strings.HasPrefix(ipStr, "172.2") || strings.HasPrefix(ipStr, "172.3") || strings.HasPrefix(ipStr, "100.64.") {
+		return "Local Network (LAN)", "lan", "Local Area Network / Wi-Fi"
+	}
+
+	// Public IP
+	cCode := strings.ToUpper(strings.TrimSpace(countryCode))
+	if cCode != "" {
+		cName, ok := countryNames[cCode]
+		if !ok {
+			cName = cCode
+		}
+		return cName, "wan", fmt.Sprintf("%s (%s)", cName, cCode)
+	}
+
+	return "Public Internet", "wan", "External Internet"
+}
+
 func enrichInspectorItem(item map[string]interface{}) {
 	logSeqMu.Lock()
 	logSeq++
@@ -211,9 +264,6 @@ func enrichInspectorItem(item map[string]interface{}) {
 	}
 	if _, ok := item["duration"]; !ok {
 		item["duration"] = 0
-	}
-	if _, ok := item["ip"]; !ok {
-		item["ip"] = "127.0.0.1"
 	}
 
 	// Ensure request structure
@@ -259,6 +309,55 @@ func enrichInspectorItem(item map[string]interface{}) {
 		}
 	}
 	item["request"] = req
+
+	// Resolve Real IP, Country & Origin
+	ipStr, _ := item["ip"].(string)
+	countryCode, _ := item["country"].(string)
+	rayID, _ := item["ray"].(string)
+
+	headers, _ := req["headers"].(map[string]interface{})
+	if headers != nil {
+		for k, v := range headers {
+			if strings.EqualFold(k, "cf-ipcountry") && countryCode == "" {
+				countryCode = fmt.Sprintf("%v", v)
+			}
+			if strings.EqualFold(k, "cf-ray") && rayID == "" {
+				rayID = fmt.Sprintf("%v", v)
+			}
+			if strings.EqualFold(k, "cf-connecting-ip") || strings.EqualFold(k, "x-real-ip") {
+				val := strings.TrimSpace(fmt.Sprintf("%v", v))
+				if val != "" && (ipStr == "" || ipStr == "127.0.0.1") {
+					ipStr = val
+				}
+			}
+		}
+	}
+
+	if ipStr == "" {
+		ipStr = "127.0.0.1"
+	}
+	item["ip"] = ipStr
+	if countryCode != "" {
+		item["country"] = strings.ToUpper(countryCode)
+	}
+
+	origin, originType, location := resolveOrigin(ipStr, countryCode)
+	item["origin"] = origin
+	item["origin_type"] = originType
+	item["location"] = location
+
+	gateway := "Direct HTTP"
+	if rayID != "" || (headers != nil && headers["cf-connecting-ip"] != nil) {
+		gateway = "Cloudflare Tunnel"
+		if rayID != "" {
+			item["ray"] = rayID
+		}
+	} else if originType == "loopback" {
+		gateway = "Internal Loopback"
+	} else if originType == "lan" {
+		gateway = "Local Subnet / LAN"
+	}
+	item["gateway"] = gateway
 
 	// Ensure response structure
 	res, ok := item["response"].(map[string]interface{})

@@ -136,6 +136,21 @@ export function InspectorInner({ logs }) {
     );
   }
 
+  const getOriginInfo = (log) => {
+    if (!log) return { ip: '127.0.0.1', origin: 'Localhost', type: 'loopback', location: 'Server Internal (Loopback)', gateway: 'Internal Loopback' };
+    const ip = log.ip || '127.0.0.1';
+    let type = log.origin_type;
+    if (!type) {
+      if (ip === '127.0.0.1' || ip === '::1' || ip === 'localhost') type = 'loopback';
+      else if (ip.startsWith('192.168.') || ip.startsWith('10.') || ip.startsWith('172.')) type = 'lan';
+      else type = 'wan';
+    }
+    const origin = log.origin || (type === 'loopback' ? 'Localhost' : type === 'lan' ? 'Local Network (LAN)' : 'Public Internet');
+    const location = log.location || (type === 'loopback' ? 'Server Internal (Loopback)' : type === 'lan' ? 'Local Area Network / Wi-Fi' : `${origin} (Public Internet)`);
+    const gateway = log.gateway || (log.ray ? 'Cloudflare Tunnel' : type === 'loopback' ? 'Internal Loopback' : 'Direct HTTP');
+    return { ip, origin, type, location, gateway };
+  };
+
   const getQueryParams = (log) => {
     if (log?.request?.query && typeof log.request.query === 'object' && Object.keys(log.request.query).length > 0) {
       return log.request.query;
@@ -233,11 +248,38 @@ export function InspectorInner({ logs }) {
                     transition: 'background 0.1s ease'
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', paddingRight: '0.5rem', flex: 1 }}>
-                    <span style={getMethodBadgeStyle(log.method)}>{log.method}</span>
-                    <span style={{ fontWeight: 600, fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={log.path || log.url}>
-                      {log.path || log.url || '/'}
-                    </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingRight: '0.5rem', flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                      <span style={getMethodBadgeStyle(log.method)}>{log.method}</span>
+                      <span style={{ fontWeight: 600, fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={log.path || log.url}>
+                        {log.path || log.url || '/'}
+                      </span>
+                    </div>
+                    {/* Origin & IP Sub-row */}
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '0.35rem', 
+                      marginTop: '0.2rem', 
+                      fontSize: '0.7rem',
+                      color: isSelected ? '#94a3b8' : '#64748b' 
+                    }}>
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                      </svg>
+                      <span style={{ fontFamily: 'monospace' }}>{log.ip || '127.0.0.1'}</span>
+                      <span>•</span>
+                      <span style={{ 
+                        fontWeight: 600, 
+                        color: (log.origin_type === 'wan' || (!log.origin_type && log.ip && !log.ip.startsWith('127.') && !log.ip.startsWith('192.168.'))) 
+                          ? (isSelected ? '#93c5fd' : '#2563eb') 
+                          : (isSelected ? '#cbd5e1' : '#475569') 
+                      }}>
+                        {log.origin || (log.ip === '127.0.0.1' ? 'Localhost' : 'LAN')}
+                      </span>
+                    </div>
                   </div>
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
                     <div style={{ fontSize: '0.8rem', color: isSelected ? '#34d399' : getStatusColor(log), fontWeight: 700 }}>
@@ -267,9 +309,31 @@ export function InspectorInner({ logs }) {
                   </svg>
                   <span>{new Date(selectedLog.time || Date.now()).toLocaleString()}</span>
                 </div>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center' }}>
                   <span>Duration: <strong>{Number(selectedLog.duration || 0).toFixed(2)} ms</strong></span>
-                  <span>Client IP: <strong>{selectedLog.ip || '127.0.0.1'}</strong></span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <span>Client IP:</span>
+                    <strong style={{ fontFamily: 'monospace', color: '#0f172a' }}>{selectedLog.ip || '127.0.0.1'}</strong>
+                    <span style={{
+                      fontSize: '0.7rem',
+                      fontWeight: 600,
+                      padding: '0.12rem 0.45rem',
+                      borderRadius: '0.25rem',
+                      background: selectedLog.origin_type === 'wan' ? '#eff6ff' : selectedLog.origin_type === 'lan' ? '#ecfdf5' : '#f1f5f9',
+                      color: selectedLog.origin_type === 'wan' ? '#1d4ed8' : selectedLog.origin_type === 'lan' ? '#047857' : '#475569',
+                      border: selectedLog.origin_type === 'wan' ? '1px solid #bfdbfe' : selectedLog.origin_type === 'lan' ? '1px solid #a7f3d0' : '1px solid #e2e8f0',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.25rem'
+                    }}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                      </svg>
+                      {selectedLog.origin || (selectedLog.ip === '127.0.0.1' ? 'Localhost' : 'LAN')}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -373,8 +437,9 @@ export function InspectorInner({ logs }) {
 
                     <div style={{ background: '#fff', padding: '1rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
                       <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Client Source</div>
-                      <div style={{ fontSize: '0.9rem', color: '#0f172a', fontWeight: 600, marginTop: '0.25rem', fontFamily: 'monospace' }}>
-                        {selectedLog.ip || '127.0.0.1'}
+                      <div style={{ fontSize: '0.9rem', color: '#0f172a', fontWeight: 600, marginTop: '0.25rem', fontFamily: 'monospace', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <span>{selectedLog.ip || '127.0.0.1'}</span>
+                        <span style={{ fontSize: '0.75rem', color: '#2563eb', fontWeight: 500 }}>({selectedLog.origin || (selectedLog.ip === '127.0.0.1' ? 'Localhost' : 'LAN')})</span>
                       </div>
                     </div>
 
@@ -383,6 +448,94 @@ export function InspectorInner({ logs }) {
                       <div style={{ fontSize: '0.85rem', color: '#0f172a', fontWeight: 600, marginTop: '0.25rem' }}>
                         {new Date(selectedLog.time || Date.now()).toLocaleTimeString()}
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Client Source & Origin Details Card */}
+                  <div style={{ background: '#fff', borderRadius: '0.5rem', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+                    <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, fontSize: '0.85rem', color: '#0f172a' }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <line x1="2" y1="12" x2="22" y2="12"></line>
+                          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                        </svg>
+                        <span>Client Source & Origin Information</span>
+                      </div>
+                      <span style={{ 
+                        fontSize: '0.72rem', 
+                        fontWeight: 600, 
+                        padding: '0.15rem 0.5rem', 
+                        borderRadius: '1rem',
+                        background: selectedLog.origin_type === 'wan' ? '#dbeafe' : selectedLog.origin_type === 'lan' ? '#d1fae5' : '#f1f5f9',
+                        color: selectedLog.origin_type === 'wan' ? '#1e40af' : selectedLog.origin_type === 'lan' ? '#065f46' : '#475569'
+                      }}>
+                        {selectedLog.origin_type === 'wan' ? 'External WAN' : selectedLog.origin_type === 'lan' ? 'Private LAN' : 'Localhost Loopback'}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1px', background: '#e2e8f0' }}>
+                      
+                      {/* 1. IP Address */}
+                      <div style={{ background: '#fff', padding: '0.85rem 1rem' }}>
+                        <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>Client IP Address</div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.95rem', color: '#0f172a' }}>
+                            {selectedLog.ip || '127.0.0.1'}
+                          </span>
+                          <button
+                            onClick={() => copyToClipboard(selectedLog.ip || '127.0.0.1')}
+                            style={{ border: '1px solid #e2e8f0', background: '#f8fafc', padding: '0.15rem 0.4rem', borderRadius: '0.25rem', fontSize: '0.7rem', cursor: 'pointer', color: '#475569' }}
+                          >
+                            Copy IP
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* 2. Geolocation / Origin */}
+                      <div style={{ background: '#fff', padding: '0.85rem 1rem' }}>
+                        <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>Origin / Location</div>
+                        <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#2563eb', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                          </svg>
+                          <span>{selectedLog.location || selectedLog.origin || (selectedLog.ip === '127.0.0.1' ? 'Server Internal (Loopback)' : 'Local Network')}</span>
+                        </div>
+                        {selectedLog.country && (
+                          <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.15rem' }}>
+                            Country Code: <strong>{selectedLog.country}</strong>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 3. Gateway & Protocol */}
+                      <div style={{ background: '#fff', padding: '0.85rem 1rem' }}>
+                        <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>Connection Gateway</div>
+                        <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                            <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                            <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                          </svg>
+                          <span>{selectedLog.gateway || (selectedLog.ray ? 'Cloudflare Tunnel' : selectedLog.ip === '127.0.0.1' ? 'Internal Loopback' : 'Direct HTTP')}</span>
+                        </div>
+                        {selectedLog.ray && (
+                          <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.15rem', fontFamily: 'monospace' }}>
+                            CF-Ray: {selectedLog.ray}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 4. Client Agent */}
+                      <div style={{ background: '#fff', padding: '0.85rem 1rem' }}>
+                        <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>Client Agent / Browser</div>
+                        <div style={{ fontSize: '0.75rem', color: '#334155', fontFamily: 'monospace', wordBreak: 'break-all', lineHeight: '1.3' }}>
+                          {selectedLog.request?.headers?.['user-agent'] || selectedLog.request?.headers?.['User-Agent'] || 'Standard HTTP Client'}
+                        </div>
+                      </div>
+
                     </div>
                   </div>
 

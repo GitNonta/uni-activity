@@ -70,7 +70,8 @@ class RequestInspectorMiddleware
             $headers = [];
             $allowedHeaders = [
                 'host', 'user-agent', 'accept', 'content-type', 'referer',
-                'x-requested-with', 'x-forwarded-for', 'x-forwarded-proto',
+                'x-requested-with', 'x-forwarded-for', 'x-forwarded-proto', 'x-real-ip',
+                'cf-connecting-ip', 'cf-ipcountry', 'cf-ray', 'cf-visitor',
                 'accept-language', 'accept-encoding'
             ];
             foreach ($request->headers->all() as $k => $v) {
@@ -81,6 +82,17 @@ class RequestInspectorMiddleware
             if ($request->hasHeader('Authorization')) {
                 $headers['Authorization'] = 'Bearer [PROTECTED]';
             }
+
+            // Real Client IP resolution (prioritize Cloudflare & Reverse Proxy headers)
+            $clientIp = (string) (
+                $request->header('cf-connecting-ip')
+                ?: $request->header('x-real-ip')
+                ?: ($request->header('x-forwarded-for') ? trim(explode(',', (string) $request->header('x-forwarded-for'))[0]) : null)
+                ?: $request->ip()
+                ?: '127.0.0.1'
+            );
+            $cfCountry = strtoupper((string) $request->header('cf-ipcountry', ''));
+            $cfRay = (string) $request->header('cf-ray', '');
 
             // Response metadata
             $responseHeaders = [
@@ -99,7 +111,9 @@ class RequestInspectorMiddleware
                 'method' => $request->method(),
                 'url' => $request->fullUrl(),
                 'path' => $request->path(),
-                'ip' => (string) $request->ip(),
+                'ip' => $clientIp,
+                'country' => $cfCountry,
+                'ray' => $cfRay,
                 'duration' => $duration,
                 'status' => $response->getStatusCode(),
                 'time' => now()->toIso8601String(),
