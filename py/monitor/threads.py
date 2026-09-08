@@ -239,7 +239,7 @@ def ws_encode(message: str) -> bytes:
 
 # ------- Stats Collector Thread -------
 def stats_collector_thread():
-    """Collect stats in background every 5 s (shared cache for all WS clients)."""
+    """Collect stats in background every 10 s (shared cache for all WS clients)."""
     while True:
         try:
             data = collect_stats()
@@ -248,18 +248,18 @@ def stats_collector_thread():
             tg_daily_report(data)
         except Exception:
             pass
-        time.sleep(5)
+        time.sleep(10)
 
 
 def ws_client_thread(conn):
-    """Push cached stats to one WS client every 5 s — zero extra subprocess calls."""
+    """Push cached stats to one WS client every 10 s — zero extra subprocess calls."""
     try:
         while True:
             with cfg._stats_lock:
                 snapshot = cfg._stats_cache.copy() if cfg._stats_cache else {}
             if snapshot:
                 conn.sendall(ws_encode(json.dumps(snapshot)))
-            time.sleep(5)
+            time.sleep(10)
     except Exception:
         pass
     finally:

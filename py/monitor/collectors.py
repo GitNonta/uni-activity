@@ -458,8 +458,13 @@ def get_github_sync_logs_dict():
             
     return logs
 
+_github_events_cache = {'t': 0, 'data': []}
+
 def get_github_events():
-    """Fetch real-time commit & local deployment events."""
+    """Fetch real-time commit & local deployment events (cached 60s)."""
+    now = time.time()
+    if now - _github_events_cache['t'] < 60:
+        return _github_events_cache['data']
     events = []
     try:
         import subprocess, datetime, os
@@ -529,6 +534,8 @@ def get_github_events():
             "timestamp": ""
         })
 
+    _github_events_cache['data'] = events
+    _github_events_cache['t'] = now
     return events
 
 def get_ai_logs():
@@ -589,22 +596,29 @@ def get_scp_active():
 
 
 
+_battery_cache = {'t': 0, 'data': None}
+
 def get_battery():
+    now = time.time()
+    if now - _battery_cache['t'] < 60:
+        return _battery_cache['data']
     try:
         import subprocess, json
         res = subprocess.run(["termux-battery-status"], capture_output=True, text=True, timeout=1)
         if res.returncode == 0:
             data = json.loads(res.stdout)
-            return {
+            _battery_cache['data'] = {
                 "percent": data.get("percentage", 0),
                 "status": data.get("status", "UNKNOWN"),
                 "current_ua": data.get("current", 0),
                 "voltage_mv": data.get("voltage", 0),
                 "charge_counter_uah": data.get("charge_counter", 0)
             }
+            _battery_cache['t'] = now
+            return _battery_cache['data']
     except Exception:
         pass
-    return None
+    return _battery_cache['data']
 
 _services_cache: dict = {}
 _services_cache_time: float = 0.0
@@ -1158,11 +1172,24 @@ def _run_cmd(cmd, timeout=5):
         return ""
 
 
+_workers_health_cache = {'t': 0, 'data': []}
+
+def _check_worker_http(host, port, timeout=0.8):
+    try:
+        import urllib.request, urllib.error
+        req = urllib.request.Request(f"http://{host}:{port}/health", headers={"User-Agent": "Monitor/1.0"})
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return str(resp.status)
+    except urllib.error.HTTPError as e:
+        return str(e.code)
+    except Exception:
+        return "000"
+
 def get_proxy_status():
     """Collect status of all proxy services: Squid HTTP, SOCKS5 (Python), Nginx LB."""
     now = time.time()
-    # Cache for 10 seconds
-    if hasattr(cfg, '_proxy_cache') and now - cfg._proxy_cache.get('t', 0) < 10:
+    # Cache for 20 seconds
+    if hasattr(cfg, '_proxy_cache') and now - cfg._proxy_cache.get('t', 0) < 20:
         return cfg._proxy_cache.get('data', {})
 
     result = {
@@ -1224,14 +1251,19 @@ def get_proxy_status():
     except:
         result['nginx_lb']['down_markers'] = 0
 
-    # Worker health (all 7 workers)
-    workers = []
-    for port in [8000, 8002, 8003]:
-        wstatus = _run_cmd(f"curl -s -o /dev/null -w '%{{http_code}}' http://127.0.0.1:{port}/health --connect-timeout 2 2>/dev/null")
-        workers.append({'host': '127.0.0.1', 'port': port, 'phone': 'P1', 'status': wstatus})
-    for port in [8000, 8002, 8003, 8004]:
-        wstatus = _run_cmd(f"curl -s -o /dev/null -w '%{{http_code}}' http://192.168.1.140:{port}/health --connect-timeout 2 2>/dev/null")
-        workers.append({'host': '192.168.1.140', 'port': port, 'phone': 'P2', 'status': wstatus})
+    # Worker health (all 7 workers, cached 30s, in-process HTTP check)
+    if now - _workers_health_cache['t'] < 30 and _workers_health_cache['data']:
+        workers = _workers_health_cache['data']
+    else:
+        workers = []
+        for port in [8000, 8002, 8003]:
+            wstatus = _check_worker_http("127.0.0.1", port)
+            workers.append({'host': '127.0.0.1', 'port': port, 'phone': 'P1', 'status': wstatus})
+        for port in [8000, 8002, 8003, 8004]:
+            wstatus = _check_worker_http("192.168.1.140", port)
+            workers.append({'host': '192.168.1.140', 'port': port, 'phone': 'P2', 'status': wstatus})
+        _workers_health_cache['data'] = workers
+        _workers_health_cache['t'] = now
     result['workers'] = workers
 
     # Squid allowed sites count
