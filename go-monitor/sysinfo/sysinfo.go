@@ -2,6 +2,7 @@ package sysinfo
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
@@ -208,19 +209,39 @@ func GetTemp() string {
 
 // BatteryStats matches React frontend battery struct
 type BatteryStats struct {
-	Percent         int    `json:"percent"`
-	Status          string `json:"status"`
-	CurrentUA       int    `json:"current_ua"`
-	VoltageMV       int    `json:"voltage_mv"`
+	Percent          int    `json:"percent"`
+	Status           string `json:"status"`
+	CurrentUA        int    `json:"current_ua"`
+	VoltageMV        int    `json:"voltage_mv"`
 	ChargeCounterUAH int    `json:"charge_counter_uah"`
 }
 
-func GetBattery() BatteryStats {
-	batDir := "/sys/class/power_supply/battery"
-	if _, err := os.Stat(batDir); err != nil {
-		return BatteryStats{Percent: 100, Status: "Full"}
-	}
+var (
+	batMu       sync.RWMutex
+	cachedBat   BatteryStats
+	lastBatPoll time.Time
+)
 
+type termuxBatteryJSON struct {
+	Percentage    int    `json:"percentage"`
+	Status        string `json:"status"`
+	Plugged       string `json:"plugged"`
+	Voltage       int    `json:"voltage"`
+	Current       int    `json:"current"`
+	ChargeCounter int    `json:"charge_counter"`
+}
+
+func GetBattery() BatteryStats {
+	batMu.RLock()
+	if time.Since(lastBatPoll) < 4*time.Second && cachedBat.Percent > 0 {
+		b := cachedBat
+		batMu.RUnlock()
+		return b
+	}
+	batMu.RUnlock()
+
+	// 1. Try sysfs power supply
+	batDir := "/sys/class/power_supply/battery"
 	readInt := func(name string) int {
 		data, err := os.ReadFile(filepath.Join(batDir, name))
 		if err != nil {
@@ -238,18 +259,59 @@ func GetBattery() BatteryStats {
 	}
 
 	capVal := readInt("capacity")
-	status := readStr("status")
-	cur := readInt("current_now")
-	volt := readInt("voltage_now")
-	charge := readInt("charge_counter")
+	if capVal > 0 {
+		status := readStr("status")
+		cur := readInt("current_now")
+		volt := readInt("voltage_now")
+		charge := readInt("charge_counter")
 
-	return BatteryStats{
-		Percent:          capVal,
-		Status:           status,
-		CurrentUA:        cur,
-		VoltageMV:        volt / 1000,
-		ChargeCounterUAH: charge,
+		res := BatteryStats{
+			Percent:          capVal,
+			Status:           status,
+			CurrentUA:        cur,
+			VoltageMV:        volt / 1000,
+			ChargeCounterUAH: charge,
+		}
+		batMu.Lock()
+		cachedBat = res
+		lastBatPoll = time.Now()
+		batMu.Unlock()
+		return res
 	}
+
+	// 2. Fallback to termux-battery-status (Android OS BatteryManager API)
+	if out, err := exec.Command("termux-battery-status").Output(); err == nil && len(out) > 0 {
+		var tb termuxBatteryJSON
+		if err := json.Unmarshal(out, &tb); err == nil && tb.Percentage >= 0 {
+			st := tb.Status
+			if st == "" || st == "UNKNOWN" {
+				if tb.Plugged != "" && tb.Plugged != "UNPLUGGED" {
+					st = "CHARGING"
+				} else {
+					st = "DISCHARGING"
+				}
+			}
+			chg := tb.ChargeCounter
+			if chg == 0 && tb.Percentage > 0 {
+				chg = (tb.Percentage * 4000 * 1000) / 100
+			}
+			res := BatteryStats{
+				Percent:          tb.Percentage,
+				Status:           st,
+				CurrentUA:        tb.Current,
+				VoltageMV:        tb.Voltage,
+				ChargeCounterUAH: chg,
+			}
+			batMu.Lock()
+			cachedBat = res
+			lastBatPoll = time.Now()
+			batMu.Unlock()
+			return res
+		}
+	}
+
+	// 3. Fallback default
+	return BatteryStats{Percent: 100, Status: "FULL", VoltageMV: 4200, ChargeCounterUAH: 4000000}
 }
 
 // NetworkStats matches React frontend network struct
