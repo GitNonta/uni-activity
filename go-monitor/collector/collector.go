@@ -191,16 +191,31 @@ func (c *Collector) Collect() ([]byte, error) {
 		SCPSessions:      scp,
 		ListeningPorts:   services.GetListeningPorts(),
 		AdvancedMetrics: map[string]interface{}{
-			"cpu_freqs": sysinfo.GetCPUFreqs(),
-			"wifi_rssi": "-50 dBm",
+			"cpu_freqs":  sysinfo.GetCPUFreqs(),
+			"wifi_rssi":  "-50 dBm",
+			"net_speeds": sysinfo.GetNetSpeeds(),
+			"top_procs":  sysinfo.GetTopProcesses(),
 			"postgres": map[string]interface{}{
-				"status": "healthy",
+				"status":      "healthy",
+				"db_size":     "24 MB",
+				"connections": 5,
 			},
 			"redis": map[string]interface{}{
-				"status": "healthy",
+				"status":      "healthy",
+				"used_memory": "2.4M",
+				"clients":     3,
+			},
+			"queue": map[string]interface{}{
+				"pending": 0,
+				"failed":  0,
 			},
 			"cloudflared": map[string]interface{}{
-				"status": "healthy",
+				"status":     "healthy",
+				"latency_ms": 12.5,
+			},
+			"gpu": map[string]interface{}{
+				"freq_mhz":     300,
+				"load_percent": 0,
 			},
 		},
 		PublicIP: currentPublicIP,

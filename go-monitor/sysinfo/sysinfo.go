@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -346,4 +347,102 @@ func mathRound(val float64, precision int) float64 {
 		p *= 10.0
 	}
 	return float64(int(val*p+0.5)) / p
+}
+
+type TopProc struct {
+	PID  string  `json:"pid"`
+	Name string  `json:"name"`
+	CPU  float64 `json:"cpu"`
+	Mem  float64 `json:"mem"`
+}
+
+var (
+	topProcsCache []TopProc
+	topProcsTime  time.Time
+	topProcsMu    sync.Mutex
+)
+
+// GetTopProcesses returns top resource-consuming processes
+func GetTopProcesses() []TopProc {
+	topProcsMu.Lock()
+	defer topProcsMu.Unlock()
+
+	if time.Since(topProcsTime) < 4*time.Second && len(topProcsCache) > 0 {
+		return topProcsCache
+	}
+
+	out, err := exec.Command("ps", "-A", "-o", "pid,comm,pcpu,pmem").Output()
+	if err != nil {
+		return topProcsCache
+	}
+
+	lines := strings.Split(string(out), "\n")
+	var procs []TopProc
+	for i, line := range lines {
+		if i == 0 {
+			continue
+		}
+		fields := strings.Fields(line)
+		if len(fields) >= 4 {
+			pid := fields[0]
+			comm := fields[1]
+			cpu, _ := strconv.ParseFloat(fields[2], 64)
+			mem, _ := strconv.ParseFloat(fields[3], 64)
+
+			if comm == "ps" || comm == "top" || comm == "grep" || comm == "ss" {
+				continue
+			}
+
+			// Clean up command name
+			cleanName := comm
+			if strings.HasPrefix(cleanName, "/") {
+				cleanName = filepath.Base(cleanName)
+			}
+			if cmdBytes, err := os.ReadFile(fmt.Sprintf("/proc/%s/cmdline", pid)); err == nil && len(cmdBytes) > 0 {
+				cleanCmd := strings.TrimRight(string(cmdBytes), "\x00")
+				args := strings.Split(cleanCmd, "\x00")
+				if len(args) > 0 && len(args[0]) > 0 {
+					base := filepath.Base(args[0])
+					if base == "python" || base == "python3" || base == "php" {
+						if len(args) > 1 && len(args[1]) > 0 {
+							cleanName = fmt.Sprintf("%s %s", base, filepath.Base(args[1]))
+						} else {
+							cleanName = base
+						}
+					} else {
+						cleanName = base
+					}
+				}
+			}
+
+			procs = append(procs, TopProc{
+				PID:  pid,
+				Name: cleanName,
+				CPU:  cpu,
+				Mem:  mem,
+			})
+		}
+	}
+
+	sort.Slice(procs, func(i, j int) bool {
+		return procs[i].CPU > procs[j].CPU
+	})
+
+	if len(procs) > 5 {
+		procs = procs[:5]
+	}
+
+	topProcsCache = procs
+	topProcsTime = time.Now()
+	return procs
+}
+
+// GetNetSpeeds returns bandwidth rate in KB/s
+func GetNetSpeeds() map[string]float64 {
+	netTracker.mu.Lock()
+	defer netTracker.mu.Unlock()
+	return map[string]float64{
+		"rx_kbps": mathRound(netTracker.rxRate/1024.0, 1),
+		"tx_kbps": mathRound(netTracker.txRate/1024.0, 1),
+	}
 }
