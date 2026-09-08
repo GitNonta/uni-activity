@@ -217,28 +217,153 @@ var countryNames = map[string]string{
 	"IE": "Ireland",
 }
 
-func resolveOrigin(ipStr string, countryCode string) (string, string, string) {
+type GeoDetail struct {
+	City        string `json:"city"`
+	Region      string `json:"region"`
+	Country     string `json:"country"`
+	CountryCode string `json:"country_code"`
+	ISP         string `json:"isp"`
+	Location    string `json:"location"`
+	Origin      string `json:"origin"`
+	OriginType  string `json:"origin_type"`
+}
+
+var (
+	geoCache  sync.Map
+	geoClient = &http.Client{Timeout: 1200 * time.Millisecond}
+)
+
+func resolveGeoDetail(ipStr string, countryCode string, cityHint string, regionHint string) *GeoDetail {
 	ip := net.ParseIP(ipStr)
 	if ip == nil || ip.IsLoopback() || ipStr == "127.0.0.1" || ipStr == "::1" || ipStr == "localhost" {
-		return "Localhost", "loopback", "Server Internal (Loopback)"
+		return &GeoDetail{
+			City:        "Localhost",
+			Region:      "Internal",
+			Country:     "Localhost",
+			CountryCode: "LOCAL",
+			ISP:         "System Loopback",
+			Location:    "Localhost (Server Internal)",
+			Origin:      "Localhost",
+			OriginType:  "loopback",
+		}
 	}
 
 	// Check Private / LAN ranges
 	if ip.IsPrivate() || strings.HasPrefix(ipStr, "192.168.") || strings.HasPrefix(ipStr, "10.") || strings.HasPrefix(ipStr, "172.16.") || strings.HasPrefix(ipStr, "172.17.") || strings.HasPrefix(ipStr, "172.18.") || strings.HasPrefix(ipStr, "172.19.") || strings.HasPrefix(ipStr, "172.2") || strings.HasPrefix(ipStr, "172.3") || strings.HasPrefix(ipStr, "100.64.") {
-		return "Local Network (LAN)", "lan", "Local Area Network / Wi-Fi"
-	}
-
-	// Public IP
-	cCode := strings.ToUpper(strings.TrimSpace(countryCode))
-	if cCode != "" {
-		cName, ok := countryNames[cCode]
-		if !ok {
-			cName = cCode
+		return &GeoDetail{
+			City:        "Local LAN",
+			Region:      "Private Subnet",
+			Country:     "LAN",
+			CountryCode: "LAN",
+			ISP:         "Local Area Network",
+			Location:    "Local Network (LAN / Wi-Fi)",
+			Origin:      "Local Network (LAN)",
+			OriginType:  "lan",
 		}
-		return cName, "wan", fmt.Sprintf("%s (%s)", cName, cCode)
 	}
 
-	return "Public Internet", "wan", "External Internet"
+	// Check in-memory cache first
+	if val, ok := geoCache.Load(ipStr); ok {
+		if detail, ok := val.(*GeoDetail); ok {
+			return detail
+		}
+	}
+
+	// If city or region hints were passed from Cloudflare headers
+	if cityHint != "" || regionHint != "" {
+		cName := countryNames[strings.ToUpper(countryCode)]
+		if cName == "" {
+			cName = countryCode
+		}
+		loc := ""
+		if cityHint != "" && regionHint != "" && cityHint != regionHint {
+			loc = fmt.Sprintf("%s, %s, %s", cityHint, regionHint, cName)
+		} else if cityHint != "" {
+			loc = fmt.Sprintf("%s, %s", cityHint, cName)
+		} else if regionHint != "" {
+			loc = fmt.Sprintf("%s, %s", regionHint, cName)
+		} else {
+			loc = cName
+		}
+		orig := cName
+		if cityHint != "" {
+			orig = fmt.Sprintf("%s, %s", cityHint, cName)
+		}
+		detail := &GeoDetail{
+			City:        cityHint,
+			Region:      regionHint,
+			Country:     cName,
+			CountryCode: countryCode,
+			ISP:         "Cloudflare Network",
+			Location:    loc,
+			Origin:      orig,
+			OriginType:  "wan",
+		}
+		geoCache.Store(ipStr, detail)
+		return detail
+	}
+
+	// Fast lookup via ip-api.com
+	resp, err := geoClient.Get(fmt.Sprintf("http://ip-api.com/json/%s?fields=status,country,countryCode,regionName,city,isp", ipStr))
+	if err == nil {
+		defer resp.Body.Close()
+		var res struct {
+			Status      string `json:"status"`
+			Country     string `json:"country"`
+			CountryCode string `json:"countryCode"`
+			RegionName  string `json:"regionName"`
+			City        string `json:"city"`
+			ISP         string `json:"isp"`
+		}
+		if err := json.NewDecoder(resp.Body).Decode(&res); err == nil && res.Status == "success" {
+			loc := ""
+			if res.City != "" && res.RegionName != "" && res.City != res.RegionName {
+				loc = fmt.Sprintf("%s, %s, %s", res.City, res.RegionName, res.Country)
+			} else if res.City != "" {
+				loc = fmt.Sprintf("%s, %s", res.City, res.Country)
+			} else {
+				loc = res.Country
+			}
+			orig := res.Country
+			if res.City != "" {
+				orig = fmt.Sprintf("%s, %s", res.City, res.Country)
+			}
+			detail := &GeoDetail{
+				City:        res.City,
+				Region:      res.RegionName,
+				Country:     res.Country,
+				CountryCode: res.CountryCode,
+				ISP:         res.ISP,
+				Location:    loc,
+				Origin:      orig,
+				OriginType:  "wan",
+			}
+			geoCache.Store(ipStr, detail)
+			return detail
+		}
+	}
+
+	// Fallback if lookup failed
+	cName := countryNames[strings.ToUpper(countryCode)]
+	if cName == "" {
+		if countryCode != "" {
+			cName = countryCode
+		} else {
+			cName = "Public Internet"
+		}
+	}
+	detail := &GeoDetail{
+		City:        "",
+		Region:      "",
+		Country:     cName,
+		CountryCode: countryCode,
+		ISP:         "External Internet",
+		Location:    cName,
+		Origin:      cName,
+		OriginType:  "wan",
+	}
+	geoCache.Store(ipStr, detail)
+	return detail
 }
 
 func enrichInspectorItem(item map[string]interface{}) {
@@ -310,9 +435,11 @@ func enrichInspectorItem(item map[string]interface{}) {
 	}
 	item["request"] = req
 
-	// Resolve Real IP, Country & Origin
+	// Resolve Real IP, Country, City, Region & Origin
 	ipStr, _ := item["ip"].(string)
 	countryCode, _ := item["country"].(string)
+	cityHint, _ := item["city"].(string)
+	regionHint, _ := item["region"].(string)
 	rayID, _ := item["ray"].(string)
 
 	headers, _ := req["headers"].(map[string]interface{})
@@ -320,6 +447,12 @@ func enrichInspectorItem(item map[string]interface{}) {
 		for k, v := range headers {
 			if strings.EqualFold(k, "cf-ipcountry") && countryCode == "" {
 				countryCode = fmt.Sprintf("%v", v)
+			}
+			if strings.EqualFold(k, "cf-ipcity") && cityHint == "" {
+				cityHint = fmt.Sprintf("%v", v)
+			}
+			if strings.EqualFold(k, "cf-region") && regionHint == "" {
+				regionHint = fmt.Sprintf("%v", v)
 			}
 			if strings.EqualFold(k, "cf-ray") && rayID == "" {
 				rayID = fmt.Sprintf("%v", v)
@@ -337,14 +470,16 @@ func enrichInspectorItem(item map[string]interface{}) {
 		ipStr = "127.0.0.1"
 	}
 	item["ip"] = ipStr
-	if countryCode != "" {
-		item["country"] = strings.ToUpper(countryCode)
-	}
 
-	origin, originType, location := resolveOrigin(ipStr, countryCode)
-	item["origin"] = origin
-	item["origin_type"] = originType
-	item["location"] = location
+	detail := resolveGeoDetail(ipStr, countryCode, cityHint, regionHint)
+	item["origin"] = detail.Origin
+	item["origin_type"] = detail.OriginType
+	item["location"] = detail.Location
+	item["city"] = detail.City
+	item["region"] = detail.Region
+	item["country"] = detail.CountryCode
+	item["country_name"] = detail.Country
+	item["isp"] = detail.ISP
 
 	gateway := "Direct HTTP"
 	if rayID != "" || (headers != nil && headers["cf-connecting-ip"] != nil) {
@@ -352,9 +487,9 @@ func enrichInspectorItem(item map[string]interface{}) {
 		if rayID != "" {
 			item["ray"] = rayID
 		}
-	} else if originType == "loopback" {
+	} else if detail.OriginType == "loopback" {
 		gateway = "Internal Loopback"
-	} else if originType == "lan" {
+	} else if detail.OriginType == "lan" {
 		gateway = "Local Subnet / LAN"
 	}
 	item["gateway"] = gateway

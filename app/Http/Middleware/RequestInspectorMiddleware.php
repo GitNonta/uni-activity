@@ -71,7 +71,7 @@ class RequestInspectorMiddleware
             $allowedHeaders = [
                 'host', 'user-agent', 'accept', 'content-type', 'referer',
                 'x-requested-with', 'x-forwarded-for', 'x-forwarded-proto', 'x-real-ip',
-                'cf-connecting-ip', 'cf-ipcountry', 'cf-ray', 'cf-visitor',
+                'cf-connecting-ip', 'cf-ipcountry', 'cf-ipcity', 'cf-region', 'cf-ray', 'cf-visitor',
                 'accept-language', 'accept-encoding'
             ];
             foreach ($request->headers->all() as $k => $v) {
@@ -92,6 +92,8 @@ class RequestInspectorMiddleware
                 ?: '127.0.0.1'
             );
             $cfCountry = strtoupper((string) $request->header('cf-ipcountry', ''));
+            $cfCity = (string) $request->header('cf-ipcity', '');
+            $cfRegion = (string) $request->header('cf-region', '');
             $cfRay = (string) $request->header('cf-ray', '');
 
             // Response metadata
@@ -113,6 +115,8 @@ class RequestInspectorMiddleware
                 'path' => $request->path(),
                 'ip' => $clientIp,
                 'country' => $cfCountry,
+                'city' => $cfCity,
+                'region' => $cfRegion,
                 'ray' => $cfRay,
                 'duration' => $duration,
                 'status' => $response->getStatusCode(),

@@ -136,8 +136,36 @@ export function InspectorInner({ logs }) {
     );
   }
 
+  const thaiProvinceMap = {
+    'Phuket': 'ภูเก็ต',
+    'Bangkok': 'กรุงเทพมหานคร',
+    'Chiang Mai': 'เชียงใหม่',
+    'Nonthaburi': 'นนทบุรี',
+    'Pathum Thani': 'ปทุมธานี',
+    'Samut Prakan': 'สมุทรปราการ',
+    'Chon Buri': 'ชลบุรี',
+    'Khon Kaen': 'ขอนแก่น',
+    'Nakhon Ratchasima': 'นครราชสีมา',
+    'Songkhla': 'สงขลา',
+    'Surat Thani': 'สุราษฎร์ธานี',
+    'Udon Thani': 'อุดรธานี',
+    'Rayong': 'ระยอง',
+    'Krabi': 'กระบี่',
+    'Phang Nga': 'พังงา',
+    'Trang': 'ตรัง',
+    'Nakhon Si Thammarat': 'นครศรีธรรมราช',
+    'Pattani': 'ปัตตานี',
+    'Yala': 'ยะลา',
+    'Narathiwat': 'นราธิวาส',
+    'Lampang': 'ลำปาง',
+    'Chiang Rai': 'เชียงราย',
+    'Phitsanulok': 'พิษณุโลก',
+    'Sukhothai': 'สุโขทัย',
+    'Ubon Ratchathani': 'อุบลราชธานี'
+  };
+
   const getOriginInfo = (log) => {
-    if (!log) return { ip: '127.0.0.1', origin: 'Localhost', type: 'loopback', location: 'Server Internal (Loopback)', gateway: 'Internal Loopback' };
+    if (!log) return { ip: '127.0.0.1', origin: 'Localhost', type: 'loopback', location: 'Server Internal (Loopback)', gateway: 'Internal Loopback', city: '', region: '', isp: '', country: '' };
     const ip = log.ip || '127.0.0.1';
     let type = log.origin_type;
     if (!type) {
@@ -148,7 +176,11 @@ export function InspectorInner({ logs }) {
     const origin = log.origin || (type === 'loopback' ? 'Localhost' : type === 'lan' ? 'Local Network (LAN)' : 'Public Internet');
     const location = log.location || (type === 'loopback' ? 'Server Internal (Loopback)' : type === 'lan' ? 'Local Area Network / Wi-Fi' : `${origin} (Public Internet)`);
     const gateway = log.gateway || (log.ray ? 'Cloudflare Tunnel' : type === 'loopback' ? 'Internal Loopback' : 'Direct HTTP');
-    return { ip, origin, type, location, gateway };
+    const city = log.city || '';
+    const region = log.region || '';
+    const isp = log.isp || '';
+    const country = log.country_name || log.country || '';
+    return { ip, origin, type, location, gateway, city, region, isp, country };
   };
 
   const getQueryParams = (log) => {
@@ -275,9 +307,14 @@ export function InspectorInner({ logs }) {
                         fontWeight: 600, 
                         color: (log.origin_type === 'wan' || (!log.origin_type && log.ip && !log.ip.startsWith('127.') && !log.ip.startsWith('192.168.'))) 
                           ? (isSelected ? '#93c5fd' : '#2563eb') 
-                          : (isSelected ? '#cbd5e1' : '#475569') 
+                          : (isSelected ? '#cbd5e1' : '#475569'),
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
                       }}>
-                        {log.origin || (log.ip === '127.0.0.1' ? 'Localhost' : 'LAN')}
+                        {log.city 
+                          ? `${log.city}${thaiProvinceMap[log.city] ? ` (${thaiProvinceMap[log.city]})` : ''}, ${log.country || log.origin}`
+                          : (log.origin || (log.ip === '127.0.0.1' ? 'Localhost' : 'LAN'))}
                       </span>
                     </div>
                   </div>
@@ -309,9 +346,9 @@ export function InspectorInner({ logs }) {
                   </svg>
                   <span>{new Date(selectedLog.time || Date.now()).toLocaleString()}</span>
                 </div>
-                <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center', flexWrap: 'wrap' }}>
                   <span>Duration: <strong>{Number(selectedLog.duration || 0).toFixed(2)} ms</strong></span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
                     <span>Client IP:</span>
                     <strong style={{ fontFamily: 'monospace', color: '#0f172a' }}>{selectedLog.ip || '127.0.0.1'}</strong>
                     <span style={{
@@ -331,7 +368,9 @@ export function InspectorInner({ logs }) {
                         <line x1="2" y1="12" x2="22" y2="12"></line>
                         <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                       </svg>
-                      {selectedLog.origin || (selectedLog.ip === '127.0.0.1' ? 'Localhost' : 'LAN')}
+                      {selectedLog.city 
+                        ? `${selectedLog.city}${thaiProvinceMap[selectedLog.city] ? ` (${thaiProvinceMap[selectedLog.city]})` : ''}${selectedLog.region && selectedLog.region !== selectedLog.city ? `, ${selectedLog.region}` : ''} • ${selectedLog.country_name || selectedLog.country || selectedLog.origin}`
+                        : (selectedLog.origin || (selectedLog.ip === '127.0.0.1' ? 'Localhost' : 'LAN'))}
                     </span>
                   </div>
                 </div>
@@ -437,9 +476,11 @@ export function InspectorInner({ logs }) {
 
                     <div style={{ background: '#fff', padding: '1rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
                       <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Client Source</div>
-                      <div style={{ fontSize: '0.9rem', color: '#0f172a', fontWeight: 600, marginTop: '0.25rem', fontFamily: 'monospace', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <div style={{ fontSize: '0.9rem', color: '#0f172a', fontWeight: 600, marginTop: '0.25rem', fontFamily: 'monospace', display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
                         <span>{selectedLog.ip || '127.0.0.1'}</span>
-                        <span style={{ fontSize: '0.75rem', color: '#2563eb', fontWeight: 500 }}>({selectedLog.origin || (selectedLog.ip === '127.0.0.1' ? 'Localhost' : 'LAN')})</span>
+                        <span style={{ fontSize: '0.75rem', color: '#2563eb', fontWeight: 500 }}>
+                          ({selectedLog.city ? `${selectedLog.city}${thaiProvinceMap[selectedLog.city] ? ` (${thaiProvinceMap[selectedLog.city]})` : ''}, ${selectedLog.country_name || selectedLog.country || selectedLog.origin}` : (selectedLog.origin || (selectedLog.ip === '127.0.0.1' ? 'Localhost' : 'LAN'))})
+                        </span>
                       </div>
                     </div>
 
@@ -460,7 +501,7 @@ export function InspectorInner({ logs }) {
                           <line x1="2" y1="12" x2="22" y2="12"></line>
                           <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                         </svg>
-                        <span>Client Source & Origin Information</span>
+                        <span>Client Source & Origin Information (ที่อยู่และข้อมูลต้นทาง)</span>
                       </div>
                       <span style={{ 
                         fontSize: '0.72rem', 
@@ -492,28 +533,51 @@ export function InspectorInner({ logs }) {
                         </div>
                       </div>
 
-                      {/* 2. Geolocation / Origin */}
+                      {/* 2. City & Province (เมือง / จังหวัด) */}
                       <div style={{ background: '#fff', padding: '0.85rem 1rem' }}>
-                        <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>Origin / Location</div>
+                        <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>City & Province (เมือง / จังหวัด)</div>
                         <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#2563eb', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                             <circle cx="12" cy="10" r="3"></circle>
                           </svg>
-                          <span>{selectedLog.location || selectedLog.origin || (selectedLog.ip === '127.0.0.1' ? 'Server Internal (Loopback)' : 'Local Network')}</span>
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {selectedLog.city 
+                              ? `${selectedLog.city}${thaiProvinceMap[selectedLog.city] ? ` (${thaiProvinceMap[selectedLog.city]})` : ''}`
+                              : (selectedLog.origin_type === 'lan' ? 'Local Subnet' : selectedLog.origin_type === 'loopback' ? 'Localhost' : 'Unknown City')}
+                          </span>
                         </div>
-                        {selectedLog.country && (
-                          <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.15rem' }}>
-                            Country Code: <strong>{selectedLog.country}</strong>
-                          </div>
-                        )}
+                        <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '0.2rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                          <span>Province: <strong>{selectedLog.region ? `${selectedLog.region}${thaiProvinceMap[selectedLog.region] ? ` (${thaiProvinceMap[selectedLog.region]})` : ''}` : '-'}</strong></span>
+                          <span>•</span>
+                          <span>Country: <strong>{selectedLog.country_name || selectedLog.country || '-'}</strong></span>
+                        </div>
                       </div>
 
-                      {/* 3. Gateway & Protocol */}
+                      {/* 3. ISP / Network Provider */}
+                      <div style={{ background: '#fff', padding: '0.85rem 1rem' }}>
+                        <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>ISP / Network Provider (ผู้ให้บริการ)</div>
+                        <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                            <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                            <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                            <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                          </svg>
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {selectedLog.isp || (selectedLog.origin_type === 'lan' ? 'Local Area Network' : selectedLog.origin_type === 'loopback' ? 'Internal Loopback' : 'External Carrier')}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.15rem' }}>
+                          Location: <strong>{selectedLog.location || selectedLog.origin || 'Direct'}</strong>
+                        </div>
+                      </div>
+
+                      {/* 4. Gateway & Protocol */}
                       <div style={{ background: '#fff', padding: '0.85rem 1rem' }}>
                         <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>Connection Gateway</div>
                         <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                             <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
                             <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
                             <line x1="6" y1="6" x2="6.01" y2="6"></line>
@@ -528,7 +592,7 @@ export function InspectorInner({ logs }) {
                         )}
                       </div>
 
-                      {/* 4. Client Agent */}
+                      {/* 5. Client Agent */}
                       <div style={{ background: '#fff', padding: '0.85rem 1rem' }}>
                         <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>Client Agent / Browser</div>
                         <div style={{ fontSize: '0.75rem', color: '#334155', fontFamily: 'monospace', wordBreak: 'break-all', lineHeight: '1.3' }}>
