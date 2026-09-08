@@ -319,7 +319,7 @@ func pushToGitHub(httpURL, sshURL string) {
 // ──────────────────────────────────────────────────────────────────────────────
 
 func killCloudflared() {
-	_ = exec.Command("pkill", "-9", "cloudflared").Run()
+	_ = exec.Command("pkill", "-9", "-f", "cloudflared").Run()
 	time.Sleep(2 * time.Second)
 }
 
@@ -344,7 +344,7 @@ func startTunnels() (httpURL, sshURL string, err error) {
 
 	// HTTP tunnel
 	httpCmd := fmt.Sprintf(
-		"nohup cloudflared tunnel --url %s --no-autoupdate --metrics 127.0.0.1:20241 > %s 2>&1 &",
+		"nohup cloudflared tunnel --url %s --no-autoupdate > %s 2>&1 &",
 		tunnelTarget, logHTTP,
 	)
 	if e := exec.Command("sh", "-c", httpCmd).Start(); e != nil {
@@ -355,7 +355,7 @@ func startTunnels() (httpURL, sshURL string, err error) {
 	// SSH tunnel (only if explicitly enabled in .env to save Cloudflare rate limit quota)
 	if readEnv("ENABLE_SSH_TUNNEL") == "true" {
 		sshCmd := fmt.Sprintf(
-			"nohup cloudflared tunnel --url ssh://127.0.0.1:8022 --no-autoupdate --metrics 127.0.0.1:20242 > %s 2>&1 &",
+			"nohup cloudflared tunnel --url ssh://127.0.0.1:8022 --no-autoupdate > %s 2>&1 &",
 			logSSH,
 		)
 		if e := exec.Command("sh", "-c", sshCmd).Start(); e != nil {
