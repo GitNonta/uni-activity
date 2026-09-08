@@ -5,16 +5,19 @@
 //   - py/start_cf_ubuntu.py
 //
 // รันบน Termux/S1:
-//   ./cf-manager &
+//
+//	./cf-manager &
 //
 // หน้าที่:
-//   1. เริ่ม cloudflared (HTTP + SSH tunnel) อัตโนมัติ
-//   2. รอ origin server พร้อมก่อนเสมอ → แก้ Error 1033
-//   3. อัพเดท .env APP_URL เมื่อ URL เปลี่ยน
-//   4. อัพเดท GitHub Pages active_url.json
-//   5. อัพเดท LINE Webhook
-//   6. Clear Laravel cache
-//   7. Health-check ทุก 15 วิ → auto-restart เมื่อ tunnel ล่ม
+//  1. เริ่ม cloudflared (HTTP + SSH tunnel) อัตโนมัติ
+//  2. รอ origin server พร้อมก่อนเสมอ → แก้ Error 1033
+//  3. อัพเดท .env APP_URL เมื่อ URL เปลี่ยน
+//  4. อัพเดท GitHub Pages active_url.json
+//  5. อัพเดท LINE Webhook
+//  6. Clear Laravel cache
+//  7. Health-check ทุก 15 วิ → auto-restart เมื่อ tunnel ล่ม
+//     รวมถึงตรวจ "edge disconnected" (Error 1033: IP not found) ผ่าน
+//     cloudflared metrics endpoint แล้ว restart ทันที ไม่ต้องรอ 3 fail
 package main
 
 import (
@@ -42,14 +45,16 @@ import (
 // ──────────────────────────────────────────────────────────────────────────────
 
 const (
-	termuxHome     = "/data/data/com.termux/files/home"
-	projectRoot    = termuxHome + "/uni-activity"
-	envFile        = projectRoot + "/.env"
-	logHTTP        = termuxHome + "/cloudflared.log"
-	logSSH         = termuxHome + "/cloudflared-ssh.log"
-	localURLJSON   = projectRoot + "/docs/active_url.json"
-	artisanPath    = projectRoot + "/artisan"
-	watchdogLog    = projectRoot + "/storage/logs/cf-manager.log"
+	termuxHome   = "/data/data/com.termux/files/home"
+	projectRoot  = termuxHome + "/uni-activity"
+	envFile      = projectRoot + "/.env"
+	logHTTP      = termuxHome + "/cloudflared.log"
+	logSSH       = termuxHome + "/cloudflared-ssh.log"
+	localURLJSON = projectRoot + "/docs/active_url.json"
+	artisanPath  = projectRoot + "/artisan"
+	watchdogLog  = projectRoot + "/storage/logs/cf-manager.log"
+	metricsHTTP  = "http://127.0.0.1:20241/metrics"
+	metricsSSH   = "http://127.0.0.1:20242/metrics"
 
 	// How long to wait for origin before starting cloudflared
 	originReadyTimeout = 90 * time.Second
@@ -61,6 +66,8 @@ const (
 	restartCooldown = 120 * time.Second
 	// Fail threshold before auto-restart
 	failThreshold = 3
+	// Edge disconnected (Error 1033 "IP not found") restarts faster — see edgeFailThreshold
+	edgeFailThreshold = 2
 )
 
 // Default tunnel target — can be overridden via TUNNEL_TARGET_URL in .env
@@ -75,6 +82,46 @@ var cfURLRegex = regexp.MustCompile(`https://[a-zA-Z0-9-]+\.trycloudflare\.com`)
 func isCloudflaredAlive() bool {
 	out, err := exec.Command("pgrep", "-f", "cloudflared").Output()
 	return err == nil && len(strings.TrimSpace(string(out))) > 0
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Edge connection probe (detects Error 1033 directly)
+// ──────────────────────────────────────────────────────────────────────────────
+
+// tunnelEdgeState queries the cloudflared metrics endpoint and reports whether
+// the tunnel has at least one live connection to Cloudflare's edge.
+//
+// Error 1033 ("Argo Tunnel error / IP not found") happens exactly when this
+// count drops to 0 while the process is still running — Cloudflare has no edge
+// to route the request to, so every request returns the 1033 error page.
+//
+// Returns (hasConnections, known). known=false means the state could not be
+// determined (metrics endpoint unreachable, e.g. port bound by something else,
+// or the metric is missing on older cloudflared builds) — callers must treat
+// that as "no data" and skip the check instead of triggering restarts.
+func tunnelEdgeState(metricsURL string) (hasConnections, known bool) {
+	client := &http.Client{Timeout: 3 * time.Second}
+	resp, err := client.Get(metricsURL)
+	if err != nil {
+		return false, false
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return false, false
+	}
+	for _, line := range strings.Split(string(body), "\n") {
+		line = strings.TrimSpace(line)
+		if !strings.HasPrefix(line, "cloudflared_tunnel_server_locations{") {
+			continue
+		}
+		fields := strings.Fields(line)
+		if len(fields) >= 2 {
+			return fields[len(fields)-1] != "0", true
+		}
+	}
+	// Metric absent (older cloudflared) → unknown, do not act on it.
+	return true, false
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -165,6 +212,8 @@ func waitForOrigin(targetURL string, timeout time.Duration) bool {
 }
 
 // isURLAlive returns true when the public tunnel URL is responding correctly.
+// HTTP 530 is what Cloudflare serves for tunnel-level failures (which includes
+// error 1033 at the edge), so anything >= 530 counts as dead.
 func isURLAlive(url string) bool {
 	client := &http.Client{
 		Timeout:       5 * time.Second,
@@ -211,6 +260,7 @@ func applyNewURL(httpURL, sshURL string) {
 	go pushToGitHub(httpURL, sshURL)
 	go updateLINEWebhook(httpURL)
 	go clearLaravelCache()
+	go notifyTelegramURLChange(httpURL)
 }
 
 func clearLaravelCache() {
@@ -243,6 +293,31 @@ func updateLINEWebhook(httpURL string) {
 	}
 	defer resp.Body.Close()
 	log.Printf("[CF-MGR][LINE] Webhook updated → HTTP %d", resp.StatusCode)
+}
+
+// notifyTelegramURLChange sends an alert when the public URL changes so users
+// and admins learn about Error 1033 recovery immediately.
+func notifyTelegramURLChange(httpURL string) {
+	token := readEnv("TELEGRAM_BOT_TOKEN")
+	chatID := readEnv("TELEGRAM_CHAT_ID")
+	if token == "" || chatID == "" {
+		return
+	}
+	body, _ := json.Marshal(map[string]interface{}{
+		"chat_id":                  chatID,
+		"text":                     "🌐 Tunnel URL changed → " + httpURL + "\n(Error 1033 auto-recovery applied)",
+		"parse_mode":               "HTML",
+		"disable_web_page_preview": true,
+	})
+	req, err := http.NewRequest("POST", "https://api.telegram.org/bot"+token+"/sendMessage", bytes.NewBuffer(body))
+	if err != nil {
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{Timeout: 10 * time.Second}
+	if resp, err := client.Do(req); err == nil {
+		resp.Body.Close()
+	}
 }
 
 func pushToGitHub(httpURL, sshURL string) {
@@ -344,7 +419,7 @@ func startTunnels() (httpURL, sshURL string, err error) {
 
 	// HTTP tunnel
 	httpCmd := fmt.Sprintf(
-		"nohup cloudflared tunnel --url %s --no-autoupdate > %s 2>&1 &",
+		"nohup cloudflared tunnel --url %s --no-autoupdate --metrics 127.0.0.1:20241 > %s 2>&1 &",
 		tunnelTarget, logHTTP,
 	)
 	if e := exec.Command("sh", "-c", httpCmd).Start(); e != nil {
@@ -355,7 +430,7 @@ func startTunnels() (httpURL, sshURL string, err error) {
 	// SSH tunnel (only if explicitly enabled in .env to save Cloudflare rate limit quota)
 	if readEnv("ENABLE_SSH_TUNNEL") == "true" {
 		sshCmd := fmt.Sprintf(
-			"nohup cloudflared tunnel --url ssh://127.0.0.1:8022 --no-autoupdate > %s 2>&1 &",
+			"nohup cloudflared tunnel --url ssh://127.0.0.1:8022 --no-autoupdate --metrics 127.0.0.1:20242 > %s 2>&1 &",
 			logSSH,
 		)
 		if e := exec.Command("sh", "-c", sshCmd).Start(); e != nil {
@@ -499,8 +574,16 @@ func writeCooldownFile(active bool, rem time.Duration, reason string) {
 }
 
 // runHealthWatcher pings the active tunnel URL and auto-restarts on failure.
+//
+// Error 1033 ("Argo Tunnel error") appears when cloudflared is still running
+// but has lost ALL connections to Cloudflare's edge. The public URL then keeps
+// serving the 1033 error page (wrapped in HTTP 530) even though the process is
+// alive. To catch that case we also probe cloudflared's metrics endpoint
+// (cloudflared_tunnel_server_locations): when it reports 0 edge locations we
+// restart the tunnel after only edgeFailThreshold consecutive observations.
 func runHealthWatcher() {
 	failCount := 0
+	edgeFailCount := 0
 	lastRestart := time.Time{}
 
 	client := &http.Client{
@@ -527,24 +610,55 @@ func runHealthWatcher() {
 		url := getActiveURL()
 		cfAlive := isCloudflaredAlive()
 
+		// Primary check: process + public URL
+		restartNeeded := false
+		reasonStr := ""
+
 		if !cfAlive {
 			failCount++
 			log.Printf("[CF-MGR][HEALTH] ⚠️  cloudflared process is NOT running — failCount=%d", failCount)
+			if failCount >= failThreshold {
+				restartNeeded = true
+				reasonStr = "cloudflared process down"
+			}
 		} else if url != "" {
 			resp, err := client.Head(url)
 			if err == nil && resp.StatusCode < 530 {
 				resp.Body.Close()
 				failCount = 0
+				edgeFailCount = 0
 				log.Printf("[CF-MGR][HEALTH] ✅ %s — OK", url)
 			} else {
 				failCount++
-				var errReason string
+				errReason := ""
 				if err != nil {
 					errReason = err.Error()
 				} else {
 					errReason = fmt.Sprintf("HTTP %d", resp.StatusCode)
 				}
 				log.Printf("[CF-MGR][HEALTH] ⚠️  %s unreachable (%s) — failCount=%d", url, errReason, failCount)
+				if failCount >= failThreshold {
+					restartNeeded = true
+					reasonStr = "public URL unreachable (" + errReason + ")"
+				}
+			}
+
+			// Secondary check: edge connection (Error 1033 / "IP not found").
+			// The URL keeps serving the 1033 page while the process looks fine.
+			// Only act when the metrics endpoint gives a definite answer.
+			if !restartNeeded {
+				if edgeOK, known := tunnelEdgeState(metricsHTTP); known {
+					if edgeOK {
+						edgeFailCount = 0
+					} else {
+						edgeFailCount++
+						log.Printf("[CF-MGR][HEALTH] ⚠️  Edge disconnected (Error 1033: IP not found) — edgeFailCount=%d", edgeFailCount)
+						if edgeFailCount >= edgeFailThreshold {
+							restartNeeded = true
+							reasonStr = "tunnel lost edge connection (Error 1033)"
+						}
+					}
+				}
 			}
 		} else {
 			// No URL in memory or logs
@@ -555,15 +669,19 @@ func runHealthWatcher() {
 			} else {
 				failCount++
 				log.Printf("[CF-MGR][HEALTH] ⚠️  No tunnel URL in log or .env — failCount=%d", failCount)
+				if failCount >= failThreshold {
+					restartNeeded = true
+					reasonStr = "no tunnel URL available"
+				}
 			}
 		}
 
-		if failCount >= failThreshold && time.Since(lastRestart) > restartCooldown {
+		if restartNeeded && time.Since(lastRestart) > restartCooldown {
 			lastRestart = time.Now()
 			failCount = 0
-			log.Println("[CF-MGR] 🔄 Auto-restart triggered (Tunnel dead / IP not found / process down)")
-			killCloudflared()
-			newHTTP, newSSH, startErr := startTunnels()
+			edgeFailCount = 0
+			log.Printf("[CF-MGR] 🔄 Auto-restart triggered (%s)", reasonStr)
+			newHTTP, newSSH, startErr := restartTunnelVerified()
 			if startErr != nil {
 				log.Printf("[CF-MGR] Auto-restart failed: %v", startErr)
 				if strings.Contains(startErr.Error(), "rate-limited") {
@@ -577,6 +695,39 @@ func runHealthWatcher() {
 			}
 		}
 	}
+}
+
+// restartTunnelVerified kills cloudflared, starts new tunnels and only returns
+// success once the fresh URL is confirmed working from the public side.
+// This guarantees a tunnel URL is never propagated while it still shows
+// Cloudflare error pages such as Error 1033.
+func restartTunnelVerified() (httpURL, sshURL string, err error) {
+	killCloudflared()
+
+	httpURL, sshURL, err = startTunnels()
+	if err != nil {
+		return "", "", err
+	}
+
+	deadline := time.Now().Add(90 * time.Second)
+	client := &http.Client{
+		Timeout:       8 * time.Second,
+		CheckRedirect: func(r *http.Request, via []*http.Request) error { return http.ErrUseLastResponse },
+	}
+	for time.Now().Before(deadline) {
+		resp, e := client.Head(httpURL)
+		if e == nil && resp.StatusCode < 530 {
+			resp.Body.Close()
+			log.Printf("[CF-MGR] Restart verified — %s is live ✓", httpURL)
+			return httpURL, sshURL, nil
+		}
+		if e == nil {
+			resp.Body.Close()
+		}
+		log.Printf("[CF-MGR] Waiting for fresh tunnel URL to go live…")
+		time.Sleep(3 * time.Second)
+	}
+	return "", "", fmt.Errorf("new tunnel URL %s still not serving after 90s (possible Error 1033 persistence)", httpURL)
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -593,7 +744,7 @@ func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
 
 	log.Println("╔══════════════════════════════════════════════════════╗")
-	log.Println("║   cf-manager v2.0 — Go Cloudflare Tunnel Manager    ║")
+	log.Println("║   cf-manager v2.1 — Go Cloudflare Tunnel Manager    ║")
 	log.Println("║   Replaces: auto_update_tunnel_url.py                ║")
 	log.Println("╚══════════════════════════════════════════════════════╝")
 

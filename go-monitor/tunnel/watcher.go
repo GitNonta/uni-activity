@@ -55,6 +55,11 @@ const (
 	termuxHome  = "/data/data/com.termux/files/home"
 	logHTTPPath = termuxHome + "/cloudflared.log"
 	logSSHPath  = termuxHome + "/cloudflared-ssh.log"
+
+	// cloudflared metrics endpoints (must match the --metrics flags cf-manager
+	// starts the tunnels with)
+	metricsHTTP = "http://127.0.0.1:20241/metrics"
+	metricsSSH  = "http://127.0.0.1:20242/metrics"
 )
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -142,7 +147,8 @@ func isURLAlive(url string) bool {
 		return false
 	}
 	defer resp.Body.Close()
-	// 530, 520-524 are Cloudflare tunnel error codes; 1033 isn't an HTTP code
+	// 530 is what Cloudflare serves for tunnel-level failures (which includes
+	// error 1033 at the edge), so anything >= 530 counts as dead.
 	return resp.StatusCode < 530
 }
 
@@ -222,6 +228,40 @@ func GetTunnelURLs() map[string]interface{} {
 		"ssh_port":   8022,
 		"updated_at": time.Now().Format("2006-01-02 15:04:05"),
 	}
+}
+
+// tunnelEdgeState queries the cloudflared metrics endpoint and reports whether
+// the tunnel has at least one live connection to Cloudflare's edge. When this
+// count drops to 0, every request to the public URL returns the Cloudflare
+// "Error 1033 / Argo Tunnel error" page (served as HTTP 530) even though the
+// cloudflared process itself is still running.
+//
+// Returns (hasConnections, known). known=false means the state could not be
+// determined (metrics endpoint unreachable, or the metric is missing on older
+// cloudflared builds) — callers must treat that as "no data".
+func tunnelEdgeState(metricsURL string) (hasConnections, known bool) {
+	client := &http.Client{Timeout: 3 * time.Second}
+	resp, err := client.Get(metricsURL)
+	if err != nil {
+		return false, false
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return false, false
+	}
+	for _, line := range strings.Split(string(body), "\n") {
+		line = strings.TrimSpace(line)
+		if !strings.HasPrefix(line, "cloudflared_tunnel_server_locations{") {
+			continue
+		}
+		fields := strings.Fields(line)
+		if len(fields) >= 2 {
+			return fields[len(fields)-1] != "0", true
+		}
+	}
+	// Metric absent (older cloudflared) → unknown, do not act on it.
+	return true, false
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -428,22 +468,46 @@ func min(a, b int) int {
 	return b
 }
 
+// isCFManagerAlive reports whether the dedicated cf-manager process is running.
+// cf-manager owns the tunnel lifecycle when present (rate-limit cooldown +
+// verified restarts), so other components must not spawn conflicting
+// cloudflared instances or race it for the metrics ports.
+func isCFManagerAlive() bool {
+	out, err := exec.Command("pgrep", "-f", "cf-manager").Output()
+	return err == nil && len(strings.TrimSpace(string(out))) > 0
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Tunnel restart (fixes Error 1033)
 // ──────────────────────────────────────────────────────────────────────────────
 
 // DoRestartTunnel kills all cloudflared processes, waits for origin readiness,
-// then starts two new tunnel processes (HTTP + SSH) and waits for their URLs.
+// then starts two new tunnel processes (HTTP + SSH), waits for their URLs and
+// VERIFIES the new URL actually serves traffic before propagating it.
 //
 // FIX for Error 1033:
 //   - Always waits for the origin (TunnelTargetURL) to respond before starting
 //     cloudflared, so cloudflared never starts pointing at a dead origin.
 //   - Uses last-occurrence URL detection to avoid picking up stale log entries.
+//   - Verifies the fresh URL answers with HTTP < 530 before updating .env /
+//     active_url.json / LINE webhook, so users never get pointed at a URL that
+//     still shows the Cloudflare 1033 error page.
 func DoRestartTunnel() (string, error) {
 	log.Println("[Tunnel] 🔄 Restarting Cloudflare Tunnel…")
 
+	// Step 0: If cf-manager is running, it owns tunnel lifecycle. Kill the
+	// cloudflared processes and let cf-manager's health watcher spawn a fresh,
+	// verified tunnel — spawning our own here would race cf-manager for the
+	// metrics ports (20241/20242) and can leave two conflicting tunnels.
+	if isCFManagerAlive() {
+		log.Println("[Tunnel] cf-manager detected — deferring tunnel spawn to it")
+		_ = exec.Command("pkill", "-9", "-f", "cloudflared").Run()
+		telegram.Send("🔄 <b>Tunnel restart requested</b>\ncf-manager is spawning a fresh, verified tunnel…")
+		return "", nil
+	}
+
 	// Step 1: Kill existing cloudflared processes
-	_ = exec.Command("pkill", "-9", "cloudflared").Run()
+	_ = exec.Command("pkill", "-9", "-f", "cloudflared").Run()
 	time.Sleep(2 * time.Second)
 
 	// Step 2: Truncate old logs so we only parse the new run
@@ -501,7 +565,35 @@ func DoRestartTunnel() (string, error) {
 		return "", fmt.Errorf("timeout: could not detect new HTTP tunnel URL within 50s")
 	}
 
-	// Step 8: Apply all side-effects
+	// Step 8: VERIFY the new URL is actually live before propagating (Error 1033 guard)
+	verifyClient := &http.Client{
+		Timeout: 8 * time.Second,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+	verified := false
+	for i := 0; i < 30; i++ {
+		resp, err := verifyClient.Head(newURL)
+		if err == nil && resp.StatusCode < 530 {
+			resp.Body.Close()
+			verified = true
+			break
+		}
+		if err == nil {
+			resp.Body.Close()
+		}
+		time.Sleep(3 * time.Second)
+	}
+	if !verified {
+		telegram.Send(fmt.Sprintf(
+			"⚠️ <b>Tunnel URL NOT live</b>\n━━━━━━━━━━━━━━━━━━━━\n🔗 <b>URL:</b> %s\n❗ New tunnel still serving Cloudflare error page (possible Error 1033) — URL not propagated",
+			newURL,
+		))
+		return "", fmt.Errorf("new tunnel URL %s still not serving after 90s (possible Error 1033 persistence)", newURL)
+	}
+
+	// Step 9: Apply all side-effects
 	applyNewURL(newURL, sshURL)
 
 	telegram.Send(fmt.Sprintf(
@@ -591,6 +683,26 @@ func StartTunnelWatcher() {
 				Status.Error = ""
 				Status.URL = url
 				Status.mu.Unlock()
+			} else if err == nil && resp.StatusCode >= 530 {
+				// Tunnel-level failure (HTTP 530 = Cloudflare error page, often Error
+				// 1033 "Argo Tunnel error"). Auto-restart is delegated to cf-manager
+				// (single source of truth with rate-limit cooldown); go-monitor only
+				// tracks online/offline telemetry.
+				resp.Body.Close()
+				Status.mu.Lock()
+				Status.Online = false
+				Status.PingMS = 0
+				Status.URL = url
+				if edgeOK, known := tunnelEdgeState(metricsHTTP); known && !edgeOK {
+					// cloudflared is running but has no edge connections → the exact
+					// state behind "Error 1033 / Argo Tunnel error" pages.
+					Status.Error = "EDGE_DISCONNECTED_1033"
+				} else {
+					Status.Error = fmt.Sprintf("HTTP_%d", resp.StatusCode)
+				}
+				Status.mu.Unlock()
+				failCount++
+				log.Printf("[Tunnel] ⚠️  Tunnel status: OFFLINE (HTTP %d) — managed by cf-manager", resp.StatusCode)
 			} else {
 				failCount++
 				errStr := classifyError(err, resp)
@@ -602,8 +714,6 @@ func StartTunnelWatcher() {
 				Status.URL = url
 				Status.mu.Unlock()
 
-				// Auto-restart is delegated to cf-manager (single source of truth with rate-limit cooldown)
-				// go-monitor only tracks online/offline telemetry
 				log.Printf("[Tunnel] ⚠️  Tunnel status: OFFLINE (%s) — managed by cf-manager", errStr)
 			}
 		}
