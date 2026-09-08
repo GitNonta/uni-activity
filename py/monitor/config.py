@@ -69,6 +69,7 @@ _tg_last_update_id: int   = 0
 import threading
 _stats_cache: dict  = {}
 _stats_lock         = threading.Lock()
+active_ws_clients: int = 0
 CACHED_PUBLIC_IP: str = ""
 
 # ── Speedtest data ────────────────────────────────────────────────────────────

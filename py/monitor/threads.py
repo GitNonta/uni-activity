@@ -12,6 +12,7 @@ from monitor.alerts import collect_stats
 # ------- UDP Inspector Receiver -------
 def udp_receiver_thread():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.bind(("0.0.0.0", cfg.UDP_PORT))
     while True:
         try:
@@ -27,6 +28,7 @@ def udp_receiver_thread():
 # ------- UDP AI Logs Receiver -------
 def udp_ai_receiver_thread():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.bind(("0.0.0.0", cfg.UDP_PORT_AI))
     while True:
         try:
@@ -239,30 +241,45 @@ def ws_encode(message: str) -> bytes:
 
 # ------- Stats Collector Thread -------
 def stats_collector_thread():
-    """Collect stats in background every 10 s (shared cache for all WS clients)."""
+    """Client-Aware Stats Collector (Zabbix style: idle 30s when 0 clients, real-time 2.5s when active)."""
     while True:
         try:
+            with cfg._stats_lock:
+                clients = cfg.active_ws_clients
+
             data = collect_stats()
             with cfg._stats_lock:
                 cfg._stats_cache = data
             tg_daily_report(data)
+
+            # If client watching, refresh in 2.5s; if idle, sleep 30s
+            time.sleep(2.5 if clients > 0 else 30.0)
         except Exception:
-            pass
-        time.sleep(10)
+            time.sleep(10)
 
 
 def ws_client_thread(conn):
-    """Push cached stats to one WS client every 10 s — zero extra subprocess calls."""
+    """Push cached stats to one WS client in real-time (2.5 s) — zero extra subprocess calls."""
+    with cfg._stats_lock:
+        cfg.active_ws_clients += 1
     try:
+        # Immediately push existing snapshot to new client
+        with cfg._stats_lock:
+            snapshot = cfg._stats_cache.copy() if cfg._stats_cache else {}
+        if snapshot:
+            conn.sendall(ws_encode(json.dumps(snapshot)))
+
         while True:
+            time.sleep(2.5)
             with cfg._stats_lock:
                 snapshot = cfg._stats_cache.copy() if cfg._stats_cache else {}
             if snapshot:
                 conn.sendall(ws_encode(json.dumps(snapshot)))
-            time.sleep(10)
     except Exception:
         pass
     finally:
+        with cfg._stats_lock:
+            cfg.active_ws_clients = max(0, cfg.active_ws_clients - 1)
         try:
             conn.close()
         except Exception:

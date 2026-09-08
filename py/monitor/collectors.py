@@ -138,7 +138,12 @@ def get_disk():
         return {"total_gb": 0, "used_gb": 0, "percent": 0}
 
 
+_net_info_cache = {'t': 0, 'data': None}
+
 def get_network_info():
+    now = time.time()
+    if _net_info_cache['data'] and (now - _net_info_cache['t']) < 60:
+        return _net_info_cache['data']
     import subprocess
     info = {
         "interface": "wlan0",
@@ -146,7 +151,7 @@ def get_network_info():
         "dns": "8.8.8.8, 10.8.2.1"
     }
     try:
-        res = subprocess.run(["ip", "addr", "show", "wlan0"], capture_output=True, text=True)
+        res = subprocess.run(["ip", "addr", "show", "wlan0"], capture_output=True, text=True, timeout=2)
         for line in res.stdout.split('\n'):
             if "inet " in line:
                 info["local_ip"] = line.strip().split()[1]
@@ -154,6 +159,8 @@ def get_network_info():
                 info["mac"] = line.strip().split()[1]
     except:
         pass
+    _net_info_cache['data'] = info
+    _net_info_cache['t'] = now
     return info
 
 def get_network():
@@ -288,8 +295,13 @@ def get_log_files_info():
         "files": log_files
     }
 
+_channel_logs_cache = {'t': 0, 'data': None}
+
 def get_channel_logs():
-    import os, subprocess, time
+    now = time.time()
+    if _channel_logs_cache['data'] and (now - _channel_logs_cache['t']) < 15:
+        return _channel_logs_cache['data']
+    import os, subprocess
     from pathlib import Path
     app_dir = "/data/data/com.termux/files/home/uni-activity"
     if not os.path.exists(app_dir):
@@ -423,6 +435,8 @@ def get_channel_logs():
 
     result["sftp"] = "\n".join(sftp_lines)
 
+    _channel_logs_cache['data'] = result
+    _channel_logs_cache['t'] = now
     return result
 
 def get_github_sync_logs_dict():
@@ -721,38 +735,37 @@ def _tcp_open(host, port):
 def get_services():
     global _services_cache, _services_cache_time
     import subprocess, time as _time
-    # Cache 15 วินาที — ไม่ต้อง pgrep ทุกรอบ
+    # Cache 15 วินาที — ไม่ต้อง query ซ้ำทุกรอบ
     if _services_cache and (_time.time() - _services_cache_time) < 15:
         return _services_cache
 
-    def pgrep(pattern):
-        try:
-            res = subprocess.run(["pgrep", "-f", pattern], capture_output=True, text=True)
-            return bool(res.stdout.strip())
-        except Exception:
-            return False
+    # Single-pass ps: รันครั้งเดียวแทนการรัน pgrep 8 ครั้ง
+    try:
+        res = subprocess.run(["ps", "-eo", "args"], capture_output=True, text=True, timeout=2)
+        all_procs = res.stdout
+    except Exception:
+        all_procs = ""
+
+    def proc_running(pattern):
+        return pattern in all_procs
 
     def count_workers():
-        try:
-            res = subprocess.run(["pgrep", "-f", "artisan serve"], capture_output=True, text=True)
-            return len([x for x in res.stdout.split() if x.strip()])
-        except Exception:
-            return 0
+        return all_procs.count("artisan serve")
 
     vk_host = _valkey_host()
     listening = get_listening_ports()
 
     candidates = [
-        ("Nginx (Edge Proxy)",          lambda: pgrep("nginx"),                     8080),
-        ("Web Workers (artisan serve)", lambda: count_workers() > 0,                None),
-        ("Laravel Reverb (WebSocket)",  lambda: pgrep("reverb:start"),              8082),
-        ("Datastore (Valkey)",          lambda: _tcp_open(vk_host, 6379),           None),
-        ("Queue Store (Valkey)",        lambda: _tcp_open(vk_host, 6380),           None),
-        ("PostgreSQL Database",         lambda: pgrep("postgres"),                  5432),
-        ("Queue Worker",                lambda: pgrep("artisan queue:work"),        None),
-        ("AI Biometrics Face Service",  lambda: pgrep("venv/bin/python server.py"), None),
-        ("Cloudflared Tunnel",          lambda: pgrep("cloudflared"),               None),
-        ("SSH / SFTP Server",           lambda: pgrep("sshd"),                      8022),
+        ("Nginx (Edge Proxy)",          lambda: proc_running("nginx"),                     8080),
+        ("Web Workers (artisan serve)", lambda: proc_running("artisan serve"),             None),
+        ("Laravel Reverb (WebSocket)",  lambda: proc_running("reverb:start"),              8082),
+        ("Datastore (Valkey)",          lambda: _tcp_open(vk_host, 6379),                  None),
+        ("Queue Store (Valkey)",        lambda: _tcp_open(vk_host, 6380),                  None),
+        ("PostgreSQL Database",         lambda: proc_running("postgres"),                  5432),
+        ("Queue Worker",                lambda: proc_running("artisan queue:work"),        None),
+        ("AI Biometrics Face Service",  lambda: proc_running("venv/bin/python server.py"), None),
+        ("Cloudflared Tunnel",          lambda: proc_running("cloudflared"),               None),
+        ("SSH / SFTP Server",           lambda: proc_running("sshd"),                      8022),
     ]
 
     status = {}
@@ -841,7 +854,15 @@ def get_net_speeds():
         "tx_kbps": round(tx_speed / 1024.0, 1)
     }
 
+_top_procs_cache = {'t': 0, 'data': []}
+_pg_stats_cache = {'t': 0, 'data': None}
+_redis_stats_cache = {'t': 0, 'data': None}
+_queue_stats_cache = {'t': 0, 'data': None}
+
 def get_top_processes():
+    now = time.time()
+    if _top_procs_cache['data'] and (now - _top_procs_cache['t']) < 10:
+        return _top_procs_cache['data']
     import subprocess
     procs = []
     try:
@@ -863,9 +884,14 @@ def get_top_processes():
         procs = sorted(procs, key=lambda x: x["cpu"], reverse=True)[:5]
     except:
         pass
+    _top_procs_cache['data'] = procs
+    _top_procs_cache['t'] = now
     return procs
 
 def get_postgres_stats():
+    now = time.time()
+    if _pg_stats_cache['data'] and (now - _pg_stats_cache['t']) < 15:
+        return _pg_stats_cache['data']
     import subprocess
     stats = {"db_size": "—", "connections": 0}
     try:
@@ -877,9 +903,14 @@ def get_postgres_stats():
             stats["db_size"] = res2.stdout.strip()
     except:
         pass
+    _pg_stats_cache['data'] = stats
+    _pg_stats_cache['t'] = now
     return stats
 
 def get_redis_stats():
+    now = time.time()
+    if _redis_stats_cache['data'] and (now - _redis_stats_cache['t']) < 15:
+        return _redis_stats_cache['data']
     import subprocess
     stats = {"used_memory": "—", "clients": 0}
     try:
@@ -897,9 +928,14 @@ def get_redis_stats():
                 stats["clients"] = int(line.split(":")[1].strip())
     except:
         pass
+    _redis_stats_cache['data'] = stats
+    _redis_stats_cache['t'] = now
     return stats
 
 def get_queue_stats():
+    now = time.time()
+    if _queue_stats_cache['data'] and (now - _queue_stats_cache['t']) < 15:
+        return _queue_stats_cache['data']
     import subprocess
     stats = {"pending": 0, "failed": 0}
     try:
@@ -914,9 +950,16 @@ def get_queue_stats():
             stats["failed"] = int(res2.stdout.strip())
     except:
         pass
+    _queue_stats_cache['data'] = stats
+    _queue_stats_cache['t'] = now
     return stats
 
+_cf_stats_cache = {'t': 0, 'data': None}
+
 def get_cloudflared_stats():
+    now = time.time()
+    if _cf_stats_cache['data'] and (now - _cf_stats_cache['t']) < 30:
+        return _cf_stats_cache['data']
     import urllib.request, re, subprocess
     stats = {
         "latency_ms"  : 0,
@@ -927,23 +970,23 @@ def get_cloudflared_stats():
     }
 
     def _fetch_metrics(port: int) -> str:
-        """ดึง metrics จาก cloudflared local port"""
-        for method in [
-            lambda: urllib.request.build_opener(
+        """ดึง metrics จาก cloudflared local port (fast probe)"""
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(0.15)
+            err = s.connect_ex(('127.0.0.1', port))
+            s.close()
+            if err != 0:
+                return ""
+        except Exception:
+            return ""
+
+        try:
+            return urllib.request.build_opener(
                 urllib.request.ProxyHandler({})
-            ).open(f"http://127.0.0.1:{port}/metrics", timeout=2).read().decode("utf-8"),
-            lambda: subprocess.run(
-                ["curl", "-s", "-m", "2", f"http://127.0.0.1:{port}/metrics"],
-                capture_output=True, text=True, timeout=3
-            ).stdout,
-        ]:
-            try:
-                content = method()
-                if content and len(content) > 10:
-                    return content
-            except Exception:
-                pass
-        return ""
+            ).open(f"http://127.0.0.1:{port}/metrics", timeout=1).read().decode("utf-8")
+        except Exception:
+            return ""
 
     # port 20241 → cloudflared ตัวแรก (--url :8080)
     content_1 = _fetch_metrics(20241)
@@ -995,6 +1038,8 @@ def get_cloudflared_stats():
         except Exception:
             stats[key] = False
 
+    _cf_stats_cache['data'] = stats
+    _cf_stats_cache['t'] = now
     return stats
 
 def get_gpu_stats():
@@ -1176,6 +1221,14 @@ _workers_health_cache = {'t': 0, 'data': []}
 
 def _check_worker_http(host, port, timeout=0.8):
     try:
+        # Fast TCP pre-probe: if port is closed or down, exit in 0.05-0.15s
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(0.15)
+        err = s.connect_ex((host, port))
+        s.close()
+        if err != 0:
+            return "000"
+
         import urllib.request, urllib.error
         req = urllib.request.Request(f"http://{host}:{port}/health", headers={"User-Agent": "Monitor/1.0"})
         with urllib.request.urlopen(req, timeout=timeout) as resp:
@@ -1681,44 +1734,6 @@ def get_proxy_status():
     except:
         pass
 
-    # DNS Resolution Time (test Cloudflare 1.1.1.1)
-    try:
-        import socket
-        dns_servers = ['1.1.1.1', '1.0.0.1']
-        dns_times = []
-        for dns in dns_servers:
-            try:
-                start = time.time()
-                socket.setdefaulttimeout(3)
-                result_dns = socket.getaddrinfo('github.com', 443, socket.AF_INET, socket.SOCK_STREAM)
-                elapsed = (time.time() - start) * 1000  # ms
-                dns_times.append(elapsed)
-            except:
-                pass
-        if dns_times:
-            cache_perf['dns_resolution_ms'] = round(sum(dns_times) / len(dns_times), 1)
-    except:
-        pass
-
-    # Squid cache manager stats
-    try:
-        mgr_output = _run_cmd("echo 'stats' | nc -w 2 127.0.0.1 3128 2>/dev/null | head -30")
-        if mgr_output:
-            for line in mgr_output.split('\n'):
-                if 'Memory usage' in line:
-                    try:
-                        mb = float(line.split(':')[1].strip().split()[0])
-                        cache_perf['cache_size_mb'] = mb
-                    except:
-                        pass
-                elif 'objects' in line.lower() and 'size' in line.lower():
-                    try:
-                        cache_perf['objects_in_cache'] = int(line.split()[0])
-                    except:
-                        pass
-    except:
-        pass
-
     result['cache_perf'] = cache_perf
 
     # ═══ Hardware Health (Phone 1 Gateway) ═══
@@ -1815,21 +1830,7 @@ def get_proxy_status():
     except:
         pass
 
-    # Squid manager info (squidclient mgr:info)
-    try:
-        mgr_info = _run_cmd("echo 'info' | nc -w 3 127.0.0.1 3128 2>/dev/null | head -40")
-        if mgr_info:
-            info_dict = {}
-            for line in mgr_info.split('\n'):
-                if ':' in line:
-                    key, _, val = line.partition(':')
-                    key = key.strip().lower().replace(' ', '_').replace('/', '_')
-                    val = val.strip()
-                    if val:
-                        info_dict[key] = val
-            hw_health['squid_mgr_info'] = info_dict
-    except:
-        pass
+
 
     result['hw_health'] = hw_health
 

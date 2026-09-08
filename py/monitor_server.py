@@ -46,8 +46,8 @@ if __name__ == "__main__":
     threading.Thread(target=fetch_public_ip_loop,     daemon=True).start()
 
     # ── HTTP Server ────────────────────────────────────────────────────────────
+    ThreadingHTTPServer.allow_reuse_address = True
     server = ThreadingHTTPServer(("", cfg.PORT), MonitorHandler)
-    server.allow_reuse_address = True
     print(f"[Monitor] Serving at http://0.0.0.0:{cfg.PORT}")
 
     # ── Telegram startup notification ─────────────────────────────────────────
