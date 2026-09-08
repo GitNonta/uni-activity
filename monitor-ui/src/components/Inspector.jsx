@@ -136,6 +136,30 @@ export function InspectorInner({ logs }) {
     );
   }
 
+  const getQueryParams = (log) => {
+    if (log?.request?.query && typeof log.request.query === 'object' && Object.keys(log.request.query).length > 0) {
+      return log.request.query;
+    }
+    const urlStr = log?.url || log?.path || '';
+    if (urlStr.includes('?')) {
+      try {
+        const queryStr = urlStr.split('?')[1];
+        const params = new URLSearchParams(queryStr);
+        const obj = {};
+        for (const [k, v] of params.entries()) {
+          obj[k] = v;
+        }
+        return Object.keys(obj).length > 0 ? obj : null;
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  };
+
+  const queryParams = selectedLog ? getQueryParams(selectedLog) : null;
+  const hasBody = Boolean(selectedLog?.request?.body && String(selectedLog.request.body).trim() !== '');
+
   return (
     <div style={{ display: 'flex', height: 'calc(100vh - 120px)', background: '#fff', borderRadius: '0.5rem', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
       
@@ -478,11 +502,144 @@ export function InspectorInner({ logs }) {
 
               {/* Tab: Payload */}
               {activeTab === 'payload' && (
-                <div>
-                  <h4 style={{ margin: '0 0 0.5rem 0', color: '#0f172a', fontWeight: 600, fontSize: '0.9rem' }}>Payload / Input Arguments</h4>
-                  <pre style={{ background: '#fff', border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '0.5rem', margin: 0, fontSize: '0.85rem', overflowX: 'auto', color: '#334155', whiteSpace: 'pre-wrap' }}>
-                    {selectedLog.request?.body || '(empty request payload)'}
-                  </pre>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                  
+                  {/* Query Parameters Section */}
+                  {queryParams && (
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <h4 style={{ margin: 0, color: '#0f172a', fontWeight: 600, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                          </svg>
+                          URL Query Parameters ({Object.keys(queryParams).length})
+                        </h4>
+                        <button
+                          onClick={() => copyToClipboard(JSON.stringify(queryParams, null, 2))}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                            border: '1px solid #cbd5e1',
+                            background: '#fff',
+                            padding: '0.2rem 0.5rem',
+                            borderRadius: '0.25rem',
+                            fontSize: '0.75rem',
+                            cursor: 'pointer',
+                            color: '#334155'
+                          }}
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                          </svg>
+                          {copied ? 'Copied!' : 'Copy Query'}
+                        </button>
+                      </div>
+
+                      <div style={{ background: '#fff', borderRadius: '0.5rem', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                          <thead>
+                            <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left', color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase' }}>
+                              <th style={{ padding: '0.6rem 1rem', width: '35%' }}>Parameter Key</th>
+                              <th style={{ padding: '0.6rem 1rem' }}>Value</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {Object.entries(queryParams).map(([k, v], idx) => (
+                              <tr key={k} style={{ borderBottom: idx < Object.keys(queryParams).length - 1 ? '1px solid #f1f5f9' : 'none' }}>
+                                <td style={{ padding: '0.6rem 1rem', fontWeight: 600, color: '#1e293b', fontFamily: 'monospace' }}>{k}</td>
+                                <td style={{ padding: '0.6rem 1rem', color: '#2563eb', fontFamily: 'monospace', wordBreak: 'break-all' }}>{String(v)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Request Body Payload Section */}
+                  {hasBody && (
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <h4 style={{ margin: 0, color: '#0f172a', fontWeight: 600, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                          </svg>
+                          Request Body Payload
+                        </h4>
+                        <button
+                          onClick={() => copyToClipboard(selectedLog.request.body)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                            border: '1px solid #cbd5e1',
+                            background: '#fff',
+                            padding: '0.2rem 0.5rem',
+                            borderRadius: '0.25rem',
+                            fontSize: '0.75rem',
+                            cursor: 'pointer',
+                            color: '#334155'
+                          }}
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                          </svg>
+                          {copied ? 'Copied!' : 'Copy Body'}
+                        </button>
+                      </div>
+
+                      <pre style={{ 
+                        background: '#0f172a', 
+                        color: '#f8fafc', 
+                        border: '1px solid #1e293b', 
+                        padding: '1rem', 
+                        borderRadius: '0.5rem', 
+                        margin: 0, 
+                        fontSize: '0.85rem', 
+                        overflowX: 'auto', 
+                        whiteSpace: 'pre-wrap', 
+                        lineHeight: '1.4' 
+                      }}>
+                        {selectedLog.request.body}
+                      </pre>
+                    </div>
+                  )}
+
+                  {/* Empty state if neither exists */}
+                  {!queryParams && !hasBody && (
+                    <div style={{ 
+                      background: '#fff', 
+                      borderRadius: '0.5rem', 
+                      border: '1px solid #e2e8f0', 
+                      padding: '2.5rem 1.5rem', 
+                      textAlign: 'center',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '0.75rem'
+                    }}>
+                      <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <line x1="8" y1="12" x2="16" y2="12"></line>
+                        </svg>
+                      </div>
+                      <div style={{ fontWeight: 600, color: '#0f172a', fontSize: '1rem' }}>
+                        No Input Arguments or Payload Transmitted
+                      </div>
+                      <div style={{ color: '#64748b', fontSize: '0.85rem', maxWidth: '420px', lineHeight: '1.4' }}>
+                        This <strong>{selectedLog.method}</strong> request to <code style={{ color: '#2563eb', background: '#eff6ff', padding: '0.1rem 0.3rem', borderRadius: '0.2rem' }}>{selectedLog.path || '/'}</code> did not carry any URL query parameters or HTTP request body payload.
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.5rem' }}>
+                        Standard HTTP {selectedLog.method} requests typically query resources without submitting data.
+                      </div>
+                    </div>
+                  )}
+
                 </div>
               )}
 

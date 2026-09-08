@@ -7,9 +7,11 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -168,7 +170,7 @@ func startUDPReceiver(port int, handler func([]byte)) {
 
 	go func() {
 		defer conn.Close()
-		buf := make([]byte, 8192)
+		buf := make([]byte, 65535)
 		for {
 			n, _, err := conn.ReadFromUDP(buf)
 			if err != nil {
@@ -231,6 +233,30 @@ func enrichInspectorItem(item map[string]interface{}) {
 	}
 	if _, ok := req["body"]; !ok {
 		req["body"] = ""
+	}
+	if _, ok := req["query"]; !ok {
+		rawURL := ""
+		if u, ok := item["url"].(string); ok && strings.Contains(u, "?") {
+			rawURL = u
+		} else if p, ok := item["path"].(string); ok && strings.Contains(p, "?") {
+			rawURL = p
+		}
+		if rawURL != "" {
+			parts := strings.SplitN(rawURL, "?", 2)
+			if len(parts) > 1 {
+				if parsedQuery, err := url.ParseQuery(parts[1]); err == nil && len(parsedQuery) > 0 {
+					qMap := make(map[string]interface{})
+					for k, v := range parsedQuery {
+						if len(v) == 1 {
+							qMap[k] = v[0]
+						} else {
+							qMap[k] = v
+						}
+					}
+					req["query"] = qMap
+				}
+			}
+		}
 	}
 	item["request"] = req
 
