@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"sync"
 	"syscall"
 	"time"
 
@@ -87,6 +88,7 @@ func main() {
 	startUDPReceiver(9998, func(data []byte) {
 		var item map[string]interface{}
 		if err := json.Unmarshal(data, &item); err == nil {
+			enrichInspectorItem(item)
 			col.AddInspectorLog(item)
 		}
 	})
@@ -94,6 +96,7 @@ func main() {
 	startUDPReceiver(9997, func(data []byte) {
 		var item map[string]interface{}
 		if err := json.Unmarshal(data, &item); err == nil {
+			enrichInspectorItem(item)
 			col.AddInspectorLog(item)
 		}
 	})
@@ -176,4 +179,71 @@ func startUDPReceiver(port int, handler func([]byte)) {
 			}
 		}
 	}()
+}
+
+var (
+	logSeq   uint64
+	logSeqMu sync.Mutex
+)
+
+func enrichInspectorItem(item map[string]interface{}) {
+	logSeqMu.Lock()
+	logSeq++
+	seq := logSeq
+	logSeqMu.Unlock()
+
+	if id, ok := item["id"].(string); !ok || id == "" {
+		item["id"] = fmt.Sprintf("act-%d-%d", time.Now().UnixMilli(), seq)
+	}
+	if _, ok := item["time"]; !ok {
+		item["time"] = time.Now().Format(time.RFC3339)
+	}
+	if _, ok := item["method"]; !ok {
+		item["method"] = "HTTP"
+	}
+	if _, ok := item["path"]; !ok {
+		item["path"] = "/"
+	}
+	if _, ok := item["status"]; !ok {
+		item["status"] = 200
+	}
+	if _, ok := item["duration"]; !ok {
+		item["duration"] = 0
+	}
+	if _, ok := item["ip"]; !ok {
+		item["ip"] = "127.0.0.1"
+	}
+
+	// Ensure request structure
+	req, ok := item["request"].(map[string]interface{})
+	if !ok || req == nil {
+		req = make(map[string]interface{})
+	}
+	if _, ok := req["headers"]; !ok {
+		headers := map[string]interface{}{
+			"Host":       "127.0.0.1",
+			"User-Agent": "UniActivity-Client",
+		}
+		if u, ok := item["url"].(string); ok && u != "" {
+			headers["URL"] = u
+		}
+		req["headers"] = headers
+	}
+	if _, ok := req["body"]; !ok {
+		req["body"] = ""
+	}
+	item["request"] = req
+
+	// Ensure response structure
+	res, ok := item["response"].(map[string]interface{})
+	if !ok || res == nil {
+		res = make(map[string]interface{})
+	}
+	if _, ok := res["headers"]; !ok {
+		res["headers"] = map[string]interface{}{}
+	}
+	if _, ok := res["body"]; !ok {
+		res["body"] = fmt.Sprintf("HTTP %v Status", item["status"])
+	}
+	item["response"] = res
 }
