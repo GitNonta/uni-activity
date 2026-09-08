@@ -3,8 +3,6 @@ package server
 import (
 	"encoding/json"
 	"net/http"
-	"net/http/httputil"
-	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -12,6 +10,10 @@ import (
 	"time"
 
 	"uni-activity/go-monitor/collector"
+	"uni-activity/go-monitor/deploy"
+	"uni-activity/go-monitor/proxy"
+	"uni-activity/go-monitor/speedtest"
+	"uni-activity/go-monitor/tunnel"
 )
 
 type HTTPServer struct {
@@ -31,8 +33,8 @@ func NewHTTPServer(staticDir string, c *collector.Collector, hub *WSHub) *HTTPSe
 func (s *HTTPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 1. CORS & Preflight
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Cache-Control")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Cache-Control, Authorization")
 
 	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusNoContent)
@@ -45,8 +47,9 @@ func (s *HTTPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 3. API Endpoints
 	path := r.URL.Path
+
+	// 3. API Endpoints — Core Telemetry
 	if path == "/api/stats" {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		data := s.collector.GetCachedJSON()
@@ -54,35 +57,11 @@ func (s *HTTPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			var err error
 			data, err = s.collector.Collect()
 			if err != nil {
-				http.Error(w, "Failed to collect stats", http.StatusInternalServerError)
+				http.Error(w, `{"status":"error","message":"Failed to collect stats"}`, http.StatusInternalServerError)
 				return
 			}
 		}
 		w.Write(data)
-		return
-	}
-
-	if path == "/api/tunnel-urls" {
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		payload, _ := json.Marshal(map[string]interface{}{
-			"http_url":   "",
-			"ssh_url":    "",
-			"server_lan": "192.168.1.222",
-			"ssh_port":   8022,
-			"updated_at": time.Now().Format("2006-01-02 15:04:05"),
-		})
-		w.Write(payload)
-		return
-	}
-
-	if strings.HasPrefix(path, "/api/proxy/traffic") {
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		payload, _ := json.Marshal(map[string]interface{}{
-			"ok":        true,
-			"timestamp": time.Now().Unix(),
-			"traffic":   map[string]interface{}{"requests": 150},
-		})
-		w.Write(payload)
 		return
 	}
 
@@ -96,17 +75,107 @@ func (s *HTTPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 4. Forward other admin/control endpoints to Python backend on port 9995
-	if strings.HasPrefix(path, "/api/deploy") || strings.HasPrefix(path, "/api/restart") ||
-		strings.HasPrefix(path, "/api/proxy/blocklist") || strings.HasPrefix(path, "/api/st") ||
-		strings.HasPrefix(path, "/api/speedtest") {
-		pyTarget, _ := url.Parse("http://127.0.0.1:9995")
-		proxy := httputil.NewSingleHostReverseProxy(pyTarget)
-		proxy.ServeHTTP(w, r)
+	// 4. API Endpoints — Cloudflare Tunnel
+	if path == "/api/tunnel-urls" {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		json.NewEncoder(w).Encode(tunnel.GetTunnelURLs())
 		return
 	}
 
-	// 5. If it's an API route that reached here, return JSON 404 (NEVER return HTML to API requests)
+	if path == "/api/restart-tunnel" {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		go tunnel.DoRestartTunnel()
+		json.NewEncoder(w).Encode(map[string]string{"status": "ok", "message": "Tunnel restart initiated"})
+		return
+	}
+
+	// 5. API Endpoints — Network & Speedtest
+	if strings.HasPrefix(path, "/api/st/upload") {
+		speedtest.HandleUpload(w, r)
+		return
+	}
+
+	if strings.HasPrefix(path, "/api/st/download") {
+		speedtest.HandleDownload(w, r)
+		return
+	}
+
+	if strings.HasPrefix(path, "/api/st/lan-ping") {
+		speedtest.HandleLANPing(w, r)
+		return
+	}
+
+	if path == "/api/st/ext-start" || path == "/api/speedtest" {
+		speedtest.HandleSpeedtestStart(w, r)
+		return
+	}
+
+	if strings.HasPrefix(path, "/api/st/ext-status") {
+		speedtest.HandleExtStatus(w, r)
+		return
+	}
+
+	// 6. API Endpoints — Git Deployment & Services
+	if strings.HasPrefix(path, "/api/deploy/manual") {
+		deploy.HandleManualDeploy(w, r)
+		return
+	}
+
+	if strings.HasPrefix(path, "/api/deploy/restart") {
+		deploy.HandleRestart(w, r)
+		return
+	}
+
+	if strings.HasPrefix(path, "/api/deploy/rollback") {
+		deploy.HandleRollback(w, r)
+		return
+	}
+
+	// 7. API Endpoints — Proxy & Blocklist
+	if strings.HasPrefix(path, "/api/proxy/traffic") {
+		proxy.HandleTraffic(w, r)
+		return
+	}
+
+	if path == "/api/proxy/blocklist" || strings.HasPrefix(path, "/api/proxy/blocklist?") {
+		proxy.HandleGetBlocklist(w, r)
+		return
+	}
+
+	if path == "/api/proxy/blocklist/add" {
+		proxy.HandleAddBlocklist(w, r)
+		return
+	}
+
+	if path == "/api/proxy/blocklist/remove" {
+		proxy.HandleRemoveBlocklist(w, r)
+		return
+	}
+
+	if path == "/api/proxy/blocklist/toggle" {
+		proxy.HandleToggleBlocklist(w, r)
+		return
+	}
+
+	if path == "/api/proxy/test" {
+		proxy.HandleTestProxies(w, r)
+		return
+	}
+
+	// 8. Special Files
+	if path == "/ssh-to-server.sh" {
+		scriptPath := "/data/data/com.termux/files/home/ssh-to-server.sh"
+		if data, err := os.ReadFile(scriptPath); err == nil {
+			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+			w.Header().Set("Content-Disposition", "inline; filename=ssh-to-server.sh")
+			w.Write(data)
+			return
+		}
+		http.NotFound(w, r)
+		return
+	}
+
+	// 9. Unknown API route -> Explicit JSON 404 (NEVER fall back to HTML for /api/)
 	if strings.HasPrefix(path, "/api/") {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusNotFound)
@@ -114,7 +183,7 @@ func (s *HTTPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 6. Static Files & SPA Fallback
+	// 10. Static Files & React SPA Fallback
 	cleanPath := strings.TrimPrefix(path, "/")
 	if cleanPath == "" {
 		cleanPath = "index.html"
@@ -123,7 +192,6 @@ func (s *HTTPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	filePath := filepath.Join(s.staticDir, cleanPath)
 	fileInfo, err := os.Stat(filePath)
 
-	// Fallback to index.html for SPA if file doesn't exist or is a directory
 	if err != nil || fileInfo.IsDir() {
 		filePath = filepath.Join(s.staticDir, "index.html")
 		fileInfo, err = os.Stat(filePath)
@@ -133,7 +201,6 @@ func (s *HTTPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Cache static assets
 	ext := filepath.Ext(filePath)
 	if ext == ".js" || ext == ".css" {
 		w.Header().Set("Cache-Control", "public, max-age=3600")

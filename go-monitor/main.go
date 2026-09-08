@@ -14,19 +14,21 @@ import (
 	"time"
 
 	"uni-activity/go-monitor/collector"
+	"uni-activity/go-monitor/config"
 	"uni-activity/go-monitor/server"
+	"uni-activity/go-monitor/telegram"
+	"uni-activity/go-monitor/tunnel"
 )
 
 func main() {
 	portFlag := flag.Int("port", 9999, "HTTP port to listen on")
 	flag.Parse()
 
-	log.Printf("🚀 Starting Go Monitor Agent on port %d...", *portFlag)
+	log.Printf("🚀 Starting Pure Go Monitor Agent on port %d...", *portFlag)
 
 	// Determine project root and static dist directory
 	projectRoot := "/data/data/com.termux/files/home/uni-activity"
 	if _, err := os.Stat(projectRoot); err != nil {
-		// Fallback to relative path
 		cwd, _ := os.Getwd()
 		projectRoot = filepath.Dir(cwd)
 	}
@@ -35,9 +37,20 @@ func main() {
 	log.Printf("📂 Project Root: %s", projectRoot)
 	log.Printf("🎨 Static UI Dir: %s", staticDir)
 
+	// Initialize Configuration & Environment (.env)
+	config.InitConfig(projectRoot)
+
+	// Start Background Engines
+	log.Println("🤖 Starting Telegram Bot Poller...")
+	telegram.StartBotPoller()
+
+	log.Println("☁️ Starting Cloudflare Tunnel Watcher...")
+	tunnel.StartTunnelWatcher()
+
+	// Initialize Telemetry Collector
 	col := collector.NewCollector(projectRoot)
 
-	// Collect initial snapshot
+	// Initial collection snapshot
 	initialData, err := col.Collect()
 	if err != nil {
 		log.Printf("⚠️ Initial collection warning: %v", err)
@@ -124,6 +137,9 @@ func main() {
 			log.Fatalf("❌ HTTP server error: %v", err)
 		}
 	}()
+
+	// Notify Telegram of Startup
+	go telegram.SendStartup(*portFlag)
 
 	// ── 4. Graceful Shutdown ──────────────────────────────────────────────────
 	sigChan := make(chan os.Signal, 1)

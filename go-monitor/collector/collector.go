@@ -10,8 +10,12 @@ import (
 	"sync"
 	"time"
 
+	"uni-activity/go-monitor/alerts"
+	"uni-activity/go-monitor/config"
 	"uni-activity/go-monitor/services"
+	"uni-activity/go-monitor/speedtest"
 	"uni-activity/go-monitor/sysinfo"
+	"uni-activity/go-monitor/tunnel"
 )
 
 type FullStats struct {
@@ -46,18 +50,18 @@ type FullStats struct {
 	PublicIP         string                 `json:"public_ip"`
 	AICluster        map[string]interface{} `json:"ai_cluster"`
 	Proxy            map[string]interface{} `json:"proxy"`
-	Alerts           []interface{}          `json:"alerts"`
-	AlertsHistory    []interface{}          `json:"alerts_history"`
+	Alerts           []alerts.AlertItem     `json:"alerts"`
+	AlertsHistory    []map[string]interface{} `json:"alerts_history"`
 }
 
 type Collector struct {
-	mu           sync.RWMutex
-	cachedStats  *FullStats
-	cachedJSON   []byte
-	projectRoot  string
-	publicIP     string
-	inspector    []interface{}
-	inspMu       sync.Mutex
+	mu          sync.RWMutex
+	cachedStats *FullStats
+	cachedJSON  []byte
+	projectRoot string
+	publicIP    string
+	inspector   []interface{}
+	inspMu      sync.Mutex
 }
 
 func NewCollector(projectRoot string) *Collector {
@@ -66,7 +70,6 @@ func NewCollector(projectRoot string) *Collector {
 		publicIP:    "127.0.0.1",
 		inspector:   make([]interface{}, 0, 100),
 	}
-	// Fetch initial public IP in background
 	go c.fetchPublicIP()
 	return c
 }
@@ -104,16 +107,7 @@ func (c *Collector) Collect() ([]byte, error) {
 		}
 	}
 
-	cfURL := ""
-	activeURLPath := filepath.Join(c.projectRoot, "docs/active_url.json")
-	if b, err := os.ReadFile(activeURLPath); err == nil {
-		var d struct {
-			URL string `json:"url"`
-		}
-		_ = json.Unmarshal(b, &d)
-		cfURL = d.URL
-	}
-
+	cfURL := tunnel.GetActiveURL()
 	sshSessions, sftp, scp := services.GetActiveSessions()
 
 	// Deploy logs
@@ -135,8 +129,25 @@ func (c *Collector) Collect() ([]byte, error) {
 	currentPublicIP := c.publicIP
 	c.mu.RUnlock()
 
+	memStats := sysinfo.GetMemory()
 	loadAvg := sysinfo.GetLoad()
 	diskStats := sysinfo.GetDisk("/data/data/com.termux/files/home")
+	tempStr := sysinfo.GetTemp()
+	svcs := services.CheckAllServices()
+
+	cfOnline, cfPing, cfErr, _ := tunnel.Status.GetStatus()
+
+	// Evaluate Alerts Engine
+	activeAlerts := alerts.Engine.Evaluate(
+		svcs,
+		loadAvg,
+		tempStr,
+		memStats.Percent,
+		diskStats.Percent,
+		cfOnline,
+	)
+
+	speedtestStatus := speedtest.CurrentJob.GetMap()
 
 	stats := &FullStats{
 		Timestamp: time.Now().Unix(),
@@ -152,25 +163,23 @@ func (c *Collector) Collect() ([]byte, error) {
 		},
 		CFUrl: cfURL,
 		CFStatus: map[string]interface{}{
-			"online":  cfURL != "",
-			"ping_ms": 12.5,
-			"error":   "",
+			"online":  cfOnline,
+			"ping_ms": cfPing,
+			"error":   cfErr,
 			"url":     cfURL,
 		},
-		Speedtest: map[string]interface{}{
-			"status": "idle",
-		},
+		Speedtest: speedtestStatus,
 		LineStatus: map[string]interface{}{
 			"status":     "OK",
 			"bot_name":   "Uni-Activity Bot",
 			"last_check": "Active",
 		},
-		Memory:   sysinfo.GetMemory(),
+		Memory:   memStats,
 		Load:     loadAvg,
-		Temp:     sysinfo.GetTemp(),
+		Temp:     tempStr,
 		Battery:  sysinfo.GetBattery(),
 		Disk:     diskStats,
-		Services: services.CheckAllServices(),
+		Services: svcs,
 		Network:  sysinfo.GetNetwork(),
 		NetworkInfo: map[string]string{
 			"interface": "wlan0",
@@ -211,7 +220,7 @@ func (c *Collector) Collect() ([]byte, error) {
 			},
 			"cloudflared": map[string]interface{}{
 				"status":     "healthy",
-				"latency_ms": 12.5,
+				"latency_ms": cfPing,
 			},
 			"gpu": map[string]interface{}{
 				"freq_mhz":     300,
@@ -231,8 +240,8 @@ func (c *Collector) Collect() ([]byte, error) {
 			"squid":   "running",
 			"workers": []string{"worker-1", "worker-2"},
 		},
-		Alerts:        []interface{}{},
-		AlertsHistory: []interface{}{},
+		Alerts:        activeAlerts,
+		AlertsHistory: config.AppConfig.GetAlertHistory(),
 	}
 
 	data, err := json.Marshal(stats)
