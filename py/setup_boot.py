@@ -45,9 +45,9 @@ nohup proot-distro login ubuntu -- bash -c "cd /data/data/com.termux/files/home/
 # 9. Wait for Cloudflared and update URL
 python ${APP_DIR}/py/start_cf_ubuntu.py
 
-# 10. Start Monitor Server (Port 9999)
-pkill -f 'monitor_server.py'
-nohup python ${APP_DIR}/py/monitor_server.py </dev/null > ${APP_DIR}/monitor.log 2>&1 &
+# 10. Start Go Monitor Server (Port 9999)
+pkill -f 'go-monitor'
+nohup ${APP_DIR}/go-monitor/go-monitor -port 9999 </dev/null > ${APP_DIR}/storage/logs/go-monitor.log 2>&1 &
 """
 
 client = paramiko.SSHClient()
