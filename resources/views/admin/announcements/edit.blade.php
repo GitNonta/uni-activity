@@ -4,7 +4,10 @@
 @section('content')
 <div class="flex items-center justify-between mb-4">
     <h1 class="font-bold" style="font-size:1.4rem;">แก้ไขประกาศ</h1>
-    <a href="{{ route('admin.announcements.index') }}" class="btn btn-outline btn-sm">← กลับ</a>
+    <a href="{{ route('admin.announcements.index') }}" class="btn btn-outline btn-sm" style="display:inline-flex;align-items:center;gap:.35rem;">
+        <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        <span>กลับ</span>
+    </a>
 </div>
 
 <div class="card">

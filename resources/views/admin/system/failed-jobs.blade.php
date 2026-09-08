@@ -178,7 +178,9 @@
     <div class="modal-content" style="max-width:800px; width:100%; max-height:85vh; display:flex; flex-direction:column; border-radius:12px; overflow:hidden; box-shadow:0 20px 25px -5px rgba(0,0,0,0.3); background:var(--surface, #ffffff); border:1px solid var(--border, #e2e8f0); color:var(--text-main, #0f172a);">
         <div style="padding:1.25rem; border-bottom:1px solid var(--border, #e2e8f0); display:flex; justify-content:space-between; align-items:center;">
             <h3 id="modalJobTitle" style="font-size:1.1rem; font-weight:700; color:var(--text-main, #0f172a); margin:0; line-height:1.5;">รายละเอียด Exception Stack Trace</h3>
-            <button onclick="closeJobModal()" style="background:none; border:none; font-size:1.25rem; color:var(--text-muted, #475569); cursor:pointer;">&times;</button>
+            <button onclick="closeJobModal()" style="background:none; border:none; display:flex; align-items:center; justify-content:center; color:var(--text-muted, #475569); cursor:pointer; width:28px; height:28px; border-radius:6px;" aria-label="ปิด">
+                <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
         </div>
         <div style="padding:1.25rem; overflow-y:auto; flex:1;">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem; font-size:0.85rem; line-height:1.5;">

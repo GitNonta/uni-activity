@@ -64,7 +64,10 @@
     </form>
 
     <div style="text-align: center; margin-top: 1.5rem;">
-        <a href="{{ route('login') }}" style="font-size: 0.8125rem; color: #94a3b8; text-decoration: none;">← กลับไปหน้าเข้าสู่ระบบ</a>
+        <a href="{{ route('login') }}" style="display:inline-flex;align-items:center;gap:.35rem;font-size: 0.8125rem; color: #94a3b8; text-decoration: none;">
+            <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            <span>กลับไปหน้าเข้าสู่ระบบ</span>
+        </a>
     </div>
 </div>
 

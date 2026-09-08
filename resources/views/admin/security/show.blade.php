@@ -57,8 +57,9 @@
 @section('content')
 <div class="detail-wrap">
     <div class="detail-header">
-        <a href="{{ route('admin.security-logs.index') }}" class="detail-back">
-            ← กลับรายการ
+        <a href="{{ route('admin.security-logs.index') }}" class="detail-back" style="display:inline-flex;align-items:center;gap:.35rem;">
+            <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            <span>กลับรายการ</span>
         </a>
         <h2 style="margin:0; font-size:1.2rem;">
             Security Log #{{ $securityLog->id }}

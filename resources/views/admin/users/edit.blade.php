@@ -7,7 +7,10 @@
     <h1 class="font-bold" style="font-size:1.4rem;">
         แก้ไข{{ $user->role === 'staff' ? 'เจ้าหน้าที่' : 'นักศึกษา' }}: {{ $user->full_name }}
     </h1>
-    <a href="{{ route('admin.users.index') }}" class="btn btn-outline btn-sm">← กลับ</a>
+    <a href="{{ route('admin.users.index') }}" class="btn btn-outline btn-sm" style="display:inline-flex;align-items:center;gap:.35rem;">
+        <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        <span>กลับ</span>
+    </a>
 </div>
 
 <div class="card">
@@ -21,9 +24,15 @@
                 <label class="form-label">บทบาท</label>
                 <div>
                     @if($user->role === 'staff')
-                        <span style="display:inline-block;padding:4px 12px;border-radius:12px;font-size:.85rem;background:#fee2e2;color:#991b1b;border:1px solid #fecaca;line-height:1.5;font-weight:600;">เจ้าหน้าที่</span>
+                        <span class="badge-role-staff">
+                            <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                            <span>เจ้าหน้าที่</span>
+                        </span>
                     @else
-                        <span style="display:inline-block;padding:4px 12px;border-radius:12px;font-size:.85rem;background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe;line-height:1.5;font-weight:600;">นักศึกษา</span>
+                        <span class="badge-role-student">
+                            <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
+                            <span>นักศึกษา</span>
+                        </span>
                     @endif
                 </div>
             </div>
@@ -39,7 +48,7 @@
             <div class="mb-3">
                 <label class="form-label">อีเมล <span style="color:#dc2626;">*</span></label>
                 @if($user->role === 'student')
-                    <input type="email" name="email" value="{{ old('email', $user->email) }}" class="form-control" readonly style="background:#f8fafc;color:#64748b;">
+                    <input type="email" name="email" value="{{ old('email', $user->email) }}" class="form-control" readonly style="background:var(--surface-hover, #f8fafc);color:var(--text-muted, #64748b);">
                     <div class="text-xs text-muted mt-1">อีเมลนักศึกษาถูกตั้งค่าอัตโนมัติตามรหัสนักศึกษา</div>
                 @else
                     <input type="email" name="email" value="{{ old('email', $user->email) }}" class="form-control" required>

@@ -258,17 +258,17 @@ html.dark .dashboard-view-all-logs-btn:hover {
                 'logout'  => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>',
                 default   => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4"/>',
             };
-            $badgeBg = match($log->action) {
-                'create','approve' => 'background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;',
-                'update','toggle'  => 'background:#fffbeb;color:#a16207;border:1px solid #fde68a;',
-                'delete','reject'  => 'background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;',
-                'login'            => 'background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;',
-                default            => 'background:#f8fafc;color:#475569;border:1px solid #e2e8f0;',
+            $actionBadgeCls = match($log->action) {
+                'create','approve' => 'audit-badge-create',
+                'update','toggle'  => 'audit-badge-update',
+                'delete','reject'  => 'audit-badge-delete',
+                'login'            => 'audit-badge-login',
+                default            => 'audit-badge-default',
             };
         @endphp
         <a href="{{ route('admin.audit-logs.show', $log->id) }}"
            class="dashboard-audit-row"
-           style="display:flex;align-items:center;gap:.875rem;padding:.875rem 1.25rem;border-bottom:1px solid #f1f5f9;text-decoration:none;color:inherit;">
+           style="display:flex;align-items:center;gap:.875rem;padding:.875rem 1.25rem;border-bottom:1px solid var(--border, #f1f5f9);text-decoration:none;color:inherit;">
             {{-- Action Icon --}}
             <div style="width:36px;height:36px;border-radius:10px;background:{{ $actionGradient }};display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.08);">
                 <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24">{!! $actionSvg !!}</svg>
@@ -283,12 +283,12 @@ html.dark .dashboard-view-all-logs-btn:hover {
             </div>
             {{-- Action Badge --}}
             <div style="flex-shrink:0;">
-                <span style="display:inline-flex;align-items:center;gap:3px;padding:3px 10px;border-radius:8px;font-size:.68rem;font-weight:700;{{ $badgeBg }}">
+                <span class="audit-badge {{ $actionBadgeCls }}">
                     {{ $log->action_label }}
                 </span>
             </div>
             {{-- Arrow --}}
-            <svg style="width:16px;height:16px;color:#cbd5e1;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <svg class="dashboard-audit-arrow" style="width:16px;height:16px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
         @empty
         <div class="empty-state empty-state-sm" style="padding:2.5rem 1rem;">
@@ -533,7 +533,9 @@ html.dark .dashboard-view-all-logs-btn:hover {
                 <svg class="icon-sm" style="display:inline;color:#16a34a;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 บันทึกกิจกรรมด่วน
             </h2>
-            <button class="modal-close" style="color: var(--text-muted, #64748b);" onclick="document.getElementById('quickModal').classList.remove('open')" aria-label="ปิด">&times;</button>
+            <button class="modal-close" style="color: var(--text-muted, #64748b);" onclick="document.getElementById('quickModal').classList.remove('open')" aria-label="ปิด">
+                <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
         </div>
         <div class="modal-body" style="background: var(--surface, #ffffff); color: var(--text-main, #0f172a);">
             <form method="POST" action="{{ route('admin.activities.quick-store') }}">

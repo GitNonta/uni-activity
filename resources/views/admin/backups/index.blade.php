@@ -7,9 +7,15 @@
     <div style="display:flex; gap:8px;">
         <form action="{{ route('admin.backups.clean') }}" method="POST" onsubmit="return confirm('ล้างไฟล์สำรองที่เก่าเกิน {{ $scheduleInfo['retention_days'] }} วัน?');">
             @csrf
-            <button type="submit" class="btn btn-outline btn-sm">ล้างไฟล์เก่า</button>
+            <button type="submit" class="btn btn-outline btn-sm" style="display:inline-flex;align-items:center;gap:.35rem;">
+                <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                <span>ล้างไฟล์เก่า</span>
+            </button>
         </form>
-        <button onclick="openModal()" class="btn btn-primary btn-sm">+ สำรองข้อมูลทันที</button>
+        <button onclick="openModal()" class="btn btn-primary btn-sm" style="display:inline-flex;align-items:center;gap:.35rem;">
+            <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <span>สำรองข้อมูลทันที</span>
+        </button>
     </div>
 </div>
 
@@ -119,14 +125,22 @@
                                 <button onclick="copyHash('{{ $b['sha256'] }}', this)" class="copy-btn" title="Click to copy">{{ substr((string)$b['sha256'], 0, 12 ) }}…</button>
                             </td>
                             <td data-label="จัดการ" class="text-right">
-                                <div style="display:flex; justify-content:flex-end; gap:4px;">
-                                    <a href="{{ route('admin.backups.download', $b['filename']) }}" class="btn btn-outline btn-sm" title="ดาวน์โหลด">↓</a>
+                                <div style="display:flex; justify-content:flex-end; gap:6px; align-items:center;">
+                                    <a href="{{ route('admin.backups.download', $b['filename']) }}"
+                                       class="btn btn-outline btn-sm backup-download-btn"
+                                       title="ดาวน์โหลดไฟล์สำรอง"
+                                       style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border-radius:6px;">
+                                        <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                    </a>
                                     <form action="{{ route('admin.backups.destroy', $b['filename']) }}" method="POST" style="display:inline;" onsubmit="return confirm('ลบ {{ $b['filename'] }}?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm" title="ลบ" style="display:inline-flex;align-items:center;justify-content:center;gap:.3rem;">
-                                            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                                            ลบ
+                                        <button type="submit"
+                                                class="btn btn-danger btn-sm backup-delete-btn"
+                                                title="ลบไฟล์สำรอง"
+                                                style="display:inline-flex;align-items:center;justify-content:center;gap:.35rem;padding:.4rem .75rem;border-radius:6px;">
+                                            <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                            <span>ลบ</span>
                                         </button>
                                     </form>
                                 </div>
@@ -174,14 +188,20 @@
 
 @section('styles')
 <style>
+    .copy-btn { font-family:monospace; font-size:0.7rem; padding:2px 8px; border-radius:4px; background:#f1f5f9; border:1px solid #cbd5e1; color:#334155; cursor:pointer; transition:all 0.15s; line-height:1.5; }
+    .copy-btn:hover { background:#c2410c; color:#fff; border-color:#c2410c; }
+    html[data-theme="dark"] .copy-btn, html.dark .copy-btn { background: #27272a; border-color: #3f3f46; color: #d4d4d8; }
+    html[data-theme="dark"] .copy-btn:hover, html.dark .copy-btn:hover { background: #ea580c; border-color: #ea580c; color: #fff; }
     .filter-tab { padding:4px 10px; font-size:0.7rem; font-weight:600; border-radius:4px; border:1px solid #cbd5e1; background:#fff; color:#475569; cursor:pointer; line-height:1.5; }
     .filter-tab.active { background:#c2410c; color:#fff; border-color:#c2410c; }
     .filter-tab:hover { border-color:#c2410c; color:#c2410c; }
-    .copy-btn { font-family:monospace; font-size:0.7rem; padding:2px 8px; border-radius:4px; background:#f1f5f9; border:1px solid #cbd5e1; color:#334155; cursor:pointer; transition:all 0.15s; line-height:1.5; }
-    .copy-btn:hover { background:#c2410c; color:#fff; border-color:#c2410c; }
+    html[data-theme="dark"] .filter-tab, html.dark .filter-tab { background: #18181b; border-color: #27272a; color: #cbd5e1; }
+    html[data-theme="dark"] .filter-tab.active, html.dark .filter-tab.active { background: #ea580c; border-color: #ea580c; color: #fff; }
     .toast { padding:0.625rem 0.875rem; border-radius:6px; font-size:0.8rem; font-weight:600; box-shadow:0 2px 8px rgba(0,0,0,0.12); margin-bottom:6px; animation:fadeIn 0.2s ease; }
     .toast-success { background:#dcfce7; color:#166534; border:1px solid #bbf7d0; }
     .toast-error { background:#fee2e2; color:#991b1b; border:1px solid #fecaca; }
+    html[data-theme="dark"] .toast-success, html.dark .toast-success { background: rgba(34, 197, 94, 0.2); color: #4ade80; border-color: rgba(34, 197, 94, 0.4); }
+    html[data-theme="dark"] .toast-error, html.dark .toast-error { background: rgba(239, 68, 68, 0.2); color: #f87171; border-color: rgba(239, 68, 68, 0.4); }
     @keyframes fadeIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
     @media (max-width:768px) { .responsive-table { display:block; } }
 </style>
