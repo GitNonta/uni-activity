@@ -494,6 +494,74 @@ func enrichInspectorItem(item map[string]interface{}) {
 	}
 	item["gateway"] = gateway
 
+	// Ensure User Identity (Who)
+	user, ok := item["user"].(map[string]interface{})
+	methodStr, _ := item["method"].(string)
+	pathStr, _ := item["path"].(string)
+	if !ok || user == nil {
+		if methodStr == "SHELL" || methodStr == "ARTISAN" {
+			user = map[string]interface{}{
+				"is_authenticated": true,
+				"id":               nil,
+				"name":             "System Console (ส่วนกลาง)",
+				"role":             "system",
+				"student_id":       nil,
+				"email":            nil,
+			}
+		} else {
+			user = map[string]interface{}{
+				"is_authenticated": false,
+				"id":               nil,
+				"name":             "Guest Visitor (ผู้เยี่ยมชม)",
+				"role":             "guest",
+				"student_id":       nil,
+				"email":            nil,
+			}
+		}
+	}
+	item["user"] = user
+
+	// Ensure Action & Section (What & Which section)
+	if act, _ := item["action"].(string); act == "" {
+		if methodStr == "ARTISAN" {
+			item["action"] = "รันคำสั่ง Artisan CLI"
+		} else if methodStr == "SHELL" {
+			item["action"] = "รันคำสั่ง Shell Command"
+		} else if pathStr == "/" || pathStr == "" {
+			item["action"] = "เข้าสู่หน้าหลัก (Visit Homepage)"
+		} else {
+			item["action"] = fmt.Sprintf("เข้าชมข้อมูล (%s %s)", methodStr, pathStr)
+		}
+	}
+
+	if sec, _ := item["section"].(string); sec == "" {
+		if methodStr == "ARTISAN" || methodStr == "SHELL" {
+			item["section"] = "CLI / System Console"
+		} else if strings.HasPrefix(pathStr, "admin") {
+			item["section"] = "Admin Management (ส่วนผู้ดูแลระบบ)"
+		} else if strings.HasPrefix(pathStr, "student") {
+			item["section"] = "Student Portal (ส่วนนักศึกษา)"
+		} else if strings.HasPrefix(pathStr, "activities") {
+			item["section"] = "Activities Hub (ส่วนกิจกรรม)"
+		} else if strings.Contains(pathStr, "scanner") || strings.Contains(pathStr, "checkin") {
+			item["section"] = "AI Face Scanner (ส่วนสแกนใบหน้า)"
+		} else if strings.HasPrefix(pathStr, "login") || strings.HasPrefix(pathStr, "password") {
+			item["section"] = "Authentication & Security (ระบบเข้าสู่ระบบ)"
+		} else {
+			item["section"] = "General / Public (ส่วนทั่วไป)"
+		}
+	}
+
+	if _, ok := item["route"]; !ok {
+		item["route"] = ""
+	}
+	if _, ok := item["controller"]; !ok {
+		item["controller"] = ""
+	}
+	if _, ok := item["referer"]; !ok {
+		item["referer"] = ""
+	}
+
 	// Ensure response structure
 	res, ok := item["response"].(map[string]interface{})
 	if !ok || res == nil {

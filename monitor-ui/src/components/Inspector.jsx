@@ -280,19 +280,61 @@ export function InspectorInner({ logs }) {
                     transition: 'background 0.1s ease'
                   }}
                 >
-                  <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingRight: '0.5rem', flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingRight: '0.5rem', flex: 1, gap: '0.2rem' }}>
+                    {/* Method & Section Badge */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', overflow: 'hidden' }}>
                       <span style={getMethodBadgeStyle(log.method)}>{log.method}</span>
-                      <span style={{ fontWeight: 600, fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={log.path || log.url}>
-                        {log.path || log.url || '/'}
-                      </span>
+                      {log.section && (
+                        <span style={{
+                          fontSize: '0.68rem',
+                          fontWeight: 600,
+                          padding: '0.1rem 0.4rem',
+                          borderRadius: '0.25rem',
+                          background: isSelected ? 'rgba(255,255,255,0.18)' : '#e0e7ff',
+                          color: isSelected ? '#fff' : '#3730a3',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          maxWidth: '180px'
+                        }}>
+                          {log.section.split(' (')[0]}
+                        </span>
+                      )}
                     </div>
+
+                    {/* Action Title (What they are doing) */}
+                    <div style={{ fontWeight: 700, fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: isSelected ? '#fff' : '#0f172a' }}>
+                      {log.action || log.path || '/'}
+                    </div>
+
+                    {/* User Identity (Who) */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.72rem', color: isSelected ? '#cbd5e1' : '#475569' }}>
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                      </svg>
+                      <span style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '160px' }}>
+                        {log.user?.name || 'Guest Visitor'}
+                      </span>
+                      {log.user?.role && (
+                        <span style={{
+                          fontSize: '0.62rem',
+                          padding: '0.05rem 0.3rem',
+                          borderRadius: '0.2rem',
+                          fontWeight: 600,
+                          background: isSelected ? 'rgba(255,255,255,0.2)' : log.user.role === 'admin' ? '#fef3c7' : log.user.role === 'student' ? '#dbeafe' : '#f1f5f9',
+                          color: isSelected ? '#fff' : log.user.role === 'admin' ? '#92400e' : log.user.role === 'student' ? '#1e40af' : '#475569'
+                        }}>
+                          {log.user.role.toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+
                     {/* Origin & IP Sub-row */}
                     <div style={{ 
                       display: 'flex', 
                       alignItems: 'center', 
                       gap: '0.35rem', 
-                      marginTop: '0.2rem', 
                       fontSize: '0.7rem',
                       color: isSelected ? '#94a3b8' : '#64748b' 
                     }}>
@@ -338,7 +380,7 @@ export function InspectorInner({ logs }) {
         {selectedLog ? (
           <>
             <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0', background: '#fff' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', color: '#64748b', fontSize: '0.8rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', color: '#64748b', fontSize: '0.8rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
@@ -346,6 +388,27 @@ export function InspectorInner({ logs }) {
                   </svg>
                   <span>{new Date(selectedLog.time || Date.now()).toLocaleString()}</span>
                 </div>
+
+                {/* User Identity Badge */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: '#f8fafc', padding: '0.2rem 0.6rem', borderRadius: '0.375rem', border: '1px solid #e2e8f0' }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  <span style={{ color: '#64748b' }}>User:</span>
+                  <strong style={{ color: '#0f172a' }}>{selectedLog.user?.name || 'Guest Visitor'}</strong>
+                  <span style={{
+                    fontSize: '0.68rem',
+                    fontWeight: 600,
+                    padding: '0.1rem 0.4rem',
+                    borderRadius: '0.2rem',
+                    background: selectedLog.user?.role === 'admin' ? '#fef3c7' : selectedLog.user?.role === 'student' ? '#dbeafe' : '#f1f5f9',
+                    color: selectedLog.user?.role === 'admin' ? '#92400e' : selectedLog.user?.role === 'student' ? '#1e40af' : '#475569'
+                  }}>
+                    {selectedLog.user?.role ? selectedLog.user.role.toUpperCase() : 'GUEST'}
+                  </span>
+                </div>
+
                 <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center', flexWrap: 'wrap' }}>
                   <span>Duration: <strong>{Number(selectedLog.duration || 0).toFixed(2)} ms</strong></span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
@@ -376,11 +439,32 @@ export function InspectorInner({ logs }) {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              {/* Main Action Title & Section */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                 <span style={getMethodBadgeStyle(selectedLog.method)}>{selectedLog.method}</span>
-                <h2 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: '#0f172a', fontFamily: getLogType(selectedLog) !== 'http' ? 'monospace' : 'inherit', wordBreak: 'break-all' }}>
-                  {selectedLog.path || selectedLog.url || '/'}
+                <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700, color: '#0f172a' }}>
+                  {selectedLog.action || selectedLog.path || '/'}
                 </h2>
+                {selectedLog.section && (
+                  <span style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    padding: '0.15rem 0.6rem',
+                    borderRadius: '0.375rem',
+                    background: '#e0e7ff',
+                    color: '#3730a3',
+                    border: '1px solid #c7d2fe'
+                  }}>
+                    {selectedLog.section}
+                  </span>
+                )}
+              </div>
+
+              {/* Path, Route & Controller */}
+              <div style={{ marginTop: '0.4rem', fontSize: '0.8rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <span>Path: <strong style={{ fontFamily: 'monospace', color: '#334155' }}>{selectedLog.path || '/'}</strong></span>
+                {selectedLog.route && <span>• Route: <strong style={{ fontFamily: 'monospace', color: '#2563eb' }}>{selectedLog.route}</strong></span>}
+                {selectedLog.controller && <span>• Controller: <strong style={{ fontFamily: 'monospace', color: '#059669' }}>{selectedLog.controller}</strong></span>}
               </div>
             </div>
             
@@ -465,34 +549,219 @@ export function InspectorInner({ logs }) {
                     </div>
                   </div>
 
-                  {/* Key Metrics Grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                  {/* 1. Who & What Key Summary Grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+                    {/* User Summary Box */}
                     <div style={{ background: '#fff', padding: '1rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Target Path</div>
-                      <div style={{ fontSize: '0.9rem', color: '#0f172a', fontWeight: 600, marginTop: '0.25rem', fontFamily: 'monospace', wordBreak: 'break-all' }}>
-                        {selectedLog.path || '/'}
+                      <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                          <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span>Who (ผู้ใช้งาน)</span>
                       </div>
-                    </div>
-
-                    <div style={{ background: '#fff', padding: '1rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Client Source</div>
-                      <div style={{ fontSize: '0.9rem', color: '#0f172a', fontWeight: 600, marginTop: '0.25rem', fontFamily: 'monospace', display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
-                        <span>{selectedLog.ip || '127.0.0.1'}</span>
-                        <span style={{ fontSize: '0.75rem', color: '#2563eb', fontWeight: 500 }}>
-                          ({selectedLog.city ? `${selectedLog.city}${thaiProvinceMap[selectedLog.city] ? ` (${thaiProvinceMap[selectedLog.city]})` : ''}, ${selectedLog.country_name || selectedLog.country || selectedLog.origin}` : (selectedLog.origin || (selectedLog.ip === '127.0.0.1' ? 'Localhost' : 'LAN'))})
+                      <div style={{ fontSize: '0.95rem', color: '#0f172a', fontWeight: 700, marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                        <span>{selectedLog.user?.name || 'Guest Visitor'}</span>
+                        <span style={{
+                          fontSize: '0.65rem',
+                          fontWeight: 600,
+                          padding: '0.1rem 0.4rem',
+                          borderRadius: '0.2rem',
+                          background: selectedLog.user?.role === 'admin' ? '#fef3c7' : selectedLog.user?.role === 'student' ? '#dbeafe' : '#f1f5f9',
+                          color: selectedLog.user?.role === 'admin' ? '#92400e' : selectedLog.user?.role === 'student' ? '#1e40af' : '#475569'
+                        }}>
+                          {selectedLog.user?.role ? selectedLog.user.role.toUpperCase() : 'GUEST'}
                         </span>
                       </div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.2rem' }}>
+                        {selectedLog.user?.student_id ? `Student ID: ${selectedLog.user.student_id}` : (selectedLog.user?.email || 'ไม่ได้เข้าสู่ระบบ (Anonymous)')}
+                      </div>
                     </div>
 
+                    {/* Action Summary Box */}
                     <div style={{ background: '#fff', padding: '1rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Event Timestamp</div>
-                      <div style={{ fontSize: '0.85rem', color: '#0f172a', fontWeight: 600, marginTop: '0.25rem' }}>
-                        {new Date(selectedLog.time || Date.now()).toLocaleTimeString()}
+                      <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                        <span>What (การกระทำ)</span>
+                      </div>
+                      <div style={{ fontSize: '0.95rem', color: '#0f172a', fontWeight: 700, marginTop: '0.35rem' }}>
+                        {selectedLog.action || selectedLog.path || '/'}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: '#2563eb', marginTop: '0.2rem', fontWeight: 500 }}>
+                        {selectedLog.section || 'General / Public'}
+                      </div>
+                    </div>
+
+                    {/* Target & Route Box */}
+                    <div style={{ background: '#fff', padding: '1rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
+                      <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+                        </svg>
+                        <span>Section & Route (ส่วนระบบ)</span>
+                      </div>
+                      <div style={{ fontSize: '0.88rem', color: '#0f172a', fontWeight: 600, marginTop: '0.35rem', fontFamily: 'monospace' }}>
+                        {selectedLog.route || selectedLog.path || '/'}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.2rem', fontFamily: 'monospace' }}>
+                        {selectedLog.controller || 'Direct View / Closure'}
+                      </div>
+                    </div>
+
+                    {/* Source & Location Box */}
+                    <div style={{ background: '#fff', padding: '1rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
+                      <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <line x1="2" y1="12" x2="22" y2="12"></line>
+                          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                        </svg>
+                        <span>Client Location (ตำแหน่ง)</span>
+                      </div>
+                      <div style={{ fontSize: '0.9rem', color: '#0f172a', fontWeight: 600, marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <span style={{ fontFamily: 'monospace' }}>{selectedLog.ip || '127.0.0.1'}</span>
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: '#2563eb', marginTop: '0.2rem', fontWeight: 600 }}>
+                        {selectedLog.city ? `${selectedLog.city}${thaiProvinceMap[selectedLog.city] ? ` (${thaiProvinceMap[selectedLog.city]})` : ''}, ${selectedLog.country_name || selectedLog.country || selectedLog.origin}` : (selectedLog.origin || 'LAN')}
                       </div>
                     </div>
                   </div>
 
-                  {/* Client Source & Origin Details Card */}
+                  {/* 2. User & Activity Deep Dive Card */}
+                  <div style={{ background: '#fff', borderRadius: '0.5rem', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+                    <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, fontSize: '0.85rem', color: '#0f172a' }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                          <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span>User & Activity Details (ใครใช้เว็บ และทำอะไรส่วนไหน)</span>
+                      </div>
+                      <span style={{
+                        fontSize: '0.72rem',
+                        fontWeight: 600,
+                        padding: '0.15rem 0.5rem',
+                        borderRadius: '1rem',
+                        background: selectedLog.user?.is_authenticated ? '#dcfce7' : '#f1f5f9',
+                        color: selectedLog.user?.is_authenticated ? '#15803d' : '#475569'
+                      }}>
+                        {selectedLog.user?.is_authenticated ? 'Authenticated User' : 'Anonymous Guest'}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1px', background: '#e2e8f0' }}>
+                      {/* Name & Role */}
+                      <div style={{ background: '#fff', padding: '0.85rem 1rem' }}>
+                        <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>User Full Name</div>
+                        <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#0f172a' }}>
+                          {selectedLog.user?.name || 'Guest Visitor (ผู้เยี่ยมชม)'}
+                        </div>
+                        <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '0.2rem' }}>
+                          Role: <strong style={{ textTransform: 'uppercase' }}>{selectedLog.user?.role || 'guest'}</strong>
+                          {selectedLog.user?.id && <span> • ID: #{selectedLog.user.id}</span>}
+                        </div>
+                      </div>
+
+                      {/* Student ID / Faculty */}
+                      <div style={{ background: '#fff', padding: '0.85rem 1rem' }}>
+                        <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>Student ID / Contact</div>
+                        <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#0f172a', fontFamily: selectedLog.user?.student_id ? 'monospace' : 'inherit' }}>
+                          {selectedLog.user?.student_id || selectedLog.user?.email || 'N/A (Guest)'}
+                        </div>
+                        {selectedLog.user?.faculty && (
+                          <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '0.2rem' }}>
+                            Faculty: <strong>{selectedLog.user.faculty}</strong>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Action Title */}
+                      <div style={{ background: '#fff', padding: '0.85rem 1rem' }}>
+                        <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>Action (สิ่งที่ทำ)</div>
+                        <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#2563eb' }}>
+                          {selectedLog.action || selectedLog.path || '/'}
+                        </div>
+                        <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '0.2rem' }}>
+                          Method: <strong>{selectedLog.method}</strong> • Status: <strong>{selectedLog.status}</strong>
+                        </div>
+                      </div>
+
+                      {/* System Section */}
+                      <div style={{ background: '#fff', padding: '0.85rem 1rem' }}>
+                        <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>System Section (ส่วนของระบบ)</div>
+                        <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#059669' }}>
+                          {selectedLog.section || 'General / Public'}
+                        </div>
+                        {selectedLog.route && (
+                          <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.2rem', fontFamily: 'monospace' }}>
+                            Route: {selectedLog.route}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. Origin Entry URL & Referer Card */}
+                  <div style={{ background: '#fff', borderRadius: '0.5rem', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+                    <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, fontSize: '0.85rem', color: '#0f172a' }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                        </svg>
+                        <span>Origin Entry URL & Referer (ต้นทางของ URL และการเข้าถึง)</span>
+                      </div>
+                      <span style={{ fontSize: '0.72rem', color: '#64748b' }}>Full HTTP Entry Path</span>
+                    </div>
+
+                    <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      {/* Full Public URL */}
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
+                          <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Full Request URL (ตั้งแต่ต้นทาง)</span>
+                          <button
+                            onClick={() => copyToClipboard(selectedLog.url || '')}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.3rem',
+                              border: '1px solid #cbd5e1',
+                              background: '#f8fafc',
+                              padding: '0.15rem 0.45rem',
+                              borderRadius: '0.25rem',
+                              fontSize: '0.7rem',
+                              cursor: 'pointer',
+                              color: '#334155'
+                            }}
+                          >
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            {copied ? 'Copied!' : 'Copy'}
+                          </button>
+                        </div>
+                        <div style={{ fontSize: '0.85rem', color: '#2563eb', fontFamily: 'monospace', wordBreak: 'break-all', background: '#f8fafc', padding: '0.5rem 0.75rem', borderRadius: '0.375rem', border: '1px solid #e2e8f0' }}>
+                          {selectedLog.url || '/'}
+                        </div>
+                      </div>
+
+                      {/* Referer URL */}
+                      {selectedLog.referer && (
+                        <div>
+                          <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>Referer (หน้าที่กดลิงก์เข้ามา)</div>
+                          <div style={{ fontSize: '0.8rem', color: '#475569', fontFamily: 'monospace', wordBreak: 'break-all', background: '#f8fafc', padding: '0.4rem 0.75rem', borderRadius: '0.375rem', border: '1px solid #e2e8f0' }}>
+                            {selectedLog.referer}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 4. Client Source & Origin Details Card */}
                   <div style={{ background: '#fff', borderRadius: '0.5rem', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
                     <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, fontSize: '0.85rem', color: '#0f172a' }}>
@@ -501,7 +770,7 @@ export function InspectorInner({ logs }) {
                           <line x1="2" y1="12" x2="22" y2="12"></line>
                           <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                         </svg>
-                        <span>Client Source & Origin Information (ที่อยู่และข้อมูลต้นทาง)</span>
+                        <span>Client Location & Network Information (ที่อยู่และข้อมูลเครือข่าย)</span>
                       </div>
                       <span style={{ 
                         fontSize: '0.72rem', 

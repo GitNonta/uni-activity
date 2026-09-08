@@ -339,26 +339,37 @@ func startTunnels() (httpURL, sshURL string, err error) {
 	}
 	time.Sleep(1 * time.Second)
 
-	// SSH tunnel
-	sshCmd := fmt.Sprintf(
-		"nohup cloudflared tunnel --url http://127.0.0.1:80 --no-autoupdate --metrics 127.0.0.1:20242 > %s 2>&1 &",
-		logSSH,
-	)
-	if e := exec.Command("sh", "-c", sshCmd).Start(); e != nil {
-		log.Printf("[CF-MGR] ⚠️  SSH tunnel start failed: %v", e)
+	// SSH tunnel (only if explicitly enabled in .env to save Cloudflare rate limit quota)
+	if readEnv("ENABLE_SSH_TUNNEL") == "true" {
+		sshCmd := fmt.Sprintf(
+			"nohup cloudflared tunnel --url ssh://127.0.0.1:8022 --no-autoupdate --metrics 127.0.0.1:20242 > %s 2>&1 &",
+			logSSH,
+		)
+		if e := exec.Command("sh", "-c", sshCmd).Start(); e != nil {
+			log.Printf("[CF-MGR] ⚠️  SSH tunnel start failed: %v", e)
+		}
 	}
 
 	// Poll logs for URLs (max 60s)
 	log.Println("[CF-MGR] Polling for tunnel URLs…")
 	for i := 0; i < 60; i++ {
 		time.Sleep(1 * time.Second)
+
+		// Check for rate limit error in log
+		if data, err := os.ReadFile(logHTTP); err == nil {
+			str := string(data)
+			if strings.Contains(str, "429 Too Many Requests") || strings.Contains(str, "1015") {
+				return "", "", fmt.Errorf("rate-limited by Cloudflare (HTTP 429 / Error 1015). Must cooldown for 10-15 minutes")
+			}
+		}
+
 		if httpURL == "" {
 			httpURL = lastURLFromLog(logHTTP)
 		}
-		if sshURL == "" {
+		if sshURL == "" && readEnv("ENABLE_SSH_TUNNEL") == "true" {
 			sshURL = lastURLFromLog(logSSH)
 		}
-		if httpURL != "" && sshURL != "" {
+		if httpURL != "" && (sshURL != "" || readEnv("ENABLE_SSH_TUNNEL") != "true") {
 			break
 		}
 	}
@@ -433,6 +444,10 @@ func runHealthWatcher(getActiveURL func() string) {
 				newHTTP, newSSH, startErr := startTunnels()
 				if startErr != nil {
 					log.Printf("[CF-MGR] Auto-restart failed: %v", startErr)
+					if strings.Contains(startErr.Error(), "rate-limited") {
+						log.Println("[CF-MGR] ⏳ Entering 10-minute cooldown to allow Cloudflare rate limit to clear...")
+						lastRestart = time.Now().Add(8 * time.Minute) // 8m + 2m cooldown = 10m backoff
+					}
 				} else {
 					applyNewURL(newHTTP, newSSH)
 				}
