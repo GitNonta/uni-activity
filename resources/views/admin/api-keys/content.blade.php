@@ -47,7 +47,6 @@
                         @error('name')
                             <p class="text-xs mt-1" style="color:#ef4444; font-weight:500;">{{ $message }}</p>
                         @enderror
-                        <p class="text-xs text-muted mt-2" style="line-height:1.5; color:#475569;">ระบุชื่อที่ชัดเจนเพื่อให้คุณจดจำได้ว่าคีย์นี้ใช้เชื่อมต่อกับแอปพลิเคชันหรือบริการใด</p>
                     </div>
                     
                     <button type="submit" class="btn btn-primary" style="background:#ea580c; color:white; border-radius:8px; font-weight:600; border:none; padding:0.65rem 1rem; width:100%; box-shadow:0 2px 4px rgba(234,88,12,0.15);">
@@ -166,7 +165,7 @@ html.dark .api-key-row:hover td {
             const originalText = copyBtn.innerText;
             const originalBg = copyBtn.style.background;
             
-            copyBtn.innerText = '✓ คัดลอกแล้ว';
+            copyBtn.innerText = 'คัดลอกเรียบร้อย';
             copyBtn.style.background = '#059669';
             
             setTimeout(() => {

@@ -55,14 +55,16 @@ class SecurityLog extends Model
         return $query->where('is_reviewed', false);
     }
 
-    /** แปลง event_type เป็นข้อความภาษาไทย */
+    /** แปลง event_type เป็นข้อความภาษาไทย (ตามกฎ SVG เท่านั้น ไม่ใช้ Emoji) */
     public function getEventTypeLabelAttribute(): string
     {
         return match ($this->event_type) {
-            'multi_account_login' => '🔴 Login หลาย Account จากเครื่องเดียวกัน',
-            'suspicious_checkin'  => '🟡 เช็คอินน่าสงสัย (IP/Device ซ้ำ)',
-            'device_mismatch'     => '🟠 Device ไม่ตรงกับครั้งที่แล้ว',
-            default               => $this->event_type,
+            'multi_account_login'  => 'เข้าสู่ระบบหลายบัญชี (Multi Account Login)',
+            'suspicious_checkin'   => 'การเช็คอินน่าสงสัย (Suspicious Checkin)',
+            'device_mismatch'      => 'อุปกรณ์ไม่ตรงกับที่บันทึกไว้',
+            'staff_login_failed'   => 'เข้าสู่ระบบเจ้าหน้าที่ไม่สำเร็จ',
+            'rate_limit_exceeded'  => 'คำขอเกินขีดจำกัดความปลอดภัย',
+            default                => ucwords(str_replace('_', ' ', (string) $this->event_type)),
         };
     }
 }

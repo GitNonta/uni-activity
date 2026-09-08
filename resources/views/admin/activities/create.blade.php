@@ -192,7 +192,7 @@
             </div>
 
             <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #e2e8f0;">
-                <p class="font-semi text-sm mb-2">ปักพิกัดสถานที่จัดกิจกรรม (สำหรับเช็คอินอัตโนมัติ)</p>
+                <p class="font-semi text-sm mb-2">พิกัดสถานที่จัดกิจกรรม</p>
                 <p class="text-xs text-muted mb-3">คลิกบนแผนที่เพื่อปักหมุด หรือกดปุ่มตำแหน่งปัจจุบัน — นักศึกษาที่อยู่ในรัศมีจะได้รับอนุมัติอัตโนมัติ</p>
                 <div style="display:flex;gap:.5rem;margin-bottom:.75rem;flex-wrap:wrap;">
                     <div style="flex:1;min-width:180px;position:relative;">

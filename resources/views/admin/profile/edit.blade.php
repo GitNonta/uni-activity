@@ -256,7 +256,7 @@ label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
                     </div>
 
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.8rem; background: #fafbfc; border-radius: 8px; border: 1px solid #f1f5f9;">
-                        <span style="font-size: 0.8rem; color: #64748b;">เพศ (สำหรับอวตาร SVG)</span>
+                        <span style="font-size: 0.8rem; color: #64748b;">เพศ</span>
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
                             <x-avatar :user="$user" size="22" />
                             <strong style="color: #0f172a; font-size: 0.875rem;">{{ $user->gender_label }}</strong>

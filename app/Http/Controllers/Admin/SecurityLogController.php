@@ -67,7 +67,7 @@ class SecurityLogController extends Controller
         $relatedUsers = collect();
         if (!empty($securityLog->related_user_ids)) {
             $relatedUsers = User::whereIn('id', $securityLog->related_user_ids)
-                ->select('id', 'full_name', 'student_id', 'faculty')
+                ->select('id', 'full_name', 'student_id', 'faculty', 'role', 'email')
                 ->get();
         }
 

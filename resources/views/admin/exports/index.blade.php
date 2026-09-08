@@ -237,19 +237,6 @@ html[data-theme="dark"] .export-field-label:hover {
     </div>
 </div>
 
-<div class="alert alert-success mt-6 export-tips-box" style="border-radius:12px;padding:1.25rem;">
-    <h4 class="alert-title" style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;font-weight:700;">
-        <svg style="width:18px;height:18px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        <span>เคล็ดลับ</span>
-    </h4>
-    <ul class="alert-list" style="margin:0;padding-left:1.5rem;display:grid;gap:.35rem;">
-        <li>ไฟล์ Excel จะมีการจัดรูปแบบสวยงามพร้อมสีและเส้นขอบ</li>
-        <li>เลือก field เฉพาะที่ต้องการเพื่อลดขนาดไฟล์</li>
-        <li>ชื่อไฟล์จะมีวันที่และเวลาเพื่อไม่ให้ซ้ำกัน</li>
-        <li>รองรับข้อมูลภาษาไทยอย่างสมบูรณ์</li>
-    </ul>
-</div>
-
 <script>
 function updateFieldCount() {
     const checked = document.querySelectorAll('.field-checkbox:checked').length;

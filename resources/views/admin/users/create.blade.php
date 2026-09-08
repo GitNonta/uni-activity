@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="flex items-center justify-between mb-4">
-    <h1 class="font-bold" style="font-size:1.4rem;">{{ $type === 'staff' ? 'สร้างเจ้าหน้าที่ (ผู้สร้างกิจกรรม)' : 'สร้างนักศึกษา' }}</h1>
+    <h1 class="font-bold" style="font-size:1.4rem;">{{ $type === 'staff' ? 'สร้างเจ้าหน้าที่' : 'สร้างนักศึกษา' }}</h1>
     <a href="{{ route('admin.users.index') }}" class="btn btn-outline btn-sm" style="display:inline-flex;align-items:center;gap:.35rem;">
         <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
         <span>กลับ</span>
@@ -36,9 +36,9 @@
                 @error('email') <div class="text-xs" style="color:#dc2626;margin-top:.25rem;">{{ $message }}</div> @enderror
             </div>
 
-            {{-- เพศสภาพสำหรับรูปอวตาร --}}
+            {{-- เพศสภาพ --}}
             <div class="mb-3">
-                <label class="form-label">เพศ (สำหรับแสดงรูปอวตาร SVG เมื่อไม่ได้ตั้งรูปโปรไฟล์)</label>
+                <label class="form-label">เพศ</label>
                 <select name="gender" class="form-control">
                     <option value="" {{ old('gender') == '' ? 'selected' : '' }}>ไม่ระบุ / อื่นๆ (Neutral)</option>
                     <option value="male" {{ old('gender') == 'male' ? 'selected' : '' }}>ชาย (Male)</option>

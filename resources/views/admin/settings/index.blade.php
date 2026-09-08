@@ -56,7 +56,7 @@
                     {{-- ตัวเลือกเพศ (Gender & Avatar Preview) --}}
                     <div class="mb-4">
                         <label class="form-label" style="font-weight:600; font-size:0.875rem; display:block; margin-bottom:0.5rem;">
-                            เพศสภาพ (สำหรับรูปอวตาร SVG อัตโนมัติ กรณีไม่ได้ตั้งรูปโปรไฟล์)
+                            เพศสภาพ
                         </label>
                         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem;">
                             {{-- เพศชาย --}}

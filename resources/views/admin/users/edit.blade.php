@@ -56,9 +56,9 @@
                 @error('email') <div class="text-xs" style="color:#dc2626;margin-top:.25rem;">{{ $message }}</div> @enderror
             </div>
 
-            {{-- เพศสภาพสำหรับรูปอวตาร --}}
+            {{-- เพศสภาพ --}}
             <div class="mb-3">
-                <label class="form-label">เพศ (สำหรับแสดงรูปอวตาร SVG เมื่อไม่ได้ตั้งรูปโปรไฟล์)</label>
+                <label class="form-label">เพศ</label>
                 <select name="gender" class="form-control">
                     <option value="" {{ old('gender', $user->gender) == '' ? 'selected' : '' }}>ไม่ระบุ / อื่นๆ (Neutral)</option>
                     <option value="male" {{ old('gender', $user->gender) == 'male' ? 'selected' : '' }}>ชาย (Male)</option>
@@ -129,7 +129,6 @@
                 <label class="form-label">รหัสผ่านใหม่</label>
                 <input type="password" name="password" class="form-control" placeholder="เว้นว่างถ้าไม่ต้องการเปลี่ยน">
                 @error('password') <div class="text-xs" style="color:#dc2626;margin-top:.25rem;">{{ $message }}</div> @enderror
-                <div class="text-xs text-muted" style="margin-top:.25rem;">เว้นว่างถ้าไม่ต้องการเปลี่ยนรหัสผ่าน</div>
             </div>
 
             {{-- สถานะ --}}

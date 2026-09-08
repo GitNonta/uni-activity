@@ -109,8 +109,8 @@
                 <label class="form-label" style="font-size:.8rem;">ชั่วโมง</label>
                 <select name="completion" class="form-control">
                     <option value="">ทุกสถานะ</option>
-                    <option value="complete"   {{ request('completion') === 'complete'   ? 'selected' : '' }}>ครบเกณฑ์ (✓)</option>
-                    <option value="incomplete" {{ request('completion') === 'incomplete' ? 'selected' : '' }}>ยังไม่ครบ ⏳</option>
+                    <option value="complete"   {{ request('completion') === 'complete'   ? 'selected' : '' }}>ครบตามเกณฑ์</option>
+                    <option value="incomplete" {{ request('completion') === 'incomplete' ? 'selected' : '' }}>ยังไม่ครบเกณฑ์</option>
                 </select>
             </div>
             <button type="submit" class="btn btn-primary">ค้นหา</button>

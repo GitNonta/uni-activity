@@ -140,8 +140,42 @@ return Application::configure(basePath: dirname(__DIR__))
             ], 403);
         });
 
-        // Custom 500 page for any unhandled exception
+        // Custom error page for any unhandled exception
         $exceptions->renderable(function (\Throwable $e, $request) {
+            if ($e instanceof \Illuminate\Auth\AuthenticationException) {
+                if ($request->expectsJson()) {
+                    return response()->json(['message' => 'Unauthenticated.'], 401);
+                }
+                return redirect()->guest(route('login'));
+            }
+
+            if ($e instanceof \Illuminate\Validation\ValidationException) {
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'message' => $e->getMessage(),
+                        'errors'  => $e->errors(),
+                    ], $e->status);
+                }
+            }
+
+            if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface) {
+                $statusCode = $e->getStatusCode();
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'message' => $e->getMessage() ?: match ($statusCode) {
+                            401 => 'Unauthenticated',
+                            403 => 'Forbidden',
+                            404 => 'Not Found',
+                            default => 'HTTP Error',
+                        },
+                    ], $statusCode);
+                }
+                return response()->view('errors::' . $statusCode, [
+                    'errors' => new \Illuminate\Support\ViewErrorBag,
+                    'exception' => $e,
+                ], $statusCode);
+            }
+
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Server Error'], 500);
             }

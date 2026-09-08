@@ -397,7 +397,10 @@ html.dark .line-unlink-btn:hover {
                 <svg width="20" height="20" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 ประวัติกิจกรรมล่าสุด
             </h2>
-            <a href="{{ route('student.history') }}" class="text-sm" style="color: #ea580c; font-weight: 600; text-decoration: none;">ดูทั้งหมด →</a>
+            <a href="{{ route('student.history') }}" class="text-sm" style="color: #ea580c; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                <span>ดูทั้งหมด</span>
+                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
         </div>
         
         <div style="display: flex; flex-direction: column; gap: 0.75rem;">
