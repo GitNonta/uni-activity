@@ -13,7 +13,7 @@ NGINX_LOG  = "/data/data/com.termux/files/usr/var/log/nginx/access.log"
 STATIC_DIR = Path(__file__).parent.parent.parent / "monitor-ui" / "dist"
 
 # ── Ports ─────────────────────────────────────────────────────────────────────
-PORT        = 9999
+PORT        = 9995
 UDP_PORT    = 9998
 UDP_PORT_AI = 9997
 

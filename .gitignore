@@ -17,6 +17,8 @@
 *.p12
 id_rsa*
 auth.json
+go-monitor/go-monitor
+go-monitor/*.exe
 
 # -----------------------------------------------------------------
 # 2. Database Dumps & Personal Data (DO NOT COMMIT)
