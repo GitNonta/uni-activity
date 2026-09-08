@@ -5,6 +5,8 @@ export function ConnectionCard({ url, status, lineStatus }) {
   const isValid = url && url !== 'Not Found' && url !== 'Loading...'
   const isOnline = status?.online ?? false
   const pingMs = status?.ping_ms ?? 0
+  const cooldown = status?.cooldown
+  const isCooldown = cooldown?.active ?? false
   const [isRestarting, setIsRestarting] = useState(false)
 
   const handleRestart = async () => {
@@ -30,7 +32,7 @@ export function ConnectionCard({ url, status, lineStatus }) {
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <button 
             onClick={handleRestart}
-            disabled={isRestarting}
+            disabled={isRestarting || isCooldown}
             style={{ 
               background: '#f3f4f6', 
               border: '1px solid #d1d5db', 
@@ -38,8 +40,8 @@ export function ConnectionCard({ url, status, lineStatus }) {
               padding: '0.3rem 0.6rem', 
               fontSize: '0.75rem', 
               fontWeight: 600, 
-              color: '#374151', 
-              cursor: isRestarting ? 'not-allowed' : 'pointer',
+              color: (isRestarting || isCooldown) ? '#9ca3af' : '#374151', 
+              cursor: (isRestarting || isCooldown) ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               gap: '0.25rem'
@@ -48,21 +50,45 @@ export function ConnectionCard({ url, status, lineStatus }) {
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: isRestarting ? 'spin 1s linear infinite' : 'none' }}>
               <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
             </svg>
-            {isRestarting ? 'Restarting...' : 'Restart Tunnel'}
+            {isRestarting ? 'Restarting...' : isCooldown ? 'Cooldown Active' : 'Restart Tunnel'}
           </button>
           
-          {isValid && (
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <span className={`badge ${isOnline ? 'badge-success' : 'badge-gray'}`}>
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
-                {isOnline ? 'Online' : 'Checking...'}
-              </span>
-              {isOnline && (
-                <span style={{ fontSize: '0.75rem', color: '#6b7280', background: '#f3f4f6', padding: '0.2rem 0.5rem', borderRadius: '4px', fontWeight: 600 }}>
-                  {pingMs} ms
+          {isCooldown ? (
+            <span 
+              className="badge" 
+              style={{ 
+                background: '#fef3c7', 
+                color: '#92400e', 
+                border: '1px solid #fde68a', 
+                display: 'inline-flex', 
+                alignItems: 'center', 
+                gap: '0.35rem', 
+                padding: '0.25rem 0.6rem', 
+                borderRadius: '6px', 
+                fontSize: '0.75rem', 
+                fontWeight: 600 
+              }}
+              title={cooldown.reason || 'Cloudflare Rate Limit'}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+              Cooldown: {cooldown.remaining_text || '10m'}
+            </span>
+          ) : (
+            isValid && (
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <span className={`badge ${isOnline ? 'badge-success' : 'badge-gray'}`}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+                  {isOnline ? 'Online' : 'Checking...'}
                 </span>
-              )}
-            </div>
+                {isOnline && (
+                  <span style={{ fontSize: '0.75rem', color: '#6b7280', background: '#f3f4f6', padding: '0.2rem 0.5rem', borderRadius: '4px', fontWeight: 600 }}>
+                    {pingMs} ms
+                  </span>
+                )}
+              </div>
+            )
           )}
         </div>
       </div>
@@ -80,6 +106,29 @@ export function ConnectionCard({ url, status, lineStatus }) {
               : <span style={{ color: '#9ca3af' }}>Waiting for connection...</span>
             }
           </div>
+
+          {isCooldown && (
+            <div style={{ 
+              marginTop: '0.65rem', 
+              padding: '0.6rem 0.85rem', 
+              background: '#fffbeb', 
+              border: '1px solid #fde68a', 
+              borderRadius: '6px',
+              fontSize: '0.75rem',
+              color: '#92400e',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '0.5rem',
+              lineHeight: 1.4
+            }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}>
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <div>
+                <strong>Cloudflare Rate-Limit Cooldown:</strong> กำลังรอคูลดาวน์อีก <strong>{cooldown.remaining_text}</strong> เพื่อให้ระบบ Cloudflare ปลดบล็อกอัตโนมัติ (ระบบจะทำการขอลิงก์และอัปเดตใหม่อัตโนมัติทันที)
+              </div>
+            </div>
+          )}
 
           <p className="section-label" style={{ marginTop: '1rem' }}>Admin Panel</p>
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>

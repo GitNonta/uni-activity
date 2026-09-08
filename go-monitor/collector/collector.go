@@ -162,12 +162,21 @@ func (c *Collector) Collect() ([]byte, error) {
 			"PHP Version":     "PHP 8.2+ Octane Core",
 		},
 		CFUrl: cfURL,
-		CFStatus: map[string]interface{}{
-			"online":  cfOnline,
-			"ping_ms": cfPing,
-			"error":   cfErr,
-			"url":     cfURL,
-		},
+		CFStatus: func() map[string]interface{} {
+			res := map[string]interface{}{
+				"online":  cfOnline,
+				"ping_ms": cfPing,
+				"error":   cfErr,
+				"url":     cfURL,
+			}
+			if cdBytes, err := os.ReadFile(filepath.Join(c.projectRoot, "storage/logs/cf-cooldown.json")); err == nil {
+				var cdMap map[string]interface{}
+				if json.Unmarshal(cdBytes, &cdMap) == nil {
+					res["cooldown"] = cdMap
+				}
+			}
+			return res
+		}(),
 		Speedtest: speedtestStatus,
 		LineStatus: map[string]interface{}{
 			"status":     "OK",

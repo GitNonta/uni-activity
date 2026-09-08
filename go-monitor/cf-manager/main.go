@@ -434,6 +434,70 @@ func getActiveURL() string {
 	return readEnv("APP_URL")
 }
 
+const cooldownFilePath = projectRoot + "/storage/logs/cf-cooldown.json"
+
+type CooldownStatus struct {
+	Active        bool   `json:"active"`
+	RemainingSec  int    `json:"remaining_sec"`
+	RemainingText string `json:"remaining_text"`
+	Reason        string `json:"reason"`
+	UpdatedAt     string `json:"updated_at"`
+}
+
+var (
+	cooldownUntil  time.Time
+	cooldownReason string
+	cdMu           sync.RWMutex
+)
+
+func setCooldown(d time.Duration, reason string) {
+	cdMu.Lock()
+	cooldownUntil = time.Now().Add(d)
+	cooldownReason = reason
+	cdMu.Unlock()
+	writeCooldownFile(true, d, reason)
+}
+
+func clearCooldown() {
+	cdMu.Lock()
+	cooldownUntil = time.Time{}
+	cooldownReason = ""
+	cdMu.Unlock()
+	writeCooldownFile(false, 0, "")
+}
+
+func getCooldownRemaining() (bool, time.Duration, string) {
+	cdMu.RLock()
+	defer cdMu.RUnlock()
+	if time.Now().Before(cooldownUntil) {
+		return true, time.Until(cooldownUntil), cooldownReason
+	}
+	return false, 0, ""
+}
+
+func writeCooldownFile(active bool, rem time.Duration, reason string) {
+	remSec := int(rem.Seconds())
+	if remSec < 0 {
+		remSec = 0
+	}
+	mins := remSec / 60
+	secs := remSec % 60
+	text := fmt.Sprintf("%02dm %02ds", mins, secs)
+	if mins == 0 {
+		text = fmt.Sprintf("%02ds", secs)
+	}
+
+	st := CooldownStatus{
+		Active:        active,
+		RemainingSec:  remSec,
+		RemainingText: text,
+		Reason:        reason,
+		UpdatedAt:     time.Now().Format("2006-01-02 15:04:05"),
+	}
+	data, _ := json.MarshalIndent(st, "", "  ")
+	_ = os.WriteFile(cooldownFilePath, data, 0644)
+}
+
 // runHealthWatcher pings the active tunnel URL and auto-restarts on failure.
 func runHealthWatcher() {
 	failCount := 0
@@ -446,6 +510,19 @@ func runHealthWatcher() {
 
 	for {
 		time.Sleep(healthCheckInterval)
+
+		// Check if cooldown is currently active
+		isCd, remDuration, reason := getCooldownRemaining()
+		if isCd {
+			remSec := int(remDuration.Seconds())
+			mins := remSec / 60
+			secs := remSec % 60
+			log.Printf("[CF-MGR][COOLDOWN] ⏳ Cooldown active: %02dm %02ds remaining before auto-restart (Reason: %s)", mins, secs, reason)
+			writeCooldownFile(true, remDuration, reason)
+			continue
+		} else {
+			writeCooldownFile(false, 0, "")
+		}
 
 		url := getActiveURL()
 		cfAlive := isCloudflaredAlive()
@@ -461,13 +538,13 @@ func runHealthWatcher() {
 				log.Printf("[CF-MGR][HEALTH] ✅ %s — OK", url)
 			} else {
 				failCount++
-				var reason string
+				var errReason string
 				if err != nil {
-					reason = err.Error()
+					errReason = err.Error()
 				} else {
-					reason = fmt.Sprintf("HTTP %d", resp.StatusCode)
+					errReason = fmt.Sprintf("HTTP %d", resp.StatusCode)
 				}
-				log.Printf("[CF-MGR][HEALTH] ⚠️  %s unreachable (%s) — failCount=%d", url, reason, failCount)
+				log.Printf("[CF-MGR][HEALTH] ⚠️  %s unreachable (%s) — failCount=%d", url, errReason, failCount)
 			}
 		} else {
 			// No URL in memory or logs
@@ -491,9 +568,11 @@ func runHealthWatcher() {
 				log.Printf("[CF-MGR] Auto-restart failed: %v", startErr)
 				if strings.Contains(startErr.Error(), "rate-limited") {
 					log.Println("[CF-MGR] ⏳ Entering 10-minute cooldown to allow Cloudflare rate limit to clear...")
-					lastRestart = time.Now().Add(8 * time.Minute) // 8m + 2m cooldown = 10m backoff
+					setCooldown(10*time.Minute, "Rate-limited by Cloudflare (HTTP 429 / Error 1015)")
+					lastRestart = time.Now().Add(8 * time.Minute)
 				}
 			} else {
+				clearCooldown()
 				applyNewURL(newHTTP, newSSH)
 			}
 		}
@@ -535,8 +614,12 @@ func main() {
 	httpURL, sshURL, err := startTunnels()
 	if err != nil {
 		log.Printf("[CF-MGR] Initial tunnel start failed: %v", err)
+		if strings.Contains(err.Error(), "rate-limited") {
+			setCooldown(10*time.Minute, "Rate-limited by Cloudflare (HTTP 429 / Error 1015)")
+		}
 		log.Println("[CF-MGR] Continuing with background watchers…")
 	} else {
+		clearCooldown()
 		applyNewURL(httpURL, sshURL)
 	}
 
