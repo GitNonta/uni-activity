@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 
 export function ConnectionCard({ url, status, lineStatus }) {
@@ -6,8 +6,39 @@ export function ConnectionCard({ url, status, lineStatus }) {
   const isOnline = status?.online ?? false
   const pingMs = status?.ping_ms ?? 0
   const cooldown = status?.cooldown
-  const isCooldown = cooldown?.active ?? false
+  const isCooldown = (cooldown?.active && (cooldown?.remaining_sec > 0)) ?? false
+  const [secondsLeft, setSecondsLeft] = useState(cooldown?.remaining_sec || 0)
   const [isRestarting, setIsRestarting] = useState(false)
+
+  // Real-time 1-second tick-down
+  useEffect(() => {
+    if (!cooldown?.active || (cooldown?.remaining_sec ?? 0) <= 0) {
+      setSecondsLeft(0)
+      return
+    }
+
+    setSecondsLeft(cooldown.remaining_sec)
+    const targetTime = Date.now() + (cooldown.remaining_sec * 1000)
+
+    const timer = setInterval(() => {
+      const remaining = Math.max(0, Math.round((targetTime - Date.now()) / 1000))
+      setSecondsLeft(remaining)
+      if (remaining <= 0) {
+        clearInterval(timer)
+      }
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [cooldown?.active, cooldown?.remaining_sec, cooldown?.updated_at])
+
+  const formatCountdown = (totalSec) => {
+    if (totalSec <= 0) return '00m 00s'
+    const mins = Math.floor(totalSec / 60)
+    const secs = totalSec % 60
+    return `${String(mins).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s`
+  }
+
+  const liveCooldownText = secondsLeft > 0 ? formatCountdown(secondsLeft) : (cooldown?.remaining_text || 'Active')
 
   const handleRestart = async () => {
     setIsRestarting(true)
@@ -73,7 +104,7 @@ export function ConnectionCard({ url, status, lineStatus }) {
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
               </svg>
-              Cooldown: {cooldown.remaining_text || '10m'}
+              Cooldown: {liveCooldownText}
             </span>
           ) : (
             isValid && (
@@ -125,7 +156,7 @@ export function ConnectionCard({ url, status, lineStatus }) {
                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
               </svg>
               <div>
-                <strong>Cloudflare Rate-Limit Cooldown:</strong> กำลังรอคูลดาวน์อีก <strong>{cooldown.remaining_text}</strong> เพื่อให้ระบบ Cloudflare ปลดบล็อกอัตโนมัติ (ระบบจะทำการขอลิงก์และอัปเดตใหม่อัตโนมัติทันที)
+                <strong>Cloudflare Rate-Limit Cooldown:</strong> กำลังรอคูลดาวน์อีก <strong>{liveCooldownText}</strong> เพื่อให้ระบบ Cloudflare ปลดบล็อกอัตโนมัติ (ระบบจะทำการขอลิงก์และอัปเดตใหม่อัตโนมัติทันที)
               </div>
             </div>
           )}

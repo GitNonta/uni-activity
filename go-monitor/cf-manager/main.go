@@ -627,6 +627,17 @@ func main() {
 	go runURLWatcher()
 	go runHealthWatcher()
 
+	// 1-second ticker to keep cf-cooldown.json updated in real-time for live second ticking
+	go func() {
+		for {
+			time.Sleep(1 * time.Second)
+			isCd, remDuration, reason := getCooldownRemaining()
+			if isCd {
+				writeCooldownFile(true, remDuration, reason)
+			}
+		}
+	}()
+
 	log.Println("[CF-MGR] All watchers started. Running…")
 
 	// Block forever
