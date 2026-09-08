@@ -558,7 +558,6 @@ func StartTunnelWatcher() {
 	go func() {
 		time.Sleep(10 * time.Second)
 		failCount := 0
-		lastRestartTime := time.Time{}
 
 		client := &http.Client{
 			Timeout: 8 * time.Second,
@@ -603,23 +602,9 @@ func StartTunnelWatcher() {
 				Status.URL = url
 				Status.mu.Unlock()
 
-				log.Printf("[Tunnel] ⚠️  Ping failed (%s) — failCount=%d", errStr, failCount)
-
-				// Auto-restart after 3 failures and 2-minute cooldown
-				if failCount >= 3 && time.Since(lastRestartTime) > 120*time.Second {
-					lastRestartTime = time.Now()
-					failCount = 0
-					telegram.Send(fmt.Sprintf(
-						"⚠️ <b>Cloudflare Tunnel Offline (%s)</b> — Triggering auto-restart…",
-						errStr,
-					))
-					go func() {
-						if _, err := DoRestartTunnel(); err != nil {
-							log.Printf("[Tunnel] Auto-restart failed: %v", err)
-							telegram.Send("❌ <b>Tunnel auto-restart failed</b> — manual intervention required")
-						}
-					}()
-				}
+				// Auto-restart is delegated to cf-manager (single source of truth with rate-limit cooldown)
+				// go-monitor only tracks online/offline telemetry
+				log.Printf("[Tunnel] ⚠️  Tunnel status: OFFLINE (%s) — managed by cf-manager", errStr)
 			}
 		}
 	}()

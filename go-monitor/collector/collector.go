@@ -2,9 +2,11 @@ package collector
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -202,7 +204,7 @@ func (c *Collector) Collect() ([]byte, error) {
 		DeployChannels:   map[string]interface{}{"deploy": "ready", "git": "ok"},
 		LogFilesInfo:     map[string]interface{}{"count": 5, "total_size_mb": 12.4},
 		GithubDeployLogs: map[string]interface{}{"status": "ok"},
-		Events:           []interface{}{},
+		Events:           getDeployEvents(c.projectRoot),
 		AILog:            "AI Cluster Operational",
 		SSHSessions:      sshSessions,
 		SFTPSessions:     sftp,
@@ -270,4 +272,53 @@ func (c *Collector) GetCachedJSON() []byte {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.cachedJSON
+}
+
+func getDeployEvents(projectRoot string) []interface{} {
+	gitBin := "git"
+	if _, err := os.Stat("/data/data/com.termux/files/usr/bin/git"); err == nil {
+		gitBin = "/data/data/com.termux/files/usr/bin/git"
+	}
+	out, err := exec.Command(gitBin, "-C", projectRoot, "log", "-n", "20", "--pretty=format:%h|%s|%an|%ad|%cr").Output()
+	if err != nil {
+		return []interface{}{}
+	}
+	lines := strings.Split(strings.TrimSpace(string(out)), "\n")
+	events := make([]interface{}, 0, len(lines))
+	for idx, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		parts := strings.Split(line, "|")
+		if len(parts) < 5 {
+			continue
+		}
+		hash := parts[0]
+		msg := parts[1]
+		author := parts[2]
+		date := parts[3]
+		rel := parts[4]
+
+		evType := "success"
+		lowMsg := strings.ToLower(msg)
+		if strings.Contains(lowMsg, "fail") || strings.Contains(lowMsg, "revert") || strings.Contains(lowMsg, "error") {
+			evType = "failed"
+		}
+
+		detail := fmt.Sprintf("Deployed by %s • %s • main branch", author, rel)
+
+		events = append(events, map[string]interface{}{
+			"id":        fmt.Sprintf("ev-%s-%d", hash, idx),
+			"type":      evType,
+			"hash":      hash,
+			"message":   msg,
+			"detail":    detail,
+			"timestamp": date,
+			"author":    author,
+			"relative":  rel,
+			"branch":    "main",
+		})
+	}
+	return events
 }
