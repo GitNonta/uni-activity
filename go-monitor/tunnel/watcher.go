@@ -1,6 +1,7 @@
 package tunnel
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
@@ -20,6 +21,11 @@ import (
 	"uni-activity/go-monitor/telegram"
 )
 
+// ──────────────────────────────────────────────────────────────────────────────
+// Types & State
+// ──────────────────────────────────────────────────────────────────────────────
+
+// TunnelStatus holds the latest known tunnel state. Access via mu.
 type TunnelStatus struct {
 	mu        sync.RWMutex
 	Online    bool   `json:"online"`
@@ -30,9 +36,8 @@ type TunnelStatus struct {
 	UpdatedAt string `json:"updated_at"`
 }
 
-var Status = &TunnelStatus{
-	Online: true,
-}
+// Status is the package-level singleton.
+var Status = &TunnelStatus{Online: true}
 
 func (s *TunnelStatus) GetStatus() (bool, int, string, string) {
 	s.mu.RLock()
@@ -40,9 +45,108 @@ func (s *TunnelStatus) GetStatus() (bool, int, string, string) {
 	return s.Online, s.PingMS, s.Error, s.URL
 }
 
+// ──────────────────────────────────────────────────────────────────────────────
+// Constants
+// ──────────────────────────────────────────────────────────────────────────────
+
 var cfURLRegex = regexp.MustCompile(`https://[a-zA-Z0-9-]+\.trycloudflare\.com`)
 
-// GetActiveURL reads docs/active_url.json or falls back to cloudflared metrics / logs
+const (
+	termuxHome  = "/data/data/com.termux/files/home"
+	logHTTPPath = termuxHome + "/cloudflared.log"
+	logSSHPath  = termuxHome + "/cloudflared-ssh.log"
+)
+
+// ──────────────────────────────────────────────────────────────────────────────
+// .env helpers
+// ──────────────────────────────────────────────────────────────────────────────
+
+// ReadEnv reads a single key from the project .env file.
+func ReadEnv(key string) string {
+	envPath := filepath.Join(config.AppConfig.ProjectRoot, ".env")
+	f, err := os.Open(envPath)
+	if err != nil {
+		return ""
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if strings.HasPrefix(line, key+"=") {
+			val := strings.TrimPrefix(line, key+"=")
+			return strings.Trim(val, "\"' \r\n")
+		}
+	}
+	return ""
+}
+
+// UpdateEnv replaces key=value pairs inside .env atomically.
+func UpdateEnv(updates map[string]string) error {
+	envPath := filepath.Join(config.AppConfig.ProjectRoot, ".env")
+	data, err := os.ReadFile(envPath)
+	if err != nil {
+		return err
+	}
+
+	lines := strings.Split(string(data), "\n")
+	replaced := make(map[string]bool)
+
+	for i, line := range lines {
+		for k, v := range updates {
+			if strings.HasPrefix(line, k+"=") {
+				lines[i] = k + "=" + v
+				replaced[k] = true
+				break
+			}
+		}
+	}
+	// Append any key not yet found
+	for k, v := range updates {
+		if !replaced[k] {
+			lines = append(lines, k+"="+v)
+		}
+	}
+
+	return os.WriteFile(envPath, []byte(strings.Join(lines, "\n")), 0644)
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// URL detection
+// ──────────────────────────────────────────────────────────────────────────────
+
+// scanLastURLFromLog reads a log file and returns the LAST trycloudflare URL found.
+// Using last-occurrence avoids picking up stale URLs from previous tunnel runs.
+func scanLastURLFromLog(logPath string) string {
+	data, err := os.ReadFile(logPath)
+	if err != nil {
+		return ""
+	}
+	matches := cfURLRegex.FindAll(data, -1)
+	if len(matches) == 0 {
+		return ""
+	}
+	return string(matches[len(matches)-1])
+}
+
+// isURLAlive returns true when the URL is reachable and not returning a tunnel-error code.
+func isURLAlive(url string) bool {
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+	resp, err := client.Head(url)
+	if err != nil {
+		return false
+	}
+	defer resp.Body.Close()
+	// 530, 520-524 are Cloudflare tunnel error codes; 1033 isn't an HTTP code
+	return resp.StatusCode < 530
+}
+
+// GetActiveURL returns the best-known live public URL for the HTTP tunnel.
 func GetActiveURL() string {
 	Status.mu.RLock()
 	cur := Status.URL
@@ -51,42 +155,33 @@ func GetActiveURL() string {
 		return cur
 	}
 
-	// 1. Try reading docs/active_url.json
+	// 1. docs/active_url.json
 	activePath := filepath.Join(config.AppConfig.ProjectRoot, "docs", "active_url.json")
 	if f, err := os.Open(activePath); err == nil {
 		defer f.Close()
 		var d struct {
 			URL string `json:"url"`
 		}
-		if err := json.NewDecoder(f).Decode(&d); err == nil && d.URL != "" {
+		if json.NewDecoder(f).Decode(&d) == nil && d.URL != "" {
 			return d.URL
 		}
 	}
 
-	// 2. Try metrics port 20241
-	client := &http.Client{Timeout: 2 * time.Second}
-	if resp, err := client.Get("http://127.0.0.1:20241/metrics"); err == nil {
+	// 2. cloudflared metrics endpoint (port 20241)
+	httpClient := &http.Client{Timeout: 2 * time.Second}
+	if resp, err := httpClient.Get("http://127.0.0.1:20241/metrics"); err == nil {
 		body, _ := io.ReadAll(resp.Body)
 		resp.Body.Close()
-		matches := cfURLRegex.FindSubmatch(body)
-		if len(matches) > 0 {
-			return string(matches[0])
+		if m := cfURLRegex.Find(body); m != nil {
+			return string(m)
 		}
 	}
 
-	// 3. Try reading cloudflared.log
-	logPath := "/data/data/com.termux/files/home/cloudflared.log"
-	if content, err := os.ReadFile(logPath); err == nil {
-		matches := cfURLRegex.Find(content)
-		if len(matches) > 0 {
-			return string(matches)
-		}
-	}
-
-	return ""
+	// 3. cloudflared.log — last occurrence
+	return scanLastURLFromLog(logHTTPPath)
 }
 
-// GetSSHURL reads active_url.json or metrics port 20242
+// GetSSHURL returns the best-known live public URL for the SSH tunnel.
 func GetSSHURL() string {
 	Status.mu.RLock()
 	cur := Status.SSHURL
@@ -101,80 +196,187 @@ func GetSSHURL() string {
 		var d struct {
 			SSHURL string `json:"ssh_url"`
 		}
-		if err := json.NewDecoder(f).Decode(&d); err == nil && d.SSHURL != "" {
+		if json.NewDecoder(f).Decode(&d) == nil && d.SSHURL != "" {
 			return d.SSHURL
 		}
 	}
 
-	client := &http.Client{Timeout: 2 * time.Second}
-	if resp, err := client.Get("http://127.0.0.1:20242/metrics"); err == nil {
+	httpClient := &http.Client{Timeout: 2 * time.Second}
+	if resp, err := httpClient.Get("http://127.0.0.1:20242/metrics"); err == nil {
 		body, _ := io.ReadAll(resp.Body)
 		resp.Body.Close()
-		matches := cfURLRegex.FindSubmatch(body)
-		if len(matches) > 0 {
-			return string(matches[0])
+		if m := cfURLRegex.Find(body); m != nil {
+			return string(m)
 		}
 	}
 
-	logPath := "/data/data/com.termux/files/home/cloudflared-ssh.log"
-	if content, err := os.ReadFile(logPath); err == nil {
-		matches := cfURLRegex.Find(content)
-		if len(matches) > 0 {
-			return string(matches)
-		}
-	}
-
-	return ""
+	return scanLastURLFromLog(logSSHPath)
 }
 
-// GetTunnelURLs returns full JSON payload for /api/tunnel-urls
+// GetTunnelURLs returns full JSON payload for /api/tunnel-urls.
 func GetTunnelURLs() map[string]interface{} {
-	httpURL := GetActiveURL()
-	sshURL := GetSSHURL()
-
 	return map[string]interface{}{
-		"http_url":   httpURL,
-		"ssh_url":    sshURL,
+		"http_url":   GetActiveURL(),
+		"ssh_url":    GetSSHURL(),
 		"server_lan": "192.168.1.222",
 		"ssh_port":   8022,
 		"updated_at": time.Now().Format("2006-01-02 15:04:05"),
 	}
 }
 
-// PushActiveURLToGitHub updates docs/active_url.json on GitHub Pages
-func PushActiveURLToGitHub(httpURL, sshURL string) {
-	pat := ""
-	envPath := filepath.Join(config.AppConfig.ProjectRoot, ".env")
-	if content, err := os.ReadFile(envPath); err == nil {
-		lines := strings.Split(string(content), "\n")
-		for _, line := range lines {
-			if strings.HasPrefix(line, "GITHUB_PAT=") {
-				pat = strings.Trim(strings.TrimPrefix(line, "GITHUB_PAT="), "\"' \r\n")
-				break
-			}
+// ──────────────────────────────────────────────────────────────────────────────
+// Origin health check
+// ──────────────────────────────────────────────────────────────────────────────
+
+// waitForOrigin blocks until the local Laravel/origin server is accepting connections
+// on targetURL, or until the timeout expires. Returns true if the origin came up.
+func waitForOrigin(targetURL string, timeout time.Duration) bool {
+	deadline := time.Now().Add(timeout)
+	client := &http.Client{Timeout: 2 * time.Second}
+	for time.Now().Before(deadline) {
+		resp, err := client.Get(targetURL)
+		if err == nil && resp.StatusCode < 500 {
+			resp.Body.Close()
+			log.Printf("[Tunnel] Origin %s is ready ✓", targetURL)
+			return true
 		}
+		log.Printf("[Tunnel] Waiting for origin %s …", targetURL)
+		time.Sleep(3 * time.Second)
+	}
+	log.Printf("[Tunnel] Origin %s did not become ready within %s", targetURL, timeout)
+	return false
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Post-restart actions
+// ──────────────────────────────────────────────────────────────────────────────
+
+// applyNewURL runs all side-effects after detecting a new tunnel URL.
+func applyNewURL(httpURL, sshURL string) {
+	log.Printf("[Tunnel] New URL detected: %s (SSH: %s)", httpURL, sshURL)
+
+	// 1. Update Status
+	Status.mu.Lock()
+	Status.URL = httpURL
+	Status.SSHURL = sshURL
+	Status.Online = true
+	Status.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
+	Status.mu.Unlock()
+
+	// 2. Update .env (APP_URL + LINE_CALLBACK_URL)
+	if err := UpdateEnv(map[string]string{
+		"APP_URL":           httpURL,
+		"LINE_CALLBACK_URL": "https://gitnonta.github.io/uni-activity/callback.html",
+	}); err != nil {
+		log.Printf("[Tunnel][ENV] Failed to update .env: %v", err)
+	} else {
+		log.Printf("[Tunnel][ENV] .env updated → APP_URL=%s", httpURL)
 	}
 
-	if pat == "" {
+	// 3. Write local docs/active_url.json
+	jsonPath := filepath.Join(config.AppConfig.ProjectRoot, "docs", "active_url.json")
+	_ = os.MkdirAll(filepath.Dir(jsonPath), 0755)
+	jsonData, _ := json.MarshalIndent(map[string]interface{}{
+		"url":        httpURL,
+		"ssh_url":    sshURL,
+		"updated_at": time.Now().Format("2006-01-02 15:04:05"),
+	}, "", "  ")
+	if err := os.WriteFile(jsonPath, jsonData, 0644); err != nil {
+		log.Printf("[Tunnel][LOCAL] Failed to write active_url.json: %v", err)
+	} else {
+		log.Printf("[Tunnel][LOCAL] active_url.json written")
+	}
+
+	// 4. Push to GitHub Pages (async)
+	go PushActiveURLToGitHub(httpURL, sshURL)
+
+	// 5. Update LINE Webhook (async)
+	go updateLINEWebhook(httpURL)
+
+	// 6. Clear Laravel cache (async)
+	go clearLaravelCache()
+}
+
+// clearLaravelCache runs artisan cache commands.
+func clearLaravelCache() {
+	artisan := filepath.Join(config.AppConfig.ProjectRoot, "artisan")
+	cmds := []string{"config:cache", "route:cache", "view:cache"}
+	for _, c := range cmds {
+		out, err := exec.Command("php", artisan, c).CombinedOutput()
+		if err != nil {
+			log.Printf("[Tunnel][ARTISAN] %s failed: %v — %s", c, err, strings.TrimSpace(string(out)))
+		} else {
+			log.Printf("[Tunnel][ARTISAN] %s → OK", c)
+		}
+	}
+}
+
+// updateLINEWebhook updates the LINE OA Webhook URL.
+func updateLINEWebhook(httpURL string) {
+	token := ReadEnv("LINE_CHANNEL_ACCESS_TOKEN")
+	if token == "" {
+		log.Println("[Tunnel][LINE] LINE_CHANNEL_ACCESS_TOKEN not found — skipping")
 		return
 	}
 
-	owner := "GitNonta"
-	repo := "uni-activity"
-	path := "docs/active_url.json"
-	apiURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/contents/%s", owner, repo, path)
+	webhook := httpURL + "/line/callback"
+	body, _ := json.Marshal(map[string]string{"endpoint": webhook})
 
-	client := &http.Client{Timeout: 10 * time.Second}
-	req, err := http.NewRequest("GET", apiURL, nil)
+	req, err := http.NewRequest("PUT", "https://api.line.me/v2/bot/channel/webhook/endpoint", bytes.NewBuffer(body))
 	if err != nil {
 		return
 	}
-	req.Header.Set("Authorization", "token "+pat)
-	req.Header.Set("Accept", "application/vnd.github.v3+json")
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", "UniActivity-Monitor-Go")
 
+	client := &http.Client{Timeout: 10 * time.Second, Transport: &http.Transport{Proxy: nil}}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("[Tunnel][LINE] Webhook update failed: %v", err)
+		return
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode == 200 {
+		log.Printf("[Tunnel][LINE] Webhook updated → %s", webhook)
+	} else {
+		log.Printf("[Tunnel][LINE] Webhook update HTTP %d", resp.StatusCode)
+	}
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// GitHub Pages push
+// ──────────────────────────────────────────────────────────────────────────────
+
+// PushActiveURLToGitHub updates docs/active_url.json on GitHub via Contents API.
+func PushActiveURLToGitHub(httpURL, sshURL string) {
+	pat := ReadEnv("GITHUB_PAT")
+	if pat == "" {
+		log.Println("[Tunnel][GH] GITHUB_PAT not found — skipping GitHub update")
+		return
+	}
+
+	const (
+		owner  = "GitNonta"
+		repo   = "uni-activity"
+		ghPath = "docs/active_url.json"
+	)
+	apiURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/contents/%s", owner, repo, ghPath)
+	headers := map[string]string{
+		"Authorization": "token " + pat,
+		"Accept":        "application/vnd.github.v3+json",
+		"User-Agent":    "UniActivity-Monitor-Go",
+	}
+
+	client := &http.Client{Timeout: 15 * time.Second}
+
+	// 1. Get current SHA
 	var sha string
-	if resp, err := client.Do(req); err == nil {
+	getReq, _ := http.NewRequest("GET", apiURL, nil)
+	for k, v := range headers {
+		getReq.Header.Set(k, v)
+	}
+	if resp, err := client.Do(getReq); err == nil {
 		var res map[string]interface{}
 		_ = json.NewDecoder(resp.Body).Decode(&res)
 		resp.Body.Close()
@@ -183,7 +385,8 @@ func PushActiveURLToGitHub(httpURL, sshURL string) {
 		}
 	}
 
-	contentData, _ := json.MarshalIndent(map[string]interface{}{
+	// 2. Build payload
+	content, _ := json.MarshalIndent(map[string]interface{}{
 		"url":        httpURL,
 		"ssh_url":    sshURL,
 		"updated_at": time.Now().Format("2006-01-02 15:04:05"),
@@ -191,131 +394,182 @@ func PushActiveURLToGitHub(httpURL, sshURL string) {
 
 	payload := map[string]interface{}{
 		"message": fmt.Sprintf("chore: update active tunnel URL to %s [auto-sync]", httpURL),
-		"content": base64.StdEncoding.EncodeToString(contentData),
+		"content": base64.StdEncoding.EncodeToString(content),
 	}
 	if sha != "" {
 		payload["sha"] = sha
 	}
 
 	bodyBytes, _ := json.Marshal(payload)
-	putReq, err := http.NewRequest("PUT", apiURL, bytes.NewBuffer(bodyBytes))
+	putReq, _ := http.NewRequest("PUT", apiURL, bytes.NewBuffer(bodyBytes))
+	for k, v := range headers {
+		putReq.Header.Set(k, v)
+	}
+	putReq.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(putReq)
 	if err != nil {
+		log.Printf("[Tunnel][GH] Push failed: %v", err)
 		return
 	}
-	putReq.Header.Set("Authorization", "token "+pat)
-	putReq.Header.Set("Accept", "application/vnd.github.v3+json")
-	putReq.Header.Set("Content-Type", "application/json")
-	putReq.Header.Set("User-Agent", "UniActivity-Monitor-Go")
-
-	if putResp, err := client.Do(putReq); err == nil {
-		putResp.Body.Close()
-		log.Printf("☁️ Active tunnel URL pushed to GitHub Pages (%s)", httpURL)
+	defer resp.Body.Close()
+	if resp.StatusCode == 200 || resp.StatusCode == 201 {
+		log.Printf("[Tunnel][GH] active_url.json pushed to GitHub Pages (%s)", httpURL)
+	} else {
+		body, _ := io.ReadAll(resp.Body)
+		log.Printf("[Tunnel][GH] Push HTTP %d: %s", resp.StatusCode, string(body)[:min(200, len(body))])
 	}
 }
 
-// DoRestartTunnel restarts cloudflared processes and captures new URLs
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Tunnel restart (fixes Error 1033)
+// ──────────────────────────────────────────────────────────────────────────────
+
+// DoRestartTunnel kills all cloudflared processes, waits for origin readiness,
+// then starts two new tunnel processes (HTTP + SSH) and waits for their URLs.
+//
+// FIX for Error 1033:
+//   - Always waits for the origin (TunnelTargetURL) to respond before starting
+//     cloudflared, so cloudflared never starts pointing at a dead origin.
+//   - Uses last-occurrence URL detection to avoid picking up stale log entries.
 func DoRestartTunnel() (string, error) {
-	log.Println("🔄 Restarting Cloudflare Tunnel...")
+	log.Println("[Tunnel] 🔄 Restarting Cloudflare Tunnel…")
+
+	// Step 1: Kill existing cloudflared processes
 	_ = exec.Command("pkill", "-9", "cloudflared").Run()
 	time.Sleep(2 * time.Second)
 
-	logHTTP := "/data/data/com.termux/files/home/cloudflared.log"
-	logSSH := "/data/data/com.termux/files/home/cloudflared-ssh.log"
+	// Step 2: Truncate old logs so we only parse the new run
+	_ = os.WriteFile(logHTTPPath, []byte(""), 0644)
+	_ = os.WriteFile(logSSHPath, []byte(""), 0644)
 
-	_ = os.WriteFile(logHTTP, []byte(""), 0644)
-	_ = os.WriteFile(logSSH, []byte(""), 0644)
-
+	// Step 3: Determine origin URL
 	targetURL := config.AppConfig.TunnelTargetURL
 	if targetURL == "" {
 		targetURL = "http://127.0.0.1:8088"
 	}
 
-	// Tunnel 1: HTTP -> Load balancer :8088
-	cmd1 := exec.Command("sh", "-c", fmt.Sprintf("nohup cloudflared tunnel --url %s --no-autoupdate > %s 2>&1 &", targetURL, logHTTP))
-	if err := cmd1.Start(); err != nil {
-		log.Printf("⚠️ Failed to start HTTP tunnel: %v", err)
+	// Step 4: WAIT for origin to be ready (fixes Error 1033)
+	log.Printf("[Tunnel] Waiting for origin %s before starting cloudflared…", targetURL)
+	if !waitForOrigin(targetURL, 60*time.Second) {
+		// Origin not ready — still try; cloudflared will handle it eventually
+		log.Printf("[Tunnel] ⚠️  Origin not ready within 60s — starting tunnel anyway")
+	}
+
+	// Step 5: Start HTTP tunnel
+	httpCmd := fmt.Sprintf(
+		"nohup cloudflared tunnel --url %s --no-autoupdate --metrics 127.0.0.1:20241 > %s 2>&1 &",
+		targetURL, logHTTPPath,
+	)
+	if err := exec.Command("sh", "-c", httpCmd).Start(); err != nil {
+		log.Printf("[Tunnel] ⚠️  Failed to start HTTP tunnel: %v", err)
 	}
 	time.Sleep(1 * time.Second)
 
-	// Tunnel 2: SSH -> :80
-	cmd2 := exec.Command("sh", "-c", fmt.Sprintf("nohup cloudflared tunnel --url http://127.0.0.1:80 --no-autoupdate > %s 2>&1 &", logSSH))
-	if err := cmd2.Start(); err != nil {
-		log.Printf("⚠️ Failed to start SSH tunnel: %v", err)
+	// Step 6: Start SSH tunnel (expose sshd via :80 on Android proot)
+	sshCmd := fmt.Sprintf(
+		"nohup cloudflared tunnel --url http://127.0.0.1:80 --no-autoupdate --metrics 127.0.0.1:20242 > %s 2>&1 &",
+		logSSHPath,
+	)
+	if err := exec.Command("sh", "-c", sshCmd).Start(); err != nil {
+		log.Printf("[Tunnel] ⚠️  Failed to start SSH tunnel: %v", err)
 	}
 
-	var newURL string
-	var sshURL string
-
-	for i := 0; i < 40; i++ {
+	// Step 7: Poll logs for new URLs (max 50s)
+	var newURL, sshURL string
+	for i := 0; i < 50; i++ {
 		time.Sleep(1 * time.Second)
 		if newURL == "" {
-			if content, err := os.ReadFile(logHTTP); err == nil {
-				m := cfURLRegex.Find(content)
-				if len(m) > 0 {
-					newURL = string(m)
-				}
-			}
+			newURL = scanLastURLFromLog(logHTTPPath)
 		}
 		if sshURL == "" {
-			if content, err := os.ReadFile(logSSH); err == nil {
-				m := cfURLRegex.Find(content)
-				if len(m) > 0 {
-					sshURL = string(m)
-				}
-			}
+			sshURL = scanLastURLFromLog(logSSHPath)
 		}
 		if newURL != "" && sshURL != "" {
 			break
 		}
 	}
 
-	if newURL != "" {
-		Status.mu.Lock()
-		Status.URL = newURL
-		Status.SSHURL = sshURL
-		Status.Online = true
-		Status.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
-		Status.mu.Unlock()
-
-		// Update .env
-		envPath := filepath.Join(config.AppConfig.ProjectRoot, ".env")
-		if content, err := os.ReadFile(envPath); err == nil {
-			lines := strings.Split(string(content), "\n")
-			for i, line := range lines {
-				if strings.HasPrefix(line, "APP_URL=") {
-					lines[i] = fmt.Sprintf("APP_URL=%s", newURL)
-				}
-			}
-			_ = os.WriteFile(envPath, []byte(strings.Join(lines, "\n")), 0644)
-		}
-
-		// Update docs/active_url.json
-		jsonPath := filepath.Join(config.AppConfig.ProjectRoot, "docs", "active_url.json")
-		_ = os.MkdirAll(filepath.Dir(jsonPath), 0755)
-		data, _ := json.MarshalIndent(map[string]interface{}{
-			"url":        newURL,
-			"ssh_url":    sshURL,
-			"updated_at": time.Now().Format("2006-01-02 15:04:05"),
-		}, "", "  ")
-		_ = os.WriteFile(jsonPath, data, 0644)
-
-		go PushActiveURLToGitHub(newURL, sshURL)
-		telegram.Send(fmt.Sprintf("🌐 <b>Cloudflare Tunnel Restarted</b>\n━━━━━━━━━━━━━━━━━━━━\n🔗 <b>URL:</b> %s\n🔒 <b>SSH:</b> %s", newURL, sshURL))
-		return newURL, nil
+	if newURL == "" {
+		return "", fmt.Errorf("timeout: could not detect new HTTP tunnel URL within 50s")
 	}
 
-	return "", fmt.Errorf("timeout waiting for new tunnel URL")
+	// Step 8: Apply all side-effects
+	applyNewURL(newURL, sshURL)
+
+	telegram.Send(fmt.Sprintf(
+		"🌐 <b>Cloudflare Tunnel Restarted</b>\n━━━━━━━━━━━━━━━━━━━━\n🔗 <b>URL:</b> %s\n🔒 <b>SSH:</b> %s",
+		newURL, sshURL,
+	))
+
+	return newURL, nil
 }
 
-// StartTunnelWatcher runs periodic health-check for the active Cloudflare Tunnel
+// ──────────────────────────────────────────────────────────────────────────────
+// Background URL watcher (detects new URLs even without explicit restart)
+// ──────────────────────────────────────────────────────────────────────────────
+
+// StartURLWatcher polls cloudflared logs every 15s and applies side-effects
+// whenever the tunnel URL changes. This is the passive counterpart to DoRestartTunnel.
+func StartURLWatcher() {
+	go func() {
+		time.Sleep(10 * time.Second)
+		var lastURL string
+
+		for {
+			time.Sleep(15 * time.Second)
+
+			cur := scanLastURLFromLog(logHTTPPath)
+			if cur == "" {
+				// Also try metrics port
+				cur = GetActiveURL()
+			}
+			if cur == "" || cur == lastURL {
+				continue
+			}
+			if !isURLAlive(cur) {
+				continue
+			}
+
+			sshCur := scanLastURLFromLog(logSSHPath)
+			lastURL = cur
+			applyNewURL(cur, sshCur)
+		}
+	}()
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Background health watcher (pings tunnel every 15s, auto-restarts on failure)
+// ──────────────────────────────────────────────────────────────────────────────
+
+// StartTunnelWatcher pings the active tunnel URL periodically and triggers
+// DoRestartTunnel after 3 consecutive failures (with a 2-minute cooldown).
 func StartTunnelWatcher() {
+	// Start passive URL watcher too
+	StartURLWatcher()
+
 	go func() {
 		time.Sleep(10 * time.Second)
 		failCount := 0
 		lastRestartTime := time.Time{}
 
+		client := &http.Client{
+			Timeout: 8 * time.Second,
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
+		}
+
 		for {
 			time.Sleep(15 * time.Second)
+
 			url := GetActiveURL()
 			if url == "" || strings.Contains(url, "localhost") || strings.Contains(url, "127.0.0.1") {
 				Status.mu.Lock()
@@ -325,25 +579,11 @@ func StartTunnelWatcher() {
 				continue
 			}
 
-			// Extract domain
-			domain := strings.TrimPrefix(url, "https://")
-			domain = strings.TrimPrefix(domain, "http://")
-			if idx := strings.Index(domain, "/"); idx != -1 {
-				domain = domain[:idx]
-			}
-
 			t0 := time.Now()
-			client := &http.Client{
-				Timeout: 8 * time.Second,
-				CheckRedirect: func(req *http.Request, via []*http.Request) error {
-					return http.ErrUseLastResponse // don't follow redirect
-				},
-			}
-
 			resp, err := client.Head(url)
 			latency := int(time.Since(t0).Milliseconds())
 
-			if err == nil && resp.StatusCode < 500 {
+			if err == nil && resp.StatusCode < 530 {
 				resp.Body.Close()
 				failCount = 0
 				Status.mu.Lock()
@@ -354,18 +594,7 @@ func StartTunnelWatcher() {
 				Status.mu.Unlock()
 			} else {
 				failCount++
-				errStr := "HTTP_ERROR"
-				if err != nil {
-					if strings.Contains(err.Error(), "timeout") {
-						errStr = "TIMEOUT"
-					} else if strings.Contains(err.Error(), "certificate") || strings.Contains(err.Error(), "tls") {
-						errStr = "SSL_ERROR"
-					} else {
-						errStr = "CONN_REFUSED"
-					}
-				} else {
-					errStr = fmt.Sprintf("HTTP_%d", resp.StatusCode)
-				}
+				errStr := classifyError(err, resp)
 
 				Status.mu.Lock()
 				Status.Online = false
@@ -374,13 +603,44 @@ func StartTunnelWatcher() {
 				Status.URL = url
 				Status.mu.Unlock()
 
-				// Auto restart after 3 failures and 120s cooldown
+				log.Printf("[Tunnel] ⚠️  Ping failed (%s) — failCount=%d", errStr, failCount)
+
+				// Auto-restart after 3 failures and 2-minute cooldown
 				if failCount >= 3 && time.Since(lastRestartTime) > 120*time.Second {
 					lastRestartTime = time.Now()
-					telegram.Send(fmt.Sprintf("⚠️ <b>Cloudflare Tunnel Offline (%s)</b> — Triggering auto-restart...", errStr))
-					go DoRestartTunnel()
+					failCount = 0
+					telegram.Send(fmt.Sprintf(
+						"⚠️ <b>Cloudflare Tunnel Offline (%s)</b> — Triggering auto-restart…",
+						errStr,
+					))
+					go func() {
+						if _, err := DoRestartTunnel(); err != nil {
+							log.Printf("[Tunnel] Auto-restart failed: %v", err)
+							telegram.Send("❌ <b>Tunnel auto-restart failed</b> — manual intervention required")
+						}
+					}()
 				}
 			}
 		}
 	}()
+}
+
+func classifyError(err error, resp *http.Response) string {
+	if err != nil {
+		s := err.Error()
+		switch {
+		case strings.Contains(s, "timeout"):
+			return "TIMEOUT"
+		case strings.Contains(s, "certificate") || strings.Contains(s, "tls"):
+			return "SSL_ERROR"
+		case strings.Contains(s, "refused"):
+			return "CONN_REFUSED"
+		default:
+			return "NET_ERROR"
+		}
+	}
+	if resp != nil {
+		return fmt.Sprintf("HTTP_%d", resp.StatusCode)
+	}
+	return "UNKNOWN"
 }
