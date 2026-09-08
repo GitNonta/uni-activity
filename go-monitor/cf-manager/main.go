@@ -32,6 +32,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 )
@@ -63,9 +64,18 @@ const (
 )
 
 // Default tunnel target — can be overridden via TUNNEL_TARGET_URL in .env
-var tunnelTarget = "http://127.0.0.1:8088"
+var (
+	tunnelTarget    = "http://127.0.0.1:8088"
+	activeTunnelURL string
+	mu              sync.RWMutex
+)
 
 var cfURLRegex = regexp.MustCompile(`https://[a-zA-Z0-9-]+\.trycloudflare\.com`)
+
+func isCloudflaredAlive() bool {
+	out, err := exec.Command("pgrep", "-f", "cloudflared").Output()
+	return err == nil && len(strings.TrimSpace(string(out))) > 0
+}
 
 // ──────────────────────────────────────────────────────────────────────────────
 // .env helpers
@@ -174,6 +184,9 @@ func isURLAlive(url string) bool {
 
 func applyNewURL(httpURL, sshURL string) {
 	log.Printf("[CF-MGR] ✅ New tunnel URL: %s (SSH: %s)", httpURL, sshURL)
+	mu.Lock()
+	activeTunnelURL = httpURL
+	mu.Unlock()
 
 	// 1. Update .env
 	updateEnv(map[string]string{
@@ -403,8 +416,26 @@ func runURLWatcher() {
 	}
 }
 
+// getActiveURL returns currently active tunnel URL with fallbacks:
+// in-memory activeTunnelURL -> last URL from cloudflared.log -> APP_URL from .env
+func getActiveURL() string {
+	mu.RLock()
+	cur := activeTunnelURL
+	mu.RUnlock()
+	if cur != "" {
+		return cur
+	}
+	if u := lastURLFromLog(logHTTP); u != "" {
+		mu.Lock()
+		activeTunnelURL = u
+		mu.Unlock()
+		return u
+	}
+	return readEnv("APP_URL")
+}
+
 // runHealthWatcher pings the active tunnel URL and auto-restarts on failure.
-func runHealthWatcher(getActiveURL func() string) {
+func runHealthWatcher() {
 	failCount := 0
 	lastRestart := time.Time{}
 
@@ -417,40 +448,53 @@ func runHealthWatcher(getActiveURL func() string) {
 		time.Sleep(healthCheckInterval)
 
 		url := getActiveURL()
-		if url == "" {
-			continue
+		cfAlive := isCloudflaredAlive()
+
+		if !cfAlive {
+			failCount++
+			log.Printf("[CF-MGR][HEALTH] ⚠️  cloudflared process is NOT running — failCount=%d", failCount)
+		} else if url != "" {
+			resp, err := client.Head(url)
+			if err == nil && resp.StatusCode < 530 {
+				resp.Body.Close()
+				failCount = 0
+				log.Printf("[CF-MGR][HEALTH] ✅ %s — OK", url)
+			} else {
+				failCount++
+				var reason string
+				if err != nil {
+					reason = err.Error()
+				} else {
+					reason = fmt.Sprintf("HTTP %d", resp.StatusCode)
+				}
+				log.Printf("[CF-MGR][HEALTH] ⚠️  %s unreachable (%s) — failCount=%d", url, reason, failCount)
+			}
+		} else {
+			// No URL in memory or logs
+			if u := lastURLFromLog(logHTTP); u != "" {
+				mu.Lock()
+				activeTunnelURL = u
+				mu.Unlock()
+			} else {
+				failCount++
+				log.Printf("[CF-MGR][HEALTH] ⚠️  No tunnel URL in log or .env — failCount=%d", failCount)
+			}
 		}
 
-		resp, err := client.Head(url)
-		if err == nil && resp.StatusCode < 530 {
-			resp.Body.Close()
+		if failCount >= failThreshold && time.Since(lastRestart) > restartCooldown {
+			lastRestart = time.Now()
 			failCount = 0
-			log.Printf("[CF-MGR][HEALTH] ✅ %s — OK", url)
-		} else {
-			failCount++
-			var reason string
-			if err != nil {
-				reason = err.Error()
-			} else {
-				reason = fmt.Sprintf("HTTP %d", resp.StatusCode)
-			}
-			log.Printf("[CF-MGR][HEALTH] ⚠️  %s failed (%s) — failCount=%d", url, reason, failCount)
-
-			if failCount >= failThreshold && time.Since(lastRestart) > restartCooldown {
-				lastRestart = time.Now()
-				failCount = 0
-				log.Println("[CF-MGR] 🔄 Auto-restart triggered")
-				killCloudflared()
-				newHTTP, newSSH, startErr := startTunnels()
-				if startErr != nil {
-					log.Printf("[CF-MGR] Auto-restart failed: %v", startErr)
-					if strings.Contains(startErr.Error(), "rate-limited") {
-						log.Println("[CF-MGR] ⏳ Entering 10-minute cooldown to allow Cloudflare rate limit to clear...")
-						lastRestart = time.Now().Add(8 * time.Minute) // 8m + 2m cooldown = 10m backoff
-					}
-				} else {
-					applyNewURL(newHTTP, newSSH)
+			log.Println("[CF-MGR] 🔄 Auto-restart triggered (Tunnel dead / IP not found / process down)")
+			killCloudflared()
+			newHTTP, newSSH, startErr := startTunnels()
+			if startErr != nil {
+				log.Printf("[CF-MGR] Auto-restart failed: %v", startErr)
+				if strings.Contains(startErr.Error(), "rate-limited") {
+					log.Println("[CF-MGR] ⏳ Entering 10-minute cooldown to allow Cloudflare rate limit to clear...")
+					lastRestart = time.Now().Add(8 * time.Minute) // 8m + 2m cooldown = 10m backoff
 				}
+			} else {
+				applyNewURL(newHTTP, newSSH)
 			}
 		}
 	}
@@ -496,19 +540,9 @@ func main() {
 		applyNewURL(httpURL, sshURL)
 	}
 
-	// Track current active URL
-	activeURL := httpURL
-	getActiveURL := func() string {
-		// Re-read from log each time (more reliable than in-memory state)
-		if u := lastURLFromLog(logHTTP); u != "" {
-			return u
-		}
-		return activeURL
-	}
-
 	// Start background watchers
 	go runURLWatcher()
-	go runHealthWatcher(getActiveURL)
+	go runHealthWatcher()
 
 	log.Println("[CF-MGR] All watchers started. Running…")
 
