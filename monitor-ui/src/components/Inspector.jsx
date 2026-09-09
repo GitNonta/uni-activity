@@ -164,8 +164,18 @@ export function InspectorInner({ logs }) {
     'Ubon Ratchathani': 'อุบลราชธานี'
   };
 
+  const isLogHttps = (log) => {
+    if (!log) return false;
+    if (log.is_https === true) return true;
+    if (typeof log.protocol === 'string' && log.protocol.toUpperCase() === 'HTTPS') return true;
+    if (typeof log.url === 'string' && log.url.toLowerCase().startsWith('https:')) return true;
+    if (log.ray && String(log.ray).trim() !== '') return true;
+    if (typeof log.gateway === 'string' && log.gateway.toUpperCase().includes('HTTPS')) return true;
+    return false;
+  };
+
   const getOriginInfo = (log) => {
-    if (!log) return { ip: '127.0.0.1', origin: 'Localhost', type: 'loopback', location: 'Server Internal (Loopback)', gateway: 'Internal Loopback', city: '', region: '', isp: '', country: '' };
+    if (!log) return { ip: '127.0.0.1', origin: 'Localhost', type: 'loopback', location: 'Server Internal (Loopback)', gateway: 'Internal Loopback', city: '', region: '', isp: '', country: '', isHttps: false };
     const ip = log.ip || '127.0.0.1';
     let type = log.origin_type;
     if (!type) {
@@ -175,12 +185,13 @@ export function InspectorInner({ logs }) {
     }
     const origin = log.origin || (type === 'loopback' ? 'Localhost' : type === 'lan' ? 'Local Network (LAN)' : 'Public Internet');
     const location = log.location || (type === 'loopback' ? 'Server Internal (Loopback)' : type === 'lan' ? 'Local Area Network / Wi-Fi' : `${origin} (Public Internet)`);
-    const gateway = log.gateway || (log.ray ? 'Cloudflare Tunnel' : type === 'loopback' ? 'Internal Loopback' : 'Direct HTTP');
+    const isHttps = isLogHttps(log);
+    const gateway = log.gateway || (log.ray || isHttps ? 'Cloudflare Tunnel (HTTPS)' : type === 'loopback' ? 'Internal Loopback' : 'Direct HTTP');
     const city = log.city || '';
     const region = log.region || '';
     const isp = log.isp || '';
     const country = log.country_name || log.country || '';
-    return { ip, origin, type, location, gateway, city, region, isp, country };
+    return { ip, origin, type, location, gateway, city, region, isp, country, isHttps };
   };
 
   const getQueryParams = (log) => {
@@ -281,9 +292,39 @@ export function InspectorInner({ logs }) {
                   }}
                 >
                   <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingRight: '0.5rem', flex: 1, gap: '0.2rem' }}>
-                    {/* Method & Section Badge */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', overflow: 'hidden' }}>
+                    {/* Method, Protocol & Section Badge */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', overflow: 'hidden', flexWrap: 'nowrap' }}>
                       <span style={getMethodBadgeStyle(log.method)}>{log.method}</span>
+                      
+                      {logType === 'http' && (
+                        <span style={{
+                          background: isLogHttps(log) ? (isSelected ? 'rgba(16, 185, 129, 0.25)' : '#d1fae5') : (isSelected ? 'rgba(148, 163, 184, 0.2)' : '#f1f5f9'),
+                          color: isLogHttps(log) ? (isSelected ? '#6ee7b7' : '#065f46') : (isSelected ? '#cbd5e1' : '#64748b'),
+                          border: isLogHttps(log) ? (isSelected ? '1px solid rgba(110, 231, 183, 0.4)' : '1px solid #a7f3d0') : (isSelected ? '1px solid rgba(203, 213, 225, 0.3)' : '1px solid #e2e8f0'),
+                          padding: '0.1rem 0.35rem',
+                          borderRadius: '0.25rem',
+                          fontSize: '0.65rem',
+                          fontWeight: 700,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.25rem',
+                          flexShrink: 0
+                        }}>
+                          {isLogHttps(log) ? (
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                          ) : (
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                              <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+                            </svg>
+                          )}
+                          {isLogHttps(log) ? 'HTTPS' : 'HTTP'}
+                        </span>
+                      )}
+
                       {log.section && (
                         <span style={{
                           fontSize: '0.68rem',
@@ -295,7 +336,7 @@ export function InspectorInner({ logs }) {
                           whiteSpace: 'nowrap',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
-                          maxWidth: '180px'
+                          maxWidth: '140px'
                         }}>
                           {log.section.split(' (')[0]}
                         </span>
@@ -338,12 +379,24 @@ export function InspectorInner({ logs }) {
                       fontSize: '0.7rem',
                       color: isSelected ? '#94a3b8' : '#64748b' 
                     }}>
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={isSelected ? '#60a5fa' : '#2563eb'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                         <circle cx="12" cy="12" r="10"></circle>
                         <line x1="2" y1="12" x2="22" y2="12"></line>
                         <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                       </svg>
-                      <span style={{ fontFamily: 'monospace' }}>{log.ip || '127.0.0.1'}</span>
+                      <span style={{ fontWeight: 600, color: isSelected ? '#93c5fd' : '#1e40af', flexShrink: 0 }}>IP ต้นทาง:</span>
+                      <span style={{ 
+                        fontFamily: 'monospace', 
+                        fontWeight: 700, 
+                        color: isSelected ? '#fff' : '#0f172a',
+                        background: isSelected ? 'rgba(255,255,255,0.12)' : '#f1f5f9',
+                        padding: '0.05rem 0.35rem',
+                        borderRadius: '0.25rem',
+                        border: isSelected ? '1px solid rgba(255,255,255,0.18)' : '1px solid #e2e8f0',
+                        flexShrink: 0
+                      }}>
+                        {log.ip || '127.0.0.1'}
+                      </span>
                       <span>•</span>
                       <span style={{ 
                         fontWeight: 600, 
@@ -412,8 +465,15 @@ export function InspectorInner({ logs }) {
                 <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center', flexWrap: 'wrap' }}>
                   <span>Duration: <strong>{Number(selectedLog.duration || 0).toFixed(2)} ms</strong></span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
-                    <span>Client IP:</span>
-                    <strong style={{ fontFamily: 'monospace', color: '#0f172a' }}>{selectedLog.ip || '127.0.0.1'}</strong>
+                    <span style={{ fontWeight: 600, color: '#1e40af' }}>IP ต้นทาง:</span>
+                    <strong style={{ 
+                      fontFamily: 'monospace', 
+                      color: '#0f172a',
+                      background: '#f1f5f9',
+                      padding: '0.1rem 0.45rem',
+                      borderRadius: '0.25rem',
+                      border: '1px solid #e2e8f0'
+                    }}>{selectedLog.ip || '127.0.0.1'}</strong>
                     <span style={{
                       fontSize: '0.7rem',
                       fontWeight: 600,
@@ -439,9 +499,38 @@ export function InspectorInner({ logs }) {
                 </div>
               </div>
 
-              {/* Main Action Title & Section */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+              {/* Main Action Title, Protocol & Section */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
                 <span style={getMethodBadgeStyle(selectedLog.method)}>{selectedLog.method}</span>
+                
+                {getLogType(selectedLog) === 'http' && (
+                  <span style={{
+                    background: isLogHttps(selectedLog) ? '#d1fae5' : '#f1f5f9',
+                    color: isLogHttps(selectedLog) ? '#065f46' : '#64748b',
+                    border: isLogHttps(selectedLog) ? '1px solid #a7f3d0' : '1px solid #e2e8f0',
+                    padding: '0.15rem 0.55rem',
+                    borderRadius: '0.25rem',
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem'
+                  }}>
+                    {isLogHttps(selectedLog) ? (
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                      </svg>
+                    ) : (
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+                      </svg>
+                    )}
+                    {isLogHttps(selectedLog) ? 'HTTPS (SSL Secure)' : 'HTTP (Plaintext)'}
+                  </span>
+                )}
+
                 <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700, color: '#0f172a' }}>
                   {selectedLog.action || selectedLog.path || '/'}
                 </h2>
@@ -619,12 +708,21 @@ export function InspectorInner({ logs }) {
                           <line x1="2" y1="12" x2="22" y2="12"></line>
                           <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                         </svg>
-                        <span>Client Location (ตำแหน่ง)</span>
+                        <span>IP ต้นทาง & ทางเข้าสู่ระบบ (Origin IP & Entry)</span>
                       </div>
-                      <div style={{ fontSize: '0.9rem', color: '#0f172a', fontWeight: 600, marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <span style={{ fontFamily: 'monospace' }}>{selectedLog.ip || '127.0.0.1'}</span>
+                      <div style={{ fontSize: '0.92rem', color: '#0f172a', fontWeight: 700, marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                        <span style={{ fontFamily: 'monospace', background: '#f8fafc', padding: '0.1rem 0.4rem', borderRadius: '0.25rem', border: '1px solid #e2e8f0' }}>{selectedLog.ip || '127.0.0.1'}</span>
+                        {isLogHttps(selectedLog) && (
+                          <span style={{ fontSize: '0.68rem', background: '#d1fae5', color: '#065f46', border: '1px solid #a7f3d0', padding: '0.1rem 0.4rem', borderRadius: '0.25rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            HTTPS
+                          </span>
+                        )}
                       </div>
-                      <div style={{ fontSize: '0.75rem', color: '#2563eb', marginTop: '0.2rem', fontWeight: 600 }}>
+                      <div style={{ fontSize: '0.75rem', color: '#2563eb', marginTop: '0.25rem', fontWeight: 600 }}>
                         {selectedLog.city ? `${selectedLog.city}${thaiProvinceMap[selectedLog.city] ? ` (${thaiProvinceMap[selectedLog.city]})` : ''}, ${selectedLog.country_name || selectedLog.country || selectedLog.origin}` : (selectedLog.origin || 'LAN')}
                       </div>
                     </div>
@@ -788,7 +886,7 @@ export function InspectorInner({ logs }) {
                       
                       {/* 1. IP Address */}
                       <div style={{ background: '#fff', padding: '0.85rem 1rem' }}>
-                        <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>Client IP Address</div>
+                        <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>IP ต้นทาง (Origin Client IP)</div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.95rem', color: '#0f172a' }}>
                             {selectedLog.ip || '127.0.0.1'}
@@ -799,6 +897,9 @@ export function InspectorInner({ logs }) {
                           >
                             Copy IP
                           </button>
+                        </div>
+                        <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.2rem' }}>
+                          {selectedLog.origin_type === 'wan' ? 'ตรวจพบจาก Public WAN / Cloudflare Header' : selectedLog.origin_type === 'lan' ? 'เครื่องในเครือข่ายภายใน (Local LAN)' : 'เครื่องเซิร์ฟเวอร์โดยตรง (Loopback)'}
                         </div>
                       </div>
 
@@ -844,18 +945,37 @@ export function InspectorInner({ logs }) {
 
                       {/* 4. Gateway & Protocol */}
                       <div style={{ background: '#fff', padding: '0.85rem 1rem' }}>
-                        <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>Connection Gateway</div>
-                        <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
-                            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
-                            <line x1="6" y1="6" x2="6.01" y2="6"></line>
-                            <line x1="6" y1="18" x2="6.01" y2="18"></line>
-                          </svg>
-                          <span>{selectedLog.gateway || (selectedLog.ray ? 'Cloudflare Tunnel' : selectedLog.ip === '127.0.0.1' ? 'Internal Loopback' : 'Direct HTTP')}</span>
+                        <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>Protocol & Connection Gateway (โปรโตคอลและเกตเวย์)</div>
+                        <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                          <span style={{
+                            background: isLogHttps(selectedLog) ? '#d1fae5' : '#f1f5f9',
+                            color: isLogHttps(selectedLog) ? '#065f46' : '#64748b',
+                            border: isLogHttps(selectedLog) ? '1px solid #a7f3d0' : '1px solid #e2e8f0',
+                            padding: '0.1rem 0.4rem',
+                            borderRadius: '0.25rem',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.25rem'
+                          }}>
+                            {isLogHttps(selectedLog) ? (
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                              </svg>
+                            ) : (
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+                              </svg>
+                            )}
+                            {isLogHttps(selectedLog) ? 'HTTPS' : 'HTTP'}
+                          </span>
+                          <span>{selectedLog.gateway || (selectedLog.ray || isLogHttps(selectedLog) ? 'Cloudflare Tunnel (HTTPS)' : selectedLog.ip === '127.0.0.1' ? 'Internal Loopback' : 'Direct HTTP')}</span>
                         </div>
                         {selectedLog.ray && (
-                          <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.15rem', fontFamily: 'monospace' }}>
+                          <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.2rem', fontFamily: 'monospace' }}>
                             CF-Ray: {selectedLog.ray}
                           </div>
                         )}

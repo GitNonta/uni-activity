@@ -457,10 +457,27 @@ func enrichInspectorItem(item map[string]interface{}) {
 			if strings.EqualFold(k, "cf-ray") && rayID == "" {
 				rayID = fmt.Sprintf("%v", v)
 			}
-			if strings.EqualFold(k, "cf-connecting-ip") || strings.EqualFold(k, "x-real-ip") {
+			if strings.EqualFold(k, "cf-connecting-ip") {
 				val := strings.TrimSpace(fmt.Sprintf("%v", v))
-				if val != "" && (ipStr == "" || ipStr == "127.0.0.1") {
+				if val != "" && net.ParseIP(val) != nil {
 					ipStr = val
+				}
+			} else if strings.EqualFold(k, "x-real-ip") {
+				val := strings.TrimSpace(fmt.Sprintf("%v", v))
+				if val != "" && net.ParseIP(val) != nil && (ipStr == "" || ipStr == "127.0.0.1") {
+					ipStr = val
+				}
+			} else if strings.EqualFold(k, "x-forwarded-for") {
+				val := strings.TrimSpace(fmt.Sprintf("%v", v))
+				if val != "" && (ipStr == "" || ipStr == "127.0.0.1" || strings.HasPrefix(ipStr, "192.168.")) {
+					for _, part := range strings.Split(val, ",") {
+						p := strings.TrimSpace(part)
+						pip := net.ParseIP(p)
+						if pip != nil && !pip.IsLoopback() && !pip.IsPrivate() {
+							ipStr = p
+							break
+						}
+					}
 				}
 			}
 		}
@@ -470,6 +487,27 @@ func enrichInspectorItem(item map[string]interface{}) {
 		ipStr = "127.0.0.1"
 	}
 	item["ip"] = ipStr
+
+	// Protocol & HTTPS detection
+	proto, _ := item["protocol"].(string)
+	isHTTPS, _ := item["is_https"].(bool)
+	urlStr, _ := item["url"].(string)
+
+	if !isHTTPS {
+		if strings.HasPrefix(strings.ToLower(urlStr), "https://") || rayID != "" || strings.EqualFold(proto, "HTTPS") {
+			isHTTPS = true
+			proto = "HTTPS"
+		}
+	}
+	if proto == "" {
+		if isHTTPS {
+			proto = "HTTPS"
+		} else {
+			proto = "HTTP"
+		}
+	}
+	item["protocol"] = proto
+	item["is_https"] = isHTTPS
 
 	detail := resolveGeoDetail(ipStr, countryCode, cityHint, regionHint)
 	item["origin"] = detail.Origin
@@ -482,8 +520,8 @@ func enrichInspectorItem(item map[string]interface{}) {
 	item["isp"] = detail.ISP
 
 	gateway := "Direct HTTP"
-	if rayID != "" || (headers != nil && headers["cf-connecting-ip"] != nil) {
-		gateway = "Cloudflare Tunnel"
+	if rayID != "" || isHTTPS || (headers != nil && headers["cf-connecting-ip"] != nil) {
+		gateway = "Cloudflare Tunnel (HTTPS)"
 		if rayID != "" {
 			item["ray"] = rayID
 		}

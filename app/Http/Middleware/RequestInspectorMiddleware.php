@@ -84,13 +84,47 @@ class RequestInspectorMiddleware
             }
 
             // Real Client IP resolution (prioritize Cloudflare & Reverse Proxy headers)
-            $clientIp = (string) (
-                $request->header('cf-connecting-ip')
-                ?: $request->header('x-real-ip')
-                ?: ($request->header('x-forwarded-for') ? trim(explode(',', (string) $request->header('x-forwarded-for'))[0]) : null)
-                ?: $request->ip()
-                ?: '127.0.0.1'
-            );
+            $clientIp = null;
+            $cfConnectingIp = trim((string) $request->header('cf-connecting-ip'));
+            if (!empty($cfConnectingIp) && filter_var($cfConnectingIp, FILTER_VALIDATE_IP)) {
+                $clientIp = $cfConnectingIp;
+            }
+
+            if (!$clientIp) {
+                // Check X-Forwarded-For chain, searching for first non-internal public IP
+                $rawFwd = (string) $request->header('x-forwarded-for');
+                if (!empty($rawFwd)) {
+                    $parts = array_map('trim', explode(',', $rawFwd));
+                    // 1. Try first valid public IP
+                    foreach ($parts as $p) {
+                        if (filter_var($p, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+                            $clientIp = $p;
+                            break;
+                        }
+                    }
+                    // 2. Fallback to first valid IP in list
+                    if (!$clientIp) {
+                        foreach ($parts as $p) {
+                            if (filter_var($p, FILTER_VALIDATE_IP)) {
+                                $clientIp = $p;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!$clientIp) {
+                $realIp = trim((string) $request->header('x-real-ip'));
+                if (!empty($realIp) && filter_var($realIp, FILTER_VALIDATE_IP)) {
+                    $clientIp = $realIp;
+                }
+            }
+
+            if (!$clientIp) {
+                $clientIp = (string) ($request->ip() ?: '127.0.0.1');
+            }
+
             $cfCountry = strtoupper((string) $request->header('cf-ipcountry', ''));
             $cfCity = (string) $request->header('cf-ipcity', '');
             $cfRegion = (string) $request->header('cf-region', '');
@@ -136,14 +170,20 @@ class RequestInspectorMiddleware
 
             [$actionTitle, $sectionTitle] = $this->resolveActionAndSection($request, $routeName, $controller);
 
-            // Public Entry URL (Preserve Cloudflare Tunnel / Reverse Proxy host)
+            // Public Entry URL (Preserve Cloudflare Tunnel / Reverse Proxy host & HTTPS scheme)
             $fwdHost = $request->header('x-forwarded-host') ?: $request->header('host');
             $fwdProto = $request->header('x-forwarded-proto') ?: ($request->isSecure() ? 'https' : 'http');
+            if ($request->hasHeader('cf-ray') || str_contains((string) $fwdHost, 'trycloudflare.com')) {
+                $fwdProto = 'https';
+            }
+            $isHttps = strtolower((string) $fwdProto) === 'https';
             $fullEntryUrl = $fwdHost ? "{$fwdProto}://{$fwdHost}" . $request->getRequestUri() : $request->fullUrl();
             $refererUrl = (string) ($request->header('referer') ?: '');
 
             $data = [
                 'method' => $request->method(),
+                'protocol' => strtoupper((string) $fwdProto),
+                'is_https' => $isHttps,
                 'url' => $fullEntryUrl,
                 'path' => $request->path(),
                 'referer' => $refererUrl,
