@@ -9,15 +9,20 @@ LOG=~/nginx-healthcheck.log
 TS() { date "+%Y-%m-%d %H:%M:%S"; }
 
 # ══════════════════════════════════════════════════════════
-#  1. Kill orphaned cloudflared (pointing to port 80)
+#  1. Kill orphaned cloudflared (not targeting a localhost origin)
 # ══════════════════════════════════════════════════════════
-CORRECT_CF="cloudflared tunnel --no-autoupdate --url http://127.0.0.1:8080"
+# Legitimate tunnels on this device always point at a local origin —
+# cf-manager's HTTP (:8088) and SSH tunnels, the runit-managed :8080
+# tunnel, etc. Killing those causes Error 1033 within seconds (Cloudflare
+# deregisters the hostname once edge connections drop) and burns the
+# quick-tunnel registration quota. Only orphans pointed elsewhere
+# (historically port 80) are killed here.
 pgrep -af cloudflared 2>/dev/null | while IFS= read -r line; do
     pid=$(echo "$line" | awk '{print $1}')
     # Skip runsv/svlogd processes
     echo "$line" | grep -qE "runsv|svlogd" && continue
-    # Skip the correct cloudflared
-    echo "$line" | grep -q "url http://127.0.0.1:8080" && continue
+    # Skip legitimate tunnels targeting a localhost origin
+    echo "$line" | grep -qE -- '--url (http|https|ssh)://(127\.0\.0\.1|localhost):' && continue
     # Skip if it's just our own grep
     echo "$line" | grep -q "grep" && continue
     # This is an orphaned cloudflared — kill it

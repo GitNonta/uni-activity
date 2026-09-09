@@ -93,9 +93,12 @@ def is_reverb_ok():
     out, _ = shell("netstat -tlnp 2>/dev/null | grep ':8082 '")
     return bool(out)
 
-def is_cloudflared_ok():
-    out, _ = shell("pgrep -f 'cloudflared tunnel'")
-    return bool(out)
+
+# NOTE: cloudflared is NOT managed here anymore. cf-manager (Go) is the
+# single owner of tunnels — spawning a competing :8080 tunnel here caused
+# tunnel wars (mutual kills → Error 1033) and burned Cloudflare's
+# quick-tunnel registration quota. The nginx-healthcheck cron only kills
+# cloudflared processes that do NOT target a localhost origin.
 
 
 def _start_valkey(port, data_dir):
@@ -174,31 +177,6 @@ def restart_reverb():
     time.sleep(5)
     return is_reverb_ok()
 
-def restart_cloudflared():
-    import re
-    log.warning('RESTART: Cloudflared Tunnel')
-    shell(f'rm -f {APP}/cloudflared.log')
-    shell("pkill -9 -f 'cloudflared tunnel' ; sleep 1")
-    cmd = (
-        'cloudflared tunnel --url http://127.0.0.1:8080 '
-        '--no-autoupdate '
-        f'</dev/null >{APP}/cloudflared.log 2>&1 &'
-    )
-    shell(f'nohup {cmd}')
-    # Wait for URL
-    for _ in range(10):
-        time.sleep(3)
-        log_txt, _ = shell(f'cat {APP}/cloudflared.log')
-        m = re.search(r'https://[a-z0-9-]+\.trycloudflare\.com', log_txt)
-        if m:
-            new_url = m.group(0)
-            log.info(f'  New tunnel URL: {new_url}')
-            shell(f"sed -i 's|APP_URL=.*|APP_URL={new_url}|g' {APP}/.env")
-            shell(f"python {APP}/py/start_cf_ubuntu.py &")
-            break
-    return is_cloudflared_ok()
-
-
 def is_web_engine_ok():
     return is_octane_ok() or is_phpfpm_ok()
 
@@ -218,7 +196,6 @@ SERVICES = [
     {'name': 'WebEngine',   'check': is_web_engine_ok,   'restart': restart_web_engine,  'cascade': []},
     {'name': 'Queue',       'check': is_queue_ok,        'restart': restart_queue,       'cascade': []},
     {'name': 'Reverb',      'check': is_reverb_ok,       'restart': restart_reverb,      'cascade': []},
-    {'name': 'Cloudflared', 'check': is_cloudflared_ok,  'restart': restart_cloudflared, 'cascade': []},
 ]
 
 def run_cycle(round_num):
