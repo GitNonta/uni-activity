@@ -42,8 +42,15 @@ jobs:
               OLD_MON_SHA="$(sha256sum go-monitor | cut -d' ' -f1)"
             fi
 
-            "$GO_BIN" build -o cf-manager ./cf-manager
-            "$GO_BIN" build -o go-monitor .
+            # -buildvcs=false -trimpath → reproducible checksums, so identical
+            # source produces an identical binary. WITHOUT this, Go embeds the
+            # git revision into every build, the checksum changes on every
+            # commit (including [auto-sync] URL pushes), and the restart below
+            # would kill cf-manager/cloudflared on every deploy — a permanent
+            # tunnel-churn loop (each restart = new quick-tunnel URL = new
+            # commit = new deploy = another kill).
+            "$GO_BIN" build -buildvcs=false -trimpath -o cf-manager ./cf-manager
+            "$GO_BIN" build -buildvcs=false -trimpath -o go-monitor .
 
             NEW_CF_SHA="$(sha256sum cf-manager | cut -d' ' -f1)"
             NEW_MON_SHA="$(sha256sum go-monitor | cut -d' ' -f1)"
@@ -51,17 +58,21 @@ jobs:
             # Restart only processes that are actually running AND whose binary
             # changed — prevents duplicate spawns and needless tunnel churn on
             # docs-only [auto-sync] pushes.
-            if [ "$OLD_CF_SHA" != "$NEW_CF_SHA" ] && pgrep -f "cf-manager" >/dev/null 2>&1; then
-              pkill -f "cf-manager" || true
-              sleep 2
-              nohup ./cf-manager >/dev/null 2>&1 &
-              echo "cf-manager rebuilt and restarted"
-            fi
-            if [ "$OLD_MON_SHA" != "$NEW_MON_SHA" ] && pgrep -f "go-monitor" >/dev/null 2>&1; then
-              pkill -f "go-monitor" || true
+            # pgrep/pkill -x matches the exact process name only ("-f" would
+            # also match unrelated processes whose args merely mention the
+            # binary, e.g. tail -f cf-manager.log). go-monitor first, then
+            # cf-manager last so the freshest tunnel URL lands after everything.
+            if [ "$OLD_MON_SHA" != "$NEW_MON_SHA" ] && pgrep -x "go-monitor" >/dev/null 2>&1; then
+              pkill -x "go-monitor" || true
               sleep 2
               nohup ./go-monitor >/dev/null 2>&1 &
               echo "go-monitor rebuilt and restarted"
+            fi
+            if [ "$OLD_CF_SHA" != "$NEW_CF_SHA" ] && pgrep -x "cf-manager" >/dev/null 2>&1; then
+              pkill -x "cf-manager" || true
+              sleep 3
+              nohup ./cf-manager >/dev/null 2>&1 &
+              echo "cf-manager rebuilt and restarted"
             fi
 
             cd ..
