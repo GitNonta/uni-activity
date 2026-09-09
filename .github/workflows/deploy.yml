@@ -34,8 +34,8 @@ jobs:
             cd go-monitor
 
             OLD_CF_SHA=""
-            if [ -f cf-manager ]; then
-              OLD_CF_SHA="$(sha256sum cf-manager | cut -d' ' -f1)"
+            if [ -f "$HOME/cf-manager" ]; then
+              OLD_CF_SHA="$(sha256sum "$HOME/cf-manager" | cut -d' ' -f1)"
             fi
             OLD_MON_SHA=""
             if [ -f go-monitor ]; then
@@ -49,10 +49,10 @@ jobs:
             # would kill cf-manager/cloudflared on every deploy — a permanent
             # tunnel-churn loop (each restart = new quick-tunnel URL = new
             # commit = new deploy = another kill).
-            "$GO_BIN" build -buildvcs=false -trimpath -o cf-manager ./cf-manager
+            "$GO_BIN" build -buildvcs=false -trimpath -o "$HOME/cf-manager" ./cf-manager
             "$GO_BIN" build -buildvcs=false -trimpath -o go-monitor .
 
-            NEW_CF_SHA="$(sha256sum cf-manager | cut -d' ' -f1)"
+            NEW_CF_SHA="$(sha256sum "$HOME/cf-manager" | cut -d' ' -f1)"
             NEW_MON_SHA="$(sha256sum go-monitor | cut -d' ' -f1)"
 
             # pgrep/pkill -x matches the exact process name only ("-f" would
@@ -60,11 +60,16 @@ jobs:
             # binary, e.g. tail -f cf-manager.log).
             ensure_running() {
               name="$1"
-              changed="$2"
+              bin="$2"
+              changed="$3"
               log_file="../storage/logs/$name-stdout.log"
               if pgrep -x "$name" >/dev/null 2>&1; then
                 if [ "$changed" = "yes" ]; then
-                  pkill -x "$name" 2>/dev/null || true
+                  # -9 so the new instance starts from a guaranteed-dead
+                  # predecessor; cf-manager leaves cloudflared running on
+                  # purpose so the healthy tunnel URL survives the restart
+                  # and gets adopted instead of re-registered.
+                  pkill -9 -x "$name" 2>/dev/null || true
                   # Wait for a clean exit so the new instance can rebind its
                   # ports (go-monitor binds :9999 — starting too early makes
                   # the new process die with "address already in use").
@@ -75,7 +80,7 @@ jobs:
                   done
                   pkill -9 -x "$name" 2>/dev/null || true
                   sleep 1
-                  setsid nohup "./$name" >>"$log_file" 2>&1 &
+                  setsid nohup "$bin" >>"$log_file" 2>&1 &
                   echo "$name restarted (binary changed)"
                 else
                   echo "$name already running, binary unchanged — left alone"
@@ -84,7 +89,7 @@ jobs:
               else
                 # Converge to running: revive a dead service even when the
                 # binary did not change (self-healing on every deploy).
-                setsid nohup "./$name" >>"$log_file" 2>&1 &
+                setsid nohup "$bin" >>"$log_file" 2>&1 &
                 echo "$name was NOT running — started"
               fi
               sleep 2
@@ -106,8 +111,8 @@ jobs:
 
             # go-monitor first, cf-manager last so the freshest tunnel URL
             # lands after everything else is settled.
-            ensure_running go-monitor "$MON_CHANGED"
-            ensure_running cf-manager "$CF_CHANGED"
+            ensure_running go-monitor "./go-monitor" "$MON_CHANGED"
+            ensure_running cf-manager "$HOME/cf-manager" "$CF_CHANGED"
 
             cd ..
           else

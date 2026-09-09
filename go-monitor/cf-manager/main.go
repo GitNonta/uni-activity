@@ -9,13 +9,14 @@
 //	./cf-manager &
 //
 // หน้าที่:
-//  1. เริ่ม cloudflared (HTTP + SSH tunnel) อัตโนมัติ
-//  2. รอ origin server พร้อมก่อนเสมอ → แก้ Error 1033
-//  3. อัพเดท .env APP_URL เมื่อ URL เปลี่ยน
-//  4. อัพเดท GitHub Pages active_url.json
-//  5. อัพเดท LINE Webhook
-//  6. Clear Laravel cache
-//  7. Health-check ทุก 15 วิ → auto-restart เมื่อ tunnel ล่ม
+//  1. Adopt existing healthy cloudflared tunnel ถ้ามี (ไม่เปลือง quota)
+//  2. เริ่ม cloudflared (HTTP + SSH tunnel) อัตโนมัติ
+//  3. รอ origin server พร้อมก่อนเสมอ → แก้ Error 1033
+//  4. อัพเดท .env APP_URL เมื่อ URL เปลี่ยน
+//  5. อัพเดท GitHub Pages active_url.json
+//  6. อัพเดท LINE Webhook
+//  7. Clear Laravel cache
+//  8. Health-check ทุก 15 วิ → auto-restart เมื่อ tunnel ล่ม
 //     รวมถึงตรวจ "edge disconnected" (Error 1033: IP not found) ผ่าน
 //     cloudflared metrics endpoint แล้ว restart ทันที ไม่ต้องรอ 3 fail
 package main
@@ -45,16 +46,23 @@ import (
 // ──────────────────────────────────────────────────────────────────────────────
 
 const (
-	termuxHome   = "/data/data/com.termux/files/home"
-	projectRoot  = termuxHome + "/uni-activity"
-	envFile      = projectRoot + "/.env"
-	logHTTP      = termuxHome + "/cloudflared.log"
-	logSSH       = termuxHome + "/cloudflared-ssh.log"
-	localURLJSON = projectRoot + "/docs/active_url.json"
-	artisanPath  = projectRoot + "/artisan"
-	watchdogLog  = projectRoot + "/storage/logs/cf-manager.log"
-	metricsHTTP  = "http://127.0.0.1:20241/metrics"
-	metricsSSH   = "http://127.0.0.1:20242/metrics"
+	termuxHome  = "/data/data/com.termux/files/home"
+	projectRoot = termuxHome + "/uni-activity"
+	envFile     = projectRoot + "/.env"
+	logHTTP     = termuxHome + "/cloudflared.log"
+	logSSH      = termuxHome + "/cloudflared-ssh.log"
+
+	// Reuse threshold for an already-registered quick tunnel. Quick tunnels
+	// that survived a manager restart keep their URL valid (DNS stays routed
+	// while the cloudflared process lives), so killing them to "get a fresh
+	// one" wastes Cloudflare's registration quota (HTTP 429 rate limit) and
+	// orphans URLs users still have open.
+	adoptProbeTimeout = 6 * time.Second
+	localURLJSON      = projectRoot + "/docs/active_url.json"
+	artisanPath       = projectRoot + "/artisan"
+	watchdogLog       = projectRoot + "/storage/logs/cf-manager.log"
+	metricsHTTP       = "http://127.0.0.1:20241/metrics"
+	metricsSSH        = "http://127.0.0.1:20242/metrics"
 
 	// How long to wait for origin before starting cloudflared
 	originReadyTimeout = 90 * time.Second
@@ -82,6 +90,89 @@ var cfURLRegex = regexp.MustCompile(`https://[a-zA-Z0-9-]+\.trycloudflare\.com`)
 func isCloudflaredAlive() bool {
 	out, err := exec.Command("pgrep", "-f", "cloudflared").Output()
 	return err == nil && len(strings.TrimSpace(string(out))) > 0
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Tunnel adoption — reuse a still-healthy tunnel instead of re-registering
+// ──────────────────────────────────────────────────────────────────────────────
+
+// adoptCandidateURLs returns known trycloudflare URLs to probe for adoption,
+// best-first:
+//  1. cloudflared.log — the URL of the tunnel this (or a previous) manager
+//     last spawned; if cloudflared survived, this is the live one.
+//  2. APP_URL from .env — the URL the Laravel app is currently configured to
+//     serve redirects and links from; adopting it keeps user bookmarks and
+//     the LINE webhook valid.
+//  3. Last 5 URLs from the git history of docs/active_url.json — covers a
+//     freshly-cloned/updated checkout where logs were truncated.
+func adoptCandidateURLs() []string {
+	seen := map[string]bool{}
+	var out []string
+	add := func(u string) {
+		if u == "" || seen[u] {
+			return
+		}
+		seen[u] = true
+		out = append(out, u)
+	}
+
+	add(lastURLFromLog(logHTTP))
+	add(readEnv("APP_URL"))
+
+	out2, err := exec.Command("git", "-C", projectRoot, "log", "-5", "--format=%H", "--", "docs/active_url.json").Output()
+	if err == nil {
+		for _, line := range strings.Split(strings.TrimSpace(string(out2)), "\n") {
+			if line == "" {
+				continue
+			}
+			blob, err := exec.Command("git", "-C", projectRoot, "show", line+":docs/active_url.json").Output()
+			if err != nil {
+				continue
+			}
+			var doc struct {
+				URL string `json:"url"`
+			}
+			if json.Unmarshal(blob, &doc) == nil {
+				add(doc.URL)
+			}
+		}
+	}
+	return out
+}
+
+// tryAdoptTunnel checks whether an existing cloudflared is still serving its
+// URL and, if so, adopts it: registers the URL in memory, applies all URL
+// side-effects (.env, GitHub Pages, LINE webhook) and reports the adopted URL
+// without spawning or killing anything.
+func tryAdoptTunnel() (string, bool) {
+	if !isCloudflaredAlive() {
+		return "", false
+	}
+
+	client := &http.Client{
+		Timeout:       adoptProbeTimeout,
+		CheckRedirect: func(r *http.Request, via []*http.Request) error { return http.ErrUseLastResponse },
+	}
+	for _, url := range adoptCandidateURLs() {
+		resp, err := client.Head(url)
+		if err != nil {
+			log.Printf("[CF-MGR][ADOPT] %s unreachable (%v)", url, err)
+			continue
+		}
+		resp.Body.Close()
+		if resp.StatusCode >= 530 {
+			log.Printf("[CF-MGR][ADOPT] %s answering HTTP %d — dead tunnel, skipping", url, resp.StatusCode)
+			continue
+		}
+		log.Printf("[CF-MGR][ADOPT] ✅ Adopting live tunnel %s (HTTP %d) — no re-registration needed", url, resp.StatusCode)
+		sshURL := lastURLFromLog(logSSH)
+		if readEnv("ENABLE_SSH_TUNNEL") != "true" {
+			sshURL = ""
+		}
+		applyNewURL(url, sshURL)
+		return url, true
+	}
+	return "", false
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -480,7 +571,7 @@ func startTunnels() (httpURL, sshURL string, err error) {
 // runURLWatcher passively monitors cloudflared.log and applies side-effects
 // when it detects a new URL (e.g. tunnel spontaneously reconnected).
 func runURLWatcher() {
-	var lastURL string
+	lastURL := getActiveURL()
 	for {
 		time.Sleep(urlScanInterval)
 		cur := lastURLFromLog(logHTTP)
@@ -720,6 +811,13 @@ func runHealthWatcher() {
 // This guarantees a tunnel URL is never propagated while it still shows
 // Cloudflare error pages such as Error 1033.
 func restartTunnelVerified() (httpURL, sshURL string, err error) {
+	// Adoption first: if some other path already has a healthy tunnel running
+	// (e.g. cloudflared survived a manager restart), reuse it instead of
+	// burning another Cloudflare quick-tunnel registration.
+	if adopted, ok := tryAdoptTunnel(); ok {
+		return adopted, lastURLFromLog(logSSH), nil
+	}
+
 	killCloudflared()
 
 	httpURL, sshURL, err = startTunnels()
@@ -762,24 +860,34 @@ func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
 
 	log.Println("╔══════════════════════════════════════════════════════╗")
-	log.Println("║   cf-manager v2.1 — Go Cloudflare Tunnel Manager    ║")
+	log.Println("║   cf-manager v2.2 — Go Cloudflare Tunnel Manager    ║")
 	log.Println("║   Replaces: auto_update_tunnel_url.py                ║")
 	log.Println("╚══════════════════════════════════════════════════════╝")
 
-	// Graceful shutdown
+	// Graceful shutdown: stop the manager only. cloudflared is intentionally
+	// left running so its quick-tunnel URL (and DNS) survives — deploy restarts
+	// the manager binary, and the new instance adopts the still-healthy tunnel
+	// instead of re-registering a new one with Cloudflare.
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-sigCh
-		log.Println("[CF-MGR] Shutting down…")
-		killCloudflared()
+		log.Println("[CF-MGR] Shutting down (cloudflared left running for adoption)…")
 		os.Exit(0)
 	}()
 
-	// Kill any existing cloudflared first
-	killCloudflared()
+	// Adoption pass: if a cloudflared is already running and its URL is still
+	// healthy, keep it. Only kill + re-register when nothing healthy exists —
+	// this preserves user-facing URLs and saves the Cloudflare registration
+	// quota (HTTP 429 rate limit after ~30 quick-tunnel registrations/hour).
+	if adopted, ok := tryAdoptTunnel(); ok {
+		log.Printf("[CF-MGR] Adopted existing tunnel %s — skipping fresh registration", adopted)
+		clearCooldown()
+	} else if isCloudflaredAlive() {
+		log.Println("[CF-MGR] cloudflared running but no healthy URL found — replacing tunnel")
+		killCloudflared()
+	}
 
-	// Start fresh tunnels
 	httpURL, sshURL, err := startTunnels()
 	if err != nil {
 		log.Printf("[CF-MGR] Initial tunnel start failed: %v", err)
