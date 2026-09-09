@@ -87,6 +87,35 @@ var (
 
 var cfURLRegex = regexp.MustCompile(`https://[a-zA-Z0-9-]+\.trycloudflare\.com`)
 
+// isValidTunnelURL checks if a string is a legitimate TryCloudflare quick tunnel URL.
+// Quick tunnel URLs have the format https://<word>-<word>-<word>-<word>.trycloudflare.com
+// It specifically filters out internal domains like api.trycloudflare.com, update, metrics, etc.
+func isValidTunnelURL(raw string) bool {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return false
+	}
+	if !strings.HasPrefix(raw, "https://") || !strings.HasSuffix(raw, ".trycloudflare.com") {
+		return false
+	}
+	sub := strings.TrimPrefix(raw, "https://")
+	sub = strings.TrimSuffix(sub, ".trycloudflare.com")
+	sub = strings.ToLower(sub)
+
+	// Filter out internal Cloudflare services
+	switch sub {
+	case "api", "update", "pkg", "metrics", "tunnel", "dash", "developers", "blog", "status":
+		return false
+	}
+
+	// TryCloudflare quick tunnel subdomains always consist of hyphenated words
+	if !strings.Contains(sub, "-") {
+		return false
+	}
+
+	return true
+}
+
 func isCloudflaredAlive() bool {
 	out, err := exec.Command("pgrep", "-f", "cloudflared").Output()
 	return err == nil && len(strings.TrimSpace(string(out))) > 0
@@ -110,7 +139,8 @@ func adoptCandidateURLs() []string {
 	seen := map[string]bool{}
 	var out []string
 	add := func(u string) {
-		if u == "" || seen[u] {
+		u = strings.TrimSpace(u)
+		if u == "" || seen[u] || !isValidTunnelURL(u) {
 			return
 		}
 		seen[u] = true
@@ -180,7 +210,7 @@ func tryAdoptTunnel() (string, bool) {
 // Edge connection probe (detects Error 1033 directly)
 // ──────────────────────────────────────────────────────────────────────────────
 
-// tunnelEdgeState queries the cloudflared metrics endpoint and reports whether
+// tunnelEdgeState queries the cloudflared metrics endpoints (20241-20245) and reports whether
 // the tunnel has at least one live connection to Cloudflare's edge.
 //
 // Error 1033 ("Argo Tunnel error / IP not found") happens exactly when this
@@ -188,31 +218,31 @@ func tryAdoptTunnel() (string, bool) {
 // to route the request to, so every request returns the 1033 error page.
 //
 // Returns (hasConnections, known). known=false means the state could not be
-// determined (metrics endpoint unreachable, e.g. port bound by something else,
-// or the metric is missing on older cloudflared builds) — callers must treat
-// that as "no data" and skip the check instead of triggering restarts.
-func tunnelEdgeState(metricsURL string) (hasConnections, known bool) {
-	client := &http.Client{Timeout: 3 * time.Second}
-	resp, err := client.Get(metricsURL)
-	if err != nil {
-		return false, false
-	}
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return false, false
-	}
-	for _, line := range strings.Split(string(body), "\n") {
-		line = strings.TrimSpace(line)
-		if !strings.HasPrefix(line, "cloudflared_tunnel_server_locations{") {
+// determined — callers must treat that as "no data" and skip the check.
+func tunnelEdgeState() (hasConnections, known bool) {
+	client := &http.Client{Timeout: 2 * time.Second}
+	for port := 20241; port <= 20245; port++ {
+		metricsURL := fmt.Sprintf("http://127.0.0.1:%d/metrics", port)
+		resp, err := client.Get(metricsURL)
+		if err != nil {
 			continue
 		}
-		fields := strings.Fields(line)
-		if len(fields) >= 2 {
-			return fields[len(fields)-1] != "0", true
+		body, err := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if err != nil {
+			continue
+		}
+		for _, line := range strings.Split(string(body), "\n") {
+			line = strings.TrimSpace(line)
+			if !strings.HasPrefix(line, "cloudflared_tunnel_server_locations{") {
+				continue
+			}
+			fields := strings.Fields(line)
+			if len(fields) >= 2 {
+				return fields[len(fields)-1] != "0", true
+			}
 		}
 	}
-	// Metric absent (older cloudflared) → unknown, do not act on it.
 	return true, false
 }
 
@@ -268,7 +298,7 @@ func updateEnv(updates map[string]string) {
 // Log parsing
 // ──────────────────────────────────────────────────────────────────────────────
 
-// lastURLFromLog returns the LAST trycloudflare URL found in the log file.
+// lastURLFromLog returns the LAST valid trycloudflare quick tunnel URL found in the log file.
 // Using last-occurrence prevents picking up stale URLs from previous runs.
 func lastURLFromLog(logPath string) string {
 	data, err := os.ReadFile(logPath)
@@ -279,7 +309,13 @@ func lastURLFromLog(logPath string) string {
 	if len(all) == 0 {
 		return ""
 	}
-	return string(all[len(all)-1])
+	for i := len(all) - 1; i >= 0; i-- {
+		u := string(all[i])
+		if isValidTunnelURL(u) {
+			return u
+		}
+	}
+	return ""
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -307,6 +343,9 @@ func waitForOrigin(targetURL string, timeout time.Duration) bool {
 // HTTP 530 is what Cloudflare serves for tunnel-level failures (which includes
 // error 1033 at the edge), so anything >= 530 counts as dead.
 func isURLAlive(url string) bool {
+	if !isValidTunnelURL(url) {
+		return false
+	}
 	client := &http.Client{
 		Timeout:       5 * time.Second,
 		CheckRedirect: func(r *http.Request, via []*http.Request) error { return http.ErrUseLastResponse },
@@ -492,7 +531,24 @@ func pushToGitHub(httpURL, sshURL string) {
 
 func killCloudflared() {
 	_ = exec.Command("pkill", "-9", "-f", "cloudflared").Run()
-	time.Sleep(2 * time.Second)
+	_ = exec.Command("killall", "-9", "cloudflared").Run()
+	if out, err := exec.Command("pgrep", "-f", "cloudflared").Output(); err == nil {
+		for _, pidStr := range strings.Fields(string(out)) {
+			_ = exec.Command("kill", "-9", pidStr).Run()
+		}
+	}
+	for i := 0; i < 10; i++ {
+		time.Sleep(300 * time.Millisecond)
+		if !isCloudflaredAlive() {
+			break
+		}
+		if out, err := exec.Command("pgrep", "-f", "cloudflared").Output(); err == nil {
+			for _, pidStr := range strings.Fields(string(out)) {
+				_ = exec.Command("kill", "-9", pidStr).Run()
+			}
+		}
+	}
+	time.Sleep(1 * time.Second)
 }
 
 // startTunnels launches cloudflared HTTP + SSH tunnel processes.
@@ -514,9 +570,9 @@ func startTunnels() (httpURL, sshURL string, err error) {
 	_ = os.WriteFile(logHTTP, []byte(""), 0644)
 	_ = os.WriteFile(logSSH, []byte(""), 0644)
 
-	// HTTP tunnel
+	// HTTP tunnel (cloudflared automatically binds metrics to localhost:20241-20245 without port conflict crashes)
 	httpCmd := fmt.Sprintf(
-		"nohup cloudflared tunnel --url %s --no-autoupdate --metrics 127.0.0.1:20241 > %s 2>&1 &",
+		"nohup cloudflared tunnel --url %s --no-autoupdate > %s 2>&1 &",
 		tunnelTarget, logHTTP,
 	)
 	if e := exec.Command("sh", "-c", httpCmd).Start(); e != nil {
@@ -527,7 +583,7 @@ func startTunnels() (httpURL, sshURL string, err error) {
 	// SSH tunnel (only if explicitly enabled in .env to save Cloudflare rate limit quota)
 	if readEnv("ENABLE_SSH_TUNNEL") == "true" {
 		sshCmd := fmt.Sprintf(
-			"nohup cloudflared tunnel --url ssh://127.0.0.1:8022 --no-autoupdate --metrics 127.0.0.1:20242 > %s 2>&1 &",
+			"nohup cloudflared tunnel --url ssh://127.0.0.1:8022 --no-autoupdate > %s 2>&1 &",
 			logSSH,
 		)
 		if e := exec.Command("sh", "-c", sshCmd).Start(); e != nil {
@@ -594,7 +650,7 @@ func getActiveURL() string {
 	mu.RLock()
 	cur := activeTunnelURL
 	mu.RUnlock()
-	if cur != "" {
+	if isValidTunnelURL(cur) {
 		return cur
 	}
 	if u := lastURLFromLog(logHTTP); u != "" {
@@ -603,7 +659,10 @@ func getActiveURL() string {
 		mu.Unlock()
 		return u
 	}
-	return readEnv("APP_URL")
+	if envURL := readEnv("APP_URL"); isValidTunnelURL(envURL) {
+		return envURL
+	}
+	return ""
 }
 
 const cooldownFilePath = projectRoot + "/storage/logs/cf-cooldown.json"
@@ -718,7 +777,7 @@ func runHealthWatcher() {
 				restartNeeded = true
 				reasonStr = "cloudflared process down"
 			}
-		} else if url != "" {
+		} else if url != "" && isValidTunnelURL(url) {
 			resp, err := client.Head(url)
 			if err == nil && resp.StatusCode < 530 {
 				resp.Body.Close()
@@ -747,7 +806,7 @@ func runHealthWatcher() {
 			// The URL keeps serving the 1033 page while the process looks fine.
 			// Only act when the metrics endpoint gives a definite answer.
 			if !restartNeeded {
-				if edgeOK, known := tunnelEdgeState(metricsHTTP); known {
+				if edgeOK, known := tunnelEdgeState(); known {
 					if edgeOK {
 						edgeFailCount = 0
 					} else {
@@ -761,17 +820,17 @@ func runHealthWatcher() {
 				}
 			}
 		} else {
-			// No URL in memory or logs
-			if u := lastURLFromLog(logHTTP); u != "" {
+			// No valid URL in memory or logs
+			if u := lastURLFromLog(logHTTP); u != "" && isValidTunnelURL(u) {
 				mu.Lock()
 				activeTunnelURL = u
 				mu.Unlock()
 			} else {
 				failCount++
-				log.Printf("[CF-MGR][HEALTH] ⚠️  No tunnel URL in log or .env — failCount=%d", failCount)
+				log.Printf("[CF-MGR][HEALTH] ⚠️  No valid tunnel URL in log or .env — failCount=%d", failCount)
 				if failCount >= failThreshold {
 					restartNeeded = true
-					reasonStr = "no tunnel URL available"
+					reasonStr = "no valid tunnel URL available"
 				}
 			}
 		}

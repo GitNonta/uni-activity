@@ -120,7 +120,34 @@ func UpdateEnv(updates map[string]string) error {
 // URL detection
 // ──────────────────────────────────────────────────────────────────────────────
 
-// scanLastURLFromLog reads a log file and returns the LAST trycloudflare URL found.
+// isValidTunnelURL checks if a string is a legitimate TryCloudflare quick tunnel URL.
+// Quick tunnel URLs have the format https://<word>-<word>-<word>-<word>.trycloudflare.com
+// It specifically filters out internal domains like api.trycloudflare.com, update, metrics, etc.
+func isValidTunnelURL(raw string) bool {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return false
+	}
+	if !strings.HasPrefix(raw, "https://") || !strings.HasSuffix(raw, ".trycloudflare.com") {
+		return false
+	}
+	sub := strings.TrimPrefix(raw, "https://")
+	sub = strings.TrimSuffix(sub, ".trycloudflare.com")
+	sub = strings.ToLower(sub)
+
+	switch sub {
+	case "api", "update", "pkg", "metrics", "tunnel", "dash", "developers", "blog", "status":
+		return false
+	}
+
+	if !strings.Contains(sub, "-") {
+		return false
+	}
+
+	return true
+}
+
+// scanLastURLFromLog reads a log file and returns the LAST valid trycloudflare quick tunnel URL found.
 // Using last-occurrence avoids picking up stale URLs from previous tunnel runs.
 func scanLastURLFromLog(logPath string) string {
 	data, err := os.ReadFile(logPath)
@@ -131,11 +158,20 @@ func scanLastURLFromLog(logPath string) string {
 	if len(matches) == 0 {
 		return ""
 	}
-	return string(matches[len(matches)-1])
+	for i := len(matches) - 1; i >= 0; i-- {
+		u := string(matches[i])
+		if isValidTunnelURL(u) {
+			return u
+		}
+	}
+	return ""
 }
 
 // isURLAlive returns true when the URL is reachable and not returning a tunnel-error code.
 func isURLAlive(url string) bool {
+	if !isValidTunnelURL(url) {
+		return false
+	}
 	client := &http.Client{
 		Timeout: 5 * time.Second,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
@@ -157,7 +193,7 @@ func GetActiveURL() string {
 	Status.mu.RLock()
 	cur := Status.URL
 	Status.mu.RUnlock()
-	if cur != "" {
+	if isValidTunnelURL(cur) {
 		return cur
 	}
 
@@ -168,22 +204,29 @@ func GetActiveURL() string {
 		var d struct {
 			URL string `json:"url"`
 		}
-		if json.NewDecoder(f).Decode(&d) == nil && d.URL != "" {
+		if json.NewDecoder(f).Decode(&d) == nil && isValidTunnelURL(d.URL) {
 			return d.URL
 		}
 	}
 
-	// 2. cloudflared metrics endpoint (port 20241)
-	httpClient := &http.Client{Timeout: 2 * time.Second}
-	if resp, err := httpClient.Get("http://127.0.0.1:20241/metrics"); err == nil {
-		body, _ := io.ReadAll(resp.Body)
-		resp.Body.Close()
-		if m := cfURLRegex.Find(body); m != nil {
-			return string(m)
+	// 2. cloudflared metrics endpoints (ports 20241-20245)
+	httpClient := &http.Client{Timeout: 1 * time.Second}
+	for port := 20241; port <= 20245; port++ {
+		metricsURL := fmt.Sprintf("http://127.0.0.1:%d/metrics", port)
+		if resp, err := httpClient.Get(metricsURL); err == nil {
+			body, _ := io.ReadAll(resp.Body)
+			resp.Body.Close()
+			matches := cfURLRegex.FindAll(body, -1)
+			for i := len(matches) - 1; i >= 0; i-- {
+				u := string(matches[i])
+				if isValidTunnelURL(u) {
+					return u
+				}
+			}
 		}
 	}
 
-	// 3. cloudflared.log — last occurrence
+	// 3. cloudflared.log — last valid occurrence
 	return scanLastURLFromLog(logHTTPPath)
 }
 
