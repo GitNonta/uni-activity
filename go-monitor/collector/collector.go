@@ -57,13 +57,14 @@ type FullStats struct {
 }
 
 type Collector struct {
-	mu          sync.RWMutex
-	cachedStats *FullStats
-	cachedJSON  []byte
-	projectRoot string
-	publicIP    string
-	inspector   []interface{}
-	inspMu      sync.Mutex
+	mu                 sync.RWMutex
+	cachedStats        *FullStats
+	cachedJSON         []byte
+	projectRoot        string
+	publicIP           string
+	inspector          []interface{}
+	inspMu             sync.Mutex
+	OnInspectorAdded   func([]byte) // called immediately when a new log arrives
 }
 
 func NewCollector(projectRoot string) *Collector {
@@ -78,11 +79,18 @@ func NewCollector(projectRoot string) *Collector {
 
 func (c *Collector) AddInspectorLog(log map[string]interface{}) {
 	c.inspMu.Lock()
-	defer c.inspMu.Unlock()
-	if len(c.inspector) >= 100 {
+	if len(c.inspector) >= 200 {
 		c.inspector = c.inspector[1:]
 	}
 	c.inspector = append(c.inspector, log)
+	c.inspMu.Unlock()
+
+	// Hot-push: notify subscriber immediately after releasing the lock
+	if cb := c.OnInspectorAdded; cb != nil {
+		if snapshot := c.PatchInspectorJSON(); len(snapshot) > 0 {
+			go cb(snapshot)
+		}
+	}
 }
 
 func (c *Collector) fetchPublicIP() {
@@ -278,6 +286,59 @@ func (c *Collector) GetCachedJSON() []byte {
 	defer c.mu.RUnlock()
 	return c.cachedJSON
 }
+
+// PatchInspectorJSON returns a new JSON blob identical to the cached snapshot
+// but with the inspector field replaced with the current in-memory slice.
+// This is a fast alternative to a full Collect() for real-time inspector push.
+func (c *Collector) PatchInspectorJSON() []byte {
+	c.mu.RLock()
+	base := c.cachedJSON
+	c.mu.RUnlock()
+
+	if len(base) == 0 {
+		return nil
+	}
+
+	c.inspMu.Lock()
+	snap := make([]interface{}, len(c.inspector))
+	copy(snap, c.inspector)
+	c.inspMu.Unlock()
+
+	inspBytes, err := json.Marshal(snap)
+	if err != nil || len(inspBytes) == 0 {
+		return base
+	}
+
+	// Simple string surgery: replace "inspector":[...] in the JSON blob.
+	// Works because go-monitor always produces well-formed compact JSON.
+	b := string(base)
+	startKey := `"inspector":`
+	ki := strings.Index(b, startKey)
+	if ki < 0 {
+		return base
+	}
+	after := ki + len(startKey)
+	// Find the matching closing bracket of the array
+	depth := 0
+	end := after
+	for end < len(b) {
+		switch b[end] {
+		case '[':
+			depth++
+		case ']':
+			depth--
+			if depth == 0 {
+				end++
+				goto done
+			}
+		}
+		end++
+	}
+done:
+	patched := b[:after] + string(inspBytes) + b[end:]
+	return []byte(patched)
+}
+
 
 func getDeployEvents(projectRoot string) []interface{} {
 	gitBin := "git"

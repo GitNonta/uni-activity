@@ -103,6 +103,16 @@ func main() {
 		}
 	})
 
+	// ── 1b. Real-time Inspector Push ──────────────────────────────────────────
+	// Hook into collector: whenever a new Inspector log arrives via UDP,
+	// immediately broadcast the patched JSON to all connected WS clients.
+	col.OnInspectorAdded = func(patched []byte) {
+		if hub.ClientCount() > 0 {
+			hub.Broadcast(patched)
+			log.Printf("📡 [Inspector] Hot-pushed %d bytes to %d client(s)", len(patched), hub.ClientCount())
+		}
+	}
+
 	// ── 2. Adaptive Stats Collector & Realtime Streaming Goroutine ───────────
 	go func() {
 		for {

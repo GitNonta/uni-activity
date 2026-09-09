@@ -1,4 +1,4 @@
-import { useState, Component } from 'react'
+import { useState, useEffect, useRef, Component } from 'react'
 
 // Error Boundary — ป้องกันจอขาวทั้งหน้าเมื่อ Inspector crash
 class InspectorErrorBoundary extends Component {
@@ -31,6 +31,12 @@ export function InspectorInner({ logs }) {
   const [activeTab, setActiveTab] = useState('summary')
   const [filterType, setFilterType] = useState('all') // 'all', 'http', 'artisan', 'shell'
   const [copied, setCopied] = useState(false)
+  const [autoScroll, setAutoScroll] = useState(true)
+  const [newLogFlash, setNewLogFlash] = useState(false)
+  const [lastCount, setLastCount] = useState(0)
+
+  const listRef = useRef(null)
+  const prevLogsLenRef = useRef(0)
 
   const safeLogs = Array.isArray(logs) ? logs : []
 
@@ -51,15 +57,39 @@ export function InspectorInner({ logs }) {
     return getLogType(log) === filterType;
   });
 
-  const selectedLog = filteredLogs.find((l, idx) => getLogId(l, idx) === selectedLogId) || filteredLogs[0] || null
+  // Detect new logs and auto-scroll to newest
+  useEffect(() => {
+    const newLen = filteredLogs.length;
+    if (newLen > prevLogsLenRef.current) {
+      // New log(s) arrived
+      setNewLogFlash(true)
+      setTimeout(() => setNewLogFlash(false), 600)
+      setLastCount(newLen)
+
+      // Auto-select latest if no user selection or if auto-scroll is on
+      if (autoScroll) {
+        const newest = filteredLogs[filteredLogs.length - 1]
+        if (newest) {
+          const newId = getLogId(newest, filteredLogs.length - 1)
+          setSelectedLogId(newId)
+        }
+        // Scroll list to bottom
+        if (listRef.current) {
+          listRef.current.scrollTop = listRef.current.scrollHeight
+        }
+      }
+    }
+    prevLogsLenRef.current = newLen
+  }, [filteredLogs.length]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const selectedLog = filteredLogs.find((l, idx) => getLogId(l, idx) === selectedLogId) || filteredLogs[filteredLogs.length - 1] || null
 
   // Auto-select first log if none selected and logs exist
-  if (selectedLog) {
-    const curId = getLogId(selectedLog, 0);
-    if (!selectedLogId) {
-      setSelectedLogId(curId);
-    }
+  if (selectedLog && !selectedLogId) {
+    const curId = getLogId(selectedLog, filteredLogs.length - 1);
+    setSelectedLogId(curId);
   }
+
 
   const getStatusColor = (log) => {
     if (!log) return '#6b7280';
@@ -223,16 +253,47 @@ export function InspectorInner({ logs }) {
       
       {/* Left Pane - List */}
       <div style={{ width: '380px', borderRight: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', background: '#fafafa' }}>
-        <div style={{ padding: '1rem', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff' }}>
+        <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
             </svg>
             <h3 style={{ margin: 0, fontSize: '1rem', color: '#111827', fontWeight: 600 }}>Server Activity</h3>
+            {/* LIVE badge */}
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.35)', borderRadius: '1rem', padding: '0.15rem 0.5rem', fontSize: '0.65rem', fontWeight: 700, color: '#059669' }}>
+              <svg width="7" height="7" viewBox="0 0 8 8" style={{ overflow: 'visible' }}>
+                <circle cx="4" cy="4" r="4" fill="#10b981">
+                  <animate attributeName="r" values="2;4;2" dur="1.4s" repeatCount="indefinite"/>
+                  <animate attributeName="opacity" values="1;0.4;1" dur="1.4s" repeatCount="indefinite"/>
+                </circle>
+              </svg>
+              LIVE
+            </span>
           </div>
-          <span style={{ fontSize: '0.75rem', color: '#4b5563', background: '#f3f4f6', padding: '0.2rem 0.6rem', borderRadius: '1rem', fontWeight: 600 }}>
-            {filteredLogs.length} / {safeLogs.length}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            {/* Auto-scroll toggle */}
+            <button
+              title={autoScroll ? 'Auto-scroll ON — click to disable' : 'Auto-scroll OFF — click to enable'}
+              onClick={() => setAutoScroll(v => !v)}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+                padding: '0.25rem 0.5rem', borderRadius: '0.375rem', fontSize: '0.65rem',
+                fontWeight: 700, cursor: 'pointer', border: 'none',
+                background: autoScroll ? '#dbeafe' : '#f3f4f6',
+                color: autoScroll ? '#1d4ed8' : '#6b7280',
+                transition: 'all 0.15s'
+              }}
+            >
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="7 13 12 18 17 13"/>
+                <polyline points="7 6 12 11 17 6"/>
+              </svg>
+              {autoScroll ? 'Auto' : 'Manual'}
+            </button>
+            <span style={{ fontSize: '0.75rem', color: '#4b5563', background: '#f3f4f6', padding: '0.2rem 0.6rem', borderRadius: '1rem', fontWeight: 600 }}>
+              {filteredLogs.length} / {safeLogs.length}
+            </span>
+          </div>
         </div>
 
         {/* Filter Bar */}
@@ -260,7 +321,15 @@ export function InspectorInner({ logs }) {
           ))}
         </div>
 
-        <div style={{ overflowY: 'auto', flex: 1 }}>
+        <div
+          ref={listRef}
+          style={{
+            overflowY: 'auto',
+            flex: 1,
+            transition: 'box-shadow 0.3s ease',
+            boxShadow: newLogFlash ? 'inset 0 0 0 2px rgba(16,185,129,0.55)' : 'none'
+          }}
+        >
           {filteredLogs.length === 0 ? (
             <div style={{ padding: '3rem 1rem', textAlign: 'center', color: '#9ca3af', fontSize: '0.875rem' }}>
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 0.5rem' }}>
