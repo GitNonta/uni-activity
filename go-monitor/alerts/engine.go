@@ -39,6 +39,8 @@ func (e *AlertEngine) Evaluate(
 	memPercent float64,
 	diskPercent float64,
 	cfOnline bool,
+	cfErr string,
+	cfURL string,
 ) []AlertItem {
 	e.mu.Lock()
 	defer e.mu.Unlock()
@@ -105,13 +107,30 @@ func (e *AlertEngine) Evaluate(
 		})
 	}
 
-	// 6. Cloudflare Offline (after 90s grace period)
-	if time.Since(config.AppConfig.StartTime) > 90*time.Second && !cfOnline {
-		detected = append(detected, AlertItem{
-			ID:      "cf_offline",
-			Type:    "critical",
-			Message: "Cloudflare Tunnel is Offline",
-		})
+	// 6. Cloudflare Tunnel Errors (Error 1033 and Offline)
+	if time.Since(config.AppConfig.StartTime) > 30*time.Second {
+		is1033 := strings.Contains(cfErr, "1033") || cfErr == "CLOUDFLARE_ERROR_1033" || cfErr == "EDGE_DISCONNECTED_1033" || cfErr == "HTTP_530"
+		if is1033 {
+			msg := "Cloudflare Error 1033: Tunnel Edge Disconnected (Origin Unreachable)"
+			if cfURL != "" {
+				msg = fmt.Sprintf("Cloudflare Error 1033: Tunnel Edge Disconnected at %s", cfURL)
+			}
+			detected = append(detected, AlertItem{
+				ID:      "cf_1033",
+				Type:    "critical",
+				Message: msg,
+			})
+		} else if !cfOnline {
+			msg := "Cloudflare Tunnel is Offline"
+			if cfErr != "" {
+				msg = fmt.Sprintf("Cloudflare Tunnel Offline (%s)", cfErr)
+			}
+			detected = append(detected, AlertItem{
+				ID:      "cf_offline",
+				Type:    "critical",
+				Message: msg,
+			})
+		}
 	}
 
 	// Debounce: must be detected >= 3 times before firing

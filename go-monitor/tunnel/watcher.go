@@ -684,25 +684,25 @@ func StartTunnelWatcher() {
 				Status.URL = url
 				Status.mu.Unlock()
 			} else if err == nil && resp.StatusCode >= 530 {
-				// Tunnel-level failure (HTTP 530 = Cloudflare error page, often Error
-				// 1033 "Argo Tunnel error"). Auto-restart is delegated to cf-manager
+				// Tunnel-level failure (HTTP 530 = Cloudflare error page, specifically Error
+				// 1033 "Cloudflare Tunnel error / Argo Tunnel error"). Auto-restart is delegated to cf-manager
 				// (single source of truth with rate-limit cooldown); go-monitor only
-				// tracks online/offline telemetry.
+				// tracks online/offline telemetry and raises alerts.
 				resp.Body.Close()
 				Status.mu.Lock()
 				Status.Online = false
 				Status.PingMS = 0
 				Status.URL = url
-				if edgeOK, known := tunnelEdgeState(metricsHTTP); known && !edgeOK {
-					// cloudflared is running but has no edge connections → the exact
-					// state behind "Error 1033 / Argo Tunnel error" pages.
+				if resp.StatusCode == 530 {
+					Status.Error = "CLOUDFLARE_ERROR_1033"
+				} else if edgeOK, known := tunnelEdgeState(metricsHTTP); known && !edgeOK {
 					Status.Error = "EDGE_DISCONNECTED_1033"
 				} else {
 					Status.Error = fmt.Sprintf("HTTP_%d", resp.StatusCode)
 				}
 				Status.mu.Unlock()
 				failCount++
-				log.Printf("[Tunnel] ⚠️  Tunnel status: OFFLINE (HTTP %d) — managed by cf-manager", resp.StatusCode)
+				log.Printf("[Tunnel] ⚠️  Tunnel status: OFFLINE (%s) — managed by cf-manager", Status.Error)
 			} else {
 				failCount++
 				errStr := classifyError(err, resp)

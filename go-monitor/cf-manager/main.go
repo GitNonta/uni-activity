@@ -295,9 +295,8 @@ func updateLINEWebhook(httpURL string) {
 	log.Printf("[CF-MGR][LINE] Webhook updated → HTTP %d", resp.StatusCode)
 }
 
-// notifyTelegramURLChange sends an alert when the public URL changes so users
-// and admins learn about Error 1033 recovery immediately.
-func notifyTelegramURLChange(httpURL string) {
+// notifyTelegramMessage sends an arbitrary message to the configured Telegram chat.
+func notifyTelegramMessage(msg string) {
 	token := readEnv("TELEGRAM_BOT_TOKEN")
 	chatID := readEnv("TELEGRAM_CHAT_ID")
 	if token == "" || chatID == "" {
@@ -305,7 +304,7 @@ func notifyTelegramURLChange(httpURL string) {
 	}
 	body, _ := json.Marshal(map[string]interface{}{
 		"chat_id":                  chatID,
-		"text":                     "🌐 Tunnel URL changed → " + httpURL + "\n(Error 1033 auto-recovery applied)",
+		"text":                     msg,
 		"parse_mode":               "HTML",
 		"disable_web_page_preview": true,
 	})
@@ -318,6 +317,12 @@ func notifyTelegramURLChange(httpURL string) {
 	if resp, err := client.Do(req); err == nil {
 		resp.Body.Close()
 	}
+}
+
+// notifyTelegramURLChange sends an alert when the public URL changes so users
+// and admins learn about Error 1033 recovery immediately.
+func notifyTelegramURLChange(httpURL string) {
+	notifyTelegramMessage("🌐 <b>Tunnel URL Changed</b>\n━━━━━━━━━━━━━━━━━━━━\n🔗 " + httpURL + "\n✅ Error 1033 auto-recovery / URL renewal completed")
 }
 
 func pushToGitHub(httpURL, sshURL string) {
@@ -635,6 +640,9 @@ func runHealthWatcher() {
 					errReason = err.Error()
 				} else {
 					errReason = fmt.Sprintf("HTTP %d", resp.StatusCode)
+					if resp.StatusCode == 530 {
+						errReason = "Cloudflare Error 1033 (HTTP 530 - Edge Disconnected)"
+					}
 				}
 				log.Printf("[CF-MGR][HEALTH] ⚠️  %s unreachable (%s) — failCount=%d", url, errReason, failCount)
 				if failCount >= failThreshold {
@@ -681,6 +689,16 @@ func runHealthWatcher() {
 			failCount = 0
 			edgeFailCount = 0
 			log.Printf("[CF-MGR] 🔄 Auto-restart triggered (%s)", reasonStr)
+			if strings.Contains(reasonStr, "1033") || strings.Contains(reasonStr, "530") {
+				notifyTelegramMessage(fmt.Sprintf(
+					"🚨 <b>Cloudflare Error 1033 Detected</b>\n"+
+						"━━━━━━━━━━━━━━━━━━━━\n"+
+						"🔗 <b>URL:</b> %s\n"+
+						"⚠️ Cloudflare Edge ขาดการเชื่อมต่อกับ Origin Server (HTTP 530 / Error 1033)\n"+
+						"🔄 <i>cf-manager กำลังรีสตาร์ท Tunnel และขอ URL ใหม่อัตโนมัติ…</i>",
+					url,
+				))
+			}
 			newHTTP, newSSH, startErr := restartTunnelVerified()
 			if startErr != nil {
 				log.Printf("[CF-MGR] Auto-restart failed: %v", startErr)

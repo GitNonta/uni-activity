@@ -106,6 +106,21 @@ func SendToChat(chatID, text string) {
 }
 
 func SendAlert(id, alertType, message string) {
+	if id == "cf_1033" {
+		ts := time.Now().Format("2006-01-02 15:04:05")
+		text := fmt.Sprintf(
+			"🚨 <b>ALERT: Cloudflare Error 1033</b>\n"+
+				"━━━━━━━━━━━━━━━━━━━━\n"+
+				"🕐 <b>เวลา:</b> %s\n"+
+				"📝 <b>รายละเอียด:</b> %s\n\n"+
+				"⚠️ <b>สาเหตุ:</b> Cloudflare Edge ขาดการเชื่อมต่อกับ Origin Server (Argo Tunnel Error / HTTP 530)\n"+
+				"🔄 <i>ระบบกำลังจัดการ Auto-Recover / ขอลิงก์ใหม่อัตโนมัติ</i>",
+			ts, message,
+		)
+		Send(text)
+		return
+	}
+
 	icon := "⚠️"
 	if alertType == "critical" {
 		icon = "🚨"
@@ -117,7 +132,11 @@ func SendAlert(id, alertType, message string) {
 
 func SendResolved(id, message string) {
 	ts := time.Now().Format("2006-01-02 15:04:05")
-	text := fmt.Sprintf("✅ <b>RESOLVED: %s</b>\n━━━━━━━━━━━━━━━━━━━━\n🕐 %s\n📝 %s", id, ts, message)
+	title := id
+	if id == "cf_1033" {
+		title = "Cloudflare Error 1033"
+	}
+	text := fmt.Sprintf("✅ <b>RESOLVED: %s</b>\n━━━━━━━━━━━━━━━━━━━━\n🕐 %s\n📝 %s", title, ts, message)
 	Send(text)
 }
 
@@ -132,6 +151,7 @@ func SendStartup(port int) {
 			"📡 Alerts: <b>Active</b>\n\n"+
 			"<i>จะแจ้งเตือนเมื่อ:</i>\n"+
 			"• 🚨 Service down\n"+
+			"• 🚨 Cloudflare Error 1033\n"+
 			"• ⚠️ CPU load &gt; 8.0\n"+
 			"• ⚠️ Memory &gt; 90%%\n"+
 			"• ⚠️ Disk &gt; 90%%\n"+

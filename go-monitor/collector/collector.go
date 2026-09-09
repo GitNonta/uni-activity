@@ -137,7 +137,10 @@ func (c *Collector) Collect() ([]byte, error) {
 	tempStr := sysinfo.GetTemp()
 	svcs := services.CheckAllServices()
 
-	cfOnline, cfPing, cfErr, _ := tunnel.Status.GetStatus()
+	cfOnline, cfPing, cfErr, cfURLStr := tunnel.Status.GetStatus()
+	if cfURLStr == "" {
+		cfURLStr = cfURL
+	}
 
 	// Evaluate Alerts Engine
 	activeAlerts := alerts.Engine.Evaluate(
@@ -147,6 +150,8 @@ func (c *Collector) Collect() ([]byte, error) {
 		memStats.Percent,
 		diskStats.Percent,
 		cfOnline,
+		cfErr,
+		cfURLStr,
 	)
 
 	speedtestStatus := speedtest.CurrentJob.GetMap()

@@ -7,6 +7,7 @@ export function ConnectionCard({ url, status, lineStatus }) {
   const pingMs = status?.ping_ms ?? 0
   const cooldown = status?.cooldown
   const isCooldown = (cooldown?.active && (cooldown?.remaining_sec > 0)) ?? false
+  const isError1033 = Boolean(status?.error && (status.error.includes('1033') || status.error.includes('530')))
   const [secondsLeft, setSecondsLeft] = useState(cooldown?.remaining_sec || 0)
   const [isRestarting, setIsRestarting] = useState(false)
 
@@ -137,6 +138,29 @@ export function ConnectionCard({ url, status, lineStatus }) {
               : <span style={{ color: '#9ca3af' }}>Waiting for connection...</span>
             }
           </div>
+
+          {isError1033 && (
+            <div style={{ 
+              marginTop: '0.65rem', 
+              padding: '0.6rem 0.85rem', 
+              background: '#fef2f2', 
+              border: '1px solid #fecaca', 
+              borderRadius: '6px',
+              fontSize: '0.75rem',
+              color: '#991b1b',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '0.5rem',
+              lineHeight: 1.4
+            }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}>
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <div>
+                <strong>Cloudflare Error 1033:</strong> Tunnel Edge ขาดการเชื่อมต่อกับ Origin Server (HTTP 530) — ระบบกำลังดำเนินการ Auto-Recover อัตโนมัติ
+              </div>
+            </div>
+          )}
 
           {isCooldown && (
             <div style={{ 
