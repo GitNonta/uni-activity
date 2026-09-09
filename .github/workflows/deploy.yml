@@ -55,25 +55,59 @@ jobs:
             NEW_CF_SHA="$(sha256sum cf-manager | cut -d' ' -f1)"
             NEW_MON_SHA="$(sha256sum go-monitor | cut -d' ' -f1)"
 
-            # Restart only processes that are actually running AND whose binary
-            # changed — prevents duplicate spawns and needless tunnel churn on
-            # docs-only [auto-sync] pushes.
             # pgrep/pkill -x matches the exact process name only ("-f" would
             # also match unrelated processes whose args merely mention the
-            # binary, e.g. tail -f cf-manager.log). go-monitor first, then
-            # cf-manager last so the freshest tunnel URL lands after everything.
-            if [ "$OLD_MON_SHA" != "$NEW_MON_SHA" ] && pgrep -x "go-monitor" >/dev/null 2>&1; then
-              pkill -x "go-monitor" || true
+            # binary, e.g. tail -f cf-manager.log).
+            ensure_running() {
+              name="$1"
+              changed="$2"
+              log_file="../storage/logs/$name-stdout.log"
+              if pgrep -x "$name" >/dev/null 2>&1; then
+                if [ "$changed" = "yes" ]; then
+                  pkill -x "$name" 2>/dev/null || true
+                  # Wait for a clean exit so the new instance can rebind its
+                  # ports (go-monitor binds :9999 — starting too early makes
+                  # the new process die with "address already in use").
+                  i=0
+                  while [ "$i" -lt 10 ] && pgrep -x "$name" >/dev/null 2>&1; do
+                    sleep 1
+                    i=$((i + 1))
+                  done
+                  pkill -9 -x "$name" 2>/dev/null || true
+                  sleep 1
+                  setsid nohup "./$name" >>"$log_file" 2>&1 &
+                  echo "$name restarted (binary changed)"
+                else
+                  echo "$name already running, binary unchanged — left alone"
+                  return 0
+                fi
+              else
+                # Converge to running: revive a dead service even when the
+                # binary did not change (self-healing on every deploy).
+                setsid nohup "./$name" >>"$log_file" 2>&1 &
+                echo "$name was NOT running — started"
+              fi
               sleep 2
-              nohup ./go-monitor >/dev/null 2>&1 &
-              echo "go-monitor rebuilt and restarted"
+              if pgrep -x "$name" >/dev/null 2>&1; then
+                echo "$name is UP (pid $(pgrep -x "$name" | tr '\n' ' '))"
+              else
+                echo "WARNING: $name failed to start — check storage/logs/$name-stdout.log" >&2
+              fi
+            }
+
+            MON_CHANGED="no"
+            if [ "$OLD_MON_SHA" != "$NEW_MON_SHA" ]; then
+              MON_CHANGED="yes"
             fi
-            if [ "$OLD_CF_SHA" != "$NEW_CF_SHA" ] && pgrep -x "cf-manager" >/dev/null 2>&1; then
-              pkill -x "cf-manager" || true
-              sleep 3
-              nohup ./cf-manager >/dev/null 2>&1 &
-              echo "cf-manager rebuilt and restarted"
+            CF_CHANGED="no"
+            if [ "$OLD_CF_SHA" != "$NEW_CF_SHA" ]; then
+              CF_CHANGED="yes"
             fi
+
+            # go-monitor first, cf-manager last so the freshest tunnel URL
+            # lands after everything else is settled.
+            ensure_running go-monitor "$MON_CHANGED"
+            ensure_running cf-manager "$CF_CHANGED"
 
             cd ..
           else
