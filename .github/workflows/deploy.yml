@@ -20,6 +20,55 @@ jobs:
           cd /data/data/com.termux/files/home/uni-activity
           git fetch origin main
           git reset --hard origin/main
+
+          # ── Rebuild Go binaries (cf-manager + monitor) ────────────────────
+          # Without this step, tunnel-management fixes (Error 1033 detection,
+          # verified restarts) never reach the running binaries on the device.
+          GO_BIN=""
+          if [ -x /data/data/com.termux/files/usr/bin/go ]; then
+            GO_BIN=/data/data/com.termux/files/usr/bin/go
+          elif command -v go >/dev/null 2>&1; then
+            GO_BIN="$(command -v go)"
+          fi
+          if [ -n "$GO_BIN" ]; then
+            cd go-monitor
+
+            OLD_CF_SHA=""
+            if [ -f cf-manager ]; then
+              OLD_CF_SHA="$(sha256sum cf-manager | cut -d' ' -f1)"
+            fi
+            OLD_MON_SHA=""
+            if [ -f go-monitor ]; then
+              OLD_MON_SHA="$(sha256sum go-monitor | cut -d' ' -f1)"
+            fi
+
+            "$GO_BIN" build -o cf-manager ./cf-manager
+            "$GO_BIN" build -o go-monitor .
+
+            NEW_CF_SHA="$(sha256sum cf-manager | cut -d' ' -f1)"
+            NEW_MON_SHA="$(sha256sum go-monitor | cut -d' ' -f1)"
+
+            # Restart only processes that are actually running AND whose binary
+            # changed — prevents duplicate spawns and needless tunnel churn on
+            # docs-only [auto-sync] pushes.
+            if [ "$OLD_CF_SHA" != "$NEW_CF_SHA" ] && pgrep -f "cf-manager" >/dev/null 2>&1; then
+              pkill -f "cf-manager" || true
+              sleep 2
+              nohup ./cf-manager >/dev/null 2>&1 &
+              echo "cf-manager rebuilt and restarted"
+            fi
+            if [ "$OLD_MON_SHA" != "$NEW_MON_SHA" ] && pgrep -f "go-monitor" >/dev/null 2>&1; then
+              pkill -f "go-monitor" || true
+              sleep 2
+              nohup ./go-monitor >/dev/null 2>&1 &
+              echo "go-monitor rebuilt and restarted"
+            fi
+
+            cd ..
+          else
+            echo "WARNING: Go toolchain not found — skipping Go binary rebuild" >&2
+          fi
+
           if [ -x /data/data/com.termux/files/usr/bin/composer ]; then
             /data/data/com.termux/files/usr/bin/composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader --ignore-platform-reqs
           elif command -v composer >/dev/null 2>&1; then
