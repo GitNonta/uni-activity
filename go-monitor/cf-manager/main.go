@@ -103,8 +103,9 @@ func isCloudflaredAlive() bool {
 //  2. APP_URL from .env — the URL the Laravel app is currently configured to
 //     serve redirects and links from; adopting it keeps user bookmarks and
 //     the LINE webhook valid.
-//  3. Last 5 URLs from the git history of docs/active_url.json — covers a
-//     freshly-cloned/updated checkout where logs were truncated.
+//  3. Last 30 URLs from the git history of docs/active_url.json — covers a
+//     freshly-cloned/updated checkout where logs were truncated, and reaches
+//     back past a day of URL churn to URLs that may still be alive.
 func adoptCandidateURLs() []string {
 	seen := map[string]bool{}
 	var out []string
@@ -119,7 +120,7 @@ func adoptCandidateURLs() []string {
 	add(lastURLFromLog(logHTTP))
 	add(readEnv("APP_URL"))
 
-	out2, err := exec.Command("git", "-C", projectRoot, "log", "-5", "--format=%H", "--", "docs/active_url.json").Output()
+	out2, err := exec.Command("git", "-C", projectRoot, "log", "-30", "--format=%H", "--", "docs/active_url.json").Output()
 	if err == nil {
 		for _, line := range strings.Split(strings.TrimSpace(string(out2)), "\n") {
 			if line == "" {
