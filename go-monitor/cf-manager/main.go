@@ -24,11 +24,13 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -72,8 +74,8 @@ const (
 	urlScanInterval = 15 * time.Second
 	// Auto-restart cooldown
 	restartCooldown = 120 * time.Second
-	// Fail threshold before auto-restart
-	failThreshold = 3
+	// Fail threshold before auto-restart (6 probes = 90s grace to allow Cloudflare DNS propagation)
+	failThreshold = 6
 	// Edge disconnected (Error 1033 "IP not found") restarts faster — see edgeFailThreshold
 	edgeFailThreshold = 2
 )
@@ -339,6 +341,33 @@ func waitForOrigin(targetURL string, timeout time.Duration) bool {
 	return false
 }
 
+// newProbeClient creates an http.Client with a direct Cloudflare/Google DNS resolver (PreferGo).
+// This bypasses Android/Termux dnsproxyd caching NXDOMAIN for newly minted trycloudflare subdomains.
+func newProbeClient(timeout time.Duration) *http.Client {
+	dialer := &net.Dialer{
+		Timeout: timeout,
+		Resolver: &net.Resolver{
+			PreferGo: true,
+			Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+				d := net.Dialer{Timeout: 3 * time.Second}
+				c, err := d.DialContext(ctx, "udp", "1.1.1.1:53")
+				if err != nil {
+					return d.DialContext(ctx, "udp", "8.8.8.8:53")
+				}
+				return c, nil
+			},
+		},
+	}
+	return &http.Client{
+		Timeout: timeout,
+		Transport: &http.Transport{
+			DialContext:         dialer.DialContext,
+			TLSHandshakeTimeout: 5 * time.Second,
+		},
+		CheckRedirect: func(r *http.Request, via []*http.Request) error { return http.ErrUseLastResponse },
+	}
+}
+
 // isURLAlive returns true when the public tunnel URL is responding correctly.
 // HTTP 530 is what Cloudflare serves for tunnel-level failures (which includes
 // error 1033 at the edge), so anything >= 530 counts as dead.
@@ -346,10 +375,7 @@ func isURLAlive(url string) bool {
 	if !isValidTunnelURL(url) {
 		return false
 	}
-	client := &http.Client{
-		Timeout:       5 * time.Second,
-		CheckRedirect: func(r *http.Request, via []*http.Request) error { return http.ErrUseLastResponse },
-	}
+	client := newProbeClient(5 * time.Second)
 	resp, err := client.Head(url)
 	if err != nil {
 		return false
@@ -572,7 +598,7 @@ func startTunnels() (httpURL, sshURL string, err error) {
 
 	// HTTP tunnel (cloudflared automatically binds metrics to localhost:20241-20245 without port conflict crashes)
 	httpCmd := fmt.Sprintf(
-		"nohup cloudflared tunnel --url %s --no-autoupdate > %s 2>&1 &",
+		"nohup cloudflared tunnel --url %s --protocol http2 --edge-ip-version 4 --no-autoupdate > %s 2>&1 &",
 		tunnelTarget, logHTTP,
 	)
 	if e := exec.Command("sh", "-c", httpCmd).Start(); e != nil {
@@ -583,7 +609,7 @@ func startTunnels() (httpURL, sshURL string, err error) {
 	// SSH tunnel (only if explicitly enabled in .env to save Cloudflare rate limit quota)
 	if readEnv("ENABLE_SSH_TUNNEL") == "true" {
 		sshCmd := fmt.Sprintf(
-			"nohup cloudflared tunnel --url ssh://127.0.0.1:8022 --no-autoupdate > %s 2>&1 &",
+			"nohup cloudflared tunnel --url ssh://127.0.0.1:8022 --protocol http2 --edge-ip-version 4 --no-autoupdate > %s 2>&1 &",
 			logSSH,
 		)
 		if e := exec.Command("sh", "-c", sshCmd).Start(); e != nil {
@@ -742,10 +768,7 @@ func runHealthWatcher() {
 	edgeFailCount := 0
 	lastRestart := time.Time{}
 
-	client := &http.Client{
-		Timeout:       8 * time.Second,
-		CheckRedirect: func(r *http.Request, via []*http.Request) error { return http.ErrUseLastResponse },
-	}
+	client := newProbeClient(8 * time.Second)
 
 	for {
 		time.Sleep(healthCheckInterval)
@@ -796,7 +819,16 @@ func runHealthWatcher() {
 					}
 				}
 				log.Printf("[CF-MGR][HEALTH] ⚠️  %s unreachable (%s) — failCount=%d", url, errReason, failCount)
-				if failCount >= failThreshold {
+
+				// If cloudflared itself confirms edge connection is active, allow up to 8 failures (2 minutes)
+				// for DNS propagation before concluding the tunnel is broken.
+				threshold := failThreshold
+				if edgeOK, known := tunnelEdgeState(); known && edgeOK {
+					threshold = 8
+					log.Printf("[CF-MGR][HEALTH] ℹ️  cloudflared edge is connected — granting DNS grace (failCount=%d/%d)", failCount, threshold)
+				}
+
+				if failCount >= threshold {
 					restartNeeded = true
 					reasonStr = "public URL unreachable (" + errReason + ")"
 				}
@@ -886,10 +918,7 @@ func restartTunnelVerified() (httpURL, sshURL string, err error) {
 	}
 
 	deadline := time.Now().Add(90 * time.Second)
-	client := &http.Client{
-		Timeout:       8 * time.Second,
-		CheckRedirect: func(r *http.Request, via []*http.Request) error { return http.ErrUseLastResponse },
-	}
+	client := newProbeClient(8 * time.Second)
 	for time.Now().Before(deadline) {
 		resp, e := client.Head(httpURL)
 		if e == nil && resp.StatusCode < 530 {
@@ -900,10 +929,29 @@ func restartTunnelVerified() (httpURL, sshURL string, err error) {
 		if e == nil {
 			resp.Body.Close()
 		}
-		log.Printf("[CF-MGR] Waiting for fresh tunnel URL to go live…")
+		log.Printf("[CF-MGR] Waiting for fresh tunnel URL to go live… (%v)", e)
 		time.Sleep(3 * time.Second)
 	}
 	return "", "", fmt.Errorf("new tunnel URL %s still not serving after 90s (possible Error 1033 persistence)", httpURL)
+}
+
+const lockFilePath = projectRoot + "/storage/logs/cf-manager.lock"
+
+func acquireSingletonLock() (*os.File, error) {
+	_ = os.MkdirAll(filepath.Dir(lockFilePath), 0755)
+	f, err := os.OpenFile(lockFilePath, os.O_CREATE|os.O_RDWR, 0644)
+	if err != nil {
+		return nil, err
+	}
+	err = syscall.Flock(int(f.Fd()), syscall.LOCK_EX|syscall.LOCK_NB)
+	if err != nil {
+		_ = f.Close()
+		return nil, fmt.Errorf("another cf-manager instance is already running")
+	}
+	_ = f.Truncate(0)
+	_, _ = f.Seek(0, 0)
+	_, _ = fmt.Fprintf(f, "%d\n", os.Getpid())
+	return f, nil
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -918,6 +966,14 @@ func main() {
 		log.SetOutput(io.MultiWriter(os.Stdout, logFile))
 	}
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
+
+	// 0. Ensure single-instance execution
+	lockFile, lockErr := acquireSingletonLock()
+	if lockErr != nil {
+		log.Printf("[CF-MGR] ⚠️  %v — exiting immediately to prevent duplicate tunnel churn", lockErr)
+		os.Exit(0)
+	}
+	defer lockFile.Close()
 
 	log.Println("╔══════════════════════════════════════════════════════╗")
 	log.Println("║   cf-manager v2.2 — Go Cloudflare Tunnel Manager    ║")

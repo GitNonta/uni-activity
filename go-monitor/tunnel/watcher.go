@@ -3,11 +3,13 @@ package tunnel
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -572,7 +574,7 @@ func DoRestartTunnel() (string, error) {
 
 	// Step 5: Start HTTP tunnel
 	httpCmd := fmt.Sprintf(
-		"nohup cloudflared tunnel --url %s --no-autoupdate --metrics 127.0.0.1:20241 > %s 2>&1 &",
+		"nohup cloudflared tunnel --url %s --protocol http2 --edge-ip-version 4 --no-autoupdate > %s 2>&1 &",
 		targetURL, logHTTPPath,
 	)
 	if err := exec.Command("sh", "-c", httpCmd).Start(); err != nil {
@@ -582,7 +584,7 @@ func DoRestartTunnel() (string, error) {
 
 	// Step 6: Start SSH tunnel (expose sshd via :80 on Android proot)
 	sshCmd := fmt.Sprintf(
-		"nohup cloudflared tunnel --url http://127.0.0.1:80 --no-autoupdate --metrics 127.0.0.1:20242 > %s 2>&1 &",
+		"nohup cloudflared tunnel --url http://127.0.0.1:80 --protocol http2 --edge-ip-version 4 --no-autoupdate > %s 2>&1 &",
 		logSSHPath,
 	)
 	if err := exec.Command("sh", "-c", sshCmd).Start(); err != nil {
@@ -684,6 +686,35 @@ func StartURLWatcher() {
 // Background health watcher (pings tunnel every 15s, auto-restarts on failure)
 // ──────────────────────────────────────────────────────────────────────────────
 
+// newProbeClient creates an http.Client with direct Cloudflare/Google DNS resolvers.
+// This prevents Android/Termux dnsproxyd from caching NXDOMAIN during quick-tunnel startup.
+func newProbeClient(timeout time.Duration) *http.Client {
+	dialer := &net.Dialer{
+		Timeout: timeout,
+		Resolver: &net.Resolver{
+			PreferGo: true,
+			Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+				d := net.Dialer{Timeout: 3 * time.Second}
+				c, err := d.DialContext(ctx, "udp", "1.1.1.1:53")
+				if err != nil {
+					return d.DialContext(ctx, "udp", "8.8.8.8:53")
+				}
+				return c, nil
+			},
+		},
+	}
+	return &http.Client{
+		Timeout: timeout,
+		Transport: &http.Transport{
+			DialContext:         dialer.DialContext,
+			TLSHandshakeTimeout: 5 * time.Second,
+		},
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+}
+
 // StartTunnelWatcher pings the active tunnel URL periodically and triggers
 // DoRestartTunnel after 3 consecutive failures (with a 2-minute cooldown).
 func StartTunnelWatcher() {
@@ -694,12 +725,7 @@ func StartTunnelWatcher() {
 		time.Sleep(10 * time.Second)
 		failCount := 0
 
-		client := &http.Client{
-			Timeout: 8 * time.Second,
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
-				return http.ErrUseLastResponse
-			},
-		}
+		client := newProbeClient(8 * time.Second)
 
 		for {
 			time.Sleep(15 * time.Second)
