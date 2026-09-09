@@ -369,3 +369,26 @@ Route::middleware(['auth', 'role:admin,super-admin'])->prefix('admin')->name('ad
 });
 Route::get('/robots.txt', [\App\Http\Controllers\SeoController::class, 'robots'])->name('robots');
 Route::get('/sitemap.xml', [\App\Http\Controllers\SeoController::class, 'sitemap'])->name('sitemap');
+
+// TEMP DEBUG ROUTE — This file appended by diagnostic script, remove after done
+use Illuminate\Http\Request;
+
+Route::get('/__hdr__', function (Request $req) {
+    return response()->json([
+        'ip_laravel'    => $req->ip(),
+        'remote_addr'   => $_SERVER['REMOTE_ADDR'] ?? null,
+        'cf_connecting' => $req->header('CF-Connecting-IP'),
+        'x_forwarded'   => $req->header('X-Forwarded-For'),
+        'x_real_ip'     => $req->header('X-Real-IP'),
+        'cf_ray'        => $req->header('CF-Ray'),
+        'cf_country'    => $req->header('CF-IPCountry'),
+        'xff_srv'       => $_SERVER['HTTP_X_FORWARDED_FOR'] ?? null,
+        'xri_srv'       => $_SERVER['HTTP_X_REAL_IP'] ?? null,
+        'cf_srv'        => $_SERVER['HTTP_CF_CONNECTING_IP'] ?? null,
+        'all_cf_srv'    => array_filter(
+            $_SERVER,
+            fn ($k) => str_starts_with($k, 'HTTP_CF'),
+            ARRAY_FILTER_USE_KEY
+        ),
+    ]);
+});
