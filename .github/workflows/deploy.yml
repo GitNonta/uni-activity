@@ -96,6 +96,41 @@ jobs:
           fi
           /data/data/com.termux/files/usr/bin/php artisan optimize:clear
           /data/data/com.termux/files/usr/bin/php artisan view:cache
+
+          # ── Rolling restart of `artisan serve` workers ──────────────────
+          # The cluster serves via `php artisan serve` (php -S children) with
+          # opcache.validate_timestamps=Off — freshly deployed PHP code stays
+          # invisible to running workers until they are restarted (symptom:
+          # new routes return blank 500s while old pages render fine).
+          # Kill the php -S LISTENERS by PID first (killing only the wrapper
+          # orphans the child, which keeps holding the port), then wrappers.
+          SERVE_PORTS="8000 8002 8003"
+          PHP_BIN=/data/data/com.termux/files/usr/bin/php
+          for PORT in $SERVE_PORTS; do
+            netstat -tlnp 2>/dev/null | grep ":$PORT " | grep -oE "[0-9]+/php" | cut -d/ -f1 | sort -u | while read LPID; do
+              kill -9 "$LPID" 2>/dev/null || true
+            done
+            pkill -f "artisan serve --host 0.0.0.0 --port $PORT" 2>/dev/null || true
+          done
+          sleep 1
+          for PORT in $SERVE_PORTS; do
+            setsid nohup "$PHP_BIN" artisan serve --host 0.0.0.0 --port "$PORT" </dev/null >>"storage/logs/serve-$PORT.log" 2>&1 &
+          done
+          sleep 3
+          for PORT in $SERVE_PORTS; do
+            SERVE_OK=""
+            for _ in 1 2 3 4 5 6 7 8 9 10; do
+              if curl -sf --max-time 5 "http://127.0.0.1:$PORT/up" >/dev/null 2>&1; then SERVE_OK=1; break; fi
+              sleep 3
+            done
+            if [ -z "$SERVE_OK" ]; then
+              echo "ERROR: artisan serve on port $PORT failed health check after restart" >&2
+              tail -5 "storage/logs/serve-$PORT.log" >&2 || true
+              exit 1
+            fi
+            echo "port $PORT serving fresh code"
+          done
+
           /data/data/com.termux/files/usr/bin/php artisan octane:reload 2>/dev/null || true
           pkill -USR2 -f "php-fpm: master" 2>/dev/null || true
           /data/data/com.termux/files/usr/bin/php artisan reverb:restart 2>/dev/null || true
