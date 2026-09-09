@@ -39,8 +39,8 @@ jobs:
             cd go-monitor
 
             OLD_CF_SHA=""
-            if [ -f "$HOME/cf-manager" ]; then
-              OLD_CF_SHA="$(sha256sum "$HOME/cf-manager" | cut -d' ' -f1)"
+            if [ -f cf-manager-bin ]; then
+              OLD_CF_SHA="$(sha256sum cf-manager-bin | cut -d' ' -f1)"
             fi
             OLD_MON_SHA=""
             if [ -f go-monitor ]; then
