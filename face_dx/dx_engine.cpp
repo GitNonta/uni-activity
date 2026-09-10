@@ -208,7 +208,7 @@ struct Engine::Impl {
 
     ComPtr<ID3D11Device> dev;
     ComPtr<ID3D11DeviceContext> ctx;
-    ComPtr<ID3D11ComputeShader> cs_conv, cs_conv11, cs_gemm_partial, cs_gemm_final, cs_add;
+    ComPtr<ID3D11ComputeShader> cs_conv, cs_conv11, cs_conv3, cs_gemm_partial, cs_gemm_final, cs_add;
     Buffer scratch;  // gemm k-split partial sums [16][512]
     ComPtr<ID3D11Buffer> cbuf;
     ComPtr<ID3D11Query> sync_q;
@@ -500,6 +500,7 @@ bool Engine::init(bool fp16, int gpu_index, std::string* err)
     if (trace) fprintf(stderr, "[trace] compiling conv shader\n");
     if (!I.compile_shader("conv.cs.hlsl", fp16, I.cs_conv)) return false;
     if (!I.compile_shader("conv11.cs.hlsl", fp16, I.cs_conv11)) return false;
+    if (!I.compile_shader("conv3.cs.hlsl", fp16, I.cs_conv3)) return false;
     if (trace) fprintf(stderr, "[trace] compiling gemm shader\n");
     if (!I.compile_shader("gemm_partial.cs.hlsl", fp16, I.cs_gemm_partial)) return false;
     if (!I.compile_shader("gemm_final.cs.hlsl", fp16, I.cs_gemm_final)) return false;
@@ -568,7 +569,6 @@ bool Engine::run(const Model& model, const float* input, float* out512, double* 
     }
     for (size_t li = 0; li < model.layers.size(); li++) {
         if (trace && li < I.ts_begin.size()) I.ctx->End(I.ts_begin[li]);
-        const auto tL0 = std::chrono::steady_clock::now();
         const Layer& L = model.layers[li];
         const int tin = (L.inputs[0] >= 0) ? L.inputs[0] : 0;
         const int tout = (int)li + 1;  // layer i writes tensor i+1
@@ -590,13 +590,20 @@ bool Engine::run(const Model& model, const float* input, float* out512, double* 
             pc[14] = L.params[8];
             const bool is_11 = L.params[2] == 1 && L.params[3] == 1 && L.params[8] == 1;
             if (is_11) {
-                // tiled 1x1 kernel: group = 16px x 32 out-channels
+                // tiled 1x1 kernel: group = 64px x 64 out-channels
                 pc[0] = L.params[0]; pc[1] = L.params[1];
                 pc[2] = ish[2] * ish[3];  // plane
                 pc[12] = L.params[9]; pc[13] = L.params[10];
                 cs = I.cs_conv11;
-                gx = ((UINT)pc[2] + 15) / 16;
-                gy = ((UINT)L.params[1] + 31) / 32;
+                gx = ((UINT)pc[2] + 63) / 64;
+                gy = ((UINT)L.params[1] + 63) / 64;
+            } else if (L.params[2] == 3 && L.params[3] == 3 &&
+                       (L.params[4] == 1 || L.params[4] == 2)) {
+                // shared-tile 3x3 kernel: 16x16 pixel tile x one oc-pair
+                cs = I.cs_conv3;
+                gx = ((UINT)L.out_shape[3] + 15) / 16;
+                gy = ((UINT)L.out_shape[2] + 15) / 16;
+                gz = ((UINT)L.params[1] + 1) / 2;
             } else {
                 cs = I.cs_conv;
                 gx = ((UINT)L.out_shape[3] + 7) / 8;
