@@ -5,5 +5,6 @@
 testdata/references.json
 *.jsonl
 *.o
+*.exe
 face_extract
 /build/

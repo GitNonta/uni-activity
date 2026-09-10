@@ -25,12 +25,14 @@ Preprocessing and normalization replicate `insightface/model_zoo/arcface_onnx.py
 
 | File | Purpose |
 |---|---|
-| `face_extract.cpp` | The extractor (`--gpu/--cpu/--fp16/--bench N/--model DIR/--out BLOB`) |
+| `face_extract.cpp` | The extractor (`--gpu/--cpu/--gpu-index N/--fp16/--bench N/--model DIR/--out BLOB`); image loading via OpenCV or `-DFACE_USE_STB` (stb_image) |
 | `android_log_stub.c` | extern-"C" stubs for `liblog`/`libandroid` symbols referenced by the NDK-built `libncnn.a` (Termux lacks them) |
 | `CMakeLists.txt` | cmake build (note: ncnn's `-fno-rtti` interface flag breaks OpenCV — use the direct clang++ command below) |
 | `gen_references.py` | Windows: generate aligned crops + Python reference embeddings (SCRFD + ArcFaceONNX, local .onnx) |
 | `compare_embeddings.py` | cosine-similarity comparison C++ vs Python reference |
-| `p1_run_tests.sh` | end-to-end test script (conversion → build → CPU/GPU runs) |
+| `p1_run_tests.sh` | end-to-end test script for P1 (conversion → build → CPU/GPU runs) |
+| `build_windows.sh` | Windows build: MinGW (scoop) + ncnn source w/ Vulkan + stb_image |
+| `stb_image.h` | vendored single-header image loader (Windows build, no OpenCV needed) |
 | `models/` | `w600k_mbf.onnx`, `det_500m.onnx` (gitignored) + ncnn conversions |
 | `testdata/` | sample photos pulled from P1 DB + crops + `references.json` (gitignored) |
 | `results/` | run outputs (gitignored) |
@@ -92,6 +94,43 @@ python face_cpp/gen_references.py   # → testdata/crops/*.png + testdata/refere
 python face_cpp/compare_embeddings.py face_cpp/testdata/references.json \
   face_cpp/results/results_cpu.jsonl face_cpp/results/results_gpu.jsonl face_cpp/results/results_gpu_fp16.jsonl
 ```
+
+## Windows build (Intel UHD GPU)
+
+No MSVC/Windows-SDK or OpenCV needed — LLVM MinGW via scoop + ncnn from source:
+
+```bash
+scoop install mingw-mstorsjo-llvm-ucrt cmake ninja
+bash face_cpp/build_windows.sh        # builds ncnn (Vulkan, simplevk) + face_extract.exe
+```
+
+`NCNN_SIMPLEVK=ON` (default) means ncnn dlopens `vulkan-1.dll` at runtime, so no
+Vulkan SDK import lib is required. Note: MSVC is *not* usable on this machine —
+the VS2019 Build Tools lack the Windows SDK (`crtdbg.h` missing), and the prebuilt
+MSVC ncnn can't be linked by MinGW — hence the source build.
+
+## Results (Windows: Intel UHD Graphics, Vulkan 1.x) — 2026-09-10
+
+Correctness vs Python InsightFace reference (cosine similarity of L2-normed 512-d):
+
+| Backend | n | cosine (mean) | cosine (min) |
+|---|---|---|---|
+| CPU fp32 (single-thread) | 4 | **0.999991** | 0.999989 |
+| GPU fp32  (Vulkan, Intel UHD) | 4 | **0.999991** | 0.999989 |
+| GPU fp16 (Intel UHD, full fp16 arithmetic) | 4 | **0.999969** | 0.999960 |
+
+Latency per 112x112 inference (steady state, n=20):
+
+| Backend | avg | min | max |
+|---|---|---|---|
+| CPU fp32  | **21.1 ms** | 18.7 | 28.5 |
+| GPU fp32  | 65.9 ms | 54.5 | 156.5 |
+| GPU fp16  | 50.7 ms | 42.7 | 60.2 |
+
+Interpretation: the Intel UHD GPU has **full fp16 arithmetic** (`fp16-a=1`), so fp16
+is ~23% faster than fp32 on-GPU — but the modern x86 CPU still wins overall
+(~2.4×) for this tiny 112x112 model, where per-inference Vulkan launch overhead
+outweighs GPU compute. GPU wins would appear at larger batch/input sizes.
 
 ## Results (P1: DUB-LX3, Adreno 506, Vulkan 1.0.61, 3.5 GB RAM) — 2026-09-10
 

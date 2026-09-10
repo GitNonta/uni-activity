@@ -10,12 +10,16 @@
 //   post  : L2-normalize (== insightface normed_embedding)
 //
 // Usage:
-//   face_extract [--model DIR] [--gpu|--cpu] [--fp16] [--bench N] <images...>
+//   face_extract [--model DIR] [--gpu|--cpu] [--gpu-index N] [--fp16] [--bench N] <images...>
 //
-//   --gpu     run on Vulkan GPU (default if available)
-//   --cpu     force CPU
-//   --fp16    enable fp16 packed/storage/arithmetic (GPU speedup, default off)
-//   --bench N run each image N times, report latency stats
+//   --gpu        run on Vulkan GPU (default if available)
+//   --cpu        force CPU
+//   --gpu-index  pick a specific Vulkan device (default: auto / first)
+//   --fp16       enable fp16 packed/storage/arithmetic (GPU speedup, default off)
+//   --bench N    run each image N times, report latency stats
+//
+// Build-time: default image loading uses OpenCV; -DFACE_USE_STB switches to
+// the dependency-free stb_image loader (used for the Windows build).
 // ============================================================================
 
 #include <cmath>
@@ -24,16 +28,46 @@
 #include <string>
 #include <vector>
 
+// Image loading backend: OpenCV by default (P1/Termux); define FACE_USE_STB to
+// build with the dependency-free stb_image loader (e.g. Windows build without
+// OpenCV dev packages). Both return the same RGB 8-bit pixel buffer.
+#if defined(FACE_USE_STB)
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+#else
 #include <opencv2/opencv.hpp>
+#endif
 
 #include "benchmark.h"
 #include "net.h"
+
+static bool load_rgb(const std::string& path, std::vector<unsigned char>& rgb, int& w, int& h)
+{
+#if defined(FACE_USE_STB)
+    int channels = 0;
+    unsigned char* px = stbi_load(path.c_str(), &w, &h, &channels, 3);
+    if (!px) return false;
+    rgb.assign(px, px + (size_t)w * h * 3);
+    stbi_image_free(px);
+    return true;
+#else
+    cv::Mat bgr = cv::imread(path, cv::IMREAD_COLOR);
+    if (bgr.empty()) return false;
+    cv::Mat r;
+    cv::cvtColor(bgr, r, cv::COLOR_BGR2RGB);
+    w = r.cols;
+    h = r.rows;
+    rgb.assign(r.data, r.data + (size_t)w * h * 3);
+    return true;
+#endif
+}
 
 struct Options {
     std::string model_dir = ".";
     bool use_gpu = false;
     bool use_fp16 = false;
     int bench = 1;
+    int gpu_index = -1;  // -1 = auto (first device)
     std::vector<std::string> images;
     std::string out_blob = "out0";
 };
@@ -41,7 +75,7 @@ struct Options {
 static void print_usage()
 {
     fprintf(stderr,
-            "usage: face_extract [--model DIR] [--gpu|--cpu] [--fp16] [--bench N] <image ...>\n");
+            "usage: face_extract [--model DIR] [--gpu|--cpu] [--gpu-index N] [--fp16] [--bench N] <image ...>\n");
 }
 
 static bool parse_args(int argc, char** argv, Options& opt)
@@ -61,6 +95,8 @@ static bool parse_args(int argc, char** argv, Options& opt)
             if (opt.bench < 1) opt.bench = 1;
         } else if (a == "--out" && i + 1 < argc) {
             opt.out_blob = argv[++i];
+        } else if (a == "--gpu-index" && i + 1 < argc) {
+            opt.gpu_index = atoi(argv[++i]);
         } else if (a == "--help" || a == "-h") {
             print_usage();
             return false;
@@ -94,16 +130,14 @@ static int extract_embedding(const ncnn::Net& net, const Options& opt,
                              const std::string& path, std::vector<float>& emb512,
                              double& ms)
 {
-    cv::Mat bgr = cv::imread(path, cv::IMREAD_COLOR);
-    if (bgr.empty()) {
+    std::vector<unsigned char> rgb;
+    int w = 0, h = 0;
+    if (!load_rgb(path, rgb, w, h)) {
         fprintf(stderr, "[err] cannot read %s\n", path.c_str());
         return -1;
     }
-    cv::Mat rgb;
-    cv::cvtColor(bgr, rgb, cv::COLOR_BGR2RGB);
 
-    ncnn::Mat in = ncnn::Mat::from_pixels_resize(rgb.data, ncnn::Mat::PIXEL_RGB,
-                                                 rgb.cols, rgb.rows, 112, 112);
+    ncnn::Mat in = ncnn::Mat::from_pixels_resize(rgb.data(), ncnn::Mat::PIXEL_RGB, w, h, 112, 112);
     const float mean_vals[3] = {127.5f, 127.5f, 127.5f};
     const float norm_vals[3] = {1.0f / 127.5f, 1.0f / 127.5f, 1.0f / 127.5f};
     in.substract_mean_normalize(mean_vals, norm_vals);
@@ -168,9 +202,18 @@ int main(int argc, char** argv)
         opt.use_gpu = false;
     }
 
+    if (opt.use_gpu && opt.gpu_index >= 0 && opt.gpu_index >= gpu_count) {
+        fprintf(stderr, "[err] --gpu-index %d out of range (have %d)\n", opt.gpu_index, gpu_count);
+        return 2;
+    }
+
     print_gpu_info();
 
     ncnn::Net net;
+    if (opt.use_gpu && opt.gpu_index >= 0) {
+        net.set_vulkan_device(opt.gpu_index);
+        fprintf(stderr, "[gpu] using device #%d\n", opt.gpu_index);
+    }
     net.opt.use_vulkan_compute = opt.use_gpu;
     net.opt.num_threads = 4;
     if (opt.use_fp16) {
