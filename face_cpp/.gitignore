@@ -1,0 +1,9 @@
+# local test artifacts & binaries — never commit
+/results/
+/pnnx/
+/models/
+testdata/references.json
+*.jsonl
+*.o
+face_extract
+/build/
