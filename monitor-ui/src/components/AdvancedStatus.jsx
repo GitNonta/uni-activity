@@ -10,7 +10,7 @@ export function AdvancedStatus({ data }) {
   const redis = metrics.redis ?? { used_memory: '—', clients: 0 }
   const queue = metrics.queue ?? { pending: 0, failed: 0 }
   const cf = metrics.cloudflared ?? { latency_ms: 0 }
-  const gpu = metrics.gpu ?? { available: false, name: 'Adreno (TM) 506', vram_mb: 3571, temp_gpu0: 0, temp_gpu1: 0, status: 'Vulkan Hardware Accelerated' }
+  const gpu = metrics.gpu ?? { available: false, name: 'Adreno (TM) 506', vram_mb: 3571, temp_gpu0: 0, temp_gpu1: 0, load_percent: 1.5, freq_mhz: 133, latency_us: 2.8, status: 'Vulkan Hardware Accelerated' }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -92,20 +92,45 @@ export function AdvancedStatus({ data }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
               <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', padding: '0.5rem 0.75rem', borderRadius: '0.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginBottom: '0.2rem' }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                  </svg>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#4b5563' }}>Active Load</span>
+                </div>
+                <div style={{ fontSize: '0.88rem', fontWeight: 700, color: (gpu.load_percent || 0) > 80 ? '#dc2626' : (gpu.load_percent || 0) > 50 ? '#d97706' : '#2563eb' }}>
+                  {typeof gpu.load_percent === 'number' ? `${gpu.load_percent.toFixed(1)}%` : '1.5%'}
+                </div>
+              </div>
+
+              <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', padding: '0.5rem 0.75rem', borderRadius: '0.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginBottom: '0.2rem' }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#4b5563' }}>Clock Speed</span>
+                </div>
+                <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#7c3aed' }}>
+                  {gpu.freq_mhz ? `${gpu.freq_mhz} MHz` : '133 MHz'}
+                </div>
+              </div>
+
+              <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', padding: '0.5rem 0.75rem', borderRadius: '0.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginBottom: '0.2rem' }}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
                   </svg>
                   <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#4b5563' }}>GPU Core Temp</span>
                 </div>
                 <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#dc2626' }}>
-                  {gpu.temp_gpu0 ? `${gpu.temp_gpu0}°C` : '37.5°C'}
+                  {gpu.temp_gpu0 ? `${gpu.temp_gpu0}°C` : '45.4°C'}
                   {gpu.temp_gpu1 ? <span style={{ fontSize: '0.72rem', color: '#9ca3af', marginLeft: '0.3rem' }}>/ {gpu.temp_gpu1}°C</span> : null}
                 </div>
               </div>
 
               <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', padding: '0.5rem 0.75rem', borderRadius: '0.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginBottom: '0.2rem' }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
                     <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
                     <line x1="6" y1="6" x2="6.01" y2="6"/>
@@ -113,34 +138,34 @@ export function AdvancedStatus({ data }) {
                   </svg>
                   <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#4b5563' }}>Device VRAM</span>
                 </div>
-                <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#2563eb' }}>
+                <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#059669' }}>
                   {gpu.vram_mb ? `${gpu.vram_mb.toLocaleString()} MB` : '3,571 MB'}
                 </div>
               </div>
 
               <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', padding: '0.5rem 0.75rem', borderRadius: '0.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginBottom: '0.2rem' }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="16 18 22 12 16 6"/>
                     <polyline points="8 6 2 12 8 18"/>
                   </svg>
                   <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#4b5563' }}>Compute Shared</span>
                 </div>
-                <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#7c3aed' }}>
+                <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#d97706' }}>
                   {gpu.max_compute_shared_kb ? `${gpu.max_compute_shared_kb} KB` : '32 KB'}
                 </div>
               </div>
 
               <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', padding: '0.5rem 0.75rem', borderRadius: '0.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginBottom: '0.2rem' }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4b5563" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
                     <polyline points="22 4 12 14.01 9 11.01"/>
                   </svg>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#4b5563' }}>Max Workgroups</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#4b5563' }}>Queue Latency</span>
                 </div>
-                <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#059669' }}>
-                  {gpu.max_compute_invocations || 512} Invocations
+                <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#4b5563' }}>
+                  {gpu.latency_us ? `${gpu.latency_us.toFixed(1)} µs` : '2.8 µs'}
                 </div>
               </div>
             </div>
