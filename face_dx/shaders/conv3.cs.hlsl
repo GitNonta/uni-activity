@@ -10,6 +10,9 @@
 // handle both stride 1 and stride 2. Weights stay in global memory but every
 // pixel-thread in the group reads the SAME weight (L1 broadcast).
 //
+// Used for the stride-2 convs (stem, downsample); stride-1 convs use
+// conv3rb.cs.hlsl which register-blocks 2 pixels per thread.
+//
 // FP16 mode (-DFP16): global buffers are u32-packed halves; the shared tile is
 // kept as unpacked fp32 after conversion.
 
