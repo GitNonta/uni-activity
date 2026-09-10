@@ -246,10 +246,7 @@ func (c *Collector) Collect() ([]byte, error) {
 				"status":     "healthy",
 				"latency_ms": cfPing,
 			},
-			"gpu": map[string]interface{}{
-				"freq_mhz":     300,
-				"load_percent": 0,
-			},
+			"gpu": sysinfo.GetGPUInfo(),
 		},
 		PublicIP: currentPublicIP,
 		AICluster: map[string]interface{}{
