@@ -1,0 +1,67 @@
+{
+  "model_architecture": "MobileNetV2-CelebA-DualHead-ArcFace",
+  "device": "cpu",
+  "arcface_enabled": true,
+  "arcface_margin": 0.5,
+  "arcface_scale": 64.0,
+  "total_parameters": 3073576,
+  "trainable_parameters": 3022376,
+  "batch_size": 32,
+  "iterations_target": 5,
+  "iteration_metrics": [
+    {
+      "iteration": 1,
+      "loss": 38.1473388671875,
+      "accuracy": 0.0,
+      "step_time_ms": 1446.49,
+      "throughput_fps": 22.12,
+      "ram_rss_mb": 647.02
+    },
+    {
+      "iteration": 2,
+      "loss": 40.67828369140625,
+      "accuracy": 0.0,
+      "step_time_ms": 1336.24,
+      "throughput_fps": 23.95,
+      "ram_rss_mb": 715.85
+    },
+    {
+      "iteration": 3,
+      "loss": 40.5222053527832,
+      "accuracy": 0.0,
+      "step_time_ms": 1384.8,
+      "throughput_fps": 23.11,
+      "ram_rss_mb": 789.94
+    },
+    {
+      "iteration": 4,
+      "loss": 39.768150329589844,
+      "accuracy": 0.0,
+      "step_time_ms": 1533.15,
+      "throughput_fps": 20.87,
+      "ram_rss_mb": 708.91
+    },
+    {
+      "iteration": 5,
+      "loss": 40.621849060058594,
+      "accuracy": 0.0,
+      "step_time_ms": 1274.17,
+      "throughput_fps": 25.11,
+      "ram_rss_mb": 651.38
+    }
+  ],
+  "inference_benchmarks": {
+    "batch_size_1": {
+      "avg_latency_ms": 22.14,
+      "min_latency_ms": 17.29,
+      "max_latency_ms": 66.35,
+      "p95_latency_ms": 27.75,
+      "fps": 45.17
+    },
+    "batch_size_32": {
+      "avg_batch_time_ms": 240.57,
+      "throughput_fps": 133.02
+    }
+  },
+  "total_training_time_sec": 7.53
+}

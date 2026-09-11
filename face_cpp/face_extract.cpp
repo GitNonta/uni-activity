@@ -229,8 +229,13 @@ int main(int argc, char** argv)
     std::string param = opt.model_dir + "/w600k_mbf.param";
     std::string bin = opt.model_dir + "/w600k_mbf.bin";
     if (net.load_param(param.c_str()) != 0 || net.load_model(bin.c_str()) != 0) {
-        fprintf(stderr, "[err] failed to load model from %s / %s\n", param.c_str(), bin.c_str());
-        return 1;
+        // Fallback: Check for ResNet-50 ArcFace (w600k_r50 / buffalo_l)
+        param = opt.model_dir + "/w600k_r50.param";
+        bin = opt.model_dir + "/w600k_r50.bin";
+        if (net.load_param(param.c_str()) != 0 || net.load_model(bin.c_str()) != 0) {
+            fprintf(stderr, "[err] failed to load model (w600k_mbf or w600k_r50) from %s\n", opt.model_dir.c_str());
+            return 1;
+        }
     }
     fprintf(stderr, "[info] model loaded (%s), backend=%s fp16=%s\n",
             opt.model_dir.c_str(), opt.use_gpu ? "vulkan" : "cpu",

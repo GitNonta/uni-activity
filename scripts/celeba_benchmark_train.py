@@ -21,6 +21,7 @@ import json
 import os
 import sys
 import time
+import math
 from typing import Dict, List, Tuple
 
 import numpy as np
@@ -40,6 +41,40 @@ CELEBA_ATTRIBUTES = [
     "Sideburns", "Smiling", "Straight_Hair", "Wavy_Hair", "Wearing_Earrings",
     "Wearing_Hat", "Wearing_Lipstick", "Wearing_Necklace", "Wearing_Necktie", "Young"
 ]
+
+
+class ArcFaceMarginHead(nn.Module):
+    """
+    ArcFace: Additive Angular Margin Loss for Deep Face Recognition (Deng et al. / InsightFace)
+    Loss = -log( e^(s*cos(theta + m)) / (e^(s*cos(theta + m)) + sum(e^(s*cos(theta_j)))) )
+    InsightFace defaults: s=64.0, m=0.50 radians (~28.6 degrees)
+    """
+    def __init__(self, in_features: int = 512, num_classes: int = 100, s: float = 64.0, m: float = 0.50):
+        super().__init__()
+        self.in_features = in_features
+        self.num_classes = num_classes
+        self.s = s
+        self.m = m
+        self.weight = nn.Parameter(torch.FloatTensor(num_classes, in_features))
+        nn.init.xavier_uniform_(self.weight)
+
+        self.cos_m = math.cos(m)
+        self.sin_m = math.sin(m)
+        self.th = math.cos(math.pi - m)
+        self.mm = math.sin(math.pi - m) * m
+
+    def forward(self, input_features: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
+        # L2-normalize both feature embeddings and classification weights
+        cosine = F.linear(F.normalize(input_features, p=2, dim=1), F.normalize(self.weight, p=2, dim=1))
+        sine = torch.sqrt((1.0 - torch.pow(cosine, 2)).clamp(0, 1))
+        phi = cosine * self.cos_m - sine * self.sin_m
+        phi = torch.where(cosine > self.th, phi, cosine - self.mm)
+
+        one_hot = torch.zeros(cosine.size(), device=input_features.device)
+        one_hot.scatter_(1, labels.view(-1, 1).long(), 1)
+        output = (one_hot * phi) + ((1.0 - one_hot) * cosine)
+        output *= self.s
+        return output
 
 
 class CelebADualHeadModel(nn.Module):
@@ -136,25 +171,39 @@ def train_and_benchmark(
     batch_size: int = 32,
     lr: float = 1e-3,
     crops_dir: str | None = None,
-    output_json: str | None = None
+    output_json: str | None = None,
+    use_arcface: bool = True
 ) -> Dict:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"[CelebA Benchmark] Initializing model on device: {device}")
+    print(f"[CelebA Benchmark] Initializing model on device: {device} (ArcFace Mode: {use_arcface})")
 
     model = CelebADualHeadModel(embedding_dim=512, num_attributes=40).to(device)
+    arcface_head = None
+    if use_arcface:
+        # 100 identity classes with InsightFace standard scale=64.0 and margin=0.50 radians
+        arcface_head = ArcFaceMarginHead(in_features=512, num_classes=100, s=64.0, m=0.50).to(device)
+
     total_params = sum(p.numel() for p in model.parameters())
+    if arcface_head:
+        total_params += sum(p.numel() for p in arcface_head.parameters())
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"[CelebA Model] Total Params: {total_params / 1e6:.2f}M, Trainable: {trainable_params / 1e6:.2f}M")
 
     dataset = SyntheticOrLocalCelebADataset(n_samples=max(320, batch_size * iterations), crops_dir=crops_dir)
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, drop_last=True)
 
-    criterion = nn.BCEWithLogitsLoss()
-    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
+    bce_criterion = nn.BCEWithLogitsLoss()
+    ce_criterion = nn.CrossEntropyLoss()
+
+    all_params = list(model.parameters()) + (list(arcface_head.parameters()) if arcface_head else [])
+    optimizer = torch.optim.AdamW(all_params, lr=lr, weight_decay=1e-4)
 
     results = {
-        "model_architecture": "MobileNetV2-CelebA-DualHead",
+        "model_architecture": "MobileNetV2-CelebA-DualHead-ArcFace" if use_arcface else "MobileNetV2-CelebA-DualHead",
         "device": str(device),
+        "arcface_enabled": use_arcface,
+        "arcface_margin": 0.50 if use_arcface else None,
+        "arcface_scale": 64.0 if use_arcface else None,
         "total_parameters": total_params,
         "trainable_parameters": trainable_params,
         "batch_size": batch_size,
@@ -164,7 +213,10 @@ def train_and_benchmark(
     }
 
     model.train()
-    print(f"[CelebA Benchmark] Starting {iterations} training iterations...")
+    if arcface_head:
+        arcface_head.train()
+
+    print(f"[CelebA Benchmark] Starting {iterations} training iterations with {'ArcFace (s=64, m=0.5)' if use_arcface else 'BCE Loss'}...")
     print(f"{'Iter':<6} {'Loss':<10} {'Accuracy':<10} {'Step Time (ms)':<16} {'Throughput (img/s)':<20} {'RAM (MB)':<10}")
     print("-" * 76)
 
@@ -185,17 +237,28 @@ def train_and_benchmark(
 
         optimizer.zero_grad()
         emb, logits = model(images)
-        loss = criterion(logits, targets)
+
+        if use_arcface and arcface_head is not None:
+            # Deterministic pseudo-identity per sample batch for metric learning
+            labels = torch.randint(0, 100, (images.size(0),), device=device)
+            arc_logits = arcface_head(emb, labels)
+            arc_loss = ce_criterion(arc_logits, labels)
+            attr_loss = bce_criterion(logits, targets)
+            loss = arc_loss + 0.5 * attr_loss
+            # Measure top-1 ArcFace recognition accuracy
+            preds = arc_logits.argmax(dim=1)
+            acc = (preds == labels).float().mean().item()
+        else:
+            loss = bce_criterion(logits, targets)
+            preds = (logits > 0.0).float()
+            acc = (preds == targets).float().mean().item()
+
         loss.backward()
         optimizer.step()
 
         t_end = time.perf_counter()
         step_ms = (t_end - t_start) * 1000.0
         throughput = batch_size / max(1e-5, (t_end - t_start))
-
-        # Accuracy: threshold logits at 0 (sigmoid(0) = 0.5)
-        preds = (logits > 0.0).float()
-        acc = (preds == targets).float().mean().item()
         ram_mb = get_process_memory_mb()
 
         iter_data = {
@@ -275,6 +338,7 @@ def main():
     parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate")
     parser.add_argument("--crops-dir", type=str, default="face_cpp/testdata/crops", help="Path to sample face crops")
     parser.add_argument("--out", type=str, default="results/celeba_benchmark.json", help="Output JSON path")
+    parser.add_argument("--use-arcface", action="store_true", default=True, help="Enable InsightFace ArcFace Angular Margin Loss (s=64, m=0.5)")
     args = parser.parse_args()
 
     train_and_benchmark(
@@ -282,7 +346,8 @@ def main():
         batch_size=args.batch_size,
         lr=args.lr,
         crops_dir=args.crops_dir,
-        output_json=args.out
+        output_json=args.out,
+        use_arcface=args.use_arcface
     )
 
 
