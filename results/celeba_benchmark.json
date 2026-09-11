@@ -1,0 +1,104 @@
+{
+  "model_architecture": "MobileNetV2-CelebA-DualHead",
+  "device": "cpu",
+  "total_parameters": 3022376,
+  "trainable_parameters": 3022376,
+  "batch_size": 32,
+  "iterations_target": 10,
+  "iteration_metrics": [
+    {
+      "iteration": 1,
+      "loss": 0.6989716291427612,
+      "accuracy": 0.512499988079071,
+      "step_time_ms": 1316.75,
+      "throughput_fps": 24.3,
+      "ram_rss_mb": 644.79
+    },
+    {
+      "iteration": 2,
+      "loss": 0.6999231576919556,
+      "accuracy": 0.514843761920929,
+      "step_time_ms": 1317.9,
+      "throughput_fps": 24.28,
+      "ram_rss_mb": 668.24
+    },
+    {
+      "iteration": 3,
+      "loss": 0.6995511054992676,
+      "accuracy": 0.5101562738418579,
+      "step_time_ms": 1384.64,
+      "throughput_fps": 23.11,
+      "ram_rss_mb": 770.34
+    },
+    {
+      "iteration": 4,
+      "loss": 0.6732712388038635,
+      "accuracy": 0.5843750238418579,
+      "step_time_ms": 1073.68,
+      "throughput_fps": 29.8,
+      "ram_rss_mb": 745.55
+    },
+    {
+      "iteration": 5,
+      "loss": 0.6769809126853943,
+      "accuracy": 0.58984375,
+      "step_time_ms": 1063.56,
+      "throughput_fps": 30.09,
+      "ram_rss_mb": 778.39
+    },
+    {
+      "iteration": 6,
+      "loss": 0.6591023206710815,
+      "accuracy": 0.6265624761581421,
+      "step_time_ms": 1137.64,
+      "throughput_fps": 28.13,
+      "ram_rss_mb": 770.29
+    },
+    {
+      "iteration": 7,
+      "loss": 0.6725012063980103,
+      "accuracy": 0.6000000238418579,
+      "step_time_ms": 1258.85,
+      "throughput_fps": 25.42,
+      "ram_rss_mb": 776.37
+    },
+    {
+      "iteration": 8,
+      "loss": 0.6651333570480347,
+      "accuracy": 0.6273437738418579,
+      "step_time_ms": 1108.56,
+      "throughput_fps": 28.87,
+      "ram_rss_mb": 694.28
+    },
+    {
+      "iteration": 9,
+      "loss": 0.6745917201042175,
+      "accuracy": 0.6187499761581421,
+      "step_time_ms": 1046.17,
+      "throughput_fps": 30.59,
+      "ram_rss_mb": 699.14
+    },
+    {
+      "iteration": 10,
+      "loss": 0.6480885744094849,
+      "accuracy": 0.655468761920929,
+      "step_time_ms": 1151.3,
+      "throughput_fps": 27.79,
+      "ram_rss_mb": 748.21
+    }
+  ],
+  "inference_benchmarks": {
+    "batch_size_1": {
+      "avg_latency_ms": 23.56,
+      "min_latency_ms": 16.62,
+      "max_latency_ms": 64.5,
+      "p95_latency_ms": 31.99,
+      "fps": 42.45
+    },
+    "batch_size_32": {
+      "avg_batch_time_ms": 295.93,
+      "throughput_fps": 108.13
+    }
+  },
+  "total_training_time_sec": 13.23
+}
