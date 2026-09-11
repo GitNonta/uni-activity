@@ -412,10 +412,11 @@ func mathRound(val float64, precision int) float64 {
 }
 
 type TopProc struct {
-	PID  string  `json:"pid"`
-	Name string  `json:"name"`
-	CPU  float64 `json:"cpu"`
-	Mem  float64 `json:"mem"`
+	PID   string  `json:"pid"`
+	Name  string  `json:"name"`
+	CPU   float64 `json:"cpu"`
+	Mem   float64 `json:"mem"`
+	GpuKB int     `json:"gpu_kb"`
 }
 
 var (
@@ -478,10 +479,11 @@ func GetTopProcesses() []TopProc {
 			}
 
 			procs = append(procs, TopProc{
-				PID:  pid,
-				Name: cleanName,
-				CPU:  cpu,
-				Mem:  mem,
+				PID:   pid,
+				Name:  cleanName,
+				CPU:   cpu,
+				Mem:   mem,
+				GpuKB: 0,
 			})
 		}
 	}
@@ -494,9 +496,51 @@ func GetTopProcesses() []TopProc {
 		procs = procs[:5]
 	}
 
+	// Enrich with GPU TextureCache from dumpsys gfxinfo (available via DUMP permission)
+	gpuMap := getGPUTextureByPID()
+	for i := range procs {
+		if kb, ok := gpuMap[procs[i].PID]; ok {
+			procs[i].GpuKB = kb
+		}
+	}
+
 	topProcsCache = procs
 	topProcsTime = time.Now()
 	return procs
+}
+
+// getGPUTextureByPID parses `dumpsys gfxinfo` to extract TextureCache usage per PID
+// Returns map[pid]gpuKB
+func getGPUTextureByPID() map[string]int {
+	result := make(map[string]int)
+	out, err := exec.Command("/system/bin/dumpsys", "gfxinfo").Output()
+	if err != nil {
+		return result
+	}
+
+	lines := strings.Split(string(out), "\n")
+	currentPID := ""
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		// Match: ** Graphics info for pid 25505 [com.google.android.gms.ui] **
+		if strings.HasPrefix(line, "** Graphics info for pid ") {
+			parts := strings.Fields(line)
+			if len(parts) >= 6 {
+				currentPID = parts[5]
+			}
+			continue
+		}
+		// Match: TextureCache           263964 / 26265600
+		if strings.HasPrefix(line, "TextureCache") && currentPID != "" {
+			fields := strings.Fields(line)
+			if len(fields) >= 2 {
+				if bytes, err := strconv.Atoi(fields[1]); err == nil && bytes > 0 {
+					result[currentPID] = bytes / 1024 // convert to KB
+				}
+			}
+		}
+	}
+	return result
 }
 
 // GetNetSpeeds returns bandwidth rate in KB/s

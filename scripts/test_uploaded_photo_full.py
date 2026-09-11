@@ -62,17 +62,40 @@ def main():
     face = faces[0]
     bbox = [round(float(x), 1) for x in face.bbox]
     det_score = float(face.det_score)
-    print(f"\n[1. Face Detection - SCRFD]")
-    print(f"  Confidence Score: {det_score * 100:.2f}%")
-    print(f"  Bounding Box    : [x1={bbox[0]}, y1={bbox[1]}, x2={bbox[2]}, y2={bbox[3]}]")
-    print(f"  Detection Time  : {det_ms:.2f} ms")
+    raw_w = int(bbox[2] - bbox[0])
+    raw_h = int(bbox[3] - bbox[1])
 
-    # Aligned 112x112 Crop
+    # คำนวณ Full Face Box ครอบคลุมความยาวใบหน้าเต็ม 100% (หน้าผาก ผม ปลายคาง กราม)
+    pad_top = int(raw_h * 0.28)
+    pad_bottom = int(raw_h * 0.14)
+    pad_side = int(raw_w * 0.14)
+    full_x1 = max(0, int(bbox[0]) - pad_side)
+    full_y1 = max(0, int(bbox[1]) - pad_top)
+    full_x2 = min(w, int(bbox[2]) + pad_side)
+    full_y2 = min(h, int(bbox[3]) + pad_bottom)
+    full_w = full_x2 - full_x1
+    full_h = full_y2 - full_y1
+
+    print(f"\n[1. Face Detection & Framing Analysis - SCRFD]")
+    print(f"  Confidence Score    : {det_score * 100:.2f}%")
+    print(f"  Standard SCRFD Box  : [x1={bbox[0]}, y1={bbox[1]}, x2={bbox[2]}, y2={bbox[3]}] (W={raw_w}, H={raw_h} px)")
+    print(f"  Full-Length Face Box: [x1={full_x1}, y1={full_y1}, x2={full_x2}, y2={full_y2}] (W={full_w}, H={full_h} px)")
+    print(f"  Face Length Increase: +{pad_top} px (forehead/hair) + {pad_bottom} px (chin/neck) = +{pad_top+pad_bottom} px (+{(full_h/raw_h - 1)*100:.1f}%)")
+    print(f"  Detection Time      : {det_ms:.2f} ms")
+
+    # A. Biometric 112x112 Crop (Strict template required by ArcFace / MobileFaceNet)
     crop112 = face_align.norm_crop(img, landmark=face.kps, image_size=112)
     crop_path = os.path.abspath("face_dx/test_student.png")
     cv2.imwrite(crop_path, crop112)
     cv2.imwrite("face_cpp/testdata/crops/test_student.png", crop112)
-    print(f"  Aligned Crop    : Saved 112x112 to {crop_path}")
+    print(f"  Biometric Model Crop: Saved 112x112 to {crop_path} (ArcFace 5-point alignment)")
+
+    # B. Full Face Portrait Crop (100% full face length for UI & Profile Card)
+    crop_full = img[full_y1:full_y2, full_x1:full_x2]
+    crop_full_path = os.path.abspath("face_dx/test_student_full.png")
+    cv2.imwrite(crop_full_path, crop_full)
+    cv2.imwrite("face_cpp/testdata/crops/test_student_full.png", crop_full)
+    print(f"  Full-Length Crop    : Saved {full_w}x{full_h} to {crop_full_path} (Full Forehead + Hair + Chin)")
 
     # 2. Passive Liveness Check
     sys.path.append("ai_service")

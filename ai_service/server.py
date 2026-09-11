@@ -267,14 +267,50 @@ def insightface_detect(img: np.ndarray):
     return face, embedding
 
 
-def crop_aligned_face(img: np.ndarray, face) -> np.ndarray:
-    """Crop aligned face จาก bounding box ของ InsightFace"""
+def get_full_face_bbox(
+    face,
+    img_shape: tuple,
+    pad_top_ratio: float = 0.28,
+    pad_bottom_ratio: float = 0.14,
+    pad_side_ratio: float = 0.14,
+) -> list[int]:
+    """
+    คำนวณ Bounding Box ที่ครอบคลุมความยาวใบหน้าเต็มสัดส่วน 100%
+    (ตั้งแต่ไรผม/หน้าผากด้านบน จนถึงปลายคางและแนวกรามด้านล่าง)
+    """
+    box = face.bbox.astype(int)
+    x1, y1, x2, y2 = box
+    h, w = img_shape[:2]
+    face_w = x2 - x1
+    face_h = y2 - y1
+
+    pad_t = int(face_h * pad_top_ratio)
+    pad_b = int(face_h * pad_bottom_ratio)
+    pad_s = int(face_w * pad_side_ratio)
+
+    return [
+        max(0, x1 - pad_s),
+        max(0, y1 - pad_t),
+        min(w, x2 + pad_s),
+        min(h, y2 + pad_b),
+    ]
+
+
+def crop_aligned_face(img: np.ndarray, face, full_length: bool = True) -> np.ndarray:
+    """
+    Crop face จากภาพ โดยรองรับการขยายสัดส่วนความยาวใบหน้าแบบเต็มกรอบ (Full Face Length)
+    full_length=True: ครอบคลุมหน้าผาก ผม ปลายคาง กราม (เหมาะกับ liveness & UI display)
+    full_length=False: ครอปเฉพาะ raw bbox แนบชิดโครงหน้า
+    """
     try:
-        box = face.bbox.astype(int)
-        x1, y1, x2, y2 = box
-        h, w = img.shape[:2]
-        x1 = max(0, x1); y1 = max(0, y1)
-        x2 = min(w, x2); y2 = min(h, y2)
+        if full_length:
+            x1, y1, x2, y2 = get_full_face_bbox(face, img.shape)
+        else:
+            box = face.bbox.astype(int)
+            x1, y1, x2, y2 = box
+            h, w = img.shape[:2]
+            x1 = max(0, x1); y1 = max(0, y1)
+            x2 = min(w, x2); y2 = min(h, y2)
         return img[y1:y2, x1:x2]
     except Exception:
         return img
@@ -386,6 +422,9 @@ async def extract_face(image: UploadFile = File(...)):
     elapsed_ms = int((time.time() - t0) * 1000)
     logger.info(f"[extract] OK in {elapsed_ms}ms - 512D + 128D extracted")
 
+    std_bbox = [int(v) for v in face.bbox.tolist()] if face is not None else []
+    full_bbox = get_full_face_bbox(face, img.shape) if face is not None else []
+
     return {
         "status": "success",
         "message": "Face embeddings extracted successfully (512D + 128D)",
@@ -395,6 +434,8 @@ async def extract_face(image: UploadFile = File(...)):
             "full": len(embedding_512d),
             "reduced": len(embedding_128d)
         },
+        "bbox": std_bbox,
+        "full_face_bbox": full_bbox,
         "processing_ms": elapsed_ms,
         "detector_used": get_detector_pipeline(),
     }
