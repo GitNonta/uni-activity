@@ -21,6 +21,9 @@ Features:
    - Assertions enforce the constraints baked into the HLSL kernels
 4. check_custom_fvp.py verifies the exported file numerically against the
    PyTorch reference on random inputs.
+5. Identity-labeled dataset:
+   - labels come from subfolder names or <person>_<n>.png filename prefixes
+   - deterministic, sorted label ids (no random label assignment)
 """
 from __future__ import annotations
 
@@ -203,36 +206,100 @@ class NativeArcFaceNet(nn.Module):
 
 
 class SimpleFacesDataset(Dataset):
-    """Loads crops or generates realistic face tensors for training."""
-    def __init__(self, n_samples: int = 160, crops_dir: str | None = None):
-        super().__init__()
-        self.n_samples = n_samples
-        self.tensors = []
-        if crops_dir and os.path.isdir(crops_dir):
-            import cv2
-            for fn in sorted(os.listdir(crops_dir)):
-                if fn.lower().endswith((".png", ".jpg", ".webp")):
-                    fp = os.path.join(crops_dir, fn)
-                    img = cv2.imread(fp)
-                    if img is not None:
-                        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                        img = cv2.resize(img, (112, 112))
-                        t = torch.from_numpy(img).permute(2, 0, 1).float()
-                        t = (t - 127.5) / 127.5
-                        self.tensors.append(t)
+    """Loads identity-labeled face crops for ArcFace training.
 
-        torch.manual_seed(42)
-        self.labels = torch.randint(0, 10, (n_samples,))
+    Identity is derived deterministically from the data layout — never
+    randomly:
+      * subfolder layout: crops_dir/<person>/*.png|jpg|webp
+          -> identity = subfolder name
+      * flat layout:      crops_dir/<person>_<anything>.ext
+          -> identity = filename prefix before the FIRST '_'
+         (selfie_1.png -> "selfie", test_student_full.png -> "test":
+          the first token is the person, the rest are descriptors, so
+          test_student.png and test_student_full.png group consistently;
+          names without '_' map to the full stem)
+    Subfolder mode takes precedence when at least one subfolder contains
+    images. Label ids are contiguous ints assigned over the SORTED identity
+    names, so they are stable across runs.
+
+    Training requires >= 2 identities with >= 2 usable images each: the
+    additive angular margin is meaningless for a single sample per class.
+    """
+
+    IMG_EXTS = (".png", ".jpg", ".jpeg", ".webp")
+
+    def __init__(self, crops_dir: str):
+        super().__init__()
+        if not crops_dir or not os.path.isdir(crops_dir):
+            raise ValueError(f"crops_dir not found: {crops_dir!r}")
+
+        import cv2
+
+        def load_tensor(fp: str) -> torch.Tensor | None:
+            img = cv2.imread(fp)
+            if img is None:
+                return None
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            img = cv2.resize(img, (112, 112))
+            t = torch.from_numpy(img).permute(2, 0, 1).float()
+            return (t - 127.5) / 127.5
+
+        # ---- gather (path, identity) pairs ----
+        entries: List[Tuple[str, str]] = []
+        subdirs = sorted(d for d in os.listdir(crops_dir)
+                         if os.path.isdir(os.path.join(crops_dir, d)))
+        for d in subdirs:
+            dd = os.path.join(crops_dir, d)
+            for fn in sorted(os.listdir(dd)):
+                if fn.lower().endswith(self.IMG_EXTS):
+                    entries.append((os.path.join(dd, fn), d))
+        if not entries:  # flat layout
+            for fn in sorted(os.listdir(crops_dir)):
+                if fn.lower().endswith(self.IMG_EXTS):
+                    stem = os.path.splitext(fn)[0]
+                    ident = stem.split("_", 1)[0] if "_" in stem else stem
+                    entries.append((os.path.join(crops_dir, fn), ident))
+
+        if not entries:
+            raise ValueError(
+                f"no images found under {crops_dir!r}; expected "
+                f"crops_dir/<person>/*.png or crops_dir/<person>_<n>.png")
+
+        identities = sorted({ident for _, ident in entries})
+        label_of = {name: i for i, name in enumerate(identities)}
+        self.class_names = identities
+        self.num_classes = len(identities)
+
+        self.tensors: List[torch.Tensor] = []
+        self.labels: List[int] = []
+        self.files: List[str] = []
+        skipped = 0
+        for fp, ident in entries:
+            t = load_tensor(fp)
+            if t is None:
+                skipped += 1
+                continue
+            self.tensors.append(t)
+            self.labels.append(label_of[ident])
+            self.files.append(fp)
+        if skipped:
+            print(f"[dataset] warning: {skipped} unreadable images skipped")
+
+        per_class = {name: sum(1 for l in self.labels if l == i)
+                     for name, i in label_of.items()}
+        if self.num_classes < 2 or min(per_class.values()) < 2:
+            raise ValueError(
+                "need >= 2 identities with >= 2 images each for ArcFace "
+                f"margin training; got {per_class} in {crops_dir!r}")
 
     def __len__(self) -> int:
-        return self.n_samples
+        return len(self.tensors)
 
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
-        if self.tensors:
-            base = self.tensors[idx % len(self.tensors)].clone()
-            noise = torch.randn_like(base) * 0.02
-            return torch.clamp(base + noise, -1.0, 1.0), self.labels[idx]
-        return torch.randn(3, 112, 112) * 0.5, self.labels[idx]
+        base = self.tensors[idx].clone()
+        noise = torch.randn_like(base) * 0.02  # light augmentation only
+        return torch.clamp(base + noise, -1.0, 1.0), \
+            torch.tensor(self.labels[idx], dtype=torch.long)
 
 
 def serialize_model_to_fvp(model: NativeArcFaceNet, out_fvp_path: str) -> None:
@@ -404,9 +471,19 @@ def train_scratch(
     print(f"[ArcFace Scratch Training] Initializing NativeArcFaceNet on device: {device}")
 
     model = NativeArcFaceNet(embedding_dim=512).to(device)
-    arcface_head = ArcFaceMarginHead(in_features=512, num_classes=10, s=64.0, m=0.50).to(device)
 
-    dataset = SimpleFacesDataset(n_samples=160, crops_dir=crops_dir)
+    dataset = SimpleFacesDataset(crops_dir=crops_dir)
+    print("[dataset] identity classes (sorted, deterministic ids): "
+          + ", ".join(f"{n}={i}(x{dataset.labels.count(i)})"
+                      for i, n in enumerate(dataset.class_names)))
+
+    arcface_head = ArcFaceMarginHead(in_features=512, num_classes=dataset.num_classes,
+                                     s=64.0, m=0.50).to(device)
+
+    if len(dataset) < batch_size:
+        print(f"[ArcFace Scratch Training] batch size reduced to dataset "
+              f"size ({len(dataset)}); drop_last would otherwise yield 0 steps")
+        batch_size = len(dataset)
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, drop_last=True)
 
     optimizer = torch.optim.AdamW(
@@ -462,12 +539,18 @@ def train_scratch(
 
 
 def main():
+    here = os.path.dirname(os.path.abspath(__file__))
+    default_crops = os.path.normpath(os.path.join(here, "..", "face_cpp", "testdata", "crops"))
+    default_out = os.path.join(here, "models", "custom_arcface.fvp")
+
     parser = argparse.ArgumentParser(description="Train Custom ArcFace and Export Directly to .fvp for Intel iGPU")
     parser.add_argument("--epochs", type=int, default=5, help="Number of training epochs")
     parser.add_argument("--batch-size", type=int, default=16, help="Batch size")
     parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate")
-    parser.add_argument("--crops-dir", type=str, default="face_cpp/testdata/crops", help="Crops directory")
-    parser.add_argument("--out", type=str, default="face_dx/models/custom_arcface.fvp", help="Output .fvp path")
+    parser.add_argument("--crops-dir", type=str, default=default_crops,
+                        help="Identity-labeled crops: subfolder per person, "
+                             "or flat <person>_<n>.png files")
+    parser.add_argument("--out", type=str, default=default_out, help="Output .fvp path")
     args = parser.parse_args()
 
     train_scratch(
