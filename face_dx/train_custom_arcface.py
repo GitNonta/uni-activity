@@ -30,9 +30,10 @@ from __future__ import annotations
 import argparse
 import math
 import os
+import random
 import struct
 import time
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 
 import numpy as np
 import torch
@@ -46,6 +47,7 @@ LAYER_CONV = 1
 LAYER_ADD = 2
 LAYER_GEMM = 3
 INPUT_TENSOR = 0xFFFFFFFF  # edge sentinel: model input
+AUG_RNG = random.Random(1234)  # dedicated RNG for augmentation (seeded => reproducible runs)
 
 
 class ArcFaceMarginHead(nn.Module):
@@ -205,6 +207,36 @@ class NativeArcFaceNet(nn.Module):
         return F.normalize(raw, p=2, dim=1)
 
 
+def gather_identity_images(crops_dir: str) -> List[Tuple[str, str]]:
+    """Collect (image_path, identity) pairs from a crops directory.
+
+    Identity derivation (deterministic, shared by training and evaluation):
+      * subfolder layout: crops_dir/<person>/*.png|jpg|webp
+          -> identity = subfolder name (takes precedence when present)
+      * flat layout:      crops_dir/<person>_<anything>.ext
+          -> identity = filename prefix before the FIRST '_'
+         (selfie_1.png -> "selfie", test_student_full.png -> "test":
+          the first token is the person, the rest are descriptors, so
+          test_student.png and test_student_full.png group consistently;
+          names without '_' map to the full stem)
+    """
+    entries: List[Tuple[str, str]] = []
+    subdirs = sorted(d for d in os.listdir(crops_dir)
+                     if os.path.isdir(os.path.join(crops_dir, d)))
+    for d in subdirs:
+        dd = os.path.join(crops_dir, d)
+        for fn in sorted(os.listdir(dd)):
+            if fn.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
+                entries.append((os.path.join(dd, fn), d))
+    if not entries:  # flat layout
+        for fn in sorted(os.listdir(crops_dir)):
+            if fn.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
+                stem = os.path.splitext(fn)[0]
+                ident = stem.split("_", 1)[0] if "_" in stem else stem
+                entries.append((os.path.join(crops_dir, fn), ident))
+    return entries
+
+
 class SimpleFacesDataset(Dataset):
     """Loads identity-labeled face crops for ArcFace training.
 
@@ -224,12 +256,18 @@ class SimpleFacesDataset(Dataset):
 
     Training requires >= 2 identities with >= 2 usable images each: the
     additive angular margin is meaningless for a single sample per class.
+
+    With augment=True, __getitem__ applies light face-preserving augmentation
+    (brightness/contrast jitter, scale+translate, horizontal flip) on top of
+    the normalized tensor. Evaluation should construct the dataset with
+    augment=False so embeddings are deterministic.
     """
 
     IMG_EXTS = (".png", ".jpg", ".jpeg", ".webp")
 
-    def __init__(self, crops_dir: str):
+    def __init__(self, crops_dir: str, augment: bool = False):
         super().__init__()
+        self.augment = augment
         if not crops_dir or not os.path.isdir(crops_dir):
             raise ValueError(f"crops_dir not found: {crops_dir!r}")
 
@@ -245,20 +283,7 @@ class SimpleFacesDataset(Dataset):
             return (t - 127.5) / 127.5
 
         # ---- gather (path, identity) pairs ----
-        entries: List[Tuple[str, str]] = []
-        subdirs = sorted(d for d in os.listdir(crops_dir)
-                         if os.path.isdir(os.path.join(crops_dir, d)))
-        for d in subdirs:
-            dd = os.path.join(crops_dir, d)
-            for fn in sorted(os.listdir(dd)):
-                if fn.lower().endswith(self.IMG_EXTS):
-                    entries.append((os.path.join(dd, fn), d))
-        if not entries:  # flat layout
-            for fn in sorted(os.listdir(crops_dir)):
-                if fn.lower().endswith(self.IMG_EXTS):
-                    stem = os.path.splitext(fn)[0]
-                    ident = stem.split("_", 1)[0] if "_" in stem else stem
-                    entries.append((os.path.join(crops_dir, fn), ident))
+        entries = gather_identity_images(crops_dir)
 
         if not entries:
             raise ValueError(
@@ -295,11 +320,35 @@ class SimpleFacesDataset(Dataset):
     def __len__(self) -> int:
         return len(self.tensors)
 
+    def _augment(self, t: torch.Tensor) -> torch.Tensor:
+        """Light face-preserving augmentation with pure torch ops (no
+        torchvision dependency). Returns a NEW tensor; stored tensors are
+        never modified."""
+        # photometric: brightness/contrast jitter (scalar factors so channel
+        # ordering stays natural)
+        if AUG_RNG.random() < 0.8:
+            t = t * AUG_RNG.uniform(0.8, 1.2) + AUG_RNG.uniform(-0.1, 0.1)
+        # geometric: scale 0.9-1.1 + translate up to 6 px (affine_grid takes
+        # normalized coords, so a pixel offset maps to px * 2 / 112)
+        if AUG_RNG.random() < 0.8:
+            s = AUG_RNG.uniform(0.9, 1.1)
+            tx = AUG_RNG.uniform(-6.0, 6.0) / 56.0
+            ty = AUG_RNG.uniform(-6.0, 6.0) / 56.0
+            theta = torch.tensor([[s, 0.0, tx], [0.0, s, ty]], dtype=torch.float32)
+            grid = F.affine_grid(theta.unsqueeze(0), (1, 3, 112, 112),
+                                 align_corners=False)
+            t = F.grid_sample(t.unsqueeze(0), grid, mode="bilinear",
+                              padding_mode="zeros", align_corners=False).squeeze(0)
+        # horizontal flip: keeps identity, diversifies pose
+        if AUG_RNG.random() < 0.5:
+            t = torch.flip(t, dims=(2,))
+        return torch.clamp(t, -1.0, 1.0)
+
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
-        base = self.tensors[idx].clone()
-        noise = torch.randn_like(base) * 0.02  # light augmentation only
-        return torch.clamp(base + noise, -1.0, 1.0), \
-            torch.tensor(self.labels[idx], dtype=torch.long)
+        t = self.tensors[idx].clone()
+        if self.augment:
+            t = self._augment(t)
+        return t, torch.tensor(self.labels[idx], dtype=torch.long)
 
 
 def serialize_model_to_fvp(model: NativeArcFaceNet, out_fvp_path: str) -> None:
@@ -465,14 +514,16 @@ def train_scratch(
     batch_size: int = 16,
     lr: float = 1e-3,
     out_fvp: str = "face_dx/models/custom_arcface.fvp",
-    crops_dir: str = "face_cpp/testdata/crops"
+    crops_dir: str = "face_cpp/testdata/crops",
+    augment: bool = True
 ) -> None:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"[ArcFace Scratch Training] Initializing NativeArcFaceNet on device: {device}")
 
     model = NativeArcFaceNet(embedding_dim=512).to(device)
 
-    dataset = SimpleFacesDataset(crops_dir=crops_dir)
+    dataset = SimpleFacesDataset(crops_dir=crops_dir, augment=augment)
+    print(f"[dataset] augmentation: {'ON' if augment else 'OFF'}")
     print("[dataset] identity classes (sorted, deterministic ids): "
           + ", ".join(f"{n}={i}(x{dataset.labels.count(i)})"
                       for i, n in enumerate(dataset.class_names)))
@@ -547,6 +598,8 @@ def main():
     parser.add_argument("--epochs", type=int, default=5, help="Number of training epochs")
     parser.add_argument("--batch-size", type=int, default=16, help="Batch size")
     parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate")
+    parser.add_argument("--no-augment", action="store_true",
+                        help="disable training augmentation")
     parser.add_argument("--crops-dir", type=str, default=default_crops,
                         help="Identity-labeled crops: subfolder per person, "
                              "or flat <person>_<n>.png files")
@@ -558,7 +611,8 @@ def main():
         batch_size=args.batch_size,
         lr=args.lr,
         out_fvp=args.out,
-        crops_dir=args.crops_dir
+        crops_dir=args.crops_dir,
+        augment=not args.no_augment
     )
 
 
