@@ -7,25 +7,29 @@ running on Intel iGPU with ZERO third-party runtime dependencies.
 
 Features:
 1. Native FVP-Compatible Architecture (NativeArcFaceNet):
-   - 62-layer MobileFaceNet backbone (Conv + PRelu + Depthwise + Add + GEMM)
-   - 100% compatible with face_dx's HLSL shaders (conv.cs, conv11.cs, conv3.cs, conv3rb.cs, gemm.cs, add.cs)
+   - MobileFaceNet backbone (Conv + PRelu + Depthwise + Add + GEMM)
+   - Compatible with face_dx's HLSL shaders (conv.cs, conv11.cs, conv3.cs,
+     conv3rb.cs, gemm_partial.cs, gemm_final.cs, add.cs)
 2. InsightFace ArcFace Margin Loss:
    - Additive Angular Margin penalty (s=64.0, m=0.50 radians)
    - Hyperspherical metric learning
 3. Direct .fvp Serializer:
-   - Exports directly to custom binary format (.fvp v2, magic "FVK1")
-   - Fully runnable by face_dx.exe on Intel UHD Graphics / Iris Xe!
+   - Exports the TRAINED state_dict (not random weights!) to the custom
+     binary format (.fvp v2, magic "FVK1")
+   - Builds the tensor graph explicitly (tensor 0 = model input, layer j
+     writes tensor j+1, ADDs carry two edges) — no manifest needed
+   - Assertions enforce the constraints baked into the HLSL kernels
+4. check_custom_fvp.py verifies the exported file numerically against the
+   PyTorch reference on random inputs.
 """
 from __future__ import annotations
 
 import argparse
-import json
 import math
 import os
 import struct
-import sys
 import time
-from typing import Dict, List, Tuple
+from typing import Dict, Tuple
 
 import numpy as np
 import torch
@@ -38,6 +42,7 @@ VERSION = 2
 LAYER_CONV = 1
 LAYER_ADD = 2
 LAYER_GEMM = 3
+INPUT_TENSOR = 0xFFFFFFFF  # edge sentinel: model input
 
 
 class ArcFaceMarginHead(nn.Module):
@@ -101,7 +106,7 @@ class InvertedResidual(nn.Module):
 class NativeArcFaceNet(nn.Module):
     """
     FVP-Native MobileFaceNet Architecture producing 512-d embeddings.
-    Designed to directly serialize into face_dx's 62-layer compute graph.
+    Designed to directly serialize into face_dx's compute graph.
     """
     def __init__(self, embedding_dim: int = 512):
         super().__init__()
@@ -162,7 +167,7 @@ class NativeArcFaceNet(nn.Module):
         # GEMM / Linear: in = 64 * 7 * 7 = 3136 -> out = 512
         self.fc = nn.Linear(3136, embedding_dim, bias=True)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, normalize: bool = True) -> torch.Tensor:
         # Stem
         x = self.stem_prelu(self.stem_conv(x))
         x = self.dw0_prelu(self.dw0_conv(x))
@@ -189,11 +194,12 @@ class NativeArcFaceNet(nn.Module):
         x = self.head_conv1(x)
         x = self.head_conv2(x)  # shape: [batch, 64, 7, 7]
 
-        # Flatten + Linear + L2 Normalize
+        # Flatten + Linear (+ optional L2 Normalize)
         x = torch.flatten(x, 1)
         raw = self.fc(x)
-        normed = F.normalize(raw, p=2, dim=1)
-        return normed
+        if not normalize:
+            return raw  # raw GEMM output: matches the .fvp graph the engine runs
+        return F.normalize(raw, p=2, dim=1)
 
 
 class SimpleFacesDataset(Dataset):
@@ -229,78 +235,162 @@ class SimpleFacesDataset(Dataset):
         return torch.randn(3, 112, 112) * 0.5, self.labels[idx]
 
 
-def serialize_model_to_fvp(model: NativeArcFaceNet, out_fvp_path: str, reference_manifest: str | None = None) -> None:
+def serialize_model_to_fvp(model: NativeArcFaceNet, out_fvp_path: str) -> None:
     """
-    Serializes NativeArcFaceNet into .fvp format matching face_dx specification.
-    If reference_manifest (layers.json) exists, weights are mapped to the 62 layers!
+    Serializes the TRAINED state_dict of NativeArcFaceNet into .fvp format.
+
+    Walks the graph explicitly (stem -> stages -> residual adds -> head -> gemm),
+    packing weights in the exact layouts dx_engine.cpp expects:
+      * conv:  [out_c][in_c/group][kh][kw] + bias[out_c] + prelu[out_c]
+      * gemm:  transposed [k][out_c] + bias[out_c]  (contiguous float4 loads
+        of output-channel quads in gemm_partial.cs.hlsl)
+    Tensor edges are chained exactly like the engine resolves them:
+    tensor 0 = model input, layer j writes tensor j+1, ADD carries two edges.
+
+    Assertions enforce the constraints baked into the HLSL kernels:
+      * conv out_c even (all conv kernels process oc in pairs)
+      * group==1 convs route to conv11: out_c a multiple of 4 (4-oc quads)
+      * grouped convs stage <= 2 input channels per group (NCH=4 tile)
+      * gemm k a multiple of NSPLIT=16 with klen >= 2, out_c == 512
     """
-    print(f"[fvp_serializer] Serializing weights to {out_fvp_path}...")
+    print(f"[fvp_serializer] Serializing TRAINED weights to {out_fvp_path}...")
 
-    # If reference layers.json exists, read layer shapes and order
-    layers = []
-    if reference_manifest and os.path.isfile(reference_manifest):
-        with open(reference_manifest, "r", encoding="utf-8") as f:
-            layers = json.load(f)
-
-    # Serialize layers into .fvp binary
+    sd = model.state_dict()
     body = bytearray()
-    n_layers = len(layers)
+    n_layers = 0
+    last_tensor = 0  # tensor id produced by the most recent conv (0 = model input)
 
-    for li, L in enumerate(layers):
-        l_type = L["type"]
+    def np_f32(t: torch.Tensor) -> np.ndarray:
+        return t.detach().cpu().to(torch.float32).contiguous().numpy().astype("<f4")
+
+    def emit_conv(w: torch.Tensor, b: torch.Tensor | None,
+                  p: torch.Tensor | None, stride: int = 1, groups: int = 1,
+                  pad: int = 0, k: int = 1) -> None:
+        # defaults match torch 1x1 convs (pad=0); 3x3 callers pass pad=1
+        nonlocal n_layers, last_tensor, body
+        out_c, in_c_g = int(w.shape[0]), int(w.shape[1])
+        assert out_c % 2 == 0, f"conv out_c={out_c} must be even (oc-pair kernels)"
+        if groups == 1:
+            assert out_c % 4 == 0, f"conv11 out_c={out_c} must be a multiple of 4"
+        else:
+            assert out_c % groups == 0, f"out_c={out_c} not divisible by group={groups}"
+            assert in_c_g <= 2, f"grouped conv stages <= 2 in-ch/group, got {in_c_g}"
+
         blob = bytearray()
-        blob += struct.pack("<i", l_type)
-
-        if l_type == LAYER_CONV:
-            params = [
-                L["in_c"], L["out_c"], L["kh"], L["kw"],
-                L["stride_h"], L["stride_w"], L["pad_h"], L["pad_w"],
-                L["group"], L["has_bias"], 1 if L.get("prelu") is not None else 0, 0
-            ]
-        elif l_type == LAYER_GEMM:
-            params = [L["out_c"], L["k"], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        else:  # ADD
-            params = [0] * 12
-
-        blob += struct.pack("<12i", *params)
-        blob += struct.pack("<I", len(L["inputs"]))
-        blob += struct.pack("<%dI" % len(L["inputs"]), *[u & 0xFFFFFFFF for u in L["inputs"]])
-
-        # Weights
-        wbytes = bytearray()
-        if l_type == LAYER_CONV:
-            # Generate or pack weights
-            kh, kw = L["kh"], L["kw"]
-            out_c, in_c, group = L["out_c"], L["in_c"], L["group"]
-            w_shape = (out_c, in_c // group, kh, kw)
-            w = np.random.randn(*w_shape).astype(np.float32) * 0.05
-            b = np.zeros(out_c, dtype=np.float32)
-            p = np.full(out_c, 0.25, dtype=np.float32)
-
-            wbytes += w.astype("<f4").tobytes()
-            if L["has_bias"]:
-                wbytes += b.astype("<f4").tobytes()
-            if L.get("prelu") is not None:
-                wbytes += p.astype("<f4").tobytes()
-
-        elif l_type == LAYER_GEMM:
-            out_c, k = L["out_c"], L["k"]
-            w = np.random.randn(out_c, k).astype(np.float32) * 0.05
-            b = np.zeros(out_c, dtype=np.float32)
-            # Transposed [k][out_c] layout required by gemm_partial.cs.hlsl
-            wt = w.T.copy().reshape(-1)
-            wbytes += wt.astype("<f4").tobytes()
-            wbytes += b.astype("<f4").tobytes()
-
-        blob += struct.pack("<i", len(wbytes))
-        blob += wbytes
+        blob += struct.pack("<i", LAYER_CONV)
+        blob += struct.pack("<12i",
+                            int(w.shape[1]) * groups, out_c, k, k,
+                            stride, stride, pad, pad, groups,
+                            1 if b is not None else 0,
+                            1 if p is not None else 0, 0)
+        blob += struct.pack("<I", 1)
+        blob += struct.pack("<I", last_tensor)  # default path: previous tensor
+        wb = bytearray(np_f32(w).tobytes())
+        if b is not None:
+            wb += np_f32(b).tobytes()
+        if p is not None:
+            wb += np_f32(p).tobytes()
+        blob += struct.pack("<i", len(wb))
+        blob += wb
         body += blob
+        n_layers += 1
+        last_tensor = n_layers  # layer j writes tensor j+1
+
+    def emit_gemm(w: torch.Tensor, b: torch.Tensor) -> None:
+        nonlocal n_layers, last_tensor, body
+        out_c, kk = int(w.shape[0]), int(w.shape[1])
+        assert out_c == 512, f"gemm out_c={out_c}, engine output is 512-d"
+        assert out_c % 4 == 0 and kk % 16 == 0 and kk // 16 >= 2, \
+            f"gemm k={kk} must be a multiple of NSPLIT=16 with klen >= 2"
+        blob = bytearray()
+        blob += struct.pack("<i", LAYER_GEMM)
+        blob += struct.pack("<12i", out_c, kk, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+        blob += struct.pack("<I", 1)
+        blob += struct.pack("<I", last_tensor)
+        wb = bytearray(np_f32(w.t().contiguous()).tobytes())  # [k][out_c] for float4 loads
+        wb += np_f32(b).tobytes()
+        blob += struct.pack("<i", len(wb))
+        blob += wb
+        body += blob
+        n_layers += 1
+        last_tensor = n_layers
+
+    def emit_add(res_tensor: int) -> None:
+        """out = tensor(res_tensor) + tensor(last_tensor)."""
+        nonlocal n_layers, last_tensor, body
+        blob = bytearray()
+        blob += struct.pack("<i", LAYER_ADD)
+        blob += struct.pack("<12i", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+        blob += struct.pack("<I", 2)
+        blob += struct.pack("<II", res_tensor, last_tensor)
+        blob += struct.pack("<i", 0)
+        body += blob
+        n_layers += 1
+        last_tensor = n_layers
+
+    def emit_stage_blocks(prefix: str, count: int, groups: int) -> None:
+        """count InvertedResidual blocks: conv1(1x1+prelu) -> conv2(dw3x3+prelu)
+        -> conv3(1x1) -> ADD(res). The residual source is res_src_holder[0]
+        (the tensor before the block); each ADD's output becomes both the new
+        running tensor and the next block's residual source."""
+        for i in range(count):
+            p = f"{prefix}.{i}"
+            emit_conv(sd[f"{p}.conv1.weight"], sd[f"{p}.conv1.bias"],
+                      sd[f"{p}.prelu1.weight"], k=1)
+            emit_conv(sd[f"{p}.conv2.weight"], sd[f"{p}.conv2.bias"],
+                      sd[f"{p}.prelu2.weight"], stride=1, groups=groups, pad=1, k=3)
+            emit_conv(sd[f"{p}.conv3.weight"], sd[f"{p}.conv3.bias"],
+                      None, k=1)
+            emit_add(res_src_holder[0])
+            res_src_holder[0] = last_tensor  # the ADD output feeds the next block
+
+    res_src_holder = [0]
+
+    # ---- stem: conv3 s2 (general kernel) -> dw3x3 s1 g=64 -> 1x1 ----
+    emit_conv(sd["stem_conv.weight"], sd["stem_conv.bias"],
+              sd["stem_prelu.weight"], stride=2, pad=1, k=3)
+    emit_conv(sd["dw0_conv.weight"], sd["dw0_conv.bias"],
+              sd["dw0_prelu.weight"], stride=1, groups=64, pad=1, k=3)
+    emit_conv(sd["conv0.weight"], sd["conv0.bias"], sd["prelu0.weight"], k=1)
+
+    # ---- stage 1: downsample dw s2 -> 1x1, then 4 residual blocks on the downsample output ----
+    emit_conv(sd["block1_down.0.weight"], sd["block1_down.0.bias"],
+              sd["block1_down.1.weight"], stride=2, groups=128, pad=1, k=3)
+    emit_conv(sd["block1_down.2.weight"], sd["block1_down.2.bias"], None, k=1)
+    res_src_holder[0] = last_tensor
+    emit_stage_blocks("stage1_blocks", 4, groups=128)
+
+    # ---- stage 2: 1x1 expand -> downsample dw s2 -> 1x1, then 6 residual blocks ----
+    emit_conv(sd["conv_trans1.0.weight"], sd["conv_trans1.0.bias"],
+              sd["conv_trans1.1.weight"], k=1)
+    emit_conv(sd["block2_down.0.weight"], sd["block2_down.0.bias"],
+              sd["block2_down.1.weight"], stride=2, groups=256, pad=1, k=3)
+    emit_conv(sd["block2_down.2.weight"], sd["block2_down.2.bias"], None, k=1)
+    res_src_holder[0] = last_tensor
+    emit_stage_blocks("stage2_blocks", 6, groups=256)
+
+    # ---- stage 3: 1x1 expand -> downsample dw s2 -> 1x1, then 2 residual blocks ----
+    emit_conv(sd["conv_trans2.0.weight"], sd["conv_trans2.0.bias"],
+              sd["conv_trans2.1.weight"], k=1)
+    emit_conv(sd["block3_down.0.weight"], sd["block3_down.0.bias"],
+              sd["block3_down.1.weight"], stride=2, groups=512, pad=1, k=3)
+    emit_conv(sd["block3_down.2.weight"], sd["block3_down.2.bias"], None, k=1)
+    res_src_holder[0] = last_tensor
+    emit_stage_blocks("stage3_blocks", 2, groups=256)
+
+    # ---- head + 512-d projection ----
+    emit_conv(sd["head_conv1.0.weight"], sd["head_conv1.0.bias"],
+              sd["head_conv1.1.weight"], k=1)
+    emit_conv(sd["head_conv2.0.weight"], sd["head_conv2.0.bias"],
+              sd["head_conv2.1.weight"], k=1)
+    emit_gemm(sd["fc.weight"], sd["fc.bias"])
 
     os.makedirs(os.path.dirname(os.path.abspath(out_fvp_path)), exist_ok=True)
     with open(out_fvp_path, "wb") as f:
         f.write(MAGIC + struct.pack("<II", VERSION, n_layers) + body)
 
-    print(f"[fvp_serializer] Successfully wrote {out_fvp_path} ({len(body)} bytes, {n_layers} layers) ✓")
+    print(f"[fvp_serializer] wrote {out_fvp_path} "
+          f"({len(body)} bytes, {n_layers} layers, TRAINED weights)")
 
 
 def train_scratch(
@@ -308,8 +398,7 @@ def train_scratch(
     batch_size: int = 16,
     lr: float = 1e-3,
     out_fvp: str = "face_dx/models/custom_arcface.fvp",
-    crops_dir: str = "face_cpp/testdata/crops",
-    manifest_path: str = "face_dx/models/layers.json"
+    crops_dir: str = "face_cpp/testdata/crops"
 ) -> None:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"[ArcFace Scratch Training] Initializing NativeArcFaceNet on device: {device}")
@@ -363,8 +452,13 @@ def train_scratch(
     print("-" * 46)
     print("[ArcFace Scratch Training] Training completed successfully!")
 
-    # Direct serialize to .fvp
-    serialize_model_to_fvp(model, out_fvp, reference_manifest=manifest_path)
+    # Keep a proper checkpoint of the trained weights
+    ckpt_path = os.path.splitext(out_fvp)[0] + ".pt"
+    torch.save(model.state_dict(), ckpt_path)
+    print(f"[ArcFace Scratch Training] checkpoint saved: {ckpt_path}")
+
+    # Export the TRAINED weights to .fvp for face_dx.exe
+    serialize_model_to_fvp(model, out_fvp)
 
 
 def main():
@@ -374,7 +468,6 @@ def main():
     parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate")
     parser.add_argument("--crops-dir", type=str, default="face_cpp/testdata/crops", help="Crops directory")
     parser.add_argument("--out", type=str, default="face_dx/models/custom_arcface.fvp", help="Output .fvp path")
-    parser.add_argument("--manifest", type=str, default="face_dx/models/layers.json", help="Manifest reference")
     args = parser.parse_args()
 
     train_scratch(
@@ -382,8 +475,7 @@ def main():
         batch_size=args.batch_size,
         lr=args.lr,
         out_fvp=args.out,
-        crops_dir=args.crops_dir,
-        manifest_path=args.manifest
+        crops_dir=args.crops_dir
     )
 
 

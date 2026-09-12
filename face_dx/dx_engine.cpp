@@ -254,21 +254,30 @@ struct Engine::Impl {
         ctx->UpdateSubresource(b.buf, 0, nullptr, src, 0, 0);
     }
 
+    ComPtr<ID3D11Buffer> staging_buf;
+    size_t staging_bytes = 0;
+
     bool download(const Buffer& b, void* dst)
     {
         D3D11_BUFFER_DESC bd{};
         b.buf->GetDesc(&bd);
-        ComPtr<ID3D11Buffer> staging;
-        D3D11_BUFFER_DESC sd{};
-        sd.ByteWidth = bd.ByteWidth;
-        sd.Usage = D3D11_USAGE_STAGING;
-        sd.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-        if (FAILED(dev->CreateBuffer(&sd, nullptr, &staging))) return false;
-        ctx->CopyResource(staging, b.buf);
+        // CopyResource requires IDENTICAL buffer sizes, so only reuse the
+        // staging buffer on an exact size match (a merely-larger buffer makes
+        // the copy fail silently and Map returns stale data).
+        if (!staging_buf || staging_bytes != bd.ByteWidth) {
+            staging_buf.reset();
+            D3D11_BUFFER_DESC sd{};
+            sd.ByteWidth = bd.ByteWidth;
+            sd.Usage = D3D11_USAGE_STAGING;
+            sd.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+            if (FAILED(dev->CreateBuffer(&sd, nullptr, &staging_buf))) return false;
+            staging_bytes = bd.ByteWidth;
+        }
+        ctx->CopyResource(staging_buf, b.buf);
         D3D11_MAPPED_SUBRESOURCE map{};
-        if (FAILED(ctx->Map(staging, 0, D3D11_MAP_READ, 0, &map))) return false;
+        if (FAILED(ctx->Map(staging_buf, 0, D3D11_MAP_READ, 0, &map))) return false;
         memcpy(dst, map.pData, bd.ByteWidth);
-        ctx->Unmap(staging, 0);
+        ctx->Unmap(staging_buf, 0);
         return true;
     }
 
@@ -701,7 +710,6 @@ bool Engine::run(const Model& model, const float* input, float* out512, double* 
     if (trace) fprintf(stderr, "[trace] graph done, syncing\n");
     I.gpu_sync();
     if (trace) {
-        // read per-layer GPU times from timestamp queries
         fprintf(stderr, "[trace] synced\n");
         D3D11_QUERY_DATA_TIMESTAMP_DISJOINT dj{};
         if (I.ctx->GetData(I.ts_disjoint, &dj, sizeof(dj), 0) == S_OK && dj.Frequency)
@@ -716,12 +724,6 @@ bool Engine::run(const Model& model, const float* input, float* out512, double* 
             }
         }
     }
-    const auto t1 = std::chrono::steady_clock::now();
-    if (ms) *ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
-    if (trace) {
-        fprintf(stderr, "[trace] dispatch+sync took %.1f ms\n", *ms);
-    }
-
     if (trace) fprintf(stderr, "[trace] all layers done\n");
 
     // ---- optional intermediate dump for debugging ----
@@ -777,6 +779,8 @@ bool Engine::run(const Model& model, const float* input, float* out512, double* 
     if (norm > 0.0) {
         for (int i = 0; i < 512; i++) out512[i] = (float)(out512[i] / norm);
     }
+    const auto t1 = std::chrono::steady_clock::now();
+    if (ms) *ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
     return true;
 }
 
