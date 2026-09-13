@@ -12,22 +12,38 @@ The engine output is already L2-normalized; the other two are normalized here so
 cosine similarity is well defined. Pass criterion: cosine >= 0.9999 everywhere
 (fp32 round-off headroom; the numpy core and ONNX agree to ~1e-6 typically).
 
+Modes:
+  batch (default) — the engine is spawned once per chunk and fed a path list
+      via --list; results stream back through --out while verification runs in
+      a PROCESS pool (the numpy graph core is GIL-bound, so threads don't
+      parallelize it) and the next chunk is prepped. No per-image process
+      startup cost; this is the mode for 5,000+ images.
+  spawn — one engine process per image (per-image isolation reference).
+
+Long runs are resumable: every verified image is appended to a state file
+(<out>.state.jsonl) as it lands; --resume skips already-verified images.
+
 Usage:
   python celeba_pipeline.py --zip /path/img_align_celeba.zip --n 300
-  python celeba_pipeline.py --zip ... --n 50 --fp16      # quick fp16 regression
+  python celeba_pipeline.py --zip ... --n 5000 --mode batch
+  python celeba_pipeline.py --zip ... --n 5000 --resume        # after a kill
+  python celeba_pipeline.py --zip ... --n 50 --fp16            # fp16 regression
 """
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import os
+import re
+import shutil
 import statistics
 import subprocess
 import sys
-import tempfile
+import threading
 import time
 import zipfile
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 import cv2
 import numpy as np
@@ -54,7 +70,9 @@ def cos(a: np.ndarray, b: np.ndarray) -> float:
     return float(np.dot(l2n(a), l2n(b)))
 
 
-def stats(xs: list[float]) -> dict:
+def stats(xs: list[float]) -> dict | None:
+    if not xs:
+        return None
     xs = sorted(xs)
     n = len(xs)
     p = lambda q: xs[min(n - 1, max(0, int(round(q * (n - 1)))))]
@@ -89,7 +107,27 @@ def preprocess(data: bytes, size: int, channel_order: str) -> np.ndarray:
     return x.transpose(2, 0, 1)[None].copy()
 
 
-def run_gpu(png_path: str, fp16: bool, bench: int = 1) -> tuple[np.ndarray, float, float | None]:
+_PNG_DIR = os.path.join(HERE, "reports", ".tmp_png")
+_PNG_SEQ = iter(range(1 << 30))
+
+
+def png_for_engine(data: bytes, size: int) -> str:
+    """Decode+resize zip bytes and save as an 8-bit PNG for the engine's own
+    decoder. The engine stores the file's canonical RGB channel order into the
+    input tensor as-is (verified: feeding RGB vs BGR differs to 1e-7, matching
+    insightface's blobFromImages(swapRB=True) convention for w600k_mbf), then
+    applies (v-127.5)/127.5 itself. cv2.imwrite expects a BGR array for a plain
+    PNG, so the unmodified cv2 image is exactly what we want on disk."""
+    img = cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR)
+    img = cv2.resize(img, (size, size), interpolation=cv2.INTER_AREA)
+    p = os.path.join(_PNG_DIR, f"img_{next(_PNG_SEQ)}.png")
+    if not cv2.imwrite(p, img):
+        raise RuntimeError("failed to write PNG for engine")
+    return p
+
+
+def run_gpu_spawn(png_path: str, fp16: bool, bench: int = 1) -> tuple[np.ndarray, float, float | None]:
+    """One engine process for a single image (spawn mode / probes)."""
     # forward slashes: the engine echoes the path into its JSON unescaped,
     # so backslashes would produce invalid JSON on the line we parse
     png_path = png_path.replace("\\", "/")
@@ -110,12 +148,140 @@ def run_gpu(png_path: str, fp16: bool, bench: int = 1) -> tuple[np.ndarray, floa
     return np.asarray(rec["embedding"], np.float32), float(rec["ms"]), avg
 
 
+class BatchChunk:
+    """One engine process handling a chunk of images via --list/--out.
+
+    A reader thread parses result lines as they stream in (the engine flushes
+    per line), so `records` fills while the GPU is still working. join()
+    waits for process exit and reports (ok, failed, missing) using the
+    engine's own summary. Incremental byte-offset reader: never re-reads the
+    growing file. Binary mode so seek offsets are exact."""
+
+    def __init__(self, png_paths: list[str], fp16: bool, bench: int):
+        self.png_paths = png_paths
+        self.list_path = os.path.join(_PNG_DIR, f"list_{id(self)}.txt")
+        self.out_path = os.path.join(_PNG_DIR, f"out_{id(self)}.jsonl")
+        with open(self.list_path, "w", encoding="utf-8") as f:
+            f.write("\n".join(p.replace("\\", "/") for p in png_paths) + "\n")
+        if os.path.exists(self.out_path):
+            os.remove(self.out_path)
+
+        cmd = [EXE, "--model", MODEL_FVP, "--fp16" if fp16 else "--fp32",
+               "--list", self.list_path.replace("\\", "/"),
+               "--out", self.out_path.replace("\\", "/")]
+        if bench > 1:
+            cmd += ["--bench", str(bench)]
+        self.proc = subprocess.Popen(cmd, cwd=HERE, stdout=subprocess.DEVNULL,
+                                     stderr=subprocess.PIPE, text=True)
+        self.records: list[dict] = []  # {"id": png_path, "ms": float, "embedding": [...]}
+        self.stderr_text: str | None = None
+        self.missing: list[str] = []   # filled by join()
+        self.join_wall_ms: float = 0.0
+        self._thread = threading.Thread(target=self._reader, daemon=True)
+        self._thread.start()
+
+    def _reader(self) -> None:
+        offset = 0
+        buf = ""
+        idle_polls = 0
+        while True:
+            try:
+                with open(self.out_path, "rb") as f:
+                    f.seek(offset)
+                    chunk = f.read()
+            except FileNotFoundError:
+                chunk = b""
+            if chunk:
+                idle_polls = 0
+                buf += chunk.decode("utf-8", errors="replace")
+                offset += len(chunk)
+                while "\n" in buf:
+                    line, buf = buf.split("\n", 1)
+                    if line.strip():
+                        try:
+                            self.records.append(json.loads(line))
+                        except json.JSONDecodeError:
+                            pass
+            if len(self.records) >= len(self.png_paths):
+                return
+            alive = self.proc.poll() is None
+            if not alive:
+                idle_polls += 1
+                if idle_polls > 10 and not chunk:
+                    # engine exited; drain a possibly unterminated final line
+                    if buf.strip():
+                        try:
+                            self.records.append(json.loads(buf.strip()))
+                        except json.JSONDecodeError:
+                            pass
+                    return
+            time.sleep(0.02 if alive else 0.05)
+
+    def join(self, timeout: float = 600.0) -> tuple[int, int, list[str]]:
+        t0 = time.perf_counter()
+        try:
+            _, stderr = self.proc.communicate(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            self.proc.kill()
+            raise RuntimeError("engine batch timed out")
+        self.stderr_text = stderr
+        self._thread.join(timeout=30)
+        ok = failed = 0
+        gm = re.search(r"ok=(\d+) failed=(\d+)", stderr or "")
+        if gm:
+            ok, failed = int(gm.group(1)), int(gm.group(2))
+        delivered = {r["id"].replace("\\", "/") for r in self.records}
+        self.missing = [p for p in self.png_paths if p.replace("\\", "/") not in delivered]
+        if not gm:
+            ok, failed = len(self.records), len(self.missing)
+        self.cleanup()
+        self.join_wall_ms = (time.perf_counter() - t0) * 1e3
+        return ok, failed, self.missing
+
+    def cleanup(self) -> None:
+        for p in (self.list_path, self.out_path):
+            try:
+                os.remove(p)
+            except OSError:
+                pass
+
+
 def run_numpy(layers, x: np.ndarray) -> np.ndarray:
     return np.asarray(cfv.run_fvp(layers, x[0])[-1], np.float32)
 
 
-def run_onnx(sess, x: np.ndarray) -> np.ndarray:
-    return np.asarray(sess.run(None, {"input.1": x})[0][0], np.float32)
+# ---- process-pool verification (the numpy core is GIL-bound in threads) ----
+_VCTX: dict = {}
+
+
+def _vinit() -> None:
+    """Per-worker setup: graph layers + private ONNX session (not picklable)."""
+    _VCTX["layers"] = cfv.load_fvp(MODEL_FVP)
+    so = ort.SessionOptions()
+    so.intra_op_num_threads = 2
+    so.inter_op_num_threads = 1
+    _VCTX["sess"] = ort.InferenceSession(MODEL_ONNX, so,
+                                         providers=["CPUExecutionProvider"])
+
+
+def _verify_task(name: str, emb_g: np.ndarray, x: np.ndarray, gpu_ms: float) -> dict:
+    """Runs in a worker process; returns a plain picklable result row."""
+    t2 = time.perf_counter()
+    emb_n = run_numpy(_VCTX["layers"], x)
+    t3 = time.perf_counter()
+    emb_o = np.asarray(_VCTX["sess"].run(None, {"input.1": x})[0][0], np.float32)
+    t4 = time.perf_counter()
+    a, b, c = cos(emb_g, emb_n), cos(emb_g, emb_o), cos(emb_n, emb_o)
+    ok = a >= PASS_COS and b >= PASS_COS and c >= PASS_COS
+    stack = np.stack([l2n(emb_g), l2n(emb_n), l2n(emb_o)]).astype("<f4")
+    return {
+        "image": name, "gpu_ms": round(gpu_ms, 2),
+        "cos_gpu_numpy": round(a, 8), "cos_gpu_onnx": round(b, 8),
+        "cos_numpy_onnx": round(c, 8), "pass": ok,
+        "norm_g": float(np.linalg.norm(emb_g)),
+        "t_np": (t3 - t2) * 1e3, "t_onx": (t4 - t3) * 1e3,
+        "emb_b64": base64.b64encode(stack.tobytes()).decode("ascii"),
+    }
 
 
 def probe_channel_order(zf: zipfile.ZipFile, name: str) -> str:
@@ -128,7 +294,7 @@ def probe_channel_order(zf: zipfile.ZipFile, name: str) -> str:
     scores = {}
     for order in ("rgb", "bgr"):
         x = preprocess(data, 112, order)
-        g, _, _ = run_gpu(png_for_engine(data, 112, order), fp16=False)
+        g, _, _ = run_gpu_spawn(png_for_engine(data, 112), fp16=False)
         scores[order] = cos(g, run_numpy(layers, x))
     best = max(scores, key=scores.get)
     print(f"[probe] channel order scores vs numpy graph: "
@@ -136,34 +302,26 @@ def probe_channel_order(zf: zipfile.ZipFile, name: str) -> str:
     return best
 
 
-_PNG_DIR = tempfile.mkdtemp(prefix="fdx_celeba_")
-_PNG_SEQ = iter(range(1 << 30))
-
-
-def png_for_engine(data: bytes, size: int, channel_order: str) -> str:
-    """Decode+resize zip bytes and save as an 8-bit PNG for the engine's own
-    decoder. The engine stores the file's canonical RGB channel order into the
-    input tensor as-is (verified: feeding RGB vs BGR differs to 1e-7, matching
-    insightface's blobFromImages(swapRB=True) convention for w600k_mbf), then
-    applies (v-127.5)/127.5 itself. cv2.imwrite expects a BGR array for a plain
-    PNG, so the unmodified cv2 image is exactly what we want on disk."""
-    img = cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR)
-    img = cv2.resize(img, (size, size), interpolation=cv2.INTER_AREA)
-    p = os.path.join(_PNG_DIR, f"img_{next(_PNG_SEQ)}.png")
-    if not cv2.imwrite(p, img):
-        raise RuntimeError("failed to write PNG for engine")
-    return p
-
-
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--zip", default=DEFAULT_ZIP)
     ap.add_argument("--n", type=int, default=300, help="sample size")
+    ap.add_argument("--mode", choices=("batch", "spawn"), default="batch",
+                    help="batch: one engine process per chunk (fast); "
+                         "spawn: one process per image")
+    ap.add_argument("--chunk", type=int, default=256,
+                    help="images per engine process (batch mode)")
     ap.add_argument("--out", default=os.path.join(HERE, "reports", "celeba_512d_report.json"))
     ap.add_argument("--embeddings", default=None, help="optional .npz path for raw 512-d outputs")
     ap.add_argument("--fp16", action="store_true", help="run engine in fp16 mode")
-    ap.add_argument("--bench", type=int, default=3, help="GPU runs averaged per image")
-    ap.add_argument("--workers", type=int, default=5, help="verification thread pool size")
+    ap.add_argument("--bench", type=int, default=1,
+                    help="extra GPU runs per image for averaged timing "
+                         "(spawn mode records the average; batch mode records "
+                         "first-run ms and reports averages separately)")
+    ap.add_argument("--workers", type=int, default=5, help="verification process pool size")
+    ap.add_argument("--resume", action="store_true",
+                    help="continue from the per-image state file written next to "
+                         "--out; already-verified images are skipped")
     ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
 
@@ -180,86 +338,211 @@ def main() -> int:
         return 2
 
     rng = np.random.default_rng(args.seed)
-    names = sorted(rng.choice(jpgs, size=args.n, replace=False).tolist())
+    all_names = sorted(rng.choice(jpgs, size=args.n, replace=False).tolist())
 
-    layers = cfv.load_fvp(MODEL_FVP)
+    # ---- resume state: one JSON line per verified image, flushed as it lands
+    state_path = args.out + ".state.jsonl"
+    done: dict[str, tuple[dict, np.ndarray | None]] = {}
+    if args.resume and os.path.exists(state_path):
+        with open(state_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    obj = json.loads(line)
+                except json.JSONDecodeError:
+                    continue  # torn final line from a killed run
+                row = {k: v for k, v in obj.items()
+                       if k not in ("emb", "emb_b64", "norm_g", "t_np", "t_onx")}
+                emb = obj.get("emb")
+                if emb is None and "emb_b64" in obj:
+                    emb = np.frombuffer(base64.b64decode(obj["emb_b64"]),
+                                        np.float32).reshape(3, 512)
+                done[row["image"]] = (row, emb)
+        if done:
+            print(f"[resume] {len(done)} verified images loaded from {os.path.basename(state_path)}")
+    names = [n for n in all_names if n not in done]
+
+    layers = cfv.load_fvp(MODEL_FVP)  # main-thread copy for the channel probe
     so = ort.SessionOptions()
     so.intra_op_num_threads = 2
     so.inter_op_num_threads = 1
     sess = ort.InferenceSession(MODEL_ONNX, so, providers=["CPUExecutionProvider"])
 
-    order = probe_channel_order(zf, names[0])
-
-    # warmup (model parse / shader compile / thread pools) — excluded from stats
-    w = names[0]
-    png = png_for_engine(zf.read(w), 112, order)
-    run_gpu(png, args.fp16, bench=args.bench)
-    run_onnx(sess, preprocess(zf.read(w), 112, order))
-    print("[warmup] done")
+    os.makedirs(_PNG_DIR, exist_ok=True)
+    order = "rgb"  # only relevant when there is fresh work to verify
+    if names:
+        order = probe_channel_order(zf, names[0])
+        # warmup (model parse / shader compile / thread pools) — excluded from stats
+        w = names[0]
+        run_gpu_spawn(png_for_engine(zf.read(w), 112), args.fp16, bench=args.bench)
+        run_onnx_main = np.asarray(sess.run(None, {"input.1": preprocess(zf.read(w), 112, order)})[0][0])
+        del run_onnx_main
+        print(f"[warmup] done (mode={args.mode})")
 
     results: list[dict] = []
     fail: list[dict] = []
     emb_dump: dict[str, np.ndarray] = {}
-    t_proc, t_gpu, t_wall, t_np, t_onx = [], [], [], [], []
+    t_proc, t_gpu, t_gpu_bench, t_chunk, t_np, t_onx = [], [], [], [], [], []
     c_gn, c_go, c_no, norms = [], [], [], []
 
-    def verify(x: np.ndarray, emb_g: np.ndarray):
-        t2 = time.perf_counter()
-        emb_n = run_numpy(layers, x)
-        t3 = time.perf_counter()
-        emb_o = run_onnx(sess, x)
-        t4 = time.perf_counter()
-        return (cos(emb_g, emb_n), cos(emb_g, emb_o), cos(emb_n, emb_o),
-                emb_n, emb_o, (t3 - t2) * 1e3, (t4 - t3) * 1e3)
-
-    pool = ThreadPoolExecutor(max_workers=args.workers)
-    inflight: dict = {}
-
-    def _collect(fut) -> None:
-        i, name, ms_first, bavg, emb_g = inflight.pop(fut)
-        a, b, c, emb_n, emb_o, tnp, tonx = fut.result()
-        t_np.append(tnp); t_onx.append(tonx)
-        c_gn.append(a); c_go.append(b); c_no.append(c)
-        norms.append(float(np.linalg.norm(emb_g)))
-        gpu_ms = bavg if bavg is not None else ms_first
-        ok = a >= PASS_COS and b >= PASS_COS and c >= PASS_COS
-        row = {"image": name, "gpu_ms": round(gpu_ms, 2),
-               "cos_gpu_numpy": round(a, 8), "cos_gpu_onnx": round(b, 8),
-               "cos_numpy_onnx": round(c, 8), "pass": ok}
+    # seed accumulators with resumed rows so the final report is complete
+    for row, emb in done.values():
         results.append(row)
-        if not ok:
+        if not row.get("pass"):
             fail.append(row)
-        if args.embeddings:
-            # store all three variants L2-normalized so the artifact is
-            # directly comparable component-wise (gpu is already normalized)
-            emb_dump[name] = np.stack([l2n(emb_g), l2n(emb_n), l2n(emb_o)])
-        if i % 50 == 0 or i == len(names):
-            print(f"[{i}/{len(names)}] {name} gpu={gpu_ms:.1f}ms "
-                  f"cos(gpu,np)={a:.7f} cos(gpu,onnx)={b:.7f} cos(np,onnx)={c:.7f}")
+        if row.get("cos_gpu_numpy") is not None:
+            c_gn.append(row["cos_gpu_numpy"])
+            c_go.append(row["cos_gpu_onnx"])
+            c_no.append(row["cos_numpy_onnx"])
+            norms.append(1.0)
+            if row.get("gpu_ms") is not None:
+                t_gpu.append(row["gpu_ms"])
+        if emb is not None:
+            emb_dump[row["image"]] = np.asarray(emb, np.float32)
 
-    for i, name in enumerate(names, 1):
-        data = zf.read(name)
-        t0 = time.perf_counter()
-        x = preprocess(data, 112, order)
-        png = png_for_engine(data, 112, order)
-        t1 = time.perf_counter()
-        emb_g, ms_first, bavg = run_gpu(png, args.fp16, bench=args.bench)
-        t2 = time.perf_counter()
-        t_proc.append((t1 - t0) * 1e3)
-        t_wall.append((t2 - t1) * 1e3)
-        t_gpu.append(bavg if bavg is not None else ms_first)
-        inflight[pool.submit(verify, x, emb_g)] = (i, name, ms_first, bavg, emb_g)
-        # drain finished futures from the head to keep results in input order
-        while len(inflight) >= 2 * args.workers:
-            fut0 = next(iter(inflight))
-            if not fut0.done():
-                break
-            _collect(fut0)
-    for fut in list(inflight):
-        _collect(fut)
-    pool.shutdown()
+    n_total = len(all_names)
+    n_session = 0
+    state_f = open(state_path, "a", encoding="utf-8")
+    lock = threading.Lock()
+    t_run0 = time.perf_counter()
+    vpool = ProcessPoolExecutor(max_workers=args.workers, initializer=_vinit)
+    futs: list = []
 
-    total_ms = statistics.fmean(t_proc) + statistics.fmean(t_gpu)
+    def absorb(res: dict) -> None:
+        nonlocal n_session
+        stack = np.frombuffer(base64.b64decode(res["emb_b64"]),
+                              np.float32).reshape(3, 512).copy()
+        row = {k: res[k] for k in ("image", "gpu_ms", "cos_gpu_numpy",
+                                   "cos_gpu_onnx", "cos_numpy_onnx", "pass")}
+        with lock:
+            t_np.append(res["t_np"])
+            t_onx.append(res["t_onx"])
+            c_gn.append(res["cos_gpu_numpy"])
+            c_go.append(res["cos_gpu_onnx"])
+            c_no.append(res["cos_numpy_onnx"])
+            norms.append(res["norm_g"])
+            results.append(row)
+            if not res["pass"]:
+                fail.append(row)
+            if args.embeddings:
+                emb_dump[res["image"]] = stack
+            state_f.write(json.dumps(res) + "\n")
+            state_f.flush()
+            n_session += 1
+        if len(results) % 50 == 0 or len(results) == n_total:
+            print(f"[{len(results)}/{n_total}] {res['image']} gpu={res['gpu_ms']}ms "
+                  f"cos(gpu,np)={res['cos_gpu_numpy']:.7f} "
+                  f"cos(gpu,onnx)={res['cos_gpu_onnx']:.7f}")
+
+    def wait_futures(fs: list) -> None:
+        for f in as_completed(fs):
+            absorb(f.result())
+        fs.clear()
+
+    def collect_records(bc: BatchChunk, png_info: dict[str, tuple[str, np.ndarray]]) -> None:
+        """Submit verification for each record of a finished chunk; mark
+        images the engine dropped as failures (and persist them to state so
+        resume doesn't retry them forever)."""
+        bench_avg: dict[str, float] = {}
+        for ln in (bc.stderr_text or "").splitlines():
+            if ln.startswith("[bench] ") and " avg=" in ln:
+                path = ln[len("[bench] "):].split(" backend=")[0]
+                try:
+                    bench_avg[path] = float(ln.split(" avg=")[1].split("ms")[0])
+                except ValueError:
+                    pass
+        for rec in bc.records:
+            png = rec["id"].replace("\\", "/")
+            info = png_info.get(png)
+            if info is None:
+                continue  # unknown id — should not happen
+            name, x = info
+            gpu_ms = bench_avg.get(png, rec["ms"])
+            with lock:
+                t_gpu.append(rec["ms"])
+                if png in bench_avg:
+                    t_gpu_bench.append(bench_avg[png])
+            emb_g = np.asarray(rec["embedding"], np.float32)
+            futs.append(vpool.submit(_verify_task, name, emb_g, x, gpu_ms))
+        for png in bc.missing:
+            info = png_info.get(png.replace("\\", "/"))
+            name = info[0] if info else png
+            row = {"image": name, "gpu_ms": None,
+                   "cos_gpu_numpy": None, "cos_gpu_onnx": None,
+                   "cos_numpy_onnx": None, "pass": False,
+                   "error": "engine batch dropped this image"}
+            with lock:
+                results.append(row)
+                fail.append(row)
+                state_f.write(json.dumps(row) + "\n")
+                state_f.flush()
+
+    if args.mode == "spawn":
+        window: list = []
+        for name in names:
+            data = zf.read(name)
+            t0 = time.perf_counter()
+            x = preprocess(data, 112, order)
+            png = png_for_engine(data, 112)
+            t1 = time.perf_counter()
+            emb_g, _ms_first, bavg = run_gpu_spawn(png, args.fp16, bench=args.bench)
+            t2 = time.perf_counter()
+            with lock:
+                t_proc.append((t1 - t0) * 1e3)
+                t_gpu.append(bavg if bavg is not None else _ms_first)
+            window.append(vpool.submit(_verify_task, name, emb_g, x,
+                                       bavg if bavg is not None else _ms_first))
+            if len(window) >= args.workers * 2:
+                wait_futures(window)
+        wait_futures(window)
+    else:
+        chunks = [names[i:i + args.chunk] for i in range(0, len(names), args.chunk)]
+        pending: list[tuple[BatchChunk, dict[str, tuple[str, np.ndarray]], int]] = []
+        for ci, chunk_names in enumerate(chunks, 1):
+            # throttle: at most one finished-but-unverified chunk behind the
+            # currently running one, so the GPU never waits on verification
+            if len(pending) >= 2:
+                old_bc, old_info, old_cnt = pending.pop(0)
+                ok, failed, _ = old_bc.join()
+                with lock:
+                    t_chunk.append(old_bc.join_wall_ms / old_cnt)
+                collect_records(old_bc, old_info)
+                print(f"[chunk done] ok={ok} failed={failed} ({old_cnt} imgs, "
+                      f"engine wall {old_bc.join_wall_ms/1000.0:.2f}s)")
+            tc0 = time.perf_counter()
+            png_list: list[str] = []
+            png_info: dict[str, tuple[str, np.ndarray]] = {}
+            for name in chunk_names:
+                data = zf.read(name)
+                t0 = time.perf_counter()
+                x = preprocess(data, 112, order)
+                t1 = time.perf_counter()
+                with lock:
+                    t_proc.append((t1 - t0) * 1e3)
+                png = png_for_engine(data, 112)
+                png_list.append(png)
+                png_info[png.replace("\\", "/")] = (name, x)
+            bc = BatchChunk(png_list, args.fp16, args.bench)
+            pending.append((bc, png_info, len(chunk_names)))
+            print(f"[chunk {ci}/{len(chunks)}] prepped+launched "
+                  f"({time.perf_counter() - tc0:.2f}s prep)")
+        for old_bc, old_info, old_cnt in pending:
+            ok, failed, _ = old_bc.join()
+            with lock:
+                t_chunk.append(old_bc.join_wall_ms / old_cnt)
+            collect_records(old_bc, old_info)
+            print(f"[chunk done] ok={ok} failed={failed} ({old_cnt} imgs, "
+                  f"engine wall {old_bc.join_wall_ms/1000.0:.2f}s)")
+        wait_futures(futs)
+    vpool.shutdown()
+    wall_total = (time.perf_counter() - t_run0) * 1e3
+    state_f.close()
+
+    shutil.rmtree(_PNG_DIR, ignore_errors=True)
+
+    n = n_total
     report = {
         "meta": {
             "generated_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
@@ -268,8 +551,10 @@ def main() -> int:
                 "total_images": len(jpgs),
                 "layout": f"{IMG_PREFIX}NNNNNN.jpg, 178x218 aligned crops",
             },
-            "sample": {"size": len(names), "method": f"uniform random seed={args.seed}",
-                       "gpu_bench_runs_per_image": args.bench},
+            "sample": {"size": n, "method": f"uniform random seed={args.seed}",
+                       "gpu_bench_runs_per_image": args.bench,
+                       "resumed_from_state": len(done),
+                       "verified_this_session": n_session},
             "model": {
                 "fvp": os.path.relpath(MODEL_FVP, HERE),
                 "onnx_reference": os.path.relpath(MODEL_ONNX, HERE),
@@ -281,6 +566,8 @@ def main() -> int:
                 "executable": os.path.relpath(EXE, HERE),
                 "backend": "Direct3D 11 compute (hand-written HLSL kernels)",
                 "precision": "fp16" if args.fp16 else "fp32",
+                "mode": args.mode,
+                "chunk_size": args.chunk if args.mode == "batch" else 1,
             },
             "preprocess": "decode JPG -> resize to 112x112 (INTER_AREA) -> "
                           f"{order.upper()} -> (x-127.5)/127.5 -> NCHW",
@@ -288,16 +575,22 @@ def main() -> int:
         },
         "timing_ms": {
             "gpu_inference": stats(t_gpu),
+            "gpu_inference_bench_avg": stats(t_gpu_bench),
             "preprocess_cpu": stats(t_proc),
-            "engine_process_wall": stats(t_wall),
-            "numpy_graph_cpu": {**stats(t_np),
-                "note": "reference backend; measured under thread contention (informational)"},
-            "onnx_reference_cpu": {**stats(t_onx),
-                "note": "reference backend; measured under thread contention (informational)"},
-            "preprocess_plus_gpu": {
-                "mean_ms": round(total_ms, 3),
-                "throughput_images_per_sec": round(1000.0 / total_ms, 2),
+            "chunk_engine_wall_per_image": stats(t_chunk) if args.mode == "batch" else None,
+            "end_to_end": {
+                "wall_total_ms": round(wall_total, 1),
+                "verified_total": n,
+                "verified_this_session": n_session,
+                "wall_per_image_ms": round(wall_total / n_session, 3) if n_session else None,
+                "throughput_images_per_sec": round(n_session / (wall_total / 1000.0), 2) if n_session else None,
             },
+            "numpy_graph_cpu": ({**stats(t_np),
+                "note": "reference backend; measured under process-pool contention (informational)"}
+                if t_np else None),
+            "onnx_reference_cpu": ({**stats(t_onx),
+                "note": "reference backend; measured under process-pool contention (informational)"}
+                if t_onx else None),
         },
         "verification": {
             "protocol": "3-way per image: DX11 GPU engine vs numpy re-execution of .fvp "
@@ -319,14 +612,16 @@ def main() -> int:
     print(f"\n[report] {args.out}")
 
     if args.embeddings:
-        np.savez_compressed(args.embeddings, names=np.asarray(names),
+        np.savez_compressed(args.embeddings, names=np.asarray(all_names),
                             variants=np.asarray(["gpu_l2", "numpy_l2", "onnx_l2"]), **{
             "emb_" + k: v for k, v in emb_dump.items()})
         print(f"[report] {args.embeddings}")
 
-    print(f"[summary] gpu mean {statistics.fmean(t_gpu):.2f} ms | "
-          f"pipeline mean {total_ms:.2f} ms/img "
-          f"({1000.0/total_ms:.1f} img/s) | "
+    g = stats(t_gpu) or {"mean_ms": float("nan")}
+    thr = f"{n_session/(wall_total/1000.0):.1f} img/s" if n_session else "n/a"
+    print(f"[summary] mode={args.mode} gpu mean {g['mean_ms']:.2f} ms | "
+          f"wall {wall_total/1000.0:.1f}s this session, {n_session} new, "
+          f"{n_total} total ({thr}) | "
           f"cos(gpu,np) min {min(c_gn):.7f} | cos(gpu,onnx) min {min(c_go):.7f} | "
           f"{'PASS' if not fail else f'FAIL ({len(fail)} images)'}")
     return 0 if not fail else 1

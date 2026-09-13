@@ -188,12 +188,22 @@ bool inflate(const uint8_t* src, size_t n, std::vector<uint8_t>& out)
         const int btype = (int)br.read(2);
 
         if (btype == 0) {  // stored (uncompressed)
-            br.read(5);  // skip to byte boundary
+            // discard remaining bits of the current byte (puff's BYTEBITS):
+            // the block header can start mid-byte after a Huffman block, so a
+            // fixed skip would silently desynchronize the whole stream
+            const int skip = br.bitcnt & 7;
+            if (skip) br.read(skip);
             const size_t len = (size_t)br.read(16);
-            br.read(16);  // nlen
-            if (br.pos + len > n) return false;
-            out.insert(out.end(), src + br.pos, src + br.pos + len);
-            br.pos += len;
+            const size_t nlen = (size_t)br.read(16);
+            if ((len ^ 0xFFFFu) != nlen) return false;  // RFC 1951 LEN/NLEN check
+            // whole bytes already sitting in the bit buffer belong to the
+            // stored data; they start at stream offset pos - bitcnt/8, and
+            // the block continues contiguously in src from there
+            const size_t nbuf = (size_t)br.bitcnt / 8;
+            const size_t back = br.pos - nbuf;
+            if (back + len > n) return false;
+            out.insert(out.end(), src + back, src + back + len);
+            br.pos = back + len;
             br.bitbuf = 0;
             br.bitcnt = 0;
         } else {
