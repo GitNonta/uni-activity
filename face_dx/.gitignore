@@ -13,3 +13,5 @@ tmp_*.bin
 
 # editor
 *.swp
+# regenerable via celeba_pipeline.py --embeddings
+reports/*.npz
