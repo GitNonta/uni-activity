@@ -127,12 +127,23 @@ def png_for_engine(data: bytes, size: int) -> str:
     return p
 
 
+def engine_model(fp16: bool) -> str:
+    """The engine's --fp16 is quantize-on-load from the fp32 .fvp (load_model
+    reads fp32 words and sizes aux offsets in elements; feeding it the packed
+    w600k_mbf_f16.fvp corrupts the aux offsets and crashes). The on-load
+    quantization produces the identical packed-half GPU buffers, so fp16
+    memory-traffic savings are fully realized either way. numpy/ONNX
+    references always stay on the fp32 graph: they are the accuracy ground
+    truth the engine is judged against."""
+    return MODEL_FVP
+
+
 def run_gpu_spawn(png_path: str, fp16: bool, bench: int = 1) -> tuple[np.ndarray, float, float | None]:
     """One engine process for a single image (spawn mode / probes)."""
     # forward slashes: the engine echoes the path into its JSON unescaped,
     # so backslashes would produce invalid JSON on the line we parse
     png_path = png_path.replace("\\", "/")
-    cmd = [EXE, "--model", MODEL_FVP, "--fp16" if fp16 else "--fp32"]
+    cmd = [EXE, "--model", engine_model(fp16), "--fp16" if fp16 else "--fp32"]
     if bench > 1:
         cmd += ["--bench", str(bench)]
     cmd.append(png_path)
@@ -167,7 +178,7 @@ class BatchChunk:
         if os.path.exists(self.out_path):
             os.remove(self.out_path)
 
-        cmd = [EXE, "--model", MODEL_FVP, "--fp16" if fp16 else "--fp32",
+        cmd = [EXE, "--model", engine_model(fp16), "--fp16" if fp16 else "--fp32",
                "--list", self.list_path.replace("\\", "/"),
                "--out", self.out_path.replace("\\", "/")]
         if bench > 1:
@@ -289,18 +300,19 @@ def _verify_task(name: str, emb_g: np.ndarray, x: np.ndarray, gpu_ms: float) -> 
     }
 
 
-def probe_channel_order(zf: zipfile.ZipFile, name: str) -> str:
+def probe_channel_order(zf: zipfile.ZipFile, name: str, fp16: bool) -> str:
     """Pick RGB vs BGR by agreement with the numpy .fvp graph on a real image.
     The graph's expected input is pinned by the exporter: RGB, (x-127.5)/127.5.
-    The GPU engine and the numpy graph read the identical .fvp weights, so the
-    order under which they agree is the order the model was exported with."""
+    The numpy side always uses the fp32 graph (ground truth); the engine side
+    runs the same precision as the benchmark. BGR visibly fails (~0.9) either
+    way, so the discrimination survives the fp16 quantization gap."""
     import check_fvp as cfv  # lazy: startup-only sanity check
     data = zf.read(name)
-    layers = cfv.load_fvp(MODEL_FVP)
+    layers = cfv.load_fvp(MODEL_FVP)  # fp32 reference
     scores = {}
     for order in ("rgb", "bgr"):
         x = preprocess(data, 112, order)
-        g, _, _ = run_gpu_spawn(png_for_engine(data, 112), fp16=False)
+        g, _, _ = run_gpu_spawn(png_for_engine(data, 112), fp16=fp16)
         scores[order] = cos(g, run_numpy(layers, x))
     best = max(scores, key=scores.get)
     print(f"[probe] channel order scores vs numpy graph: "
@@ -361,7 +373,7 @@ def main() -> int:
         print(f"[error] requested {n_req} but zip has {len(jpgs)}", file=sys.stderr)
         return 2
 
-    for f in (EXE, MODEL_FVP):
+    for f in (EXE, engine_model(args.fp16)):
         if not os.path.isfile(f):
             print(f"[error] missing {f}", file=sys.stderr)
             return 2
@@ -413,7 +425,7 @@ def main() -> int:
     order = "rgb"  # the exporter-pinned contract; probe re-confirms below
     if names:
         if not args.skip_probe:
-            order = probe_channel_order(zf, names[0])
+            order = probe_channel_order(zf, names[0], args.fp16)
         # engine warmup (model parse / shader compile) — excluded from stats
         w = names[0]
         run_gpu_spawn(png_for_engine(zf.read(w), 112), args.fp16, bench=args.bench)
@@ -665,7 +677,7 @@ def main() -> int:
                        "resumed_from_state": len(done),
                        "processed_this_session": n_session},
             "model": {
-                "fvp": os.path.relpath(MODEL_FVP, HERE),
+                "fvp": os.path.relpath(engine_model(args.fp16), HERE),
                 "onnx_reference": os.path.relpath(MODEL_ONNX, HERE) if do_verify else None,
                 "layers": len(layers) if layers else None,
                 "embedding_dim": 512,
