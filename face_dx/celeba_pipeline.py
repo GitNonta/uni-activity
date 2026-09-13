@@ -3,30 +3,34 @@
 embeddings with the DX11 GPU engine, record per-image processing time, and
 cross-verify the results to prove decoding accuracy. Saves a JSON report.
 
-Three independent executions of the same network are compared per image:
+Three independent executions of the same network can be compared per image:
   1. gpu    — build/face_dx.exe (D3D11 compute, Intel iGPU) on the .fvp model
   2. numpy  — pure-python re-execution of the same .fvp graph (check_fvp.py core)
   3. onnx   — ONNX Runtime on the original w600k_mbf.onnx (independent reference)
 
-The engine output is already L2-normalized; the other two are normalized here so
-cosine similarity is well defined. Pass criterion: cosine >= 0.9999 everywhere
-(fp32 round-off headroom; the numpy core and ONNX agree to ~1e-6 typically).
-
 Modes:
-  batch (default) — the engine is spawned once per chunk and fed a path list
-      via --list; results stream back through --out while verification runs in
-      a PROCESS pool (the numpy graph core is GIL-bound, so threads don't
-      parallelize it) and the next chunk is prepped. No per-image process
-      startup cost; this is the mode for 5,000+ images.
-  spawn — one engine process per image (per-image isolation reference).
+  default (full verification) — every image is cross-checked gpu-vs-numpy-vs-onnx
+      in a process pool while the engine runs chunks. This is the acceptance
+      harness; it intentionally spends CPU next to the GPU.
+  --production — engine only at steady state. No verifier processes, no ONNX
+      session, no numpy graph: the GPU reclaims 100% of the memory bandwidth.
+      Results stream to a JSONL embeddings file in the engine's native schema.
+      Guards that keep production honest:
+        * startup channel-order probe (one-time, 2 images) — skip with --skip-probe
+        * --spotcheck N: every Nth image still gets the full 3-way check
+          (default 100 ~= 1%); a spot-check failure FAILS the run (exit 1)
+      --spotcheck 0 disables checking entirely. numpy/onnxruntime are imported
+      lazily, so a deployed box without them installed still runs production.
+  --mode spawn — one engine process per image (per-image isolation reference).
 
-Long runs are resumable: every verified image is appended to a state file
-(<out>.state.jsonl) as it lands; --resume skips already-verified images.
+Long runs are resumable: every processed image is appended to a state file
+(<out>.state.jsonl) as it lands; --resume skips already-processed images.
 
 Usage:
   python celeba_pipeline.py --zip /path/img_align_celeba.zip --n 300
   python celeba_pipeline.py --zip ... --n 5000 --mode batch
   python celeba_pipeline.py --zip ... --n 5000 --resume        # after a kill
+  python celeba_pipeline.py --zip ... --n all --production     # engine-only
   python celeba_pipeline.py --zip ... --n 50 --fp16            # fp16 regression
 """
 from __future__ import annotations
@@ -47,9 +51,6 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 
 import cv2
 import numpy as np
-import onnxruntime as ort
-
-import check_fvp as cfv
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_ZIP = r"D:\projects\uni-activity\face_cpp\img_align_celeba.zip"
@@ -247,6 +248,7 @@ class BatchChunk:
 
 
 def run_numpy(layers, x: np.ndarray) -> np.ndarray:
+    import check_fvp as cfv  # lazy: production needs no numpy graph
     return np.asarray(cfv.run_fvp(layers, x[0])[-1], np.float32)
 
 
@@ -255,7 +257,10 @@ _VCTX: dict = {}
 
 
 def _vinit() -> None:
-    """Per-worker setup: graph layers + private ONNX session (not picklable)."""
+    """Per-worker setup: graph layers + private ONNX session (not picklable).
+    Only called when verification will actually run."""
+    import check_fvp as cfv
+    import onnxruntime as ort
     _VCTX["layers"] = cfv.load_fvp(MODEL_FVP)
     so = ort.SessionOptions()
     so.intra_op_num_threads = 2
@@ -289,6 +294,7 @@ def probe_channel_order(zf: zipfile.ZipFile, name: str) -> str:
     The graph's expected input is pinned by the exporter: RGB, (x-127.5)/127.5.
     The GPU engine and the numpy graph read the identical .fvp weights, so the
     order under which they agree is the order the model was exported with."""
+    import check_fvp as cfv  # lazy: startup-only sanity check
     data = zf.read(name)
     layers = cfv.load_fvp(MODEL_FVP)
     scores = {}
@@ -305,12 +311,26 @@ def probe_channel_order(zf: zipfile.ZipFile, name: str) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--zip", default=DEFAULT_ZIP)
-    ap.add_argument("--n", type=int, default=300, help="sample size")
+    ap.add_argument("--n", default="300",
+                    help="sample size, or 'all' for every image in the zip")
     ap.add_argument("--mode", choices=("batch", "spawn"), default="batch",
                     help="batch: one engine process per chunk (fast); "
                          "spawn: one process per image")
     ap.add_argument("--chunk", type=int, default=256,
                     help="images per engine process (batch mode)")
+    ap.add_argument("--production", action="store_true",
+                    help="engine-only at steady state: no verifier processes, "
+                         "no ONNX session, no numpy graph. Guards: startup "
+                         "channel probe + --spotcheck N (default every 100th "
+                         "image gets the full 3-way check; 0 disables)")
+    ap.add_argument("--spotcheck", type=int, default=100,
+                    help="production mode: full 3-way check every Nth image "
+                         "(0 = never). Ignored outside production")
+    ap.add_argument("--skip-probe", action="store_true",
+                    help="production mode: skip the startup channel-order probe")
+    ap.add_argument("--embeddings-jsonl", default=None,
+                    help="stream one {id, ms, embedding} JSON line per image "
+                         "here as it is processed (engine-native schema)")
     ap.add_argument("--out", default=os.path.join(HERE, "reports", "celeba_512d_report.json"))
     ap.add_argument("--embeddings", default=None, help="optional .npz path for raw 512-d outputs")
     ap.add_argument("--fp16", action="store_true", help="run engine in fp16 mode")
@@ -321,26 +341,39 @@ def main() -> int:
     ap.add_argument("--workers", type=int, default=5, help="verification process pool size")
     ap.add_argument("--resume", action="store_true",
                     help="continue from the per-image state file written next to "
-                         "--out; already-verified images are skipped")
+                         "--out; already-processed images are skipped")
     ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
 
-    for f in (EXE, MODEL_FVP, MODEL_ONNX):
-        if not os.path.isfile(f):
-            print(f"[error] missing {f}", file=sys.stderr)
-            return 2
+    production = args.production
+    spot = args.spotcheck if production else 0
+    do_verify = not production or spot > 0
 
     zf = zipfile.ZipFile(args.zip)
     jpgs = [n for n in zf.namelist() if n.lower().endswith((".jpg", ".jpeg")) and IMG_PREFIX in n]
-    print(f"[zip] {args.zip}: {len(jpgs)} images")
-    if len(jpgs) < args.n:
-        print(f"[error] requested {args.n} but zip has {len(jpgs)}", file=sys.stderr)
+    print(f"[zip] {args.zip}: {len(jpgs)} images "
+          f"({'production' if production else 'full-verify'} mode)")
+    if str(args.n).lower() == "all":
+        n_req = len(jpgs)
+    else:
+        n_req = int(args.n)
+    if len(jpgs) < n_req:
+        print(f"[error] requested {n_req} but zip has {len(jpgs)}", file=sys.stderr)
+        return 2
+
+    for f in (EXE, MODEL_FVP):
+        if not os.path.isfile(f):
+            print(f"[error] missing {f}", file=sys.stderr)
+            return 2
+    if do_verify and not os.path.isfile(MODEL_ONNX):
+        print(f"[error] missing {MODEL_ONNX} (needed for verification; "
+              f"use --production --spotcheck 0 for engine-only)", file=sys.stderr)
         return 2
 
     rng = np.random.default_rng(args.seed)
-    all_names = sorted(rng.choice(jpgs, size=args.n, replace=False).tolist())
+    all_names = sorted(rng.choice(jpgs, size=n_req, replace=False).tolist())
 
-    # ---- resume state: one JSON line per verified image, flushed as it lands
+    # ---- resume state: one JSON line per processed image, flushed as it lands
     state_path = args.out + ".state.jsonl"
     done: dict[str, tuple[dict, np.ndarray | None]] = {}
     if args.resume and os.path.exists(state_path):
@@ -357,35 +390,44 @@ def main() -> int:
                        if k not in ("emb", "emb_b64", "norm_g", "t_np", "t_onx")}
                 emb = obj.get("emb")
                 if emb is None and "emb_b64" in obj:
-                    emb = np.frombuffer(base64.b64decode(obj["emb_b64"]),
-                                        np.float32).reshape(3, 512)
+                    raw = np.frombuffer(base64.b64decode(obj["emb_b64"]), np.float32)
+                    emb = raw.reshape(3, 512) if raw.size == 1536 else raw  # verified stack or production single
                 done[row["image"]] = (row, emb)
         if done:
-            print(f"[resume] {len(done)} verified images loaded from {os.path.basename(state_path)}")
+            print(f"[resume] {len(done)} processed images loaded from {os.path.basename(state_path)}")
     names = [n for n in all_names if n not in done]
 
-    layers = cfv.load_fvp(MODEL_FVP)  # main-thread copy for the channel probe
-    so = ort.SessionOptions()
-    so.intra_op_num_threads = 2
-    so.inter_op_num_threads = 1
-    sess = ort.InferenceSession(MODEL_ONNX, so, providers=["CPUExecutionProvider"])
+    layers = None
+    sess = None
+    if do_verify or not args.skip_probe:
+        import check_fvp as cfv
+        layers = cfv.load_fvp(MODEL_FVP)  # main-thread copy for the probe
+    if do_verify:
+        import onnxruntime as ort
+        so = ort.SessionOptions()
+        so.intra_op_num_threads = 2
+        so.inter_op_num_threads = 1
+        sess = ort.InferenceSession(MODEL_ONNX, so, providers=["CPUExecutionProvider"])
 
     os.makedirs(_PNG_DIR, exist_ok=True)
-    order = "rgb"  # only relevant when there is fresh work to verify
+    order = "rgb"  # the exporter-pinned contract; probe re-confirms below
     if names:
-        order = probe_channel_order(zf, names[0])
-        # warmup (model parse / shader compile / thread pools) — excluded from stats
+        if not args.skip_probe:
+            order = probe_channel_order(zf, names[0])
+        # engine warmup (model parse / shader compile) — excluded from stats
         w = names[0]
         run_gpu_spawn(png_for_engine(zf.read(w), 112), args.fp16, bench=args.bench)
-        run_onnx_main = np.asarray(sess.run(None, {"input.1": preprocess(zf.read(w), 112, order)})[0][0])
-        del run_onnx_main
-        print(f"[warmup] done (mode={args.mode})")
+        if sess is not None:
+            warm = np.asarray(sess.run(None, {"input.1": preprocess(zf.read(w), 112, order)})[0][0])
+            del warm
+        print(f"[warmup] done (mode={args.mode}{' production' if production else ''})")
 
     results: list[dict] = []
     fail: list[dict] = []
     emb_dump: dict[str, np.ndarray] = {}
     t_proc, t_gpu, t_gpu_bench, t_chunk, t_np, t_onx = [], [], [], [], [], []
     c_gn, c_go, c_no, norms = [], [], [], []
+    n_spot = 0
 
     # seed accumulators with resumed rows so the final report is complete
     for row, emb in done.values():
@@ -405,12 +447,16 @@ def main() -> int:
     n_total = len(all_names)
     n_session = 0
     state_f = open(state_path, "a", encoding="utf-8")
+    jsonl_f = open(args.embeddings_jsonl, "a", encoding="utf-8") if args.embeddings_jsonl else None
     lock = threading.Lock()
     t_run0 = time.perf_counter()
-    vpool = ProcessPoolExecutor(max_workers=args.workers, initializer=_vinit)
+    vpool = ProcessPoolExecutor(max_workers=max(1, args.workers), initializer=_vinit) \
+        if do_verify else None
     futs: list = []
 
-    def absorb(res: dict) -> None:
+    row_idx: dict[str, int] = {}  # image -> position in results (for merges)
+
+    def absorb_verified(res: dict) -> None:
         nonlocal n_session
         stack = np.frombuffer(base64.b64decode(res["emb_b64"]),
                               np.float32).reshape(3, 512).copy()
@@ -423,28 +469,72 @@ def main() -> int:
             c_go.append(res["cos_gpu_onnx"])
             c_no.append(res["cos_numpy_onnx"])
             norms.append(res["norm_g"])
-            results.append(row)
+            if res["image"] in row_idx:
+                # production spot-check: replace the placeholder row instead
+                # of duplicating it (state file is last-wins on resume)
+                results[row_idx[res["image"]]] = row
+            else:
+                row_idx[res["image"]] = len(results)
+                results.append(row)
+                n_session += 1
             if not res["pass"]:
                 fail.append(row)
             if args.embeddings:
                 emb_dump[res["image"]] = stack
             state_f.write(json.dumps(res) + "\n")
             state_f.flush()
-            n_session += 1
         if len(results) % 50 == 0 or len(results) == n_total:
             print(f"[{len(results)}/{n_total}] {res['image']} gpu={res['gpu_ms']}ms "
                   f"cos(gpu,np)={res['cos_gpu_numpy']:.7f} "
                   f"cos(gpu,onnx)={res['cos_gpu_onnx']:.7f}")
 
+    def absorb_production(png: str, rec: dict, name: str, x: np.ndarray | None,
+                          verify: bool) -> None:
+        """Production fast path: take the engine record as-is, persist it,
+        and (optionally) hand this one image to the verifier pool."""
+        nonlocal n_session, n_spot
+        emb_g = np.asarray(rec["embedding"], np.float32)
+        row = {"image": name, "gpu_ms": round(rec["ms"], 2),
+               "cos_gpu_numpy": None, "cos_gpu_onnx": None,
+               "cos_numpy_onnx": None, "pass": True,
+               "emb_b64": base64.b64encode(
+                   l2n(emb_g).astype("<f4").tobytes()).decode("ascii")}
+        with lock:
+            t_gpu.append(rec["ms"])
+            row_idx[name] = len(results)
+            results.append(row)
+            if args.embeddings:
+                emb_dump[name] = l2n(emb_g)
+            if jsonl_f is not None:
+                jsonl_f.write(json.dumps({"id": name, "backend": rec["backend"],
+                                          "fp16": rec["fp16"], "ms": rec["ms"],
+                                          "embedding": rec["embedding"]}) + "\n")
+                jsonl_f.flush()
+            state_f.write(json.dumps(row) + "\n")
+            state_f.flush()
+            n_session += 1
+            if verify:
+                n_spot += 1
+        if verify and vpool is not None and x is not None:
+            futs.append(vpool.submit(_verify_task, name, emb_g, x,
+                                     float(rec["ms"])))
+        if len(results) % 50 == 0 or len(results) == n_total:
+            el = time.perf_counter() - t_run0
+            print(f"[{len(results)}/{n_total}] {name} gpu={rec['ms']:.1f}ms "
+                  f"({n_session/max(el,1e-9):.1f} img/s)"
+                  + (" [spot-checked]" if verify else ""))
+
     def wait_futures(fs: list) -> None:
         for f in as_completed(fs):
-            absorb(f.result())
+            absorb_verified(f.result())
         fs.clear()
 
-    def collect_records(bc: BatchChunk, png_info: dict[str, tuple[str, np.ndarray]]) -> None:
-        """Submit verification for each record of a finished chunk; mark
-        images the engine dropped as failures (and persist them to state so
-        resume doesn't retry them forever)."""
+    def collect_records(bc: BatchChunk,
+                        png_info: dict[str, tuple[str, np.ndarray | None]],
+                        idx0: int) -> None:
+        """Hand each engine record of a finished chunk to the right absorber;
+        mark images the engine dropped as failures (and persist them to state
+        so resume doesn't retry them forever)."""
         bench_avg: dict[str, float] = {}
         for ln in (bc.stderr_text or "").splitlines():
             if ln.startswith("[bench] ") and " avg=" in ln:
@@ -459,13 +549,18 @@ def main() -> int:
             if info is None:
                 continue  # unknown id — should not happen
             name, x = info
-            gpu_ms = bench_avg.get(png, rec["ms"])
-            with lock:
-                t_gpu.append(rec["ms"])
-                if png in bench_avg:
-                    t_gpu_bench.append(bench_avg[png])
-            emb_g = np.asarray(rec["embedding"], np.float32)
-            futs.append(vpool.submit(_verify_task, name, emb_g, x, gpu_ms))
+            if production:
+                verify = spot > 0 and (idx0 % spot == 0)
+                absorb_production(png, rec, name, x, verify)
+            else:
+                gpu_ms = bench_avg.get(png, rec["ms"])
+                with lock:
+                    t_gpu.append(rec["ms"])
+                    if png in bench_avg:
+                        t_gpu_bench.append(bench_avg[png])
+                emb_g = np.asarray(rec["embedding"], np.float32)
+                futs.append(vpool.submit(_verify_task, name, emb_g, x, gpu_ms))
+            idx0 += 1
         for png in bc.missing:
             info = png_info.get(png.replace("\\", "/"))
             name = info[0] if info else png
@@ -481,7 +576,7 @@ def main() -> int:
 
     if args.mode == "spawn":
         window: list = []
-        for name in names:
+        for idx, name in enumerate(names):
             data = zf.read(name)
             t0 = time.perf_counter()
             x = preprocess(data, 112, order)
@@ -491,30 +586,37 @@ def main() -> int:
             t2 = time.perf_counter()
             with lock:
                 t_proc.append((t1 - t0) * 1e3)
-                t_gpu.append(bavg if bavg is not None else _ms_first)
-            window.append(vpool.submit(_verify_task, name, emb_g, x,
-                                       bavg if bavg is not None else _ms_first))
-            if len(window) >= args.workers * 2:
-                wait_futures(window)
+            rec = {"id": name, "ms": bavg if bavg is not None else _ms_first,
+                   "embedding": emb_g.tolist(), "backend": "gpu-dx16" if args.fp16 else "gpu-dx",
+                   "fp16": args.fp16}
+            if production:
+                absorb_production(png, rec, name, x, spot > 0 and (idx % spot == 0))
+            else:
+                with lock:
+                    t_gpu.append(rec["ms"])
+                window.append(vpool.submit(_verify_task, name, emb_g, x, rec["ms"]))
+                if len(window) >= args.workers * 2:
+                    wait_futures(window)
         wait_futures(window)
     else:
         chunks = [names[i:i + args.chunk] for i in range(0, len(names), args.chunk)]
-        pending: list[tuple[BatchChunk, dict[str, tuple[str, np.ndarray]], int]] = []
+        pending: list[tuple[BatchChunk, dict[str, tuple[str, np.ndarray | None]], int, int]] = []
+        idx_base = 0
         for ci, chunk_names in enumerate(chunks, 1):
             # throttle: at most one finished-but-unverified chunk behind the
             # currently running one, so the GPU never waits on verification
             if len(pending) >= 2:
-                old_bc, old_info, old_cnt = pending.pop(0)
+                old_bc, old_info, old_cnt, old_idx = pending.pop(0)
                 ok, failed, _ = old_bc.join()
                 with lock:
                     t_chunk.append(old_bc.join_wall_ms / old_cnt)
-                collect_records(old_bc, old_info)
+                collect_records(old_bc, old_info, old_idx)
                 print(f"[chunk done] ok={ok} failed={failed} ({old_cnt} imgs, "
                       f"engine wall {old_bc.join_wall_ms/1000.0:.2f}s)")
             tc0 = time.perf_counter()
             png_list: list[str] = []
-            png_info: dict[str, tuple[str, np.ndarray]] = {}
-            for name in chunk_names:
+            png_info: dict[str, tuple[str, np.ndarray | None]] = {}
+            for j, name in enumerate(chunk_names):
                 data = zf.read(name)
                 t0 = time.perf_counter()
                 x = preprocess(data, 112, order)
@@ -523,22 +625,29 @@ def main() -> int:
                     t_proc.append((t1 - t0) * 1e3)
                 png = png_for_engine(data, 112)
                 png_list.append(png)
-                png_info[png.replace("\\", "/")] = (name, x)
+                # production keeps the input tensor only for spot-checked
+                # images; full-verify keeps every one for the pool
+                keep_x = x if (not production or (spot > 0 and (idx_base + j) % spot == 0)) else None
+                png_info[png.replace("\\", "/")] = (name, keep_x)
             bc = BatchChunk(png_list, args.fp16, args.bench)
-            pending.append((bc, png_info, len(chunk_names)))
+            pending.append((bc, png_info, len(chunk_names), idx_base))
+            idx_base += len(chunk_names)
             print(f"[chunk {ci}/{len(chunks)}] prepped+launched "
                   f"({time.perf_counter() - tc0:.2f}s prep)")
-        for old_bc, old_info, old_cnt in pending:
+        for old_bc, old_info, old_cnt, old_idx in pending:
             ok, failed, _ = old_bc.join()
             with lock:
                 t_chunk.append(old_bc.join_wall_ms / old_cnt)
-            collect_records(old_bc, old_info)
+            collect_records(old_bc, old_info, old_idx)
             print(f"[chunk done] ok={ok} failed={failed} ({old_cnt} imgs, "
                   f"engine wall {old_bc.join_wall_ms/1000.0:.2f}s)")
         wait_futures(futs)
-    vpool.shutdown()
+    if vpool is not None:
+        vpool.shutdown()
     wall_total = (time.perf_counter() - t_run0) * 1e3
     state_f.close()
+    if jsonl_f is not None:
+        jsonl_f.close()
 
     shutil.rmtree(_PNG_DIR, ignore_errors=True)
 
@@ -554,11 +663,11 @@ def main() -> int:
             "sample": {"size": n, "method": f"uniform random seed={args.seed}",
                        "gpu_bench_runs_per_image": args.bench,
                        "resumed_from_state": len(done),
-                       "verified_this_session": n_session},
+                       "processed_this_session": n_session},
             "model": {
                 "fvp": os.path.relpath(MODEL_FVP, HERE),
-                "onnx_reference": os.path.relpath(MODEL_ONNX, HERE),
-                "layers": len(layers),
+                "onnx_reference": os.path.relpath(MODEL_ONNX, HERE) if do_verify else None,
+                "layers": len(layers) if layers else None,
                 "embedding_dim": 512,
                 "postprocess": "L2 normalize (cosine-ready, matches insightface normed_embedding)",
             },
@@ -566,12 +675,12 @@ def main() -> int:
                 "executable": os.path.relpath(EXE, HERE),
                 "backend": "Direct3D 11 compute (hand-written HLSL kernels)",
                 "precision": "fp16" if args.fp16 else "fp32",
-                "mode": args.mode,
+                "mode": "production" if production else args.mode,
                 "chunk_size": args.chunk if args.mode == "batch" else 1,
             },
             "preprocess": "decode JPG -> resize to 112x112 (INTER_AREA) -> "
                           f"{order.upper()} -> (x-127.5)/127.5 -> NCHW",
-            "channel_order_probe": order,
+            "channel_order_probe": None if args.skip_probe else order,
         },
         "timing_ms": {
             "gpu_inference": stats(t_gpu),
@@ -580,8 +689,8 @@ def main() -> int:
             "chunk_engine_wall_per_image": stats(t_chunk) if args.mode == "batch" else None,
             "end_to_end": {
                 "wall_total_ms": round(wall_total, 1),
-                "verified_total": n,
-                "verified_this_session": n_session,
+                "processed_total": n,
+                "processed_this_session": n_session,
                 "wall_per_image_ms": round(wall_total / n_session, 3) if n_session else None,
                 "throughput_images_per_sec": round(n_session / (wall_total / 1000.0), 2) if n_session else None,
             },
@@ -592,17 +701,33 @@ def main() -> int:
                 "note": "reference backend; measured under process-pool contention (informational)"}
                 if t_onx else None),
         },
-        "verification": {
-            "protocol": "3-way per image: DX11 GPU engine vs numpy re-execution of .fvp "
-                        "vs ONNX Runtime on the original ONNX model (all cosine after L2 norm)",
-            "cosine_gpu_vs_numpy": cos_stats(c_gn),
-            "cosine_gpu_vs_onnx": cos_stats(c_go),
-            "cosine_numpy_vs_onnx": cos_stats(c_no),
-            "gpu_embedding_norm": cos_stats(norms),
+        "verification": ({
+            "mode": "production",
+            "steady_state": "engine only — no verifier processes run per image",
+            "spotcheck_every_n": spot,
+            "spotchecked": n_spot,
+            "protocol": "spot-checked images: DX11 GPU engine vs numpy re-execution "
+                        "of .fvp vs ONNX Runtime on the original ONNX model "
+                        "(all cosine after L2 norm)",
+            "cosine_gpu_vs_numpy": cos_stats(c_gn) if c_gn else None,
+            "cosine_gpu_vs_onnx": cos_stats(c_go) if c_go else None,
+            "cosine_numpy_vs_onnx": cos_stats(c_no) if c_no else None,
+            "gpu_embedding_norm": cos_stats(norms) if norms else None,
             "pass_threshold": PASS_COS,
             "failed_images": fail,
             "passed": len(fail) == 0,
-        },
+        } if production else {
+            "mode": "full",
+            "protocol": "3-way per image: DX11 GPU engine vs numpy re-execution of .fvp "
+                        "vs ONNX Runtime on the original ONNX model (all cosine after L2 norm)",
+            "cosine_gpu_vs_numpy": cos_stats(c_gn) if c_gn else None,
+            "cosine_gpu_vs_onnx": cos_stats(c_go) if c_go else None,
+            "cosine_numpy_vs_onnx": cos_stats(c_no) if c_no else None,
+            "gpu_embedding_norm": cos_stats(norms) if norms else None,
+            "pass_threshold": PASS_COS,
+            "failed_images": fail,
+            "passed": len(fail) == 0,
+        }),
         "results": results,
     }
 
@@ -612,17 +737,21 @@ def main() -> int:
     print(f"\n[report] {args.out}")
 
     if args.embeddings:
+        variants = (["gpu_l2"] if production
+                    else ["gpu_l2", "numpy_l2", "onnx_l2"])
         np.savez_compressed(args.embeddings, names=np.asarray(all_names),
-                            variants=np.asarray(["gpu_l2", "numpy_l2", "onnx_l2"]), **{
+                            variants=np.asarray(variants), **{
             "emb_" + k: v for k, v in emb_dump.items()})
         print(f"[report] {args.embeddings}")
 
     g = stats(t_gpu) or {"mean_ms": float("nan")}
     thr = f"{n_session/(wall_total/1000.0):.1f} img/s" if n_session else "n/a"
-    print(f"[summary] mode={args.mode} gpu mean {g['mean_ms']:.2f} ms | "
+    cos_part = (f"cos(gpu,np) min {min(c_gn):.7f} | cos(gpu,onnx) min {min(c_go):.7f} | "
+                if c_gn and c_go else "")
+    print(f"[summary] mode={args.mode}{' production' if production else ''} "
+          f"gpu mean {g['mean_ms']:.2f} ms | "
           f"wall {wall_total/1000.0:.1f}s this session, {n_session} new, "
-          f"{n_total} total ({thr}) | "
-          f"cos(gpu,np) min {min(c_gn):.7f} | cos(gpu,onnx) min {min(c_go):.7f} | "
+          f"{n_total} total ({thr}) | {cos_part}"
           f"{'PASS' if not fail else f'FAIL ({len(fail)} images)'}")
     return 0 if not fail else 1
 

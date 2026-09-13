@@ -15,3 +15,7 @@ tmp_*.bin
 *.swp
 # regenerable via celeba_pipeline.py --embeddings
 reports/*.npz
+
+# regenerable streaming artifacts (resume state + engine-native embeddings)
+reports/*.state.jsonl
+reports/*.jsonl
