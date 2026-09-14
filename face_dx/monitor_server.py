@@ -178,6 +178,10 @@ class RunStats:
 
             elapsed_run = time.time() - self._run_start
             rate_avg = self.rows / elapsed_run if elapsed_run > 5 else 0.0
+            # Unbiased window rate: endpoint delta over the full sampled
+            # window, stalls included. Short windows make the ETA jumpy when
+            # the machine's load changes, so the page also shows the
+            # since-launch-rate ETA as a companion (eta_alt).
             rate_window = 0.0
             if len(self._hist) >= 2:
                 (t0, r0), (t1, r1) = self._hist[0], self._hist[-1]
@@ -374,9 +378,15 @@ def render_svg(s: dict, total: int) -> str:
     hrs = int(eta_s // 3600); mins = int(eta_s % 3600 // 60)
     eta = f"~{hrs}h {mins:02d}m" if eta_s > 0 else "—"
     p.append(f'<text x="{W - M}" y="210" fill="#8b949e" font-size="15" '
-             f'text-anchor="end">ETA (10-MIN WINDOW RATE)</text>')
+             f'text-anchor="end">ETA AT CURRENT WINDOW RATE</text>')
     p.append(f'<text x="{W - M}" y="264" fill="#d2a8ff" font-size="54" '
              f'font-weight="bold" text-anchor="end">{eta}</text>')
+    eta_alt_s = remaining / s["rate_avg"] if s["rate_avg"] > 0.01 else 0.0
+    if eta_alt_s > 0:
+        ha = int(eta_alt_s // 3600); ma = int(eta_alt_s % 3600 // 60)
+        p.append(f'<text x="{W - M}" y="292" fill="#484f58" font-size="13" '
+                 f'text-anchor="end">whole-run average says ~{ha}h {ma:02d}m '
+                 f'({s["rate_avg"]:.1f} img/s)</text>')
 
     # KPI tiles: 4 x 2
     tw, th, gap = 420, 130, 40
