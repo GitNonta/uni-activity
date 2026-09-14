@@ -59,7 +59,15 @@ MODEL_FVP = os.path.join(HERE, "models", "w600k_mbf.fvp")
 MODEL_ONNX = os.path.join(HERE, "models", "w600k_mbf.onnx")
 IMG_PREFIX = "img_align_celeba/"  # layout inside the official CelebA aligned zip
 
-PASS_COS = 0.9999  # fp32 cross-backend acceptance threshold
+# fp16 quantization (fp32-accumulate, fp16-weight storage) has a measured cosine tail
+# down to ~0.99985 vs the fp32 references — far from real breakage (~0.88) but below
+# the fp32 gate, so the gate is precision-aware.
+PASS_COS_FP32 = 0.9999
+PASS_COS_FP16 = 0.9998
+
+
+def pass_cos(fp16: bool) -> float:
+    return PASS_COS_FP16 if fp16 else PASS_COS_FP32
 
 
 def l2n(v: np.ndarray) -> np.ndarray:
@@ -267,12 +275,15 @@ def run_numpy(layers, x: np.ndarray) -> np.ndarray:
 _VCTX: dict = {}
 
 
-def _vinit() -> None:
+def _vinit(fp16: bool) -> None:
     """Per-worker setup: graph layers + private ONNX session (not picklable).
-    Only called when verification will actually run."""
+    Only called when verification will actually run. Takes the precision flag
+    via initargs — spawn'd children re-import this module, so mutated globals
+    from the parent would NOT be visible here."""
     import check_fvp as cfv
     import onnxruntime as ort
     _VCTX["layers"] = cfv.load_fvp(MODEL_FVP)
+    _VCTX["pass_cos"] = pass_cos(fp16)
     so = ort.SessionOptions()
     so.intra_op_num_threads = 2
     so.inter_op_num_threads = 1
@@ -288,7 +299,8 @@ def _verify_task(name: str, emb_g: np.ndarray, x: np.ndarray, gpu_ms: float) -> 
     emb_o = np.asarray(_VCTX["sess"].run(None, {"input.1": x})[0][0], np.float32)
     t4 = time.perf_counter()
     a, b, c = cos(emb_g, emb_n), cos(emb_g, emb_o), cos(emb_n, emb_o)
-    ok = a >= PASS_COS and b >= PASS_COS and c >= PASS_COS
+    g = _VCTX["pass_cos"]
+    ok = a >= g and b >= g and c >= g
     stack = np.stack([l2n(emb_g), l2n(emb_n), l2n(emb_o)]).astype("<f4")
     return {
         "image": name, "gpu_ms": round(gpu_ms, 2),
@@ -462,7 +474,8 @@ def main() -> int:
     jsonl_f = open(args.embeddings_jsonl, "a", encoding="utf-8") if args.embeddings_jsonl else None
     lock = threading.Lock()
     t_run0 = time.perf_counter()
-    vpool = ProcessPoolExecutor(max_workers=max(1, args.workers), initializer=_vinit) \
+    vpool = ProcessPoolExecutor(max_workers=max(1, args.workers),
+                                initializer=_vinit, initargs=(bool(args.fp16),)) \
         if do_verify else None
     futs: list = []
 
@@ -725,7 +738,7 @@ def main() -> int:
             "cosine_gpu_vs_onnx": cos_stats(c_go) if c_go else None,
             "cosine_numpy_vs_onnx": cos_stats(c_no) if c_no else None,
             "gpu_embedding_norm": cos_stats(norms) if norms else None,
-            "pass_threshold": PASS_COS,
+            "pass_threshold": pass_cos(args.fp16),
             "failed_images": fail,
             "passed": len(fail) == 0,
         } if production else {
@@ -736,7 +749,7 @@ def main() -> int:
             "cosine_gpu_vs_onnx": cos_stats(c_go) if c_go else None,
             "cosine_numpy_vs_onnx": cos_stats(c_no) if c_no else None,
             "gpu_embedding_norm": cos_stats(norms) if norms else None,
-            "pass_threshold": PASS_COS,
+            "pass_threshold": pass_cos(args.fp16),
             "failed_images": fail,
             "passed": len(fail) == 0,
         }),

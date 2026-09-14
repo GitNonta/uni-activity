@@ -3,6 +3,7 @@
 // (d3d11.dll + Intel driver) with kernels written from scratch in HLSL.
 #include "dx_engine.h"
 
+#include <array>
 #include <cstdio>
 #include <cstring>
 #include <cmath>
@@ -210,12 +211,40 @@ struct Engine::Impl {
     ComPtr<ID3D11DeviceContext> ctx;
     ComPtr<ID3D11ComputeShader> cs_conv, cs_conv11, cs_conv3, cs_conv3rb, cs_gemm_partial, cs_gemm_final, cs_add;
     Buffer scratch;  // gemm k-split partial sums [16][512]
-    ComPtr<ID3D11Buffer> cbuf;
     ComPtr<ID3D11Query> sync_q;
 
     std::vector<Buffer> tensor;   // index 0 = model input
     std::vector<Buffer> weight;
     std::vector<Buffer> aux;      // separate per-layer bias/prelu buffer (offset-free)
+
+    // ---- map-once constant-buffer pool ----
+    // For a fixed model the dispatch constants never change across images.
+    // They are precomputed once into deduplicated 64-byte sets, each with its
+    // own tiny default-usage constant buffer uploaded once via
+    // UpdateSubresource. The dispatch loop then only binds the right slot —
+    // no per-image Map at all. The old DYNAMIC + per-layer Map(WRITE_DISCARD)
+    // split the command buffer ~62x per image on Intel drivers and dominated
+    // CPU-side wall time (~80 ms/img on this iGPU).
+    std::vector<std::array<int, 16>> cbuf_sets;
+    std::vector<ComPtr<ID3D11Buffer>> cbuf_pool;  // one 64-byte CB per set
+    int const_slot(const int* pc)
+    {
+        for (size_t i = 0; i < cbuf_sets.size(); i++)
+            if (memcmp(cbuf_sets[i].data(), pc, 15 * sizeof(int)) == 0) return (int)i;
+        std::array<int, 16> a{};  // zero-padded to the full 64-byte CB record
+        memcpy(a.data(), pc, 15 * sizeof(int));
+        D3D11_BUFFER_DESC cb{};
+        cb.ByteWidth = 64;
+        cb.Usage = D3D11_USAGE_DEFAULT;
+        cb.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+        ComPtr<ID3D11Buffer> b;
+        if (FAILED(dev->CreateBuffer(&cb, nullptr, &b))) return -1;
+        ctx->UpdateSubresource(b.p, 0, nullptr, a.data(), 64, 1);
+        cbuf_sets.push_back(a);
+        cbuf_pool.push_back(std::move(b));
+        return (int)cbuf_sets.size() - 1;
+    }
+
     std::vector<ComPtr<ID3D11Query>> ts_begin, ts_end;  // per-layer GPU timestamps
     std::vector<double> ts_gpu_ms;
     ComPtr<ID3D11Query> ts_disjoint;
@@ -495,16 +524,8 @@ bool Engine::init(bool fp16, int gpu_index, std::string* err)
         I.ts_gpu_ms.assign(64, 0.0);
     }
 
-    if (trace) fprintf(stderr, "[trace] creating constant buffer\n");
-    D3D11_BUFFER_DESC cb{};
-    cb.ByteWidth = 64;
-    cb.Usage = D3D11_USAGE_DYNAMIC;  // Map(WRITE_DISCARD) never stalls the GPU
-    cb.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    cb.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    if (FAILED(I.dev->CreateBuffer(&cb, nullptr, &I.cbuf))) {
-        if (err) *err = "constant buffer failed";
-        return false;
-    }
+    // dispatch constants use the map-once pool (see Impl::const_slot);
+    // no static constant buffer is created here anymore.
 
     if (trace) fprintf(stderr, "[trace] compiling conv shader\n");
     if (!I.compile_shader("conv.cs.hlsl", fp16, I.cs_conv)) return false;
@@ -584,6 +605,7 @@ bool Engine::run(const Model& model, const float* input, float* out512, double* 
         const int tout = (int)li + 1;  // layer i writes tensor i+1
 
         int pc[15] = {0};
+        int pcslot = -1, pcpslot = -1;  // map-once constant-buffer slots
         ID3D11ComputeShader* cs = nullptr;
         bool gemm_final = false;
         UINT gx = 1, gy = 1, gz = 1;
@@ -645,13 +667,11 @@ bool Engine::run(const Model& model, const float* input, float* out512, double* 
                 I.ctx->CSSetUnorderedAccessViews(0, 1, puav, nullptr);
                 ID3D11ShaderResourceView* psrvs[3] = {I.tensor[tin].srv, I.weight[li].srv,
                                                       nullptr};
-                D3D11_MAPPED_SUBRESOURCE pm{};
-                if (FAILED(I.ctx->Map(I.cbuf, 0, D3D11_MAP_WRITE_DISCARD, 0, &pm)))
-                    return false;
-                memcpy(pm.pData, pcp, sizeof(pcp));
-                I.ctx->Unmap(I.cbuf, 0);
+                pcpslot = I.const_slot(pcp);
+                if (pcpslot < 0) return false;
+                ID3D11Buffer* pcb[1] = {I.cbuf_pool[pcpslot].p};
                 I.ctx->CSSetShader(I.cs_gemm_partial, nullptr, 0);
-                I.ctx->CSSetConstantBuffers(0, 1, &I.cbuf.p);
+                I.ctx->CSSetConstantBuffers(0, 1, pcb);
                 I.ctx->CSSetShaderResources(0, 3, psrvs);
                 I.ctx->Dispatch(16, 1, 1);
             }
@@ -692,12 +712,11 @@ bool Engine::run(const Model& model, const float* input, float* out512, double* 
             srvs[1] = I.weight[li].srv;
             srvs[2] = I.aux[li].srv;
         }
-        D3D11_MAPPED_SUBRESOURCE cmap{};
-        if (FAILED(I.ctx->Map(I.cbuf, 0, D3D11_MAP_WRITE_DISCARD, 0, &cmap))) return false;
-        memcpy(cmap.pData, pc, sizeof(pc));
-        I.ctx->Unmap(I.cbuf, 0);
+        if (pcslot < 0) pcslot = I.const_slot(pc);
+        if (pcslot < 0) return false;
+        ID3D11Buffer* cbos[1] = {I.cbuf_pool[pcslot].p};
         I.ctx->CSSetShader(cs, nullptr, 0);
-        I.ctx->CSSetConstantBuffers(0, 1, &I.cbuf.p);
+        I.ctx->CSSetConstantBuffers(0, 1, cbos);
         I.ctx->CSSetShaderResources(0, 3, srvs);
 
         I.ctx->Dispatch(gx, gy, gz);

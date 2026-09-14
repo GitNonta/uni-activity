@@ -19,3 +19,10 @@ reports/*.npz
 # regenerable streaming artifacts (resume state + engine-native embeddings)
 reports/*.state.jsonl
 reports/*.jsonl
+
+# regenerable pipeline staging + streaming artifacts
+reports/.tmp_png*/
+reports/*.jsonl
+reports/*.state.jsonl
+reports/*.npz
+reports/full_run.log
