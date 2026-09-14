@@ -26,3 +26,5 @@ reports/*.jsonl
 reports/*.state.jsonl
 reports/*.npz
 reports/full_run.log
+reports/monitor_server.log
+reports/full_run_progress.log
