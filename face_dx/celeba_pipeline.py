@@ -47,7 +47,7 @@ import sys
 import threading
 import time
 import zipfile
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, as_completed, wait as futures_wait
 
 import cv2
 import numpy as np
@@ -555,6 +555,18 @@ def main() -> int:
             absorb_verified(f.result())
         fs.clear()
 
+    def drain_futures(timeout: float = 0.0) -> None:
+        """Absorb whatever verification futures already finished (non-blocking
+        by default). Called opportunistically in the batch loop so spot-check
+        rows stream into the state file mid-run instead of landing only at
+        end-of-run."""
+        if vpool is None or not futs:
+            return
+        done, not_done = futures_wait(futs, timeout=timeout)
+        for f in done:
+            absorb_verified(f.result())
+        futs[:] = list(not_done)
+
     def collect_records(bc: BatchChunk,
                         png_info: dict[str, tuple[str, np.ndarray | None]],
                         idx0: int) -> None:
@@ -637,8 +649,10 @@ def main() -> int:
                 with lock:
                     t_chunk.append(old_bc.join_wall_ms / old_cnt)
                 collect_records(old_bc, old_info, old_idx)
+                drain_futures()
                 print(f"[chunk done] ok={ok} failed={failed} ({old_cnt} imgs, "
                       f"engine wall {old_bc.join_wall_ms/1000.0:.2f}s)")
+            drain_futures(0.05)  # stream finished spot-checks while GPU works
             tc0 = time.perf_counter()
             png_list: list[str] = []
             png_info: dict[str, tuple[str, np.ndarray | None]] = {}

@@ -46,29 +46,39 @@ def wait_for_report() -> None:
 
 
 def state_stats() -> dict:
-    fails = spots = 0
-    ms: list[float] = []
-    worst_cos = 1.0
+    """Aggregates the state file with LAST-ROW-WINS semantics per image:
+    spot-checks append a verified row for an image that already has a
+    placeholder row, so the final row for each image is authoritative."""
+    latest: dict[str, dict] = {}
     with open(STATE, encoding="utf-8") as f:
         for line in f:
             try:
                 r = json.loads(line)
             except json.JSONDecodeError:
                 continue
-            if not r.get("pass", True):
-                fails += 1
-            m = r.get("gpu_ms")
-            if isinstance(m, (int, float)):
-                ms.append(float(m))
-            if r.get("cos_gpu_onnx") is not None:
-                spots += 1
-                worst_cos = min(worst_cos,
-                                r.get("cos_gpu_numpy") or 1.0,
-                                r.get("cos_gpu_onnx") or 1.0)
+            name = r.get("image")
+            if isinstance(name, str) and name:
+                latest[name] = r
+    fails = 0
+    ms: list[float] = []
+    worst_cos = 1.0
+    spots = 0
+    for r in latest.values():
+        if not r.get("pass", True):
+            fails += 1
+        m = r.get("gpu_ms")
+        if isinstance(m, (int, float)):
+            ms.append(float(m))
+        if r.get("cos_gpu_onnx") is not None:
+            spots += 1
+            worst_cos = min(worst_cos,
+                            r.get("cos_gpu_numpy") or 1.0,
+                            r.get("cos_gpu_onnx") or 1.0)
     ms.sort()
     n = len(ms)
     pct = lambda p: ms[min(n - 1, int(p * n))] if n else 0.0
-    return {"rows": n, "fails": fails, "spots": spots, "worst_cos": worst_cos,
+    return {"rows": len(latest), "fails": fails, "spots": spots,
+            "worst_cos": worst_cos,
             "p50": pct(.5), "p90": pct(.9), "p99": pct(.99), "max": pct(1.0)}
 
 

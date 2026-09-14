@@ -55,6 +55,11 @@ class RunStats:
         self.gpu_ms: list[float] = []       # reservoir for latency percentiles
         self.spot_checks = 0
         self.worst_spot_cos = 1.0
+        # dedup: production spot-checks APPEND a verified row for an image
+        # that already has a placeholder row — latest row wins
+        self._seen: set[str] = set()
+        self._verified: set[str] = set()
+        self._failing: set[str] = set()
         self.last_image = ""
         self.last_gpu_ms = 0.0
         self._offset = 0                    # byte offset into the state file
@@ -115,44 +120,45 @@ class RunStats:
         data = self._partial + chunk
         lines = data.split(b"\n")
         self._partial = lines.pop()          # last piece may be incomplete
-        rows, fails, spots = 0, 0, 0
-        gpu_new: list[float] = []
-        worst = self.worst_spot_cos
-        for ln in lines:
-            ln = ln.strip()
-            if not ln:
-                continue
-            try:
-                r = json.loads(ln)
-            except json.JSONDecodeError:
-                continue
-            rows += 1
-            if not r.get("pass", True):
-                fails += 1
-            ms = r.get("gpu_ms")
-            if isinstance(ms, (int, float)):
-                gpu_new.append(float(ms))
-            if r.get("cos_gpu_onnx") is not None:
-                spots += 1
-                worst = min(worst, r.get("cos_gpu_numpy") or 1.0,
-                            r.get("cos_gpu_onnx") or 1.0)
-            self.last_image = r.get("image", self.last_image)
-            if isinstance(ms, (int, float)):
-                self.last_gpu_ms = float(ms)
         with self._lock:
-            self.rows += rows
-            self.failures += fails
-            self.spot_checks += spots
-            self.worst_spot_cos = worst
-            self.gpu_ms_sum += sum(gpu_new)
-            self.gpu_n_cum += len(gpu_new)
-            self.gpu_ms.extend(gpu_new)
+            for ln in lines:
+                ln = ln.strip()
+                if not ln:
+                    continue
+                try:
+                    r = json.loads(ln)
+                except json.JSONDecodeError:
+                    continue
+                name = r.get("image")
+                if not isinstance(name, str) or not name:
+                    continue
+                if name not in self._seen:
+                    self._seen.add(name)
+                    m = r.get("gpu_ms")
+                    if isinstance(m, (int, float)):
+                        self.gpu_ms_sum += float(m)
+                        self.gpu_n_cum += 1
+                        self.gpu_ms.append(float(m))
+                        self.last_gpu_ms = float(m)
+                if r.get("cos_gpu_onnx") is not None and name not in self._verified:
+                    self._verified.add(name)
+                    c = min(r.get("cos_gpu_numpy") or 1.0,
+                            r.get("cos_gpu_onnx") or 1.0)
+                    self.worst_spot_cos = min(self.worst_spot_cos, c)
+                    # trend = worst-to-date (step line toward the gate)
+                    self._cos_hist.append((time.time(), self.worst_spot_cos))
+                if r.get("pass", True):
+                    self._failing.discard(name)
+                else:
+                    self._failing.add(name)
+                self.last_image = name
             # cap percentile memory: keep at most 50k samples (uniform stride)
             if len(self.gpu_ms) > 50_000:
                 stride = len(self.gpu_ms) // 25_000
                 self.gpu_ms = self.gpu_ms[::stride]
-            if spots:
-                self._cos_hist.append((time.time(), worst))
+            self.rows = len(self._seen)
+            self.failures = len(self._failing)
+            self.spot_checks = len(self._verified)
 
     @staticmethod
     def _ds_cos(h: list[tuple[float, float]], cap: int = 240) -> list[tuple[float, float]]:
@@ -264,11 +270,11 @@ def hourly_chart(buckets: list[tuple[int, int]],
 
 def cos_trend(series: list[tuple[float, float]], gate: float,
               x: int, y: int, w: int, h: int) -> str:
-    """Spot-check worst-cosine line with the fp16 acceptance gate drawn."""
+    """Spot-check worst-to-date cosine line with the acceptance gate drawn."""
     if len(series) < 2:
         return (f'<text x="{x + w / 2}" y="{y + h / 2}" fill="#5b6a8f" '
                 f'text-anchor="middle" font-family="monospace" font-size="14">'
-                f'no spot-checks absorbed yet (batch mode: end of run)</text>')
+                f'no spot-check rows verified yet</text>')
     t0, t1 = series[0][0], series[-1][0]
     span = max(t1 - t0, 1e-9)
     lo = min(min(c for _, c in series), gate) - 2e-5
@@ -415,7 +421,7 @@ def render_svg(s: dict, total: int) -> str:
           rate_curve(s["hist"], x2, cy1, cw, ch), x2, cy1)
     chart('IMAGES COMPLETED PER HOUR',
           hourly_chart(s["hourly"], M, cy2, cw, ch), M, cy2)
-    chart('SPOT-CHECK COSINE (worst of gpu-vs-numpy / gpu-vs-onnx)',
+    chart('SPOT-CHECK WORST-TO-DATE COSINE · GATE 0.9998',
           cos_trend(s["cos_series"], 0.9998, x2, cy2, cw, ch), x2, cy2)
 
     # footer
