@@ -367,7 +367,22 @@ def main() -> int:
                     help="continue from the per-image state file written next to "
                          "--out; already-processed images are skipped")
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--nice", choices=("normal", "below", "idle"), default="normal",
+                    help="process priority for this pipeline and its engine "
+                         "children. 'below' keeps the desktop responsive on "
+                         "shared machines at a small throughput cost")
     args = ap.parse_args()
+    if args.nice != "normal":
+        try:
+            import psutil
+            p = psutil.Process()
+            p.nice(psutil.BELOW_NORMAL_PRIORITY_CLASS if args.nice == "below"
+                   else psutil.IDLE_PRIORITY_CLASS)
+            print(f"[nice] pipeline priority -> {args.nice} "
+                  f"(engine children inherit)")
+        except ImportError:
+            print("[nice] psutil not installed; run without priority change "
+                  "or: pip install psutil")
 
     production = args.production
     spot = args.spotcheck if production else 0
