@@ -506,6 +506,7 @@ def main() -> int:
                 fail.append(row)
             if args.embeddings:
                 emb_dump[res["image"]] = stack
+            res["ts"] = time.time()  # wall clock for per-hour monitoring
             state_f.write(json.dumps(res) + "\n")
             state_f.flush()
         if len(results) % 50 == 0 or len(results) == n_total:
@@ -521,7 +522,7 @@ def main() -> int:
         emb_g = np.asarray(rec["embedding"], np.float32)
         row = {"image": name, "gpu_ms": round(rec["ms"], 2),
                "cos_gpu_numpy": None, "cos_gpu_onnx": None,
-               "cos_numpy_onnx": None, "pass": True,
+               "cos_numpy_onnx": None, "pass": True, "ts": time.time(),
                "emb_b64": base64.b64encode(
                    l2n(emb_g).astype("<f4").tobytes()).decode("ascii")}
         with lock:
@@ -591,7 +592,7 @@ def main() -> int:
             name = info[0] if info else png
             row = {"image": name, "gpu_ms": None,
                    "cos_gpu_numpy": None, "cos_gpu_onnx": None,
-                   "cos_numpy_onnx": None, "pass": False,
+                   "cos_numpy_onnx": None, "pass": False, "ts": time.time(),
                    "error": "engine batch dropped this image"}
             with lock:
                 results.append(row)

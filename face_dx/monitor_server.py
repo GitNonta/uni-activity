@@ -60,6 +60,11 @@ class RunStats:
         self._offset = 0                    # byte offset into the state file
         self._partial = b""                 # partial trailing line
         self._hist: deque[tuple[float, int]] = deque(maxlen=HISTORY)
+        # full-resolution samples for per-hour throughput buckets (tiny: one
+        # tuple per 10 s)
+        self._samples: deque[tuple[float, int]] = deque(maxlen=20_000)
+        # spot-check cosine trend: (t, min(cos_gpu_numpy, cos_gpu_onnx))
+        self._cos_hist: deque[tuple[float, float]] = deque(maxlen=2_000)
         # run start ≈ state file creation time (the pipeline creates it at
         # launch; the monitor may attach hours later and still get it right)
         try:
@@ -78,8 +83,26 @@ class RunStats:
                 self._poll()
             except OSError:
                 pass  # file being rotated/replaced — retry next tick
-            self._hist.append((time.time(), self.rows))
+            now = time.time()
+            self._hist.append((now, self.rows))
+            self._samples.append((now, self.rows))
             time.sleep(POLL_SEC)
+
+    @staticmethod
+    def _hourly_from(samples: list[tuple[float, int]]) -> list[tuple[int, int]]:
+        """Images completed per wall-clock hour, derived from the monitor's
+        own row-count samples (works even for state rows written without a
+        timestamp). Attribution: the row delta between two consecutive
+        samples lands in the bucket of the later sample. Last <=24 buckets.
+        Pure function — callers must already hold the lock (or own the list)."""
+        if len(samples) < 2:
+            return []
+        buckets: dict[int, int] = {}
+        for (ta, ra), (tb, rb) in zip(samples, samples[1:]):
+            d = rb - ra
+            if d > 0:
+                buckets[int(tb // 3600)] = buckets.get(int(tb // 3600), 0) + d
+        return sorted(buckets.items())[-24:]
 
     def _poll(self) -> None:
         size = os.path.getsize(self.state_path)
@@ -128,6 +151,15 @@ class RunStats:
             if len(self.gpu_ms) > 50_000:
                 stride = len(self.gpu_ms) // 25_000
                 self.gpu_ms = self.gpu_ms[::stride]
+            if spots:
+                self._cos_hist.append((time.time(), worst))
+
+    @staticmethod
+    def _ds_cos(h: list[tuple[float, float]], cap: int = 240) -> list[tuple[float, float]]:
+        if len(h) <= cap:
+            return h
+        stride = len(h) / cap
+        return [h[int(i * stride)] for i in range(cap)]
 
     # ---- snapshot for rendering ------------------------------------------
     def snapshot(self) -> dict:
@@ -160,6 +192,8 @@ class RunStats:
                 "rate_window": rate_window,
                 "rate_avg": rate_avg,
                 "hist": list(self._hist),
+                "hourly": self._hourly_from(list(self._samples)),
+                "cos_series": self._ds_cos(list(self._cos_hist)),
             }
 
 
@@ -194,6 +228,63 @@ def sparkline(hist: list[tuple[float, int]], total: int,
     area = f"{x + w:.1f},{y + h} {poly} {x:.1f},{y + h}"
     return (f'<polygon points="{area}" fill="#1b4332" opacity="0.55"/>'
             f'<polyline points="{poly}" fill="none" stroke="#52b788" stroke-width="2"/>')
+
+
+def _hhmm(t: float) -> str:
+    import datetime as _dt
+    return _dt.datetime.fromtimestamp(t).strftime("%H:%M")
+
+
+def hourly_chart(buckets: list[tuple[int, int]],
+                 x: int, y: int, w: int, h: int) -> str:
+    """Bars: images completed per wall-clock hour (last <=24 buckets)."""
+    if not buckets:
+        return (f'<text x="{x + w / 2}" y="{y + h / 2}" fill="#5b6a8f" '
+                f'text-anchor="middle" font-family="monospace" font-size="14">'
+                f'collecting samples…</text>')
+    n = len(buckets)
+    bw = max(6.0, (w - 20) / n - 6)
+    peak = max(v for _, v in buckets) or 1
+    out = []
+    for i, (t, v) in enumerate(buckets):
+        bx = x + 10 + i * ((w - 20) / n)
+        bh = v / peak * (h - 44)
+        out.append(f'<rect x="{bx:.1f}" y="{y + h - 24 - bh:.1f}" '
+                   f'width="{bw:.1f}" height="{bh:.1f}" fill="#3fb950" rx="2"/>')
+        out.append(f'<text x="{bx + bw / 2:.1f}" y="{y + h - 8}" fill="#484f58" '
+                   f'font-size="11" text-anchor="middle">{_hhmm(t)}</text>')
+        if n <= 14 or i % 2 == 0:
+            out.append(f'<text x="{bx + bw / 2:.1f}" '
+                       f'y="{y + h - 30 - bh:.1f}" fill="#8b949e" font-size="11" '
+                       f'text-anchor="middle">{v:,}</text>')
+    out.append(f'<text x="{x + w - 10}" y="{y + 16}" fill="#484f58" '
+               f'font-size="12" text-anchor="end">peak {peak:,}/h</text>')
+    return "".join(out)
+
+
+def cos_trend(series: list[tuple[float, float]], gate: float,
+              x: int, y: int, w: int, h: int) -> str:
+    """Spot-check worst-cosine line with the fp16 acceptance gate drawn."""
+    if len(series) < 2:
+        return (f'<text x="{x + w / 2}" y="{y + h / 2}" fill="#5b6a8f" '
+                f'text-anchor="middle" font-family="monospace" font-size="14">'
+                f'no spot-checks absorbed yet (batch mode: end of run)</text>')
+    t0, t1 = series[0][0], series[-1][0]
+    span = max(t1 - t0, 1e-9)
+    lo = min(min(c for _, c in series), gate) - 2e-5
+    hi = 1.0
+    def py(c: float) -> float:
+        return y + (1 - (c - lo) / max(hi - lo, 1e-9)) * h
+    poly = " ".join(f"{x + (t - t0) / span * w:.1f},{py(c):.1f}" for t, c in series)
+    gy = py(gate)
+    return (f'<line x1="{x}" y1="{gy:.1f}" x2="{x + w}" y2="{gy:.1f}" '
+            f'stroke="#e63946" stroke-dasharray="6 4" stroke-width="1.5"/>'
+            f'<text x="{x + w - 8}" y="{gy - 6:.1f}" fill="#e63946" '
+            f'font-size="11" text-anchor="end">gate {gate:.4f}</text>'
+            f'<polyline points="{poly}" fill="none" stroke="#7ee787" '
+            f'stroke-width="2.5"/>'
+            f'<text x="{x + w - 8}" y="{y + 16}" fill="#484f58" '
+            f'font-size="12" text-anchor="end">worst {min(c for _, c in series):.6f}</text>')
 
 
 def tile(label: str, value: str, x: int, y: int, w: int, h: int,
@@ -284,7 +375,7 @@ def render_svg(s: dict, total: int) -> str:
     # KPI tiles: 4 x 2
     tw, th, gap = 420, 130, 40
     xs = [M + i * (tw + gap) for i in range(4)]
-    y1, y2 = 310, 310 + th + gap
+    y1, y2 = 300, 470
     p.append(tile("RATE · 10-MIN WINDOW", f"{rate_win:.1f} img/s",
                   xs[0], y1, tw, th, "#79c0ff"))
     p.append(tile("RATE · SINCE LAUNCH", f"{rate_avg:.1f} img/s",
@@ -304,27 +395,35 @@ def render_svg(s: dict, total: int) -> str:
     p.append(tile("ELAPSED", f"{el // 3600}h {el % 3600 // 60:02d}m {el % 60:02d}s",
                   xs[3], y2, tw, th))
 
-    # charts
-    cy, ch = 660, 300
+    # charts: 2 x 2 grid
+    cy1, ch = 640, 160
     cw = (W - 2 * M - gap) // 2
-    p.append(f'<text x="{M}" y="{cy - 16}" fill="#8b949e" font-size="14">'
-             f'CUMULATIVE PROGRESS · LAST {window_min:.0f} MIN</text>')
-    p.append(sparkline(s["hist"], total, M, cy, cw, ch))
-    p.append(f'<rect x="{M}" y="{cy}" width="{cw}" height="{ch}" fill="none" '
-             f'stroke="#30363d" rx="8"/>')
     x2 = M + cw + gap
-    p.append(f'<text x="{x2}" y="{cy - 16}" fill="#8b949e" font-size="14">'
-             f'THROUGHPUT (img/s) · LAST {window_min:.0f} MIN</text>')
-    p.append(rate_curve(s["hist"], x2, cy, cw, ch))
-    p.append(f'<rect x="{x2}" y="{cy}" width="{cw}" height="{ch}" fill="none" '
-             f'stroke="#30363d" rx="8"/>')
+    cy2 = cy1 + ch + 52
+
+    def chart(title: str, body: str, cx: int, cyy: int) -> None:
+        p.append(f'<text x="{cx}" y="{cyy - 14}" fill="#8b949e" font-size="14">'
+                 f'{title}</text>')
+        p.append(body)
+        p.append(f'<rect x="{cx}" y="{cyy}" width="{cw}" height="{ch}" '
+                 f'fill="none" stroke="#30363d" rx="8"/>')
+
+    window_min = HISTORY * POLL_SEC / 60
+    chart(f'CUMULATIVE PROGRESS · LAST {window_min:.0f} MIN',
+          sparkline(s["hist"], total, M, cy1, cw, ch), M, cy1)
+    chart(f'THROUGHPUT (img/s) · LAST {window_min:.0f} MIN',
+          rate_curve(s["hist"], x2, cy1, cw, ch), x2, cy1)
+    chart('IMAGES COMPLETED PER HOUR',
+          hourly_chart(s["hourly"], M, cy2, cw, ch), M, cy2)
+    chart('SPOT-CHECK COSINE (worst of gpu-vs-numpy / gpu-vs-onnx)',
+          cos_trend(s["cos_series"], 0.9998, x2, cy2, cw, ch), x2, cy2)
 
     # footer
-    p.append(f'<text x="{M}" y="{cy + ch + 60}" fill="#8b949e" font-size="14">'
+    p.append(f'<text x="{M}" y="1026" fill="#8b949e" font-size="14">'
              f'LAST IMAGE</text>')
-    p.append(f'<text x="{M}" y="{cy + ch + 88}" fill="#e6edf3" font-size="17">'
+    p.append(f'<text x="{M}" y="1050" fill="#e6edf3" font-size="17">'
              f'{esc(s["last_image"] or "—")}</text>')
-    p.append(f'<text x="{W - M}" y="{cy + ch + 88}" fill="#484f58" font-size="13" '
+    p.append(f'<text x="{W - M}" y="1050" fill="#484f58" font-size="13" '
              f'text-anchor="end">read-only monitor · polls {POLL_SEC:.0f}s · '
              f'auto-refreshes without reload</text>')
     p.append("</svg>")
