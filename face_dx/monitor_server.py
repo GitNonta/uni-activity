@@ -196,6 +196,46 @@ def sparkline(hist: list[tuple[float, int]], total: int,
             f'<polyline points="{poly}" fill="none" stroke="#52b788" stroke-width="2"/>')
 
 
+def tile(label: str, value: str, x: int, y: int, w: int, h: int,
+         color: str = "#e6edf3") -> str:
+    return (f'<rect x="{x}" y="{y}" width="{w}" height="{h}" fill="#161b22" '
+            f'stroke="#30363d" rx="10"/>'
+            f'<text x="{x + 20}" y="{y + 34}" fill="#8b949e" font-size="14">'
+            f'{label}</text>'
+            f'<text x="{x + 20}" y="{y + 82}" fill="{color}" font-size="30" '
+            f'font-weight="bold">{esc(value)}</text>')
+
+
+def rate_curve(hist: list[tuple[float, int]],
+               x: int, y: int, w: int, h: int) -> str:
+    """Throughput (img/s) polyline derived from the cumulative-rows history."""
+    if len(hist) < 3:
+        return (f'<text x="{x + w / 2}" y="{y + h / 2}" fill="#5b6a8f" '
+                f'text-anchor="middle" font-family="monospace" font-size="14">'
+                f'collecting samples…</text>')
+    pts: list[tuple[float, float]] = []
+    for (ta, ra), (tb, rb) in zip(hist, hist[1:]):
+        dt = tb - ta
+        if dt > 0:
+            pts.append((tb, (rb - ra) / dt))
+    if len(pts) < 2:
+        return (f'<text x="{x + w / 2}" y="{y + h / 2}" fill="#5b6a8f" '
+                f'text-anchor="middle" font-family="monospace" font-size="14">'
+                f'collecting samples…</text>')
+    t0, t1 = pts[0][0], pts[-1][0]
+    span = max(t1 - t0, 1e-9)
+    rmax = max(r for _, r in pts)
+    rmax = max(rmax, 5.0) * 1.15
+    poly = " ".join(f"{x + (t - t0) / span * w:.1f},"
+                    f"{y + h - min(1.0, r / rmax) * h:.1f}" for t, r in pts)
+    area = f"{x + w:.1f},{y + h} {poly} {x:.1f},{y + h}"
+    return (f'<polygon points="{area}" fill="#1b3a5c" opacity="0.55"/>'
+            f'<polyline points="{poly}" fill="none" stroke="#79c0ff" '
+            f'stroke-width="2.5"/>'
+            f'<text x="{x + w - 10}" y="{y + 18}" fill="#484f58" '
+            f'text-anchor="end" font-size="12">peak {rmax / 1.15:.0f} img/s</text>')
+
+
 def render_svg(s: dict, total: int) -> str:
     done = s["rows"]
     frac = min(1.0, done / max(total, 1))
@@ -206,61 +246,124 @@ def render_svg(s: dict, total: int) -> str:
     ok = s["failures"] == 0
     status_color = "#52b788" if ok else "#e63946"
     status_text = "RUNNING · ALL PASS" if ok else "FAILURES DETECTED"
+    window_min = HISTORY * POLL_SEC / 60
 
-    W, H = 760, 560
+    W, H = 1920, 1080  # viewBox units; scales to any screen
+    M = 60             # page margin
     p = []
-    p.append(f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" '
-             f'viewBox="0 0 {W} {H}" font-family="monospace">')
-    p.append(f'<rect width="{W}" height="{H}" fill="#0d1117" rx="10"/>')
-    p.append(f'<text x="24" y="40" fill="#e6edf3" font-size="19" font-weight="bold">'
-             f'CelebA 512-d fp16 extraction</text>')
-    p.append(f'<circle cx="{W - 130}" cy="34" r="6" fill="{status_color}">'
+    p.append(f'<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" '
+             f'viewBox="0 0 {W} {H}" preserveAspectRatio="xMidYMid meet" '
+             f'font-family="monospace">')
+    p.append(f'<rect width="{W}" height="{H}" fill="#0d1117"/>')
+
+    # header
+    p.append(f'<text x="{M}" y="76" fill="#e6edf3" font-size="36" '
+             f'font-weight="bold">CelebA 512-d fp16 extraction</text>')
+    p.append(f'<circle cx="{W - M - 210}" cy="66" r="9" fill="{status_color}">'
              f'<animate attributeName="opacity" values="1;0.25;1" dur="2s" '
              f'repeatCount="indefinite"/></circle>')
-    p.append(f'<text x="{W - 116}" y="39" fill="{status_color}" font-size="13">'
+    p.append(f'<text x="{W - M - 185}" y="73" fill="{status_color}" font-size="18">'
              f'{status_text}</text>')
 
-    p.append(bar(frac, 24, 60, W - 48, 22, "#3fb950"))
-    p.append(f'<text x="24" y="104" fill="#e6edf3" font-size="24" font-weight="bold">'
-             f'{done:,} / {total:,}</text>')
-    p.append(f'<text x="{W - 24}" y="104" fill="#8b949e" font-size="15" '
-             f'text-anchor="end">{frac * 100:.2f}%</text>')
+    # progress bar
+    p.append(bar(frac, M, 108, W - 2 * M, 48, "#3fb950"))
+    p.append(f'<text x="{W // 2}" y="140" fill="#0d1117" font-size="24" '
+             f'font-weight="bold" text-anchor="middle">{frac * 100:.2f}%</text>')
 
-    def kv(label: str, value: str, x: int, y: int, color: str = "#e6edf3") -> str:
-        return (f'<text x="{x}" y="{y}" fill="#8b949e" font-size="12">{label}</text>'
-                f'<text x="{x}" y="{y + 18}" fill="{color}" font-size="15">'
-                f'{esc(value)}</text>')
-
+    # big count + ETA
+    p.append(f'<text x="{M}" y="210" fill="#8b949e" font-size="15">IMAGES DONE</text>')
+    p.append(f'<text x="{M}" y="264" fill="#e6edf3" font-size="54" '
+             f'font-weight="bold">{done:,} / {total:,}</text>')
     hrs = int(eta_s // 3600); mins = int(eta_s % 3600 // 60)
-    eta = f"~{hrs}h {mins:02d}m" if eta_s > 0 else "— (waiting for rate samples)"
-    p.append(kv("RATE (10-MIN WINDOW)", f"{rate_win:.1f} img/s", 24, 150, "#79c0ff"))
-    p.append(kv("RATE (SINCE LAUNCH)", f"{rate_avg:.1f} img/s", 210, 150, "#79c0ff"))
-    p.append(kv("ETA", eta, 400, 150, "#d2a8ff"))
-    p.append(kv("REMAINING", f"{remaining:,}", 590, 150))
+    eta = f"~{hrs}h {mins:02d}m" if eta_s > 0 else "—"
+    p.append(f'<text x="{W - M}" y="210" fill="#8b949e" font-size="15" '
+             f'text-anchor="end">ETA (10-MIN WINDOW RATE)</text>')
+    p.append(f'<text x="{W - M}" y="264" fill="#d2a8ff" font-size="54" '
+             f'font-weight="bold" text-anchor="end">{eta}</text>')
 
-    p.append(kv("GPU P50 / P90 / P99", f"{s['gpu_p50']:.1f} / {s['gpu_p90']:.1f} / "
-                f"{s['gpu_p99']:.1f} ms", 24, 205))
-    p.append(kv("GPU MAX / LAST", f"{s['gpu_max']:.1f} / {s['last_gpu_ms']:.1f} ms",
-                400, 205))
-    p.append(kv("SPOT-CHECKS", f"{s['spot_checks']:,}  (worst cos "
-                f"{s['worst_spot_cos']:.6f})", 24, 255, "#7ee787"))
-    p.append(kv("FAILURES", f"{s['failures']:,}", 400, 255,
-                "#7ee787" if ok else "#ff7b72"))
+    # KPI tiles: 4 x 2
+    tw, th, gap = 420, 130, 40
+    xs = [M + i * (tw + gap) for i in range(4)]
+    y1, y2 = 310, 310 + th + gap
+    p.append(tile("RATE · 10-MIN WINDOW", f"{rate_win:.1f} img/s",
+                  xs[0], y1, tw, th, "#79c0ff"))
+    p.append(tile("RATE · SINCE LAUNCH", f"{rate_avg:.1f} img/s",
+                  xs[1], y1, tw, th, "#79c0ff"))
+    p.append(tile("REMAINING", f"{remaining:,}", xs[2], y1, tw, th))
+    p.append(tile("SPOT-CHECKS", f"{s['spot_checks']:,}", xs[3], y1, tw, th,
+                  "#7ee787"))
+    p.append(f'<text x="{xs[3] + 20}" y="{y1 + 108}" fill="#8b949e" font-size="13">'
+             f'worst cos {s["worst_spot_cos"]:.6f} vs 0.9998 gate</text>')
+    p.append(tile("GPU P50 / P90 / P99", f"{s['gpu_p50']:.1f} / {s['gpu_p90']:.1f} / "
+                  f"{s['gpu_p99']:.1f} ms", xs[0], y2, tw, th))
+    p.append(tile("GPU MAX / LAST", f"{s['gpu_max']:.1f} / {s['last_gpu_ms']:.1f} ms",
+                  xs[1], y2, tw, th))
+    p.append(tile("FAILURES", f"{s['failures']:,}", xs[2], y2, tw, th,
+                  "#7ee787" if ok else "#ff7b72"))
+    el = int(s["elapsed_s"])
+    p.append(tile("ELAPSED", f"{el // 3600}h {el % 3600 // 60:02d}m {el % 60:02d}s",
+                  xs[3], y2, tw, th))
 
-    p.append(f'<text x="24" y="312" fill="#8b949e" font-size="12">'
-             f'PROGRESS OVER LAST {HISTORY * POLL_SEC / 60:.0f} MIN</text>')
-    p.append(sparkline(s["hist"], total, 24, 322, W - 48, 110))
-    p.append(f'<rect x="24" y="322" width="{W - 48}" height="110" '
-             f'fill="none" stroke="#30363d" rx="6"/>')
+    # charts
+    cy, ch = 660, 300
+    cw = (W - 2 * M - gap) // 2
+    p.append(f'<text x="{M}" y="{cy - 16}" fill="#8b949e" font-size="14">'
+             f'CUMULATIVE PROGRESS · LAST {window_min:.0f} MIN</text>')
+    p.append(sparkline(s["hist"], total, M, cy, cw, ch))
+    p.append(f'<rect x="{M}" y="{cy}" width="{cw}" height="{ch}" fill="none" '
+             f'stroke="#30363d" rx="8"/>')
+    x2 = M + cw + gap
+    p.append(f'<text x="{x2}" y="{cy - 16}" fill="#8b949e" font-size="14">'
+             f'THROUGHPUT (img/s) · LAST {window_min:.0f} MIN</text>')
+    p.append(rate_curve(s["hist"], x2, cy, cw, ch))
+    p.append(f'<rect x="{x2}" y="{cy}" width="{cw}" height="{ch}" fill="none" '
+             f'stroke="#30363d" rx="8"/>')
 
-    p.append(f'<text x="24" y="470" fill="#8b949e" font-size="12">LAST IMAGE</text>')
-    p.append(f'<text x="24" y="490" fill="#e6edf3" font-size="13">'
+    # footer
+    p.append(f'<text x="{M}" y="{cy + ch + 60}" fill="#8b949e" font-size="14">'
+             f'LAST IMAGE</text>')
+    p.append(f'<text x="{M}" y="{cy + ch + 88}" fill="#e6edf3" font-size="17">'
              f'{esc(s["last_image"] or "—")}</text>')
-    p.append(f'<text x="24" y="{H - 20}" fill="#484f58" font-size="11">'
-             f'read-only monitor · polls {POLL_SEC:.0f}s · page auto-refreshes '
-             f'every {POLL_SEC:.0f}s</text>')
+    p.append(f'<text x="{W - M}" y="{cy + ch + 88}" fill="#484f58" font-size="13" '
+             f'text-anchor="end">read-only monitor · polls {POLL_SEC:.0f}s · '
+             f'auto-refreshes without reload</text>')
     p.append("</svg>")
     return "".join(p)
+
+
+_PAGE = """<!doctype html>
+<html><head><meta charset="utf-8">
+<title>fdx monitor</title>
+<style>
+  html,body{margin:0;padding:0;height:100%;background:#0d1117;overflow:hidden}
+  #dash{width:100vw;height:100vh}
+  #dash svg{width:100%;height:100%;display:block}
+  #fs{position:fixed;bottom:14px;right:14px;opacity:.3;background:#161b22;
+      color:#8b949e;border:1px solid #30363d;border-radius:6px;padding:7px 12px;
+      font:12px monospace;cursor:pointer;letter-spacing:1px}
+  #fs:hover{opacity:1;color:#e6edf3}
+</style></head>
+<body>
+<div id="dash">__SVG__</div>
+<button id="fs" onclick="go()">FULLSCREEN</button>
+<script>
+function go(){var e=document.documentElement;
+  if(e.requestFullscreen)e.requestFullscreen();
+  else if(e.webkitRequestFullscreen)e.webkitRequestFullscreen();}
+setInterval(async function(){
+  try{var r=await fetch('/dashboard.svg',{cache:'no-store'});
+    if(r.ok)document.getElementById('dash').innerHTML=await r.text();
+  }catch(e){}
+}, __MS__);
+</script>
+</body></html>"""
+
+
+def render_page(s: dict, total: int) -> str:
+    """Full-screen HTML shell: SVG fills the viewport, refreshes via fetch
+    (no page reload, so Fullscreen state survives) and offers a real
+    Fullscreen-API button."""
+    return _PAGE.replace("__SVG__", render_svg(s, total)).replace("__MS__", str(int(POLL_SEC * 1000)))
 
 
 # ---------------------------------------------------------------------------
@@ -303,11 +406,14 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, "\n".join(lines).encode(), "text/plain")
         elif self.path.startswith("/healthz"):
             self._send(200, b"ok", "text/plain")
+        elif self.path.startswith("/dashboard.svg"):
+            s = self.stats.snapshot()
+            total = self._report_total() or self.total
+            self._send(200, render_svg(s, total).encode(), "image/svg+xml")
         else:
             s = self.stats.snapshot()
             total = self._report_total() or self.total
-            body = render_svg(s, total).encode()
-            self._send(200, body, "image/svg+xml")
+            self._send(200, render_page(s, total).encode(), "text/html; charset=utf-8")
 
     def _report_total(self) -> int:
         """Once the final report exists, read the authoritative total from it
