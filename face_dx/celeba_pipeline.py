@@ -105,10 +105,17 @@ def cos_stats(cs: list[float]) -> dict:
     }
 
 
-def preprocess(data: bytes, size: int, channel_order: str) -> np.ndarray:
-    """zip bytes -> normalized NCHW float32 [1,3,size,size]."""
+def decode_resize(data: bytes, size: int) -> np.ndarray:
+    """zip bytes -> BGR uint8 HWC image, decoded and resized exactly once.
+    Every downstream consumer (engine staging, spot-check tensors) must
+    derive from this single call so each image pays the JPEG decode + resize
+    cost only one time."""
     img = cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR)
-    img = cv2.resize(img, (size, size), interpolation=cv2.INTER_AREA)
+    return cv2.resize(img, (size, size), interpolation=cv2.INTER_AREA)
+
+
+def normalize(img: np.ndarray, size: int, channel_order: str) -> np.ndarray:
+    """decoded image -> normalized NCHW float32 [1,3,size,size]."""
     if channel_order == "rgb":
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     x = img.astype(np.float32)
@@ -116,23 +123,33 @@ def preprocess(data: bytes, size: int, channel_order: str) -> np.ndarray:
     return x.transpose(2, 0, 1)[None].copy()
 
 
+def preprocess(data: bytes, size: int, channel_order: str) -> np.ndarray:
+    """zip bytes -> normalized NCHW float32 [1,3,size,size]."""
+    return normalize(decode_resize(data, size), size, channel_order)
+
+
 _PNG_DIR = os.path.join(HERE, "reports", ".tmp_png")
 _PNG_SEQ = iter(range(1 << 30))
 
 
-def png_for_engine(data: bytes, size: int) -> str:
-    """Decode+resize zip bytes and save as an 8-bit PNG for the engine's own
-    decoder. The engine stores the file's canonical RGB channel order into the
-    input tensor as-is (verified: feeding RGB vs BGR differs to 1e-7, matching
-    insightface's blobFromImages(swapRB=True) convention for w600k_mbf), then
-    applies (v-127.5)/127.5 itself. cv2.imwrite expects a BGR array for a plain
-    PNG, so the unmodified cv2 image is exactly what we want on disk."""
-    img = cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR)
-    img = cv2.resize(img, (size, size), interpolation=cv2.INTER_AREA)
-    p = os.path.join(_PNG_DIR, f"img_{next(_PNG_SEQ)}.png")
-    if not cv2.imwrite(p, img):
-        raise RuntimeError("failed to write PNG for engine")
+def stage_from_img(img: np.ndarray, size: int) -> str:
+    """Stage an already-decoded image for the engine as raw RGB8 (exactly
+    size*size*3 bytes, row-major — no header; the size is the identifier).
+    Replaces the old PNG staging: no cv2.imwrite zlib pass here and no PNG
+    inflate inside the engine — bit-identical input tensor (verified
+    cos=1.0), at a fraction of the CPU cost. The engine stores the file's
+    canonical RGB channel order into the input tensor as-is (matches
+    insightface's blobFromImages(swapRB=True) convention for w600k_mbf),
+    then applies (v-127.5)/127.5 itself."""
+    rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    p = os.path.join(_PNG_DIR, f"img_{next(_PNG_SEQ)}.raw")
+    rgb.tofile(p)
     return p
+
+
+def stage_for_engine(data: bytes, size: int) -> str:
+    """Decode+resize zip bytes once and stage them for the engine."""
+    return stage_from_img(decode_resize(data, size), size)
 
 
 def engine_model(fp16: bool) -> str:
@@ -418,7 +435,7 @@ def probe_channel_order(zf: zipfile.ZipFile, name: str, fp16: bool) -> str:
     scores = {}
     for order in ("rgb", "bgr"):
         x = preprocess(data, 112, order)
-        g, _, _ = run_gpu_spawn(png_for_engine(data, 112), fp16=fp16)
+        g, _, _ = run_gpu_spawn(stage_for_engine(data, 112), fp16=fp16)
         scores[order] = cos(g, run_numpy(layers, x))
     best = max(scores, key=scores.get)
     print(f"[probe] channel order scores vs numpy graph: "
@@ -549,7 +566,7 @@ def main() -> int:
             order = probe_channel_order(zf, names[0], args.fp16)
         # engine warmup (model parse / shader compile) — excluded from stats
         w = names[0]
-        run_gpu_spawn(png_for_engine(zf.read(w), 112), args.fp16, bench=args.bench)
+        run_gpu_spawn(stage_for_engine(zf.read(w), 112), args.fp16, bench=args.bench)
         if sess is not None:
             warm = np.asarray(sess.run(None, {"input.1": preprocess(zf.read(w), 112, order)})[0][0])
             del warm
@@ -726,8 +743,11 @@ def main() -> int:
         for idx, name in enumerate(names):
             data = zf.read(name)
             t0 = time.perf_counter()
-            x = preprocess(data, 112, order)
-            png = png_for_engine(data, 112)
+            img = decode_resize(data, 112)  # single decode for both outputs
+            png = stage_from_img(img, 112)
+            x = (preprocess(data, 112, order) if not production
+                 else (normalize(img, 112, order)
+                       if spot > 0 and idx % spot == 0 else None))
             t1 = time.perf_counter()
             emb_g, _ms_first, bavg = run_gpu_spawn(png, args.fp16, bench=args.bench)
             t2 = time.perf_counter()
@@ -768,15 +788,18 @@ def main() -> int:
             for j, name in enumerate(chunk_names):
                 data = zf.read(name)
                 t0 = time.perf_counter()
-                x = preprocess(data, 112, order)
+                img = decode_resize(data, 112)  # single decode for both outputs
                 t1 = time.perf_counter()
                 with lock:
                     t_proc.append((t1 - t0) * 1e3)
-                png = png_for_engine(data, 112)
+                png = stage_from_img(img, 112)
                 png_list.append(png)
-                # production keeps the input tensor only for spot-checked
-                # images; full-verify keeps every one for the pool
-                keep_x = x if (not production or (spot > 0 and (idx_base + j) % spot == 0)) else None
+                # production builds the input tensor only for spot-checked
+                # images (1%); full-verify keeps every one for the pool
+                if not production or (spot > 0 and (idx_base + j) % spot == 0):
+                    keep_x: np.ndarray | None = normalize(img, 112, order)
+                else:
+                    keep_x = None
                 png_info[png.replace("\\", "/")] = (name, keep_x)
             bc = BatchChunk(png_list, args.fp16, args.bench)
             pending.append((bc, png_info, len(chunk_names), idx_base))

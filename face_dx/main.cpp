@@ -12,6 +12,12 @@
 // Entire pipeline is my own code: PNG decode (png_decode.h), model parsing
 // (.fvp), graph execution on the Intel GPU through the Windows OS only
 // (d3d11.dll + Intel driver) with hand-written HLSL kernels.
+//
+// Input formats (auto-detected by magic bytes):
+//   - 8-bit PNG (non-interlaced) — decoded by png_decode.h
+//   - raw RGB: exactly 112*112*3 bytes of row-major RGB8 — no decode step at
+//     all (the batch pipeline stages resized crops in this format to keep the
+//     CPU cost per image minimal)
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -35,7 +41,8 @@ static void usage()
 {
     fprintf(stderr,
             "usage: face_dx [--model FILE] [--fp16|--fp32] [--bench N] [--gpu-index N]\n"
-            "               [--list FILE] [--out FILE] <image ...>\n");
+            "               [--list FILE] [--out FILE] <image ...>\n"
+            "  inputs: 8-bit PNG or raw RGB8 (exactly 112*112*3 bytes, auto-detected)\n");
 }
 
 static bool parse_args(int argc, char** argv, Opt& o)
@@ -112,13 +119,26 @@ static bool load_input(const std::string& path, std::vector<float>& out)
     if (got != bytes.size()) return false;
 
     fdxpng::Image img;
-    if (!fdxpng::decode(bytes.data(), bytes.size(), img)) {
-        fprintf(stderr, "[fdx] cannot decode %s (expected an 8-bit PNG)\n", path.c_str());
-        return false;
-    }
-    if (img.w != 112 || img.h != 112) {
-        fprintf(stderr, "[fdx] %s is %dx%d, expected an aligned 112x112 crop\n",
-                path.c_str(), img.w, img.h);
+    if (bytes.size() >= 8 && memcmp(bytes.data(), "\x89PNG\r\n\x1a\n", 8) == 0) {
+        if (!fdxpng::decode(bytes.data(), bytes.size(), img)) {
+            fprintf(stderr, "[fdx] cannot decode %s (expected an 8-bit PNG)\n", path.c_str());
+            return false;
+        }
+        if (img.w != 112 || img.h != 112) {
+            fprintf(stderr, "[fdx] %s is %dx%d, expected an aligned 112x112 crop\n",
+                    path.c_str(), img.w, img.h);
+            return false;
+        }
+    } else if (bytes.size() == 112 * 112 * 3) {
+        // raw RGB8 staging format: row-major, channel-last — skips the whole
+        // PNG inflate path (the batch pipeline pre-resizes before staging)
+        img.w = 112;
+        img.h = 112;
+        img.ch = 3;
+        img.px = std::move(bytes);
+    } else {
+        fprintf(stderr, "[fdx] %s: not a PNG and not raw RGB (%zu bytes)\n",
+                path.c_str(), bytes.size());
         return false;
     }
 
