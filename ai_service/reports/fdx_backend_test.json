@@ -1,0 +1,45 @@
+{
+  "ok": true,
+  "checks": {
+    "health_embedder_fdx": {
+      "pass": true,
+      "detail": "fdx-d3d11"
+    },
+    "extract_fdx_space": {
+      "pass": true,
+      "detail": {
+        "space": "fdx-w600k-mbf",
+        "norm": 1.0
+      }
+    },
+    "spaces_incomparable": {
+      "pass": true,
+      "detail": "cos(fdx, insightface)=0.0374 (re-enrollment required)"
+    },
+    "verify_same_person": {
+      "pass": true,
+      "detail": {
+        "sim": 0.8685,
+        "embedder": "fdx-d3d11",
+        "thr": 0.6
+      }
+    },
+    "verify_diff_person": {
+      "pass": true,
+      "detail": {
+        "sim": 0.0091
+      }
+    },
+    "response_contract": {
+      "pass": true,
+      "detail": "embedder + match_threshold present and consistent"
+    },
+    "failopen_without_fdx": {
+      "pass": true,
+      "detail": {
+        "embedder": "insightface-arcface",
+        "sim": 1.0
+      }
+    }
+  }
+}

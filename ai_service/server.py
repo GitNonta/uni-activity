@@ -72,6 +72,7 @@ import pickle
 
 # ── Local modules ─────────────────────────────────────────────────────────────
 from liveness import LivenessDetector, LivenessResult
+from fdx_backend import FdxBackend
 from depth_liveness import DepthLivenessAnalyzer, DepthLivenessResult
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -81,12 +82,14 @@ face_app: Optional[FaceAnalysis] = None
 liveness_detector: Optional[LivenessDetector] = None
 yolo_model = None        # ultralytics YOLO (optional, lazy-loaded)
 pca_reducer: Optional[PCA] = None  # sklearn PCA 512D → 128D
+fdx_backend: Optional[FdxBackend] = None  # fdx D3D11 embedder (activity-check decoder)
 depth_liveness: Optional[DepthLivenessAnalyzer] = None  # depth-stream signal (optional)
 
 LIVENESS_THRESHOLD = float(os.environ.get("LIVENESS_THRESHOLD", "0.58"))
 FACE_MATCH_THRESHOLD = float(os.environ.get("FACE_MATCH_THRESHOLD", "0.65"))
 USE_YOLO = os.environ.get("USE_YOLO", "1") == "1"
 USE_LIVENESS = os.environ.get("USE_LIVENESS", "1") == "1"
+USE_FDX = os.environ.get("USE_FDX", "1") == "1"   # fdx = chosen activity-check decoder
 # Depth-stream liveness (weak additional signal; fails OPEN when the depth
 # server at DEPTH_LIVENESS_URL is not running). Thresholds live in
 # depth_liveness.py (env: DEPTH_FLUX_MIN / DEPTH_SPAN_MIN, UNCALIBRATED).
@@ -120,7 +123,7 @@ YOLO_MODEL_PATH = os.environ.get("YOLO_MODEL_PATH", _DEFAULT_YOLO)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Load all models at startup, release at shutdown"""
-    global face_app, liveness_detector, yolo_model, pca_reducer, depth_liveness
+    global face_app, liveness_detector, yolo_model, pca_reducer, depth_liveness, fdx_backend
 
     logger.info("=" * 60)
     logger.info("Starting Uni-Activity AI Server v2.0 (Secured with API Key & Restricted CORS)")
@@ -195,16 +198,30 @@ async def lifespan(app: FastAPI):
     pca_reducer.fit(dummy_data)
     logger.info("PCA reducer initialized \u2713")
 
+    # ── 5. fdx embedder (chosen activity-check face decoder) ─────────────
+    if USE_FDX:
+        fdx_backend = FdxBackend()
+        if fdx_backend.available:
+            adapter = fdx_backend.describe().get("adapter", {})
+            logger.info(f"fdx engine ready ✓ (adapter={adapter.get('name')})")
+        else:
+            logger.warning(f"fdx engine unavailable ({fdx_backend.last_error}) "
+                           "— /extract & /verify fall back to insightface ArcFace")
+    else:
+        logger.info("fdx DISABLED (USE_FDX=0)")
+
     logger.info("All models ready. Server is UP.")
     yield
 
     # Shutdown
     logger.info("Shutting down AI Server...")
+    if fdx_backend is not None:
+        fdx_backend.close()
 
 
 app = FastAPI(
     title="Uni-Activity AI Server",
-    version="2.0.0",
+    version="2.1.0",
     description="Face Verification: YOLOv8 + SCRFD + ArcFace + Passive Liveness",
     lifespan=lifespan,
 )
@@ -283,6 +300,13 @@ def insightface_detect(img: np.ndarray):
     face = max(faces, key=lambda f: f.det_score)
     embedding = face.normed_embedding  # shape (512,) normalized
     return face, embedding
+
+
+def fdx_embed_crop(crop_bgr: np.ndarray) -> Optional[np.ndarray]:
+    """512-d via fdx (the chosen decoder); None if engine unavailable/failed."""
+    if fdx_backend is None or not fdx_backend.available:
+        return None
+    return fdx_backend.embed_bgr(crop_bgr)
 
 
 def get_full_face_bbox(
@@ -387,14 +411,18 @@ def reduce_to_128d(embedding_512d: np.ndarray) -> np.ndarray:
 async def health():
     return {
         "status": "ok",
-        "version": "2.0.0",
+        "version": "2.1.0",
         "auth_required": bool(AI_SERVER_KEY),
         "models": {
             "insightface": face_app is not None,
             "yolov8": yolo_model is not None,
             "liveness": liveness_detector is not None,
             "depth_liveness": depth_liveness is not None,
+            "fdx": fdx_backend.available if fdx_backend else False,
         },
+        "embedder": ("fdx-d3d11" if fdx_backend is not None and fdx_backend.available
+                     else "insightface-arcface"),
+        "fdx": fdx_backend.describe() if fdx_backend else None,
         "pipeline": get_detector_pipeline(),
         "thresholds": {
             "face_match": FACE_MATCH_THRESHOLD,
@@ -433,6 +461,17 @@ async def extract_face(image: UploadFile = File(...)):
     if embedding_512d is None:
         raise HTTPException(400, "No face detected in image. Please ensure the image contains a clear, front-facing face.")
 
+    # ── fdx 512-d (chosen activity-check decoder) ──────────────────────
+    embedder = "insightface-arcface"
+    fdx_512d: Optional[np.ndarray] = None
+    if fdx_backend is not None and fdx_backend.available:
+        crop = crop_aligned_face(img, face, full_length=False) if face is not None else img
+        fdx_512d = fdx_backend.embed_bgr(crop)
+        if fdx_512d is not None:
+            embedder = "fdx-d3d11"
+        else:
+            logger.warning(f"[extract] fdx failed ({fdx_backend.last_error}) — falling back to insightface")
+
     faces_in_img = face_app.get(img)
     if len(faces_in_img) > 1:
         raise HTTPException(400, "Multiple faces detected. Please upload a photo with only one person.")
@@ -446,15 +485,29 @@ async def extract_face(image: UploadFile = File(...)):
     std_bbox = [int(v) for v in face.bbox.tolist()] if face is not None else []
     full_bbox = get_full_face_bbox(face, img.shape) if face is not None else []
 
+    # When fdx is the embedder, embedding_512d IS the fdx vector: enrollments
+    # stored from this response are natively in the fdx space. The insightface
+    # vector is kept alongside for the migration window; 128-d PCA output is
+    # disabled there until the reducer is re-fit on fdx embeddings.
+    if fdx_512d is not None:
+        primary_512d, legacy_512d = fdx_512d, embedding_512d
+        embedding_128d = None
+    else:
+        primary_512d, legacy_512d = embedding_512d, None
+
     return {
         "status": "success",
-        "message": "Face embeddings extracted successfully (512D + 128D)",
-        "embedding_512d": embedding_512d.tolist(),
-        "embedding_128d": embedding_128d.tolist(),
+        "message": ("Face embeddings extracted successfully (512D fdx)" if fdx_512d is not None
+                    else "Face embeddings extracted successfully (512D + 128D)"),
+        "embedding_512d": primary_512d.tolist(),
+        "embedding_space": "fdx-w600k-mbf" if fdx_512d is not None else "insightface-arcface",
+        "embedding_128d": embedding_128d.tolist() if embedding_128d is not None else None,
         "embedding_dims": {
-            "full": len(embedding_512d),
-            "reduced": len(embedding_128d)
+            "full": len(primary_512d),
+            "reduced": len(embedding_128d) if embedding_128d is not None else 0
         },
+        "embedding_insightface_512d": legacy_512d.tolist() if legacy_512d is not None else None,
+        "embedder": embedder,
         "bbox": std_bbox,
         "full_face_bbox": full_bbox,
         "processing_ms": elapsed_ms,
@@ -529,10 +582,22 @@ async def verify_face(
             "detector_used": get_detector_pipeline(),
         }
 
-    # ── ArcFace cosine similarity ──────────────────────────────────────
-    similarity = float(np.dot(stored_emb, selfie_emb))
+    # ── Cosine similarity (fdx preferred, insightface fallback) ─────────
+    embedder = "insightface-arcface"
+    threshold = FACE_MATCH_THRESHOLD
+    fdx_emb: Optional[np.ndarray] = None
+    if fdx_backend is not None and fdx_backend.available:
+        crop = crop_aligned_face(work_img, face, full_length=False) if face is not None else work_img
+        fdx_emb = fdx_backend.embed_bgr(crop)
+        if fdx_emb is not None:
+            embedder = "fdx-d3d11"
+            threshold = fdx_backend.threshold
+    if fdx_emb is not None:
+        similarity = float(np.dot(stored_emb, fdx_emb))
+    else:
+        similarity = float(np.dot(stored_emb, selfie_emb))
     score_pct  = float(similarity * 100)
-    is_match   = similarity >= FACE_MATCH_THRESHOLD
+    is_match   = similarity >= threshold
 
     # ── Passive Liveness ───────────────────────────────────────────────
     liveness_passed = True
@@ -608,6 +673,8 @@ async def verify_face(
         "liveness_score": round(liveness_score, 4),
         "liveness_checks": liveness_checks,
         "depth_liveness_checks": depth_checks,
+        "embedder": embedder,
+        "match_threshold": round(float(threshold), 4),
         "detector_used": get_detector_pipeline(),
         "processing_ms": elapsed_ms,
         "message": msg,
