@@ -15,6 +15,7 @@
 //
 // Input formats (auto-detected by magic bytes):
 //   - 8-bit PNG (non-interlaced) — decoded by png_decode.h
+//   - uncompressed 24/32-bit BMP — decoded by png_decode.h (decode_bmp)
 //   - raw RGB: exactly 112*112*3 bytes of row-major RGB8 — no decode step at
 //     all (the batch pipeline stages resized crops in this format to keep the
 //     CPU cost per image minimal)
@@ -42,7 +43,8 @@ static void usage()
     fprintf(stderr,
             "usage: face_dx [--model FILE] [--fp16|--fp32] [--bench N] [--gpu-index N]\n"
             "               [--list FILE] [--out FILE] <image ...>\n"
-            "  inputs: 8-bit PNG or raw RGB8 (exactly 112*112*3 bytes, auto-detected)\n");
+            "  inputs: PNG, BMP (24/32-bit), or raw RGB8 (112*112*3 bytes,\n"
+            "          auto-detected)\n");
 }
 
 static bool parse_args(int argc, char** argv, Opt& o)
@@ -119,7 +121,13 @@ static bool load_input(const std::string& path, std::vector<float>& out)
     if (got != bytes.size()) return false;
 
     fdxpng::Image img;
-    if (bytes.size() >= 8 && memcmp(bytes.data(), "\x89PNG\r\n\x1a\n", 8) == 0) {
+    if (bytes.size() >= 2 && bytes[0] == 'B' && bytes[1] == 'M') {
+        if (!fdxpng::decode_bmp(bytes.data(), bytes.size(), img)) {
+            fprintf(stderr, "[fdx] cannot decode %s (unsupported BMP variant)\n",
+                    path.c_str());
+            return false;
+        }
+    } else if (bytes.size() >= 8 && memcmp(bytes.data(), "\x89PNG\r\n\x1a\n", 8) == 0) {
         if (!fdxpng::decode(bytes.data(), bytes.size(), img)) {
             fprintf(stderr, "[fdx] cannot decode %s (expected an 8-bit PNG)\n", path.c_str());
             return false;

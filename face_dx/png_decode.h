@@ -22,6 +22,49 @@ struct Image {
     std::vector<uint8_t> px;  // w*h*ch, row-major RGB(A)
 };
 
+// decode an uncompressed 24/32-bit BMP (BITMAPINFOHEADER or later) into img.
+// Handles bottom-up and top-down rows; rejects RLE / bitfields / palette
+// layouts (cv2 and most writers emit plain BI_RGB 24bpp, which is the case we
+// care about for multi-format staging). Returns false on unsupported input.
+inline bool decode_bmp(const uint8_t* d, size_t n, Image& img)
+{
+    auto rd16 = [](const uint8_t* p) -> uint16_t {
+        return (uint16_t)(p[0] | (p[1] << 8)); };
+    auto rd32 = [](const uint8_t* p) -> uint32_t {
+        return (uint32_t)p[0] | ((uint32_t)p[1] << 8) |
+               ((uint32_t)p[2] << 16) | ((uint32_t)p[3] << 24); };
+    if (n < 54 || d[0] != 'B' || d[1] != 'M') return false;
+    const uint32_t data_off = rd32(d + 10);
+    const uint32_t hdr = rd32(d + 14);
+    if (hdr < 40) return false;  // BITMAPCOREHEADER family
+    const int32_t w = (int32_t)rd32(d + 18);
+    const int32_t h_raw = (int32_t)rd32(d + 22);
+    const uint16_t bpp = rd16(d + 28);
+    const uint32_t comp = rd32(d + 30);
+    if (w <= 0 || (bpp != 24 && bpp != 32) || comp != 0) return false;
+    const bool top_down = h_raw < 0;
+    const int32_t h = top_down ? -h_raw : h_raw;
+    if (h <= 0 || data_off >= n) return false;
+    const int ch = bpp / 8;
+    const size_t row_sz = ((size_t)w * ch + 3u) & ~(size_t)3u;  // DWORD rows
+    if ((size_t)data_off + row_sz * (size_t)h > n) return false;
+    img.w = w;
+    img.h = h;
+    img.ch = 3;
+    img.px.assign((size_t)w * h * 3, 0);
+    for (int y = 0; y < h; y++) {
+        const uint8_t* src = d + data_off +
+            (size_t)(top_down ? y : h - 1 - y) * row_sz;
+        uint8_t* dst = img.px.data() + (size_t)y * w * 3;
+        for (int x = 0; x < w; x++) {
+            dst[x * 3 + 0] = src[x * ch + 2];  // BMP is B,G,R(,X)
+            dst[x * 3 + 1] = src[x * ch + 1];  // image struct is R,G,B
+            dst[x * 3 + 2] = src[x * ch + 0];
+        }
+    }
+    return true;
+}
+
 namespace {
 
 // ---- bit reader over a byte span ----

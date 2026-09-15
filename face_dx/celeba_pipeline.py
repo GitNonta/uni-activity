@@ -59,6 +59,43 @@ MODEL_FVP = os.path.join(HERE, "models", "w600k_mbf.fvp")
 MODEL_ONNX = os.path.join(HERE, "models", "w600k_mbf.onnx")
 IMG_PREFIX = "img_align_celeba/"  # layout inside the official CelebA aligned zip
 
+# every format cv2.imdecode handles out of the box; enumeration is
+# case-insensitive and deterministic (sorted) in all source layouts
+IMG_EXTS = (".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff")
+
+
+class ImageSource:
+    """Uniform read(name)->bytes + names interface over a zip archive or a
+    directory tree, so the pipeline is format/layout agnostic."""
+
+    def __init__(self, path: str) -> None:
+        self.path = path
+        self.zipf: zipfile.ZipFile | None = None
+        if path.lower().endswith(".zip"):
+            self.zipf = zipfile.ZipFile(path)
+            self.names = [n for n in self.zipf.namelist()
+                          if n.lower().endswith(IMG_EXTS) and not n.endswith("/")]
+        elif os.path.isdir(path):
+            self.names = []
+            for root, _dirs, files in os.walk(path):
+                for fn in files:
+                    if fn.lower().endswith(IMG_EXTS):
+                        self.names.append(os.path.relpath(
+                            os.path.join(root, fn), path).replace("\\", "/"))
+            self.names.sort()
+        else:
+            raise FileNotFoundError(f"input is neither a zip nor a directory: {path}")
+
+    def read(self, name: str) -> bytes:
+        if self.zipf is not None:
+            return self.zipf.read(name)
+        with open(os.path.join(self.path, *name.split("/")), "rb") as f:
+            return f.read()
+
+
+def open_source(path: str) -> ImageSource:
+    return ImageSource(path)
+
 # fp16 quantization (fp32-accumulate, fp16-weight storage) has a measured cosine tail
 # down to ~0.99985 vs the fp32 references — far from real breakage (~0.88) but below
 # the fp32 gate, so the gate is precision-aware.
@@ -423,14 +460,13 @@ def _verify_task(name: str, emb_g: np.ndarray, x: np.ndarray, gpu_ms: float) -> 
     }
 
 
-def probe_channel_order(zf: zipfile.ZipFile, name: str, fp16: bool) -> str:
+def probe_channel_order(data: bytes, name: str, fp16: bool) -> str:
     """Pick RGB vs BGR by agreement with the numpy .fvp graph on a real image.
     The graph's expected input is pinned by the exporter: RGB, (x-127.5)/127.5.
     The numpy side always uses the fp32 graph (ground truth); the engine side
     runs the same precision as the benchmark. BGR visibly fails (~0.9) either
     way, so the discrimination survives the fp16 quantization gap."""
     import check_fvp as cfv  # lazy: startup-only sanity check
-    data = zf.read(name)
     layers = cfv.load_fvp(MODEL_FVP)  # fp32 reference
     scores = {}
     for order in ("rgb", "bgr"):
@@ -445,7 +481,10 @@ def probe_channel_order(zf: zipfile.ZipFile, name: str, fp16: bool) -> str:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--zip", default=DEFAULT_ZIP)
+    ap.add_argument("--zip", "--input", dest="zip", default=DEFAULT_ZIP,
+                    help="image source: a .zip archive or a directory of "
+                         "images (jpg/jpeg/png/webp/bmp/tif/tiff) — "
+                         "recursed for directories")
     ap.add_argument("--n", default="300",
                     help="sample size, or 'all' for every image in the zip")
     ap.add_argument("--mode", choices=("batch", "spawn"), default="batch",
@@ -499,9 +538,13 @@ def main() -> int:
     spot = args.spotcheck if production else 0
     do_verify = not production or spot > 0
 
-    zf = zipfile.ZipFile(args.zip)
-    jpgs = [n for n in zf.namelist() if n.lower().endswith((".jpg", ".jpeg")) and IMG_PREFIX in n]
-    print(f"[zip] {args.zip}: {len(jpgs)} images "
+    src = open_source(args.zip)
+    jpgs = src.names
+    if not jpgs:
+        print(f"[error] no images ({', '.join(IMG_EXTS)}) found in {args.zip}",
+              file=sys.stderr)
+        return 2
+    print(f"[input] {args.zip}: {len(jpgs)} images "
           f"({'production' if production else 'full-verify'} mode)")
     if str(args.n).lower() == "all":
         n_req = len(jpgs)
@@ -563,12 +606,12 @@ def main() -> int:
     order = "rgb"  # the exporter-pinned contract; probe re-confirms below
     if names:
         if not args.skip_probe:
-            order = probe_channel_order(zf, names[0], args.fp16)
+            order = probe_channel_order(src.read(names[0]), names[0], args.fp16)
         # engine warmup (model parse / shader compile) — excluded from stats
         w = names[0]
-        run_gpu_spawn(stage_for_engine(zf.read(w), 112), args.fp16, bench=args.bench)
+        run_gpu_spawn(stage_for_engine(src.read(w), 112), args.fp16, bench=args.bench)
         if sess is not None:
-            warm = np.asarray(sess.run(None, {"input.1": preprocess(zf.read(w), 112, order)})[0][0])
+            warm = np.asarray(sess.run(None, {"input.1": preprocess(src.read(w), 112, order)})[0][0])
             del warm
         print(f"[warmup] done (mode={args.mode}{' production' if production else ''})")
 
@@ -741,7 +784,7 @@ def main() -> int:
     if args.mode == "spawn":
         window: list = []
         for idx, name in enumerate(names):
-            data = zf.read(name)
+            data = src.read(name)
             t0 = time.perf_counter()
             img = decode_resize(data, 112)  # single decode for both outputs
             png = stage_from_img(img, 112)
@@ -786,7 +829,7 @@ def main() -> int:
             png_list: list[str] = []
             png_info: dict[str, tuple[str, np.ndarray | None]] = {}
             for j, name in enumerate(chunk_names):
-                data = zf.read(name)
+                data = src.read(name)
                 t0 = time.perf_counter()
                 img = decode_resize(data, 112)  # single decode for both outputs
                 t1 = time.perf_counter()
@@ -828,9 +871,10 @@ def main() -> int:
         "meta": {
             "generated_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
             "dataset": {
-                "zip": os.path.abspath(args.zip),
+                "input": os.path.abspath(args.zip),
                 "total_images": len(jpgs),
-                "layout": f"{IMG_PREFIX}NNNNNN.jpg, 178x218 aligned crops",
+                "layout": "zip archive or directory tree; any cv2-readable "
+                          "image format (jpg/png/webp/bmp/tif)",
             },
             "sample": {"size": n, "method": f"uniform random seed={args.seed}",
                        "gpu_bench_runs_per_image": args.bench,
