@@ -32,8 +32,8 @@
       "video_stream": true,
       "depth_stream": true,
       "meta": {
-        "seq": 8,
-        "ms": 63.19,
+        "seq": 6,
+        "ms": 62.15,
         "box": null,
         "frame": [
           480,
@@ -41,11 +41,21 @@
         ]
       },
       "ok": true
+    },
+    "recorder_replay": {
+      "started": true,
+      "stopped": true,
+      "listed": true,
+      "replayed": true,
+      "frames": 44,
+      "replay_flag": true,
+      "replay_stops": true,
+      "ok": true
     }
   },
   "pass": true,
   "meta": {
-    "generated_utc": "2026-09-15T11:34:53Z",
+    "generated_utc": "2026-09-15T11:54:03Z",
     "model": "model-small.onnx"
   }
 }

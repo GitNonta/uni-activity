@@ -43,6 +43,7 @@ VIEWER_PATH = os.path.join(HERE, "index.html")
 
 GRID = 64          # depth-grid resolution served over JSON
 DEPTH_IN = 256     # MiDaS-Small input size
+REC_DIR = os.path.join(HERE, "recordings")   # .fdz = JSONL of depth frames
 
 # shared state (latest-only; writers replace, readers copy references)
 _lock = threading.Lock()
@@ -55,7 +56,13 @@ _state = {
     "seq": 0,
     "ts": 0.0,
     "depth_ms": 0.0,
+    "replay": False,     # True while a recorded .fdz is being played back
 }
+
+# recorder / replay state
+_rec_lock = threading.Lock()
+_rec = {"file": None, "count": 0, "t0": 0.0, "name": ""}
+_replay = {"active": False, "thread": None, "stop": threading.Event()}
 
 
 # ---------------------------------------------------------------------------
@@ -141,6 +148,11 @@ class DepthModel:
 def depth_loop(cpu_threads: int) -> None:
     model = DepthModel(cpu_threads)
     while True:
+        # pause while a recording is being replayed: the replay thread owns
+        # _state during playback (and we save the inference cost)
+        if _replay["active"]:
+            time.sleep(0.05)
+            continue
         # the capture thread publishes JPEG frames; decode the latest
         # (~2-3 ms at 640x480) and run depth on the face crop
         with _lock:
@@ -183,6 +195,86 @@ def depth_loop(cpu_threads: int) -> None:
             _state["depth_ms"] = ms
             _state["range"] = (dmin, dmax)
 
+        # append to the open recording (one JSON line per depth frame)
+        with _rec_lock:
+            f = _rec["file"]
+            if f is not None:
+                f.write(json.dumps({
+                    "seq": _state["seq"], "ts": round(_state["ts"], 3),
+                    "box": box, "ms": round(ms, 2),
+                    "depth_b64": base64.b64encode(
+                        grid.astype("<f2").tobytes()).decode()}) + "\n")
+                _rec["count"] += 1
+
+
+# ---------------------------------------------------------------------------
+# recorder / replay
+# ---------------------------------------------------------------------------
+def _set_replay(active: bool) -> None:
+    _replay["active"] = active
+    with _lock:
+        _state["replay"] = active
+
+
+def _stop_replay() -> None:
+    """Signal the replay thread to stop and wait for it (never from itself)."""
+    _replay["stop"].set()
+    th = _replay["thread"]
+    if th and th.is_alive() and th is not threading.current_thread():
+        th.join(timeout=2.0)
+    _replay["thread"] = None
+    _set_replay(False)
+
+
+def replay_loop(path: str) -> None:
+    """Feed a recorded .fdz into _state at its recorded pace."""
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            lines = fh.readlines()
+    except OSError:
+        _set_replay(False)
+        return
+    prev_ts = None
+    for line in lines:
+        if _replay["stop"].is_set():
+            break
+        try:
+            obj = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        wait = 0.0 if prev_ts is None else max(0.0, min(0.25, obj.get("ts", 0) - prev_ts))
+        prev_ts = obj.get("ts", 0)
+        if wait > 0:
+            time.sleep(wait)
+        try:
+            grid = np.frombuffer(base64.b64decode(obj["depth_b64"]), "<f2") \
+                .astype(np.float32).reshape(GRID, GRID)
+        except (KeyError, ValueError):
+            continue
+        with _lock:
+            _state["depth"] = grid
+            _state["box"] = obj.get("box")
+            _state["seq"] += 1
+            _state["ts"] = time.time()
+            _state["depth_ms"] = float(obj.get("ms", 0.0))
+            _state["range"] = (float(grid.min()), float(grid.max()))
+            _state["replay"] = _replay["active"]
+    if _replay["active"]:
+        _set_replay(False)   # natural end of file
+
+
+def start_replay(path: str) -> tuple[bool, str]:
+    if not os.path.isfile(path):
+        return False, "recording not found"
+    _stop_replay()
+    _replay["stop"].clear()
+    _replay["active"] = True
+    _replay["thread"] = threading.Thread(target=replay_loop, args=(path,), daemon=True)
+    with _lock:
+        _state["replay"] = True
+    _replay["thread"].start()
+    return True, os.path.basename(path)
+
 
 # ---------------------------------------------------------------------------
 # HTTP
@@ -223,6 +315,10 @@ class Handler(BaseHTTPRequestHandler):
             with _lock:
                 depth = _state["depth"]
                 rng = _state.get("range")
+                with _rec_lock:
+                    recording = _rec["file"] is not None
+                    rec_count = _rec["count"] if recording else 0
+                    rec_name = _rec["name"] if recording else None
                 payload = {
                     "seq": _state["seq"], "ts": _state["ts"],
                     "box": _state["box"], "frame": _state["frame_shape"],
@@ -230,14 +326,94 @@ class Handler(BaseHTTPRequestHandler):
                     "depth_min": rng[0] if rng else None,
                     "depth_max": rng[1] if rng else None,
                     "grid": GRID,
+                    "replay": bool(_state["replay"]),
+                    "recording": recording,
+                    "rec_name": rec_name,
+                    "rec_frames": rec_count,
                     "depth_b64": base64.b64encode(
                         depth.astype("<f2").tobytes()).decode()
                     if depth is not None else None,
                 }
             body = json.dumps(payload).encode()
             self._send(200, "application/json", body)
+        elif path == "/recordings":
+            items = []
+            if os.path.isdir(REC_DIR):
+                for nm in sorted(os.listdir(REC_DIR)):
+                    if nm.endswith(".fdz"):
+                        p = os.path.join(REC_DIR, nm)
+                        items.append({"name": nm,
+                                      "bytes": os.path.getsize(p),
+                                      "mtime": os.path.getmtime(p)})
+            body = json.dumps({"recordings": items}).encode()
+            self._send(200, "application/json", body)
         else:
             self._send(404, "text/plain", b"not found")
+
+    def do_POST(self):
+        path = self.path.split("?")[0]
+        try:
+            n = int(self.headers.get("Content-Length", "0"))
+            body = json.loads(self.rfile.read(min(n, 4096)) or b"{}")
+        except (ValueError, json.JSONDecodeError):
+            self._send(400, "application/json", b'{"ok":false,"error":"bad json"}')
+            return
+
+        if path == "/record":
+            if body.get("action") == "start":
+                _stop_replay()  # cannot record while replaying
+                with _rec_lock:
+                    if _rec["file"] is not None:
+                        self._send(409, "application/json",
+                                   b'{"ok":false,"error":"already recording"}')
+                        return
+                    os.makedirs(REC_DIR, exist_ok=True)
+                    name = time.strftime("rec_%Y%m%d_%H%M%S.fdz")
+                    _rec["file"] = open(os.path.join(REC_DIR, name), "w",
+                                        encoding="utf-8")
+                    _rec["count"] = 0
+                    _rec["t0"] = time.time()
+                    _rec["name"] = name
+                self._send(200, "application/json",
+                           json.dumps({"ok": True, "name": name}).encode())
+            elif body.get("action") == "stop":
+                with _rec_lock:
+                    f = _rec["file"]
+                    if f is None:
+                        self._send(409, "application/json",
+                                   b'{"ok":false,"error":"not recording"}')
+                        return
+                    f.close()
+                    name, count = _rec["name"], _rec["count"]
+                    _rec["file"] = None
+                    _rec["name"] = ""
+                self._send(200, "application/json",
+                           json.dumps({"ok": True, "name": name,
+                                       "frames": count}).encode())
+            else:
+                self._send(400, "application/json",
+                           b'{"ok":false,"error":"action must be start|stop"}')
+
+        elif path == "/replay":
+            if body.get("action") == "stop":
+                _stop_replay()
+                self._send(200, "application/json", b'{"ok":true}')
+            else:
+                name = str(body.get("name", ""))
+                if not name.endswith(".fdz") or os.path.basename(name) != name:
+                    self._send(400, "application/json",
+                               b'{"ok":false,"error":"invalid name"}')
+                    return
+                with _rec_lock:
+                    if _rec["file"] is not None:
+                        self._send(409, "application/json",
+                                   b'{"ok":false,"error":"stop recording first"}')
+                        return
+                ok, msg = start_replay(os.path.join(REC_DIR, name))
+                self._send(200 if ok else 404, "application/json",
+                           json.dumps({"ok": ok, "name": msg}).encode())
+        else:
+            self._send(404, "application/json", b'{"ok":false,"error":"not found"}')
 
     def _stream(self, key: str) -> None:
         self.send_response(200)
@@ -286,6 +462,11 @@ def main() -> int:
     except KeyboardInterrupt:
         pass
     finally:
+        _stop_replay()
+        with _rec_lock:
+            if _rec["file"] is not None:
+                _rec["file"].close()
+                _rec["file"] = None
         cap.release()
     return 0
 

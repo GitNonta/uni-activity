@@ -161,6 +161,49 @@ def main() -> int:
             }
             print(f"[depth] server: health={ok_health} json={ok_json} grid={ok_grid} "
                   f"rgb_stream={ok_rgb} depth_stream={ok_depth} meta={meta}")
+
+            # ---- 3b. recorder + replay round trip ----
+            rec = {"started": False, "stopped": False, "listed": False,
+                   "replayed": False, "frames": 0}
+            if ok_health:
+                def post(path: str, obj: dict) -> dict:
+                    req = urllib.request.Request(
+                        f"http://127.0.0.1:{PORT}{path}", method="POST",
+                        data=json.dumps(obj).encode(),
+                        headers={"Content-Type": "application/json"})
+                    with urllib.request.urlopen(req, timeout=5) as r:
+                        return json.loads(r.read())
+
+                j = post("/record", {"action": "start"})
+                rec["started"] = bool(j.get("ok"))
+                time.sleep(3.0)  # accumulate ~30-45 frames
+                j = post("/record", {"action": "stop"})
+                rec["stopped"] = bool(j.get("ok"))
+                rec["frames"] = int(j.get("frames", 0))
+                with urllib.request.urlopen(
+                        f"http://127.0.0.1:{PORT}/recordings", timeout=5) as r:
+                    lst = json.loads(r.read())["recordings"]
+                rec["listed"] = any(x["name"].endswith(".fdz") for x in lst)
+                if rec["started"] and rec["frames"] >= 10:
+                    name = lst[-1]["name"]
+                    j = post("/replay", {"action": "play", "name": name})
+                    rec["replayed"] = bool(j.get("ok"))
+                    if rec["replayed"]:
+                        time.sleep(1.0)
+                        _, body = get("/depth.json", timeout=3)
+                        j2 = json.loads(body)
+                        rec["replay_flag"] = bool(j2.get("replay"))
+                        post("/replay", {"action": "stop"})
+                        time.sleep(0.5)
+                        _, body = get("/depth.json", timeout=3)
+                        rec["replay_stops"] = not json.loads(body).get("replay")
+            results["checks"]["recorder_replay"] = {
+                **rec,
+                "ok": rec["started"] and rec["stopped"] and rec["listed"]
+                      and rec["replayed"] and rec.get("replay_flag", False)
+                      and rec.get("replay_stops", False),
+            }
+            print(f"[depth] recorder: {rec}")
         finally:
             proc.terminate()
             try:
@@ -173,7 +216,9 @@ def main() -> int:
 
     # ---- verdict ----
     hard = [results["checks"][k]["ok"] for k in ("model_sanity", "face_geometry")]
-    ok = all(hard) and (a.no_camera or results["checks"]["server_smoke"]["ok"])
+    extra = [] if a.no_camera else [results["checks"]["server_smoke"]["ok"],
+                                    results["checks"]["recorder_replay"]["ok"]]
+    ok = all(hard) and all(extra)
     results["pass"] = bool(ok)
     results["meta"] = {
         "generated_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
