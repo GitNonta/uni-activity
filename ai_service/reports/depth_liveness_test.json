@@ -1,0 +1,40 @@
+{
+  "checks": {
+    "frozen_not_live": {
+      "is_live": false,
+      "score": 0.7,
+      "flux": 0.227,
+      "span": 599.76,
+      "ok": true
+    },
+    "moving_live": {
+      "is_live": true,
+      "score": 1.0,
+      "flux": 57.7858,
+      "ok": true
+    },
+    "flat_not_live": {
+      "is_live": false,
+      "span": 0.73,
+      "ok": true
+    },
+    "fail_open": {
+      "is_live": true,
+      "available": false,
+      "score": 0.5,
+      "ok": true
+    },
+    "verify_wiring": {
+      "depth_checks_present": true,
+      "available": false,
+      "liveness_passed": true,
+      "is_match": false,
+      "ok": true
+    }
+  },
+  "pass": true,
+  "meta": {
+    "generated_utc": "2026-09-15T12:05:57Z",
+    "note": "thresholds UNCALIBRATED \u2014 calibrate with real capture/attack data"
+  }
+}

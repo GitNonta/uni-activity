@@ -72,6 +72,7 @@ import pickle
 
 # ── Local modules ─────────────────────────────────────────────────────────────
 from liveness import LivenessDetector, LivenessResult
+from depth_liveness import DepthLivenessAnalyzer, DepthLivenessResult
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Global models (loaded once at startup)
@@ -80,11 +81,18 @@ face_app: Optional[FaceAnalysis] = None
 liveness_detector: Optional[LivenessDetector] = None
 yolo_model = None        # ultralytics YOLO (optional, lazy-loaded)
 pca_reducer: Optional[PCA] = None  # sklearn PCA 512D → 128D
+depth_liveness: Optional[DepthLivenessAnalyzer] = None  # depth-stream signal (optional)
 
 LIVENESS_THRESHOLD = float(os.environ.get("LIVENESS_THRESHOLD", "0.58"))
 FACE_MATCH_THRESHOLD = float(os.environ.get("FACE_MATCH_THRESHOLD", "0.65"))
 USE_YOLO = os.environ.get("USE_YOLO", "1") == "1"
 USE_LIVENESS = os.environ.get("USE_LIVENESS", "1") == "1"
+# Depth-stream liveness (weak additional signal; fails OPEN when the depth
+# server at DEPTH_LIVENESS_URL is not running). Thresholds live in
+# depth_liveness.py (env: DEPTH_FLUX_MIN / DEPTH_SPAN_MIN, UNCALIBRATED).
+USE_DEPTH_LIVENESS = os.environ.get("USE_DEPTH_LIVENESS", "1") == "1"
+DEPTH_LIVENESS_URL = os.environ.get("DEPTH_LIVENESS_URL", "http://127.0.0.1:8086")
+DEPTH_LIVENESS_SAMPLES = int(os.environ.get("DEPTH_LIVENESS_SAMPLES", "8"))
 
 # ── API Key & Security Configuration ──────────────────────────────────────────
 AI_SERVER_KEY = os.environ.get("AI_SERVER_KEY", os.environ.get("AI_SERVICE_API_KEY", "uni-activity-ai-secret-key-2026"))
@@ -112,7 +120,7 @@ YOLO_MODEL_PATH = os.environ.get("YOLO_MODEL_PATH", _DEFAULT_YOLO)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Load all models at startup, release at shutdown"""
-    global face_app, liveness_detector, yolo_model, pca_reducer
+    global face_app, liveness_detector, yolo_model, pca_reducer, depth_liveness
 
     logger.info("=" * 60)
     logger.info("Starting Uni-Activity AI Server v2.0 (Secured with API Key & Restricted CORS)")
@@ -151,6 +159,16 @@ async def lifespan(app: FastAPI):
         logger.info(f"Liveness detector loaded ✓ (threshold={LIVENESS_THRESHOLD})")
     else:
         logger.info("Liveness detection DISABLED (USE_LIVENESS=0)")
+
+    # ── 2b. Depth-stream liveness (optional, fail-open) ───────────────
+    if USE_DEPTH_LIVENESS:
+        depth_liveness = DepthLivenessAnalyzer(
+            server_url=DEPTH_LIVENESS_URL,
+            sample_frames=DEPTH_LIVENESS_SAMPLES)
+        logger.info(f"Depth liveness analyzer ready ✓ (server={DEPTH_LIVENESS_URL}, "
+                    "fail-open when unreachable)")
+    else:
+        logger.info("Depth liveness DISABLED (USE_DEPTH_LIVENESS=0)")
 
     # ── 3. YOLOv8-face (optional, lazy) ──────────────────────────────
     if USE_YOLO:
@@ -375,6 +393,7 @@ async def health():
             "insightface": face_app is not None,
             "yolov8": yolo_model is not None,
             "liveness": liveness_detector is not None,
+            "depth_liveness": depth_liveness is not None,
         },
         "pipeline": get_detector_pipeline(),
         "thresholds": {
@@ -536,6 +555,26 @@ async def verify_face(
             liveness_passed = True
             liveness_score  = 0.5
 
+    # ── Depth-stream liveness (weak additional signal, fail-open) ──────
+    # Only meaningful when the capture client is streaming to the depth
+    # server; a still-image /verify simply gets 'unavailable' = no change.
+    depth_checks: dict = {}
+    if check_liveness and depth_liveness is not None and USE_DEPTH_LIVENESS \
+            and liveness_passed:  # skip the ~1 s sampling when texture already failed
+        try:
+            dres: DepthLivenessResult = depth_liveness.analyze()
+            depth_checks = dres.checks
+            if dres.available:
+                # fusion: require BOTH texture liveness and depth-motion
+                # evidence when depth data exists; unavailable = no change
+                liveness_passed = liveness_passed and dres.is_live
+                liveness_score = round((liveness_score + dres.liveness_score) / 2, 4)
+            logger.info(f"[verify] depth liveness: live={dres.is_live} "
+                        f"available={dres.available} checks={depth_checks}")
+        except Exception as e:
+            logger.warning(f"Depth liveness error (non-fatal): {e}")
+            depth_checks = {"available": False, "error": str(e)}
+
     elapsed_ms = int((time.time() - t0) * 1000)
 
     # ── Final decision ─────────────────────────────────────────────────
@@ -545,8 +584,13 @@ async def verify_face(
         msg = f"Face verified ✓ ({score_pct:.1f}%) — Liveness confirmed"
     elif not is_match:
         msg = f"Face does not match ({score_pct:.1f}%)"
-    else:
+    elif not depth_checks.get("available", False):
         msg = f"Face matches ({score_pct:.1f}%) but liveness check failed"
+    elif depth_checks.get("motion_ok", True):
+        msg = f"Face matches ({score_pct:.1f}%) but depth span check failed"
+    else:
+        msg = (f"Face matches ({score_pct:.1f}%) but depth motion check failed "
+               "(possible photo attack)")
 
     logger.info(
         f"[verify] match={is_match}({score_pct:.1f}%) "
@@ -563,6 +607,7 @@ async def verify_face(
         "score_percentage": round(score_pct, 2),
         "liveness_score": round(liveness_score, 4),
         "liveness_checks": liveness_checks,
+        "depth_liveness_checks": depth_checks,
         "detector_used": get_detector_pipeline(),
         "processing_ms": elapsed_ms,
         "message": msg,
