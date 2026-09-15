@@ -1,0 +1,51 @@
+{
+  "checks": {
+    "model_sanity": {
+      "shape": [
+        256,
+        256
+      ],
+      "finite": true,
+      "span": 955.6,
+      "ok": true
+    },
+    "face_geometry": {
+      "center_nearer_than_border": "4/4",
+      "center_means": [
+        873.8,
+        787.8,
+        752.9,
+        793.8
+      ],
+      "border_means": [
+        565.8,
+        676.4,
+        528.5,
+        588.1
+      ],
+      "ok": true
+    },
+    "server_smoke": {
+      "healthz": true,
+      "depth_json": true,
+      "grid_valid": true,
+      "video_stream": true,
+      "depth_stream": true,
+      "meta": {
+        "seq": 8,
+        "ms": 63.19,
+        "box": null,
+        "frame": [
+          480,
+          640
+        ]
+      },
+      "ok": true
+    }
+  },
+  "pass": true,
+  "meta": {
+    "generated_utc": "2026-09-15T11:34:53Z",
+    "model": "model-small.onnx"
+  }
+}

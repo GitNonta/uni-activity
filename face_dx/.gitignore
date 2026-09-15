@@ -34,3 +34,4 @@ reports/celeba_512d_full_fp16.json
 bindings/node/node_modules/
 bindings/csharp/*.exe
 reports/_*/
+depth_capture/model-small.onnx
