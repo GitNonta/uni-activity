@@ -288,11 +288,13 @@ def get_full_face_bbox(
     pad_b = int(face_h * pad_bottom_ratio)
     pad_s = int(face_w * pad_side_ratio)
 
+    # int() coercion: bbox values are numpy int32 and FastAPI cannot serialize
+    # numpy scalars (500 "object is not iterable" at response encoding)
     return [
-        max(0, x1 - pad_s),
-        max(0, y1 - pad_t),
-        min(w, x2 + pad_s),
-        min(h, y2 + pad_b),
+        int(max(0, x1 - pad_s)),
+        int(max(0, y1 - pad_t)),
+        int(min(w, x2 + pad_s)),
+        int(min(h, y2 + pad_b)),
     ]
 
 

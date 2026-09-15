@@ -1,0 +1,78 @@
+{
+  "gates": {
+    "server_vs_engine": 0.6,
+    "engine_vs_onnx": 0.9998
+  },
+  "checks": {
+    "health": {
+      "code": 200,
+      "pipeline": "yolov8n-face+scrfd+arcface+liveness",
+      "models": {
+        "insightface": true,
+        "yolov8": true,
+        "liveness": true
+      }
+    },
+    "auth_enforced": {
+      "probe": "POST /extract without API key",
+      "result": "403 without key"
+    },
+    "extract": {
+      "code": 200,
+      "dims": {
+        "full": 512,
+        "reduced": 128
+      },
+      "processing_ms": 3319,
+      "detector": "yolov8n-face+scrfd+arcface+liveness"
+    },
+    "verify_same": {
+      "similarity": -0.0895,
+      "is_match": false,
+      "liveness_passed": true,
+      "liveness_score": 0.8895,
+      "processing_ms": 909
+    },
+    "verify_diff": {
+      "similarity": -0.0137,
+      "is_match": false,
+      "processing_ms": 816
+    },
+    "engine_same_vs_diff": {
+      "same_crop_cos": 1.0,
+      "diff_face_cos": 0.0002,
+      "separation_ok": true
+    }
+  },
+  "cross_stack": [
+    {
+      "image": "img_align_celeba/017413.jpg",
+      "server_vs_engine": -0.036702,
+      "server_vs_onnx": -0.036528,
+      "engine_vs_onnx": 0.999974
+    },
+    {
+      "image": "img_align_celeba/018082.jpg",
+      "server_vs_engine": 0.094025,
+      "server_vs_onnx": 0.09412,
+      "engine_vs_onnx": 0.999977
+    },
+    {
+      "image": "img_align_celeba/087728.jpg",
+      "server_vs_engine": 0.004004,
+      "server_vs_onnx": 0.003609,
+      "engine_vs_onnx": 0.999979
+    },
+    {
+      "image": "img_align_celeba/132613.jpg",
+      "server_vs_engine": -0.025679,
+      "server_vs_onnx": -0.02531,
+      "engine_vs_onnx": 0.999978
+    },
+    {
+      "image": "(duplicate of first crop)",
+      "engine_determinism_cos": 1.0
+    }
+  ],
+  "verdict": "PASS"
+}
