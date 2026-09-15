@@ -186,12 +186,12 @@ class BatchChunk:
         if os.path.exists(self.out_path):
             os.remove(self.out_path)
 
-        cmd = [EXE, "--model", engine_model(fp16), "--fp16" if fp16 else "--fp32",
-               "--list", self.list_path.replace("\\", "/"),
-               "--out", self.out_path.replace("\\", "/")]
+        self._cmd = [EXE, "--model", engine_model(fp16), "--fp16" if fp16 else "--fp32",
+                     "--list", self.list_path.replace("\\", "/"),
+                     "--out", self.out_path.replace("\\", "/")]
         if bench > 1:
-            cmd += ["--bench", str(bench)]
-        self.proc = subprocess.Popen(cmd, cwd=HERE, stdout=subprocess.DEVNULL,
+            self._cmd += ["--bench", str(bench)]
+        self.proc = subprocess.Popen(self._cmd, cwd=HERE, stdout=subprocess.DEVNULL,
                                      stderr=subprocess.PIPE, text=True)
         self.records: list[dict] = []  # {"id": png_path, "ms": float, "embedding": [...]}
         self.stderr_text: str | None = None
@@ -237,13 +237,54 @@ class BatchChunk:
                     return
             time.sleep(0.02 if alive else 0.05)
 
-    def join(self, timeout: float = 600.0) -> tuple[int, int, list[str]]:
-        t0 = time.perf_counter()
+    def restart(self) -> None:
+        """Respawn a fresh engine on the same PNG list after a failed join.
+
+        Used for timed-out batches (hung engine / iGPU driver stall): keeps
+        everything read so far, drops any partial out file, and starts the
+        chunk over. Without this, one wedged engine kills an entire resumed
+        production run with an uncaught RuntimeError."""
         try:
-            _, stderr = self.proc.communicate(timeout=timeout)
-        except subprocess.TimeoutExpired:
             self.proc.kill()
-            raise RuntimeError("engine batch timed out")
+        except OSError:
+            pass
+        try:
+            self.proc.wait(timeout=10)
+        except Exception:
+            pass
+        self._thread.join(timeout=5)
+        if os.path.exists(self.out_path):
+            os.remove(self.out_path)
+        self.records = []
+        self.stderr_text = None
+        self.missing = []
+        self.join_wall_ms = 0.0
+        self.proc = subprocess.Popen(self._cmd, cwd=HERE, stdout=subprocess.DEVNULL,
+                                     stderr=subprocess.PIPE, text=True)
+        self._thread = threading.Thread(target=self._reader, daemon=True)
+        self._thread.start()
+
+    def join(self, timeout: float = 600.0, retries: int = 2) -> tuple[int, int, list[str]]:
+        t0 = time.perf_counter()
+        while True:
+            try:
+                _, stderr = self.proc.communicate(timeout=timeout)
+                break
+            except subprocess.TimeoutExpired:
+                try:
+                    self.proc.kill()  # may race an engine that just exited
+                except OSError:
+                    pass
+                if retries <= 0:
+                    try:
+                        self.proc.wait(timeout=5)  # reap so no handle leaks
+                    except Exception:
+                        pass
+                    raise RuntimeError("engine batch timed out")
+                retries -= 1
+                print(f"[engine timeout] batch hung >{timeout:.0f}s; respawning "
+                      f"fresh engine ({retries} retries left)")
+                self.restart()
         self.stderr_text = stderr
         self._thread.join(timeout=30)
         ok = failed = 0
