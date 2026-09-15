@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generated_utc": "2026-09-15T10:13:28Z",
+    "generated_utc": "2026-09-15T10:48:27Z",
     "dll": "build\\face_dx.dll",
     "model": "models\\w600k_mbf.fvp",
     "images": 6,
@@ -21,34 +21,34 @@
   "results": {
     "c-runner": {
       "images": 6,
-      "wall_s": 1.178,
+      "wall_s": 1.325,
       "max_diff_vs_exe": 0.0,
       "min_cos_vs_exe": 1.0
     },
     "python": {
       "images": 6,
-      "wall_s": 1.641,
+      "wall_s": 1.571,
       "max_diff_vs_exe": 0.0,
       "min_cos_vs_exe": 1.0,
       "max_diff_vs_c": 0.0
     },
     "node": {
       "images": 6,
-      "wall_s": 1.362,
+      "wall_s": 1.443,
       "max_diff_vs_exe": 0.0,
       "min_cos_vs_exe": 1.0,
       "max_diff_vs_c": 0.0
     },
     "csharp": {
       "images": 6,
-      "wall_s": 1.312,
+      "wall_s": 1.313,
       "max_diff_vs_exe": 1.000000000861423e-08,
       "min_cos_vs_exe": 1.0,
       "max_diff_vs_c": 1.000000000861423e-08
     },
     "java": {
       "images": 6,
-      "wall_s": 2.768,
+      "wall_s": 2.658,
       "max_diff_vs_exe": 0.0,
       "min_cos_vs_exe": 1.0,
       "max_diff_vs_c": 0.0

@@ -64,12 +64,27 @@ FDX_API void fdx_model_free(fdx_model* model);
 
 /* Create the GPU engine. fp16 != 0 selects packed-fp16 weight storage with
  * fp32 accumulation (production); 0 selects pure fp32 (reference).
- * gpu_index: -1 = auto-pick, else adapter index from fdx_gpu_count(). */
+ * gpu_index: -1 = default hardware adapter (WARP fallback only if no GPU),
+ *            -2 = force WARP software rasterizer,
+ *            >= 0 = explicit adapter index in fdx_gpu_count() enumeration
+ *            order; out of range -> FDX_ERR_GPU_INIT. */
 FDX_API int32_t fdx_engine_create(int32_t fp16, int32_t gpu_index,
                                   fdx_engine** out_engine,
                                   char* err_buf, int32_t err_cap);
 
 FDX_API void fdx_engine_free(fdx_engine* engine);
+
+/* Describe the adapter an engine actually runs on (valid after create).
+ * name_buf receives a NUL-terminated adapter description (e.g.
+ * "Intel(R) UHD Graphics" or "Microsoft Basic Render Driver"), truncated to
+ * fit; is_warp receives 1 for the WARP software rasterizer; luid receives the
+ * DXGI AdapterLuid as (HighPart<<32)|LowPart (0 if unavailable). Any of the
+ * three out pointers may be NULL. Returns FDX_ERR_INVALID_ARG for a NULL
+ * engine. Added in ABI 1 (additive); safe for ABI-1 hosts that ignore it. */
+FDX_API int32_t fdx_engine_describe(const fdx_engine* engine,
+                                    char* name_buf, int32_t name_cap,
+                                    int32_t* is_warp,
+                                    unsigned long long* luid);
 
 /* ── inference ───────────────────────────────────────────────────────────── */
 

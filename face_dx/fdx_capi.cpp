@@ -17,6 +17,7 @@
 #include "dx_engine.h"
 
 #include <windows.h>
+#include <cstring>   // strncpy (fdx_engine_describe)
 #include <dxgi.h>    // vendored (vendor/) — fdx_gpu_count adapter enumeration
 #include <direct.h>  // _wchdir
 
@@ -186,6 +187,21 @@ FDX_API int32_t fdx_engine_create(int32_t fp16, int32_t gpu_index,
 FDX_API void fdx_engine_free(fdx_engine* engine)
 {
     delete engine;
+}
+
+FDX_API int32_t fdx_engine_describe(const fdx_engine* engine,
+                                    char* name_buf, int32_t name_cap,
+                                    int32_t* is_warp,
+                                    unsigned long long* luid)
+{
+    if (!engine) return FDX_ERR_INVALID_ARG;
+    if (name_buf && name_cap > 0) {
+        strncpy(name_buf, engine->e.adapter_name(), (size_t)name_cap - 1);
+        name_buf[name_cap - 1] = 0;
+    }
+    if (is_warp) *is_warp = engine->e.adapter_is_warp() ? 1 : 0;
+    if (luid) *luid = engine->e.adapter_luid();
+    return FDX_OK;
 }
 
 // ---------------------------------------------------------------------------

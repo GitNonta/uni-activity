@@ -207,6 +207,11 @@ struct Buffer {
 struct Engine::Impl {
     bool fp16 = false;
 
+    // selected adapter info (captured at init)
+    char adapter_name[128] = "";
+    bool adapter_warp = false;
+    unsigned long long adapter_luid_v = 0;
+
     ComPtr<ID3D11Device> dev;
     ComPtr<ID3D11DeviceContext> ctx;
     ComPtr<ID3D11ComputeShader> cs_conv, cs_conv11, cs_conv3, cs_conv3rb, cs_gemm_partial, cs_gemm_final, cs_add;
@@ -473,31 +478,134 @@ Engine::~Engine()
     p_ = nullptr;
 }
 
+const char* Engine::adapter_name() const
+{
+    return p_ ? p_->adapter_name : "";
+}
+
+bool Engine::adapter_is_warp() const
+{
+    return p_ ? p_->adapter_warp : false;
+}
+
+unsigned long long Engine::adapter_luid() const
+{
+    return p_ ? p_->adapter_luid_v : 0ULL;
+}
+
 bool Engine::init(bool fp16, int gpu_index, std::string* err)
 {
-    (void)gpu_index;
     Impl& I = *p_;
     I.fp16 = fp16;
+    I.adapter_name[0] = 0;
+    I.adapter_warp = false;
+    I.adapter_luid_v = 0;
 
     const bool trace = getenv("FDX_TRACE") != nullptr;
     D3D_FEATURE_LEVEL levels[] = {D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1};
     D3D_FEATURE_LEVEL got = D3D_FEATURE_LEVEL_11_0;
     ComPtr<ID3D11Device> dev;
     ComPtr<ID3D11DeviceContext> ctx;
-    if (trace) fprintf(stderr, "[trace] creating d3d11 device\n");
-    HRESULT hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr,
-                                   D3D11_CREATE_DEVICE_BGRA_SUPPORT, levels, 2,
-                                   D3D11_SDK_VERSION, &dev, &got, &ctx);
-    if (FAILED(hr)) {
-        // WARP fallback (OS software rasterizer) — only used if no GPU at all
-        hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_WARP, nullptr, 0, levels, 2,
-                               D3D11_SDK_VERSION, &dev, &got, &ctx);
+
+    // ---- adapter selection: -1 default hw, -2 WARP, >=0 explicit adapter ----
+    ComPtr<IDXGIFactory1> fac;
+    const bool have_fac =
+        SUCCEEDED(CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&fac));
+    ComPtr<IDXGIAdapter1> sel;   // non-null only for explicit selection
+
+    if (gpu_index == -2) {
+        // explicit WARP (software rasterizer)
+        if (trace) fprintf(stderr, "[trace] creating WARP device\n");
+        HRESULT hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_WARP, nullptr, 0,
+                                       levels, 2, D3D11_SDK_VERSION, &dev, &got, &ctx);
         if (FAILED(hr)) {
-            if (err) *err = "D3D11CreateDevice failed";
+            if (err) *err = "WARP device creation failed";
             return false;
         }
-        fprintf(stderr, "[fdx] warning: hardware device unavailable, using WARP (CPU)\n");
+        I.adapter_warp = true;
+    } else if (gpu_index >= 0) {
+        // explicit adapter by DXGI enumeration index (fdx_gpu_count order)
+        if (!have_fac) {
+            if (err) *err = "CreateDXGIFactory1 failed for adapter selection";
+            return false;
+        }
+        IDXGIAdapter* base = nullptr;
+        HRESULT hr = fac->EnumAdapters((UINT)gpu_index, &base);
+        if (hr == DXGI_ERROR_NOT_FOUND) {
+            if (err) *err = "gpu_index out of range";
+            return false;
+        } else if (FAILED(hr)) {
+            if (err) *err = "EnumAdapters failed";
+            return false;
+        }
+        base->QueryInterface(__uuidof(IDXGIAdapter1), (void**)&sel);
+        base->Release();
+        if (!sel) {
+            if (err) *err = "adapter QueryInterface failed";
+            return false;
+        }
+        hr = D3D11CreateDevice(sel, D3D_DRIVER_TYPE_UNKNOWN, nullptr,
+                               D3D11_CREATE_DEVICE_BGRA_SUPPORT, levels, 2,
+                               D3D11_SDK_VERSION, &dev, &got, &ctx);
+        if (FAILED(hr)) {
+            if (err) *err = "D3D11CreateDevice failed on selected adapter";
+            return false;
+        }
+    } else {
+        // default hardware adapter, WARP fallback if no GPU at all
+        if (trace) fprintf(stderr, "[trace] creating d3d11 device\n");
+        HRESULT hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr,
+                                       D3D11_CREATE_DEVICE_BGRA_SUPPORT, levels, 2,
+                                       D3D11_SDK_VERSION, &dev, &got, &ctx);
+        if (FAILED(hr)) {
+            // WARP fallback (OS software rasterizer) — only used if no GPU at all
+            hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_WARP, nullptr, 0, levels, 2,
+                                   D3D11_SDK_VERSION, &dev, &got, &ctx);
+            if (FAILED(hr)) {
+                if (err) *err = "D3D11CreateDevice failed";
+                return false;
+            }
+            fprintf(stderr, "[fdx] warning: hardware device unavailable, using WARP (CPU)\n");
+            I.adapter_warp = true;
+        }
     }
+
+    // ---- capture the adapter actually in use ----
+    {
+        DXGI_ADAPTER_DESC1 d{};
+        bool have = false;
+        if (sel) {
+            have = SUCCEEDED(sel->GetDesc1(&d));
+        } else {
+            // ID3D11Device only exposes IDXGIDevice; GetAdapter() returns the
+            // adapter the device really runs on (correct for the driver-picked
+            // default and for the WARP fallback alike).
+            ComPtr<IDXGIDevice> ddev;
+            ComPtr<IDXGIAdapter> dada;
+            if (SUCCEEDED(dev->QueryInterface(__uuidof(IDXGIDevice), (void**)&ddev)) &&
+                SUCCEEDED(ddev->GetAdapter(&dada))) {
+                ComPtr<IDXGIAdapter1> da1;
+                have = SUCCEEDED(dada->QueryInterface(__uuidof(IDXGIAdapter1), (void**)&da1))
+                       && SUCCEEDED(da1->GetDesc1(&d));
+            }
+        }
+        if (have) {
+            char name[128];
+            const int n = WideCharToMultiByte(CP_UTF8, 0, d.Description, -1,
+                                              name, sizeof(name), nullptr, nullptr);
+            if (n > 0) name[n - 1] = 0;
+            snprintf(I.adapter_name, sizeof(I.adapter_name), "%s", name);
+            I.adapter_luid_v = ((unsigned long long)(uint32_t)d.AdapterLuid.HighPart << 32)
+                             | (uint32_t)d.AdapterLuid.LowPart;
+            // WARP by adapter identity (VendorId 0x1414 / DeviceId 0x008C),
+            // authoritative for every creation path incl. explicit selection.
+            I.adapter_warp = d.VendorId == 0x1414 && d.DeviceId == 0x008C;
+        } else {
+            snprintf(I.adapter_name, sizeof(I.adapter_name), "unknown adapter");
+        }
+    }
+    fprintf(stderr, "[fdx] adapter[%d]: %s%s\n", gpu_index, I.adapter_name,
+            I.adapter_warp ? " (WARP software)" : "");
     if (trace) fprintf(stderr, "[trace] device created\n");
     I.dev = std::move(dev);
     I.ctx = std::move(ctx);

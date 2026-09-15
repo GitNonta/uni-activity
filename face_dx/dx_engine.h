@@ -44,8 +44,16 @@ public:
     Engine();
     ~Engine();
 
-    // init(false) = fp32; init(true) = packed-fp16. gpu_index -1 = auto.
+    // init(false) = fp32; init(true) = packed-fp16.
+    // gpu_index: -1 = default hardware adapter, -2 = WARP (software),
+    // >= 0 = explicit DXGI adapter index (fdx_gpu_count enumeration order).
     bool init(bool fp16, int gpu_index, std::string* err);
+
+    // Adapter actually in use (valid after init): DXGI description, or
+    // "unknown adapter" if it could not be queried. Empty before init.
+    const char* adapter_name() const;
+    bool adapter_is_warp() const;                  // WARP software rasterizer
+    unsigned long long adapter_luid() const;       // (high<<32)|low, 0 if unknown
 
     // input: 3*112*112 float NCHW, already normalized (x-127.5)/127.5
     // out: 512 floats (L2-normalized) ; ms: wall time incl. submit+wait

@@ -84,6 +84,7 @@ def check_artifacts() -> None:
 EXPECTED_EXPORTS = [
     "fdx_abi_version", "fdx_gpu_count", "fdx_model_load", "fdx_model_free",
     "fdx_engine_create", "fdx_engine_free", "fdx_engine_run",
+    "fdx_engine_describe",  # additive in ABI 1: real gpu_index + adapter info
 ]
 
 

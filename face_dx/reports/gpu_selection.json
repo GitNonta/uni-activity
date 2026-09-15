@@ -1,0 +1,42 @@
+{
+  "meta": {
+    "generated_utc": "2026-09-15T10:47:44Z",
+    "dll": "build\\face_dx.dll",
+    "model": "models\\w600k_mbf.fvp",
+    "images": 6,
+    "parity_gate": 0.99999
+  },
+  "adapters": [
+    {
+      "index": 0,
+      "name": "Intel(R) UHD Graphics",
+      "is_warp": false,
+      "luid": 58377
+    },
+    {
+      "index": 1,
+      "name": "Microsoft Basic Render Driver",
+      "is_warp": true,
+      "luid": 59232
+    }
+  ],
+  "auto": {
+    "name": "Intel(R) UHD Graphics",
+    "is_warp": false,
+    "luid": 58377
+  },
+  "warp": {
+    "name": "Microsoft Basic Render Driver",
+    "is_warp": true,
+    "luid": 59232
+  },
+  "parity_min_cos_hw_vs_warp": 1.0,
+  "ms_per_image": {
+    "hardware_auto": 34.85,
+    "warp": 201.0
+  },
+  "error_paths": {
+    "out_of_range_gpu_index": -3,
+    "describe_null_engine": -1
+  }
+}
