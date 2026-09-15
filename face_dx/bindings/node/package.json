@@ -1,0 +1,9 @@
+{
+  "name": "face_dx-node-binding",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FDX C ABI v1 host for Node.js via koffi (prebuilt FFI)",
+  "dependencies": {
+    "koffi": "^2.12.0"
+  }
+}

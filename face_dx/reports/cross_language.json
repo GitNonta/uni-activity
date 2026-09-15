@@ -1,0 +1,78 @@
+{
+  "meta": {
+    "generated_utc": "2026-09-15T10:13:28Z",
+    "dll": "build\\face_dx.dll",
+    "model": "models\\w600k_mbf.fvp",
+    "images": 6,
+    "mode": "fp16",
+    "diff_gate": 1e-07,
+    "probe_expect": {
+      "bad_model": -2,
+      "null_input": -1
+    },
+    "hosts": [
+      "c-runner",
+      "csharp",
+      "java",
+      "node",
+      "python"
+    ]
+  },
+  "results": {
+    "c-runner": {
+      "images": 6,
+      "wall_s": 1.178,
+      "max_diff_vs_exe": 0.0,
+      "min_cos_vs_exe": 1.0
+    },
+    "python": {
+      "images": 6,
+      "wall_s": 1.641,
+      "max_diff_vs_exe": 0.0,
+      "min_cos_vs_exe": 1.0,
+      "max_diff_vs_c": 0.0
+    },
+    "node": {
+      "images": 6,
+      "wall_s": 1.362,
+      "max_diff_vs_exe": 0.0,
+      "min_cos_vs_exe": 1.0,
+      "max_diff_vs_c": 0.0
+    },
+    "csharp": {
+      "images": 6,
+      "wall_s": 1.312,
+      "max_diff_vs_exe": 1.000000000861423e-08,
+      "min_cos_vs_exe": 1.0,
+      "max_diff_vs_c": 1.000000000861423e-08
+    },
+    "java": {
+      "images": 6,
+      "wall_s": 2.768,
+      "max_diff_vs_exe": 0.0,
+      "min_cos_vs_exe": 1.0,
+      "max_diff_vs_c": 0.0
+    }
+  },
+  "probes": {
+    "c-runner": {
+      "mode": "n/a (LoadLibrary CLI, no probe mode)"
+    },
+    "python": {
+      "bad_model": -2,
+      "null_input": -1
+    },
+    "node": {
+      "bad_model": -2,
+      "null_input": -1
+    },
+    "csharp": {
+      "bad_model": -2,
+      "null_input": -1
+    },
+    "java": {
+      "bad_model": -2,
+      "null_input": -1
+    }
+  }
+}
