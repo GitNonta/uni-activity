@@ -1,0 +1,77 @@
+{
+  "ok": true,
+  "checks": {
+    "wheel_import": {
+      "pass": true,
+      "detail": "D:\\projects\\uni-activity\\face_dx\\pylib\\.venv-test\\Lib\\site-packages\\fdx\\__init__.py"
+    },
+    "version": {
+      "pass": true,
+      "detail": "1.0.0"
+    },
+    "abi": {
+      "pass": true,
+      "detail": 1
+    },
+    "self_check": {
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "checks": {
+          "abi": true,
+          "error_contract": {
+            "bad_model": -2,
+            "null_input": -1
+          },
+          "engine_fp16": true,
+          "finite": true,
+          "norm_close": true,
+          "describe": {
+            "name": "Intel(R) UHD Graphics",
+            "is_warp": false,
+            "luid": 58377
+          },
+          "fp16_vs_fp32": {
+            "cosine": 0.999969,
+            "gate": 0.9998,
+            "pass": true
+          }
+        },
+        "gpu_index": -1,
+        "ms_fp16": 51.05,
+        "ms_fp32": 84.81
+      }
+    },
+    "bit_parity_vs_binding": {
+      "pass": true,
+      "detail": "max_abs_diff=7.45e-09 (8-sig-digit JSONL text floor)"
+    },
+    "warp_parity": {
+      "pass": true,
+      "detail": "cos=1.000000000 adapter=Microsoft Basic Render Driver"
+    },
+    "batch_shape": {
+      "pass": true,
+      "detail": "(2, 512)"
+    },
+    "bad_bytes_raises": {
+      "pass": true,
+      "detail": "UnidentifiedImageError"
+    },
+    "small_ndarray_resized_like_pil": {
+      "pass": true,
+      "detail": "documented semantics: ndarray (like PIL/encoded) auto-resizes to 112x112; only raw= bytes are size-strict"
+    },
+    "context_manager_ndarray": {
+      "pass": true,
+      "detail": "PIL image as ndarray input"
+    }
+  },
+  "fdx_file": "D:\\projects\\uni-activity\\face_dx\\pylib\\.venv-test\\Lib\\site-packages\\fdx\\__init__.py",
+  "describe": {
+    "name": "Intel(R) UHD Graphics",
+    "is_warp": false,
+    "luid": 58377
+  },
+  "engine_ms_fp16": 51.65
+}

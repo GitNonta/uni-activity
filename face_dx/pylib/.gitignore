@@ -1,0 +1,6 @@
+fdx/_native/
+dist/
+build/
+*.egg-info/
+.venv*/
+__pycache__/

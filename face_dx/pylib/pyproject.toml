@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fdx"
+version = "1.0.0"
+description = "FaceDx — 512-D face embedding via a zero-dependency Direct3D 11 engine"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "uni-activity" }]
+keywords = ["face", "embedding", "arcface", "mobilefacenet", "d3d11", "gpu"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: Microsoft :: Windows",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+]
+dependencies = ["numpy>=1.22", "pillow>=9.0"]
+
+[tool.setuptools]
+packages = ["fdx"]
+
+# native payload is assembled into fdx/_native/ by build_face_dx_package.sh
+# before the wheel is built; everything under _native ships inside the wheel.
+[tool.setuptools.package-data]
+fdx = ["_native/*.dll", "_native/*.h", "_native/shaders/*.hlsl", "_native/models/*.fvp"]
+
+# the wheel is retagged to win_amd64 by build_face_dx_package.sh (native payload)
