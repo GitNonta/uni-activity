@@ -33,3 +33,4 @@ reports/full_run_progress.log
 reports/celeba_512d_full_fp16.json
 bindings/node/node_modules/
 bindings/csharp/*.exe
+reports/_*/
