@@ -168,16 +168,18 @@ def commit(summary_text: str) -> None:
         gi = f.read()
     rep_size = os.path.getsize(REPORT)
     rep_rel = "reports/celeba_512d_full_fp16.json"
+    # git runs with cwd=HERE (=face_dx), so staged paths must be relative to
+    # face_dx, not to the repo root — the face_dx/ prefix here made git add
+    # fail with exit 128 (path doubled).
     if rep_size <= MAX_REPORT_BYTES:
         gi = gi.replace(rep_rel + "\n", "")  # un-ignore if previously ignored
-        files = ["face_dx/reports/FULL_RUN_SUMMARY.md", "face_dx/" + rep_rel,
-                 "face_dx/.gitignore"]
+        files = ["reports/FULL_RUN_SUMMARY.md", rep_rel, ".gitignore"]
     else:
         # report too large for git — keep it on disk only, note in gitignore
         if rep_rel not in gi:
             gi += (f"\n# full-zip report exceeds {MAX_REPORT_BYTES // (1024 * 1024)} MB "
                    f"— on disk only, summary carries the findings\n{rep_rel}\n")
-        files = ["face_dx/reports/FULL_RUN_SUMMARY.md", "face_dx/.gitignore"]
+        files = ["reports/FULL_RUN_SUMMARY.md", ".gitignore"]
     with open(GITIGNORE, "w", encoding="utf-8", newline="\n") as f:
         f.write(gi)
     subprocess.run(["git", "add", *files], cwd=HERE, check=True)

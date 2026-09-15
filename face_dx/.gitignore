@@ -28,3 +28,6 @@ reports/*.npz
 reports/full_run.log
 reports/monitor_server.log
 reports/full_run_progress.log
+
+# full-zip report exceeds 20 MB — on disk only, summary carries the findings
+reports/celeba_512d_full_fp16.json
