@@ -37,8 +37,28 @@ Viewer: **http://127.0.0.1:8086/** — drag to orbit, scroll to zoom.
 | `/` | this 3D viewer |
 | `/video.mjpg` | webcam MJPEG stream |
 | `/depth.mjpg` | depth colormap MJPEG stream (face crop region) |
-| `/depth.json` | `{seq, ts, box, depth_ms, depth_min/max, depth_b64}` — 64×64 float16 inverse-depth grid |
+| `/depth.json` | `{seq, ts, box, depth_ms, depth_min/max, depth_b64, replay, recording, rec_*}` — 64×64 float16 inverse-depth grid |
+| `/recordings` | list of `.fdz` recordings |
+| `POST /record` | `{action: start\|stop}` — write a `.fdz` (one JSON line per depth frame) |
+| `POST /replay` | `{action: play, name}` / `{action: stop}` — feed a recording back through the live state |
 | `/healthz` | liveness (used by start_depth.bat) |
+
+## Liveness integration (ai_service)
+
+`ai_service/depth_liveness.py` polls `/depth.json` during `/verify` and adds a
+**weak additional liveness signal** based on the stream's *temporal* structure:
+
+- **flux** — live faces constantly micro-move (breathing, posture); a
+  held-still photo's depth freezes (measured separation: ~250×)
+- **span** — near–far relief range; a flat print has almost none
+
+Monocular depth **cannot** distinguish a photo from a face by shape alone
+(MiDaS predicts the same relief for both) — hence temporal-only, and it does
+not stop video replay. It **fails open** when the depth server is off
+(`available:false`, neutral 0.5 score), so verification UX never breaks.
+Thresholds (`DEPTH_FLUX_MIN`, `DEPTH_SPAN_MIN`) are UNCALIBRATED — tune them
+with real capture/attack data from the deployment camera. Disable entirely
+with `USE_DEPTH_LIVENESS=0`.
 
 ## How it works
 

@@ -35,3 +35,4 @@ bindings/node/node_modules/
 bindings/csharp/*.exe
 reports/_*/
 depth_capture/model-small.onnx
+depth_capture/recordings/
