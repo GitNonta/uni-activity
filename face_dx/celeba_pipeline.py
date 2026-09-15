@@ -193,12 +193,33 @@ class BatchChunk:
             self._cmd += ["--bench", str(bench)]
         self.proc = subprocess.Popen(self._cmd, cwd=HERE, stdout=subprocess.DEVNULL,
                                      stderr=subprocess.PIPE, text=True)
+        self._stderr_buf: list[str] = []
+        self._stderr_thread = self._spawn_stderr_drain()
         self.records: list[dict] = []  # {"id": png_path, "ms": float, "embedding": [...]}
         self.stderr_text: str | None = None
         self.missing: list[str] = []   # filled by join()
         self.join_wall_ms: float = 0.0
         self._thread = threading.Thread(target=self._reader, daemon=True)
         self._thread.start()
+
+    def _spawn_stderr_drain(self) -> threading.Thread:
+        """Drain stderr continuously: an unread 64KB pipe buffer blocks the
+        engine mid-chunk (fprintf stalls -> batch "hangs" until timeout).
+        This killed two overnight runs; join() reads the captured text."""
+        def _drain() -> None:
+            try:
+                assert self.proc.stderr is not None
+                for line in self.proc.stderr:
+                    self._stderr_buf.append(line)
+            except (ValueError, OSError):
+                pass  # closed during restart / interpreter shutdown
+        t = threading.Thread(target=_drain, daemon=True)
+        t.start()
+        return t
+
+    @property
+    def _stderr_captured(self) -> str:
+        return "".join(self._stderr_buf)
 
     def _reader(self) -> None:
         offset = 0
@@ -253,24 +274,52 @@ class BatchChunk:
         except Exception:
             pass
         self._thread.join(timeout=5)
+        self._stderr_thread.join(timeout=5)  # old pipe closed by reaped engine
         if os.path.exists(self.out_path):
             os.remove(self.out_path)
         self.records = []
         self.stderr_text = None
         self.missing = []
         self.join_wall_ms = 0.0
+        self._stderr_buf = []
         self.proc = subprocess.Popen(self._cmd, cwd=HERE, stdout=subprocess.DEVNULL,
                                      stderr=subprocess.PIPE, text=True)
+        self._stderr_thread = self._spawn_stderr_drain()
         self._thread = threading.Thread(target=self._reader, daemon=True)
         self._thread.start()
 
+    def _out_size(self) -> int:
+        try:
+            return os.path.getsize(self.out_path)
+        except OSError:
+            return -1  # not created yet — still counts as "no progress"
+
     def join(self, timeout: float = 600.0, retries: int = 2) -> tuple[int, int, list[str]]:
+        """Wait for the engine, respawning on a real stall.
+
+        `timeout` is a *stall* watchdog, not a wall-clock budget: the timer
+        resets whenever the engine's out file grows (records are streamed)
+        or the process exits. A cold-boot machine can legitimately make a
+        chunk take longer than any fixed budget — but a wedged engine never
+        writes anything, so a quiet out file is the trustworthy signal.
+        The wall-clock variant killed two runs that were merely slow.
+        """
         t0 = time.perf_counter()
         while True:
-            try:
-                _, stderr = self.proc.communicate(timeout=timeout)
-                break
-            except subprocess.TimeoutExpired:
+            last_size = self._out_size()
+            stalled_s = 0.0
+            while self.proc.poll() is None:
+                time.sleep(1.0)
+                size = self._out_size()
+                if size != last_size:
+                    last_size = size
+                    stalled_s = 0.0
+                    continue
+                stalled_s += 1.0
+                if stalled_s >= timeout:
+                    break
+            if self.proc.poll() is None:
+                # watchdog fired while the engine is alive: real stall
                 try:
                     self.proc.kill()  # may race an engine that just exited
                 except OSError:
@@ -280,15 +329,19 @@ class BatchChunk:
                         self.proc.wait(timeout=5)  # reap so no handle leaks
                     except Exception:
                         pass
-                    raise RuntimeError("engine batch timed out")
+                    raise RuntimeError(
+                        f"engine stalled: no output for {timeout:.0f}s")
                 retries -= 1
-                print(f"[engine timeout] batch hung >{timeout:.0f}s; respawning "
+                print(f"[engine stall] no output for {timeout:.0f}s; respawning "
                       f"fresh engine ({retries} retries left)")
                 self.restart()
-        self.stderr_text = stderr
+                continue
+            break  # process exited on its own
+        self._stderr_thread.join(timeout=5)  # let the tail lines land first
+        self.stderr_text = self._stderr_captured
         self._thread.join(timeout=30)
         ok = failed = 0
-        gm = re.search(r"ok=(\d+) failed=(\d+)", stderr or "")
+        gm = re.search(r"ok=(\d+) failed=(\d+)", self.stderr_text or "")
         if gm:
             ok, failed = int(gm.group(1)), int(gm.group(2))
         delivered = {r["id"].replace("\\", "/") for r in self.records}
