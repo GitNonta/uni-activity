@@ -132,6 +132,31 @@ def run_onnx(tensors: list[np.ndarray], threads: int) -> tuple[float, list[np.nd
     return time.perf_counter() - t0, embs, per
 
 
+def run_onnx_batched(tensors: list[np.ndarray], threads: int,
+                     batch: int) -> tuple[float, list[np.ndarray], list[float]]:
+    """Batched ONNX CPU: feed `batch` images per run() call so the GEMM
+    kernels see larger matrices and per-run dispatch overhead amortizes.
+    Same protocol as run_onnx (one warmup batch, then timed)."""
+    import onnxruntime as ort
+    so = ort.SessionOptions()
+    so.intra_op_num_threads = threads
+    so.inter_op_num_threads = 1
+    sess = ort.InferenceSession(MODEL_ONNX, so, providers=["CPUExecutionProvider"])
+    xb0 = np.concatenate(tensors[:min(batch, len(tensors))], axis=0)
+    _ = sess.run(None, {"input.1": xb0})  # warmup
+    embs: list[np.ndarray] = []
+    per: list[float] = []
+    t0 = time.perf_counter()
+    for i in range(0, len(tensors), batch):
+        chunk = tensors[i:i + batch]
+        xb = (np.concatenate(chunk, axis=0) if len(chunk) > 1 else chunk[0])
+        t1 = time.perf_counter()
+        y = np.asarray(sess.run(None, {"input.1": xb})[0], np.float32)
+        per.append((time.perf_counter() - t1) * 1e3 / len(chunk))
+        embs.extend(y)
+    return time.perf_counter() - t0, embs, per
+
+
 def run_numpy_backend(tensors: list[np.ndarray]) -> tuple[float, list[np.ndarray], list[float]]:
     """Pure-python .fvp interpreter (check_fvp.run_fvp) — same graph the GPU
     engine executes, executed element-wise in numpy."""
@@ -156,6 +181,9 @@ def main() -> int:
     ap.add_argument("--numpy-rows", type=int, default=8,
                     help="images for the slow pure-numpy interpreter "
                          "(several times slower than onnx per image)")
+    ap.add_argument("--onnx-batches", default="8,32",
+                    help="comma-separated batch sizes for batched ONNX CPU "
+                         "runs (crossed with 2 and 4 threads; empty to skip)")
     ap.add_argument("--out", default=os.path.join(HERE, "reports", "cpu_vs_gpu.json"))
     a = ap.parse_args()
 
@@ -201,6 +229,22 @@ def main() -> int:
         }
 
     # agreement vs the ONNX 4-thread CPU reference (onnx-4t itself == 1.0)
+    # -- CPU: batched ONNX (batch x threads matrix) — does batching scale?
+    batches = [int(b) for b in a.onnx_batches.split(",") if b.strip()]
+    for b in batches:
+        for th in (2, 4):
+            label = f"onnx-{th}t-b{b}"
+            print(f"[bench] {label}: {len(tensors)} images")
+            wall, embs, per = run_onnx_batched(tensors, th, b)
+            embs_by_backend[label] = embs
+            rows[label] = {
+                "throughput_ips": round(len(tensors) / wall, 2),
+                "per_image_ms_wall": round(wall * 1e3 / len(tensors), 2),
+                "per_image_ms_kernel": round(float(np.mean(per)), 2),
+                "min_cos_vs_onnx": None,
+                "batch": b,
+            }
+
     ref = [l2n(e) for e in embs_by_backend["onnx-4t"]]
     for label, embs in embs_by_backend.items():
         rows[label]["min_cos_vs_onnx"] = round(
@@ -226,8 +270,8 @@ def main() -> int:
 
 def write_report(rows: dict, a, n_imgs: int) -> None:
     gates = {"gpu-fp16": 0.9998, "gpu-fp32": 0.9999, "numpy": 0.9999}
-    cpu_fastest = min(("onnx-1t", "onnx-2t", "onnx-4t"),
-                      key=lambda k: rows[k]["per_image_ms_wall"])
+    onnx_labels = [k for k in rows if k.startswith("onnx-")]
+    cpu_fastest = min(onnx_labels, key=lambda k: rows[k]["per_image_ms_wall"])
     gpu_fastest = min(("gpu-fp16", "gpu-fp32"),
                       key=lambda k: rows[k]["per_image_ms_wall"])
     report = {

@@ -1,0 +1,88 @@
+{
+  "meta": {
+    "generated_utc": "2026-09-15T04:37:45Z",
+    "images": 1000,
+    "input": "D:\\projects\\uni-activity\\face_cpp\\img_align_celeba.zip",
+    "model": "w600k_mbf.fvp",
+    "machine": "Intel i5-10210U (4C/8T) + Intel UHD iGPU, D3D11 compute",
+    "protocol": "same decoded 112x112 RGB inputs for every backend; engine = one batch process; ONNX = CPUExecutionProvider at 1/2/4 intra-op threads; numpy = check_fvp .fvp interpreter; agreement = cosine vs ONNX CPU (4 threads)"
+  },
+  "backends": {
+    "gpu-fp16": {
+      "throughput_ips": 30.09,
+      "per_image_ms_wall": 33.24,
+      "per_image_ms_kernel": 31.63,
+      "min_cos_vs_onnx": 0.9998825
+    },
+    "gpu-fp32": {
+      "throughput_ips": 17.74,
+      "per_image_ms_wall": 56.38,
+      "per_image_ms_kernel": 54.57,
+      "min_cos_vs_onnx": 0.9999999
+    },
+    "onnx-1t": {
+      "throughput_ips": 51.48,
+      "per_image_ms_wall": 19.42,
+      "per_image_ms_kernel": 19.42,
+      "min_cos_vs_onnx": 0.9999999
+    },
+    "onnx-2t": {
+      "throughput_ips": 70.32,
+      "per_image_ms_wall": 14.22,
+      "per_image_ms_kernel": 14.22,
+      "min_cos_vs_onnx": 0.9999999
+    },
+    "onnx-4t": {
+      "throughput_ips": 76.23,
+      "per_image_ms_wall": 13.12,
+      "per_image_ms_kernel": 13.12,
+      "min_cos_vs_onnx": 0.9999999
+    },
+    "onnx-2t-b8": {
+      "throughput_ips": 68.42,
+      "per_image_ms_wall": 14.62,
+      "per_image_ms_kernel": 14.55,
+      "min_cos_vs_onnx": 0.9999999,
+      "batch": 8
+    },
+    "onnx-4t-b8": {
+      "throughput_ips": 79.0,
+      "per_image_ms_wall": 12.66,
+      "per_image_ms_kernel": 12.58,
+      "min_cos_vs_onnx": 0.9999999,
+      "batch": 8
+    },
+    "onnx-2t-b32": {
+      "throughput_ips": 65.43,
+      "per_image_ms_wall": 15.28,
+      "per_image_ms_kernel": 15.23,
+      "min_cos_vs_onnx": 0.9999999,
+      "batch": 32
+    },
+    "onnx-4t-b32": {
+      "throughput_ips": 74.56,
+      "per_image_ms_wall": 13.41,
+      "per_image_ms_kernel": 13.3,
+      "min_cos_vs_onnx": 0.9999999,
+      "batch": 32
+    },
+    "numpy": {
+      "throughput_ips": 10.95,
+      "per_image_ms_wall": 91.32,
+      "per_image_ms_kernel": 91.32,
+      "images_run": 4,
+      "min_cos_vs_onnx": 1.0
+    }
+  },
+  "gates": {
+    "gpu-fp16": 0.9998,
+    "gpu-fp32": 0.9999,
+    "numpy": 0.9999
+  },
+  "verdict": {
+    "gpu_fastest": "gpu-fp16",
+    "cpu_fastest": "onnx-4t-b8",
+    "speedup_gpu_over_best_cpu": 0.38,
+    "all_agree": true
+  }
+}
