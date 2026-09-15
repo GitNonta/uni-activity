@@ -1,0 +1,70 @@
+{
+  "meta": {
+    "generated_utc": "2026-09-15T06:06:07Z",
+    "dll": "D:\\projects\\uni-activity\\face_dx\\build\\face_dx.dll",
+    "model": "w600k_mbf.fvp",
+    "fp16_gate": "parity identical (same fp16 kernels, same raw input)",
+    "elapsed_s": 8.6
+  },
+  "checks": {
+    "artifacts": {
+      "all_present": true,
+      "missing": [],
+      "shaders": [
+        "add.cs.hlsl",
+        "conv.cs.hlsl",
+        "conv11.cs.hlsl",
+        "conv3.cs.hlsl",
+        "conv3rb.cs.hlsl",
+        "gemm_final.cs.hlsl",
+        "gemm_partial.cs.hlsl"
+      ],
+      "dll_bytes": 1464832
+    },
+    "exports": {
+      "found": [
+        "fdx_abi_version",
+        "fdx_engine_create",
+        "fdx_engine_free",
+        "fdx_engine_run",
+        "fdx_gpu_count",
+        "fdx_model_free",
+        "fdx_model_load"
+      ],
+      "expected": [
+        "fdx_abi_version",
+        "fdx_engine_create",
+        "fdx_engine_free",
+        "fdx_engine_run",
+        "fdx_gpu_count",
+        "fdx_model_free",
+        "fdx_model_load"
+      ],
+      "all_present": true
+    },
+    "parity_fp16": {
+      "images": 6,
+      "max_abs_diff": 0.0,
+      "min_cos": 1.0,
+      "identical": true
+    },
+    "parity_fp32": {
+      "images": 6,
+      "max_abs_diff": 0.0,
+      "min_cos": 1.0,
+      "identical": true
+    },
+    "abi_errors": {
+      "abi_version": 1,
+      "bad_model": {
+        "code": -2,
+        "err": "cannot open models/definitely_missing.fvp"
+      },
+      "null_input": {
+        "code": -1
+      },
+      "ctypes_run_mean_ms": 30.57
+    }
+  },
+  "pass": true
+}
