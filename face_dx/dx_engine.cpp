@@ -16,6 +16,9 @@
 #include "d3d11.h"
 #include "d3dcompiler.h"
 
+// status codes shared with the C ABI (FDX_ERR_DEVICE_LOST etc.)
+#include "fdx_capi.h"
+
 namespace fdx {
 
 // ---------------------------------------------------------------------------
@@ -257,6 +260,40 @@ struct Engine::Impl {
     std::vector<ComPtr<ID3D11ShaderResourceView>> srv_scratch;
     std::vector<ComPtr<ID3D11UnorderedAccessView>> uav_scratch;
 
+    int last_error_v = 0;  // 0 = OK, FDX_ERR_* (see fdx_capi.h)
+
+    // Release every device-bound resource so init() can run again in place.
+    // Device-created objects are invalid after device removal; the reinit
+    // path must not touch them beyond dropping the references.
+    void teardown_for_reinit()
+    {
+        srv_scratch.clear();
+        uav_scratch.clear();
+        ts_begin.clear();
+        ts_end.clear();
+        ts_disjoint.reset();
+        ts_gpu_ms.clear();
+        ts_freq = 0.0;
+        sync_q.reset();
+        staging_buf.reset();
+        staging_bytes = 0;
+        cbuf_pool.clear();
+        cbuf_sets.clear();
+        scratch = Buffer{};   // ComPtr members release; Buffer has no reset()
+        tensor.clear();
+        weight.clear();
+        aux.clear();
+        cs_conv.reset();
+        cs_conv11.reset();
+        cs_conv3.reset();
+        cs_conv3rb.reset();
+        cs_gemm_partial.reset();
+        cs_gemm_final.reset();
+        cs_add.reset();
+        ctx.reset();
+        dev.reset();
+    }
+
     size_t elements_to_words(int n) const { return (size_t)((n + 1) / 2); }
 
     bool make_buffer(size_t bytes, UINT elements, Buffer& b)
@@ -321,6 +358,13 @@ struct Engine::Impl {
         ctx->End(sync_q);
         ctx->Flush();
         while (ctx->GetData(sync_q, nullptr, 0, 0) == S_FALSE) std::this_thread::yield();
+    }
+
+    // true if the D3D11 device has been removed (adapter unplugged, driver
+    // reset/crash, TDR). Checked at the hard sync point of every run.
+    bool device_lost() const
+    {
+        return dev->GetDeviceRemovedReason() != S_OK;
     }
 
     bool compile_shader(const char* file, bool fp16, ComPtr<ID3D11ComputeShader>& out)
@@ -493,6 +537,18 @@ unsigned long long Engine::adapter_luid() const
     return p_ ? p_->adapter_luid_v : 0ULL;
 }
 
+bool Engine::reinit(bool fp16, int gpu_index, std::string* err)
+{
+    if (!p_) return false;
+    p_->teardown_for_reinit();
+    return init(fp16, gpu_index, err);
+}
+
+int Engine::last_error() const
+{
+    return p_ ? p_->last_error_v : 0;
+}
+
 bool Engine::init(bool fp16, int gpu_index, std::string* err)
 {
     Impl& I = *p_;
@@ -654,6 +710,12 @@ bool Engine::init(bool fp16, int gpu_index, std::string* err)
 bool Engine::run(const Model& model, const float* input, float* out512, double* ms)
 {
     Impl& I = *p_;
+    I.last_error_v = 0;
+    if (!I.dev || !I.ctx) {
+        // no device: init never ran, or a failed reinit tore it down
+        I.last_error_v = FDX_ERR_GPU_INIT;
+        return false;
+    }
     const bool f16 = I.fp16;
 
     const bool trace = getenv("FDX_TRACE") != nullptr;
@@ -836,6 +898,11 @@ bool Engine::run(const Model& model, const float* input, float* out512, double* 
     // final readback below must wait for all of them.
     if (trace) fprintf(stderr, "[trace] graph done, syncing\n");
     I.gpu_sync();
+    if (I.device_lost()) {
+        I.last_error_v = FDX_ERR_DEVICE_LOST;
+        fprintf(stderr, "[fdx] GPU device removed (GetDeviceRemovedReason failed)\n");
+        return false;
+    }
     if (trace) {
         fprintf(stderr, "[trace] synced\n");
         D3D11_QUERY_DATA_TIMESTAMP_DISJOINT dj{};
@@ -889,14 +956,20 @@ bool Engine::run(const Model& model, const float* input, float* out512, double* 
     const size_t last = model.layers.size();
     if (f16) {
         std::vector<uint32_t> packed(256);
-        I.download(I.tensor[last], packed.data());
+        if (!I.download(I.tensor[last], packed.data())) {
+            I.last_error_v = I.device_lost() ? FDX_ERR_DEVICE_LOST : FDX_ERR_RUN;
+            return false;
+        }
         for (int i = 0; i < 512; i++) {
             const uint32_t u = packed[i >> 1];
             const uint16_t h = (i & 1) ? (uint16_t)(u >> 16) : (uint16_t)(u & 0xFFFFu);
             out512[i] = half_to_float(h);
         }
     } else {
-        I.download(I.tensor[last], out512);
+        if (!I.download(I.tensor[last], out512)) {
+            I.last_error_v = I.device_lost() ? FDX_ERR_DEVICE_LOST : FDX_ERR_RUN;
+            return false;
+        }
     }
 
     // L2 normalize (matches insightface normed_embedding)

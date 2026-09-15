@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_utc": "2026-09-15T10:49:06Z",
+    "generated_utc": "2026-09-15T11:12:57Z",
     "dll": "D:\\projects\\uni-activity\\face_dx\\build\\face_dx.dll",
     "model": "w600k_mbf.fvp",
     "fp16_gate": "parity identical (same fp16 kernels, same raw input)",
-    "elapsed_s": 6.7
+    "elapsed_s": 6.8
   },
   "checks": {
     "artifacts": {
@@ -19,7 +19,7 @@
         "gemm_final.cs.hlsl",
         "gemm_partial.cs.hlsl"
       ],
-      "dll_bytes": 1467904
+      "dll_bytes": 1469952
     },
     "exports": {
       "found": [
@@ -27,6 +27,7 @@
         "fdx_engine_create",
         "fdx_engine_describe",
         "fdx_engine_free",
+        "fdx_engine_reinit",
         "fdx_engine_run",
         "fdx_gpu_count",
         "fdx_model_free",
@@ -37,6 +38,7 @@
         "fdx_engine_create",
         "fdx_engine_describe",
         "fdx_engine_free",
+        "fdx_engine_reinit",
         "fdx_engine_run",
         "fdx_gpu_count",
         "fdx_model_free",
@@ -65,7 +67,7 @@
       "null_input": {
         "code": -1
       },
-      "ctypes_run_mean_ms": 30.35
+      "ctypes_run_mean_ms": 30.73
     }
   },
   "pass": true

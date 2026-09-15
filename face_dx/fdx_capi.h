@@ -102,6 +102,16 @@ FDX_API int32_t fdx_engine_run(fdx_engine* engine,
                                float* out512,
                                double* out_ms);
 
+/* Recover from FDX_ERR_DEVICE_LOST, or switch adapters, in place: tears down
+ * every device-bound resource and creates a new D3D11 device on the same
+ * engine handle (gpu_index semantics as fdx_engine_create: -1 auto, -2 WARP,
+ * >= 0 explicit index). Model handles stay valid; tensor/weight buffers are
+ * re-created lazily on the next fdx_engine_run. Returns FDX_ERR_GPU_INIT on
+ * failure (detail in err_buf). Added in ABI 1 (additive). */
+FDX_API int32_t fdx_engine_reinit(fdx_engine* engine,
+                                  int32_t fp16, int32_t gpu_index,
+                                  char* err_buf, int32_t err_cap);
+
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif

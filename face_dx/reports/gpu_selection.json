@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generated_utc": "2026-09-15T10:47:44Z",
+    "generated_utc": "2026-09-15T11:13:10Z",
     "dll": "build\\face_dx.dll",
     "model": "models\\w600k_mbf.fvp",
     "images": 6,
@@ -32,8 +32,8 @@
   },
   "parity_min_cos_hw_vs_warp": 1.0,
   "ms_per_image": {
-    "hardware_auto": 34.85,
-    "warp": 201.0
+    "hardware_auto": 31.82,
+    "warp": 266.16
   },
   "error_paths": {
     "out_of_range_gpu_index": -3,

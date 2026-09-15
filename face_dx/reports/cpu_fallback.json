@@ -1,0 +1,54 @@
+{
+  "meta": {
+    "generated_utc": "2026-09-15T11:12:40Z",
+    "dll": "build\\face_dx.dll",
+    "model": "models\\w600k_mbf.fvp",
+    "images": 6,
+    "parity_gate": 0.99999
+  },
+  "hardware_adapter": {
+    "name": "Intel(R) UHD Graphics",
+    "is_warp": false,
+    "luid": 58377
+  },
+  "checks": {
+    "warp_cpu_backend": {
+      "adapter": {
+        "name": "Microsoft Basic Render Driver",
+        "is_warp": true,
+        "luid": 59232
+      },
+      "min_cos_vs_hardware": 1.0,
+      "determinism_max_abs_diff": 0.0,
+      "min_cos_fp16_vs_fp32": 0.999969504,
+      "ok": true
+    },
+    "reinit_roundtrip": {
+      "to_warp": {
+        "name": "Microsoft Basic Render Driver",
+        "is_warp": true,
+        "luid": 59232,
+        "min_cos_vs_ref": 1.0
+      },
+      "back_to_hw": {
+        "name": "Intel(R) UHD Graphics",
+        "is_warp": false,
+        "luid": 58377,
+        "min_cos_vs_ref": 1.0
+      },
+      "ok": true
+    },
+    "recovery_drill": {
+      "images": 6,
+      "failed": 0,
+      "min_cos_vs_reference": 1.0,
+      "ok": true
+    },
+    "error_paths": {
+      "reinit_out_of_range": -3,
+      "run_after_failed_reinit": -3,
+      "engine_recoverable_after_failed_reinit": true,
+      "ok": true
+    }
+  }
+}

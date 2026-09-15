@@ -215,11 +215,46 @@ FDX_API int32_t fdx_engine_run(fdx_engine* engine,
 {
     if (!engine || !model || !input || !out512) return FDX_ERR_INVALID_ARG;
     try {
-        if (!engine->e.run(model->m, input, out512, out_ms)) return FDX_ERR_RUN;
-        return FDX_OK;
+        if (engine->e.run(model->m, input, out512, out_ms)) return FDX_OK;
+        // distinguish GPU device removal / missing device init from a
+        // generic in-run failure, so hosts can pick the right recovery
+        const int le = engine->e.last_error();
+        return le == FDX_ERR_DEVICE_LOST ? FDX_ERR_DEVICE_LOST
+             : le == FDX_ERR_GPU_INIT   ? FDX_ERR_GPU_INIT
+             : FDX_ERR_RUN;
     } catch (const std::bad_alloc&) {
         return FDX_ERR_RUN;
     } catch (...) {
         return FDX_ERR_RUN;
     }
+}
+
+/* Recover a lost device (FDX_ERR_DEVICE_LOST) or switch adapters in place.
+ * Tears down every device-bound resource and creates a new D3D11 device on
+ * the same engine handle (gpu_index semantics as fdx_engine_create).
+ * Model handles stay valid; tensor/weight buffers are re-created lazily on
+ * the next fdx_engine_run. */
+FDX_API int32_t fdx_engine_reinit(fdx_engine* engine,
+                                  int32_t fp16, int32_t gpu_index,
+                                  char* err_buf, int32_t err_cap)
+{
+    if (!engine) return FDX_ERR_INVALID_ARG;
+    DirGuard dg;
+    std::string serr;
+    bool ok = false;
+    if (dg.to_dll_dir(err_buf, err_cap)) {
+        try {
+            ok = engine->e.reinit(fp16 != 0, (int)gpu_index, &serr);
+        } catch (const std::bad_alloc&) {
+            serr = "out of memory during engine reinit";
+        } catch (...) {
+            serr = "unexpected exception during engine reinit";
+        }
+    }
+    if (!ok) {
+        if (!err_buf || !*err_buf)
+            set_err(err_buf, err_cap, serr.empty() ? "engine reinit failed" : serr);
+        return FDX_ERR_GPU_INIT;
+    }
+    return FDX_OK;
 }

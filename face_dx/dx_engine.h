@@ -57,7 +57,18 @@ public:
 
     // input: 3*112*112 float NCHW, already normalized (x-127.5)/127.5
     // out: 512 floats (L2-normalized) ; ms: wall time incl. submit+wait
+    // On GPU device loss run() returns false with last_error() ==
+    // FDX_ERR_DEVICE_LOST; recover with reinit() (e.g. gpu_index -2 = WARP).
     bool run(const Model& model, const float* input, float* out512, double* ms);
+
+    // Tear down every device-bound resource and init again in place (same
+    // Engine object, new D3D11 device). The recovery path after
+    // FDX_ERR_DEVICE_LOST — or any deliberate adapter switch.
+    bool reinit(bool fp16, int gpu_index, std::string* err);
+
+    // 0 after init, or FDX_ERR_DEVICE_LOST when the last run failed due to
+    // GPU device removal (distinguishes -5 from a generic run failure).
+    int last_error() const;
 
 private:
     struct Impl;

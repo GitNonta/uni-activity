@@ -27,6 +27,7 @@
 
 #include "png_decode.h"
 #include "dx_engine.h"
+#include "fdx_capi.h"  // FDX_ERR_DEVICE_LOST for the CPU-fallback recovery path
 
 struct Opt {
     std::string model = "models/w600k_mbf.fvp";
@@ -166,7 +167,38 @@ struct BatchStats {
     int ok = 0;
     int failed = 0;
     double gpu_ms_total = 0.0;
+    bool degraded = false;   // recovered via WARP (CPU) fallback at least once
 };
+
+// run one image with CPU-fallback recovery: on FDX_ERR_DEVICE_LOST reinit in
+// place — first on the same adapter, then on WARP (pure-CPU rasterizer) — and
+// retry. Returns true and fills out512/out_ms on success.
+static bool run_with_recovery(fdx::Engine& engine, const fdx::Model& model,
+                              const float* input, float* out512, double* out_ms,
+                              BatchStats& st)
+{
+    if (engine.run(model, input, out512, out_ms)) return true;
+    if (engine.last_error() != FDX_ERR_DEVICE_LOST) return false;  // generic failure
+
+    // device lost: one retry on the same adapter, then WARP (CPU) fallback
+    std::string err;
+    const int same = engine.adapter_is_warp() ? -2 : -1;
+    if (engine.reinit(engine.adapter_is_warp(), same, &err) &&
+        engine.run(model, input, out512, out_ms))
+        return true;
+    fprintf(stderr, "[fdx] retry after device loss failed (%s), forcing WARP (CPU)\n",
+            err.c_str());
+    if (!engine.reinit(true, -2, &err)) {
+        fprintf(stderr, "[fdx] WARP fallback init failed: %s\n", err.c_str());
+        return false;
+    }
+    st.degraded = true;
+    if (!engine.run(model, input, out512, out_ms)) {
+        fprintf(stderr, "[fdx] inference failed even on WARP (CPU)\n");
+        return false;
+    }
+    return true;
+}
 
 static void process_image(fdx::Engine& engine, const fdx::Model& model, const Opt& o,
                           const std::string& img, FILE* outf, BatchStats& st)
@@ -181,7 +213,7 @@ static void process_image(fdx::Engine& engine, const fdx::Model& model, const Op
 
     std::vector<float> emb(512);
     double ms = 0.0;
-    if (!engine.run(model, input.data(), emb.data(), &ms)) {
+    if (!run_with_recovery(engine, model, input.data(), emb.data(), &ms, st)) {
         fprintf(stderr, "[fdx] inference failed for %s\n", img.c_str());
         st.failed++;
         return;
@@ -270,9 +302,10 @@ int main(int argc, char** argv)
     for (const std::string& img : o.images)
         process_image(engine, model, o, img, outf, st);
 
-    fprintf(stderr, "[summary] ok=%d failed=%d gpu_ms_total=%.1f gpu_ms_avg=%.2f\n",
+    fprintf(stderr, "[summary] ok=%d failed=%d gpu_ms_total=%.1f gpu_ms_avg=%.2f%s\n",
             st.ok, st.failed, st.gpu_ms_total,
-            st.ok ? st.gpu_ms_total / st.ok : 0.0);
+            st.ok ? st.gpu_ms_total / st.ok : 0.0,
+            st.degraded ? " [recovered-on-WARP]" : "");
 
     if (outf != stdout) fclose(outf);
     return st.ok > 0 ? 0 : 1;

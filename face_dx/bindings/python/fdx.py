@@ -75,6 +75,13 @@ class Fdx:
         self.lib.fdx_engine_run.argtypes = [
             C.c_void_p, C.c_void_p, C.POINTER(C.c_float),
             C.POINTER(C.c_float), C.POINTER(C.c_double)]
+        self.lib.fdx_engine_describe.restype = C.c_int32
+        self.lib.fdx_engine_describe.argtypes = [
+            C.c_void_p, C.c_char_p, C.c_int32,
+            C.POINTER(C.c_int32), C.POINTER(C.c_ulonglong)]
+        self.lib.fdx_engine_reinit.restype = C.c_int32
+        self.lib.fdx_engine_reinit.argtypes = [
+            C.c_void_p, C.c_int32, C.c_int32, C.c_char_p, C.c_int32]
         v = int(self.lib.fdx_abi_version())
         if v != FDX_ABI_VERSION:
             raise FdxError(-1, f"ABI version mismatch: dll={v} host={FDX_ABI_VERSION}")
@@ -109,6 +116,25 @@ class Fdx:
 
     def free_engine(self, h: C.c_void_p) -> None:
         self.lib.fdx_engine_free(h)
+
+    def describe(self, h: C.c_void_p) -> dict:
+        """Adapter an engine actually runs on: name, is_warp, luid."""
+        name = C.create_string_buffer(256)
+        warp = C.c_int32(0)
+        luid = C.c_ulonglong(0)
+        rc = self.lib.fdx_engine_describe(h, name, 256, C.byref(warp), C.byref(luid))
+        if rc != 0:
+            raise FdxError(rc, "fdx_engine_describe failed")
+        return {"name": name.value.decode("utf-8", "replace"),
+                "is_warp": bool(warp.value), "luid": int(luid.value)}
+
+    def reinit(self, h: C.c_void_p, fp16: bool = True,
+               gpu_index: int = -1) -> None:
+        """In-place recovery / adapter switch (FDX_ERR_DEVICE_LOST path)."""
+        buf = C.create_string_buffer(256)
+        rc = self.lib.fdx_engine_reinit(h, 1 if fp16 else 0, gpu_index, buf, 256)
+        if rc != 0:
+            raise FdxError(rc, self._err(buf))
 
     def run(self, engine: C.c_void_p, model: C.c_void_p,
             rgb_bytes: bytes) -> tuple[list[float], float]:

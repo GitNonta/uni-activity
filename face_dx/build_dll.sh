@@ -40,6 +40,8 @@ EXPORTS
     fdx_engine_create
     fdx_engine_free
     fdx_engine_run
+    fdx_engine_reinit
+    fdx_engine_describe
 EOF
 
 # import lib for MSVC-style link-time consumers (the -Wl,--out-implib copy
