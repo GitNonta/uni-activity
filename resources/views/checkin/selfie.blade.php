@@ -74,6 +74,13 @@
         @keyframes statusPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
 
         .score-display { display:none; align-items:center; justify-content:space-between; background:var(--white-08); border:1px solid var(--panel-border); border-radius:10px; padding:0.75rem 1rem; font-size:0.85rem; margin-top:0.75rem; }
+        .accuracy-panel { display:none; background:var(--white-08); border:1px solid var(--panel-border); border-radius:10px; padding:0.7rem 1rem; margin-top:0.6rem; font-size:0.78rem; }
+        .accuracy-bar-wrap { position:relative; height:8px; border-radius:6px; background:rgba(255,255,255,0.12); margin:0.45rem 0 0.3rem 0; overflow:visible; }
+        .accuracy-bar-fill { position:absolute; left:0; top:0; bottom:0; width:0%; border-radius:6px; background:#34d399; transition:width 0.35s ease, background-color 0.35s ease; }
+        .accuracy-threshold-mark { position:absolute; top:-3px; bottom:-3px; width:2px; background:rgba(255,255,255,0.65); left:60%; }
+        .accuracy-stats { display:flex; justify-content:space-between; gap:0.5rem; color:var(--text-dim, #94a3b8); font-size:0.72rem; }
+        .accuracy-state { display:flex; align-items:center; gap:0.35rem; font-weight:700; font-size:0.8rem; }
+        .accuracy-state svg { flex-shrink:0; }
         .score-label { color:var(--white-60); }
         .score-value { font-weight:700; font-size:1rem; }
 
@@ -216,6 +223,21 @@
                 <span class="score-label">คะแนนความคล้าย</span>
                 <span id="scoreValuePanel" class="score-value">—</span>
             </div>
+            <div id="accuracyPanel" class="accuracy-panel">
+                <div class="accuracy-state" id="accuracyState">
+                    <span id="accuracyStateIcon"></span>
+                    <span id="accuracyStateText">รอเฟรมแรก...</span>
+                </div>
+                <div class="accuracy-bar-wrap">
+                    <div class="accuracy-threshold-mark"></div>
+                    <div class="accuracy-bar-fill" id="accuracyBarFill"></div>
+                </div>
+                <div class="accuracy-stats">
+                    <span>เฉลี่ย 5 เฟรม: <strong id="accuracyAvg">—</strong></span>
+                    <span>เกณฑ์ผ่าน 60%</span>
+                    <span>เฟรม: <strong id="accuracyCount">0</strong></span>
+                </div>
+            </div>
             <div id="statusAlertPanel" class="status-alert error" style="margin-top:0.75rem;"></div>
         </div>
         <div class="panel-divider"></div>
@@ -355,6 +377,68 @@ function setScore(score, color) {
     if (mVal) { mVal.textContent = score; mVal.style.color = color; }
     var rt = document.getElementById('realtimeScore');
     if (rt) { rt.textContent = score; rt.style.color = color; }
+}
+/* ── Real-time accuracy panel: bar + 5-frame average + trend ── */
+var accHistory = [];
+function updateAccuracy(pct) {
+    var panel = document.getElementById('accuracyPanel');
+    if (panel) panel.style.display = 'block';
+    var fill = document.getElementById('accuracyBarFill');
+    var stIcon = document.getElementById('accuracyStateIcon');
+    var stText = document.getElementById('accuracyStateText');
+    var avgEl = document.getElementById('accuracyAvg');
+    var cntEl = document.getElementById('accuracyCount');
+    if (!fill || !stText) return;
+
+    var THRESH = 60, NEAR = 50;
+    var ICON_UP   = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
+    var ICON_DOWN = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>';
+    var ICON_OK   = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>';
+    var ICON_LOW  = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18L18 6M6 6l12 12"/></svg>';
+    var ICON_NONE = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/></svg>';
+
+    if (pct === null || pct === undefined) {
+        fill.style.width = '0%';
+        fill.style.background = '#64748b';
+        stIcon.innerHTML = ICON_NONE;
+        stText.textContent = 'ไม่พบใบหน้า — ปรับมุมกล้อง/แสง';
+        stText.style.color = '#94a3b8';
+        return;
+    }
+
+    var prevAvg = null;
+    if (accHistory.length > 0) {
+        prevAvg = accHistory.reduce(function(a,b){return a+b;},0) / accHistory.length;
+    }
+    accHistory.push(pct);
+    if (accHistory.length > 5) accHistory.shift();
+    var avg = accHistory.reduce(function(a,b){return a+b;},0) / accHistory.length;
+
+    fill.style.width = Math.min(100, Math.max(0, pct)).toFixed(1) + '%';
+    var trend = '';
+    if (prevAvg !== null && accHistory.length >= 2) {
+        if (pct > prevAvg + 1.5) { trend = ICON_UP; }
+        else if (pct < prevAvg - 1.5) { trend = ICON_DOWN; }
+    }
+
+    if (pct >= THRESH) {
+        fill.style.background = '#34d399';
+        stIcon.innerHTML = ICON_OK + trend;
+        stText.textContent = 'ความแม่นยำสูง — ผ่านเกณฑ์ (' + pct.toFixed(1) + '%)';
+        stText.style.color = '#34d399';
+    } else if (pct >= NEAR) {
+        fill.style.background = '#fbbf24';
+        stIcon.innerHTML = ICON_DOWN;
+        stText.textContent = 'ใกล้เกณฑ์ — มองตรงและเข้าใกล้กล้อง (' + pct.toFixed(1) + '%)';
+        stText.style.color = '#fbbf24';
+    } else {
+        fill.style.background = '#f87171';
+        stIcon.innerHTML = ICON_LOW;
+        stText.textContent = 'ความแม่นยำต่ำ (' + pct.toFixed(1) + '%)';
+        stText.style.color = '#f87171';
+    }
+    if (avgEl) avgEl.textContent = avg.toFixed(1) + '%';
+    if (cntEl) cntEl.textContent = String(accHistory.length);
 }
 function showAlert(msg) {
     var ap = document.getElementById('statusAlertPanel');
@@ -681,11 +765,13 @@ async function performPythonVerification(base64Image) {
                 setScore(result.message||'กำลังลองอีกครั้ง...','#fca5a5');
             }
             if(result.fallback_recommended){isJsModeActive=true;pythonFailCount++;}
+            updateAccuracy(null);
             return;
         }
         pythonFailCount=0;
         var score=result.score_percentage||0,passed=result.is_match||false;
         setScore('Python (512D): '+score.toFixed(1)+'% ('+(result.processing_ms||ms)+'ms)',passed?'#34d399':'#fcd34d');
+        updateAccuracy(score);
         if(passed)await processScanResult({confidence:score/100,passed:true,score:score,source:'python_primary',processingTime:result.processing_ms||ms});
     } catch(e){
         if(timer){clearTimeout(timer);timer=null;}
