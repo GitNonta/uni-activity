@@ -188,7 +188,7 @@ export default function App() {
         {activeTab === 'aiscanner'     && (
           <AiScanner
             aiLog={data?.ai_log}
-            serviceStatus={data?.services?.['AI Scan Service']}
+            serviceStatus={data?.services?.['AI Scan Service'] ?? data?.services?.['AI Biometrics Face Service']}
           />
         )}
           </main>

@@ -3,12 +3,16 @@ package services
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"net"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
+
+	"uni-activity/go-monitor/config"
 )
 
 type ServiceStatusMap map[string]string
@@ -23,6 +27,8 @@ func CheckAllServices() ServiceStatusMap {
 		"PostgreSQL Database":         "Stopped",
 		"Queue Worker":                "Stopped",
 		"AI Biometrics Face Service":  "Stopped",
+		// key the monitor-ui AiScanner card reads (App.jsx serviceStatus)
+		"AI Scan Service":             "Stopped",
 	}
 
 	// 1. Port checks via fast TCP connect (50ms timeout)
@@ -55,6 +61,12 @@ func CheckAllServices() ServiceStatusMap {
 	}
 	if checkPort(8001) {
 		res["AI Biometrics Face Service"] = "Running"
+		res["AI Scan Service"] = "Running"
+	} else if aiRunning() {
+		// AI service lives on a remote host (e.g. the GPU machine) — the
+		// localhost port probe cannot see it; ask its /health directly.
+		res["AI Biometrics Face Service"] = "Running (remote)"
+		res["AI Scan Service"] = "Running (remote)"
 	}
 
 	// 2. Scan /proc/[0-9]*/cmdline directly for workers that don't bind ports (like Queue Worker)
@@ -81,11 +93,33 @@ func CheckAllServices() ServiceStatusMap {
 			}
 			if strings.Contains(cmd, "uvicorn") && strings.Contains(cmd, "8001") {
 				res["AI Biometrics Face Service"] = "Running"
+				res["AI Scan Service"] = "Running"
 			}
 		}
 	}
 
 	return res
+}
+
+// aiRunning asks the AI face service's /health endpoint over HTTP.
+// Returns true on HTTP 200 regardless of whether the service runs on this
+// host or a remote GPU machine (the localhost port probe can't see remote).
+func aiRunning() bool {
+	url := strings.TrimSpace(config.AppConfig.AiServiceURL)
+	if url == "" {
+		url = "http://127.0.0.1:8001"
+	}
+	if !strings.Contains(url, "://") {
+		url = "http://" + url
+	}
+	client := &http.Client{Timeout: 2 * time.Second}
+	resp, err := client.Get(strings.TrimRight(url, "/") + "/health")
+	if err != nil {
+		return false
+	}
+	defer resp.Body.Close()
+	_, _ = io.Copy(io.Discard, resp.Body)
+	return resp.StatusCode == http.StatusOK
 }
 
 // GetListeningPorts reads /proc/net/tcp and tcp6 for state 0A (LISTEN)

@@ -17,6 +17,7 @@ type Config struct {
 	TelegramBotToken  string
 	TelegramChatID    string
 	TunnelTargetURL   string
+	AiServiceURL      string
 	StartTime         time.Time
 	ActiveAlertIDs    map[string]struct{}
 	AlertPending      map[string]int
@@ -31,6 +32,7 @@ var AppConfig = &Config{
 	AlertResolveCount: make(map[string]int),
 	AlertsHistory:     make([]map[string]interface{}, 0),
 	TunnelTargetURL:   "http://127.0.0.1:8088",
+	AiServiceURL:      "http://127.0.0.1:8001",
 }
 
 func InitConfig(root string) {
@@ -65,6 +67,13 @@ func InitConfig(root string) {
 				}
 			case "TUNNEL_TARGET_URL":
 				AppConfig.TunnelTargetURL = val
+			case "AI_SERVICE_URL":
+				AppConfig.AiServiceURL = val
+			case "AI_SERVER_URL":
+				// same setting under the Laravel-style key; first match wins
+				if AppConfig.AiServiceURL == "http://127.0.0.1:8001" {
+					AppConfig.AiServiceURL = val
+				}
 			}
 		}
 	}
@@ -75,6 +84,9 @@ func InitConfig(root string) {
 	}
 	if chatID := os.Getenv("TELEGRAM_CHAT_ID"); chatID != "" {
 		AppConfig.TelegramChatID = chatID
+	}
+	if url := os.Getenv("AI_SERVICE_URL"); url != "" {
+		AppConfig.AiServiceURL = url
 	}
 }
 
