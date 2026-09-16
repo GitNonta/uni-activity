@@ -7,6 +7,9 @@ REM Log: server_lan.log in this directory.
 setlocal
 cd /d "%~dp0"
 
+REM friendly node name shown in monitor log lines ([node:gpu-pc])
+set AI_NODE_NAME=gpu-pc
+
 curl -s -m 2 http://127.0.0.1:8001/health >nul 2>&1
 if not errorlevel 1 (
     echo [ai] already running on port 8001 - nothing to do.
