@@ -180,7 +180,13 @@ class CheckInController extends Controller
         $user = auth()->user();
         $profilePhotoUrl = $user->profile_photo ? asset('storage/' . $user->profile_photo) : null;
 
-        return view('checkin.selfie', compact('activity', 'token', 'att', 'profilePhotoUrl'));
+        /* Never cache the scan page: a stale cached copy silently keeps
+           running the old JS (old bugs, no pacemaker) and looks identical
+           to a broken loop from the server side. */
+        $response = response()->view('checkin.selfie', compact('activity', 'token', 'att', 'profilePhotoUrl'));
+        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        $response->headers->set('Pragma', 'no-cache');
+        return $response;
     }
 
     /**
