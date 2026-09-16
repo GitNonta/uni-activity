@@ -158,6 +158,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/student/notifications', [StudentController::class, 'notifications'])->middleware('throttle:status')->name('student.notifications'); // JSON alerts
     Route::post('/profile/photo', [ProfilePhotoController::class, 'store'])->middleware('throttle:upload')->name('profile.photo.upload');
     Route::post('/profile/save-js-descriptor', [ProfilePhotoController::class, 'saveJsDescriptor'])->name('profile.save_js_descriptor');
+    Route::get('/profile/face-status', [ProfilePhotoController::class, 'faceStatus'])->middleware('throttle:status')->name('profile.face_status'); // สถานะถอดรหัสใบหน้า
 
     // ── ประเมินกิจกรรม ──
     Route::get('activities/{activity}/feedback', [FeedbackController::class, 'create'])->name('feedback.create');

@@ -135,6 +135,31 @@ class ProfilePhotoController extends Controller
     }
 
     /**
+     * สถานะการถอดรหัสใบหน้า (Face Decoding Status)
+     * ใช้โดยหน้าโปรไฟล์เพื่อ poll ดูว่า Background Queue สกัดเวกเตอร์เสร็จหรือยัง
+     * ตอบกลับเฉพาะสถานะ boolean — ไม่มีข้อมูลเวกเตอร์ออกจากระบบเด็ดขาด
+     */
+    public function faceStatus(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        if (!$user) {
+            return response()->json(['success' => false], 401);
+        }
+
+        $decoded = $user->face_descriptor !== null;
+
+        return response()->json([
+            'success'    => true,
+            'has_photo'  => $user->profile_photo !== null,
+            'decoded'    => $decoded,
+            'message'    => $decoded
+                ? 'ถอดรหัสใบหน้าสำเร็จ (512D) — ระบบพร้อมใช้งานสำหรับเช็คอิน'
+                : 'กำลังถอดรหัสใบหน้า (512D) ผ่าน Background Queue...',
+            'updated_at' => $user->updated_at?->toIso8601String(),
+        ]);
+    }
+
+    /**
      * บันทึก Face Descriptor ของ JS (128-d)
      */
     public function saveJsDescriptor(Request $request): JsonResponse

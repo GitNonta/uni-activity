@@ -4,6 +4,12 @@
 
 @section('content')
 
+{{-- Face Decoding Status Banner (live) — แสดง "ถอดรหัสใบหน้าสำเร็จ" เมื่อ Background Queue สกัดเวกเตอร์ 512D เสร็จ --}}
+<div id="faceStatusBanner" data-state="hidden" style="display: none; margin-bottom: 1.5rem; border-radius: 12px; padding: 1rem 1.25rem; align-items: center; gap: 0.65rem; box-shadow: 0 1px 2px rgba(0,0,0,0.03); font-weight: 600; font-size: 0.9rem;">
+    <span id="faceStatusIcon"></span>
+    <span id="faceStatusText"></span>
+</div>
+
 {{-- 1. Hero Card: ข้อมูลส่วนตัวและสถิติภาพรวม --}}
 <style>
 @keyframes swap-avatar-badge {
@@ -238,7 +244,7 @@ html.dark .line-unlink-btn:hover {
                         @endif
                     </div>
                 </label>
-                <form id="photoForm" method="POST" action="{{ route('profile.photo.upload') }}" enctype="multipart/form-data" style="display:none;">
+                    <form id="photoForm" method="POST" action="{{ route('profile.photo.upload') }}" enctype="multipart/form-data" style="display:none;">
                     @csrf
                     <input type="hidden" name="face_descriptor" id="faceDescriptorInput">
                     <input type="file" id="photoInput" name="profile_photo" accept="image/jpeg,image/png,image/webp"
@@ -839,8 +845,93 @@ html.dark .line-unlink-btn:hover {
         const overlay = document.getElementById('photoLoadingOverlay');
         overlay.style.display = 'flex';
 
+        // เริ่ม poll สถานะการถอดรหัสใบหน้า (ต่อเนื่องหลัง redirect กลับมา)
+        if (window.startFaceStatusPolling) { window.startFaceStatusPolling(); }
+
         // ส่งฟอร์มให้ Server จัดการเรื่องการสกัด Vector 512-d ทันที
         document.getElementById('photoForm').submit();
     }
+</script>
+<script>
+    (function () {
+        'use strict';
+        var banner = document.getElementById('faceStatusBanner');
+        if (!banner) return;
+
+        var iconEl = document.getElementById('faceStatusIcon');
+        var textEl = document.getElementById('faceStatusText');
+        var timer  = null;
+        var pollsLeft = 0;
+
+        var ICONS = {
+            pending: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>',
+            success: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>',
+            error:   '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18L18 6M6 6l12 12"/></svg>'
+        };
+
+        function render(state, message) {
+            banner.style.display = 'flex';
+            banner.setAttribute('data-state', state);
+            iconEl.innerHTML = ICONS[state] || '';
+            textEl.textContent = message;
+            if (state === 'pending') {
+                banner.style.background = '#fffbeb';
+                banner.style.border = '1px solid #fde68a';
+                banner.style.color = '#92400e';
+            } else if (state === 'success') {
+                banner.style.background = '#ecfdf5';
+                banner.style.border = '1px solid #a7f3d0';
+                banner.style.color = '#065f46';
+            } else {
+                banner.style.background = '#fef2f2';
+                banner.style.border = '1px solid #fecaca';
+                banner.style.color = '#991b1b';
+            }
+        }
+
+        function stopPolling() {
+            if (timer) { clearTimeout(timer); timer = null; }
+        }
+
+        function poll() {
+            fetch('{{ route('profile.face_status') }}', { headers: { 'Accept': 'application/json' } })
+                .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+                .then(function (data) {
+                    if (!data.success) return;
+                    if (!data.has_photo) return;
+                    if (data.decoded) {
+                        render('success', 'ถอดรหัสใบหน้าสำเร็จ (512D) — ระบบพร้อมใช้งานสำหรับเช็คอิน');
+                        stopPolling();
+                    } else if (pollsLeft > 0) {
+                        pollsLeft--;
+                        render('pending', 'กำลังถอดรหัสใบหน้า (512D) ผ่าน Background Queue...');
+                        timer = setTimeout(poll, 2000);
+                    } else {
+                        render('error', 'ยังไม่สามารถถอดรหัสใบหน้าได้ (ใช้เวลานานกว่าปกติ) — ลองอัปโหลดรูปใหม่อีกครั้ง');
+                        stopPolling();
+                    }
+                })
+                .catch(function () {
+                    if (pollsLeft > 0) {
+                        pollsLeft--;
+                        timer = setTimeout(poll, 3000);
+                    }
+                });
+        }
+
+        window.startFaceStatusPolling = function () {
+            render('pending', 'กำลังอัปโหลดรูปโปรไฟล์...');
+            pollsLeft = 45;
+            stopPolling();
+            timer = setTimeout(poll, 3000);
+        };
+
+        // ── Auto-resume: เข้าหน้านี้โดยมีรูปแต่ยังไม่มีเวกเตอร์ → resume polling ──
+        @if(isset($user) && $user->profile_photo && $user->face_descriptor === null)
+            pollsLeft = 45;
+            render('pending', 'กำลังถอดรหัสใบหน้า (512D) ผ่าน Background Queue...');
+            timer = setTimeout(poll, 1500);
+        @endif
+    })();
 </script>
 @endpush
