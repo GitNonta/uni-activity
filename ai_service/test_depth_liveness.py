@@ -41,7 +41,7 @@ def fail(msg: str) -> None:
 def analyzer_with(grids: list[np.ndarray]) -> DepthLivenessAnalyzer:
     a = DepthLivenessAnalyzer(sample_frames=len(grids), poll_interval=0.0)
     it = iter(grids)
-    a._fetch_one = lambda: next(it, None)  # inject past the network layer
+    a._fetch_one = lambda timeout=None: next(it, None)  # inject past the network layer
     return a
 
 

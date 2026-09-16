@@ -69,14 +69,19 @@ class DepthLivenessAnalyzer:
         self.flux_min = float(os.environ.get("DEPTH_FLUX_MIN", flux_min or 0.35))
         self.span_min = float(os.environ.get("DEPTH_SPAN_MIN", span_min or 30.0))
         self.timeout = float(timeout)
+        # When the depth server is down, remember it for a while: the full
+        # sample loop costs ~sample_frames x timeout (~13 s) to discover a
+        # dead server, which every /verify would otherwise pay.
+        self._down_until = 0.0
+        self._down_window = float(os.environ.get("DEPTH_DOWN_WINDOW", "60"))
 
     # -- fetching ------------------------------------------------------------
-    def _fetch_one(self) -> np.ndarray | None:
+    def _fetch_one(self, timeout: float | None = None) -> np.ndarray | None:
         try:
             req = urllib.request.Request(
                 f"{self.server_url}/depth.json",
                 headers={"Cache-Control": "no-store"})
-            with urllib.request.urlopen(req, timeout=self.timeout) as r:
+            with urllib.request.urlopen(req, timeout=self.timeout if timeout is None else timeout) as r:
                 j = json.loads(r.read())
             b64 = j.get("depth_b64")
             if not b64:
@@ -92,8 +97,28 @@ class DepthLivenessAnalyzer:
 
     # -- scoring -------------------------------------------------------------
     def analyze(self) -> DepthLivenessResult:
-        grids: list[np.ndarray] = []
-        for i in range(self.sample_frames):
+        def _fail_open(reason: str, frames: int = 0) -> DepthLivenessResult:
+            return DepthLivenessResult(
+                is_live=True, liveness_score=0.5, available=False,
+                checks={"available": False, "frames": frames, "reason": reason},
+                message="depth stream unavailable (fail-open)")
+
+        now = time.monotonic()
+        if now < self._down_until:
+            return _fail_open("cooldown")
+
+        # Fast pre-probe (short timeout): if the depth server is down, bail
+        # out immediately instead of burning the full sample loop, and cool
+        # down so subsequent verifications skip the wait entirely.
+        probe = self._fetch_one(timeout=0.4)
+        if probe is None:
+            self._down_until = now + self._down_window
+            logger.info("[depth-liveness] depth server unreachable — fail-open, "
+                        f"cooldown {self._down_window:.0f}s")
+            return _fail_open("probe-failed")
+
+        grids: list[np.ndarray] = [probe]
+        for i in range(1, self.sample_frames):
             g = self._fetch_one()
             if g is not None:
                 grids.append(g)
@@ -101,11 +126,8 @@ class DepthLivenessAnalyzer:
                 time.sleep(self.poll_interval)
 
         if len(grids) < 3:
-            logger.info("[depth-liveness] depth server unavailable — fail-open")
-            return DepthLivenessResult(
-                is_live=True, liveness_score=0.5, available=False,
-                checks={"available": False, "frames": len(grids)},
-                message="depth stream unavailable (fail-open)")
+            logger.info("[depth-liveness] depth server degraded — fail-open")
+            return _fail_open("insufficient-frames", frames=len(grids))
 
         spans = [float(g.max() - g.min()) for g in grids]
         flux = [float(np.abs(grids[i] - grids[i - 1]).mean())
