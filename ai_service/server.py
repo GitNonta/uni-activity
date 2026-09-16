@@ -40,15 +40,25 @@ class UDPHandler(logging.Handler):
         except Exception:
             pass
 
+# ── Node identification ──────────────────────────────────────────────────────
+# Multiple AI nodes (GPU PC, Termux, ...) can ship logs to the same UDP sink;
+# without a tag, the monitor cannot tell which engine processed a scan.
+# Override with AI_NODE_NAME (e.g. AI_NODE_NAME=gpu-pc).
+NODE_NAME = os.environ.get("AI_NODE_NAME", socket.gethostname().upper())
+NODE_TAG = f"[node:{NODE_NAME}]"
+
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    format="%(asctime)s [%(levelname)s] " + NODE_TAG + " %(name)s: %(message)s"
 )
 logger = logging.getLogger("AIServer")
 
 try:
-    udp = UDPHandler("192.168.1.222", 9997)
-    udp.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
+    udp = UDPHandler(
+        os.environ.get("AI_LOG_UDP_HOST", "192.168.1.222"),
+        int(os.environ.get("AI_LOG_UDP_PORT", "9997")),
+    )
+    udp.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] " + NODE_TAG + " %(message)s"))
     logger.addHandler(udp)
 except Exception:
     pass
@@ -411,6 +421,7 @@ def reduce_to_128d(embedding_512d: np.ndarray) -> np.ndarray:
 async def health():
     return {
         "status": "ok",
+        "node": NODE_NAME,
         "version": "2.1.0",
         "auth_required": bool(AI_SERVER_KEY),
         "models": {
