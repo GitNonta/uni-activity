@@ -104,10 +104,12 @@ class ExtractFaceBiometricsJob implements ShouldQueue
         if (!empty($data['embedding_128d']) && is_array($data['embedding_128d'])) {
             $user->face_descriptor_js = $data['embedding_128d'];
             $updated = true;
-        } elseif (!empty($user->face_descriptor) && empty($user->face_descriptor_js) && count($user->face_descriptor) >= 128) {
-            $user->face_descriptor_js = array_slice($user->face_descriptor, 0, 128);
-            $updated = true;
         }
+        // No truncation fallback: the first 128 components of a 512-d
+        // embedding are NOT a valid reduced vector (that needs the fitted
+        // PCA). In fdx mode /extract returns embedding_128d = null until
+        // the PCA is re-fit (ai_service/FDX_MIGRATION.md) — leave the JS
+        // descriptor null rather than store a meaningless truncation.
 
         if ($updated) {
             $user->save();
