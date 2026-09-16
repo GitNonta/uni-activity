@@ -637,7 +637,12 @@ async function performJsVerification(canvas) {
 async function performPythonVerification(base64Image) {
     try {
         var t0=Date.now();
-        var res=await fetch('/api/face/verify',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').getAttribute('content'),'Accept':'application/json','Authorization':'Bearer '+(document.querySelector('meta[name="api-token"]')||{}).getAttribute('content')},body:JSON.stringify({image:base64Image,mode:'python',priority:'accuracy'})});
+        var hdrs={'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':(document.querySelector('meta[name="csrf-token"]')||{getAttribute:function(){return '';}}).getAttribute('content')};
+        // Session-cookie auth (auth()->user() in the controller) — no Bearer
+        // header: the old code crashed here when meta[name=api-token] was
+        // absent ((null||{}).getAttribute is not a function), killing every
+        // scan frame before it could reach /api/face/verify.
+        var res=await fetch('/api/face/verify',{method:'POST',headers:hdrs,body:JSON.stringify({image:base64Image,mode:'python',priority:'accuracy'})});
         var ms=Date.now()-t0;
         if(res.status===429){var ra=30;try{var j=await res.json();ra=j.retry_after||30;}catch(_){}pythonThrottledUntil=Date.now()+ra*1000;console.warn('Rate limited — backing off '+ra+'s');return;}
         if(!res.ok)throw new Error('HTTP '+res.status);
