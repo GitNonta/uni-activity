@@ -560,6 +560,12 @@ async def verify_face(
     roi = yolo_detect_face(img)
     if roi is None:
         elapsed_ms = int((time.time() - t0) * 1000)
+        # frame diagnostics: lets the UI (and logs) tell a dark/occluded frame
+        # from a detector failure instead of failing silently
+        mean_b = float(img.mean()) if img is not None else -1.0
+        std_b = float(img.std()) if img is not None else -1.0
+        logger.info(f"[verify] no_face(yolo) in {elapsed_ms}ms "
+                    f"diag={{'brightness': {mean_b:.1f}, 'std': {std_b:.1f}, 'size': {img.shape[1]}x{img.shape[0]}}}")
         return {
             "status": "no_face",
             "is_match": False,
@@ -567,6 +573,11 @@ async def verify_face(
             "liveness_passed": False,
             "liveness_score": 0.0,
             "message": "No face detected in frame",
+            "frame_diag": {
+                "brightness": round(mean_b, 1),
+                "std": round(std_b, 1),
+                "size": f"{img.shape[1]}x{img.shape[0]}",
+            },
             "processing_ms": elapsed_ms,
             "detector_used": get_detector_pipeline(),
         }
@@ -582,6 +593,10 @@ async def verify_face(
 
     if selfie_emb is None:
         elapsed_ms = int((time.time() - t0) * 1000)
+        mean_b = float(img.mean()) if img is not None else -1.0
+        std_b = float(img.std()) if img is not None else -1.0
+        logger.info(f"[verify] no_face(scrfd) in {elapsed_ms}ms "
+                    f"diag={{'brightness': {mean_b:.1f}, 'std': {std_b:.1f}}}")
         return {
             "status": "no_face",
             "is_match": False,
@@ -589,6 +604,10 @@ async def verify_face(
             "liveness_passed": False,
             "liveness_score": 0.0,
             "message": "No face detected by SCRFD",
+            "frame_diag": {
+                "brightness": round(mean_b, 1),
+                "std": round(std_b, 1),
+            },
             "processing_ms": elapsed_ms,
             "detector_used": get_detector_pipeline(),
         }

@@ -613,7 +613,9 @@ function handleLowLightDetection(ctx,canvas) {
         var video=document.getElementById('cameraPreview'),guide=document.getElementById('faceGuide'),infoEl=document.getElementById('scanInstructions');
         if(avgBrightness<75)isFlashOn=true;if(avgBrightness>110)isFlashOn=false;
         if(isFlashOn){
-            var boost=Math.min(3.5,90/Math.max(avgBrightness,10));
+            // Cap the boost at 1.6x: stronger boosts whiten the frame and
+            // make the face undetectable (no_face freezes) at night
+            var boost=Math.min(1.6,90/Math.max(avgBrightness,10));
             if(video)video.style.filter='brightness('+boost.toFixed(2)+') contrast(1.15)';
             if(ctx&&video){ctx.filter='brightness('+boost.toFixed(2)+') contrast(1.15)';ctx.translate(canvas.width,0);ctx.scale(-1,1);ctx.drawImage(video,0,0,canvas.width,canvas.height);ctx.setTransform(1,0,0,1,0,0);ctx.filter='none';}
             if(guide)guide.style.boxShadow='0 0 0 4000px rgba(10,22,40,0.6)';
@@ -635,25 +637,40 @@ async function performJsVerification(canvas) {
     } catch(e){console.warn('JS verification error:',e);}
 }
 async function performPythonVerification(base64Image) {
+    var timer=null;
     try {
         var t0=Date.now();
+        var ctrl=(typeof AbortController!=='undefined')?new AbortController():null;
+        if(ctrl)timer=setTimeout(function(){ctrl.abort();},10000);
         var hdrs={'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':(document.querySelector('meta[name="csrf-token"]')||{getAttribute:function(){return '';}}).getAttribute('content')};
         // Session-cookie auth (auth()->user() in the controller) — no Bearer
         // header: the old code crashed here when meta[name=api-token] was
         // absent ((null||{}).getAttribute is not a function), killing every
         // scan frame before it could reach /api/face/verify.
-        var res=await fetch('/api/face/verify',{method:'POST',headers:hdrs,body:JSON.stringify({image:base64Image,mode:'python',priority:'accuracy'})});
+        var res=await fetch('/api/face/verify',{method:'POST',headers:hdrs,body:JSON.stringify({image:base64Image,mode:'python',priority:'accuracy'}),signal:ctrl?ctrl.signal:undefined});
+        if(timer){clearTimeout(timer);timer=null;}
         var ms=Date.now()-t0;
         if(res.status===429){var ra=30;try{var j=await res.json();ra=j.retry_after||30;}catch(_){}pythonThrottledUntil=Date.now()+ra*1000;console.warn('Rate limited — backing off '+ra+'s');return;}
         if(!res.ok)throw new Error('HTTP '+res.status);
         var result=await res.json();
+        if(result.success===false&&result.status==='no_face'){
+            // เฟรมนี้ไม่มีใบหน้าที่ตรวจพบ (กล้องถูกบัง/เฟรมค้างหลังสลับแอป)
+            // แสดงผลทันที — เดิมโค้ดเงียบและ UI ค้างที่คะแนนเก่าจนดูเหมือน freeze
+            setScore('ไม่พบใบหน้าในเฟรม — กรุณามองกล้อง','#fca5a5');
+            setStatusChip('scanning','กำลังสแกนใบหน้า... (ปรับมุมกล้อง/แสง)');
+            return;
+        }
         if(result.success!==false){
             pythonFailCount=0;
             var score=result.score_percentage||0,passed=result.is_match||false;
             setScore('Python (512D): '+score.toFixed(1)+'% ('+(result.processing_ms||ms)+'ms)',passed?'#34d399':'#fcd34d');
             if(passed)await processScanResult({confidence:score/100,passed:true,score:score,source:'python_primary',processingTime:result.processing_ms||ms});
         } else if(result.fallback_recommended){isJsModeActive=true;pythonFailCount++;}
-    } catch(e){console.warn('Python verification failed:',e);pythonFailCount++;if(pythonFailCount>=2&&isFaceApiLoaded&&profileDescriptor&&profileDescriptor.embedding_128d){isJsModeActive=true;}}
+    } catch(e){
+        if(timer){clearTimeout(timer);timer=null;}
+        console.warn('Python verification failed:',e);pythonFailCount++;
+        if(pythonFailCount>=2&&isFaceApiLoaded&&profileDescriptor&&profileDescriptor.embedding_128d){isJsModeActive=true;}
+    }
 }
 async function loadJsDescriptorFromApi() {
     if(profileDescriptor&&profileDescriptor.embedding_128d)return true;
