@@ -519,7 +519,7 @@ async function initFaceApi() {
 }
 document.addEventListener('DOMContentLoaded',function(){initFaceApi();});
 
-var stream=null,scanTimeout=null,scanAttempts=0;
+var stream=null,scanTimeout=null,scanAttempts=0,cameraNoSignal=0;
 var MAX_ATTEMPTS=15,THRESHOLD=60;
 var isVerifying=false,stopScanning=false,isFlashOn=false;
 
@@ -565,9 +565,27 @@ function showLargeScreenTips() {
     setTimeout(function(){if(el&&scanAttempts<=2){el.textContent=hint;setStatusChip('scanning',hint);setTimeout(function(){if(el&&!stopScanning){el.textContent='กำลังสแกนใบหน้าแบบเรียลไทม์... กรุณามองกล้อง';setStatusChip('scanning','กำลังสแกนใบหน้า...');}},3500);}},2000);
 }
 
+async function restartCamera() {
+    try{ if(stream){stream.getTracks().forEach(function(t){t.stop();});} }catch(e){}
+    stream=null;
+    try{ await startCamera(); }catch(e){ console.warn('Camera restart failed:',e); }
+}
 async function scanFrame() {
-    if(isVerifying||!stream||stopScanning)return;
+    if(isVerifying||stopScanning)return;
     var video=document.getElementById('cameraPreview');
+    // ── Camera health: Android suspends the stream on tab-switch, which
+    // used to silently no-op every scan (UI frozen at the last score).
+    var tracksDead=!stream||(stream.getVideoTracks&&stream.getVideoTracks().length>0&&stream.getVideoTracks()[0].readyState!=='live');
+    if(video&&video.videoWidth>0){cameraNoSignal=0;}
+    else{cameraNoSignal++;}
+    if(tracksDead||cameraNoSignal>10){
+        cameraNoSignal=0;
+        setStatusChip('warning','กล้องไม่พร้อม — กำลังเชื่อมต่อใหม่...');
+        restartCamera();
+        scanTimeout=setTimeout(scanFrame,2500);
+        return;
+    }
+    if(!stream)return;
     if(video.videoWidth===0){scanTimeout=setTimeout(scanFrame,1000);return;}
     isVerifying=true;scanAttempts++;
     if(scanAttempts%3===0)playScanSound();
@@ -653,19 +671,22 @@ async function performPythonVerification(base64Image) {
         if(res.status===429){var ra=30;try{var j=await res.json();ra=j.retry_after||30;}catch(_){}pythonThrottledUntil=Date.now()+ra*1000;console.warn('Rate limited — backing off '+ra+'s');return;}
         if(!res.ok)throw new Error('HTTP '+res.status);
         var result=await res.json();
-        if(result.success===false&&result.status==='no_face'){
-            // เฟรมนี้ไม่มีใบหน้าที่ตรวจพบ (กล้องถูกบัง/เฟรมค้างหลังสลับแอป)
-            // แสดงผลทันที — เดิมโค้ดเงียบและ UI ค้างที่คะแนนเก่าจนดูเหมือน freeze
-            setScore('ไม่พบใบหน้าในเฟรม — กรุณามองกล้อง','#fca5a5');
-            setStatusChip('scanning','กำลังสแกนใบหน้า... (ปรับมุมกล้อง/แสง)');
+        if(result.success===false){
+            // ตอบกลับทุกกรณีแบบชัดเจน — เดิมโค้ดเงียบทำให้ UI ค้างที่คะแนนเก่า
+            // (no_face / No profile descriptor หลังอัปโหลดรูปใหม่ / ฯลฯ)
+            if(result.status==='no_face'){
+                setScore('ไม่พบใบหน้าในเฟรม — กรุณามองกล้อง','#fca5a5');
+                setStatusChip('scanning','กำลังสแกนใบหน้า... (ปรับมุมกล้อง/แสง)');
+            } else {
+                setScore(result.message||'กำลังลองอีกครั้ง...','#fca5a5');
+            }
+            if(result.fallback_recommended){isJsModeActive=true;pythonFailCount++;}
             return;
         }
-        if(result.success!==false){
-            pythonFailCount=0;
-            var score=result.score_percentage||0,passed=result.is_match||false;
-            setScore('Python (512D): '+score.toFixed(1)+'% ('+(result.processing_ms||ms)+'ms)',passed?'#34d399':'#fcd34d');
-            if(passed)await processScanResult({confidence:score/100,passed:true,score:score,source:'python_primary',processingTime:result.processing_ms||ms});
-        } else if(result.fallback_recommended){isJsModeActive=true;pythonFailCount++;}
+        pythonFailCount=0;
+        var score=result.score_percentage||0,passed=result.is_match||false;
+        setScore('Python (512D): '+score.toFixed(1)+'% ('+(result.processing_ms||ms)+'ms)',passed?'#34d399':'#fcd34d');
+        if(passed)await processScanResult({confidence:score/100,passed:true,score:score,source:'python_primary',processingTime:result.processing_ms||ms});
     } catch(e){
         if(timer){clearTimeout(timer);timer=null;}
         console.warn('Python verification failed:',e);pythonFailCount++;
