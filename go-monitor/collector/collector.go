@@ -65,6 +65,32 @@ type Collector struct {
 	inspector          []interface{}
 	inspMu             sync.Mutex
 	OnInspectorAdded   func([]byte) // called immediately when a new log arrives
+	aiLog              []string     // plain-text lines from the AI face service
+	aiLogMu            sync.Mutex
+}
+
+// AddAILogLine appends one line of AI-service log text (received via UDP
+// 9997) to the ring buffer shown in the monitor's AI Scanner terminal.
+func (c *Collector) AddAILogLine(line string) {
+	line = strings.TrimRight(line, "\r\n ")
+	if line == "" {
+		return
+	}
+	c.aiLogMu.Lock()
+	if len(c.aiLog) >= 100 {
+		c.aiLog = c.aiLog[1:]
+	}
+	c.aiLog = append(c.aiLog, line)
+	c.aiLogMu.Unlock()
+}
+
+func (c *Collector) aiLogText() string {
+	c.aiLogMu.Lock()
+	defer c.aiLogMu.Unlock()
+	if len(c.aiLog) == 0 {
+		return ""
+	}
+	return strings.Join(c.aiLog, "\n")
 }
 
 func NewCollector(projectRoot string) *Collector {
@@ -218,7 +244,7 @@ func (c *Collector) Collect() ([]byte, error) {
 		LogFilesInfo:     map[string]interface{}{"count": 5, "total_size_mb": 12.4},
 		GithubDeployLogs: map[string]interface{}{"status": "ok"},
 		Events:           getDeployEvents(c.projectRoot),
-		AILog:            "AI Cluster Operational",
+		AILog:            c.aiLogText(), // real UDP-received lines; empty until the AI service ships logs
 		SSHSessions:      sshSessions,
 		SFTPSessions:     sftp,
 		SCPSessions:      scp,

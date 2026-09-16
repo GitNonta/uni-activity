@@ -96,11 +96,15 @@ func main() {
 	})
 
 	startUDPReceiver(9997, func(data []byte) {
+		// The AI face service ships plain-text log lines here; older senders
+		// may still use JSON inspector items — accept both.
 		var item map[string]interface{}
 		if err := json.Unmarshal(data, &item); err == nil {
 			enrichInspectorItem(item)
 			col.AddInspectorLog(item)
+			return
 		}
+		col.AddAILogLine(string(data))
 	})
 
 	// ── 1b. Real-time Inspector Push ──────────────────────────────────────────
