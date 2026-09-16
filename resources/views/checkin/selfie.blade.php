@@ -483,8 +483,6 @@ if (_manualBtn) {
 var faceScanMethod = '{{ $faceScanMethod ?? "hybrid" }}';
 var isJsModeActive = (faceScanMethod === 'js');
 var profileDescriptor = null, pythonFailCount = 0, pythonThrottledUntil = 0, isFaceApiLoaded = false;
-var smartScanner = null;
-var performanceMonitor = {requests:0, successRate:0, avgResponseTime:0, lastUpdate:Date.now()};
 
 var audioContext = new (window.AudioContext || window.webkitAudioContext)();
 function playScanSound() {
@@ -505,24 +503,9 @@ function playErrorSound() {
     o.start();setTimeout(function(){o.stop();},200);
 }
 
-async function initSmartScanner() {
-    if (!window.SmartFaceScanner) { console.warn('SmartFaceScanner not loaded'); return false; }
-    smartScanner = new SmartFaceScanner({maxConcurrentRequests:1,adaptiveThrottling:true,fallbackThreshold:2,minInterval:800,maxInterval:3000,baseInterval:1500,preferAccuracy:faceScanMethod==='python',hybridMode:faceScanMethod==='hybrid'||faceScanMethod==='python'});
-    setInterval(updatePerformanceMonitor, 5000);
-    return true;
-}
-function updatePerformanceMonitor() {
-    if (!smartScanner) return;
-    var status=smartScanner.getStatus();
-    performanceMonitor={requests:performanceMonitor.requests+1,mode:status.mode,fallbackActive:status.fallbackActive,avgResponseTime:status.performance.avgPythonTime||status.performance.avgJsTime||0,currentInterval:status.currentInterval,lastUpdate:Date.now()};
-    updateScanStatusUI(status);
-}
-function updateScanStatusUI(status) {
-    var el=document.getElementById('scanStatus'); if(!el) return;
-    var map={python:['AI Server','#34d399'],js:['JavaScript',status.fallbackActive?'#fcd34d':'#93c5fd'],hybrid:['Hybrid','#c4b5fd']};
-    var pair=map[status.mode]||['Unknown','#fff'];
-    el.innerHTML='<span style="color:'+pair[1]+'">'+pair[0]+'</span>'+(status.fallbackActive?' (Fallback)':'')+'<br><small>'+status.performance.avgPythonTime+'ms avg</small>';
-}
+/* SmartFaceScanner removed: the class was referenced but never shipped,
+   so every init attempt only produced a console warning and all its
+   call sites were dead branches around the legacy scan loop. */
 
 var faceLandmarksCanvas=null,faceLandmarksCtx=null,detectionInterval=null,isScanningActive=true;
 function initFaceLandmarksCanvas() {
@@ -613,13 +596,12 @@ document.addEventListener('DOMContentLoaded', async function(){
     var guide=document.getElementById('faceGuide');if(guide)guide.style.display='none';
     return;
     @endif
-    var smartScannerReady=await initSmartScanner();
     var preComputed={!! $profileJsDescriptor ?? 'null' !!};
     if(preComputed){profileDescriptor={embedding_128d:new Float32Array(Object.values(preComputed)),embedding_512d:null};}
-    else if(smartScannerReady){await loadJsDescriptorFromApi();}
     await startCamera();
     var guide=document.getElementById('faceGuide');if(guide)guide.classList.add('scanning-ring');
     var scanEl=document.getElementById('scanInstructions');if(scanEl)scanEl.textContent='กำลังสแกนใบหน้าแบบเรียลไทม์... กรุณามองกล้อง';
+    var stEl=document.getElementById('scanStatus');if(stEl)stEl.innerHTML='<span style="color:#34d399;">AI Server</span>';
     setStatusChip('scanning','กำลังสแกนใบหน้า...');
     showLargeScreenTips();
     scanTimeout=setTimeout(scanFrame,1000);
@@ -674,15 +656,14 @@ async function scanFrame() {
     isVerifying=true;scanAttempts++;
     if(scanAttempts%3===0)playScanSound();
     try {
-        if(smartScanner&&profileDescriptor){var result=await smartScanner.scanFrame(video,profileDescriptor);if(result){await processScanResult(result);return;}}
-        else{await legacyScanFrame(video);}
-    } catch(error){console.error('Scan error:',error);await legacyScanFrame(video);}
+        await legacyScanFrame(video);
+    } catch(error){console.error('Scan error:',error);}
     finally {
         isVerifying=false;
         // เมื่อโดนหน่วง (429) ให้รอจนหมดอายุจริง+เผื่อ 0.5s — เดิม retry ทุก 5s
         // ไปเสีย quota และทำให้เหมือน freeze
         var throttled=Date.now()<pythonThrottledUntil;
-        var nextInterval=throttled?Math.max(1000,pythonThrottledUntil-Date.now()+500):(smartScanner?smartScanner.currentInterval:1000);
+        var nextInterval=throttled?Math.max(1000,pythonThrottledUntil-Date.now()+500):1000;
         if(!stopScanning)scanTimeout=setTimeout(scanFrame,nextInterval);
     }
 }
