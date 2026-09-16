@@ -19,32 +19,14 @@
             --panel-border: rgba(37,99,235,0.25);
         }
         html, body { width:100%; height:100%; overflow:hidden; font-family:'Inter','Sarabun',sans-serif; background:var(--navy); color:var(--white); -webkit-font-smoothing:antialiased; }
-        .scan-shell { display:flex; width:100vw; height:100vh; height:100dvh; position:relative; }
+        .scan-shell { display:block; position:fixed; inset:0; width:100vw; height:100vh; height:100dvh; overflow:hidden; }
+        /* Full-screen camera on EVERY device (phone + tablet + desktop):
+           the old split side-panel layout is retired; the camera fills the
+           viewport and all controls float over it. */
+        .camera-area { position:absolute; inset:0; background:#000; }
+        .side-panel { display:none !important; }
 
-        /* ─ Desktop ─ */
-        @media (min-width:1024px) {
-            .scan-shell { flex-direction:row; }
-            .side-panel { display:flex; flex-direction:column; width:340px; min-width:300px; max-width:380px; flex-shrink:0; background:var(--navy); border-right:1px solid var(--panel-border); padding:2rem 1.75rem; gap:1.5rem; z-index:20; overflow-y:auto; }
-            .camera-area { flex:1; position:relative; overflow:hidden; background:#000; }
-            .mobile-header, .mobile-bottom { display:none; }
-        }
-        /* ─ Tablet ─ */
-        @media (min-width:640px) and (max-width:1023px) {
-            .scan-shell { flex-direction:column; }
-            .side-panel { display:flex; flex-direction:row; flex-wrap:wrap; gap:1rem; width:100%; order:2; padding:1.25rem 1.5rem; background:var(--navy); border-top:1px solid var(--panel-border); z-index:20; flex-shrink:0; max-height:40vh; overflow-y:auto; }
-            .camera-area { flex:1; position:relative; overflow:hidden; background:#000; order:1; min-height:0; }
-            .side-panel .panel-logo, .side-panel .panel-divider { display:none; }
-            .side-panel .panel-section { flex:1 1 45%; min-width:200px; }
-            .mobile-header, .mobile-bottom { display:none; }
-        }
-        /* ─ Mobile ─ */
-        @media (max-width:639px) {
-            .scan-shell { flex-direction:column; }
-            .side-panel { display:none; }
-            .camera-area { position:absolute; inset:0; background:#000; }
-            .mobile-header { display:flex; position:absolute; top:0; left:0; right:0; z-index:30; padding:1rem 1.25rem; padding-top:calc(1rem + env(safe-area-inset-top,0px)); background:linear-gradient(to bottom,rgba(10,22,40,0.85),transparent); align-items:center; gap:0.75rem; pointer-events:auto; }
-            .mobile-bottom { display:flex; flex-direction:column; position:absolute; bottom:0; left:0; right:0; z-index:30; padding:1.25rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom,0px)); background:linear-gradient(to top,rgba(10,22,40,0.92) 60%,transparent); gap:0.75rem; pointer-events:auto; }
-        }
+        /* Desktop / tablet split-panel media queries removed — full-screen for all */
 
         #cameraPreview { width:100%; height:100%; object-fit:cover; transform:scaleX(-1); display:block; }
 
@@ -63,7 +45,23 @@
         .activity-meta-row { display:flex; align-items:center; gap:0.5rem; font-size:0.8rem; color:var(--white-60); }
         .activity-meta-row svg { flex-shrink:0; opacity:0.7; }
 
-        .status-chip { display:inline-flex; align-items:center; gap:0.5rem; padding:0.55rem 1rem; border-radius:30px; font-size:0.85rem; font-weight:600; border:1px solid; transition:all 0.3s; width:100%; }
+        .status-chip { display:inline-flex; align-items:center; gap:0.5rem; padding:0.55rem 1rem; border-radius:30px; font-size:0.85rem; font-weight:600; border:1px solid; transition:all 0.3s; width:100%; background:rgba(10,22,40,0.72); backdrop-filter:blur(12px); }
+        /* ── Full-screen HUD (floating controls, all devices) ── */
+        .mobile-header { display:flex; position:absolute; top:0; left:0; right:0; z-index:30; padding:1rem 1.25rem; padding-top:calc(1rem + env(safe-area-inset-top,0px)); background:linear-gradient(to bottom,rgba(10,22,40,0.85),transparent); align-items:center; gap:0.75rem; pointer-events:auto; }
+        .mobile-bottom { display:flex; flex-direction:column; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:min(94vw,600px); z-index:30; padding:1.1rem 1.1rem calc(1.1rem + env(safe-area-inset-bottom,0px)); background:linear-gradient(to top,rgba(10,22,40,0.92) 60%,transparent); gap:0.65rem; pointer-events:auto; }
+        .hud-toprow { display:flex; gap:0.6rem; align-items:stretch; }
+        .hud-toprow .status-chip { flex:1; min-width:0; }
+        .hud-toprow .score-display { margin-top:0; min-width:150px; justify-content:center; }
+        /* ── Toast notifications (top, stacked) ── */
+        #toastStack { position:fixed; top:calc(0.7rem + env(safe-area-inset-top,0px)); left:50%; transform:translateX(-50%); z-index:10001; display:flex; flex-direction:column; gap:0.5rem; width:min(92vw,460px); pointer-events:none; }
+        .toast { display:flex; align-items:center; gap:0.6rem; background:rgba(10,22,40,0.92); border:1px solid var(--white-15); border-left:4px solid var(--blue-light); border-radius:12px; padding:0.7rem 0.95rem; font-size:0.82rem; color:var(--white); backdrop-filter:blur(14px); box-shadow:0 8px 30px rgba(0,0,0,0.45); opacity:0; transform:translateY(-12px); transition:opacity 0.28s ease, transform 0.28s ease; }
+        .toast.toast-in { opacity:1; transform:translateY(0); }
+        .toast.toast-out { opacity:0; transform:translateY(-10px); }
+        .toast-icon { flex-shrink:0; display:flex; }
+        .toast-success { border-left-color:#34d399; } .toast-success .toast-icon { color:#34d399; }
+        .toast-error { border-left-color:#f87171; } .toast-error .toast-icon { color:#f87171; }
+        .toast-warning { border-left-color:#fbbf24; } .toast-warning .toast-icon { color:#fbbf24; }
+        .toast-info { border-left-color:#60a5fa; } .toast-info .toast-icon { color:#60a5fa; }
         .status-chip.connecting { background:rgba(37,99,235,0.12); border-color:rgba(37,99,235,0.35); color:var(--blue-light); }
         .status-chip.scanning { background:rgba(96,165,250,0.1); border-color:rgba(96,165,250,0.4); color:#93c5fd; }
         .status-chip.success { background:rgba(16,185,129,0.12); border-color:rgba(16,185,129,0.4); color:#34d399; }
@@ -179,6 +177,9 @@
 <body>
 <div class="scan-shell">
 
+    <!-- ── TOAST NOTIFICATIONS (top, stacked) ── -->
+    <div id="toastStack" aria-live="polite"></div>
+
     <!-- ── SIDE PANEL ── -->
     <aside class="side-panel">
         <div class="panel-logo">
@@ -212,35 +213,7 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="panel-section">
-            <span class="panel-section-label">สถานะระบบ</span>
-            <div id="statusChip" class="status-chip connecting">
-                <span class="status-dot pulse"></span>
-                <span id="statusChipText">กำลังเชื่อมต่อกล้อง...</span>
-            </div>
-            <div id="scoreDisplayPanel" class="score-display">
-                <span class="score-label">คะแนนความคล้าย</span>
-                <span id="scoreValuePanel" class="score-value">—</span>
-            </div>
-            <div id="accuracyPanel" class="accuracy-panel">
-                <div class="accuracy-state" id="accuracyState">
-                    <span id="accuracyStateIcon"></span>
-                    <span id="accuracyStateText">รอเฟรมแรก...</span>
-                </div>
-                <div class="accuracy-bar-wrap">
-                    <div class="accuracy-threshold-mark"></div>
-                    <div class="accuracy-bar-fill" id="accuracyBarFill"></div>
-                </div>
-                <div class="accuracy-stats">
-                    <span>เฉลี่ย 5 เฟรม: <strong id="accuracyAvg">—</strong></span>
-                    <span>เกณฑ์ผ่าน 60%</span>
-                    <span>เฟรม: <strong id="accuracyCount">0</strong></span>
-                </div>
-            </div>
-            <div id="statusAlertPanel" class="status-alert error" style="margin-top:0.75rem;"></div>
-        </div>
-        <div class="panel-divider"></div>
+        </div>        <div class="panel-divider"></div>
         <div class="panel-section">
             <span class="panel-section-label">คำแนะนำ</span>
             <ul class="instructions-list">
@@ -249,11 +222,6 @@
                 <li><span class="num">3</span>ให้แสงสว่างเพียงพอ หลีกเลี่ยงแสงจ้าด้านหลัง</li>
                 <li><span class="num">4</span>ถืออุปกรณ์ให้นิ่ง ห่างจากกล้องประมาณ 40–60 ซม.</li>
             </ul>
-        </div>
-        <div class="panel-section" style="margin-top:auto;">
-            <button type="button" id="manualCaptureBtnPanel" class="btn-manual" onclick="capturePhoto(true)">
-                ถ่ายภาพด้วยตนเอง
-            </button>
         </div>
     </aside>
 
@@ -312,14 +280,31 @@
 
     <!-- ── MOBILE BOTTOM ── -->
     <div class="mobile-bottom">
-        <div class="mobile-status-box">
-            <div id="mobileStatusText" class="mobile-status-text">กำลังเชื่อมต่อกล้อง...</div>
-            <div id="mobileScoreRow" class="mobile-score-row">
-                <span id="mobileScoreVal" class="mobile-score-val"></span>
-                <span class="mobile-score-label">ความคล้ายใบหน้า</span>
+        <div class="hud-toprow">
+            <div id="statusChip" class="status-chip connecting">
+                <span class="status-dot pulse"></span>
+                <span id="statusChipText">กำลังเชื่อมต่อกล้อง...</span>
+            </div>
+            <div id="scoreDisplayPanel" class="score-display">
+                <span class="score-label">คะแนน</span>
+                <span id="scoreValuePanel" class="score-value">—</span>
             </div>
         </div>
-        <div id="mobileAlertBox" class="status-alert error"></div>
+        <div id="accuracyPanel" class="accuracy-panel">
+            <div class="accuracy-state" id="accuracyState">
+                <span id="accuracyStateIcon"></span>
+                <span id="accuracyStateText">รอเฟรมแรก...</span>
+            </div>
+            <div class="accuracy-bar-wrap">
+                <div class="accuracy-threshold-mark"></div>
+                <div class="accuracy-bar-fill" id="accuracyBarFill"></div>
+            </div>
+            <div class="accuracy-stats">
+                <span>เฉลี่ย 5 เฟรม: <strong id="accuracyAvg">—</strong></span>
+                <span>เกณฑ์ผ่าน 60%</span>
+                <span>เฟรม: <strong id="accuracyCount">0</strong></span>
+            </div>
+        </div>
         <button type="button" id="manualCaptureBtnMobile" class="btn-manual" onclick="capturePhoto(true)" style="display:none;">ถ่ายภาพด้วยตนเอง</button>
     </div>
 
@@ -365,6 +350,9 @@ function setStatusChip(state, text) {
     if (dot) dot.classList.toggle('pulse', state === 'connecting' || state === 'scanning');
     var m = document.getElementById('mobileStatusText');
     if (m) m.textContent = text;
+    /* no_face / throttle states also surface as a top toast for glanceability */
+    if (state === 'error' && text) showToast(text, 'error');
+    else if (state === 'warning' && text) showToast(text, 'warning');
 }
 function setScore(score, color) {
     var panel = document.getElementById('scoreDisplayPanel');
@@ -375,6 +363,7 @@ function setScore(score, color) {
     var mVal = document.getElementById('mobileScoreVal');
     if (mRow) mRow.style.display = 'flex';
     if (mVal) { mVal.textContent = score; mVal.style.color = color; }
+    /* legacy mirror kept for compatibility */
     var rt = document.getElementById('realtimeScore');
     if (rt) { rt.textContent = score; rt.style.color = color; }
 }
@@ -440,13 +429,39 @@ function updateAccuracy(pct) {
     if (avgEl) avgEl.textContent = avg.toFixed(1) + '%';
     if (cntEl) cntEl.textContent = String(accHistory.length);
 }
-function showAlert(msg) {
-    var ap = document.getElementById('statusAlertPanel');
-    var mb = document.getElementById('mobileAlertBox');
-    if (ap) { ap.textContent = msg; ap.style.display = msg ? 'block' : 'none'; }
-    if (mb) { mb.textContent = msg; mb.style.display = msg ? 'block' : 'none'; }
+function showAlert(msg, type) {
+    /* Toast-based now: pop-ups appear stacked at the top of the screen.
+       type: 'error' | 'success' | 'warning' | 'info' (default) */
+    showToast(msg, type || 'info');
     var sm = document.getElementById('statusMsg');
-    if (sm) { sm.textContent = msg; sm.style.display = msg ? 'block' : 'none'; }
+    if (sm) { sm.textContent = msg; }
+}
+/* ── Toast system: pop-up notifications at the top of the screen ── */
+var TOAST_ICONS = {
+    success: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>',
+    error:   '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18L18 6M6 6l12 12"/></svg>',
+    warning: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>',
+    info:    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M12 12v4"/></svg>'
+};
+function showToast(msg, type) {
+    type = type || 'info';
+    var stack = document.getElementById('toastStack');
+    if (!stack) { console.log('[toast:' + type + ']', msg); return; }
+    var t = document.createElement('div');
+    t.className = 'toast toast-' + type;
+    t.setAttribute('role', 'status');
+    t.innerHTML = '<span class="toast-icon">' + (TOAST_ICONS[type] || TOAST_ICONS.info) + '</span>' +
+                  '<span class="toast-msg"></span>';
+    t.querySelector('.toast-msg').textContent = msg;
+    stack.appendChild(t);
+    requestAnimationFrame(function(){ t.classList.add('toast-in'); });
+    var ttl = (type === 'error') ? 6000 : 3500;
+    setTimeout(function(){
+        t.classList.add('toast-out');
+        setTimeout(function(){ t.remove(); }, 320);
+    }, ttl);
+    /* cap stack height: at most 3 visible, oldest dropped first */
+    while (stack.children.length > 3) { stack.removeChild(stack.firstChild); }
 }
 function showManualBtn(show) {
     ['manualCaptureBtnPanel','manualCaptureBtnMobile','manualCaptureBtn'].forEach(function(id) {
