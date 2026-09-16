@@ -25,11 +25,15 @@ class FaceVerificationThrottle
         $user = $request->user();
         $mode = $request->input('mode', 'hybrid');
         
-        // Define rate limits per mode (requests per minute)
+        // Rate limits per mode (requests per minute). Must match the scan
+        // page's cadence: the live loop fires ~1 frame/second, so a 10/min
+        // limit caused a 429 storm — ~10 frames, then throttled retries
+        // masked as a frozen UI with only ~1 real frame/min reaching the
+        // AI node.
         $limits = [
-            'python' => 10,   // Heavy processing
-            'js' => 30,       // Light processing  
-            'hybrid' => 20    // Balanced
+            'python' => 90,   // Heavy processing, 1 Hz scan + headroom
+            'js' => 120,      // Light processing
+            'hybrid' => 90    // Balanced
         ];
         
         $maxAttempts = $limits[$mode] ?? $limits['hybrid'];

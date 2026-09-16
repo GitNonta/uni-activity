@@ -679,8 +679,10 @@ async function scanFrame() {
     } catch(error){console.error('Scan error:',error);await legacyScanFrame(video);}
     finally {
         isVerifying=false;
+        // เมื่อโดนหน่วง (429) ให้รอจนหมดอายุจริง+เผื่อ 0.5s — เดิม retry ทุก 5s
+        // ไปเสีย quota และทำให้เหมือน freeze
         var throttled=Date.now()<pythonThrottledUntil;
-        var nextInterval=throttled?5000:(smartScanner?smartScanner.currentInterval:1000);
+        var nextInterval=throttled?Math.max(1000,pythonThrottledUntil-Date.now()+500):(smartScanner?smartScanner.currentInterval:1000);
         if(!stopScanning)scanTimeout=setTimeout(scanFrame,nextInterval);
     }
 }
@@ -752,7 +754,7 @@ async function performPythonVerification(base64Image) {
         var res=await fetch('/api/face/verify',{method:'POST',headers:hdrs,body:JSON.stringify({image:base64Image,mode:'python',priority:'accuracy'}),signal:ctrl?ctrl.signal:undefined});
         if(timer){clearTimeout(timer);timer=null;}
         var ms=Date.now()-t0;
-        if(res.status===429){var ra=30;try{var j=await res.json();ra=j.retry_after||30;}catch(_){}pythonThrottledUntil=Date.now()+ra*1000;console.warn('Rate limited — backing off '+ra+'s');return;}
+        if(res.status===429){var ra=30;try{var j=await res.json();ra=j.retry_after||30;}catch(_){}pythonThrottledUntil=Date.now()+ra*1000;console.warn('Rate limited — backing off '+ra+'s');setScore('หน่วงเวลาตามข้อจำกัดระบบ ('+ra+'s)','#fbbf24');setStatusChip('scanning','สแกนถี่เกิน — พักสั้นแล้วสแกนต่อ...');updateAccuracy(null);return;}
         if(!res.ok)throw new Error('HTTP '+res.status);
         var result=await res.json();
         if(result.success===false){
