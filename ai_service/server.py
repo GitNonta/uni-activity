@@ -69,7 +69,7 @@ os.environ.setdefault("OPENBLAS_NUM_THREADS", "4")
 os.environ.setdefault("MKL_NUM_THREADS", "4")
 
 # ── FastAPI ───────────────────────────────────────────────────────────────────
-from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Query, Security, Depends, status
+from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Query, Request, Security, Depends, status
 from fastapi.security.api_key import APIKeyHeader
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -528,6 +528,7 @@ async def extract_face(image: UploadFile = File(...)):
 
 @app.post("/verify", dependencies=[Depends(verify_api_key)])
 async def verify_face(
+    request: Request,
     image: UploadFile = File(...),
     known_embedding: str = Form(...),
     check_liveness: bool = Form(True),
@@ -537,7 +538,8 @@ async def verify_face(
     พร้อม Passive Liveness Check (ป้องกัน photo attack)
     """
     t0 = time.time()
-    logger.info(f"[verify] file={image.filename} liveness={check_liveness}")
+    ui_build = request.headers.get("x-scan-ui", "?")
+    logger.info(f"[verify] file={image.filename} liveness={check_liveness} ui={ui_build}")
 
     # ── Parse stored embedding ─────────────────────────────────────────
     try:

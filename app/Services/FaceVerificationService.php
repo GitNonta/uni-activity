@@ -57,9 +57,14 @@ class FaceVerificationService
             $lbResponse = $this->loadBalancer->executeWithFailover(
                 function (string $nodeUrl, string $apiKey, int $timeout) use ($imageDecoded, $user): array {
                     $httpRequest = Http::timeout($timeout);
-                    if (!empty($apiKey)) {
-                        $httpRequest = $httpRequest->withHeaders(['X-API-Key' => $apiKey]);
+                    $fwdHeaders = ['X-API-Key' => $apiKey];
+                    /* UI build attribution: lets the AI node log which scan-page
+                       build produced each frame (stale cached pages are then
+                       visible in the node log instead of being silent). */
+                    if ($uiBuild = (string) request()->header('X-Scan-UI')) {
+                        $fwdHeaders['X-Scan-UI'] = $uiBuild;
                     }
+                    $httpRequest = $httpRequest->withHeaders($fwdHeaders);
 
                     $response = $httpRequest
                         ->attach('image', $imageDecoded, 'frame.jpg')

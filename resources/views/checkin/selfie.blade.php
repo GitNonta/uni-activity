@@ -604,6 +604,8 @@ document.addEventListener('DOMContentLoaded',function(){initFaceApi();});
 var stream=null,scanTimeout=null,scanAttempts=0,cameraNoSignal=0;
 var MAX_ATTEMPTS=15,THRESHOLD=60;
 var isVerifying=false,stopScanning=false,isFlashOn=false;
+var lastFrameAt=0,frameStartedAt=0;
+var SCAN_UI_BUILD='b3';/* marker sent with every verify — lets the server expose stale cached pages */
 
 document.addEventListener('DOMContentLoaded', async function(){
     @if(session('error'))
@@ -616,6 +618,7 @@ document.addEventListener('DOMContentLoaded', async function(){
     await startCamera();
     var guide=document.getElementById('faceGuide');if(guide)guide.classList.add('scanning-ring');
     var scanEl=document.getElementById('scanInstructions');if(scanEl)scanEl.textContent='กำลังสแกนใบหน้าแบบเรียลไทม์... กรุณามองกล้อง';
+    console.log('[scan-ui] build '+SCAN_UI_BUILD+' loaded');
     var stEl=document.getElementById('scanStatus');if(stEl)stEl.innerHTML='<span style="color:#34d399;">AI Server</span>';
     setStatusChip('scanning','กำลังสแกนใบหน้า...');
     showLargeScreenTips();
@@ -646,13 +649,30 @@ function showLargeScreenTips() {
     setTimeout(function(){if(el&&scanAttempts<=2){el.textContent=hint;setStatusChip('scanning',hint);setTimeout(function(){if(el&&!stopScanning){el.textContent='กำลังสแกนใบหน้าแบบเรียลไทม์... กรุณามองกล้อง';setStatusChip('scanning','กำลังสแกนใบหน้า...');}},3500);}},2000);
 }
 
+/* Pacemaker: rescues any wedged scan state within seconds and keeps
+   frames flowing at ~1 Hz regardless of individual handler bugs. */
+setInterval(function(){
+    if(stopScanning)return;
+    if(scanTimeout===null){scanTimeout=setTimeout(scanFrame,50);}
+},2000);
+
 async function restartCamera() {
     try{ if(stream){stream.getTracks().forEach(function(t){t.stop();});} }catch(e){}
     stream=null;
     try{ await startCamera(); }catch(e){ console.warn('Camera restart failed:',e); }
 }
 async function scanFrame() {
-    if(isVerifying||stopScanning)return;
+    /* Pacemaker contract: scanTimeout===null means "no timer pending".
+       The heartbeat watchdog re-invokes this function every 2s whenever
+       that holds, so the loop can never die permanently — even if an
+       await wedges, a timer is lost, or the camera hiccups. */
+    scanTimeout=null;lastFrameAt=Date.now();
+    if(isVerifying){
+        if(Date.now()-frameStartedAt<15000)return;/* in-flight — heartbeat re-checks */
+        isVerifying=false;/* hard-unlock a wedged request */
+        showToast('ระบบกู้คืนการสแกนอัตโนมัติ','warning');
+    }
+    if(stopScanning)return;
     var video=document.getElementById('cameraPreview');
     // ── Camera health: Android suspends the stream on tab-switch, which
     // used to silently no-op every scan (UI frozen at the last score).
@@ -668,7 +688,7 @@ async function scanFrame() {
     }
     if(!stream)return;
     if(video.videoWidth===0){scanTimeout=setTimeout(scanFrame,1000);return;}
-    isVerifying=true;scanAttempts++;
+    isVerifying=true;frameStartedAt=Date.now();scanAttempts++;
     if(scanAttempts%3===0)playScanSound();
     try {
         await legacyScanFrame(video);
@@ -742,7 +762,7 @@ async function performPythonVerification(base64Image) {
         var t0=Date.now();
         var ctrl=(typeof AbortController!=='undefined')?new AbortController():null;
         if(ctrl)timer=setTimeout(function(){ctrl.abort();},10000);
-        var hdrs={'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':(document.querySelector('meta[name="csrf-token"]')||{getAttribute:function(){return '';}}).getAttribute('content')};
+        var hdrs={'Content-Type':'application/json','Accept':'application/json','X-Scan-UI':SCAN_UI_BUILD,'X-CSRF-TOKEN':(document.querySelector('meta[name="csrf-token"]')||{getAttribute:function(){return '';}}).getAttribute('content')};
         // Session-cookie auth (auth()->user() in the controller) — no Bearer
         // header: the old code crashed here when meta[name=api-token] was
         // absent ((null||{}).getAttribute is not a function), killing every
