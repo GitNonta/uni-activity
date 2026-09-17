@@ -787,7 +787,9 @@ async function performPythonVerification(base64Image) {
             } else {
                 setScore(result.message||'กำลังลองอีกครั้ง...','#fca5a5');
             }
-            if(result.fallback_recommended){isJsModeActive=true;pythonFailCount++;}
+            /* fallback_recommended ignored: auto-switching to local JS scoring
+               hides the scan from the server entirely (froze "after one scan").
+               Python stays authoritative; failures stay visible and retried. */
             updateAccuracy(null);
             return;
         }
@@ -802,11 +804,9 @@ async function performPythonVerification(base64Image) {
         /* Visible failure — this path used to be silent and looked like a freeze */
         setStatusChip('error','เชื่อมต่อ AI Server ไม่สำเร็จ — กำลังลองใหม่...');
         if(pythonFailCount===2)showToast('การเชื่อมต่อ AI Server ขัดข้อง — ระบบกำลังลองใหม่อัตโนมัติ','error');
-        /* Mode fallback is now VISIBLE: switching to local JS verification
-           silently is indistinguishable from a freeze (server sees nothing). */
-        if(pythonFailCount>=2&&isFaceApiLoaded&&profileDescriptor&&profileDescriptor.embedding_128d){
-            if(!isJsModeActive){isJsModeActive=true;showToast('สลับไปโหมดสำรองในเครื่อง (JS) ชั่วคราว','warning');setStatusChip('warning','โหมดสำรอง (JS) — เซิร์ฟเวอร์ไม่ตอบสนอง');}
-        }
+        /* No runtime switch to local JS mode: a silent switch made every scan
+           "work once on the server, then vanish". The pacemaker loop retries
+           python on the next frame instead. */
     }
 }
 async function loadJsDescriptorFromApi() {
