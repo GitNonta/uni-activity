@@ -220,21 +220,10 @@ async def lifespan(app: FastAPI):
     else:
         logger.info("fdx DISABLED (USE_FDX=0)")
 
-    # ── Pipeline warmup: the first real frame after startup pays the cold path
-    # (DML/ONNX session priming + fdx shader compile ≈ 8-9s), which blew past
-    # the browser's old 10s abort and looked like a freeze. Warm it here so
-    # every user frame starts fast.
-    try:
-        import numpy as _np
-        _warm = _np.zeros((112, 112, 3), dtype=_np.uint8)
-        _warm_roi = _warm
-        if yolo_model is not None:
-            yolo_model(_warm, verbose=False, conf=0.5)
-        if face_app is not None:
-            face_app.get(_warm_roi)
-        logger.info("[warmup] detector+recognizer primed ✓")
-    except Exception as _e:
-        logger.warning(f"[warmup] skipped: {_e}")
+    # NOTE: no synthetic warmup here — a zeroed-frame warmup hard-crashes
+    # DirectML (no traceback, process dies after "fdx engine ready"). The
+    # cold path (~9s on frame 1) is handled by the 20s client abort instead;
+    # operators can warm the pipeline with one real verify after deploy.
 
     logger.info("All models ready. Server is UP.")
     yield
