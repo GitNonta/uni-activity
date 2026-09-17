@@ -136,6 +136,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/check-in/{token}', [CheckInController::class, 'store'])->name('checkin.store');                    // ดำเนินการเช็คอิน QR
     Route::post('/check-in/{token}/verify-frame', [CheckInController::class, 'verifyFrame'])->name('checkin.verify_frame'); // สแกนหน้าแบบเรียวไทม์
     
+    // Scan diagnostics beacon (throttle-free: must never consume verify quota)
+    Route::post('/api/face/scan-beacon', [App\Http\Controllers\CheckInController::class, 'scanBeacon'])->name('api.face.scan_beacon');
+
     // Optimized face verification API endpoints
     Route::prefix('api/face')->middleware('face-verify')->group(function () {
         Route::post('/verify', [App\Http\Controllers\Api\FaceVerificationController::class, 'verify'])->name('api.face.verify');
@@ -360,7 +363,6 @@ Route::middleware(['auth', 'role:admin,super-admin'])->prefix('admin')->name('ad
     // API routes for optimized face verification
     Route::prefix('api')->middleware('auth:sanctum')->group(function () {
         Route::post('/face/verify', [App\Http\Controllers\Api\FaceVerificationController::class, 'verify'])->name('api.face.verify');
-        Route::post('/face/scan-beacon', [App\Http\Controllers\CheckInController::class, 'scanBeacon'])->name('api.face.scan_beacon');
         Route::get('/face/metrics', [App\Http\Controllers\Api\FaceVerificationController::class, 'metrics'])->name('api.face.metrics');
     });
 

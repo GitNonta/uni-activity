@@ -782,11 +782,14 @@ async function performPythonVerification(base64Image) {
         // absent ((null||{}).getAttribute is not a function), killing every
         // scan frame before it could reach /api/face/verify.
         var res=await fetch('/api/face/verify',{method:'POST',headers:hdrs,body:JSON.stringify({image:base64Image,mode:'python',priority:'accuracy'}),signal:ctrl?ctrl.signal:undefined});
+        /* NOTE: abort timer stays armed through body parse — a stalled
+           response BODY (tunnel buffering) must abort too, or this await
+           hangs forever and the frame wedges (pacemaker rescues at 15s). */
+        var result=await res.json();
         if(timer){clearTimeout(timer);timer=null;}
         var ms=Date.now()-t0;
         if(res.status===429){beacon('http_429',{});var ra=30;try{var j=await res.json();ra=j.retry_after||30;}catch(_){}pythonThrottledUntil=Date.now()+ra*1000;console.warn('Rate limited — backing off '+ra+'s');setScore('หน่วงเวลาตามข้อจำกัดระบบ ('+ra+'s)','#fbbf24');setStatusChip('scanning','สแกนถี่เกิน — พักสั้นแล้วสแกนต่อ...');updateAccuracy(null);return;}
         if(!res.ok){beacon('http_error',{msg:'HTTP '+res.status});throw new Error('HTTP '+res.status);}
-        var result=await res.json();
         beacon('response',{score:result.score_percentage||0,note:(result.success===false)?(result.status||'fail'):'ok'});
         if(result.success===false){
             // ตอบกลับทุกกรณีแบบชัดเจน — เดิมโค้ดเงียบทำให้ UI ค้างที่คะแนนเก่า
