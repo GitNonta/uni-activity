@@ -299,10 +299,10 @@
                 <div class="accuracy-threshold-mark"></div>
                 <div class="accuracy-bar-fill" id="accuracyBarFill"></div>
             </div>
-            <div class="accuracy-stats">
-                <span>เฉลี่ย 5 เฟรม: <strong id="accuracyAvg">—</strong></span>
-                <span>เกณฑ์ผ่าน 60%</span>
-                <span>เฟรม: <strong id="accuracyCount">0</strong></span>
+            <div class="accuracy-stats">                <span>เฉลี่ย 5 เฟรม: <strong id="accuracyAvg">—</strong></span>
+                    <span>เกณฑ์ผ่าน 60%</span>
+                    <span>เฟรม: <strong id="accuracyCount">0</strong></span>
+                    <span>ส่งแล้ว: <strong id="framesSentCount">0</strong></span>
             </div>
         </div>
         <button type="button" id="manualCaptureBtnMobile" class="btn-manual" onclick="capturePhoto(true)" style="display:none;">ถ่ายภาพด้วยตนเอง</button>
@@ -497,7 +497,7 @@ if (_manualBtn) {
 /* ── Original Logic ── */
 var faceScanMethod = '{{ $faceScanMethod ?? "hybrid" }}';
 var isJsModeActive = (faceScanMethod === 'js');
-var profileDescriptor = null, pythonFailCount = 0, pythonThrottledUntil = 0, isFaceApiLoaded = false;
+var profileDescriptor = null, pythonFailCount = 0, pythonThrottledUntil = 0, isFaceApiLoaded = false, framesSent = 0;
 
 var audioContext = new (window.AudioContext || window.webkitAudioContext)();
 function playScanSound() {
@@ -569,7 +569,7 @@ function updateGuideFramePosition(box) {
     guide.style.left=((box.x+box.width/2)/video.videoWidth*100)+'%';
     guide.style.top=((box.y+box.height/2)/video.videoHeight*100)+'%';
 }
-function startRealtimeDetection(){if(detectionInterval)clearInterval(detectionInterval);detectionInterval=setInterval(function(){if(isScanningActive&&isFaceApiLoaded)detectAndDrawFace();},100);}
+function startRealtimeDetection(){if(detectionInterval)clearInterval(detectionInterval);/* 250ms: 10Hz landmark redraw overheats old phone renderers and can freeze the whole page (including the scan loop) */detectionInterval=setInterval(function(){if(isScanningActive&&isFaceApiLoaded)detectAndDrawFace();},250);}
 function stopRealtimeDetection(){if(detectionInterval){clearInterval(detectionInterval);detectionInterval=null;}if(faceLandmarksCtx)faceLandmarksCtx.clearRect(0,0,faceLandmarksCanvas.width,faceLandmarksCanvas.height);}
 
 async function initFaceApi() {
@@ -760,6 +760,11 @@ async function performPythonVerification(base64Image) {
     var timer=null;
     try {
         var t0=Date.now();
+        /* Frame-sent counter: if this keeps rising while the score freezes,
+           the loop is alive and frames die server-side; if it stops, the
+           phone's renderer itself died. Visible in the HUD. */
+        framesSent++;
+        var fsEl=document.getElementById('framesSentCount');if(fsEl)fsEl.textContent=String(framesSent);
         var ctrl=(typeof AbortController!=='undefined')?new AbortController():null;
         if(ctrl)timer=setTimeout(function(){ctrl.abort();},10000);
         var hdrs={'Content-Type':'application/json','Accept':'application/json','X-Scan-UI':SCAN_UI_BUILD,'X-CSRF-TOKEN':(document.querySelector('meta[name="csrf-token"]')||{getAttribute:function(){return '';}}).getAttribute('content')};
@@ -794,7 +799,14 @@ async function performPythonVerification(base64Image) {
     } catch(e){
         if(timer){clearTimeout(timer);timer=null;}
         console.warn('Python verification failed:',e);pythonFailCount++;
-        if(pythonFailCount>=2&&isFaceApiLoaded&&profileDescriptor&&profileDescriptor.embedding_128d){isJsModeActive=true;}
+        /* Visible failure — this path used to be silent and looked like a freeze */
+        setStatusChip('error','เชื่อมต่อ AI Server ไม่สำเร็จ — กำลังลองใหม่...');
+        if(pythonFailCount===2)showToast('การเชื่อมต่อ AI Server ขัดข้อง — ระบบกำลังลองใหม่อัตโนมัติ','error');
+        /* Mode fallback is now VISIBLE: switching to local JS verification
+           silently is indistinguishable from a freeze (server sees nothing). */
+        if(pythonFailCount>=2&&isFaceApiLoaded&&profileDescriptor&&profileDescriptor.embedding_128d){
+            if(!isJsModeActive){isJsModeActive=true;showToast('สลับไปโหมดสำรองในเครื่อง (JS) ชั่วคราว','warning');setStatusChip('warning','โหมดสำรอง (JS) — เซิร์ฟเวอร์ไม่ตอบสนอง');}
+        }
     }
 }
 async function loadJsDescriptorFromApi() {
