@@ -29,6 +29,21 @@ class CheckInController extends Controller
     /**
      * แสดงหน้าเช็คอิน/ออกงานจาก QR Code (ใช้ token จาก URL)
      */
+    /**
+     * Scan diagnostics beacon: the scan page posts JS errors / loop
+     * liveness / fetch outcomes here. One log line per event — makes a
+     * client-side death visible from the server (the scan loop currently
+     * dies after the first server response with no observable trace).
+     */
+    public function scanBeacon(Request $request): JsonResponse
+    {
+        $type = (string) $request->input('type', 'unknown');
+        $data = $request->only(['msg', 'source', 'line', 'col', 'frames', 'score', 'note']);
+        Log::info('[scan-beacon] ' . json_encode(array_merge(['type' => $type], $data), JSON_UNESCAPED_UNICODE));
+
+        return response()->json(['ok' => true]);
+    }
+
     public function show(string $token): View|RedirectResponse
     {
         // N10 fix: Require authentication — QR token alone is not enough

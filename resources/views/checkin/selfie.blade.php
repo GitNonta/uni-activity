@@ -498,6 +498,15 @@ if (_manualBtn) {
 var faceScanMethod = '{{ $faceScanMethod ?? "hybrid" }}';
 var isJsModeActive = (faceScanMethod === 'js');
 var profileDescriptor = null, pythonFailCount = 0, pythonThrottledUntil = 0, isFaceApiLoaded = false, framesSent = 0;
+/* ── Scan diagnostics beacon: makes client-side deaths visible server-side.
+   Fire-and-forget posts to /api/face/scan-beacon (Log::info, no DB). ── */
+function beacon(type, extra) {
+    try {
+        fetch('/api/face/scan-beacon',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json','X-CSRF-TOKEN':(document.querySelector('meta[name="csrf-token"]')||{getAttribute:function(){return '';}}).getAttribute('content')},body:JSON.stringify(Object.assign({type:type,frames:framesSent},extra||{}))}).catch(function(){});
+    } catch(e){}
+}
+window.addEventListener('error',function(e){beacon('js_error',{msg:String(e.message).slice(0,200),source:(e.filename||'').split('/').pop()+':'+e.lineno});},true);
+window.addEventListener('unhandledrejection',function(e){beacon('promise_rejection',{msg:String(e.reason).slice(0,200)});},true);
 
 var audioContext = new (window.AudioContext || window.webkitAudioContext)();
 function playScanSound() {
@@ -672,7 +681,7 @@ async function scanFrame() {
         isVerifying=false;/* hard-unlock a wedged request */
         showToast('ระบบกู้คืนการสแกนอัตโนมัติ','warning');
     }
-    if(stopScanning)return;
+    if(stopScanning){beacon('loop_stopped',{note:'stopScanning'});return;}
     var video=document.getElementById('cameraPreview');
     // ── Camera health: Android suspends the stream on tab-switch, which
     // used to silently no-op every scan (UI frozen at the last score).
@@ -775,9 +784,10 @@ async function performPythonVerification(base64Image) {
         var res=await fetch('/api/face/verify',{method:'POST',headers:hdrs,body:JSON.stringify({image:base64Image,mode:'python',priority:'accuracy'}),signal:ctrl?ctrl.signal:undefined});
         if(timer){clearTimeout(timer);timer=null;}
         var ms=Date.now()-t0;
-        if(res.status===429){var ra=30;try{var j=await res.json();ra=j.retry_after||30;}catch(_){}pythonThrottledUntil=Date.now()+ra*1000;console.warn('Rate limited — backing off '+ra+'s');setScore('หน่วงเวลาตามข้อจำกัดระบบ ('+ra+'s)','#fbbf24');setStatusChip('scanning','สแกนถี่เกิน — พักสั้นแล้วสแกนต่อ...');updateAccuracy(null);return;}
-        if(!res.ok)throw new Error('HTTP '+res.status);
+        if(res.status===429){beacon('http_429',{});var ra=30;try{var j=await res.json();ra=j.retry_after||30;}catch(_){}pythonThrottledUntil=Date.now()+ra*1000;console.warn('Rate limited — backing off '+ra+'s');setScore('หน่วงเวลาตามข้อจำกัดระบบ ('+ra+'s)','#fbbf24');setStatusChip('scanning','สแกนถี่เกิน — พักสั้นแล้วสแกนต่อ...');updateAccuracy(null);return;}
+        if(!res.ok){beacon('http_error',{msg:'HTTP '+res.status});throw new Error('HTTP '+res.status);}
         var result=await res.json();
+        beacon('response',{score:result.score_percentage||0,note:(result.success===false)?(result.status||'fail'):'ok'});
         if(result.success===false){
             // ตอบกลับทุกกรณีแบบชัดเจน — เดิมโค้ดเงียบทำให้ UI ค้างที่คะแนนเก่า
             // (no_face / No profile descriptor หลังอัปโหลดรูปใหม่ / ฯลฯ)
@@ -801,6 +811,7 @@ async function performPythonVerification(base64Image) {
     } catch(e){
         if(timer){clearTimeout(timer);timer=null;}
         console.warn('Python verification failed:',e);pythonFailCount++;
+        beacon('fetch_exception',{msg:String(e && e.message ? e.message : e).slice(0,200)});
         /* Visible failure — this path used to be silent and looked like a freeze */
         setStatusChip('error','เชื่อมต่อ AI Server ไม่สำเร็จ — กำลังลองใหม่...');
         if(pythonFailCount===2)showToast('การเชื่อมต่อ AI Server ขัดข้อง — ระบบกำลังลองใหม่อัตโนมัติ','error');

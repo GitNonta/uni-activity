@@ -360,6 +360,7 @@ Route::middleware(['auth', 'role:admin,super-admin'])->prefix('admin')->name('ad
     // API routes for optimized face verification
     Route::prefix('api')->middleware('auth:sanctum')->group(function () {
         Route::post('/face/verify', [App\Http\Controllers\Api\FaceVerificationController::class, 'verify'])->name('api.face.verify');
+        Route::post('/face/scan-beacon', [App\Http\Controllers\CheckInController::class, 'scanBeacon'])->name('api.face.scan_beacon');
         Route::get('/face/metrics', [App\Http\Controllers\Api\FaceVerificationController::class, 'metrics'])->name('api.face.metrics');
     });
 
