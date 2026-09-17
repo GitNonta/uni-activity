@@ -679,6 +679,7 @@ async function scanFrame() {
     if(isVerifying){
         if(Date.now()-frameStartedAt<15000)return;/* in-flight — heartbeat re-checks */
         isVerifying=false;/* hard-unlock a wedged request */
+        beacon('pacemaker_rescue',{note:'request-wedged'});
         showToast('ระบบกู้คืนการสแกนอัตโนมัติ','warning');
     }
     if(stopScanning){beacon('loop_stopped',{note:'stopScanning'});return;}
@@ -690,13 +691,14 @@ async function scanFrame() {
     else{cameraNoSignal++;}
     if(tracksDead||cameraNoSignal>10){
         cameraNoSignal=0;
+        beacon('camera_restart',{note:'tracksDead='+tracksDead+',noSignal='+cameraNoSignal});
         setStatusChip('warning','กล้องไม่พร้อม — กำลังเชื่อมต่อใหม่...');
         restartCamera();
         scanTimeout=setTimeout(scanFrame,2500);
         return;
     }
-    if(!stream)return;
-    if(video.videoWidth===0){scanTimeout=setTimeout(scanFrame,1000);return;}
+    if(!stream){beacon('loop_blocked',{note:'no-stream'});return;}
+    if(video.videoWidth===0){beacon('loop_blocked',{note:'video-zero'});scanTimeout=setTimeout(scanFrame,1000);return;}
     isVerifying=true;frameStartedAt=Date.now();scanAttempts++;
     if(scanAttempts%3===0)playScanSound();
     try {
