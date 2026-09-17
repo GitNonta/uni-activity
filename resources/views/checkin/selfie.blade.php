@@ -777,7 +777,7 @@ async function performPythonVerification(base64Image) {
         framesSent++;
         var fsEl=document.getElementById('framesSentCount');if(fsEl)fsEl.textContent=String(framesSent);
         var ctrl=(typeof AbortController!=='undefined')?new AbortController():null;
-        if(ctrl)timer=setTimeout(function(){ctrl.abort();},10000);
+        if(ctrl)timer=setTimeout(function(){ctrl.abort();},20000);/* 20s: frame 1 cold path takes ~10s (gpu-pc warmup + tunnel); 10s aborted slow-but-alive requests every session */
         var hdrs={'Content-Type':'application/json','Accept':'application/json','X-Scan-UI':SCAN_UI_BUILD,'X-CSRF-TOKEN':(document.querySelector('meta[name="csrf-token"]')||{getAttribute:function(){return '';}}).getAttribute('content')};
         // Session-cookie auth (auth()->user() in the controller) — no Bearer
         // header: the old code crashed here when meta[name=api-token] was
