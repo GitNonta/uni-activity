@@ -31,5 +31,7 @@ echo [ai] ERROR: server did not come up - check server_lan.log
 exit /b 1
 
 :up
-echo [ai] UP: http://192.168.1.33:8001/health
+for /f "delims=" %%i in ('powershell -NoProfile -Command "(Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -like '192.168.*' } | Select-Object -First 1).IPAddress"') do set LANIP=%%i
+if "%LANIP%"=="" set LANIP=127.0.0.1
+echo [ai] UP: http://%LANIP%:8001/health
 exit /b 0

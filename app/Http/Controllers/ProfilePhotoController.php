@@ -87,11 +87,12 @@ class ProfilePhotoController extends Controller
                 Storage::disk('public')->delete($user->profile_photo);
             }
 
-            // บันทึก Path และเคลียร์รหัสเดิมเพื่อรอ Background Worker สกัดใหม่
+            // บันทึก Path ใหม่ — คง vector เดิมไว้จนกว่า Background Worker จะสกัดใหม่สำเร็จ
+            // (job ถูก dispatch แบบ force=true จะ overwrite เองเมื่อสกัดสำเร็จ;
+            //  ถ้า extraction ล้มเหลว เช่น AI node ล่ม ผู้ใช้ยังเช็คอินได้ด้วย vector เดิม
+            //  แทนที่จะถูกเซ็ต null จนสแกนไม่ได้เลย — เหตุการณ์ 2026-09-20)
             $user->update([
-                'profile_photo'      => $relativePath,
-                'face_descriptor'    => null,
-                'face_descriptor_js' => null,
+                'profile_photo' => $relativePath,
             ]);
 
             // ส่งงานสกัด Vector (512D + 128D) เข้าสู่ Background Queue
