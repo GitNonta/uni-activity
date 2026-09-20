@@ -790,7 +790,14 @@ async function performPythonVerification(base64Image) {
         var result=await res.json();
         if(timer){clearTimeout(timer);timer=null;}
         var ms=Date.now()-t0;
-        if(res.status===429){beacon('http_429',{});var ra=30;try{var j=await res.json();ra=j.retry_after||30;}catch(_){}pythonThrottledUntil=Date.now()+ra*1000;console.warn('Rate limited — backing off '+ra+'s');setScore('หน่วงเวลาตามข้อจำกัดระบบ ('+ra+'s)','#fbbf24');setStatusChip('scanning','สแกนถี่เกิน — พักสั้นแล้วสแกนต่อ...');updateAccuracy(null);return;}
+        /* 429 — Rate limited: back off using retry_after from the already-parsed
+           JSON body (result). Do NOT call res.json() a second time — the body
+           stream is already consumed and a second call throws/hangs. */
+        if(res.status===429){beacon('http_429',{});var ra=(result&&result.retry_after)||30;pythonThrottledUntil=Date.now()+ra*1000;console.warn('Rate limited — backing off '+ra+'s');setScore('หน่วงเวลาตามข้อจำกัดระบบ ('+ra+'s)','#fbbf24');setStatusChip('scanning','สแกนถี่เกิน — พักสั้นแล้วสแกนต่อ...');updateAccuracy(null);return;}
+        /* 503 — AI Server / tunnel unavailable: back off 60s to stop the
+           retry storm. Without this the scan loop hammers the dead endpoint
+           every 1s, flooding the console and wasting bandwidth. */
+        if(res.status===503){beacon('http_503',{});var bo=60;pythonThrottledUntil=Date.now()+bo*1000;console.warn('AI Server unavailable (503) — backing off '+bo+'s');setScore('AI Server ไม่พร้อมให้บริการ — พักแล้วลองใหม่ใน '+bo+'s','#f87171');setStatusChip('error','AI Server ออฟไลน์ — รอ '+bo+' วินาทีแล้วลองใหม่');updateAccuracy(null);if(pythonFailCount===0)showToast('AI Server ไม่พร้อมให้บริการชั่วคราว — ระบบจะลองใหม่อัตโนมัติ','error');pythonFailCount++;return;}
         if(!res.ok){beacon('http_error',{msg:'HTTP '+res.status});throw new Error('HTTP '+res.status);}
         beacon('response',{score:result.score_percentage||0,note:(result.success===false)?(result.status||'fail'):'ok'});
         if(result.success===false){
