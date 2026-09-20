@@ -478,16 +478,6 @@ if (_scanEl) {
         else setStatusChip('scanning', t);
     }).observe(_scanEl, {childList:true, characterData:true, subtree:true});
 }
-var _msgEl = document.getElementById('statusMsg');
-if (_msgEl) {
-    new MutationObserver(function() { var t=_msgEl.textContent.trim(); showAlert(t); if(t) setStatusChip('error',t); })
-        .observe(_msgEl, {childList:true, characterData:true, subtree:true});
-}
-var _rtEl = document.getElementById('realtimeScore');
-if (_rtEl) {
-    new MutationObserver(function() { var t=_rtEl.textContent.trim(),c=_rtEl.style.color||'white'; if(t) setScore(t,c); })
-        .observe(_rtEl, {childList:true, characterData:true, subtree:true, attributes:true, attributeFilter:['style']});
-}
 var _manualBtn = document.getElementById('manualCaptureBtn');
 if (_manualBtn) {
     new MutationObserver(function() { showManualBtn(_manualBtn.style.display !== 'none'); })
@@ -614,7 +604,7 @@ var stream=null,scanTimeout=null,scanAttempts=0,cameraNoSignal=0;
 var MAX_ATTEMPTS=15,THRESHOLD=60;
 var isVerifying=false,stopScanning=false,isFlashOn=false;
 var lastFrameAt=0,frameStartedAt=0;
-var SCAN_UI_BUILD='b3';/* marker sent with every verify — lets the server expose stale cached pages */
+var SCAN_UI_BUILD='b4';/* marker sent with every verify — lets the server expose stale cached pages */
 
 document.addEventListener('DOMContentLoaded', async function(){
     @if(session('error'))
@@ -809,6 +799,7 @@ async function performPythonVerification(base64Image) {
             } else {
                 setScore(result.message||'กำลังลองอีกครั้ง...','#fca5a5');
             }
+            console.log('[scan-ui] Frame ' + framesSent + ' -> ' + (result.status || result.message || 'no face'));
             /* fallback_recommended ignored: auto-switching to local JS scoring
                hides the scan from the server entirely (froze "after one scan").
                Python stays authoritative; failures stay visible and retried. */
@@ -817,6 +808,7 @@ async function performPythonVerification(base64Image) {
         }
         pythonFailCount=0;
         var score=result.score_percentage||0,passed=result.is_match||false;
+        console.log('[scan-ui] Frame ' + framesSent + ' -> ' + score.toFixed(1) + '% (match=' + passed + ')');
         setScore('Python (512D): '+score.toFixed(1)+'% ('+(result.processing_ms||ms)+'ms)',passed?'#34d399':'#fcd34d');
         updateAccuracy(score);
         if(passed)await processScanResult({confidence:score/100,passed:true,score:score,source:'python_primary',processingTime:result.processing_ms||ms});
