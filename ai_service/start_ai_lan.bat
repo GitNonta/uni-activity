@@ -2,7 +2,7 @@
 REM start_ai_lan.bat - run the AI face server LAN-accessible (0.0.0.0:8001).
 REM Binds all interfaces so the web/app server (192.168.1.222) can reach
 REM /extract and /verify. Requires the firewall rule for TCP 8001 inbound.
-REM Log: server_lan.log in this directory.
+REM Log: server_lan.log in this directory (appended, never truncated).
 
 setlocal
 cd /d "%~dp0"
@@ -17,7 +17,7 @@ if not errorlevel 1 (
 )
 
 echo [ai] starting server on 0.0.0.0:8001 (models load ~10s)...
-start "face_dx_ai_lan" /min cmd /c "python run_server_cpu.py > server_lan.log 2>&1"
+start "face_dx_ai_lan" /min cmd /c "python run_server_cpu.py >> server_lan.log 2>&1"
 
 REM wait for the health endpoint to come up
 set /a tries=0
