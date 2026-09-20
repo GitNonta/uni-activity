@@ -447,6 +447,38 @@ async def health():
     }
 
 
+@app.get("/warmup", dependencies=[Depends(verify_api_key)])
+async def warmup():
+    """
+    Pre-warm the GPU pipeline with a real (non-zeroed) noise image so
+    that the first live /verify request does not hit the cold-path delay.
+
+    Safe for DirectML: uses random uint8 pixels (not all-zeros).
+    DirectML hard-crashes only on zeroed frames — random noise is fine.
+    """
+    t0 = time.time()
+    try:
+        rng = np.random.RandomState(seed=int(time.time()) % 65536)
+        # 480×640 BGR noise — realistic size, non-zero pixels
+        warm_img = rng.randint(50, 200, (480, 640, 3), dtype=np.uint8)
+
+        # Run InsightFace detect (will find no face in noise, but warms ONNX runtime)
+        if face_app is not None:
+            _ = face_app.get(warm_img)
+
+        # Run YOLOv8 detect (optional)
+        if yolo_model is not None:
+            _ = yolo_model(warm_img, verbose=False, conf=0.9)
+
+        elapsed_ms = int((time.time() - t0) * 1000)
+        logger.info(f"[warmup] GPU pipeline warmed in {elapsed_ms}ms")
+        return {"status": "warmed", "elapsed_ms": elapsed_ms, "node": NODE_NAME}
+    except Exception as e:
+        elapsed_ms = int((time.time() - t0) * 1000)
+        logger.warning(f"[warmup] failed in {elapsed_ms}ms: {e}")
+        return {"status": "partial", "elapsed_ms": elapsed_ms, "error": str(e)}
+
+
 @app.post("/extract", dependencies=[Depends(verify_api_key)])
 async def extract_face(image: UploadFile = File(...)):
     """
