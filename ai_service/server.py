@@ -1,15 +1,25 @@
 """
-Uni-Activity AI Server v2.2
+Uni-Activity AI Server v2.3
 ============================
 Multi-Pipeline Face Verification:
   YOLOv8-face       → Fast face pre-detection
   SCRFD             → InsightFace precise detection + alignment
   fdx (w600k_mbf)   → 512D MobileFaceNet D3D11 embedding (primary)
-  ArcFace 512D      → InsightFace fallback embedding
+  ArcFace 512D      → InsightFace fallback embedding (SAME w600k_mbf weights →
+                      identical embedding space; see alignment contract below)
   Liveness          → Passive liveness detection (texture/FFT/EAR/color)
 
+Embedding-space contract (v2.3)
+-------------------------------
+All 512-d embeddings — fdx AND the insightface fallback — come from the same
+network (w600k_mbf / MobileFaceNet) fed 5-point-landmark norm_crop 112×112
+crops. Measured parity: cos(fdx, onnx-mbf) = 1.0000 on the same aligned crop
+(face_dx/alignment_probe.py). Enrollment and verification are therefore
+interchangeable across both embedders, and old buffalo_l/w600k_r50-era
+vectors are NOT compatible (re-enrollment required once, at migration).
+
 Endpoints:
-  POST /extract  — สร้าง embedding จากรูปโปรไฟล์ (fdx-space 512D)
+  POST /extract  — สร้าง embedding จากรูปโปรไฟล์ (512D, fdx space)
   POST /verify   — ยืนยันใบหน้า + liveness check
   POST /liveness — ตรวจ liveness อย่างเดียว
   GET  /health   — ตรวจสอบสถานะ server
@@ -146,7 +156,17 @@ async def lifespan(app: FastAPI):
     logger.info("=" * 60)
 
     # ── 1. InsightFace (SCRFD + ArcFace) ─────────────────────────────
-    logger.info("Loading InsightFace buffalo_l (SCRFD + ArcFace)...")
+    # IMPORTANT (embedding-space contract): the recognition model MUST be
+    # w600k_mbf (MobileFaceNet) — the SAME network the fdx engine runs.
+    # FaceAnalysis(name="buffalo_l") is NOT safe here: insightface's model
+    # dir may contain several recognition onnx files (e.g. w600k_r50 from
+    # buffalo_l) and it keeps the FIRST file routed as "recognition"
+    # (sorted-glob, first match wins). That loads ResNet50 embeddings,
+    # which share NO basis with fdx/MobileFaceNet embeddings — measured
+    # cos(fdx, r50) ≈ -0.02 (see face_dx/alignment_probe.py). Passing
+    # model_file= pins the exact onnx for each task (insightface ≥ 0.7
+    # FaceAnalysis accepts model_file via **kwargs → model_zoo.get_model).
+    logger.info("Loading InsightFace (SCRFD det_10g + ArcFace w600k_mbf)...")
     available = ort.get_available_providers()
     logger.info(f"ONNX providers available: {available}")
 
@@ -164,13 +184,72 @@ async def lifespan(app: FastAPI):
         providers = ["CPUExecutionProvider"]
         ctx_id = -1
 
-    face_app = FaceAnalysis(
-        name="buffalo_l",
-        allowed_modules=["detection", "recognition"],
-        providers=providers,
-    )
+    def _resolve_onnx(filename: str) -> Optional[str]:
+        """Find a model onnx: INSIGHTFACE_MODELS_DIR env, ~/.insightface/models/<pack>,
+        or ai_service/models/. Returns None when not found (caller falls back)."""
+        cands = [
+            os.environ.get("INSIGHTFACE_MODELS_DIR", ""),
+            os.path.join(os.path.expanduser("~"), ".insightface", "models", "buffalo_l"),
+            os.path.join(os.path.expanduser("~"), ".insightface", "models", "buffalo_s"),
+            os.path.join(_HERE, "models"),
+        ]
+        for d in filter(None, cands):
+            p = os.path.join(d, filename)
+            if os.path.isfile(p):
+                return p
+        return None
+
+    det_file = _resolve_onnx("det_10g.onnx")
+    rec_file = _resolve_onnx("w600k_mbf.onnx")
+    logger.info(f"detector onnx: {det_file or 'FaceAnalysis default (buffalo_l)'}")
+    logger.info(f"recognition onnx: {rec_file or 'NOT FOUND — required for fdx parity'}")
+
+    # The recognition model is the embedding-space contract; without it the
+    # server would silently run a different network than fdx. Fail fast.
+    if rec_file is None:
+        raise RuntimeError(
+            "w600k_mbf.onnx not found (searched INSIGHTFACE_MODELS_DIR, "
+            "~/.insightface/models/buffalo_l, ai_service/models). It defines the "
+            "embedding space shared with the fdx engine; refusing to start with "
+            "a mismatched recognition model."
+        )
+
+    if det_file is not None:
+        face_app = FaceAnalysis(
+            allowed_modules=["detection", "recognition"],
+            providers=providers,
+            model_file=det_file,
+        )
+        # model_file pins ONE onnx per FaceAnalysis; load recognition from its
+        # own explicit instance so the det/rec contract is exact on both.
+        face_app.models.pop("recognition", None)
+        rec_app = FaceAnalysis(
+            allowed_modules=["recognition"],
+            providers=providers,
+            model_file=rec_file,
+        )
+        for taskname, model in rec_app.models.items():
+            face_app.models[taskname] = model
+        face_app.det_model = face_app.models["detection"]
+    else:
+        # detector onnx not found locally → download/default pack, then pin rec
+        face_app = FaceAnalysis(
+            name="buffalo_l",
+            allowed_modules=["detection"],
+            providers=providers,
+        )
+        rec_app = FaceAnalysis(
+            allowed_modules=["recognition"],
+            providers=providers,
+            model_file=rec_file,
+        )
+        for taskname, model in rec_app.models.items():
+            face_app.models[taskname] = model
+
     face_app.prepare(ctx_id=ctx_id, det_size=(640, 640), det_thresh=0.5)
-    logger.info("InsightFace loaded ✓")
+    loaded_rec = face_app.models.get("recognition")
+    logger.info(f"InsightFace loaded ✓ (recognition={type(loaded_rec).__name__}, "
+                f"model={os.path.basename(rec_file)})")
 
     # ── 2. Liveness Detector ──────────────────────────────────────────
     if USE_LIVENESS:
@@ -246,6 +325,7 @@ app = FastAPI(
     version="2.2.0",
     description="Face Verification: YOLOv8 + SCRFD + fdx-w600k-mbf 512D + Passive Liveness",
     lifespan=lifespan,
+    version="2.3.0",
 )
 
 # ── Restricted CORS Configuration ─────────────────────────────────────────────
@@ -401,31 +481,31 @@ def crop_aligned_face(img: np.ndarray, face, full_length: bool = True) -> np.nda
         return img
 
 
-def prepare_fdx_crop(img: np.ndarray, face) -> np.ndarray:
+def prepare_fdx_crop(img: np.ndarray, face) -> Optional[np.ndarray]:
     """Extract and align face ROI to 112×112 for fdx inference.
 
-    Uses 5-point landmark norm_crop when landmarks are present (canonical
-    InsightFace/MobileFaceNet alignment, achieving >99.5% cosine stability
-    across poses/scales). Falls back to bounding-box crop if landmarks are
-    unavailable.
+    Alignment is MANDATORY: the fdx engine runs ArcFace-style MobileFaceNet
+    weights, which are only meaningful on the canonical 5-point landmark
+    warp (norm_crop) that InsightFace itself feeds the network. A plain
+    bilinear resize of the ROI is NOT equivalent — measured cos(aligned,
+    plain) ≈ 0.30 on the same face (alignment changes the embedding space
+    coordinates; see face_dx/alignment_probe.py). InsightFace parity =
+    norm_crop-or-nothing.
+
+    Returns the aligned 112×112 BGR crop, or None when landmarks are
+    unavailable/invalid. Callers must treat None as 'cannot embed in the
+    fdx space' (skip / fall back to insightface), never as 'use the raw
+    crop anyway'.
     """
-    # 1. Preferred path: canonical 5-point landmark norm_crop
     try:
-        if face is not None and hasattr(face, "kps") and face.kps is not None and len(face.kps) == 5:
+        if (face is not None and getattr(face, "kps", None) is not None
+                and len(face.kps) == 5):
             aligned = face_align.norm_crop(img, landmark=face.kps, image_size=112)
             if aligned is not None and aligned.shape == (112, 112, 3):
                 return aligned
     except Exception as e:
-        logger.debug(f"norm_crop fallback to bbox crop: {e}")
-
-    # 2. Fallback path: axis-aligned bbox crop + bilinear resize to 112×112
-    try:
-        crop = crop_aligned_face(img, face, full_length=False)
-        if crop.shape[0] == 0 or crop.shape[1] == 0:
-            return img
-        return cv2.resize(crop, (112, 112), interpolation=cv2.INTER_LINEAR)
-    except Exception:
-        return img
+        logger.warning(f"norm_crop failed for fdx crop: {e}")
+    return None
 
 
 def get_detector_pipeline() -> str:
@@ -571,16 +651,22 @@ async def extract_face(image: UploadFile = File(...)):  # noqa: B008
     # ── fdx 512-d (chosen activity-check decoder) ──────────────────────
     # fdx_embed_crop_async() offloads the ~35-50ms D3D11 GPU inference onto
     # the thread-pool executor so it does not block the uvicorn event loop.
-    # prepare_fdx_crop() aligns the face to canonical 112×112 using landmarks.
+    # prepare_fdx_crop() aligns the face to canonical 112×112 via norm_crop.
+    # Without landmarks the crop is NOT aligned → embedding would not match
+    # the fdx space → the request falls back to insightface (which uses the
+    # same w600k_mbf weights, so enroll/verify stay consistent).
     embedder = "insightface-arcface"
     fdx_512d: Optional[np.ndarray] = None
     if fdx_backend is not None and fdx_backend.available:
-        crop = prepare_fdx_crop(img, face) if face is not None else img
-        fdx_512d = await fdx_embed_crop_async(crop)
+        crop = prepare_fdx_crop(img, face) if face is not None else None
+        if crop is not None:
+            fdx_512d = await fdx_embed_crop_async(crop)
         if fdx_512d is not None:
             embedder = "fdx-d3d11"
         else:
-            logger.warning(f"[extract] fdx failed ({fdx_backend.last_error}) — falling back to insightface")
+            reason = ("no 5-point landmarks (unaligned crop rejected)"
+                      if crop is None else fdx_backend.last_error)
+            logger.warning(f"[extract] fdx unavailable ({reason}) — falling back to insightface")
 
     # สร้าง 128D embedding โดยใช้ PCA dimensionality reduction
     embedding_128d = reduce_to_128d(embedding_512d)
@@ -711,17 +797,25 @@ async def verify_face(
 
     # ── Cosine similarity (fdx preferred, insightface fallback) ─────────
     # fdx_embed_crop_async() offloads the D3D11 GPU inference to the thread
-    # pool (non-blocking). prepare_fdx_crop() ensures the canonical 112×112
-    # bilinear resize is applied before inference.
+    # pool (non-blocking). prepare_fdx_crop() returns the canonical norm_crop
+    # 112×112 aligned face — or None when landmarks are missing; an unaligned
+    # crop is never fed to the engine (would land outside the fdx space).
+    # The insightface fallback now runs the SAME w600k_mbf weights, so both
+    # paths produce comparable embeddings.
     embedder = "insightface-arcface"
     threshold = FACE_MATCH_THRESHOLD
     fdx_emb: Optional[np.ndarray] = None
     if fdx_backend is not None and fdx_backend.available:
-        crop = prepare_fdx_crop(work_img, face) if face is not None else work_img
-        fdx_emb = await fdx_embed_crop_async(crop)
+        crop = prepare_fdx_crop(work_img, face) if face is not None else None
+        if crop is not None:
+            fdx_emb = await fdx_embed_crop_async(crop)
         if fdx_emb is not None:
             embedder = "fdx-d3d11"
             threshold = fdx_backend.threshold
+        else:
+            reason = ("no 5-point landmarks (unaligned crop rejected)"
+                      if crop is None else fdx_backend.last_error)
+            logger.warning(f"[verify] fdx unavailable ({reason}) — using insightface")
     if fdx_emb is not None:
         similarity = float(np.dot(stored_emb, fdx_emb))
     else:

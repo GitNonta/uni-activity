@@ -45,13 +45,14 @@
         .activity-meta-row { display:flex; align-items:center; gap:0.5rem; font-size:0.8rem; color:var(--white-60); }
         .activity-meta-row svg { flex-shrink:0; opacity:0.7; }
 
-        .status-chip { display:inline-flex; align-items:center; gap:0.5rem; padding:0.55rem 1rem; border-radius:30px; font-size:0.85rem; font-weight:600; border:1px solid; transition:all 0.3s; width:100%; background:rgba(10,22,40,0.72); backdrop-filter:blur(12px); }
+        .status-chip { display:inline-flex; align-items:center; gap:0.5rem; padding:0.55rem 0.95rem; border-radius:30px; font-size:0.82rem; font-weight:600; border:1px solid; transition:all 0.3s; width:auto; background:rgba(10,22,40,0.72); backdrop-filter:blur(12px); white-space:nowrap; overflow:hidden; }
+        #statusChipText { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:inline-block; }
         /* ── Full-screen HUD (floating controls, all devices) ── */
         .mobile-header { display:flex; position:absolute; top:0; left:0; right:0; z-index:30; padding:1rem 1.25rem; padding-top:calc(1rem + env(safe-area-inset-top,0px)); background:linear-gradient(to bottom,rgba(10,22,40,0.85),transparent); align-items:center; gap:0.75rem; pointer-events:auto; }
         .mobile-bottom { display:flex; flex-direction:column; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:min(94vw,600px); z-index:30; padding:1.1rem 1.1rem calc(1.1rem + env(safe-area-inset-bottom,0px)); background:linear-gradient(to top,rgba(10,22,40,0.92) 60%,transparent); gap:0.65rem; pointer-events:auto; }
-        .hud-toprow { display:flex; gap:0.6rem; align-items:stretch; }
-        .hud-toprow .status-chip { flex:1; min-width:0; }
-        .hud-toprow .score-display { margin-top:0; min-width:150px; justify-content:center; }
+        .hud-toprow { display:flex; gap:0.5rem; align-items:center; width:100%; }
+        .hud-toprow .status-chip { flex:1 1 auto; min-width:0; }
+        .hud-toprow .score-display { margin-top:0; flex:0 0 auto; min-width:0; padding:0.55rem 0.85rem; border-radius:30px; justify-content:center; gap:0.35rem; white-space:nowrap; }
         /* ── Toast notifications (top, stacked) ── */
         #toastStack { position:fixed; top:calc(0.7rem + env(safe-area-inset-top,0px)); left:50%; transform:translateX(-50%); z-index:10001; display:flex; flex-direction:column; gap:0.5rem; width:min(92vw,460px); pointer-events:none; }
         .toast { display:flex; align-items:center; gap:0.6rem; background:rgba(10,22,40,0.92); border:1px solid var(--white-15); border-left:4px solid var(--blue-light); border-radius:12px; padding:0.7rem 0.95rem; font-size:0.82rem; color:var(--white); backdrop-filter:blur(14px); box-shadow:0 8px 30px rgba(0,0,0,0.45); opacity:0; transform:translateY(-12px); transition:opacity 0.28s ease, transform 0.28s ease; }
@@ -89,7 +90,7 @@
         .btn-manual { display:none; width:100%; padding:0.7rem 1.25rem; border-radius:10px; border:1px solid var(--white-15); background:var(--white-08); color:var(--white); font-size:0.875rem; font-weight:500; cursor:pointer; transition:background 0.2s; font-family:inherit; }
         .btn-manual:hover { background:rgba(255,255,255,0.12); }
 
-        #faceGuide { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:260px; height:340px; border-radius:130px; border:2.5px solid rgba(96,165,250,0.85); box-shadow:0 0 0 4000px rgba(10,22,40,0.48),0 0 0 1px rgba(96,165,250,0.3); transition:border-color 0.4s,box-shadow 0.6s; overflow:hidden; z-index:10; }
+        #faceGuide { position:absolute; top:50% !important; left:50% !important; transform:translate(-50%,-50%) !important; width:260px; height:340px; border-radius:130px; border:2.5px solid rgba(96,165,250,0.85); box-shadow:0 0 0 4000px rgba(10,22,40,0.48),0 0 0 1px rgba(96,165,250,0.3); transition:border-color 0.4s,box-shadow 0.6s; overflow:hidden; z-index:10; }
         .scan-line { position:absolute; width:100%; height:2px; background:linear-gradient(90deg,transparent 5%,rgba(96,165,250,0.8) 50%,transparent 95%); box-shadow:0 0 8px rgba(96,165,250,0.6); animation:scanMove 2.5s ease-in-out infinite; z-index:20; }
         @keyframes scanMove { 0%{top:5%;opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{top:95%;opacity:0} }
         .corner { position:absolute; width:28px; height:28px; border-color:rgba(96,165,250,0.9); border-style:solid; border-width:0; transition:border-color 0.3s; }
@@ -97,12 +98,7 @@
         .corner-tr { top:0;right:0;border-top-width:2.5px;border-right-width:2.5px;border-top-right-radius:120px; }
         .corner-bl { bottom:0;left:0;border-bottom-width:2.5px;border-left-width:2.5px;border-bottom-left-radius:120px; }
         .corner-br { bottom:0;right:0;border-bottom-width:2.5px;border-right-width:2.5px;border-bottom-right-radius:120px; }
-        .grid-overlay { display:none !important; }
-        .face-detection-points { position:absolute;inset:0;z-index:15; }
-        .detection-point { position:absolute;width:3px;height:3px;background:rgba(96,165,250,0.9);border-radius:50%;animation:pointPulse 1.8s ease-in-out infinite; }
-        @keyframes pointPulse { 0%,100%{opacity:0.3;transform:scale(1)} 50%{opacity:1;transform:scale(1.8)} }
-        #faceLandmarksCanvas { position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:24; }
-        #scanStatus { position:absolute;top:8px;left:8px;background:rgba(10,22,40,0.7);color:rgba(255,255,255,0.6);padding:4px 8px;border-radius:6px;font-size:9px;backdrop-filter:blur(4px);z-index:25;display:none; }
+        .grid-overlay, .face-detection-points, #faceLandmarksCanvas, #scanStatus { display:none !important; }
 
         .scanning-ring { border-color:rgba(96,165,250,0.9) !important; animation:guidePulse 2s ease-in-out infinite; }
         @keyframes guidePulse { 0%,100%{box-shadow:0 0 0 4000px rgba(10,22,40,0.48),0 0 20px rgba(96,165,250,0.25)} 50%{box-shadow:0 0 0 4000px rgba(10,22,40,0.48),0 0 35px rgba(96,165,250,0.5)} }
@@ -234,11 +230,7 @@
     <div class="camera-area">
         <video id="cameraPreview" autoplay playsinline muted></video>
         <div id="faceGuide">
-            <div class="grid-overlay"></div>
             <div class="scan-line"></div>
-            <div class="face-detection-points" id="faceDetectionPoints"></div>
-            <canvas id="faceLandmarksCanvas"></canvas>
-            <div id="scanStatus"><span style="color:#60a5fa;">Initializing</span></div>
             <div class="corner corner-tl"></div>
             <div class="corner corner-tr"></div>
             <div class="corner corner-bl"></div>
@@ -526,66 +518,24 @@ function playErrorSound() {
    so every init attempt only produced a console warning and all its
    call sites were dead branches around the legacy scan loop. */
 
-var faceLandmarksCanvas=null,faceLandmarksCtx=null,detectionInterval=null,isScanningActive=true;
-function initFaceLandmarksCanvas() {
-    faceLandmarksCanvas=document.getElementById('faceLandmarksCanvas');
-    if(faceLandmarksCanvas){var v=document.getElementById('cameraPreview');faceLandmarksCanvas.width=v.videoWidth||640;faceLandmarksCanvas.height=v.videoHeight||480;faceLandmarksCtx=faceLandmarksCanvas.getContext('2d');}
-}
+var detectionInterval=null,isScanningActive=true;
+function initFaceLandmarksCanvas() {/* retired: landmarks drawing disabled for clean biometric UI */}
 async function detectAndDrawFace() {
-    if(!isScanningActive||!isFaceApiLoaded) return;
+    if(!isScanningActive||!isFaceApiLoaded||!window.faceapi) return;
     var video=document.getElementById('cameraPreview');
-    if(video.videoWidth===0) return;
-    if(!faceLandmarksCanvas||faceLandmarksCanvas.width!==video.videoWidth) initFaceLandmarksCanvas();
+    if(!video||video.videoWidth===0) return;
     try {
-        var det=await faceapi.detectSingleFace(video,new faceapi.TinyFaceDetectorOptions({inputSize:224,scoreThreshold:0.4})).withFaceLandmarks();
-        /* ── Update shared detection cache (for FaceGate reuse) ── */
-        _faceDetCache.result=det?det.detection:null;
+        /* Lightweight face detection without heavy landmarks (saves mobile CPU & battery) */
+        var det=await faceapi.detectSingleFace(video,new faceapi.TinyFaceDetectorOptions({inputSize:160,scoreThreshold:0.4}));
+        _faceDetCache.result=det||null;
         _faceDetCache.ts=Date.now();
-        faceLandmarksCtx.clearRect(0,0,faceLandmarksCanvas.width,faceLandmarksCanvas.height);
-        if(det){
-            var box=det.detection.box;
-            /* Draw landmark bounding box */
-            faceLandmarksCtx.strokeStyle='rgba(96,165,250,0.7)';faceLandmarksCtx.lineWidth=2;
-            faceLandmarksCtx.strokeRect(box.x,box.y,box.width,box.height);
-            faceLandmarksCtx.fillStyle='rgba(96,165,250,0.9)';
-            det.landmarks.positions.forEach(function(pt,i){
-                faceLandmarksCtx.beginPath();faceLandmarksCtx.arc(pt.x,pt.y,1.5,0,2*Math.PI);faceLandmarksCtx.fill();
-                if(i%5===0){faceLandmarksCtx.shadowBlur=8;faceLandmarksCtx.shadowColor='rgba(96,165,250,0.8)';faceLandmarksCtx.beginPath();faceLandmarksCtx.arc(pt.x,pt.y,3,0,2*Math.PI);faceLandmarksCtx.fill();faceLandmarksCtx.shadowBlur=0;}
-            });
-            updateRealFaceDetectionPoints(det.landmarks);
-            updateGuideFramePosition(det.detection.box);
-        }
-    } catch(e){console.warn('Face detection error:',e);}
+    } catch(e){}
 }
-function updateRealFaceDetectionPoints(landmarks) {
-    var c=document.getElementById('faceDetectionPoints');if(!c)return;
-    var video=document.getElementById('cameraPreview');c.innerHTML='';
-    [36,39,42,45,33,48,54,0,16,19,24,8].forEach(function(idx,i){
-        if(!landmarks.positions[idx])return;
-        var pt=landmarks.positions[idx],dot=document.createElement('div');
-        dot.className='detection-point';
-        dot.style.left=(pt.x/video.videoWidth*100)+'%';
-        dot.style.top=(pt.y/video.videoHeight*100)+'%';
-        dot.style.animationDelay=(i*0.12)+'s';
-        c.appendChild(dot);
-    });
-}
-function updateGuideFramePosition(box) {
-    var guide=document.getElementById('faceGuide'),video=document.getElementById('cameraPreview');
-    if(!guide||!video||video.videoWidth===0)return;
-    guide.style.transition='left 0.3s ease-out,top 0.3s ease-out';
-    guide.style.left=((box.x+box.width/2)/video.videoWidth*100)+'%';
-    guide.style.top=((box.y+box.height/2)/video.videoHeight*100)+'%';
-}
-function resetGuideToCenter() {
-    var guide=document.getElementById('faceGuide');
-    if(!guide) return;
-    guide.style.transition='left 0.4s ease-out,top 0.4s ease-out';
-    guide.style.left='50%';
-    guide.style.top='50%';
-}
-function startRealtimeDetection(){if(detectionInterval)clearInterval(detectionInterval);/* 250ms: 10Hz landmark redraw overheats old phone renderers and can freeze the whole page (including the scan loop) */detectionInterval=setInterval(function(){if(isScanningActive&&isFaceApiLoaded)detectAndDrawFace();},250);}
-function stopRealtimeDetection(){if(detectionInterval){clearInterval(detectionInterval);detectionInterval=null;}if(faceLandmarksCtx)faceLandmarksCtx.clearRect(0,0,faceLandmarksCanvas.width,faceLandmarksCanvas.height);}
+function updateRealFaceDetectionPoints(landmarks) {/* retired: no landmark dots */}
+function updateGuideFramePosition(box) {/* retired: face guide stays strictly locked to center */}
+function resetGuideToCenter() {/* guide is permanently centered at 50%, 50% */}
+function startRealtimeDetection(){if(detectionInterval)clearInterval(detectionInterval);detectionInterval=setInterval(function(){if(isScanningActive&&isFaceApiLoaded)detectAndDrawFace();},350);}
+function stopRealtimeDetection(){if(detectionInterval){clearInterval(detectionInterval);detectionInterval=null;}}
 
 /**
  * FaceGate — lightweight TinyFaceDetector pre-flight before Python /verify.
@@ -671,7 +621,7 @@ var FACE_GATE_BACKOFF_AFTER=5; /* consecutive no-face frames → interval increa
    result is fresh (< FACE_CACHE_MS). This halves inference work when both
    timers happen to fire within the same animation frame. */
 var _faceDetCache={result:null,ts:0,CACHE_MS:200};
-var SCAN_UI_BUILD='b4';/* marker sent with every verify — lets the server expose stale cached pages */
+var SCAN_UI_BUILD='b5';/* marker sent with every verify — lets the server expose stale cached pages */
 
 document.addEventListener('DOMContentLoaded', async function(){
     @if(session('error'))
@@ -845,9 +795,14 @@ async function legacyScanFrame(video) {
         if(fg){fg.classList.remove('warning-ring');if(!fg.classList.contains('scanning-ring'))fg.classList.add('scanning-ring');}
     }
 
-    /* Show detection confidence in chip while scan is in-flight */
-    var qualityLabel=gate.confidence>=0.85?'สูง':gate.confidence>=0.60?'กลาง':'ต่ำ';
-    setStatusChip('scanning','กำลังสแกนใบหน้า... (ความมั่นใจ: '+qualityLabel+')');
+    /* Distance & framing guidance: quality = faceBoxArea / frameArea */
+    if(gate.quality > 0.55){
+        setStatusChip('warning','ถอยห่างจากกล้องเล็กน้อย...');
+    } else if(gate.quality < 0.08){
+        setStatusChip('warning','ขยับเข้ามาใกล้กล้องอีกนิด...');
+    } else {
+        setStatusChip('scanning','กำลังสแกนใบหน้า...');
+    }
 
     var base64Image=canvas.toDataURL('image/jpeg',0.82);
     if(isJsModeActive&&isFaceApiLoaded&&profileDescriptor&&profileDescriptor.embedding_128d){await performJsVerification(canvas);}
@@ -920,10 +875,11 @@ async function performPythonVerification(base64Image) {
             // ตอบกลับทุกกรณีแบบชัดเจน — เดิมโค้ดเงียบทำให้ UI ค้างที่คะแนนเก่า
             // (no_face / No profile descriptor หลังอัปโหลดรูปใหม่ / ฯลฯ)
             if(result.status==='no_face'){
-                setScore('ไม่พบใบหน้าในเฟรม — กรุณามองกล้อง','#fca5a5');
-                setStatusChip('scanning','กำลังสแกนใบหน้า... (ปรับมุมกล้อง/แสง)');
+                setScore('—','#fca5a5');
+                setStatusChip('warning','ไม่พบใบหน้า — กรุณามองตรงมายังกล้อง');
             } else {
-                setScore(result.message||'กำลังลองอีกครั้ง...','#fca5a5');
+                setScore('—','#fca5a5');
+                setStatusChip('warning',result.message||'กำลังลองอีกครั้ง...');
             }
             console.log('[scan-ui] Frame ' + framesSent + ' -> ' + (result.status || result.message || 'no face'));
             /* fallback_recommended ignored: auto-switching to local JS scoring
@@ -935,9 +891,11 @@ async function performPythonVerification(base64Image) {
         pythonFailCount=0;
         var score=result.score_percentage||0,passed=result.is_match||false;
         console.log('[scan-ui] Frame ' + framesSent + ' -> ' + score.toFixed(1) + '% (match=' + passed + ')');
-        setScore('Python (512D): '+score.toFixed(1)+'% ('+(result.processing_ms||ms)+'ms)',passed?'#34d399':'#fcd34d');
+        var procTime=result.processing_ms||ms;
+        var secStr=(procTime/1000).toFixed(1)+'s';
+        setScore(score.toFixed(1)+'% ('+secStr+')',passed?'#34d399':'#fcd34d');
         updateAccuracy(score);
-        if(passed)await processScanResult({confidence:score/100,passed:true,score:score,source:'python_primary',processingTime:result.processing_ms||ms});
+        if(passed)await processScanResult({confidence:score/100,passed:true,score:score,source:'python_primary',processingTime:procTime});
     } catch(e){
         if(timer){clearTimeout(timer);timer=null;}
         console.warn('Python verification failed:',e);pythonFailCount++;
