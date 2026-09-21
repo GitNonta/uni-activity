@@ -118,6 +118,12 @@
         .error-ring .corner { border-color:rgba(239,68,68,0.9) !important; }
         .error-ring .scan-line { background:linear-gradient(90deg,transparent,rgba(239,68,68,0.8),transparent); box-shadow:0 0 8px rgba(239,68,68,0.6); }
         @keyframes errorShake { 0%,100%{transform:translate(-50%,-50%)} 25%{transform:translate(-52%,-50%)} 75%{transform:translate(-48%,-50%)} }
+        /* ── FaceGate: no-face / low-quality warning state ── */
+        .warning-ring { border-color:rgba(245,158,11,0.9) !important; box-shadow:0 0 0 4000px rgba(10,22,40,0.65),0 0 25px rgba(245,158,11,0.3) !important; animation:warningPulse 1.8s ease-in-out infinite !important; }
+        .warning-ring .corner { border-color:rgba(245,158,11,0.9) !important; }
+        .warning-ring .scan-line { background:linear-gradient(90deg,transparent,rgba(245,158,11,0.7),transparent); box-shadow:0 0 8px rgba(245,158,11,0.5); }
+        .warning-ring .detection-point { background:rgba(245,158,11,0.9); }
+        @keyframes warningPulse { 0%,100%{box-shadow:0 0 0 4000px rgba(10,22,40,0.65),0 0 15px rgba(245,158,11,0.2)} 50%{box-shadow:0 0 0 4000px rgba(10,22,40,0.65),0 0 35px rgba(245,158,11,0.45)} }
 
         @media (min-width:640px) and (max-width:1023px) { #faceGuide{width:220px;height:290px} }
         @media (min-width:1024px) { #faceGuide{width:290px;height:380px} .corner{width:32px;height:32px} }
@@ -532,10 +538,14 @@ async function detectAndDrawFace() {
     if(video.videoWidth===0) return;
     if(!faceLandmarksCanvas||faceLandmarksCanvas.width!==video.videoWidth) initFaceLandmarksCanvas();
     try {
-        var det=await faceapi.detectSingleFace(video,new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
+        var det=await faceapi.detectSingleFace(video,new faceapi.TinyFaceDetectorOptions({inputSize:224,scoreThreshold:0.4})).withFaceLandmarks();
+        /* ── Update shared detection cache (for FaceGate reuse) ── */
+        _faceDetCache.result=det?det.detection:null;
+        _faceDetCache.ts=Date.now();
         faceLandmarksCtx.clearRect(0,0,faceLandmarksCanvas.width,faceLandmarksCanvas.height);
         if(det){
             var box=det.detection.box;
+            /* Draw landmark bounding box */
             faceLandmarksCtx.strokeStyle='rgba(96,165,250,0.7)';faceLandmarksCtx.lineWidth=2;
             faceLandmarksCtx.strokeRect(box.x,box.y,box.width,box.height);
             faceLandmarksCtx.fillStyle='rgba(96,165,250,0.9)';
@@ -544,7 +554,7 @@ async function detectAndDrawFace() {
                 if(i%5===0){faceLandmarksCtx.shadowBlur=8;faceLandmarksCtx.shadowColor='rgba(96,165,250,0.8)';faceLandmarksCtx.beginPath();faceLandmarksCtx.arc(pt.x,pt.y,3,0,2*Math.PI);faceLandmarksCtx.fill();faceLandmarksCtx.shadowBlur=0;}
             });
             updateRealFaceDetectionPoints(det.landmarks);
-            updateGuideFramePosition(box);
+            updateGuideFramePosition(det.detection.box);
         }
     } catch(e){console.warn('Face detection error:',e);}
 }
@@ -568,8 +578,52 @@ function updateGuideFramePosition(box) {
     guide.style.left=((box.x+box.width/2)/video.videoWidth*100)+'%';
     guide.style.top=((box.y+box.height/2)/video.videoHeight*100)+'%';
 }
+function resetGuideToCenter() {
+    var guide=document.getElementById('faceGuide');
+    if(!guide) return;
+    guide.style.transition='left 0.4s ease-out,top 0.4s ease-out';
+    guide.style.left='50%';
+    guide.style.top='50%';
+}
 function startRealtimeDetection(){if(detectionInterval)clearInterval(detectionInterval);/* 250ms: 10Hz landmark redraw overheats old phone renderers and can freeze the whole page (including the scan loop) */detectionInterval=setInterval(function(){if(isScanningActive&&isFaceApiLoaded)detectAndDrawFace();},250);}
 function stopRealtimeDetection(){if(detectionInterval){clearInterval(detectionInterval);detectionInterval=null;}if(faceLandmarksCtx)faceLandmarksCtx.clearRect(0,0,faceLandmarksCanvas.width,faceLandmarksCanvas.height);}
+
+/**
+ * FaceGate — lightweight TinyFaceDetector pre-flight before Python /verify.
+ *
+ * Returns { detected: bool, confidence: float 0-1, quality: float 0-1 }.
+ * Reuses the _faceDetCache from detectAndDrawFace() when the cached result
+ * is < CACHE_MS old (avoids double GPU inference in the same frame burst).
+ * Fail-open: any error or face-api not loaded → { detected:true } so the
+ * scan proceeds exactly as before the gate was introduced.
+ *
+ * quality = (face-box area / frame area) — at 0.03 only an absent or
+ * postage-stamp-sized face is blocked; a normal selfie fills 20-60%.
+ */
+async function checkFacePresence(canvas) {
+    if(!isFaceApiLoaded||!window.faceapi) return {detected:true,confidence:1,quality:1};
+    try {
+        var now=Date.now(),cachedDet=null;
+        /* Reuse 250ms-loop result if fresh */
+        if(_faceDetCache.result!==undefined&&(now-_faceDetCache.ts)<_faceDetCache.CACHE_MS){
+            cachedDet=_faceDetCache.result; /* null = no face, object = detection */
+        } else {
+            /* Run TinyFaceDetector on the already-captured scan canvas */
+            var raw=await faceapi.detectSingleFace(canvas,new faceapi.TinyFaceDetectorOptions({inputSize:160,scoreThreshold:0.4}));
+            _faceDetCache.result=raw||null;
+            _faceDetCache.ts=Date.now();
+            cachedDet=_faceDetCache.result;
+        }
+        if(!cachedDet) return {detected:false,confidence:0,quality:0};
+        var box=cachedDet.box;
+        var frameArea=canvas.width*canvas.height;
+        var quality=frameArea>0?(box.width*box.height)/frameArea:0;
+        return {detected:true,confidence:cachedDet.score||0.5,quality:quality};
+    } catch(e){
+        console.warn('[FaceGate] fail-open:',e);
+        return {detected:true,confidence:0.5,quality:0.5};
+    }
+}
 
 async function initFaceApi() {
     if(isFaceApiLoaded)return;
@@ -604,6 +658,20 @@ var stream=null,scanTimeout=null,scanAttempts=0,cameraNoSignal=0;
 var MAX_ATTEMPTS=15,THRESHOLD=60;
 var isVerifying=false,stopScanning=false,isFlashOn=false;
 var lastFrameAt=0,frameStartedAt=0;
+/* ── FaceGate globals ── */
+var noFaceFrames=0;           /* consecutive frames without a detected face */
+/* Minimum ratio of detection-box area to frame area. At 0.03 (3%) only a
+   very small or clearly-absent face is blocked; a normal selfie fills
+   20–60% of the frame and always passes. Fail-open: if face-api is not
+   loaded, the gate is bypassed entirely (same behaviour as before). */
+var FACE_GATE_MIN_QUALITY=0.03;
+var FACE_GATE_TOAST_AFTER=3;   /* consecutive no-face frames → toast nudge */
+var FACE_GATE_BACKOFF_AFTER=5; /* consecutive no-face frames → interval increase */
+/* Shared detection cache: detectAndDrawFace (250ms loop) writes here so
+   checkFacePresence can skip a second TinyFaceDetector call if the cached
+   result is fresh (< FACE_CACHE_MS). This halves inference work when both
+   timers happen to fire within the same animation frame. */
+var _faceDetCache={result:null,ts:0,CACHE_MS:200};
 var SCAN_UI_BUILD='b4';/* marker sent with every verify — lets the server expose stale cached pages */
 
 document.addEventListener('DOMContentLoaded', async function(){
@@ -721,6 +789,49 @@ async function legacyScanFrame(video) {
     var ctx=canvas.getContext('2d');
     ctx.translate(canvas.width,0);ctx.scale(-1,1);ctx.drawImage(video,0,0,canvas.width,canvas.height);ctx.setTransform(1,0,0,1,0,0);
     handleLowLightDetection(ctx,canvas);
+
+    /* ── FaceGate: pre-flight check before sending to Python AI ─────────────
+       Runs TinyFaceDetector on the captured frame. When no face (or face too
+       small) is detected the Python /verify call is skipped entirely — no API
+       request is made, rate-limit quota is preserved, and the guide snaps back
+       to centre with an amber "วางใบหน้าในกรอบ" chip.
+       Fail-open: if face-api is not loaded, gate.detected === true and the
+       scan proceeds unconditionally (same as before the gate). */
+    var gate=await checkFacePresence(canvas);
+    if(!gate.detected||gate.quality<FACE_GATE_MIN_QUALITY){
+        noFaceFrames++;
+        updateAccuracy(null);
+        resetGuideToCenter();
+        var fg=document.getElementById('faceGuide');
+        if(fg){
+            fg.classList.remove('scanning-ring','success-ring','error-ring');
+            if(!fg.classList.contains('warning-ring'))fg.classList.add('warning-ring');
+        }
+        if(noFaceFrames<=2){
+            setStatusChip('warning','วางใบหน้าให้อยู่ในกรอบ...');
+        } else if(noFaceFrames===FACE_GATE_TOAST_AFTER){
+            setStatusChip('warning','ไม่พบใบหน้า — กรุณามองตรงมายังกล้อง');
+            showToast('ไม่พบใบหน้า — กรุณาวางใบหน้าให้อยู่ในกรอบและมองตรงมายังกล้อง','warning');
+        } else if(noFaceFrames>FACE_GATE_BACKOFF_AFTER){
+            /* Battery-saving backoff: scan interval grows (capped at 2.5s) */
+            var backoffMs=Math.min(2500,noFaceFrames*300);
+            pythonThrottledUntil=Math.max(pythonThrottledUntil,Date.now()+backoffMs);
+            setStatusChip('warning','ไม่พบใบหน้า — กรุณาเข้าใกล้กล้องและมองตรง');
+        }
+        return; /* ← skip Python /verify entirely */
+    }
+
+    /* Face detected — reset gate state and restore scanning ring */
+    if(noFaceFrames>0){
+        noFaceFrames=0;
+        var fg=document.getElementById('faceGuide');
+        if(fg){fg.classList.remove('warning-ring');if(!fg.classList.contains('scanning-ring'))fg.classList.add('scanning-ring');}
+    }
+
+    /* Show detection confidence in chip while scan is in-flight */
+    var qualityLabel=gate.confidence>=0.85?'สูง':gate.confidence>=0.60?'กลาง':'ต่ำ';
+    setStatusChip('scanning','กำลังสแกนใบหน้า... (ความมั่นใจ: '+qualityLabel+')');
+
     var base64Image=canvas.toDataURL('image/jpeg',0.6);
     if(isJsModeActive&&isFaceApiLoaded&&profileDescriptor&&profileDescriptor.embedding_128d){await performJsVerification(canvas);}
     else{await performPythonVerification(base64Image);}

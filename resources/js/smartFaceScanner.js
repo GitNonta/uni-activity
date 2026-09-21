@@ -48,7 +48,7 @@ class SmartFaceScanner {
         this.requestQueue = [];
         this.isProcessingQueue = false;
         
-        console.log('🧠 SmartFaceScanner initialized:', this.options);
+        console.log('[SmartFaceScanner] initialized, mode=' + this.options.maxConcurrentRequests + ' concurrent');
     }
     
     /**
@@ -431,3 +431,63 @@ class SmartFaceScanner {
 
 // Export for use in blade template
 window.SmartFaceScanner = SmartFaceScanner;
+
+/**
+ * detectFaceQuality — window-exported async helper for FaceGate.
+ *
+ * Runs TinyFaceDetector on a video or canvas element and returns a quality
+ * descriptor that the caller uses to decide whether to send the frame to
+ * the Python AI server.
+ *
+ * Result shape:
+ *   { detected: boolean,   — whether any face was found
+ *     confidence: number,  — TinyFaceDetector score (0-1)
+ *     quality:    number   — face-box area / frame area (0-1) }
+ *
+ * The internal 150ms cache means consecutive callers (landmark loop +
+ * scan gate) within the same frame burst share one GPU inference pass.
+ *
+ * Fail-open: if face-api is unavailable or throws, returns
+ * { detected:true } so the scan proceeds unconditionally.
+ *
+ * @param {HTMLVideoElement|HTMLCanvasElement} el
+ * @param {{ inputSize?: number, scoreThreshold?: number }} [opts]
+ * @returns {Promise<{detected:boolean, confidence:number, quality:number}>}
+ */
+var _faceDetectionCache = {
+    result:   null,   /* last raw faceapi detection or null (no face) */
+    ts:       0,      /* timestamp of last update (ms) */
+    CACHE_MS: 150     /* cache validity window */
+};
+
+async function detectFaceQuality(el, opts) {
+    if (!window.faceapi) return {detected:true, confidence:1, quality:1};
+    var options = Object.assign({inputSize:160, scoreThreshold:0.4}, opts || {});
+    try {
+        var now = Date.now();
+        var cached = null;
+        if (now - _faceDetectionCache.ts < _faceDetectionCache.CACHE_MS) {
+            cached = _faceDetectionCache.result;
+        } else {
+            var raw = await faceapi.detectSingleFace(
+                el,
+                new faceapi.TinyFaceDetectorOptions(options)
+            );
+            _faceDetectionCache.result = raw || null;
+            _faceDetectionCache.ts     = Date.now();
+            cached = _faceDetectionCache.result;
+        }
+        if (!cached) return {detected:false, confidence:0, quality:0};
+        var box       = cached.box;
+        var frameArea = (el.videoWidth || el.width) * (el.videoHeight || el.height);
+        var faceArea  = box.width * box.height;
+        var quality   = frameArea > 0 ? faceArea / frameArea : 0;
+        return {detected:true, confidence:cached.score || 0.5, quality:quality};
+    } catch (e) {
+        console.warn('[detectFaceQuality] fail-open:', e);
+        return {detected:true, confidence:0.5, quality:0.5};
+    }
+}
+
+window.detectFaceQuality    = detectFaceQuality;
+window._faceDetectionCache  = _faceDetectionCache;
