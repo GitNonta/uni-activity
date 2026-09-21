@@ -45,6 +45,15 @@ class LineService
             return null;
         }
 
+        // 1. Check docs/active_url.json first (auto-synced tunnel URL from Termux / GitHub)
+        $activeJson = base_path('docs/active_url.json');
+        if (file_exists($activeJson)) {
+            $data = json_decode((string) @file_get_contents($activeJson), true);
+            if (!empty($data['url']) && str_starts_with($data['url'], 'https://')) {
+                return rtrim($data['url'], '/') . '/storage/' . ltrim($imagePath, '/');
+            }
+        }
+
         $url = asset('storage/' . $imagePath);
         if (str_starts_with($url, 'https://')) {
             return $url;

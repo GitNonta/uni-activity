@@ -42,8 +42,10 @@ nohup proot-distro login ubuntu -- bash -c "cloudflared tunnel --url http://127.
 pkill -f 'ai_service/server.py'
 nohup proot-distro login ubuntu -- bash -c "cd /data/data/com.termux/files/home/uni-activity/ai_service && /root/ai_project/venv/bin/python server.py > server.log 2>&1" &
 
-# 9. Wait for Cloudflared and update URL
+# 9. Wait for Cloudflared and start continuous tunnel auto-updater daemon
+pkill -f 'auto_update_tunnel_url.py'
 python ${APP_DIR}/py/start_cf_ubuntu.py
+nohup python3 -u ${APP_DIR}/py/auto_update_tunnel_url.py > ${APP_DIR}/storage/logs/tunnel_auto_update.log 2>&1 &
 
 # 10. Start Go Monitor Server (Port 9999)
 pkill -f 'go-monitor'
