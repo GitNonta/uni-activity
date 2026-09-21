@@ -70,33 +70,80 @@
             </div>
         </div>
 
-        <div class="grid-3 mt-3" style="font-size:.875rem; background:#f8fafc; padding:10px; border-radius:8px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+<style>
+.checkout-accordion summary::-webkit-details-marker,
+.multiday-checkout-details summary::-webkit-details-marker {
+    display: none;
+}
+.checkout-accordion[open] .checkout-chevron,
+.multiday-checkout-details[open] .multiday-checkout-chevron {
+    transform: rotate(180deg);
+}
+.checkout-accordion:hover {
+    border-color: #fdba74 !important;
+}
+.checkout-accordion summary:hover {
+    background: #fff2e5 !important;
+}
+</style>
+
+        <div class="grid-2 mt-3" style="font-size:.875rem; background:#f8fafc; padding:12px; border-radius:10px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; border: 1px solid #f1f5f9;">
             <div>
-                <span class="text-muted" style="font-size: 0.8rem;">เปิด-ปิดลงทะเบียน</span>
-                <p class="font-semi" style="font-size: 0.85rem; color:#475569;">
+                <span class="text-muted" style="font-size: 0.8rem; display:flex; align-items:center; gap:5px;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    เปิด-ปิดลงทะเบียน
+                </span>
+                <p class="font-semi" style="font-size: 0.85rem; color:#475569; margin:4px 0 0; line-height:1.4;">
                     {{ $activity->register_open_at ? $activity->register_open_at->format('d/m/Y H:i') : '-' }}<br>ถึง {{ $activity->register_close_at ? $activity->register_close_at->format('d/m/Y H:i') : '-' }}
                 </p>
             </div>
             <div>
-                <span class="text-muted" style="font-size: 0.8rem;">เปิด-ปิดเช็คอินหน้างาน</span>
-                <p class="font-semi" style="font-size: 0.85rem; color:#475569;">
+                <span class="text-muted" style="font-size: 0.8rem; display:flex; align-items:center; gap:5px;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+                    เปิด-ปิดเช็คอินหน้างาน
+                </span>
+                <p class="font-semi" style="font-size: 0.85rem; color:#475569; margin:4px 0 0; line-height:1.4;">
                     {{ $activity->checkin_open_at ? $activity->checkin_open_at->format('d/m/Y H:i') : '-' }}<br>ถึง {{ $activity->checkin_close_at ? $activity->checkin_close_at->format('d/m/Y H:i') : '-' }}
                 </p>
             </div>
-            <div>
-                <span class="text-muted" style="font-size: 0.8rem;">เปิด-ปิดสแกนออกงาน</span>
-                <p class="font-semi" style="font-size: 0.85rem; color:#475569;">
-                    @if($activity->checkout_open_at)
-                        {{ $activity->checkout_open_at->format('d/m/Y H:i') }}<br>ถึง {{ $activity->checkout_close_at->format('d/m/Y H:i') }}
-                        @if($activity->min_hours_before_checkout > 0)
-                            <br><span style="color:#ef4444; font-size: 0.75rem;">(ต้องเข้าร่วมอย่างน้อย {{ (float)$activity->min_hours_before_checkout }} ชม.)</span>
-                        @endif
-                    @else
-                        -
-                    @endif
-                </p>
-            </div>
         </div>
+
+        {{-- รายละเอียดเวลาออกจากงาน (ซ้อน/พับเก็บแบบ Accordion ในหน้าการ์ด) --}}
+        @if($activity->checkout_open_at)
+        <details class="checkout-accordion mt-2" style="background:#fffaf5; border:1px solid #fed7aa; border-radius:10px; overflow:hidden; transition:border-color 0.2s ease;">
+            <summary style="padding:10px 14px; font-size:0.82rem; font-weight:600; color:#c2410c; cursor:pointer; display:flex; align-items:center; justify-content:space-between; list-style:none; user-select:none; transition:background 0.2s ease;">
+                <span style="display:inline-flex; align-items:center; gap:0.45rem;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    รายละเอียดเวลาออกจากงาน (Check-out สแกนรับชั่วโมง)
+                </span>
+                <span class="checkout-chevron" style="display:inline-flex; align-items:center; transition:transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); color:#ea580c;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </span>
+            </summary>
+            <div style="padding:10px 14px 12px; border-top:1px dashed #fdba74; background:#ffffff; font-size:0.82rem; color:#475569;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem;">
+                    <div>
+                        <span class="text-muted" style="font-size:0.75rem; display:block;">ช่วงเวลาเปิด-ปิดสแกนออกงาน:</span>
+                        <div class="font-semi" style="color:#9a3412; font-size:0.85rem; margin-top:2px;">
+                            {{ $activity->checkout_open_at->format('d/m/Y H:i') }} ถึง {{ $activity->checkout_close_at->format('d/m/Y H:i') }}
+                        </div>
+                    </div>
+                    @if($activity->min_hours_before_checkout > 0)
+                        <span style="background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; font-size:0.75rem; font-weight:600; padding:3px 10px; border-radius:6px; display:inline-flex; align-items:center; gap:4px;">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            ต้องเข้าร่วมอย่างน้อย {{ (float)$activity->min_hours_before_checkout }} ชม.
+                        </span>
+                    @endif
+                </div>
+            </div>
+        </details>
+        @endif
 
         @if($activity->is_multiday && $activity->days && $activity->days->isNotEmpty())
             <div style="margin-top:1.25rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:1rem;">
@@ -146,17 +193,20 @@
                                 </div>
                             </div>
                             <div>
-                                <span style="font-size:0.72rem; color:#991b1b; font-weight:600; display:flex; align-items:center; gap:0.25rem;">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                                        <polyline points="16 17 21 12 16 7"></polyline>
-                                        <line x1="21" y1="12" x2="9" y2="12"></line>
-                                    </svg>
-                                    เช็คเอาต์ (ออกงาน):
-                                </span>
-                                <div style="font-size:0.78rem; color:#334155; margin-top:0.15rem;">
-                                    {{ $day->checkout_open_at ? $day->checkout_open_at->format('H:i') : '-' }} - {{ $day->checkout_close_at ? $day->checkout_close_at->format('H:i') : '-' }} น.
-                                </div>
+                                <details class="multiday-checkout-details" style="cursor:pointer;">
+                                    <summary style="font-size:0.72rem; color:#c2410c; font-weight:600; display:inline-flex; align-items:center; gap:0.25rem; list-style:none; user-select:none;">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                            <polyline points="16 17 21 12 16 7"></polyline>
+                                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                                        </svg>
+                                        <span>เช็คเอาต์ (ออกงาน)</span>
+                                        <svg class="multiday-checkout-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s ease;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                    </summary>
+                                    <div style="font-size:0.78rem; color:#9a3412; font-weight:600; margin-top:0.2rem; background:#fff7ed; padding:3px 8px; border-radius:6px; border:1px solid #fed7aa; display:inline-block;">
+                                        {{ $day->checkout_open_at ? $day->checkout_open_at->format('H:i') : '-' }} - {{ $day->checkout_close_at ? $day->checkout_close_at->format('H:i') : '-' }} น.
+                                    </div>
+                                </details>
                             </div>
                             <div style="text-align:right;">
                                 <span style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; font-size:0.75rem; font-weight:700; padding:0.25rem 0.55rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.25rem;">
