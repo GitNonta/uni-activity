@@ -23,8 +23,9 @@ Alignment contract
 The engine was validated with plain 112x112 bilinear resize of the face
 ROI (preprocessing parity gate: cosine 1.000000000 vs ground truth on the
 full CelebA run). Landmark-aligned (norm_crop) faces are INSIDE that
-distribution, so the caller may pass either; this module embeds whatever
-112x112 BGR crop it receives without second-guessing.
+distribution, so the caller may pass either; this module pre-resizes every
+crop to exactly 112x112 (cv2.INTER_LINEAR) before passing to the engine to
+guarantee deterministic preprocessing regardless of input size.
 
 Failure policy
 --------------
@@ -39,11 +40,16 @@ import sys
 import threading
 from typing import Optional
 
+import cv2
 import numpy as np
 
 # ── fdx import: installed wheel first, repo pylib fallback ──────────────────
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _PYLIB = os.path.abspath(os.path.join(_HERE, "..", "face_dx", "pylib"))
+
+# Canonical input size the engine was calibrated on (preprocessing parity
+# gate: cosine 1.000000000 vs ground truth on the full CelebA run).
+FDX_INPUT_SIZE = 112
 
 
 def _import_fdx():
@@ -101,6 +107,7 @@ class FdxBackend:
             "available": self.available,
             "backend": "fdx-d3d11" if self.available else None,
             "threshold": self.threshold,
+            "input_size": FDX_INPUT_SIZE,
         }
         if self.available:
             try:
@@ -114,10 +121,14 @@ class FdxBackend:
     # -- embedding ----------------------------------------------------------
 
     def embed_bgr(self, crop_bgr: np.ndarray) -> Optional[np.ndarray]:
-        """112x112 (or larger) BGR crop -> 512-d L2-normalized float32.
+        """BGR crop (any size) -> 512-d L2-normalized float32.
 
-        Returns None on any engine failure (caller falls back); the
-        failure reason lands in describe()["error"].
+        The crop is resized to FDX_INPUT_SIZE×FDX_INPUT_SIZE (112×112) with
+        bilinear interpolation before inference, matching the preprocessing
+        used during engine calibration (cos 1.000000 parity gate).
+
+        Returns None on any engine failure (caller falls back to insightface);
+        the failure reason lands in describe()["error"].
         """
         eng = getattr(self._device, "engine", None)
         if eng is None:
@@ -125,6 +136,14 @@ class FdxBackend:
                 return None
             return self._embed_on_primary(crop_bgr)
         return self._run(eng, crop_bgr)
+
+    def embed_bgr_112(self, crop_bgr: np.ndarray) -> Optional[np.ndarray]:
+        """Convenience alias — always pre-resizes to 112×112 (canonical path).
+
+        Identical to embed_bgr(); callers that want to make the preprocessing
+        contract explicit in their code should use this method.
+        """
+        return self.embed_bgr(crop_bgr)
 
     def _embed_on_primary(self, crop_bgr: np.ndarray) -> Optional[np.ndarray]:
         # The engine is single-context (fdx_capi.h: no concurrent runs on
@@ -138,8 +157,18 @@ class FdxBackend:
 
     def _run(self, eng, crop_bgr: np.ndarray) -> Optional[np.ndarray]:
         try:
+            # ── Pre-resize to canonical 112×112 (preprocessing parity) ────
+            # Calibration was performed on 112×112 bilinear-resized crops.
+            # We always resize here so behavior is deterministic regardless
+            # of what size ROI the caller provides (raw bbox, padded, etc.).
+            if crop_bgr.shape[0] != FDX_INPUT_SIZE or crop_bgr.shape[1] != FDX_INPUT_SIZE:
+                crop_bgr = cv2.resize(
+                    crop_bgr,
+                    (FDX_INPUT_SIZE, FDX_INPUT_SIZE),
+                    interpolation=cv2.INTER_LINEAR,
+                )
             rgb = np.ascontiguousarray(crop_bgr[:, :, ::-1])  # BGR -> RGB
-            return eng.embed(rgb)  # ndarray input: auto-resize to 112x112
+            return eng.embed(rgb)  # 112x112 RGB → 512-d L2-normalized float32
         except self._fdx.DeviceLostError as e:
             self.last_error = f"device lost: {e}"
             self.available = False

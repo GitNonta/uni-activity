@@ -1,19 +1,21 @@
 """
-Uni-Activity AI Server v2.0
+Uni-Activity AI Server v2.2
 ============================
 Multi-Pipeline Face Verification:
-  YOLOv8-face  → Fast face pre-detection
-  SCRFD        → InsightFace precise detection + alignment
-  ArcFace 512D → Face embedding + cosine similarity
-  Liveness     → Passive liveness detection (texture/FFT/EAR/color)
+  YOLOv8-face       → Fast face pre-detection
+  SCRFD             → InsightFace precise detection + alignment
+  fdx (w600k_mbf)   → 512D MobileFaceNet D3D11 embedding (primary)
+  ArcFace 512D      → InsightFace fallback embedding
+  Liveness          → Passive liveness detection (texture/FFT/EAR/color)
 
 Endpoints:
-  POST /extract  — สร้าง embedding จากรูปโปรไฟล์
+  POST /extract  — สร้าง embedding จากรูปโปรไฟล์ (fdx-space 512D)
   POST /verify   — ยืนยันใบหน้า + liveness check
   POST /liveness — ตรวจ liveness อย่างเดียว
   GET  /health   — ตรวจสอบสถานะ server
 """
 
+import asyncio
 import io
 import os
 import json
@@ -91,7 +93,10 @@ from depth_liveness import DepthLivenessAnalyzer, DepthLivenessResult
 face_app: Optional[FaceAnalysis] = None
 liveness_detector: Optional[LivenessDetector] = None
 yolo_model = None        # ultralytics YOLO (optional, lazy-loaded)
-pca_reducer: Optional[PCA] = None  # sklearn PCA 512D → 128D
+# pca_reducer: 128D path is DISABLED in fdx mode. It requires re-fitting on a
+# real corpus of fdx embeddings — a dummy gaussian fit produces meaningless
+# output and is not performed. See reduce_to_128d() for the guarded stub.
+pca_reducer = None       # Optional[PCA] — stays None until re-fit on fdx corpus
 fdx_backend: Optional[FdxBackend] = None  # fdx D3D11 embedder (activity-check decoder)
 depth_liveness: Optional[DepthLivenessAnalyzer] = None  # depth-stream signal (optional)
 
@@ -133,7 +138,7 @@ YOLO_MODEL_PATH = os.environ.get("YOLO_MODEL_PATH", _DEFAULT_YOLO)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Load all models at startup, release at shutdown"""
-    global face_app, liveness_detector, yolo_model, pca_reducer, depth_liveness, fdx_backend
+    global face_app, liveness_detector, yolo_model, depth_liveness, fdx_backend
 
     logger.info("=" * 60)
     logger.info("Starting Uni-Activity AI Server v2.0 (Secured with API Key & Restricted CORS)")
@@ -201,12 +206,13 @@ async def lifespan(app: FastAPI):
     else:
         logger.info("YOLOv8 DISABLED (USE_YOLO=0)")
 
-    # ── 4. PCA Reducer for 512D → 128D ────────────────────────────────
-    logger.info("Setting up PCA reducer for 512D \u2192 128D conversion...")
-    pca_reducer = PCA(n_components=128, random_state=42)
-    dummy_data = np.random.randn(200, 512).astype(np.float32)
-    pca_reducer.fit(dummy_data)
-    logger.info("PCA reducer initialized \u2713")
+    # ── 4. PCA Reducer (128D path) ───────────────────────────────────────
+    # The 128D reduction path is DISABLED in fdx mode: the PCA reducer must be
+    # fitted on a real corpus of fdx-space embeddings to be meaningful. Fitting
+    # on gaussian noise (as was done previously) produces geometrically
+    # unrelated projections and was removed. The pca_reducer global stays None;
+    # /extract returns embedding_128d=null when the fdx embedder is active.
+    logger.info("128D PCA path: disabled in fdx mode (requires fdx-corpus re-fit) ✓")
 
     # ── 5. fdx embedder (chosen activity-check face decoder) ─────────────
     if USE_FDX:
@@ -236,8 +242,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Uni-Activity AI Server",
-    version="2.1.0",
-    description="Face Verification: YOLOv8 + SCRFD + ArcFace + Passive Liveness",
+    version="2.2.0",
+    description="Face Verification: YOLOv8 + SCRFD + fdx-w600k-mbf 512D + Passive Liveness",
     lifespan=lifespan,
 )
 
@@ -318,10 +324,29 @@ def insightface_detect(img: np.ndarray):
 
 
 def fdx_embed_crop(crop_bgr: np.ndarray) -> Optional[np.ndarray]:
-    """512-d via fdx (the chosen decoder); None if engine unavailable/failed."""
+    """512-d via fdx (the chosen decoder); None if engine unavailable/failed.
+
+    Deprecated — use the async wrapper `fdx_embed_crop_async()` from endpoints
+    so the fdx GPU inference (~35-50 ms) does not block the event loop.
+    """
     if fdx_backend is None or not fdx_backend.available:
         return None
     return fdx_backend.embed_bgr(crop_bgr)
+
+
+async def fdx_embed_crop_async(crop_bgr: np.ndarray) -> Optional[np.ndarray]:
+    """Non-blocking fdx embed: runs engine inference in a thread-pool executor.
+
+    The fdx D3D11 engine performs GPU inference (~35-50 ms per frame). Calling
+    it directly on the uvicorn async worker would block the event loop for that
+    duration, serializing all concurrent requests. run_in_executor() offloads
+    the work onto the default ThreadPoolExecutor so FastAPI can continue
+    serving other requests while the GPU computes.
+    """
+    if fdx_backend is None or not fdx_backend.available:
+        return None
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, fdx_backend.embed_bgr, crop_bgr)
 
 
 def get_full_face_bbox(
@@ -371,6 +396,25 @@ def crop_aligned_face(img: np.ndarray, face, full_length: bool = True) -> np.nda
             x1 = max(0, x1); y1 = max(0, y1)
             x2 = min(w, x2); y2 = min(h, y2)
         return img[y1:y2, x1:x2]
+    except Exception:
+        return img
+
+
+def prepare_fdx_crop(img: np.ndarray, face) -> np.ndarray:
+    """Extract and pre-resize face ROI to 112×112 for fdx inference.
+
+    The fdx engine (w600k_mbf) was calibrated on 112×112 bilinear-resized
+    face ROI crops (preprocessing parity gate: cosine 1.000000000 vs ground
+    truth on the full CelebA run). This helper makes that contract explicit at
+    the call site in /extract and /verify, regardless of what size the bbox
+    crops to. FdxBackend._run() also resizes as a safety net, but doing it
+    here keeps the pipeline readable and avoids any double-resize.
+    """
+    try:
+        crop = crop_aligned_face(img, face, full_length=False)
+        if crop.shape[0] == 0 or crop.shape[1] == 0:
+            return img
+        return cv2.resize(crop, (112, 112), interpolation=cv2.INTER_LINEAR)
     except Exception:
         return img
 
@@ -480,7 +524,7 @@ async def warmup():
 
 
 @app.post("/extract", dependencies=[Depends(verify_api_key)])
-async def extract_face(image: UploadFile = File(...)):
+async def extract_face(image: UploadFile = File(...)):  # noqa: B008
     """
     สร้าง face embedding จากรูปโปรไฟล์ในสองรูปแบบ:
     - 512D ArcFace (สำหรับ verification ความแม่นยำสูง)
@@ -510,11 +554,15 @@ async def extract_face(image: UploadFile = File(...)):
         raise HTTPException(400, "No face detected in image. Please ensure the image contains a clear, front-facing face.")
 
     # ── fdx 512-d (chosen activity-check decoder) ──────────────────────
+    # fdx_embed_crop_async() offloads the ~35-50ms D3D11 GPU inference onto
+    # the thread-pool executor so it does not block the uvicorn event loop.
+    # prepare_fdx_crop() pre-resizes the ROI to 112×112 (calibrated input
+    # size) before handing it to the engine.
     embedder = "insightface-arcface"
     fdx_512d: Optional[np.ndarray] = None
     if fdx_backend is not None and fdx_backend.available:
-        crop = crop_aligned_face(img, face, full_length=False) if face is not None else img
-        fdx_512d = fdx_backend.embed_bgr(crop)
+        crop = prepare_fdx_crop(img, face) if face is not None else img
+        fdx_512d = await fdx_embed_crop_async(crop)
         if fdx_512d is not None:
             embedder = "fdx-d3d11"
         else:
@@ -652,12 +700,15 @@ async def verify_face(
         }
 
     # ── Cosine similarity (fdx preferred, insightface fallback) ─────────
+    # fdx_embed_crop_async() offloads the D3D11 GPU inference to the thread
+    # pool (non-blocking). prepare_fdx_crop() ensures the canonical 112×112
+    # bilinear resize is applied before inference.
     embedder = "insightface-arcface"
     threshold = FACE_MATCH_THRESHOLD
     fdx_emb: Optional[np.ndarray] = None
     if fdx_backend is not None and fdx_backend.available:
-        crop = crop_aligned_face(work_img, face, full_length=False) if face is not None else work_img
-        fdx_emb = fdx_backend.embed_bgr(crop)
+        crop = prepare_fdx_crop(work_img, face) if face is not None else work_img
+        fdx_emb = await fdx_embed_crop_async(crop)
         if fdx_emb is not None:
             embedder = "fdx-d3d11"
             threshold = fdx_backend.threshold
@@ -804,3 +855,4 @@ async def check_liveness_only(image: UploadFile = File(...)):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("server:app", host="0.0.0.0", port=8001, reload=False, workers=1)
+
