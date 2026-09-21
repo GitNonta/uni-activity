@@ -28,7 +28,7 @@
 
         /* Desktop / tablet split-panel media queries removed — full-screen for all */
 
-        #cameraPreview { width:100%; height:100%; object-fit:cover; transform:scaleX(-1); display:block; }
+        #cameraPreview { width:100%; height:100%; object-fit:cover; transform:scaleX(-1); display:block; image-rendering:-webkit-optimize-contrast; }
 
         .panel-logo { display:flex; align-items:center; gap:0.75rem; padding-bottom:0.25rem; }
         .panel-logo-icon { width:40px; height:40px; background:var(--blue); border-radius:10px; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px var(--blue-glow); flex-shrink:0; }
@@ -89,7 +89,7 @@
         .btn-manual { display:none; width:100%; padding:0.7rem 1.25rem; border-radius:10px; border:1px solid var(--white-15); background:var(--white-08); color:var(--white); font-size:0.875rem; font-weight:500; cursor:pointer; transition:background 0.2s; font-family:inherit; }
         .btn-manual:hover { background:rgba(255,255,255,0.12); }
 
-        #faceGuide { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:260px; height:340px; border-radius:130px; border:2px solid rgba(96,165,250,0.7); box-shadow:0 0 0 4000px rgba(10,22,40,0.65),0 0 0 1px rgba(96,165,250,0.2),inset 0 0 30px rgba(96,165,250,0.05); transition:border-color 0.4s,box-shadow 0.6s; overflow:hidden; z-index:10; }
+        #faceGuide { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:260px; height:340px; border-radius:130px; border:2.5px solid rgba(96,165,250,0.85); box-shadow:0 0 0 4000px rgba(10,22,40,0.48),0 0 0 1px rgba(96,165,250,0.3); transition:border-color 0.4s,box-shadow 0.6s; overflow:hidden; z-index:10; }
         .scan-line { position:absolute; width:100%; height:2px; background:linear-gradient(90deg,transparent 5%,rgba(96,165,250,0.8) 50%,transparent 95%); box-shadow:0 0 8px rgba(96,165,250,0.6); animation:scanMove 2.5s ease-in-out infinite; z-index:20; }
         @keyframes scanMove { 0%{top:5%;opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{top:95%;opacity:0} }
         .corner { position:absolute; width:28px; height:28px; border-color:rgba(96,165,250,0.9); border-style:solid; border-width:0; transition:border-color 0.3s; }
@@ -97,8 +97,7 @@
         .corner-tr { top:0;right:0;border-top-width:2.5px;border-right-width:2.5px;border-top-right-radius:120px; }
         .corner-bl { bottom:0;left:0;border-bottom-width:2.5px;border-left-width:2.5px;border-bottom-left-radius:120px; }
         .corner-br { bottom:0;right:0;border-bottom-width:2.5px;border-right-width:2.5px;border-bottom-right-radius:120px; }
-        .grid-overlay { position:absolute;inset:0;background-image:linear-gradient(rgba(96,165,250,0.06) 1px,transparent 1px),linear-gradient(90deg,rgba(96,165,250,0.06) 1px,transparent 1px);background-size:24px 24px;animation:gridPulse 4s ease-in-out infinite;z-index:10; }
-        @keyframes gridPulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
+        .grid-overlay { display:none !important; }
         .face-detection-points { position:absolute;inset:0;z-index:15; }
         .detection-point { position:absolute;width:3px;height:3px;background:rgba(96,165,250,0.9);border-radius:50%;animation:pointPulse 1.8s ease-in-out infinite; }
         @keyframes pointPulse { 0%,100%{opacity:0.3;transform:scale(1)} 50%{opacity:1;transform:scale(1.8)} }
@@ -106,7 +105,7 @@
         #scanStatus { position:absolute;top:8px;left:8px;background:rgba(10,22,40,0.7);color:rgba(255,255,255,0.6);padding:4px 8px;border-radius:6px;font-size:9px;backdrop-filter:blur(4px);z-index:25;display:none; }
 
         .scanning-ring { border-color:rgba(96,165,250,0.9) !important; animation:guidePulse 2s ease-in-out infinite; }
-        @keyframes guidePulse { 0%,100%{box-shadow:0 0 0 4000px rgba(10,22,40,0.65),0 0 20px rgba(96,165,250,0.2)} 50%{box-shadow:0 0 0 4000px rgba(10,22,40,0.65),0 0 35px rgba(96,165,250,0.4)} }
+        @keyframes guidePulse { 0%,100%{box-shadow:0 0 0 4000px rgba(10,22,40,0.48),0 0 20px rgba(96,165,250,0.25)} 50%{box-shadow:0 0 0 4000px rgba(10,22,40,0.48),0 0 35px rgba(96,165,250,0.5)} }
         .scanning-ring .corner { border-color:rgba(96,165,250,0.9) !important; }
         .success-ring { border-color:rgba(16,185,129,0.9) !important; box-shadow:0 0 0 4000px rgba(10,22,40,0.65),0 0 40px rgba(16,185,129,0.4) !important; animation:successPulse 0.6s ease-out !important; }
         .success-ring .corner { border-color:rgba(16,185,129,0.9) !important; }
@@ -696,8 +695,24 @@ async function startCamera() {
     try {
         var isLargeScreen=window.innerWidth>=1024||window.innerHeight>=768;
         var isMobile=/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        var constraints=isLargeScreen&&!isMobile?{video:{facingMode:'user',width:{ideal:640,max:1280},height:{ideal:480,max:720},frameRate:{ideal:30,max:30}},audio:false}:{video:{facingMode:'user'},audio:false};
-        try{stream=await navigator.mediaDevices.getUserMedia(constraints);}catch(e){stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});}
+        var constraints={
+            video:{
+                facingMode:'user',
+                width:{ideal:1280,min:640},
+                height:{ideal:720,min:480},
+                frameRate:{ideal:30,min:15}
+            },
+            audio:false
+        };
+        try{
+            stream=await navigator.mediaDevices.getUserMedia(constraints);
+        }catch(e){
+            try{
+                stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}},audio:false});
+            }catch(e2){
+                stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+            }
+        }
         var video=document.getElementById('cameraPreview');
         video.srcObject=stream;
         video.onloadedmetadata=function(){adjustUIForScreenSize(isLargeScreen,isMobile);};
@@ -783,10 +798,12 @@ async function processScanResult(result) {
     }
 }
 async function legacyScanFrame(video) {
-    var MAX_DIM=480,tw=video.videoWidth,th=video.videoHeight;
+    var MAX_DIM=720,tw=video.videoWidth,th=video.videoHeight;
     if(tw>th){if(tw>MAX_DIM){th=Math.round(th*(MAX_DIM/tw));tw=MAX_DIM;}}else{if(th>MAX_DIM){tw=Math.round(tw*(MAX_DIM/th));th=MAX_DIM;}}
     var canvas=document.createElement('canvas');canvas.width=tw;canvas.height=th;
     var ctx=canvas.getContext('2d');
+    ctx.imageSmoothingEnabled=true;
+    ctx.imageSmoothingQuality='high';
     ctx.translate(canvas.width,0);ctx.scale(-1,1);ctx.drawImage(video,0,0,canvas.width,canvas.height);ctx.setTransform(1,0,0,1,0,0);
     handleLowLightDetection(ctx,canvas);
 
@@ -832,7 +849,7 @@ async function legacyScanFrame(video) {
     var qualityLabel=gate.confidence>=0.85?'สูง':gate.confidence>=0.60?'กลาง':'ต่ำ';
     setStatusChip('scanning','กำลังสแกนใบหน้า... (ความมั่นใจ: '+qualityLabel+')');
 
-    var base64Image=canvas.toDataURL('image/jpeg',0.6);
+    var base64Image=canvas.toDataURL('image/jpeg',0.82);
     if(isJsModeActive&&isFaceApiLoaded&&profileDescriptor&&profileDescriptor.embedding_128d){await performJsVerification(canvas);}
     else{await performPythonVerification(base64Image);}
 }
@@ -843,14 +860,12 @@ function handleLowLightDetection(ctx,canvas) {
         for(var i=0;i<data.length;i+=40){colorSum+=(data[i]*299+data[i+1]*587+data[i+2]*114)/1000;samples++;}
         var avgBrightness=colorSum/samples;
         var video=document.getElementById('cameraPreview'),guide=document.getElementById('faceGuide'),infoEl=document.getElementById('scanInstructions');
-        if(avgBrightness<75)isFlashOn=true;if(avgBrightness>110)isFlashOn=false;
+        if(avgBrightness<65)isFlashOn=true;if(avgBrightness>100)isFlashOn=false;
         if(isFlashOn){
-            // Cap the boost at 1.6x: stronger boosts whiten the frame and
-            // make the face undetectable (no_face freezes) at night
-            var boost=Math.min(1.6,90/Math.max(avgBrightness,10));
-            if(video)video.style.filter='brightness('+boost.toFixed(2)+') contrast(1.15)';
-            if(ctx&&video){ctx.filter='brightness('+boost.toFixed(2)+') contrast(1.15)';ctx.translate(canvas.width,0);ctx.scale(-1,1);ctx.drawImage(video,0,0,canvas.width,canvas.height);ctx.setTransform(1,0,0,1,0,0);ctx.filter='none';}
-            if(guide)guide.style.boxShadow='0 0 0 4000px rgba(10,22,40,0.6)';
+            var boost=Math.min(1.25,80/Math.max(avgBrightness,20));
+            if(video)video.style.filter='brightness('+boost.toFixed(2)+') contrast(1.05)';
+            if(ctx&&video){ctx.filter='brightness('+boost.toFixed(2)+') contrast(1.05)';ctx.translate(canvas.width,0);ctx.scale(-1,1);ctx.drawImage(video,0,0,canvas.width,canvas.height);ctx.setTransform(1,0,0,1,0,0);ctx.filter='none';}
+            if(guide)guide.style.boxShadow='0 0 0 4000px rgba(10,22,40,0.5)';
             if(infoEl&&!stopScanning){infoEl.textContent='สภาวะแสงน้อย — กำลังปรับความสว่างอัตโนมัติ...';setStatusChip('warning','แสงน้อยเกินไป — ปรับความสว่างอัตโนมัติ');}
         } else {
             if(video)video.style.filter='';

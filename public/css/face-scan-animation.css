@@ -25,19 +25,7 @@
 
 /* ===== Animated Grid Overlay ===== */
 .grid-overlay {
-    position: absolute;
-    inset: 0;
-    background-image: 
-        linear-gradient(rgba(0, 255, 136, 0.1) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 255, 136, 0.1) 1px, transparent 1px);
-    background-size: 20px 20px;
-    animation: gridPulse 3s ease-in-out infinite;
-    z-index: 10;
-}
-
-@keyframes gridPulse {
-    0%, 100% { opacity: 0.3; }
-    50% { opacity: 0.6; }
+    display: none !important;
 }
 
 /* ===== Scanning Line Animation ===== */
