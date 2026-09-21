@@ -195,6 +195,14 @@ def main() -> int:
     accuracy = float((np.sum(same_a >= DEFAULT) + np.sum(diff_a < DEFAULT))
                      / (len(same_a) + len(diff_a)))
 
+    # exact sweep at candidate operating points
+    sweep = {}
+    for thr in [0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50]:
+        sweep[f"{thr:.2f}"] = {
+            "far": float(np.mean(diff_a >= thr)),
+            "frr": float(np.mean(same_a < thr)),
+        }
+
     def stats(a: np.ndarray) -> dict:
         return {"n": int(a.size), "mean": float(np.mean(a)), "std": float(np.std(a)),
                 "min": float(np.min(a)), "p5": float(np.quantile(a, 0.05)),
@@ -217,6 +225,7 @@ def main() -> int:
         "d_prime": dp,
         "tar_at_far": {"1e-1": tar1, "1e-2": tar2, "1e-3": tar3},
         "optimal_threshold": {"youden_j": best_j, "threshold": best_thr},
+        "threshold_sweep": sweep,
         "default_0.40_check": {
             "far": far_at_default,
             "frr": frr_at_default,
@@ -235,6 +244,9 @@ def main() -> int:
     print(f"AUC={auc:.6f}  d-prime={dp:.3f}")
     print(f"TAR@FAR 1e-1={tar1:.4f}  1e-2={tar2:.4f}  1e-3={tar3:.4f}")
     print(f"Youden-J optimal threshold={best_thr:.4f} (J={best_j:.4f})")
+    print("threshold sweep (exact):")
+    for thr, v in sweep.items():
+        print(f"  thr={thr}: FAR={v['far']:.5f}  FRR={v['frr']:.4f}")
     print(f"DEFAULT 0.40: FAR={far_at_default:.5f}  FRR={frr_at_default:.4f}  accuracy={accuracy:.4f}  "
           f"-> {report['default_0.40_check']['verdict']}")
     print(f"report -> {args.out}")

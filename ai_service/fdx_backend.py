@@ -14,14 +14,17 @@ re-extracted with fdx from an enrolled photo. The PCA 512->128 reducer is
 also fitted per-space; it must be re-fit on fdx embeddings before the
 128-d output means anything (until then it stays disabled).
 
-Calibration (CelebA, 5 identities, 5-point-landmark norm_crop 112×112 crops,
-identity-preserving probes: mirror / zoom / re-encode):
-same-person cosine 0.42-0.91, different-person -0.05-0.27, separation
-margin ≈ 0.15 (aligned crops compress the band vs plain-resize because
-norm_crop preserves more pose variation). Default threshold 0.40
-(env FDX_MATCH_THRESHOLD) balances FAR/FRR for kiosk selfie verification;
-tighten toward 0.55 in controlled lighting, loosen toward 0.30 for
-wide-pose webcam captures.
+Calibration (CelebA ground-truth identities — identity_CelebA.txt — 100
+identities × 12 images, 5-point-landmark norm_crop 112×112 crops, enrolled-
+vs-probe and impostor pairs, exact sweep in
+face_dx/reports/threshold_calibration.json):
+same-person cosine mean 0.52 (p5 0.23), different-person p95 0.12
+(max 0.27). AUC 0.9917, d-prime 4.16, TAR@FAR1e-2 = 0.961.
+Operating points: thr 0.20 → FAR 0.4% / FRR 4.3% (Youden-optimal);
+thr 0.30 → FAR 0.0% / FRR 8.1%; thr 0.40 → FAR 0.0% / FRR 19.7%.
+Default threshold 0.30 (env FDX_MATCH_THRESHOLD) — the FAR-0 point with
+usable usability; raise to 0.40+ only when capture conditions are fully
+controlled and false rejects are acceptable.
 
 Embedding-space parity: the engine runs the SAME weights as the server's
 insightface fallback (w600k_mbf.onnx). cos(fdx, onnx) = 1.0000 on the same
@@ -95,7 +98,7 @@ class FdxBackend:
         self._primary_thread = threading.get_ident()
         self.available = False
         self.last_error = "not initialized"
-        self.threshold = float(os.environ.get("FDX_MATCH_THRESHOLD", "0.40"))
+        self.threshold = float(os.environ.get("FDX_MATCH_THRESHOLD", "0.30"))
 
         fdx, err = _import_fdx()
         if fdx is None:

@@ -112,12 +112,12 @@ fdx_backend: Optional[FdxBackend] = None  # fdx D3D11 embedder (activity-check d
 depth_liveness: Optional[DepthLivenessAnalyzer] = None  # depth-stream signal (optional)
 
 LIVENESS_THRESHOLD = float(os.environ.get("LIVENESS_THRESHOLD", "0.58"))
-# insightface-fallback match threshold. Both embedders now share the w600k_mbf
-# space, so this and FDX_MATCH_THRESHOLD live on the same score scale. On the
-# mbf space the cosine bands are compressed vs r50-style scores: same-person
-# ≈ 0.40-0.85 (pose/lighting dependent), different-person ≈ 0.0-0.30.
-# 0.40 = FAR-tight default for kiosk selfie verification (tune via env).
-FACE_MATCH_THRESHOLD = float(os.environ.get("FACE_MATCH_THRESHOLD", "0.40"))
+# insightface-fallback match threshold. Both embedders share the w600k_mbf
+# space, so this and FDX_MATCH_THRESHOLD live on the same score scale.
+# Calibrated on 100 ground-truth CelebA identities (face_dx/
+# threshold_calibration.py): thr 0.30 → FAR 0.0% / FRR 8.1%; the old 0.40
+# rejected 20% of legitimate same-person attempts. Tune via env.
+FACE_MATCH_THRESHOLD = float(os.environ.get("FACE_MATCH_THRESHOLD", "0.30"))
 USE_YOLO = os.environ.get("USE_YOLO", "1") == "1"
 USE_LIVENESS = os.environ.get("USE_LIVENESS", "1") == "1"
 USE_FDX = os.environ.get("USE_FDX", "1") == "1"   # fdx = chosen activity-check decoder

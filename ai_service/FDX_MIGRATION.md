@@ -76,17 +76,33 @@ backend verify which space a stored vector came from.
 > embedder switches no longer require re-enrollment as long as both stay
 > on w600k_mbf weights + norm_crop alignment.
 
-## Threshold calibration (CelebA, 5 identities, norm_crop 112×112)
+## Threshold calibration (CelebA ground truth, 100 identities × 12 images)
 
-- same-person (identity-preserving transforms): cosine **0.42–0.91**
-- different-person: **−0.05–0.27**
-- separation margin ≈ 0.15 → default **0.40** balances FAR/FRR for kiosk
-  selfie verification; tighten toward 0.55 in controlled lighting,
-  loosen toward 0.30 for wide-pose webcam captures.
+Real identity labels (`identity_CelebA.txt`), production contract (norm_crop
+112×112 → fdx engine). Full report:
+`face_dx/reports/threshold_calibration.json`.
 
-(Aligned crops compress the band vs the old plain-resize calibration
-because norm_crop preserves more pose variation — same-face scores now
-range wider, so the old 0.60 default would reject legitimate users.)
+| metric | value |
+|---|---|
+| same-person cosine | mean **0.52**, p5 **0.23** (n=1089) |
+| different-person cosine | p95 **0.12**, max **0.27** (n=9702) |
+| AUC / d-prime | **0.9917** / **4.16** |
+| TAR @ FAR 1e-1 / 1e-2 / 1e-3 | 0.976 / 0.961 / 0.949 |
+
+Exact FAR/FRR sweep:
+
+| threshold | FAR | FRR |
+|---|---|---|
+| 0.20 | 0.39% | 4.3% |
+| **0.30 (default)** | **0.00%** | **8.1%** |
+| 0.40 | 0.00% | 19.7% |
+
+Default **0.30** is the zero-FAR point with acceptable false-reject rate.
+The earlier 0.40 default (and the pre-migration 0.60) rejected 1-in-5 and
+nearly all legitimate attempts respectively — aligned-crop scores sit much
+lower than plain-resize-era scores because norm_crop preserves real pose
+variation. Raise to 0.40 only for fully-controlled kiosk capture where
+false rejects are cheap.
 
 Calibration was done on aligned 112×112 CelebA crops (the same alignment
 the production pipeline uses); plain-resize ROI crops were the engine's
@@ -97,8 +113,8 @@ preprocessing-parity reference (cos 1.000000000 vs ground truth).
 | var | default | meaning |
 |---|---|---|
 | `USE_FDX` | `1` | set `0` to disable fdx entirely (insightface only) |
-| `FDX_MATCH_THRESHOLD` | `0.40` | fdx verify threshold (mbf space) |
-| `FACE_MATCH_THRESHOLD` | `0.40` | insightface-fallback threshold (same space now) |
+| `FDX_MATCH_THRESHOLD` | `0.30` | fdx verify threshold (mbf space, calibrated) |
+| `FACE_MATCH_THRESHOLD` | `0.30` | insightface-fallback threshold (same space now) |
 | `FDX_GPU_INDEX` | `-1` | `-1` auto GPU, `-2` force WARP (CPU), `≥0` adapter index |
 | `FDX_FP16` | `1` | fp16 weight storage + fp32 accumulation (production) |
 
