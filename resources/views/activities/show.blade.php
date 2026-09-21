@@ -70,23 +70,6 @@
             </div>
         </div>
 
-<style>
-.checkout-accordion summary::-webkit-details-marker,
-.multiday-checkout-details summary::-webkit-details-marker {
-    display: none;
-}
-.checkout-accordion[open] .checkout-chevron,
-.multiday-checkout-details[open] .multiday-checkout-chevron {
-    transform: rotate(180deg);
-}
-.checkout-accordion:hover {
-    border-color: #fdba74 !important;
-}
-.checkout-accordion summary:hover {
-    background: #fff2e5 !important;
-}
-</style>
-
         <div class="grid-2 mt-3" style="font-size:.875rem; background:#f8fafc; padding:12px; border-radius:10px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; border: 1px solid #f1f5f9;">
             <div>
                 <span class="text-muted" style="font-size: 0.8rem; display:flex; align-items:center; gap:5px;">
@@ -108,43 +91,6 @@
             </div>
         </div>
 
-        {{-- รายละเอียดเวลาออกจากงาน (ซ้อน/พับเก็บแบบ Accordion ในหน้าการ์ด) --}}
-        @if($activity->checkout_open_at)
-        <details class="checkout-accordion mt-2" style="background:#fffaf5; border:1px solid #fed7aa; border-radius:10px; overflow:hidden; transition:border-color 0.2s ease;">
-            <summary style="padding:10px 14px; font-size:0.82rem; font-weight:600; color:#c2410c; cursor:pointer; display:flex; align-items:center; justify-content:space-between; list-style:none; user-select:none; transition:background 0.2s ease;">
-                <span style="display:inline-flex; align-items:center; gap:0.45rem;">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                        <polyline points="16 17 21 12 16 7"></polyline>
-                        <line x1="21" y1="12" x2="9" y2="12"></line>
-                    </svg>
-                    รายละเอียดเวลาออกจากงาน (Check-out สแกนรับชั่วโมง)
-                </span>
-                <span class="checkout-chevron" style="display:inline-flex; align-items:center; transition:transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); color:#ea580c;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
-                </span>
-            </summary>
-            <div style="padding:10px 14px 12px; border-top:1px dashed #fdba74; background:#ffffff; font-size:0.82rem; color:#475569;">
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem;">
-                    <div>
-                        <span class="text-muted" style="font-size:0.75rem; display:block;">ช่วงเวลาเปิด-ปิดสแกนออกงาน:</span>
-                        <div class="font-semi" style="color:#9a3412; font-size:0.85rem; margin-top:2px;">
-                            {{ $activity->checkout_open_at->format('d/m/Y H:i') }} ถึง {{ $activity->checkout_close_at->format('d/m/Y H:i') }}
-                        </div>
-                    </div>
-                    @if($activity->min_hours_before_checkout > 0)
-                        <span style="background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; font-size:0.75rem; font-weight:600; padding:3px 10px; border-radius:6px; display:inline-flex; align-items:center; gap:4px;">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                            ต้องเข้าร่วมอย่างน้อย {{ (float)$activity->min_hours_before_checkout }} ชม.
-                        </span>
-                    @endif
-                </div>
-            </div>
-        </details>
-        @endif
-
         @if($activity->is_multiday && $activity->days && $activity->days->isNotEmpty())
             <div style="margin-top:1.25rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:1rem;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; border-bottom:1px solid #e2e8f0; padding-bottom:0.5rem; flex-wrap:wrap; gap:0.5rem;">
@@ -155,7 +101,7 @@
                             <line x1="8" y1="2" x2="8" y2="6"></line>
                             <line x1="3" y1="10" x2="21" y2="10"></line>
                         </svg>
-                        กำหนดการเช็คอิน-เช็คเอาต์ และชั่วโมงกิจกรรมรายวัน (Daily Schedule & Hours)
+                        กำหนดการเช็คอินและชั่วโมงกิจกรรมรายวัน (Daily Schedule & Hours)
                     </h4>
                     <span style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-size:0.75rem; font-weight:700; padding:0.2rem 0.55rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.3rem;">
                         รวม {{ (float)$activity->activity_hours }} ชม.
@@ -163,7 +109,7 @@
                 </div>
                 <div style="display:flex; flex-direction:column; gap:0.6rem;">
                     @foreach($activity->days as $day)
-                        <div style="background:#ffffff; border:1px solid #f1f5f9; border-radius:8px; padding:0.75rem; display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:0.6rem; align-items:center;">
+                        <div style="background:#ffffff; border:1px solid #f1f5f9; border-radius:8px; padding:0.75rem; display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:0.6rem; align-items:center;">
                             <div>
                                 <span style="background:#2563eb; color:#ffffff; font-size:0.7rem; font-weight:700; padding:0.15rem 0.45rem; border-radius:4px; display:inline-flex; align-items:center; gap:0.25rem;">
                                     วันที่ {{ $day->day_number }}
@@ -191,22 +137,6 @@
                                 <div style="font-size:0.78rem; color:#334155; margin-top:0.15rem;">
                                     {{ $day->checkin_open_at ? $day->checkin_open_at->format('H:i') : '-' }} - {{ $day->checkin_close_at ? $day->checkin_close_at->format('H:i') : '-' }} น.
                                 </div>
-                            </div>
-                            <div>
-                                <details class="multiday-checkout-details" style="cursor:pointer;">
-                                    <summary style="font-size:0.72rem; color:#c2410c; font-weight:600; display:inline-flex; align-items:center; gap:0.25rem; list-style:none; user-select:none;">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                                            <polyline points="16 17 21 12 16 7"></polyline>
-                                            <line x1="21" y1="12" x2="9" y2="12"></line>
-                                        </svg>
-                                        <span>เช็คเอาต์ (ออกงาน)</span>
-                                        <svg class="multiday-checkout-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s ease;"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                                    </summary>
-                                    <div style="font-size:0.78rem; color:#9a3412; font-weight:600; margin-top:0.2rem; background:#fff7ed; padding:3px 8px; border-radius:6px; border:1px solid #fed7aa; display:inline-block;">
-                                        {{ $day->checkout_open_at ? $day->checkout_open_at->format('H:i') : '-' }} - {{ $day->checkout_close_at ? $day->checkout_close_at->format('H:i') : '-' }} น.
-                                    </div>
-                                </details>
                             </div>
                             <div style="text-align:right;">
                                 <span style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; font-size:0.75rem; font-weight:700; padding:0.25rem 0.55rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.25rem;">

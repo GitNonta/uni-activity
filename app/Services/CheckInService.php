@@ -506,7 +506,7 @@ class CheckInService
                 if ($activity->checkout_open_at && $now < $activity->checkout_open_at) {
                     return [
                         'success' => false,
-                        'message' => 'ยังไม่ถึงเวลาออกงาน (เปิดให้ออกงานตั้งแต่ ' . $activity->checkout_open_at->format('H:i น.') . ')',
+                        'message' => 'ยังไม่ถึงช่วงเวลาที่เปิดให้บันทึกออกงาน กรุณารอประกาศจากผู้จัดกิจกรรม',
                     ];
                 }
 
