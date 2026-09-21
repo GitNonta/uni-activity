@@ -5,6 +5,26 @@ MobileFaceNet-512D w600k_mbf.fvp on the zero-dependency D3D11 engine),
 selected after testing. Verified: `test_fdx_backend.py` →
 `reports/fdx_backend_test.json` (7/7).
 
+## Native face stack (v2.4) — the `insightface` package is gone
+
+Since v2.4 the server does **not** import the `insightface` pip package at
+all. `ai_service/native_face.py` runs the same onnx models through raw
+onnxruntime sessions:
+
+| stage | before (≤ v2.3) | now (v2.4) |
+|---|---|---|
+| detection + 5-point landmarks | `insightface.app.FaceAnalysis` (SCRFD det_10g) | `NativeSCRFD` (det_10g.onnx, same decode/NMS/letterbox math) |
+| norm_crop alignment | `insightface.utils.face_align` | `native_face.norm_crop` (same arcface_dst template + SimilarityTransform) |
+| fallback embedding | ArcFaceONNX via `model_zoo.get_model` | `NativeArcFace` (w600k_mbf.onnx, same 127.5 preprocessing) |
+
+Parity was proven on real CelebA images before the switch
+(`face_dx/_native_parity_check.py` → `face_dx/reports/native_parity_check.json`):
+**bbox IoU 1.0, kps max delta 0.0 px, norm_crop diff 0, embedding cos 1.0** —
+numerically identical to the package it replaces. Models are unchanged;
+only the runtime packaging is. `requirements.txt` no longer lists
+`insightface` (the model files themselves are still resolved from the same
+locations, including `INSIGHTFACE_MODELS_DIR`).
+
 ## Embedding-space parity (v2.3)
 
 Both embedders now run the SAME network (w600k_mbf / MobileFaceNet):
@@ -12,15 +32,14 @@ Both embedders now run the SAME network (w600k_mbf / MobileFaceNet):
 | embedder | weights | measured cos vs fdx (aligned crop) |
 |---|---|---|
 | fdx D3D11 engine | w600k_mbf.fvp (fp16) | — |
-| insightface fallback | w600k_mbf.onnx (pinned via model_zoo.get_model) | **0.99998** |
+| native ArcFace fallback (v2.4) | w600k_mbf.onnx (pinned path) | **0.99998** / 1.0000 |
 
 `face_dx/alignment_probe.py` proves this: on the same norm_crop 112×112
-crop, fdx and ONNX-mbf agree to fp16 precision, while the previous
+crop, fdx and ONNX-mbf agree to fp16 precision, while the earlier
 FaceAnalysis default (w600k_r50, ResNet50 — picked first-match-wins from a
-sorted glob) scored cos ≈ −0.02 against fdx. If you ever see
-`server_vs_engine` cosines near zero again, check which recognition onnx
-the server actually loaded (`/health` → `fdx` + startup log line
-`InsightFace loaded ✓ (recognition=..., model=w600k_mbf.onnx)`).
+sorted glob before v2.3) scored cos ≈ −0.02 against fdx. That hazard is
+structurally gone since v2.4: there is no pack globbing anymore — both
+onnx files are loaded from explicit pinned paths.
 
 The recognition onnx is resolved from (first hit wins):
 1. `INSIGHTFACE_MODELS_DIR` env var
@@ -47,8 +66,8 @@ enroll/verify stay consistent either way.
 | area | behavior |
 |---|---|
 | `/extract` | returns the **fdx** 512-d vector as `embedding_512d` with `embedding_space: "fdx-w600k-mbf"`; the insightface vector is still included as `embedding_insightface_512d` during the migration window; `embedding_128d` is `null` in fdx mode (PCA must be re-fit on fdx vectors first). Accepts up to 5 profile photos (`image` + repeated `images` multipart field) and returns one L2-normalized **centroid** — see "Ensemble enrollment" below |
-| `/verify` | compares the stored vector against the **fdx** embedding; threshold from `FDX_MATCH_THRESHOLD` (default **0.30**); falls back to insightface comparison only if the engine fails mid-request |
-| fallback | engine unavailable at startup (no DLL / no GPU / bad model) → server logs a warning and **both endpoints silently use insightface ArcFace** (fail-open); `/health` shows `embedder` + `fdx.reason` |
+| `/verify` | compares the stored vector against the **fdx** embedding; threshold from `FDX_MATCH_THRESHOLD` (default **0.30**); falls back to native ArcFace comparison only if the engine fails mid-request |
+| fallback | engine unavailable at startup (no DLL / no GPU / bad model) → server logs a warning and **both endpoints silently use native ArcFace** (fail-open, `embedder: "native-arcface"`); `/health` shows `embedder` + `fdx.reason` |
 | `/health` | new fields: `models.fdx`, `embedder`, `fdx` (adapter info, threshold) |
 
 ## ⚠ Re-enrollment is mandatory (embedding spaces are incompatible)
@@ -153,9 +172,9 @@ preprocessing-parity reference (cos 1.000000000 vs ground truth).
 
 | var | default | meaning |
 |---|---|---|
-| `USE_FDX` | `1` | set `0` to disable fdx entirely (insightface only) |
+| `USE_FDX` | `1` | set `0` to disable fdx entirely (native ArcFace only) |
 | `FDX_MATCH_THRESHOLD` | `0.30` | fdx verify threshold (mbf space, calibrated) |
-| `FACE_MATCH_THRESHOLD` | `0.30` | insightface-fallback threshold (same space now) |
+| `FACE_MATCH_THRESHOLD` | `0.30` | native-fallback threshold (same w600k_mbf space) |
 | `FDX_GPU_INDEX` | `-1` | `-1` auto GPU, `-2` force WARP (CPU), `≥0` adapter index |
 | `FDX_FP16` | `1` | fp16 weight storage + fp32 accumulation (production) |
 
@@ -166,6 +185,7 @@ preprocessing-parity reference (cos 1.000000000 vs ground truth).
 - One engine per process, thread-marshalled inside `fdx_backend` —
   FastAPI's threadpool is safe but serializes fdx work (~35–50 ms/img).
   Scale by process, not thread.
-- GPU device loss mid-request → that request falls back to insightface;
+- GPU device loss mid-request → that request falls back to the native
+  ArcFace (same w600k_mbf space, embeddings stay comparable);
   call `POST /health` polling + `fdx_backend.reinit()` from a maintenance
   endpoint if you want automatic recovery.

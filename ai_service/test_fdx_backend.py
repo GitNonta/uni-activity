@@ -202,7 +202,7 @@ def main() -> int:
         code, v0 = http(PORT_NOFDX, "POST", "/verify", data=data, headers={"Content-Type": ct})
         check("failopen_without_fdx",
               code == 200 and v0.get("face_match") is True
-              and v0.get("embedder") == "insightface-arcface",
+              and v0.get("embedder") == "native-arcface",
               {"embedder": v0.get("embedder"), "sim": v0.get("similarity")})
     finally:
         proc0.terminate()

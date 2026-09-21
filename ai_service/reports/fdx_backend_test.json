@@ -37,7 +37,7 @@
     "failopen_without_fdx": {
       "pass": true,
       "detail": {
-        "embedder": "insightface-arcface",
+        "embedder": "native-arcface",
         "sim": 1.0
       }
     }

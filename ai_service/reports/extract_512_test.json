@@ -15,11 +15,11 @@
     },
     "formats": {
       "pass": true,
-      "detail": "jpeg vs png cosine = 0.997953 (>= 0.995; lossy-compression noise must stay far below the same/diff margin), both extracted"
+      "detail": "jpeg vs png cosine = 0.997955 (>= 0.995; lossy-compression noise must stay far below the same/diff margin), both extracted"
     },
     "separation": {
       "pass": true,
-      "detail": "same-person cosine=0.9786 (>=0.75), different-person=0.0171 (<=0.35), margin=0.9616 (>=0.45)"
+      "detail": "same-person cosine=0.9787 (>=0.75), different-person=0.0170 (<=0.35), margin=0.9616 (>=0.45)"
     },
     "no_face_path": {
       "pass": true,

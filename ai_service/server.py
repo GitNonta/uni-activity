@@ -1,17 +1,25 @@
 """
-Uni-Activity AI Server v2.3
+Uni-Activity AI Server v2.4
 ============================
-Multi-Pipeline Face Verification:
-  YOLOv8-face       → Fast face pre-detection
-  SCRFD             → InsightFace precise detection + alignment
+Multi-Pipeline Face Verification (insightface-package-free):
+  YOLOv8-face       → Fast face pre-detection (optional)
+  NativeSCRFD       → Native ONNX face detection + 5-point landmarks (det_10g)
   fdx (w600k_mbf)   → 512D MobileFaceNet D3D11 embedding (primary)
-  ArcFace 512D      → InsightFace fallback embedding (SAME w600k_mbf weights →
-                      identical embedding space; see alignment contract below)
+  NativeArcFace     → Native ONNX fallback embedding (w600k_mbf.onnx → identical
+                      embedding space; see alignment contract below)
   Liveness          → Passive liveness detection (texture/FFT/EAR/color)
 
-Embedding-space contract (v2.3)
--------------------------------
-All 512-d embeddings — fdx AND the insightface fallback — come from the same
+The `insightface` pip package is no longer used at runtime. Detection,
+5-point landmarks, norm_crop alignment and the ArcFace fallback are served by
+ai_service/native_face.py — a direct onnxruntime implementation transcribed
+from insightface 1.0.1 source and proven numerically identical on real images
+(bbox IoU 1.0, kps delta 0.0 px, warp diff 0, embedding cos 1.0; see
+face_dx/_native_parity_check.py + face_dx/reports/native_parity_check.json).
+The models (det_10g.onnx, w600k_mbf.onnx) are unchanged.
+
+Embedding-space contract (v2.3, unchanged)
+------------------------------------------
+All 512-d embeddings — fdx AND the native ArcFace fallback — come from the same
 network (w600k_mbf / MobileFaceNet) fed 5-point-landmark norm_crop 112×112
 crops. Measured parity: cos(fdx, onnx-mbf) = 1.0000 on the same aligned crop
 (face_dx/alignment_probe.py). Enrollment and verification are therefore
@@ -86,9 +94,8 @@ from fastapi.security.api_key import APIKeyHeader
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-# ── InsightFace ───────────────────────────────────────────────────────────────
-from insightface.app import FaceAnalysis
-from insightface.utils import face_align
+# ── Native face stack (no insightface package) ───────────────────────────────
+from native_face import NativeSCRFD, NativeArcFace, norm_crop
 import onnxruntime as ort
 from sklearn.decomposition import PCA
 import pickle
@@ -101,7 +108,8 @@ from depth_liveness import DepthLivenessAnalyzer, DepthLivenessResult
 # ─────────────────────────────────────────────────────────────────────────────
 # Global models (loaded once at startup)
 # ─────────────────────────────────────────────────────────────────────────────
-face_app: Optional[FaceAnalysis] = None
+face_app: Optional[NativeSCRFD] = None          # native SCRFD detector
+arcface_fallback: Optional[NativeArcFace] = None  # native ArcFace fallback embedder
 liveness_detector: Optional[LivenessDetector] = None
 yolo_model = None        # ultralytics YOLO (optional, lazy-loaded)
 # pca_reducer: 128D path is DISABLED in fdx mode. It requires re-fitting on a
@@ -154,28 +162,22 @@ YOLO_MODEL_PATH = os.environ.get("YOLO_MODEL_PATH", _DEFAULT_YOLO)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Load all models at startup, release at shutdown"""
-    global face_app, liveness_detector, yolo_model, depth_liveness, fdx_backend
+    global face_app, arcface_fallback, liveness_detector, yolo_model, depth_liveness, fdx_backend
 
     logger.info("=" * 60)
     logger.info("Starting Uni-Activity AI Server v2.0 (Secured with API Key & Restricted CORS)")
     logger.info("=" * 60)
 
-    # ── 1. InsightFace (SCRFD + ArcFace w600k_mbf) ───────────────────
-    # IMPORTANT (embedding-space contract): the recognition model MUST be
-    # w600k_mbf (MobileFaceNet) — the SAME network the fdx engine runs.
-    # FaceAnalysis(name="buffalo_l") is NOT safe here: the model dir may
-    # contain several recognition onnx files (e.g. w600k_r50 from buffalo_l)
-    # and insightface keeps the FIRST file routed as "recognition" (sorted
-    # glob, first match wins) — that silently loads ResNet50 embeddings,
-    # which share NO basis with fdx/MobileFaceNet embeddings (measured
-    # cos(fdx, r50) ≈ -0.02; see face_dx/alignment_probe.py).
-    #
-    # Fix: load the default pack for detection, then REPLACE the recognition
-    # model with one instantiated directly from the pinned w600k_mbf.onnx
-    # via model_zoo.get_model(). Version-robust: FaceAnalysis hard-asserts
-    # 'detection' in models (recognition-only instances are impossible) and
-    # does not honor a model_file override for its glob.
-    logger.info("Loading InsightFace (SCRFD det_10g + ArcFace w600k_mbf)...")
+    # ── 1. Native face stack (SCRFD det_10g + ArcFace w600k_mbf) ─────
+    # The insightface pip package is gone from the runtime; native_face.py
+    # runs the same onnx models through raw onnxruntime sessions and was
+    # proven numerically identical to the package (face_dx/_native_parity_check.py:
+    # bbox IoU 1.0, kps delta 0.0 px, norm_crop diff 0, embedding cos 1.0).
+    # The embedding-space contract is unchanged: recognition MUST be
+    # w600k_mbf (MobileFaceNet) — the SAME network the fdx engine runs —
+    # loaded from an explicit, pinned path. No pack globbing is involved
+    # anymore, so the old first-match-wins w600k_r50 hazard cannot recur.
+    logger.info("Loading native face stack (SCRFD det_10g + ArcFace w600k_mbf)...")
     available = ort.get_available_providers()
     logger.info(f"ONNX providers available: {available}")
 
@@ -210,11 +212,17 @@ async def lifespan(app: FastAPI):
 
     det_file = _resolve_onnx("det_10g.onnx")
     rec_file = _resolve_onnx("w600k_mbf.onnx")
-    logger.info(f"detector onnx: {det_file or 'FaceAnalysis default (buffalo_l)'}")
+    logger.info(f"detector onnx: {det_file or 'NOT FOUND — required'}")
     logger.info(f"recognition onnx: {rec_file or 'NOT FOUND — required for fdx parity'}")
 
-    # The recognition model is the embedding-space contract; without it the
-    # server would silently run a different network than fdx. Fail fast.
+    # Both models are the embedding-space contract; without either the server
+    # would silently run a different network than fdx. Fail fast.
+    if det_file is None:
+        raise RuntimeError(
+            "det_10g.onnx not found (searched INSIGHTFACE_MODELS_DIR, "
+            "~/.insightface/models/buffalo_l, ai_service/models). The native "
+            "SCRFD detector cannot start without it."
+        )
     if rec_file is None:
         raise RuntimeError(
             "w600k_mbf.onnx not found (searched INSIGHTFACE_MODELS_DIR, "
@@ -223,29 +231,13 @@ async def lifespan(app: FastAPI):
             "a mismatched recognition model."
         )
 
-    face_app = FaceAnalysis(
-        name="buffalo_l",
-        allowed_modules=["detection"],
-        providers=providers,
-    )
+    face_app = NativeSCRFD(det_file, providers=providers)
 
-    # Replace recognition with the pinned w600k_mbf.onnx (embedding-space
-    # contract with the fdx engine — see the comment block above).
-    from insightface.model_zoo.model_zoo import get_model as _if_get_model
-    pinned_rec = _if_get_model(rec_file, providers=providers)
-    if pinned_rec is None or getattr(pinned_rec, "taskname", "recognition") != "recognition":
-        raise RuntimeError(
-            f"Failed to load pinned recognition model from {rec_file} — "
-            "the file is missing, corrupt, or not an ArcFace recognition onnx."
-        )
-    pinned_rec.prepare(ctx_id)
-    face_app.models["recognition"] = pinned_rec
-
-    face_app.prepare(ctx_id=ctx_id, det_size=(640, 640), det_thresh=0.5)
-    loaded_rec = face_app.models.get("recognition")
-    rec_model_file = getattr(loaded_rec, "model_file", rec_file)
-    logger.info(f"InsightFace loaded ✓ (recognition={type(loaded_rec).__name__}, "
-                f"model={os.path.basename(str(rec_model_file))})")
+    # Fallback embedder runs the SAME w600k_mbf weights via native ONNX
+    # (embedding-space contract with the fdx engine — see comment above).
+    arcface_fallback = NativeArcFace(rec_file, providers=providers)
+    logger.info(f"Native face stack loaded ✓ (SCRFD={os.path.basename(det_file)}, "
+                f"ArcFace={os.path.basename(rec_file)})")
 
     # ── 2. Liveness Detector ──────────────────────────────────────────
     if USE_LIVENESS:
@@ -298,7 +290,7 @@ async def lifespan(app: FastAPI):
             logger.info(f"fdx engine ready ✓ (adapter={adapter.get('name')})")
         else:
             logger.warning(f"fdx engine unavailable ({fdx_backend.last_error}) "
-                           "— /extract & /verify fall back to insightface ArcFace")
+                           "— /extract & /verify fall back to native ArcFace")
     else:
         logger.info("fdx DISABLED (USE_FDX=0)")
 
@@ -318,7 +310,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Uni-Activity AI Server",
-    version="2.3.0",
+    version="2.4.0",
     description="Face Verification: YOLOv8 + SCRFD + fdx-w600k-mbf 512D + Passive Liveness",
     lifespan=lifespan,
 )
@@ -386,16 +378,30 @@ def yolo_detect_face(img: np.ndarray) -> Optional[np.ndarray]:
 
 def insightface_detect(img: np.ndarray):
     """
-    ใช้ InsightFace (SCRFD + ArcFace) ตรวจจับและสร้าง embedding
-    Returns: (face_object, normed_embedding) หรือ raise Exception
+    ตรวจจับใบหน้า (native SCRFD) และสร้าง fallback embedding (native ArcFace)
+    Returns: (face_object, normed_embedding) หรือ (None, None)
+
+    Name kept for call-site stability — this is the NATIVE stack now, the
+    insightface package is not involved: detection + 5-point kps come from
+    NativeSCRFD (det_10g.onnx) and the embedding from NativeArcFace
+    (w600k_mbf.onnx, same weights the fdx engine runs → same space).
     """
-    faces = face_app.get(img)
+    faces = (face_app.detect(img, input_size=(640, 640), det_thresh=0.5)
+             if face_app is not None else [])
     if len(faces) == 0:
         return None, None
 
     # เลือกใบหน้าที่ใหญ่สุด (det_score สูงสุด)
     face = max(faces, key=lambda f: f.det_score)
-    embedding = face.normed_embedding  # shape (512,) normalized
+
+    embedding: Optional[np.ndarray] = None
+    if arcface_fallback is not None and face.kps is not None:
+        try:
+            crop = norm_crop(img, face.kps, image_size=arcface_fallback.input_size[0])
+            embedding = arcface_fallback.normed_embedding(crop)
+        except Exception as e:
+            logger.warning(f"native ArcFace embed failed: {e}")
+            embedding = None
     return face, embedding
 
 
@@ -495,7 +501,7 @@ def prepare_fdx_crop(img: np.ndarray, face) -> Optional[np.ndarray]:
     try:
         if (face is not None and getattr(face, "kps", None) is not None
                 and len(face.kps) == 5):
-            aligned = face_align.norm_crop(img, landmark=face.kps, image_size=112)
+            aligned = norm_crop(img, landmark=face.kps, image_size=112)
             if aligned is not None and aligned.shape == (112, 112, 3):
                 return aligned
     except Exception as e:
@@ -507,7 +513,7 @@ def get_detector_pipeline() -> str:
     parts = []
     if yolo_model is not None:
         parts.append("yolov8n-face")
-    parts.append("scrfd+arcface")
+    parts.append("native-scrfd+native-arcface")
     if liveness_detector is not None:
         parts.append("liveness")
     return "+".join(parts)
@@ -555,17 +561,19 @@ async def health():
     return {
         "status": "ok",
         "node": NODE_NAME,
-        "version": "2.3.0",
+        "version": "2.4.0",
         "auth_required": bool(AI_SERVER_KEY),
         "models": {
-            "insightface": face_app is not None,
+            "insightface": face_app is not None,  # legacy alias = native detector ready
+            "native_scrfd": face_app is not None,
+            "native_arcface_fallback": arcface_fallback is not None,
             "yolov8": yolo_model is not None,
             "liveness": liveness_detector is not None,
             "depth_liveness": depth_liveness is not None,
             "fdx": fdx_backend.available if fdx_backend else False,
         },
         "embedder": ("fdx-d3d11" if fdx_backend is not None and fdx_backend.available
-                     else "insightface-arcface"),
+                     else "native-arcface"),
         "fdx": fdx_backend.describe() if fdx_backend else None,
         "pipeline": get_detector_pipeline(),
         "thresholds": {
@@ -590,9 +598,9 @@ async def warmup():
         # 480×640 BGR noise — realistic size, non-zero pixels
         warm_img = rng.randint(50, 200, (480, 640, 3), dtype=np.uint8)
 
-        # Run InsightFace detect (will find no face in noise, but warms ONNX runtime)
+        # Run native SCRFD detect (will find no face in noise, but warms ONNX runtime)
         if face_app is not None:
-            _ = face_app.get(warm_img)
+            _ = face_app.detect(warm_img, input_size=(640, 640), det_thresh=0.5)
 
         # Run YOLOv8 detect (optional)
         if yolo_model is not None:
@@ -648,12 +656,12 @@ async def extract_face(  # noqa: B008
             last_error = f"image {idx}: {e}"
             continue
 
-        faces_in_img = face_app.get(img)
+        faces_in_img = face_app.detect(img, input_size=(640, 640), det_thresh=0.5)
         if len(faces_in_img) == 0:
             # Fallback to YOLO pre-filter if SCRFD det_thresh didn't trigger on full image
             roi = yolo_detect_face(img)
             if roi is not None and roi is not img:
-                roi_faces = face_app.get(roi)
+                roi_faces = face_app.detect(roi, input_size=(640, 640), det_thresh=0.5)
                 if roi_faces:
                     faces_in_img = roi_faces
                     img = roi  # Work consistently in roi coordinate frame
@@ -665,7 +673,16 @@ async def extract_face(  # noqa: B008
             continue
 
         face = max(faces_in_img, key=lambda f: f.det_score)
-        embedding_512d = face.normed_embedding
+
+        # Native fallback embedding (w600k_mbf via ONNX — the SAME weights
+        # the fdx engine runs, so both paths share one embedding space).
+        embedding_512d: Optional[np.ndarray] = None
+        if arcface_fallback is not None and face.kps is not None:
+            try:
+                embedding_512d = arcface_fallback.normed_embedding(
+                    norm_crop(img, face.kps, image_size=arcface_fallback.input_size[0]))
+            except Exception as e:
+                logger.warning(f"[extract] native ArcFace embed failed: {e}")
 
         # ── fdx 512-d (chosen activity-check decoder) ──────────────────
         # fdx_embed_crop_async() offloads the ~35-50ms D3D11 GPU inference
@@ -675,7 +692,7 @@ async def extract_face(  # noqa: B008
         # → embedding would not match the fdx space → the request falls
         # back to insightface (which uses the same w600k_mbf weights, so
         # enroll/verify stay consistent).
-        embedder = "insightface-arcface"
+        embedder = "native-arcface"
         fdx_512d: Optional[np.ndarray] = None
         if fdx_backend is not None and fdx_backend.available:
             crop = prepare_fdx_crop(img, face) if face is not None else None
@@ -686,10 +703,13 @@ async def extract_face(  # noqa: B008
             else:
                 reason = ("no 5-point landmarks (unaligned crop rejected)"
                           if crop is None else fdx_backend.last_error)
-                logger.warning(f"[extract] fdx unavailable ({reason}) — falling back to insightface")
+                logger.warning(f"[extract] fdx unavailable ({reason}) — falling back to native arcface")
 
         # Collect the primary-space vector (fdx when available); keep the
-        # insightface vector of the FIRST image for the migration window.
+        # native fallback vector of the FIRST image for the migration window.
+        if embedding_512d is None and fdx_512d is None:
+            last_error = f"image {idx}: face detected but embedding failed"
+            continue
         vectors.append(fdx_512d if fdx_512d is not None else embedding_512d)
         if idx == 0:
             first_img = img
@@ -734,7 +754,7 @@ async def extract_face(  # noqa: B008
                     if first_fdx_512d is not None
                     else f"Face embeddings extracted successfully (512D + 128D, centroid of {len(vectors)} images)"),
         "embedding_512d": primary_512d.tolist(),
-        "embedding_space": "fdx-w600k-mbf" if first_fdx_512d is not None else "insightface-arcface",
+        "embedding_space": "fdx-w600k-mbf" if first_fdx_512d is not None else "native-w600k-mbf",
         "embedding_128d": embedding_128d.tolist() if embedding_128d is not None else None,
         "embedding_dims": {
             "full": len(primary_512d),
@@ -839,14 +859,14 @@ async def verify_face(
             "detector_used": get_detector_pipeline(),
         }
 
-    # ── Cosine similarity (fdx preferred, insightface fallback) ─────────
+    # ── Cosine similarity (fdx preferred, native fallback) ─────────────
     # fdx_embed_crop_async() offloads the D3D11 GPU inference to the thread
     # pool (non-blocking). prepare_fdx_crop() returns the canonical norm_crop
     # 112×112 aligned face — or None when landmarks are missing; an unaligned
     # crop is never fed to the engine (would land outside the fdx space).
     # The insightface fallback now runs the SAME w600k_mbf weights, so both
     # paths produce comparable embeddings.
-    embedder = "insightface-arcface"
+    embedder = "native-arcface"
     threshold = FACE_MATCH_THRESHOLD
     fdx_emb: Optional[np.ndarray] = None
     if fdx_backend is not None and fdx_backend.available:
@@ -859,7 +879,7 @@ async def verify_face(
         else:
             reason = ("no 5-point landmarks (unaligned crop rejected)"
                       if crop is None else fdx_backend.last_error)
-            logger.warning(f"[verify] fdx unavailable ({reason}) — using insightface")
+            logger.warning(f"[verify] fdx unavailable ({reason}) — using native arcface")
     if fdx_emb is not None:
         similarity = float(np.dot(stored_emb, fdx_emb))
     else:
