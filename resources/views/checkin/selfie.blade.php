@@ -519,23 +519,13 @@ function playErrorSound() {
    call sites were dead branches around the legacy scan loop. */
 
 var detectionInterval=null,isScanningActive=true;
-function initFaceLandmarksCanvas() {/* retired: landmarks drawing disabled for clean biometric UI */}
-async function detectAndDrawFace() {
-    if(!isScanningActive||!isFaceApiLoaded||!window.faceapi) return;
-    var video=document.getElementById('cameraPreview');
-    if(!video||video.videoWidth===0) return;
-    try {
-        /* Lightweight face detection without heavy landmarks (saves mobile CPU & battery) */
-        var det=await faceapi.detectSingleFace(video,new faceapi.TinyFaceDetectorOptions({inputSize:160,scoreThreshold:0.4}));
-        _faceDetCache.result=det||null;
-        _faceDetCache.ts=Date.now();
-    } catch(e){}
-}
-function updateRealFaceDetectionPoints(landmarks) {/* retired: no landmark dots */}
-function updateGuideFramePosition(box) {/* retired: face guide stays strictly locked to center */}
-function resetGuideToCenter() {/* guide is permanently centered at 50%, 50% */}
-function startRealtimeDetection(){if(detectionInterval)clearInterval(detectionInterval);detectionInterval=setInterval(function(){if(isScanningActive&&isFaceApiLoaded)detectAndDrawFace();},350);}
-function stopRealtimeDetection(){if(detectionInterval){clearInterval(detectionInterval);detectionInterval=null;}}
+function initFaceLandmarksCanvas() {}
+async function detectAndDrawFace() {}
+function updateRealFaceDetectionPoints(landmarks) {}
+function updateGuideFramePosition(box) {}
+function resetGuideToCenter() {}
+function startRealtimeDetection() {}
+function stopRealtimeDetection() {}
 
 /**
  * FaceGate — lightweight TinyFaceDetector pre-flight before Python /verify.
@@ -621,7 +611,7 @@ var FACE_GATE_BACKOFF_AFTER=5; /* consecutive no-face frames → interval increa
    result is fresh (< FACE_CACHE_MS). This halves inference work when both
    timers happen to fire within the same animation frame. */
 var _faceDetCache={result:null,ts:0,CACHE_MS:200};
-var SCAN_UI_BUILD='b5';/* marker sent with every verify — lets the server expose stale cached pages */
+var SCAN_UI_BUILD='b6';/* marker sent with every verify — lets the server expose stale cached pages */
 
 document.addEventListener('DOMContentLoaded', async function(){
     @if(session('error'))
@@ -729,25 +719,23 @@ async function scanFrame() {
     } catch(error){console.error('Scan error:',error);}
     finally {
         isVerifying=false;
-        // เมื่อโดนหน่วง (429) ให้รอจนหมดอายุจริง+เผื่อ 0.5s — เดิม retry ทุก 5s
-        // ไปเสีย quota และทำให้เหมือน freeze
         var throttled=Date.now()<pythonThrottledUntil;
-        var nextInterval=throttled?Math.max(1000,pythonThrottledUntil-Date.now()+500):1000;
+        var nextInterval=throttled?Math.max(400,pythonThrottledUntil-Date.now()+100):350;
         if(!stopScanning)scanTimeout=setTimeout(scanFrame,nextInterval);
     }
 }
 async function processScanResult(result) {
-    var scoreStr=result.source+': '+result.score.toFixed(1)+'% ('+result.processingTime+'ms)';
-    var scoreColor=result.passed?'#34d399':'#fcd34d';
-    setScore(scoreStr,scoreColor);
-    if(result.passed&&result.confidence>0.7){
-        stopScanning=true;isScanningActive=false;clearTimeout(scanTimeout);
-        var guide=document.getElementById('faceGuide');if(guide)guide.classList.replace('scanning-ring','success-ring');
-        setStatusChip('success','ยืนยันตัวตนสำเร็จ!');
-        playSuccessSound();capturePhoto(true);
-    }
+    if(!result.passed) return;
+    stopScanning=true;isScanningActive=false;
+    if(scanTimeout){clearTimeout(scanTimeout);scanTimeout=null;}
+    var guide=document.getElementById('faceGuide');
+    if(guide)guide.classList.replace('scanning-ring','success-ring');
+    setStatusChip('success','ยืนยันตัวตนสำเร็จ!');
+    playSuccessSound();
+    capturePhoto(true);
 }
 async function legacyScanFrame(video) {
+    if(stopScanning) return;
     var MAX_DIM=720,tw=video.videoWidth,th=video.videoHeight;
     if(tw>th){if(tw>MAX_DIM){th=Math.round(th*(MAX_DIM/tw));tw=MAX_DIM;}}else{if(th>MAX_DIM){tw=Math.round(tw*(MAX_DIM/th));th=MAX_DIM;}}
     var canvas=document.createElement('canvas');canvas.width=tw;canvas.height=th;
@@ -757,54 +745,8 @@ async function legacyScanFrame(video) {
     ctx.translate(canvas.width,0);ctx.scale(-1,1);ctx.drawImage(video,0,0,canvas.width,canvas.height);ctx.setTransform(1,0,0,1,0,0);
     handleLowLightDetection(ctx,canvas);
 
-    /* ── FaceGate: pre-flight check before sending to Python AI ─────────────
-       Runs TinyFaceDetector on the captured frame. When no face (or face too
-       small) is detected the Python /verify call is skipped entirely — no API
-       request is made, rate-limit quota is preserved, and the guide snaps back
-       to centre with an amber "วางใบหน้าในกรอบ" chip.
-       Fail-open: if face-api is not loaded, gate.detected === true and the
-       scan proceeds unconditionally (same as before the gate). */
-    var gate=await checkFacePresence(canvas);
-    if(!gate.detected||gate.quality<FACE_GATE_MIN_QUALITY){
-        noFaceFrames++;
-        updateAccuracy(null);
-        resetGuideToCenter();
-        var fg=document.getElementById('faceGuide');
-        if(fg){
-            fg.classList.remove('scanning-ring','success-ring','error-ring');
-            if(!fg.classList.contains('warning-ring'))fg.classList.add('warning-ring');
-        }
-        if(noFaceFrames<=2){
-            setStatusChip('warning','วางใบหน้าให้อยู่ในกรอบ...');
-        } else if(noFaceFrames===FACE_GATE_TOAST_AFTER){
-            setStatusChip('warning','ไม่พบใบหน้า — กรุณามองตรงมายังกล้อง');
-            showToast('ไม่พบใบหน้า — กรุณาวางใบหน้าให้อยู่ในกรอบและมองตรงมายังกล้อง','warning');
-        } else if(noFaceFrames>FACE_GATE_BACKOFF_AFTER){
-            /* Battery-saving backoff: scan interval grows (capped at 2.5s) */
-            var backoffMs=Math.min(2500,noFaceFrames*300);
-            pythonThrottledUntil=Math.max(pythonThrottledUntil,Date.now()+backoffMs);
-            setStatusChip('warning','ไม่พบใบหน้า — กรุณาเข้าใกล้กล้องและมองตรง');
-        }
-        return; /* ← skip Python /verify entirely */
-    }
-
-    /* Face detected — reset gate state and restore scanning ring */
-    if(noFaceFrames>0){
-        noFaceFrames=0;
-        var fg=document.getElementById('faceGuide');
-        if(fg){fg.classList.remove('warning-ring');if(!fg.classList.contains('scanning-ring'))fg.classList.add('scanning-ring');}
-    }
-
-    /* Distance & framing guidance: quality = faceBoxArea / frameArea */
-    if(gate.quality > 0.55){
-        setStatusChip('warning','ถอยห่างจากกล้องเล็กน้อย...');
-    } else if(gate.quality < 0.08){
-        setStatusChip('warning','ขยับเข้ามาใกล้กล้องอีกนิด...');
-    } else {
-        setStatusChip('scanning','กำลังสแกนใบหน้า...');
-    }
-
-    var base64Image=canvas.toDataURL('image/jpeg',0.82);
+    var base64Image=canvas.toDataURL('image/jpeg',0.80);
+    if(stopScanning) return;
     if(isJsModeActive&&isFaceApiLoaded&&profileDescriptor&&profileDescriptor.embedding_128d){await performJsVerification(canvas);}
     else{await performPythonVerification(base64Image);}
 }
@@ -872,22 +814,21 @@ async function performPythonVerification(base64Image) {
         if(!res.ok){beacon('http_error',{msg:'HTTP '+res.status});throw new Error('HTTP '+res.status);}
         beacon('response',{score:result.score_percentage||0,note:(result.success===false)?(result.status||'fail'):'ok'});
         if(result.success===false){
-            // ตอบกลับทุกกรณีแบบชัดเจน — เดิมโค้ดเงียบทำให้ UI ค้างที่คะแนนเก่า
-            // (no_face / No profile descriptor หลังอัปโหลดรูปใหม่ / ฯลฯ)
             if(result.status==='no_face'){
                 setScore('—','#fca5a5');
-                setStatusChip('warning','ไม่พบใบหน้า — กรุณามองตรงมายังกล้อง');
+                setStatusChip('warning','วางใบหน้าให้อยู่ในกรอบ...');
             } else {
                 setScore('—','#fca5a5');
                 setStatusChip('warning',result.message||'กำลังลองอีกครั้ง...');
             }
+            var fg=document.getElementById('faceGuide');
+            if(fg){fg.classList.remove('scanning-ring');if(!fg.classList.contains('warning-ring'))fg.classList.add('warning-ring');}
             console.log('[scan-ui] Frame ' + framesSent + ' -> ' + (result.status || result.message || 'no face'));
-            /* fallback_recommended ignored: auto-switching to local JS scoring
-               hides the scan from the server entirely (froze "after one scan").
-               Python stays authoritative; failures stay visible and retried. */
             updateAccuracy(null);
             return;
         }
+        var fg=document.getElementById('faceGuide');
+        if(fg){fg.classList.remove('warning-ring');if(!fg.classList.contains('scanning-ring'))fg.classList.add('scanning-ring');}
         pythonFailCount=0;
         var score=result.score_percentage||0,passed=result.is_match||false;
         console.log('[scan-ui] Frame ' + framesSent + ' -> ' + score.toFixed(1) + '% (match=' + passed + ')');
