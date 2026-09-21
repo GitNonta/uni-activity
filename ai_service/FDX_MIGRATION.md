@@ -1,9 +1,46 @@
 # fdx decoder migration — activity check
 
-The AI server's face decoder for activity check is now **fdx** (the custom
+The AI server's face decoder for activity check is **fdx** (the custom
 MobileFaceNet-512D w600k_mbf.fvp on the zero-dependency D3D11 engine),
 selected after testing. Verified: `test_fdx_backend.py` →
 `reports/fdx_backend_test.json` (7/7).
+
+## Embedding-space parity (v2.3)
+
+Both embedders now run the SAME network (w600k_mbf / MobileFaceNet):
+
+| embedder | weights | measured cos vs fdx (aligned crop) |
+|---|---|---|
+| fdx D3D11 engine | w600k_mbf.fvp (fp16) | — |
+| insightface fallback | w600k_mbf.onnx (pinned via model_zoo.get_model) | **0.99998** |
+
+`face_dx/alignment_probe.py` proves this: on the same norm_crop 112×112
+crop, fdx and ONNX-mbf agree to fp16 precision, while the previous
+FaceAnalysis default (w600k_r50, ResNet50 — picked first-match-wins from a
+sorted glob) scored cos ≈ −0.02 against fdx. If you ever see
+`server_vs_engine` cosines near zero again, check which recognition onnx
+the server actually loaded (`/health` → `fdx` + startup log line
+`InsightFace loaded ✓ (recognition=..., model=w600k_mbf.onnx)`).
+
+The recognition onnx is resolved from (first hit wins):
+1. `INSIGHTFACE_MODELS_DIR` env var
+2. `~/.insightface/models/buffalo_l/w600k_mbf.onnx`
+3. `~/.insightface/models/buffalo_s/w600k_mbf.onnx`
+4. `ai_service/models/w600k_mbf.onnx`
+
+If none exist the server refuses to start (fail-closed) instead of
+silently running a mismatched space. buffalo_l ships w600k_r50 only, so
+copy `face_dx/models/w600k_mbf.onnx` into the pack dir (or point
+`INSIGHTFACE_MODELS_DIR` at `face_dx/models`).
+
+## Alignment contract (v2.3)
+
+The fdx path only accepts **5-point landmark norm_crop** faces. The old
+plain-resize fallback is gone: a non-aligned crop lands elsewhere in the
+embedding space (measured cos(aligned, plain) ≈ 0.30 on the same
+identity). When SCRFD provides no landmarks the request automatically
+uses the insightface fallback — which now shares the fdx space, so
+enroll/verify stay consistent either way.
 
 ## What changed
 
@@ -34,13 +71,22 @@ score near zero (fail-closed, no false accepts — but no true accepts
 either). The `embedding_space` tag in `/extract` responses lets the
 backend verify which space a stored vector came from.
 
-## Threshold calibration (CelebA, 5 identities)
+> v2.3 note: after this one-time re-enrollment, the insightface fallback
+> and fdx produce interchangeable vectors (cos 0.99998), so future
+> embedder switches no longer require re-enrollment as long as both stay
+> on w600k_mbf weights + norm_crop alignment.
 
-- same-person (identity-preserving transforms): cosine **0.858–0.911**
-- different-person: **0.019–0.212**
-- separation margin: **0.646** → default **0.60** sits close to the
-  same-person floor; tighten toward 0.75 for a stricter gate if your
-  capture conditions are controlled (kiosk).
+## Threshold calibration (CelebA, 5 identities, norm_crop 112×112)
+
+- same-person (identity-preserving transforms): cosine **0.42–0.91**
+- different-person: **−0.05–0.27**
+- separation margin ≈ 0.15 → default **0.40** balances FAR/FRR for kiosk
+  selfie verification; tighten toward 0.55 in controlled lighting,
+  loosen toward 0.30 for wide-pose webcam captures.
+
+(Aligned crops compress the band vs the old plain-resize calibration
+because norm_crop preserves more pose variation — same-face scores now
+range wider, so the old 0.60 default would reject legitimate users.)
 
 Calibration was done on aligned 112×112 CelebA crops (the same alignment
 the production pipeline uses); plain-resize ROI crops were the engine's
@@ -51,7 +97,8 @@ preprocessing-parity reference (cos 1.000000000 vs ground truth).
 | var | default | meaning |
 |---|---|---|
 | `USE_FDX` | `1` | set `0` to disable fdx entirely (insightface only) |
-| `FDX_MATCH_THRESHOLD` | `0.60` | fdx verify threshold |
+| `FDX_MATCH_THRESHOLD` | `0.40` | fdx verify threshold (mbf space) |
+| `FACE_MATCH_THRESHOLD` | `0.40` | insightface-fallback threshold (same space now) |
 | `FDX_GPU_INDEX` | `-1` | `-1` auto GPU, `-2` force WARP (CPU), `≥0` adapter index |
 | `FDX_FP16` | `1` | fp16 weight storage + fp32 accumulation (production) |
 

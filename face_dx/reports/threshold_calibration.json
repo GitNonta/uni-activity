@@ -1,0 +1,48 @@
+{
+  "meta": {
+    "identities": 50,
+    "images_per_identity": 12,
+    "seed": 0,
+    "embedder": "fdx-d3d11 w600k_mbf.fvp fp16",
+    "alignment": "scrfd 5-point kps -> norm_crop 112x112 (server contract)",
+    "identity_source": "identity_CelebA.txt (ground-truth labels)",
+    "skipped_images": 0
+  },
+  "same_person_scores": {
+    "n": 550,
+    "mean": 0.5229111506298861,
+    "std": 0.15919718495822582,
+    "min": -0.07861272990703583,
+    "p5": 0.24922663271427156,
+    "p50": 0.5433359146118164,
+    "p95": 0.7458904206752777,
+    "max": 0.9303397536277771
+  },
+  "diff_person_scores": {
+    "n": 2450,
+    "mean": 0.011055084646261317,
+    "std": 0.07005757892675163,
+    "min": -0.19861558079719543,
+    "p5": -0.10227356851100922,
+    "p50": 0.010326040908694267,
+    "p95": 0.1272629201412201,
+    "max": 0.303265780210495
+  },
+  "auc": 0.9913320964749536,
+  "d_prime": 4.161857289604014,
+  "tar_at_far": {
+    "1e-1": 0.9745454545454545,
+    "1e-2": 0.9636363636363636,
+    "1e-3": 0.9454545454545454
+  },
+  "optimal_threshold": {
+    "youden_j": 0.9538404452690167,
+    "threshold": 0.1768270879983902
+  },
+  "default_0.40_check": {
+    "far": 0.0,
+    "frr": 0.19818181818181818,
+    "accuracy": 0.9636666666666667,
+    "verdict": "REVIEW"
+  }
+}

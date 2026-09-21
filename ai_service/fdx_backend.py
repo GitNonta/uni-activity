@@ -14,18 +14,30 @@ re-extracted with fdx from an enrolled photo. The PCA 512->128 reducer is
 also fitted per-space; it must be re-fit on fdx embeddings before the
 128-d output means anything (until then it stays disabled).
 
-Calibration (CelebA, 5 identities, flipped-image same-person probes):
-same-person cosine 0.858-0.911, different-person 0.019-0.212, separation
-margin 0.646. Default threshold 0.60 (env FDX_MATCH_THRESHOLD).
+Calibration (CelebA, 5 identities, 5-point-landmark norm_crop 112×112 crops,
+identity-preserving probes: mirror / zoom / re-encode):
+same-person cosine 0.42-0.91, different-person -0.05-0.27, separation
+margin ≈ 0.15 (aligned crops compress the band vs plain-resize because
+norm_crop preserves more pose variation). Default threshold 0.40
+(env FDX_MATCH_THRESHOLD) balances FAR/FRR for kiosk selfie verification;
+tighten toward 0.55 in controlled lighting, loosen toward 0.30 for
+wide-pose webcam captures.
+
+Embedding-space parity: the engine runs the SAME weights as the server's
+insightface fallback (w600k_mbf.onnx). cos(fdx, onnx) = 1.0000 on the same
+aligned crop (face_dx/alignment_probe.py) — enrollment via /extract and
+verification via /verify are interchangeable between the two embedders.
 
 Alignment contract
 ------------------
 The engine was validated with plain 112x112 bilinear resize of the face
 ROI (preprocessing parity gate: cosine 1.000000000 vs ground truth on the
-full CelebA run). Landmark-aligned (norm_crop) faces are INSIDE that
-distribution, so the caller may pass either; this module pre-resizes every
-crop to exactly 112x112 (cv2.INTER_LINEAR) before passing to the engine to
-guarantee deterministic preprocessing regardless of input size.
+full CelebA run). But embeddings are only COMPARABLE when every crop is the
+canonical 5-point landmark warp (norm_crop) — a plain resize of an arbitrary
+ROI lands elsewhere in the space (measured cos(aligned, plain) ≈ 0.30 on the
+same identity). The server therefore only feeds norm_crop'd faces; see
+server.py prepare_fdx_crop(). This module still force-resizes to exactly
+112×112 (cv2.INTER_LINEAR) as a no-op safety net.
 
 Failure policy
 --------------
@@ -83,7 +95,7 @@ class FdxBackend:
         self._primary_thread = threading.get_ident()
         self.available = False
         self.last_error = "not initialized"
-        self.threshold = float(os.environ.get("FDX_MATCH_THRESHOLD", "0.60"))
+        self.threshold = float(os.environ.get("FDX_MATCH_THRESHOLD", "0.40"))
 
         fdx, err = _import_fdx()
         if fdx is None:

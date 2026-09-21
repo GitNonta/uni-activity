@@ -112,7 +112,12 @@ fdx_backend: Optional[FdxBackend] = None  # fdx D3D11 embedder (activity-check d
 depth_liveness: Optional[DepthLivenessAnalyzer] = None  # depth-stream signal (optional)
 
 LIVENESS_THRESHOLD = float(os.environ.get("LIVENESS_THRESHOLD", "0.58"))
-FACE_MATCH_THRESHOLD = float(os.environ.get("FACE_MATCH_THRESHOLD", "0.65"))
+# insightface-fallback match threshold. Both embedders now share the w600k_mbf
+# space, so this and FDX_MATCH_THRESHOLD live on the same score scale. On the
+# mbf space the cosine bands are compressed vs r50-style scores: same-person
+# ≈ 0.40-0.85 (pose/lighting dependent), different-person ≈ 0.0-0.30.
+# 0.40 = FAR-tight default for kiosk selfie verification (tune via env).
+FACE_MATCH_THRESHOLD = float(os.environ.get("FACE_MATCH_THRESHOLD", "0.40"))
 USE_YOLO = os.environ.get("USE_YOLO", "1") == "1"
 USE_LIVENESS = os.environ.get("USE_LIVENESS", "1") == "1"
 USE_FDX = os.environ.get("USE_FDX", "1") == "1"   # fdx = chosen activity-check decoder
@@ -155,17 +160,21 @@ async def lifespan(app: FastAPI):
     logger.info("Starting Uni-Activity AI Server v2.0 (Secured with API Key & Restricted CORS)")
     logger.info("=" * 60)
 
-    # ── 1. InsightFace (SCRFD + ArcFace) ─────────────────────────────
+    # ── 1. InsightFace (SCRFD + ArcFace w600k_mbf) ───────────────────
     # IMPORTANT (embedding-space contract): the recognition model MUST be
     # w600k_mbf (MobileFaceNet) — the SAME network the fdx engine runs.
-    # FaceAnalysis(name="buffalo_l") is NOT safe here: insightface's model
-    # dir may contain several recognition onnx files (e.g. w600k_r50 from
-    # buffalo_l) and it keeps the FIRST file routed as "recognition"
-    # (sorted-glob, first match wins). That loads ResNet50 embeddings,
-    # which share NO basis with fdx/MobileFaceNet embeddings — measured
-    # cos(fdx, r50) ≈ -0.02 (see face_dx/alignment_probe.py). Passing
-    # model_file= pins the exact onnx for each task (insightface ≥ 0.7
-    # FaceAnalysis accepts model_file via **kwargs → model_zoo.get_model).
+    # FaceAnalysis(name="buffalo_l") is NOT safe here: the model dir may
+    # contain several recognition onnx files (e.g. w600k_r50 from buffalo_l)
+    # and insightface keeps the FIRST file routed as "recognition" (sorted
+    # glob, first match wins) — that silently loads ResNet50 embeddings,
+    # which share NO basis with fdx/MobileFaceNet embeddings (measured
+    # cos(fdx, r50) ≈ -0.02; see face_dx/alignment_probe.py).
+    #
+    # Fix: load the default pack for detection, then REPLACE the recognition
+    # model with one instantiated directly from the pinned w600k_mbf.onnx
+    # via model_zoo.get_model(). Version-robust: FaceAnalysis hard-asserts
+    # 'detection' in models (recognition-only instances are impossible) and
+    # does not honor a model_file override for its glob.
     logger.info("Loading InsightFace (SCRFD det_10g + ArcFace w600k_mbf)...")
     available = ort.get_available_providers()
     logger.info(f"ONNX providers available: {available}")
@@ -214,42 +223,29 @@ async def lifespan(app: FastAPI):
             "a mismatched recognition model."
         )
 
-    if det_file is not None:
-        face_app = FaceAnalysis(
-            allowed_modules=["detection", "recognition"],
-            providers=providers,
-            model_file=det_file,
+    face_app = FaceAnalysis(
+        name="buffalo_l",
+        allowed_modules=["detection"],
+        providers=providers,
+    )
+
+    # Replace recognition with the pinned w600k_mbf.onnx (embedding-space
+    # contract with the fdx engine — see the comment block above).
+    from insightface.model_zoo.model_zoo import get_model as _if_get_model
+    pinned_rec = _if_get_model(rec_file, providers=providers)
+    if pinned_rec is None or getattr(pinned_rec, "taskname", "recognition") != "recognition":
+        raise RuntimeError(
+            f"Failed to load pinned recognition model from {rec_file} — "
+            "the file is missing, corrupt, or not an ArcFace recognition onnx."
         )
-        # model_file pins ONE onnx per FaceAnalysis; load recognition from its
-        # own explicit instance so the det/rec contract is exact on both.
-        face_app.models.pop("recognition", None)
-        rec_app = FaceAnalysis(
-            allowed_modules=["recognition"],
-            providers=providers,
-            model_file=rec_file,
-        )
-        for taskname, model in rec_app.models.items():
-            face_app.models[taskname] = model
-        face_app.det_model = face_app.models["detection"]
-    else:
-        # detector onnx not found locally → download/default pack, then pin rec
-        face_app = FaceAnalysis(
-            name="buffalo_l",
-            allowed_modules=["detection"],
-            providers=providers,
-        )
-        rec_app = FaceAnalysis(
-            allowed_modules=["recognition"],
-            providers=providers,
-            model_file=rec_file,
-        )
-        for taskname, model in rec_app.models.items():
-            face_app.models[taskname] = model
+    pinned_rec.prepare(ctx_id)
+    face_app.models["recognition"] = pinned_rec
 
     face_app.prepare(ctx_id=ctx_id, det_size=(640, 640), det_thresh=0.5)
     loaded_rec = face_app.models.get("recognition")
+    rec_model_file = getattr(loaded_rec, "model_file", rec_file)
     logger.info(f"InsightFace loaded ✓ (recognition={type(loaded_rec).__name__}, "
-                f"model={os.path.basename(rec_file)})")
+                f"model={os.path.basename(str(rec_model_file))})")
 
     # ── 2. Liveness Detector ──────────────────────────────────────────
     if USE_LIVENESS:
@@ -322,10 +318,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Uni-Activity AI Server",
-    version="2.2.0",
+    version="2.3.0",
     description="Face Verification: YOLOv8 + SCRFD + fdx-w600k-mbf 512D + Passive Liveness",
     lifespan=lifespan,
-    version="2.3.0",
 )
 
 # ── Restricted CORS Configuration ─────────────────────────────────────────────
@@ -560,7 +555,7 @@ async def health():
     return {
         "status": "ok",
         "node": NODE_NAME,
-        "version": "2.1.0",
+        "version": "2.3.0",
         "auth_required": bool(AI_SERVER_KEY),
         "models": {
             "insightface": face_app is not None,

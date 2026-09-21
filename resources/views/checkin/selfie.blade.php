@@ -45,14 +45,150 @@
         .activity-meta-row { display:flex; align-items:center; gap:0.5rem; font-size:0.8rem; color:var(--white-60); }
         .activity-meta-row svg { flex-shrink:0; opacity:0.7; }
 
-        .status-chip { display:inline-flex; align-items:center; gap:0.5rem; padding:0.55rem 0.95rem; border-radius:30px; font-size:0.82rem; font-weight:600; border:1px solid; transition:all 0.3s; width:auto; background:rgba(10,22,40,0.72); backdrop-filter:blur(12px); white-space:nowrap; overflow:hidden; }
-        #statusChipText { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:inline-block; }
         /* ── Full-screen HUD (floating controls, all devices) ── */
-        .mobile-header { display:flex; position:absolute; top:0; left:0; right:0; z-index:30; padding:1rem 1.25rem; padding-top:calc(1rem + env(safe-area-inset-top,0px)); background:linear-gradient(to bottom,rgba(10,22,40,0.85),transparent); align-items:center; gap:0.75rem; pointer-events:auto; }
-        .mobile-bottom { display:flex; flex-direction:column; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:min(94vw,600px); z-index:30; padding:1.1rem 1.1rem calc(1.1rem + env(safe-area-inset-bottom,0px)); background:linear-gradient(to top,rgba(10,22,40,0.92) 60%,transparent); gap:0.65rem; pointer-events:auto; }
-        .hud-toprow { display:flex; gap:0.5rem; align-items:center; width:100%; }
-        .hud-toprow .status-chip { flex:1 1 auto; min-width:0; }
-        .hud-toprow .score-display { margin-top:0; flex:0 0 auto; min-width:0; padding:0.55rem 0.85rem; border-radius:30px; justify-content:center; gap:0.35rem; white-space:nowrap; }
+        .mobile-header {
+            display: flex;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 30;
+            padding: 1rem 1.25rem;
+            padding-top: calc(0.9rem + env(safe-area-inset-top, 0px));
+            background: linear-gradient(to bottom, rgba(5, 11, 24, 0.78) 0%, transparent 100%);
+            align-items: center;
+            gap: 0.85rem;
+            pointer-events: auto;
+        }
+        .mobile-back-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            color: #ffffff;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transition: background 0.2s, transform 0.15s;
+            flex-shrink: 0;
+        }
+        .mobile-back-btn:active { transform: scale(0.94); }
+        .mobile-header-info { flex: 1; min-width: 0; }
+        .mobile-header-label { font-size: 0.65rem; color: rgba(255, 255, 255, 0.55); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; }
+        .mobile-header-title { font-size: 0.95rem; font-weight: 600; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* ── Unified Floating Glass Bottom Card ── */
+        .mobile-bottom {
+            display: flex;
+            flex-direction: column;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(92vw, 420px);
+            z-index: 30;
+            padding-bottom: calc(1.2rem + env(safe-area-inset-bottom, 0px));
+            pointer-events: auto;
+        }
+        .hud-card {
+            background: rgba(10, 20, 38, 0.78);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 20px;
+            padding: 0.85rem 1.15rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            transition: all 0.3s ease;
+        }
+        .hud-card-main {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.65rem;
+        }
+        .hud-status {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #f1f5f9;
+            white-space: nowrap;
+            overflow: hidden;
+            min-width: 0;
+            flex: 1;
+        }
+        #statusChipText {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: inline-block;
+        }
+        .status-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: #38bdf8;
+            box-shadow: 0 0 10px #38bdf8;
+            transition: all 0.3s;
+        }
+        .status-dot.dot-scanning { background: #38bdf8; box-shadow: 0 0 10px #38bdf8; }
+        .status-dot.dot-warning { background: #fbbf24; box-shadow: 0 0 10px #fbbf24; }
+        .status-dot.dot-success { background: #34d399; box-shadow: 0 0 12px #34d399; }
+        .status-dot.dot-error { background: #f87171; box-shadow: 0 0 10px #f87171; }
+        .status-dot.pulse { animation: statusPulse 1.5s ease-in-out infinite; }
+        @keyframes statusPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.75); } }
+
+        .hud-score-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.65rem;
+            border-radius: 14px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #e2e8f0;
+            flex-shrink: 0;
+            letter-spacing: 0.02em;
+            transition: all 0.25s;
+        }
+
+        .hud-progress-wrap {
+            position: relative;
+            height: 4px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            overflow: visible;
+        }
+        .hud-threshold-mark {
+            position: absolute;
+            top: -2.5px;
+            bottom: -2.5px;
+            left: 60%;
+            width: 2px;
+            background: rgba(255, 255, 255, 0.55);
+            border-radius: 1px;
+            z-index: 2;
+        }
+        .hud-progress-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 0%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #38bdf8, #34d399);
+            transition: width 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+        }
+
         /* ── Toast notifications (top, stacked) ── */
         #toastStack { position:fixed; top:calc(0.7rem + env(safe-area-inset-top,0px)); left:50%; transform:translateX(-50%); z-index:10001; display:flex; flex-direction:column; gap:0.5rem; width:min(92vw,460px); pointer-events:none; }
         .toast { display:flex; align-items:center; gap:0.6rem; background:rgba(10,22,40,0.92); border:1px solid var(--white-15); border-left:4px solid var(--blue-light); border-radius:12px; padding:0.7rem 0.95rem; font-size:0.82rem; color:var(--white); backdrop-filter:blur(14px); box-shadow:0 8px 30px rgba(0,0,0,0.45); opacity:0; transform:translateY(-12px); transition:opacity 0.28s ease, transform 0.28s ease; }
@@ -63,71 +199,80 @@
         .toast-error { border-left-color:#f87171; } .toast-error .toast-icon { color:#f87171; }
         .toast-warning { border-left-color:#fbbf24; } .toast-warning .toast-icon { color:#fbbf24; }
         .toast-info { border-left-color:#60a5fa; } .toast-info .toast-icon { color:#60a5fa; }
-        .status-chip.connecting { background:rgba(37,99,235,0.12); border-color:rgba(37,99,235,0.35); color:var(--blue-light); }
-        .status-chip.scanning { background:rgba(96,165,250,0.1); border-color:rgba(96,165,250,0.4); color:#93c5fd; }
-        .status-chip.success { background:rgba(16,185,129,0.12); border-color:rgba(16,185,129,0.4); color:#34d399; }
-        .status-chip.warning { background:rgba(245,158,11,0.12); border-color:rgba(245,158,11,0.4); color:#fcd34d; }
-        .status-chip.error { background:rgba(239,68,68,0.12); border-color:rgba(239,68,68,0.4); color:#fca5a5; }
-        .status-dot { width:8px; height:8px; border-radius:50%; background:currentColor; flex-shrink:0; }
-        .status-dot.pulse { animation:statusPulse 1.5s ease-in-out infinite; }
-        @keyframes statusPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
-
-        .score-display { display:none; align-items:center; justify-content:space-between; background:var(--white-08); border:1px solid var(--panel-border); border-radius:10px; padding:0.75rem 1rem; font-size:0.85rem; margin-top:0.75rem; }
-        .accuracy-panel { display:none; background:var(--white-08); border:1px solid var(--panel-border); border-radius:10px; padding:0.7rem 1rem; margin-top:0.6rem; font-size:0.78rem; }
-        .accuracy-bar-wrap { position:relative; height:8px; border-radius:6px; background:rgba(255,255,255,0.12); margin:0.45rem 0 0.3rem 0; overflow:visible; }
-        .accuracy-bar-fill { position:absolute; left:0; top:0; bottom:0; width:0%; border-radius:6px; background:#34d399; transition:width 0.35s ease, background-color 0.35s ease; }
-        .accuracy-threshold-mark { position:absolute; top:-3px; bottom:-3px; width:2px; background:rgba(255,255,255,0.65); left:60%; }
-        .accuracy-stats { display:flex; justify-content:space-between; gap:0.5rem; color:var(--text-dim, #94a3b8); font-size:0.72rem; }
-        .accuracy-state { display:flex; align-items:center; gap:0.35rem; font-weight:700; font-size:0.8rem; }
-        .accuracy-state svg { flex-shrink:0; }
-        .score-label { color:var(--white-60); }
-        .score-value { font-weight:700; font-size:1rem; }
-
-        .instructions-list { list-style:none; display:flex; flex-direction:column; gap:0.6rem; }
-        .instructions-list li { display:flex; align-items:flex-start; gap:0.6rem; font-size:0.82rem; color:var(--white-60); line-height:1.5; }
-        .instructions-list li .num { flex-shrink:0; width:20px; height:20px; border-radius:50%; background:rgba(37,99,235,0.2); border:1px solid rgba(37,99,235,0.4); color:var(--blue-light); font-size:0.7rem; font-weight:700; display:flex; align-items:center; justify-content:center; }
 
         .btn-manual { display:none; width:100%; padding:0.7rem 1.25rem; border-radius:10px; border:1px solid var(--white-15); background:var(--white-08); color:var(--white); font-size:0.875rem; font-weight:500; cursor:pointer; transition:background 0.2s; font-family:inherit; }
         .btn-manual:hover { background:rgba(255,255,255,0.12); }
 
-        #faceGuide { position:absolute; top:50% !important; left:50% !important; transform:translate(-50%,-50%) !important; width:260px; height:340px; border-radius:130px; border:2.5px solid rgba(96,165,250,0.85); box-shadow:0 0 0 4000px rgba(10,22,40,0.48),0 0 0 1px rgba(96,165,250,0.3); transition:border-color 0.4s,box-shadow 0.6s; overflow:hidden; z-index:10; }
-        .scan-line { position:absolute; width:100%; height:2px; background:linear-gradient(90deg,transparent 5%,rgba(96,165,250,0.8) 50%,transparent 95%); box-shadow:0 0 8px rgba(96,165,250,0.6); animation:scanMove 2.5s ease-in-out infinite; z-index:20; }
-        @keyframes scanMove { 0%{top:5%;opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{top:95%;opacity:0} }
-        .corner { position:absolute; width:28px; height:28px; border-color:rgba(96,165,250,0.9); border-style:solid; border-width:0; transition:border-color 0.3s; }
-        .corner-tl { top:0;left:0;border-top-width:2.5px;border-left-width:2.5px;border-top-left-radius:120px; }
-        .corner-tr { top:0;right:0;border-top-width:2.5px;border-right-width:2.5px;border-top-right-radius:120px; }
-        .corner-bl { bottom:0;left:0;border-bottom-width:2.5px;border-left-width:2.5px;border-bottom-left-radius:120px; }
-        .corner-br { bottom:0;right:0;border-bottom-width:2.5px;border-right-width:2.5px;border-bottom-right-radius:120px; }
+        /* ── Face Guide Oval (Biometric FaceID aesthetic) ── */
+        #faceGuide {
+            position: absolute;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            width: 250px;
+            height: 330px;
+            border-radius: 125px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 0 4000px rgba(5, 12, 24, 0.52);
+            transition: border-color 0.4s ease, box-shadow 0.5s ease;
+            overflow: hidden;
+            z-index: 10;
+        }
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent 5%, rgba(56, 189, 248, 0.85) 50%, transparent 95%);
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.7);
+            animation: scanMove 2.6s ease-in-out infinite;
+            z-index: 20;
+        }
+        @keyframes scanMove { 0% { top: 6%; opacity: 0; } 12% { opacity: 1; } 88% { opacity: 1; } 100% { top: 94%; opacity: 0; } }
+
+        .corner { position: absolute; width: 26px; height: 26px; border-color: rgba(56, 189, 248, 0.9); border-style: solid; border-width: 0; transition: border-color 0.3s; }
+        .corner-tl { top: 0; left: 0; border-top-width: 2.5px; border-left-width: 2.5px; border-top-left-radius: 110px; }
+        .corner-tr { top: 0; right: 0; border-top-width: 2.5px; border-right-width: 2.5px; border-top-right-radius: 110px; }
+        .corner-bl { bottom: 0; left: 0; border-bottom-width: 2.5px; border-left-width: 2.5px; border-bottom-left-radius: 110px; }
+        .corner-br { bottom: 0; right: 0; border-bottom-width: 2.5px; border-right-width: 2.5px; border-bottom-right-radius: 110px; }
         .grid-overlay, .face-detection-points, #faceLandmarksCanvas, #scanStatus { display:none !important; }
 
-        .scanning-ring { border-color:rgba(96,165,250,0.9) !important; animation:guidePulse 2s ease-in-out infinite; }
-        @keyframes guidePulse { 0%,100%{box-shadow:0 0 0 4000px rgba(10,22,40,0.48),0 0 20px rgba(96,165,250,0.25)} 50%{box-shadow:0 0 0 4000px rgba(10,22,40,0.48),0 0 35px rgba(96,165,250,0.5)} }
-        .scanning-ring .corner { border-color:rgba(96,165,250,0.9) !important; }
-        .success-ring { border-color:rgba(16,185,129,0.9) !important; box-shadow:0 0 0 4000px rgba(10,22,40,0.65),0 0 40px rgba(16,185,129,0.4) !important; animation:successPulse 0.6s ease-out !important; }
-        .success-ring .corner { border-color:rgba(16,185,129,0.9) !important; }
-        .success-ring .scan-line { background:linear-gradient(90deg,transparent,rgba(16,185,129,0.8),transparent); box-shadow:0 0 8px rgba(16,185,129,0.6); }
-        .success-ring .grid-overlay { background-image:linear-gradient(rgba(16,185,129,0.06) 1px,transparent 1px),linear-gradient(90deg,rgba(16,185,129,0.06) 1px,transparent 1px); }
-        .success-ring .detection-point { background:rgba(16,185,129,0.9); }
-        @keyframes successPulse { 0%{transform:translate(-50%,-50%) scale(0.97)} 60%{transform:translate(-50%,-50%) scale(1.02)} 100%{transform:translate(-50%,-50%) scale(1)} }
-        .error-ring { border-color:rgba(239,68,68,0.9) !important; box-shadow:0 0 0 4000px rgba(10,22,40,0.65),0 0 30px rgba(239,68,68,0.35) !important; animation:errorShake 0.35s ease-out !important; }
-        .error-ring .corner { border-color:rgba(239,68,68,0.9) !important; }
-        .error-ring .scan-line { background:linear-gradient(90deg,transparent,rgba(239,68,68,0.8),transparent); box-shadow:0 0 8px rgba(239,68,68,0.6); }
-        @keyframes errorShake { 0%,100%{transform:translate(-50%,-50%)} 25%{transform:translate(-52%,-50%)} 75%{transform:translate(-48%,-50%)} }
-        /* ── FaceGate: no-face / low-quality warning state ── */
-        .warning-ring { border-color:rgba(245,158,11,0.9) !important; box-shadow:0 0 0 4000px rgba(10,22,40,0.65),0 0 25px rgba(245,158,11,0.3) !important; animation:warningPulse 1.8s ease-in-out infinite !important; }
-        .warning-ring .corner { border-color:rgba(245,158,11,0.9) !important; }
-        .warning-ring .scan-line { background:linear-gradient(90deg,transparent,rgba(245,158,11,0.7),transparent); box-shadow:0 0 8px rgba(245,158,11,0.5); }
-        .warning-ring .detection-point { background:rgba(245,158,11,0.9); }
-        @keyframes warningPulse { 0%,100%{box-shadow:0 0 0 4000px rgba(10,22,40,0.65),0 0 15px rgba(245,158,11,0.2)} 50%{box-shadow:0 0 0 4000px rgba(10,22,40,0.65),0 0 35px rgba(245,158,11,0.45)} }
+        .scanning-ring {
+            border-color: rgba(56, 189, 248, 0.85) !important;
+            animation: guidePulse 2.4s ease-in-out infinite;
+        }
+        @keyframes guidePulse {
+            0%, 100% { box-shadow: 0 0 0 4000px rgba(5, 12, 24, 0.52), 0 0 18px rgba(56, 189, 248, 0.22); }
+            50% { box-shadow: 0 0 0 4000px rgba(5, 12, 24, 0.52), 0 0 32px rgba(56, 189, 248, 0.45); }
+        }
+        .scanning-ring .corner { border-color: rgba(56, 189, 248, 0.9) !important; }
 
-        @media (min-width:640px) and (max-width:1023px) { #faceGuide{width:220px;height:290px} }
-        @media (min-width:1024px) { #faceGuide{width:290px;height:380px} .corner{width:32px;height:32px} }
-        @media (max-width:480px) { #faceGuide{width:210px;height:280px} .corner{width:24px;height:24px} }
+        .success-ring {
+            border-color: rgba(52, 211, 153, 0.95) !important;
+            box-shadow: 0 0 0 4000px rgba(5, 12, 24, 0.65), 0 0 40px rgba(52, 211, 153, 0.5) !important;
+            animation: successPulse 0.5s ease-out !important;
+        }
+        .success-ring .corner { border-color: rgba(52, 211, 153, 0.95) !important; }
+        .success-ring .scan-line { background: linear-gradient(90deg, transparent, rgba(52, 211, 153, 0.85), transparent); box-shadow: 0 0 10px rgba(52, 211, 153, 0.7); }
+        @keyframes successPulse { 0% { transform: translate(-50%, -50%) scale(0.97); } 50% { transform: translate(-50%, -50%) scale(1.02); } 100% { transform: translate(-50%, -50%) scale(1); } }
 
-        .mobile-back-btn { display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px;background:rgba(10,22,40,0.6);border:1px solid var(--white-15);color:var(--white);text-decoration:none;backdrop-filter:blur(8px);flex-shrink:0; }
-        .mobile-header-info { flex:1;min-width:0; }
-        .mobile-header-label { font-size:0.65rem;color:var(--white-60);letter-spacing:0.08em;text-transform:uppercase; }
-        .mobile-header-title { font-size:0.9rem;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+        .warning-ring {
+            border-color: rgba(251, 191, 36, 0.85) !important;
+            box-shadow: 0 0 0 4000px rgba(5, 12, 24, 0.55), 0 0 22px rgba(251, 191, 36, 0.3) !important;
+        }
+        .warning-ring .corner { border-color: rgba(251, 191, 36, 0.85) !important; }
+        .warning-ring .scan-line { background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.75), transparent); box-shadow: 0 0 8px rgba(251, 191, 36, 0.5); }
+
+        .error-ring {
+            border-color: rgba(239, 68, 68, 0.9) !important;
+            box-shadow: 0 0 0 4000px rgba(5, 12, 24, 0.65), 0 0 30px rgba(239, 68, 68, 0.35) !important;
+        }
+        .error-ring .corner { border-color: rgba(239, 68, 68, 0.9) !important; }
+
+        @media (max-width: 480px) {
+            #faceGuide { width: 220px; height: 290px; border-radius: 110px; }
+            .corner { width: 22px; height: 22px; }
+            .mobile-bottom { width: min(92vw, 380px); }
+        }
 
         .mobile-status-box { background:rgba(10,22,40,0.75);border:1px solid var(--white-15);border-radius:14px;padding:0.85rem 1rem;backdrop-filter:blur(12px);text-align:center; }
         .mobile-status-text { font-size:0.875rem;font-weight:500;color:var(--white);line-height:1.5; }
@@ -243,7 +388,9 @@
                     <img id="profileThumb" src="{{ $profilePhotoUrl }}" alt="รูปโปรไฟล์">
                     <span class="comparison-face-label">รูปในระบบ</span>
                 </div>
-                <div class="comparison-arrow">&#10231;</div>
+                <div class="comparison-arrow">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </div>
                 <div class="comparison-face">
                     <canvas id="selfieThumb" width="88" height="88"></canvas>
                     <span class="comparison-face-label">Selfie</span>
@@ -275,34 +422,33 @@
         </div>
     </div>
 
-    <!-- ── MOBILE BOTTOM ── -->
+    <!-- ── MOBILE BOTTOM (Clean Floating Glass HUD) ── -->
     <div class="mobile-bottom">
-        <div class="hud-toprow">
-            <div id="statusChip" class="status-chip connecting">
-                <span class="status-dot pulse"></span>
-                <span id="statusChipText">กำลังเชื่อมต่อกล้อง...</span>
+        <div class="hud-card">
+            <div class="hud-card-main">
+                <div id="statusChip" class="hud-status">
+                    <span class="status-dot pulse"></span>
+                    <span id="statusChipText">กำลังเชื่อมต่อกล้อง...</span>
+                </div>
+                <div id="scoreDisplayPanel" class="hud-score-badge">
+                    <span id="scoreValuePanel">—</span>
+                </div>
             </div>
-            <div id="scoreDisplayPanel" class="score-display">
-                <span class="score-label">คะแนน</span>
-                <span id="scoreValuePanel" class="score-value">—</span>
-            </div>
-        </div>
-        <div id="accuracyPanel" class="accuracy-panel">
-            <div class="accuracy-state" id="accuracyState">
-                <span id="accuracyStateIcon"></span>
-                <span id="accuracyStateText">รอเฟรมแรก...</span>
-            </div>
-            <div class="accuracy-bar-wrap">
-                <div class="accuracy-threshold-mark"></div>
-                <div class="accuracy-bar-fill" id="accuracyBarFill"></div>
-            </div>
-            <div class="accuracy-stats">                <span>เฉลี่ย 5 เฟรม: <strong id="accuracyAvg">—</strong></span>
-                    <span>เกณฑ์ผ่าน 60%</span>
-                    <span>เฟรม: <strong id="accuracyCount">0</strong></span>
-                    <span>ส่งแล้ว: <strong id="framesSentCount">0</strong></span>
+            <div class="hud-progress-wrap">
+                <div class="hud-threshold-mark" title="เกณฑ์ 60%"></div>
+                <div class="hud-progress-fill" id="accuracyBarFill"></div>
             </div>
         </div>
-        <button type="button" id="manualCaptureBtnMobile" class="btn-manual" onclick="capturePhoto(true)" style="display:none;">ถ่ายภาพด้วยตนเอง</button>
+        <!-- Technical telemetry kept hidden for script safety -->
+        <div style="display:none;" aria-hidden="true">
+            <div id="accuracyPanel">
+                <div id="accuracyState"><span id="accuracyStateIcon"></span><span id="accuracyStateText"></span></div>
+                <span id="accuracyAvg">0</span>
+                <span id="accuracyCount">0</span>
+                <span id="framesSentCount">0</span>
+            </div>
+            <button type="button" id="manualCaptureBtnMobile" onclick="capturePhoto(true)"></button>
+        </div>
     </div>
 
 </div>
@@ -341,87 +487,70 @@ function setStatusChip(state, text) {
     var chip = document.getElementById('statusChip');
     var chipText = document.getElementById('statusChipText');
     if (!chip) return;
-    chip.className = 'status-chip ' + state;
     if (chipText) chipText.textContent = text;
     var dot = chip.querySelector('.status-dot');
-    if (dot) dot.classList.toggle('pulse', state === 'connecting' || state === 'scanning');
+    if (dot) {
+        dot.className = 'status-dot';
+        if (state === 'connecting' || state === 'scanning') {
+            dot.classList.add('dot-scanning', 'pulse');
+        } else if (state === 'warning') {
+            dot.classList.add('dot-warning');
+        } else if (state === 'success') {
+            dot.classList.add('dot-success');
+        } else if (state === 'error') {
+            dot.classList.add('dot-error');
+        }
+    }
     var m = document.getElementById('mobileStatusText');
     if (m) m.textContent = text;
-    /* no_face / throttle states also surface as a top toast for glanceability */
+    /* Toast notifications for important alerts */
     if (state === 'error' && text) showToast(text, 'error');
     else if (state === 'warning' && text) showToast(text, 'warning');
 }
 function setScore(score, color) {
     var panel = document.getElementById('scoreDisplayPanel');
     var val = document.getElementById('scoreValuePanel');
-    if (panel) panel.style.display = 'flex';
-    if (val) { val.textContent = score; val.style.color = color; }
-    var mRow = document.getElementById('mobileScoreRow');
-    var mVal = document.getElementById('mobileScoreVal');
-    if (mRow) mRow.style.display = 'flex';
-    if (mVal) { mVal.textContent = score; mVal.style.color = color; }
-    /* legacy mirror kept for compatibility */
+    if (panel) panel.style.display = 'inline-flex';
+    if (val) {
+        val.textContent = score;
+        if (color) val.style.color = color;
+    }
     var rt = document.getElementById('realtimeScore');
     if (rt) { rt.textContent = score; rt.style.color = color; }
 }
-/* ── Real-time accuracy panel: bar + 5-frame average + trend ── */
+/* ── Real-time accuracy bar ── */
 var accHistory = [];
 function updateAccuracy(pct) {
-    var panel = document.getElementById('accuracyPanel');
-    if (panel) panel.style.display = 'block';
     var fill = document.getElementById('accuracyBarFill');
-    var stIcon = document.getElementById('accuracyStateIcon');
-    var stText = document.getElementById('accuracyStateText');
     var avgEl = document.getElementById('accuracyAvg');
     var cntEl = document.getElementById('accuracyCount');
-    if (!fill || !stText) return;
+    if (!fill) return;
 
     var THRESH = 60, NEAR = 50;
-    var ICON_UP   = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
-    var ICON_DOWN = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>';
-    var ICON_OK   = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>';
-    var ICON_LOW  = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18L18 6M6 6l12 12"/></svg>';
-    var ICON_NONE = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/></svg>';
 
     if (pct === null || pct === undefined) {
         fill.style.width = '0%';
         fill.style.background = '#64748b';
-        stIcon.innerHTML = ICON_NONE;
-        stText.textContent = 'ไม่พบใบหน้า — ปรับมุมกล้อง/แสง';
-        stText.style.color = '#94a3b8';
+        fill.style.boxShadow = 'none';
         return;
     }
 
-    var prevAvg = null;
-    if (accHistory.length > 0) {
-        prevAvg = accHistory.reduce(function(a,b){return a+b;},0) / accHistory.length;
-    }
     accHistory.push(pct);
     if (accHistory.length > 5) accHistory.shift();
     var avg = accHistory.reduce(function(a,b){return a+b;},0) / accHistory.length;
 
-    fill.style.width = Math.min(100, Math.max(0, pct)).toFixed(1) + '%';
-    var trend = '';
-    if (prevAvg !== null && accHistory.length >= 2) {
-        if (pct > prevAvg + 1.5) { trend = ICON_UP; }
-        else if (pct < prevAvg - 1.5) { trend = ICON_DOWN; }
-    }
+    var widthPct = Math.min(100, Math.max(0, pct));
+    fill.style.width = widthPct.toFixed(1) + '%';
 
     if (pct >= THRESH) {
-        fill.style.background = '#34d399';
-        stIcon.innerHTML = ICON_OK + trend;
-        stText.textContent = 'ความแม่นยำสูง — ผ่านเกณฑ์ (' + pct.toFixed(1) + '%)';
-        stText.style.color = '#34d399';
+        fill.style.background = 'linear-gradient(90deg, #38bdf8, #34d399)';
+        fill.style.boxShadow = '0 0 10px rgba(52, 211, 153, 0.5)';
     } else if (pct >= NEAR) {
-        fill.style.background = '#fbbf24';
-        stIcon.innerHTML = ICON_DOWN;
-        stText.textContent = 'ใกล้เกณฑ์ — มองตรงและเข้าใกล้กล้อง (' + pct.toFixed(1) + '%)';
-        stText.style.color = '#fbbf24';
+        fill.style.background = 'linear-gradient(90deg, #38bdf8, #fbbf24)';
+        fill.style.boxShadow = '0 0 8px rgba(251, 191, 36, 0.4)';
     } else {
-        fill.style.background = '#f87171';
-        stIcon.innerHTML = ICON_LOW;
-        stText.textContent = 'ความแม่นยำต่ำ (' + pct.toFixed(1) + '%)';
-        stText.style.color = '#f87171';
+        fill.style.background = 'linear-gradient(90deg, #38bdf8, #f87171)';
+        fill.style.boxShadow = 'none';
     }
     if (avgEl) avgEl.textContent = avg.toFixed(1) + '%';
     if (cntEl) cntEl.textContent = String(accHistory.length);
@@ -611,7 +740,7 @@ var FACE_GATE_BACKOFF_AFTER=5; /* consecutive no-face frames → interval increa
    result is fresh (< FACE_CACHE_MS). This halves inference work when both
    timers happen to fire within the same animation frame. */
 var _faceDetCache={result:null,ts:0,CACHE_MS:200};
-var SCAN_UI_BUILD='b6';/* marker sent with every verify — lets the server expose stale cached pages */
+var SCAN_UI_BUILD='b7';/* marker sent with every verify — lets the server expose stale cached pages */
 
 document.addEventListener('DOMContentLoaded', async function(){
     @if(session('error'))
@@ -776,7 +905,7 @@ async function performJsVerification(canvas) {
         var det=await faceapi.detectSingleFace(canvas).withFaceLandmarks().withFaceDescriptor();
         var score=0,passed=false;
         if(det){var dist=faceapi.euclideanDistance(profileDescriptor.embedding_128d,det.descriptor);score=Math.max(0,(1-dist)*100);passed=dist<0.5;}
-        setScore('JS (128D): '+score.toFixed(1)+'%',passed?'#34d399':'#fcd34d');
+        setScore(score.toFixed(0)+'%',passed?'#34d399':'#fcd34d');
         if(passed)await processScanResult({confidence:score/100,passed:true,score:score,source:'js_primary',processingTime:Date.now()%1000});
     } catch(e){console.warn('JS verification error:',e);}
 }
@@ -833,8 +962,7 @@ async function performPythonVerification(base64Image) {
         var score=result.score_percentage||0,passed=result.is_match||false;
         console.log('[scan-ui] Frame ' + framesSent + ' -> ' + score.toFixed(1) + '% (match=' + passed + ')');
         var procTime=result.processing_ms||ms;
-        var secStr=(procTime/1000).toFixed(1)+'s';
-        setScore(score.toFixed(1)+'% ('+secStr+')',passed?'#34d399':'#fcd34d');
+        setScore(score.toFixed(0)+'%',passed?'#34d399':'#fcd34d');
         updateAccuracy(score);
         if(passed)await processScanResult({confidence:score/100,passed:true,score:score,source:'python_primary',processingTime:procTime});
     } catch(e){
