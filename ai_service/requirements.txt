@@ -12,6 +12,9 @@ pydantic>=2.0.0
 # (det_10g.onnx), 5-point landmarks, norm_crop and the ArcFace fallback
 # (w600k_mbf.onnx) run through native_face.py on raw onnxruntime sessions.
 onnxruntime>=1.17.0          # CPU only — ถ้ามี NVIDIA ใช้ onnxruntime-gpu
+# optional: `onnx` (NOT onnxruntime) lets native_face.py auto-detect mxnet-style
+# ArcFace preprocessing (0/1 instead of 127.5). Without it the safe 127.5
+# default is used — correct for all glint-style exports incl. w600k_mbf.
 scikit-image>=0.19           # SimilarityTransform for norm_crop (was transitive via insightface)
 
 # ── YOLOv8 Face Detector ───────────────────────────────────

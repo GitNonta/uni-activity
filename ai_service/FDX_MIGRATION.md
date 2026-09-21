@@ -25,6 +25,25 @@ only the runtime packaging is. `requirements.txt` no longer lists
 `insightface` (the model files themselves are still resolved from the same
 locations, including `INSIGHTFACE_MODELS_DIR`).
 
+### Latency: native vs insightface-package era
+
+Same-op benchmark (detect 640 → norm_crop → w600k_mbf embed, interleaved
+rounds, real CelebA incl. upscaled ~640×785 frames;
+`face_dx/_latency_benchmark.py` → `face_dx/reports/native_vs_insightface_latency.json`):
+
+| provider | stack | detect p50 | embed p50 | total p50 | total p95 |
+|---|---|---|---|---|---|
+| CPU | insightface-era | 283.3 ms | 16.1 ms | 301.4 ms | 386.4 ms |
+| CPU | **native** | 283.3 ms | 15.5 ms | **300.2 ms** | **375.8 ms** |
+| DML | insightface-era | 283.0 ms | 15.7 ms | 301.2 ms | 378.3 ms |
+| DML | **native** | 285.8 ms | 17.0 ms | 305.0 ms | 377.4 ms |
+
+Speedup 0.99–1.00× — statistically identical (the insightface package is a
+thin wrapper over the same onnxruntime calls; detector dominates and both
+stacks run the identical det_10g session). Removing the package costs
+nothing at runtime. On the real server the fdx D3D11 engine (~35–50 ms/img)
+replaces the ONNX embed stage anyway.
+
 ## Embedding-space parity (v2.3)
 
 Both embedders now run the SAME network (w600k_mbf / MobileFaceNet):

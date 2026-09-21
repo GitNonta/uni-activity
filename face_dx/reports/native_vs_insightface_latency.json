@@ -1,0 +1,58 @@
+{
+  "providers": [
+    "DmlExecutionProvider",
+    "CPUExecutionProvider"
+  ],
+  "rounds": 8,
+  "images_per_round": 24,
+  "samples_per_stage": 192,
+  "sanity": "cos(insightface-era, native) >= 0.9999 on all images",
+  "date": "2026-09-22 02:38",
+  "results": {
+    "insightface-era (v2.3)": {
+      "detect": {
+        "p50": 283.02,
+        "p95": 354.92,
+        "mean": 288.99
+      },
+      "align": {
+        "p50": 1.0,
+        "p95": 1.31,
+        "mean": 1.43
+      },
+      "embed": {
+        "p50": 15.68,
+        "p95": 36.69,
+        "mean": 19.31
+      },
+      "total": {
+        "p50": 301.16,
+        "p95": 378.32,
+        "mean": 309.74
+      }
+    },
+    "native (v2.4)": {
+      "detect": {
+        "p50": 285.81,
+        "p95": 355.85,
+        "mean": 290.46
+      },
+      "align": {
+        "p50": 1.03,
+        "p95": 1.5,
+        "mean": 1.08
+      },
+      "embed": {
+        "p50": 17.02,
+        "p95": 35.47,
+        "mean": 19.06
+      },
+      "total": {
+        "p50": 305.03,
+        "p95": 377.36,
+        "mean": 310.6
+      }
+    },
+    "native_speedup_p50": 0.987
+  }
+}

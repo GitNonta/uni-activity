@@ -12,11 +12,13 @@
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
             --navy: #0a1628; --navy-mid: #0f2040;
-            --blue: #2563eb; --blue-light: #3b82f6; --blue-glow: rgba(37,99,235,0.35);
+            --orange: #ea580c; --orange-light: #f97316; --orange-bright: #fb923c;
+            --orange-glow: rgba(249, 115, 22, 0.45);
+            --blue: #ea580c; --blue-light: #f97316; --blue-glow: rgba(249, 115, 22, 0.35);
             --green: #10b981; --amber: #f59e0b; --red: #ef4444;
             --white: #ffffff; --white-60: rgba(255,255,255,0.6);
             --white-15: rgba(255,255,255,0.15); --white-08: rgba(255,255,255,0.08);
-            --panel-border: rgba(37,99,235,0.25);
+            --panel-border: rgba(249, 115, 22, 0.25);
         }
         html, body { width:100%; height:100%; overflow:hidden; font-family:'Inter','Sarabun',sans-serif; background:var(--navy); color:var(--white); -webkit-font-smoothing:antialiased; }
         .scan-shell { display:block; position:fixed; inset:0; width:100vw; height:100vh; height:100dvh; overflow:hidden; }
@@ -134,12 +136,12 @@
         .toast-success { border-left-color:#34d399; } .toast-success .toast-icon { color:#34d399; }
         .toast-error { border-left-color:#f87171; } .toast-error .toast-icon { color:#f87171; }
         .toast-warning { border-left-color:#fbbf24; } .toast-warning .toast-icon { color:#fbbf24; }
-        .toast-info { border-left-color:#60a5fa; } .toast-info .toast-icon { color:#60a5fa; }
+        .toast-info { border-left-color:#f97316; } .toast-info .toast-icon { color:#f97316; }
 
         .btn-manual { display:none; width:100%; padding:0.7rem 1.25rem; border-radius:10px; border:1px solid var(--white-15); background:var(--white-08); color:var(--white); font-size:0.875rem; font-weight:500; cursor:pointer; transition:background 0.2s; font-family:inherit; }
         .btn-manual:hover { background:rgba(255,255,255,0.12); }
 
-        /* ── Face Guide Oval (Biometric FaceID aesthetic) ── */
+        /* ── Face Guide Oval (Biometric Orange FaceID aesthetic) ── */
         #faceGuide {
             position: absolute;
             top: 50% !important;
@@ -148,8 +150,8 @@
             width: 250px;
             height: 330px;
             border-radius: 125px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 0 0 4000px rgba(5, 12, 24, 0.52);
+            border: 2px solid rgba(249, 115, 22, 0.45);
+            box-shadow: 0 0 0 4000px rgba(5, 12, 24, 0.52), 0 0 16px rgba(249, 115, 22, 0.18);
             transition: border-color 0.4s ease, box-shadow 0.5s ease;
             overflow: hidden;
             z-index: 10;
@@ -157,15 +159,15 @@
         .scan-line {
             position: absolute;
             width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent 5%, rgba(56, 189, 248, 0.85) 50%, transparent 95%);
-            box-shadow: 0 0 10px rgba(56, 189, 248, 0.7);
+            height: 2.5px;
+            background: linear-gradient(90deg, transparent 5%, rgba(251, 146, 60, 0.95) 50%, transparent 95%);
+            box-shadow: 0 0 12px rgba(249, 115, 22, 0.9), 0 0 24px rgba(234, 88, 12, 0.5);
             animation: scanMove 2.6s ease-in-out infinite;
             z-index: 20;
         }
         @keyframes scanMove { 0% { top: 6%; opacity: 0; } 12% { opacity: 1; } 88% { opacity: 1; } 100% { top: 94%; opacity: 0; } }
 
-        .corner { position: absolute; width: 26px; height: 26px; border-color: rgba(56, 189, 248, 0.9); border-style: solid; border-width: 0; transition: border-color 0.3s; }
+        .corner { position: absolute; width: 26px; height: 26px; border-color: rgba(249, 115, 22, 0.95); border-style: solid; border-width: 0; transition: border-color 0.3s; filter: drop-shadow(0 0 6px rgba(249, 115, 22, 0.5)); }
         .corner-tl { top: 0; left: 0; border-top-width: 2.5px; border-left-width: 2.5px; border-top-left-radius: 110px; }
         .corner-tr { top: 0; right: 0; border-top-width: 2.5px; border-right-width: 2.5px; border-top-right-radius: 110px; }
         .corner-bl { bottom: 0; left: 0; border-bottom-width: 2.5px; border-left-width: 2.5px; border-bottom-left-radius: 110px; }
@@ -173,21 +175,21 @@
         .grid-overlay, .face-detection-points, #faceLandmarksCanvas, #scanStatus { display:none !important; }
 
         .scanning-ring {
-            border-color: rgba(56, 189, 248, 0.85) !important;
+            border-color: rgba(249, 115, 22, 0.92) !important;
             animation: guidePulse 2.4s ease-in-out infinite;
         }
         @keyframes guidePulse {
-            0%, 100% { box-shadow: 0 0 0 4000px rgba(5, 12, 24, 0.52), 0 0 18px rgba(56, 189, 248, 0.22); }
-            50% { box-shadow: 0 0 0 4000px rgba(5, 12, 24, 0.52), 0 0 32px rgba(56, 189, 248, 0.45); }
+            0%, 100% { box-shadow: 0 0 0 4000px rgba(5, 12, 24, 0.52), 0 0 22px rgba(249, 115, 22, 0.35); }
+            50% { box-shadow: 0 0 0 4000px rgba(5, 12, 24, 0.52), 0 0 38px rgba(249, 115, 22, 0.7), inset 0 0 16px rgba(249, 115, 22, 0.25); }
         }
-        .scanning-ring .corner { border-color: rgba(56, 189, 248, 0.9) !important; }
+        .scanning-ring .corner { border-color: #fb923c !important; filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.8)); }
 
         .success-ring {
             border-color: rgba(52, 211, 153, 0.95) !important;
             box-shadow: 0 0 0 4000px rgba(5, 12, 24, 0.65), 0 0 40px rgba(52, 211, 153, 0.5) !important;
             animation: successPulse 0.5s ease-out !important;
         }
-        .success-ring .corner { border-color: rgba(52, 211, 153, 0.95) !important; }
+        .success-ring .corner { border-color: rgba(52, 211, 153, 0.95) !important; filter: drop-shadow(0 0 8px rgba(52, 211, 153, 0.7)); }
         .success-ring .scan-line { background: linear-gradient(90deg, transparent, rgba(52, 211, 153, 0.85), transparent); box-shadow: 0 0 10px rgba(52, 211, 153, 0.7); }
         @keyframes successPulse { 0% { transform: translate(-50%, -50%) scale(0.97); } 50% { transform: translate(-50%, -50%) scale(1.02); } 100% { transform: translate(-50%, -50%) scale(1); } }
 
