@@ -14,17 +14,19 @@ re-extracted with fdx from an enrolled photo. The PCA 512->128 reducer is
 also fitted per-space; it must be re-fit on fdx embeddings before the
 128-d output means anything (until then it stays disabled).
 
-Calibration (CelebA ground-truth identities — identity_CelebA.txt — 100
-identities × 12 images, 5-point-landmark norm_crop 112×112 crops, enrolled-
-vs-probe and impostor pairs, exact sweep in
-face_dx/reports/threshold_calibration.json):
-same-person cosine mean 0.52 (p5 0.23), different-person p95 0.12
-(max 0.27). AUC 0.9917, d-prime 4.16, TAR@FAR1e-2 = 0.961.
-Operating points: thr 0.20 → FAR 0.4% / FRR 4.3% (Youden-optimal);
-thr 0.30 → FAR 0.0% / FRR 8.1%; thr 0.40 → FAR 0.0% / FRR 19.7%.
-Default threshold 0.30 (env FDX_MATCH_THRESHOLD) — the FAR-0 point with
-usable usability; raise to 0.40+ only when capture conditions are fully
-controlled and false rejects are acceptable.
+Calibration (CelebA ground-truth identities — identity_CelebA.txt — 500
+identities × 8 images, 5-point-landmark norm_crop 112×112 crops, 5-image
+centroid enrollment ensemble, exact sweep in
+face_dx/reports/threshold_calibration_500.json):
+same-person cosine mean 0.65 (p5 0.39), different-person p95 0.13.
+AUC 0.9926, d-prime 5.60, TAR@FAR1e-2 = 0.978.
+Operating points (centroid-of-5): thr 0.20 → FAR 0.64% / FRR 2.3%;
+thr 0.30 → FAR 0.021% / FRR 3.0%; thr 0.40 → FAR ~5e-6 / FRR 5.3%
+(20.5% without the ensemble). Default threshold 0.30 (env
+FDX_MATCH_THRESHOLD) — near-zero FAR with usable usability; raise to 0.40+
+only when capture conditions are fully controlled and false rejects are
+acceptable. /extract accepts up to 5 profile photos and returns one
+L2-normalized centroid (single-photo requests behave exactly as before).
 
 Embedding-space parity: the engine runs the SAME weights as the server's
 insightface fallback (w600k_mbf.onnx). cos(fdx, onnx) = 1.0000 on the same

@@ -33,9 +33,9 @@ KEY = "uni-activity-ai-secret-key-2026"
 HDR = {"X-API-Key": KEY}
 PORT_FDX = 8021
 PORT_NOFDX = 8022
-THRESHOLD = 0.60          # fdx_backend default
+THRESHOLD = 0.30          # calibrated zero-FAR default (w600k_mbf space)
 SAME_BAND = (0.60, 1.01)  # calibrated: 0.858-0.911 (flip probes)
-DIFF_BAND = (-1.01, 0.60)  # calibrated: 0.019-0.212
+DIFF_BAND = (-1.01, 0.30)  # calibrated: 0.019-0.212
 
 results: dict = {"ok": True, "checks": {}}
 
@@ -142,14 +142,14 @@ def main() -> int:
                round(float(np.linalg.norm(emb_fdx)), 4) if emb_fdx.size else None})
         legacy = ex.get("embedding_insightface_512d")
 
-        # ---- 5. the two spaces must not be comparable ----
+        # ---- 5. the two spaces must agree (model parity with InsightFace) ----
         if legacy:
             emb_if = np.asarray(legacy, dtype=np.float32)
             cross = float(np.dot(emb_fdx, emb_if))
-            check("spaces_incomparable", abs(cross) < 0.35,
-                  f"cos(fdx, insightface)={cross:.4f} (re-enrollment required)")
+            check("spaces_compatible_parity", cross >= 0.999,
+                  f"cos(fdx, insightface)={cross:.4f} (model parity confirmed)")
         else:
-            check("spaces_incomparable", False, "no legacy vector in response")
+            check("spaces_compatible_parity", False, "no legacy vector in response")
 
         # ---- 3. same-person verify ----
         known = json.dumps(emb_fdx.tolist())

@@ -46,8 +46,8 @@ enroll/verify stay consistent either way.
 
 | area | behavior |
 |---|---|
-| `/extract` | returns the **fdx** 512-d vector as `embedding_512d` with `embedding_space: "fdx-w600k-mbf"`; the insightface vector is still included as `embedding_insightface_512d` during the migration window; `embedding_128d` is `null` in fdx mode (PCA must be re-fit on fdx vectors first) |
-| `/verify` | compares the stored vector against the **fdx** embedding; threshold from `FDX_MATCH_THRESHOLD` (default **0.60**); falls back to insightface comparison only if the engine fails mid-request |
+| `/extract` | returns the **fdx** 512-d vector as `embedding_512d` with `embedding_space: "fdx-w600k-mbf"`; the insightface vector is still included as `embedding_insightface_512d` during the migration window; `embedding_128d` is `null` in fdx mode (PCA must be re-fit on fdx vectors first). Accepts up to 5 profile photos (`image` + repeated `images` multipart field) and returns one L2-normalized **centroid** — see "Ensemble enrollment" below |
+| `/verify` | compares the stored vector against the **fdx** embedding; threshold from `FDX_MATCH_THRESHOLD` (default **0.30**); falls back to insightface comparison only if the engine fails mid-request |
 | fallback | engine unavailable at startup (no DLL / no GPU / bad model) → server logs a warning and **both endpoints silently use insightface ArcFace** (fail-open); `/health` shows `embedder` + `fdx.reason` |
 | `/health` | new fields: `models.fdx`, `embedder`, `fdx` (adapter info, threshold) |
 
@@ -76,33 +76,74 @@ backend verify which space a stored vector came from.
 > embedder switches no longer require re-enrollment as long as both stay
 > on w600k_mbf weights + norm_crop alignment.
 
-## Threshold calibration (CelebA ground truth, 100 identities × 12 images)
+## Ensemble enrollment (v2.4)
+
+`/extract` now accepts up to **5 profile photos**: the required `image`
+field plus extras in the repeated multipart field `images`. Every photo
+must contain exactly one face; failed photos are skipped as long as at
+least one succeeds. All valid vectors are averaged into one
+L2-normalized **centroid**, returned as `embedding_512d` — so client
+storage and `/verify` are unchanged (still one 512-d vector).
+
+Response additions: `enrolled_images` (count) and `enrollment`
+(`"single"` or `"centroid"`). A single-photo request behaves exactly as
+before (`enrollment: "single"`).
+
+```http
+POST /extract
+Content-Type: multipart/form-data
+
+image     = profile_1.jpg      (required)
+images    = profile_2.jpg      (repeated field, optional)
+images    = profile_3.jpg
+images    = profile_4.jpg
+images    = profile_5.jpg
+```
+
+The backend should ask users for **5 different profile photos** (different
+days/poses, not near-duplicates). Per-identity vectors in the ensemble cut
+false rejects sharply: at the same FAR (~5e-6), FRR@0.40 drops from 20.5%
+(single photo) to **5.3%** (centroid-of-5) on 500 CelebA identities.
+
+## Threshold calibration (CelebA ground truth, 500 identities × 8 images)
 
 Real identity labels (`identity_CelebA.txt`), production contract (norm_crop
-112×112 → fdx engine). Full report:
-`face_dx/reports/threshold_calibration.json`.
+112×112 → fdx engine, 5-image centroid enrollment, seed 0). Full report:
+`face_dx/reports/threshold_calibration_500.json` (the earlier 100-id × 12
+single-photo run is archived in `threshold_calibration.json`).
 
-| metric | value |
-|---|---|
-| same-person cosine | mean **0.52**, p5 **0.23** (n=1089) |
-| different-person cosine | p95 **0.12**, max **0.27** (n=9702) |
-| AUC / d-prime | **0.9917** / **4.16** |
-| TAR @ FAR 1e-1 / 1e-2 / 1e-3 | 0.976 / 0.961 / 0.949 |
+| metric | centroid-of-5 | single-photo (reference) |
+|---|---|---|
+| same-person cosine | mean **0.653**, p5 **0.390** (n=1496) | mean 0.516, p5 0.207 |
+| different-person cosine | p95 **0.127**, max 0.658 (n=746,504) | p95 0.121 |
+| AUC / d-prime | **0.9926** / **5.60** | 0.9866 / 4.05 |
+| TAR @ FAR 1e-1 / 1e-2 / 1e-3 | **0.986 / 0.978 / 0.973** | 0.973 / 0.957 / 0.939 |
 
-Exact FAR/FRR sweep:
+Exact FAR/FRR sweep (centroid-of-5):
 
 | threshold | FAR | FRR |
 |---|---|---|
-| 0.20 | 0.39% | 4.3% |
-| **0.30 (default)** | **0.00%** | **8.1%** |
-| 0.40 | 0.00% | 19.7% |
+| 0.20 | 0.64% | 2.3% |
+| **0.30 (default)** | **0.021%** | **3.0%** |
+| 0.256 | 0.10% | 2.7% |
+| 0.40 | ~5e-6 | 5.3% |
+| 0.50 | ~1e-6 | 11.0% |
 
-Default **0.30** is the zero-FAR point with acceptable false-reject rate.
-The earlier 0.40 default (and the pre-migration 0.60) rejected 1-in-5 and
-nearly all legitimate attempts respectively — aligned-crop scores sit much
-lower than plain-resize-era scores because norm_crop preserves real pose
-variation. Raise to 0.40 only for fully-controlled kiosk capture where
-false rejects are cheap.
+Operating-point guidance (centroid enrollment):
+
+- **0.30 (default)** — zero-FAR-equivalent point from the 100-id run; on
+  500 ids it costs 0.021% FAR with 3.0% FRR. Good default for activity
+  checks where a rare false accept is tolerable.
+- **0.40** — high-security mode: FAR ~5e-6 (1 in 187k impostor pairs),
+  FRR 5.3% with a 5-photo ensemble (20.5% without). Raise
+  `FDX_MATCH_THRESHOLD` for fully-controlled kiosk capture only.
+- **0.20 floor** — convenience mode (FAR 0.64%). Do not go below 0.20:
+  the diff-max 0.658 outlier means sub-0.20 thresholds trade real
+  impostor risk for marginal FRR gains.
+
+The earlier 0.60 default rejected nearly all legitimate attempts —
+aligned-crop scores sit much lower than plain-resize-era scores because
+norm_crop preserves real pose variation.
 
 Calibration was done on aligned 112×112 CelebA crops (the same alignment
 the production pipeline uses); plain-resize ROI crops were the engine's

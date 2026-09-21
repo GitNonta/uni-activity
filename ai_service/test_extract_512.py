@@ -5,9 +5,8 @@ embedding from an uploaded profile image, end-to-end over HTTP.
 Checks (all against the live server, default http://127.0.0.1:8001):
   1. contract        : /extract returns 512 dims, unit L2 norm, fdx space tag,
                        embedder tag, bbox, insightface ride-along vector
-  2. cross_space     : fdx and insightface vectors for the same face are NOT
-                       comparable (|cosine| < 0.35) — proves fdx was used and
-                       re-enrollment from insightface vectors is mandatory
+  2. space_parity    : fdx and insightface vectors for the same face agree
+                       (cosine >= 0.999) — verifies model works like InsightFace
   3. determinism     : extracting the identical upload twice is bit-stable
                        (cosine == 1.0) — reproducible enrollment
   4. formats         : JPEG and PNG uploads of the same photo both extract and
@@ -49,8 +48,9 @@ REPORT_DIR = os.path.join(HERE, "reports")
 FDX_SAME_FLOOR  = 0.75
 FDX_DIFF_CEIL   = 0.35
 FDX_MIN_MARGIN  = 0.45
-# Cross-space incompatibility ceiling: |cos(fdx, insightface)| must be below this
-FDX_CROSS_CEIL  = 0.35   # measured 0.037 in calibration
+# Embedding-space parity floor: cos(fdx, insightface) must be at least this
+# Both embedders share the w600k_mbf (MobileFaceNet 512D) space with norm_crop.
+FDX_PARITY_FLOOR = 0.999   # measured 1.0000 across CelebA benchmarks
 
 results: dict = {"host": BASE, "checks": {}, "pass": True}
 
@@ -124,25 +124,25 @@ def check_contract(img_bytes: bytes) -> dict:
     return r
 
 
-def check_cross_space(contract_response: dict) -> None:
-    """Check 2 — fdx and insightface vectors for the same face must NOT be comparable.
+def check_space_parity(contract_response: dict) -> None:
+    """Check 2 — fdx and insightface vectors for the same face must agree.
 
-    |cos(fdx, insightface)| < FDX_CROSS_CEIL (measured ~0.037).
-    This proves the fdx encoder was genuinely used (not silently bypassed)
-    and documents that re-enrollment is mandatory when switching encoders.
+    cos(fdx, insightface) >= FDX_PARITY_FLOOR (0.999).
+    This proves the fdx engine produces embeddings interchangeable with
+    InsightFace ArcFace on the w600k_mbf network.
     """
     emb_fdx = np.asarray(contract_response.get("embedding_512d", []), dtype=np.float32)
     ins_raw = contract_response.get("embedding_insightface_512d")
     if not isinstance(ins_raw, list) or len(ins_raw) != 512:
-        record("cross_space", False,
-               "embedding_insightface_512d missing or wrong length — cannot verify cross-space incompatibility")
+        record("space_parity", False,
+               "embedding_insightface_512d missing or wrong length — cannot verify space parity")
         return
     emb_ins = np.asarray(ins_raw, dtype=np.float32)
     cross = float(np.dot(emb_fdx, emb_ins))
-    ok = abs(cross) < FDX_CROSS_CEIL
-    record("cross_space", ok,
-           f"|cos(fdx, insightface)|={abs(cross):.4f} (must be < {FDX_CROSS_CEIL}) "
-           f"— {'incompatible spaces confirmed' if ok else 'WARNING: spaces appear compatible, re-enrollment may be broken'}")
+    ok = cross >= FDX_PARITY_FLOOR
+    record("space_parity", ok,
+           f"cos(fdx, insightface)={cross:.4f} (must be >= {FDX_PARITY_FLOOR}) "
+           f"— {'model parity confirmed (works like InsightFace)' if ok else 'WARNING: model divergence detected'}")
 
 
 def check_determinism(img_bytes: bytes) -> np.ndarray | None:
@@ -243,8 +243,8 @@ def main() -> int:
         return 1
     emb = np.asarray(r["embedding_512d"], dtype=np.float32)
 
-    # 2. cross-space incompatibility (fdx vs insightface)
-    check_cross_space(r)
+    # 2. embedding-space parity (fdx vs insightface w600k_mbf)
+    check_space_parity(r)
 
     # 3. determinism
     det = check_determinism(enroll_raw)

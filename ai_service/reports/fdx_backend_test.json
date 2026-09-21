@@ -12,22 +12,22 @@
         "norm": 1.0
       }
     },
-    "spaces_incomparable": {
+    "spaces_compatible_parity": {
       "pass": true,
-      "detail": "cos(fdx, insightface)=0.0374 (re-enrollment required)"
+      "detail": "cos(fdx, insightface)=1.0000 (model parity confirmed)"
     },
     "verify_same_person": {
       "pass": true,
       "detail": {
-        "sim": 0.8685,
+        "sim": 0.9502,
         "embedder": "fdx-d3d11",
-        "thr": 0.6
+        "thr": 0.3
       }
     },
     "verify_diff_person": {
       "pass": true,
       "detail": {
-        "sim": 0.0091
+        "sim": -0.0309
       }
     },
     "response_contract": {

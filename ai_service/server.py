@@ -34,7 +34,7 @@ import base64
 import logging
 import socket
 from contextlib import asynccontextmanager
-from typing import Optional
+from typing import List, Optional
 
 import numpy as np
 import cv2
@@ -608,93 +608,142 @@ async def warmup():
 
 
 @app.post("/extract", dependencies=[Depends(verify_api_key)])
-async def extract_face(image: UploadFile = File(...)):  # noqa: B008
+async def extract_face(  # noqa: B008
+    image: UploadFile = File(...),
+    images: Optional[List[UploadFile]] = File(None),
+):
     """
     สร้าง face embedding จากรูปโปรไฟล์ในสองรูปแบบ:
     - 512D ArcFace (สำหรับ verification ความแม่นยำสูง)
     - 128D reduced (สำหรับ JavaScript real-time processing)
     ใช้ตอน upload รูปโปรไฟล์ใหม่เท่านั้น
+
+    Ensemble enrollment (recommended): send up to 5 profile photos — the
+    required `image` plus extras in the repeated multipart field `images`.
+    Every valid photo is embedded and the vectors are averaged into one
+    L2-normalized centroid returned as embedding_512d, so /verify and client
+    storage stay unchanged. Calibrated on 500 CelebA identities (seed 0):
+    FRR@thr=0.40 drops 20.5% (single photo) -> 5.3% (centroid-of-5) at the
+    same FAR (~5e-6). See face_dx/reports/threshold_calibration_500.json.
     """
     t0 = time.time()
-    logger.info(f"[extract] file={image.filename} - extracting both 512D and 128D embeddings")
+    extra = images or []
+    logger.info(f"[extract] file={image.filename} - extracting both 512D and 128D embeddings "
+                f"(+{len(extra)} ensemble images)")
 
-    contents = await image.read()
-    try:
-        img = decode_image(contents)
-    except ValueError as e:
-        raise HTTPException(400, str(e))
+    blobs = [await image.read()] + [await f.read() for f in extra]
 
-    # Detect face on full image: guarantees accurate global coordinates,
-    # multiple-face detection, and correct landmark alignment for norm_crop.
-    faces_in_img = face_app.get(img)
-    if len(faces_in_img) == 0:
-        # Fallback to YOLO pre-filter if SCRFD det_thresh didn't trigger on full image
-        roi = yolo_detect_face(img)
-        if roi is not None and roi is not img:
-            roi_faces = face_app.get(roi)
-            if roi_faces:
-                faces_in_img = roi_faces
-                img = roi  # Work consistently in roi coordinate frame
-    if len(faces_in_img) == 0:
-        raise HTTPException(400, "No face detected in image. Please ensure the image contains a clear, front-facing face.")
-    if len(faces_in_img) > 1:
-        raise HTTPException(400, "Multiple faces detected. Please upload a photo with only one person.")
+    # Detect a face in every enrollment image. Full-image detection
+    # guarantees accurate global coordinates, multiple-face detection, and
+    # correct landmark alignment for norm_crop. Each photo must contain
+    # exactly one face; failed photos are skipped (not fatal) as long as at
+    # least one succeeds.
+    vectors: list[np.ndarray] = []
+    last_error: Optional[str] = None
+    n_extra_ok = 0
+    for idx, blob in enumerate(blobs):
+        try:
+            img = decode_image(blob)
+        except ValueError as e:
+            last_error = f"image {idx}: {e}"
+            continue
 
-    face = max(faces_in_img, key=lambda f: f.det_score)
-    embedding_512d = face.normed_embedding
+        faces_in_img = face_app.get(img)
+        if len(faces_in_img) == 0:
+            # Fallback to YOLO pre-filter if SCRFD det_thresh didn't trigger on full image
+            roi = yolo_detect_face(img)
+            if roi is not None and roi is not img:
+                roi_faces = face_app.get(roi)
+                if roi_faces:
+                    faces_in_img = roi_faces
+                    img = roi  # Work consistently in roi coordinate frame
+        if len(faces_in_img) == 0:
+            last_error = f"image {idx}: no face detected"
+            continue
+        if len(faces_in_img) > 1:
+            last_error = f"image {idx}: multiple faces detected"
+            continue
 
-    # ── fdx 512-d (chosen activity-check decoder) ──────────────────────
-    # fdx_embed_crop_async() offloads the ~35-50ms D3D11 GPU inference onto
-    # the thread-pool executor so it does not block the uvicorn event loop.
-    # prepare_fdx_crop() aligns the face to canonical 112×112 via norm_crop.
-    # Without landmarks the crop is NOT aligned → embedding would not match
-    # the fdx space → the request falls back to insightface (which uses the
-    # same w600k_mbf weights, so enroll/verify stay consistent).
-    embedder = "insightface-arcface"
-    fdx_512d: Optional[np.ndarray] = None
-    if fdx_backend is not None and fdx_backend.available:
-        crop = prepare_fdx_crop(img, face) if face is not None else None
-        if crop is not None:
-            fdx_512d = await fdx_embed_crop_async(crop)
-        if fdx_512d is not None:
-            embedder = "fdx-d3d11"
+        face = max(faces_in_img, key=lambda f: f.det_score)
+        embedding_512d = face.normed_embedding
+
+        # ── fdx 512-d (chosen activity-check decoder) ──────────────────
+        # fdx_embed_crop_async() offloads the ~35-50ms D3D11 GPU inference
+        # onto the thread-pool executor so it does not block the uvicorn
+        # event loop. prepare_fdx_crop() aligns the face to canonical
+        # 112×112 via norm_crop. Without landmarks the crop is NOT aligned
+        # → embedding would not match the fdx space → the request falls
+        # back to insightface (which uses the same w600k_mbf weights, so
+        # enroll/verify stay consistent).
+        embedder = "insightface-arcface"
+        fdx_512d: Optional[np.ndarray] = None
+        if fdx_backend is not None and fdx_backend.available:
+            crop = prepare_fdx_crop(img, face) if face is not None else None
+            if crop is not None:
+                fdx_512d = await fdx_embed_crop_async(crop)
+            if fdx_512d is not None:
+                embedder = "fdx-d3d11"
+            else:
+                reason = ("no 5-point landmarks (unaligned crop rejected)"
+                          if crop is None else fdx_backend.last_error)
+                logger.warning(f"[extract] fdx unavailable ({reason}) — falling back to insightface")
+
+        # Collect the primary-space vector (fdx when available); keep the
+        # insightface vector of the FIRST image for the migration window.
+        vectors.append(fdx_512d if fdx_512d is not None else embedding_512d)
+        if idx == 0:
+            first_img = img
+            first_face = face
+            first_embedding_512d = embedding_512d
+            first_fdx_512d = fdx_512d
+            first_embedder = embedder
         else:
-            reason = ("no 5-point landmarks (unaligned crop rejected)"
-                      if crop is None else fdx_backend.last_error)
-            logger.warning(f"[extract] fdx unavailable ({reason}) — falling back to insightface")
+            n_extra_ok += 1
 
-    # สร้าง 128D embedding โดยใช้ PCA dimensionality reduction
-    embedding_128d = reduce_to_128d(embedding_512d)
+    if not vectors:
+        detail = f" ({last_error})" if last_error else ""
+        raise HTTPException(400, f"No face detected in image. Please ensure the image contains a clear, front-facing face.{detail}")
 
-    elapsed_ms = int((time.time() - t0) * 1000)
-    logger.info(f"[extract] OK in {elapsed_ms}ms - 512D + 128D extracted")
+    # Ensemble centroid: mean of all valid enrollment vectors, L2-normalized.
+    # Verified on 500 CelebA identities: FRR@0.40 20.5% (single) -> 5.3%
+    # (centroid-of-5) at equal FAR (face_dx/reports/threshold_calibration_500.json).
+    stack = np.stack([np.asarray(v, dtype=np.float64) for v in vectors])
+    centroid = stack.mean(axis=0)
+    norm = float(np.linalg.norm(centroid))
+    if norm < 1e-12:
+        raise HTTPException(500, "Degenerate enrollment centroid (zero vector)")
+    embedding_512d = (centroid / norm).astype(np.float32)
 
-    std_bbox = [int(v) for v in face.bbox.tolist()] if face is not None else []
-    full_bbox = get_full_face_bbox(face, img.shape) if face is not None else []
-
-    # When fdx is the embedder, embedding_512d IS the fdx vector: enrollments
-    # stored from this response are natively in the fdx space. The insightface
-    # vector is kept alongside for the migration window; 128-d PCA output is
-    # disabled there until the reducer is re-fit on fdx embeddings.
-    if fdx_512d is not None:
-        primary_512d, legacy_512d = fdx_512d, embedding_512d
+    if first_fdx_512d is not None:
+        primary_512d, legacy_512d = embedding_512d, first_embedding_512d
         embedding_128d = None
     else:
         primary_512d, legacy_512d = embedding_512d, None
+        embedding_128d = reduce_to_128d(embedding_512d)
+
+    elapsed_ms = int((time.time() - t0) * 1000)
+    logger.info(f"[extract] OK in {elapsed_ms}ms - 512D + 128D extracted "
+                f"({len(vectors)} images, {n_extra_ok} ensemble extras)")
+
+    std_bbox = [int(v) for v in first_face.bbox.tolist()] if first_face is not None else []
+    full_bbox = get_full_face_bbox(first_face, first_img.shape) if first_face is not None else []
 
     return {
         "status": "success",
-        "message": ("Face embeddings extracted successfully (512D fdx)" if fdx_512d is not None
-                    else "Face embeddings extracted successfully (512D + 128D)"),
+        "message": (f"Face embeddings extracted successfully (512D fdx centroid of {len(vectors)} images)"
+                    if first_fdx_512d is not None
+                    else f"Face embeddings extracted successfully (512D + 128D, centroid of {len(vectors)} images)"),
         "embedding_512d": primary_512d.tolist(),
-        "embedding_space": "fdx-w600k-mbf" if fdx_512d is not None else "insightface-arcface",
+        "embedding_space": "fdx-w600k-mbf" if first_fdx_512d is not None else "insightface-arcface",
         "embedding_128d": embedding_128d.tolist() if embedding_128d is not None else None,
         "embedding_dims": {
             "full": len(primary_512d),
             "reduced": len(embedding_128d) if embedding_128d is not None else 0
         },
         "embedding_insightface_512d": legacy_512d.tolist() if legacy_512d is not None else None,
-        "embedder": embedder,
+        "embedder": first_embedder,
+        "enrolled_images": len(vectors),
+        "enrollment": "centroid" if len(vectors) > 1 else "single",
         "bbox": std_bbox,
         "full_face_bbox": full_bbox,
         "processing_ms": elapsed_ms,
