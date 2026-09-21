@@ -1,9 +1,13 @@
 {
-  "host": "http://192.168.1.33:8001",
+  "host": "http://127.0.0.1:8001",
   "checks": {
     "contract": {
       "pass": true,
       "detail": "dims=512 norm=1.000000 space=fdx-w600k-mbf embedder=fdx-d3d11 bbox=[46, 61, 132, 186] insightface=present"
+    },
+    "cross_space": {
+      "pass": true,
+      "detail": "|cos(fdx, insightface)|=0.0009 (must be < 0.35) \u2014 incompatible spaces confirmed"
     },
     "determinism": {
       "pass": true,
@@ -11,15 +15,15 @@
     },
     "formats": {
       "pass": true,
-      "detail": "jpeg vs png cosine = 0.998348 (>= 0.995; lossy-compression noise must stay far below the same/diff margin), both extracted"
+      "detail": "jpeg vs png cosine = 0.997955 (>= 0.995; lossy-compression noise must stay far below the same/diff margin), both extracted"
     },
     "separation": {
       "pass": true,
-      "detail": "same-person cosine=0.9544 (>=0.60), different-person=0.0783 (<=0.40), margin=0.8761"
+      "detail": "same-person cosine=0.9787 (>=0.75), different-person=0.0170 (<=0.35), margin=0.9616 (>=0.45)"
     },
     "no_face_path": {
       "pass": true,
-      "detail": "blank image -> HTTP 400 (No face detected in image) \u2014 rejected, not embedded"
+      "detail": "blank image -> HTTP 400 (No face detected in image. Please ensure the image contains ) \u2014 rejected, not embedded"
     }
   },
   "pass": true

@@ -61,7 +61,7 @@ class DepthLivenessAnalyzer:
                  poll_interval: float = 0.12,
                  flux_min: float | None = None,
                  span_min: float | None = None,
-                 timeout: float = 1.5) -> None:
+                 timeout: float = 0.2) -> None:
         self.server_url = server_url.rstrip("/")
         self.sample_frames = max(3, int(sample_frames))
         self.poll_interval = float(poll_interval)
