@@ -125,7 +125,7 @@ class ReenrollFaceEncodingsFdx extends Command
                     // 400 = no face detected → keep old vector, list for manual fix
                     $noFace += $resp->status() === 400 ? 1 : 0;
                     $failed += $resp->status() !== 400 ? 1 : 0;
-                    $this->line("\n  ✗ #{$user->id} HTTP {$resp->status()}: " . str_limit($resp->body(), 80));
+                    $this->line("\n  ✗ #{$user->id} HTTP {$resp->status()}: " . \Illuminate\Support\Str::limit($resp->body(), 80));
                     $bar->advance();
                     continue;
                 }
