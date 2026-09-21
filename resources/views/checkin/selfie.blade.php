@@ -80,113 +80,49 @@
         .mobile-header-label { font-size: 0.65rem; color: rgba(255, 255, 255, 0.55); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; }
         .mobile-header-title { font-size: 0.95rem; font-weight: 600; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* ── Unified Floating Glass Bottom Card ── */
+        /* ── Floating Percentage Pill HUD ── */
         .mobile-bottom {
             display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: center;
             position: absolute;
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: min(92vw, 420px);
+            width: auto;
             z-index: 30;
-            padding-bottom: calc(1.2rem + env(safe-area-inset-bottom, 0px));
+            padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
             pointer-events: auto;
         }
-        .hud-card {
-            background: rgba(10, 20, 38, 0.78);
+        .hud-score-pill {
+            background: rgba(10, 20, 38, 0.82);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            border-radius: 20px;
-            padding: 0.85rem 1.15rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            display: flex;
-            flex-direction: column;
-            gap: 0.6rem;
-            transition: all 0.3s ease;
-        }
-        .hud-card-main {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 0.65rem;
-        }
-        .hud-status {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: #f1f5f9;
-            white-space: nowrap;
-            overflow: hidden;
-            min-width: 0;
-            flex: 1;
-        }
-        #statusChipText {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: inline-block;
-        }
-        .status-dot {
-            width: 9px;
-            height: 9px;
-            border-radius: 50%;
-            flex-shrink: 0;
-            background: #38bdf8;
-            box-shadow: 0 0 10px #38bdf8;
-            transition: all 0.3s;
-        }
-        .status-dot.dot-scanning { background: #38bdf8; box-shadow: 0 0 10px #38bdf8; }
-        .status-dot.dot-warning { background: #fbbf24; box-shadow: 0 0 10px #fbbf24; }
-        .status-dot.dot-success { background: #34d399; box-shadow: 0 0 12px #34d399; }
-        .status-dot.dot-error { background: #f87171; box-shadow: 0 0 10px #f87171; }
-        .status-dot.pulse { animation: statusPulse 1.5s ease-in-out infinite; }
-        @keyframes statusPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.75); } }
-
-        .hud-score-badge {
+            border: 1.5px solid rgba(255, 255, 255, 0.16);
+            border-radius: 9999px;
+            padding: 0.55rem 1.6rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
             display: inline-flex;
             align-items: center;
-            padding: 0.25rem 0.65rem;
-            border-radius: 14px;
-            font-size: 0.82rem;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .hud-score-pill.score-pass {
+            border-color: rgba(52, 211, 153, 0.85);
+            background: rgba(6, 30, 24, 0.85);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 24px rgba(52, 211, 153, 0.4);
+            transform: scale(1.06);
+        }
+        #scoreValuePanel {
+            font-size: 1.45rem;
             font-weight: 700;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.12);
             color: #e2e8f0;
-            flex-shrink: 0;
             letter-spacing: 0.02em;
-            transition: all 0.25s;
-        }
-
-        .hud-progress-wrap {
-            position: relative;
-            height: 4px;
-            border-radius: 4px;
-            background: rgba(255, 255, 255, 0.1);
-            overflow: visible;
-        }
-        .hud-threshold-mark {
-            position: absolute;
-            top: -2.5px;
-            bottom: -2.5px;
-            left: 60%;
-            width: 2px;
-            background: rgba(255, 255, 255, 0.55);
-            border-radius: 1px;
-            z-index: 2;
-        }
-        .hud-progress-fill {
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 0%;
-            border-radius: 4px;
-            background: linear-gradient(90deg, #38bdf8, #34d399);
-            transition: width 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+            min-width: 48px;
+            text-align: center;
+            line-height: 1.2;
+            transition: color 0.25s, transform 0.2s;
         }
 
         /* ── Toast notifications (top, stacked) ── */
@@ -422,27 +358,17 @@
         </div>
     </div>
 
-    <!-- ── MOBILE BOTTOM (Clean Floating Glass HUD) ── -->
+    <!-- ── MOBILE BOTTOM (Percentage Only Floating Pill) ── -->
     <div class="mobile-bottom">
-        <div class="hud-card">
-            <div class="hud-card-main">
-                <div id="statusChip" class="hud-status">
-                    <span class="status-dot pulse"></span>
-                    <span id="statusChipText">กำลังเชื่อมต่อกล้อง...</span>
-                </div>
-                <div id="scoreDisplayPanel" class="hud-score-badge">
-                    <span id="scoreValuePanel">—</span>
-                </div>
-            </div>
-            <div class="hud-progress-wrap">
-                <div class="hud-threshold-mark" title="เกณฑ์ 60%"></div>
-                <div class="hud-progress-fill" id="accuracyBarFill"></div>
-            </div>
+        <div id="scoreDisplayPanel" class="hud-score-pill">
+            <span id="scoreValuePanel">—</span>
         </div>
-        <!-- Technical telemetry kept hidden for script safety -->
+        <!-- Technical elements and status kept hidden for script safety -->
         <div style="display:none;" aria-hidden="true">
+            <div id="statusChip"><span class="status-dot"></span><span id="statusChipText"></span></div>
             <div id="accuracyPanel">
                 <div id="accuracyState"><span id="accuracyStateIcon"></span><span id="accuracyStateText"></span></div>
+                <div id="accuracyBarFill"></div>
                 <span id="accuracyAvg">0</span>
                 <span id="accuracyCount">0</span>
                 <span id="framesSentCount">0</span>
@@ -510,7 +436,15 @@ function setStatusChip(state, text) {
 function setScore(score, color) {
     var panel = document.getElementById('scoreDisplayPanel');
     var val = document.getElementById('scoreValuePanel');
-    if (panel) panel.style.display = 'inline-flex';
+    if (panel) {
+        panel.style.display = 'inline-flex';
+        var num = parseInt(score, 10);
+        if (!isNaN(num) && num >= 60) {
+            panel.classList.add('score-pass');
+        } else {
+            panel.classList.remove('score-pass');
+        }
+    }
     if (val) {
         val.textContent = score;
         if (color) val.style.color = color;
@@ -740,7 +674,7 @@ var FACE_GATE_BACKOFF_AFTER=5; /* consecutive no-face frames → interval increa
    result is fresh (< FACE_CACHE_MS). This halves inference work when both
    timers happen to fire within the same animation frame. */
 var _faceDetCache={result:null,ts:0,CACHE_MS:200};
-var SCAN_UI_BUILD='b7';/* marker sent with every verify — lets the server expose stale cached pages */
+var SCAN_UI_BUILD='b8';/* marker sent with every verify — lets the server expose stale cached pages */
 
 document.addEventListener('DOMContentLoaded', async function(){
     @if(session('error'))
@@ -935,11 +869,11 @@ async function performPythonVerification(base64Image) {
         /* 429 — Rate limited: back off using retry_after from the already-parsed
            JSON body (result). Do NOT call res.json() a second time — the body
            stream is already consumed and a second call throws/hangs. */
-        if(res.status===429){beacon('http_429',{});var ra=(result&&result.retry_after)||30;pythonThrottledUntil=Date.now()+ra*1000;console.warn('Rate limited — backing off '+ra+'s');setScore('หน่วงเวลาตามข้อจำกัดระบบ ('+ra+'s)','#fbbf24');setStatusChip('scanning','สแกนถี่เกิน — พักสั้นแล้วสแกนต่อ...');updateAccuracy(null);return;}
+        if(res.status===429){beacon('http_429',{});var ra=(result&&result.retry_after)||30;pythonThrottledUntil=Date.now()+ra*1000;console.warn('Rate limited — backing off '+ra+'s');setScore('—','#fbbf24');setStatusChip('scanning','สแกนถี่เกิน — พักสั้นแล้วสแกนต่อ...');updateAccuracy(null);return;}
         /* 503 — AI Server / tunnel unavailable: back off 60s to stop the
            retry storm. Without this the scan loop hammers the dead endpoint
            every 1s, flooding the console and wasting bandwidth. */
-        if(res.status===503){beacon('http_503',{});var bo=60;pythonThrottledUntil=Date.now()+bo*1000;console.warn('AI Server unavailable (503) — backing off '+bo+'s');setScore('AI Server ไม่พร้อมให้บริการ — พักแล้วลองใหม่ใน '+bo+'s','#f87171');setStatusChip('error','AI Server ออฟไลน์ — รอ '+bo+' วินาทีแล้วลองใหม่');updateAccuracy(null);if(pythonFailCount===0)showToast('AI Server ไม่พร้อมให้บริการชั่วคราว — ระบบจะลองใหม่อัตโนมัติ','error');pythonFailCount++;return;}
+        if(res.status===503){beacon('http_503',{});var bo=60;pythonThrottledUntil=Date.now()+bo*1000;console.warn('AI Server unavailable (503) — backing off '+bo+'s');setScore('—','#f87171');setStatusChip('error','AI Server ออฟไลน์ — รอ '+bo+' วินาทีแล้วลองใหม่');updateAccuracy(null);if(pythonFailCount===0)showToast('AI Server ไม่พร้อมให้บริการชั่วคราว — ระบบจะลองใหม่อัตโนมัติ','error');pythonFailCount++;return;}
         if(!res.ok){beacon('http_error',{msg:'HTTP '+res.status});throw new Error('HTTP '+res.status);}
         beacon('response',{score:result.score_percentage||0,note:(result.success===false)?(result.status||'fail'):'ok'});
         if(result.success===false){
