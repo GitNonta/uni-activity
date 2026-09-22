@@ -322,10 +322,98 @@ html.dark .pub-section-title {
 }
 
 .pub-posts-feed {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-    gap: 0.9rem;
-    align-items: start;
+    display: block;
+}
+
+/* ── แท็บไอคอนสไตล์ Instagram: กิจกรรม / ข่าวประกาศ / ประกาศงาน ── */
+.pub-feed-tabs {
+    display: flex;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+    margin-bottom: 0.35rem;
+}
+html[data-theme="dark"] .pub-feed-tabs,
+html.dark .pub-feed-tabs {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.pub-feed-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.6rem 0.25rem 0.55rem;
+    margin-bottom: -1px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-family: inherit;
+    color: #94a3b8;
+    transition: color 0.15s ease, border-color 0.15s ease;
+}
+html[data-theme="dark"] .pub-feed-tab,
+html.dark .pub-feed-tab {
+    color: #64748b;
+}
+.pub-feed-tab:hover {
+    color: #64748b;
+}
+html[data-theme="dark"] .pub-feed-tab:hover,
+html.dark .pub-feed-tab:hover {
+    color: #94a3b8;
+}
+.pub-feed-tab.is-active {
+    color: var(--tab-color, #1e293b);
+    border-bottom-color: var(--tab-color, #1e293b);
+}
+
+.pub-feed-tab-icon {
+    display: inline-flex;
+}
+.pub-feed-tab-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.pub-feed-tab-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    line-height: 1.3;
+}
+.pub-feed-tab.is-active .pub-feed-tab-label {
+    font-weight: 700;
+}
+
+.pub-feed-tab-count {
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: #94a3b8;
+    background: rgba(148, 163, 184, 0.14);
+    border-radius: 999px;
+    padding: 0 0.4rem;
+    line-height: 1.5;
+}
+
+.pub-feed-panel {
+    display: none;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+.pub-feed-panel.is-active {
+    display: flex;
+}
+
+.pub-feed-panel-empty {
+    padding: 1.4rem 0.5rem;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #94a3b8;
+    line-height: 1.5;
 }
 
 .pub-post-row {
@@ -347,62 +435,7 @@ html.dark .pub-post-row:hover {
     background: rgba(255, 255, 255, 0.05);
 }
 
-/* ── กลุ่มโพสต์แยกตามประเภท: กิจกรรม / ข่าวประกาศ / ประกาศงาน (คอลัมน์) ── */
-.pub-feed-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
-    min-width: 0;
-    background: rgba(148, 163, 184, 0.06);
-    border: 1px solid rgba(148, 163, 184, 0.16);
-    border-radius: 14px;
-    padding: 0.55rem 0.35rem;
-}
-html[data-theme="dark"] .pub-feed-group,
-html.dark .pub-feed-group {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.08);
-}
 
-.pub-feed-group-header {
-    display: flex;
-    align-items: center;
-    gap: 0.55rem;
-    padding: 0.15rem 0.55rem 0.4rem;
-}
-
-.pub-feed-group-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 26px;
-    height: 26px;
-    border-radius: 8px;
-    flex-shrink: 0;
-}
-
-.pub-feed-group-label {
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--text-main, #334155);
-    letter-spacing: 0.01em;
-    line-height: 1.4;
-}
-html[data-theme="dark"] .pub-feed-group-label,
-html.dark .pub-feed-group-label {
-    color: #e2e8f0;
-}
-
-.pub-feed-group-count {
-    margin-left: auto;
-    font-size: 0.68rem;
-    font-weight: 700;
-    color: #94a3b8;
-    background: rgba(148, 163, 184, 0.12);
-    border-radius: 999px;
-    padding: 0.12rem 0.55rem;
-    line-height: 1.4;
-}
 
 .pub-post-title {
     flex: 1;
@@ -634,6 +667,7 @@ html.dark .follower-row:hover {
         <div class="pub-posts-feed">
             @php
                 $postsByType = $posts->groupBy('type');
+                $defaultFeedType = collect(['activity', 'announcement', 'job'])->first(fn ($t) => $postsByType->get($t, collect())->isNotEmpty()) ?? 'activity';
                 $feedGroups = [
                     'activity' => [
                         'label' => 'กิจกรรม',
@@ -652,31 +686,41 @@ html.dark .follower-row:hover {
                     ],
                 ];
             @endphp
+            @if ($posts->isNotEmpty())
+            <div class="pub-feed-tabs" role="tablist">
+                @foreach ($feedGroups as $type => $group)
+                    <button type="button" class="pub-feed-tab {{ $type === $defaultFeedType ? 'is-active' : '' }}"
+                            data-feed-tab="{{ $type }}" role="tab"
+                            aria-selected="{{ $type === $defaultFeedType ? 'true' : 'false' }}"
+                            style="--tab-color: {{ $group['color'] }};"
+                            title="{{ $group['label'] }}">
+                        <span class="pub-feed-tab-icon">{!! $group['icon'] !!}</span>
+                        <span class="pub-feed-tab-label">{{ $group['label'] }} <span class="pub-feed-tab-count">{{ $postsByType->get($type, collect())->count() }}</span></span>
+                    </button>
+                @endforeach
+            </div>
             @foreach ($feedGroups as $type => $group)
                 @php $groupPosts = $postsByType->get($type, collect()); @endphp
-                @if ($groupPosts->isEmpty())
-                    @continue
-                @endif
-                <div class="pub-feed-group">
-                    <div class="pub-feed-group-header">
-                        <span class="pub-feed-group-icon" style="color: {{ $group['color'] }}; background: {{ $group['color'] }}1a;">{!! $group['icon'] !!}</span>
-                        <span class="pub-feed-group-label">{{ $group['label'] }}</span>
-                        <span class="pub-feed-group-count">{{ $groupPosts->count() }}</span>
-                    </div>
-                    @foreach ($groupPosts as $post)
-                        <a href="{{ $post['url'] }}" class="pub-post-row">
-                            <span class="pub-post-title">{{ $post['title'] }}</span>
-                            <span class="pub-post-date">
-                                @if($post['date'])
-                                    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                    {{ \Illuminate\Support\Carbon::parse($post['date'])->format('d/m/Y') }}
-                                @endif
-                            </span>
-                            <svg class="pub-post-arrow" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                        </a>
-                    @endforeach
+                <div class="pub-feed-panel {{ $type === $defaultFeedType ? 'is-active' : '' }}" data-feed-panel="{{ $type }}" role="tabpanel">
+                    @if ($groupPosts->isEmpty())
+                        <div class="pub-feed-panel-empty">ยังไม่มี{{ $group['label'] }}</div>
+                    @else
+                        @foreach ($groupPosts as $post)
+                            <a href="{{ $post['url'] }}" class="pub-post-row">
+                                <span class="pub-post-title">{{ $post['title'] }}</span>
+                                <span class="pub-post-date">
+                                    @if($post['date'])
+                                        <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                        {{ \Illuminate\Support\Carbon::parse($post['date'])->format('d/m/Y') }}
+                                    @endif
+                                </span>
+                                <svg class="pub-post-arrow" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            </a>
+                        @endforeach
+                    @endif
                 </div>
             @endforeach
+            @endif
             @if ($posts->isEmpty())
                 <x-empty-state
                     icon="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
@@ -711,6 +755,21 @@ html.dark .follower-row:hover {
 (function () {
     var CSRF = document.querySelector('meta[name="csrf-token"]').content;
     var followBtn = document.getElementById('followBtn');
+
+    // ── แท็บโพสต์สไตล์ Instagram: สลับแผงตามประเภท (กิจกรรม/ข่าวประกาศ/ประกาศงาน) ──
+    document.querySelectorAll('.pub-feed-tab').forEach(function (tab) {
+        tab.addEventListener('click', function () {
+            var type = tab.getAttribute('data-feed-tab');
+            document.querySelectorAll('.pub-feed-tab').forEach(function (t) {
+                var on = t === tab;
+                t.classList.toggle('is-active', on);
+                t.setAttribute('aria-selected', on ? 'true' : 'false');
+            });
+            document.querySelectorAll('.pub-feed-panel').forEach(function (p) {
+                p.classList.toggle('is-active', p.getAttribute('data-feed-panel') === type);
+            });
+        });
+    });
 
     // ── Escape ข้อความก่อนใส่ลง innerHTML ทุกครั้ง (ป้องกัน XSS จากชื่อผู้ใช้) ──
     function escHtml(s) {
