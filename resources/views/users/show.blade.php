@@ -346,14 +346,55 @@ html.dark .pub-post-row:hover {
     background: rgba(255, 255, 255, 0.05);
 }
 
-.pub-type-chip {
-    font-size: 0.7rem;
-    font-weight: 700;
-    padding: 0.2rem 0.65rem;
-    border-radius: 999px;
-    color: #ffffff;
+/* ── กลุ่มโพสต์แยกตามประเภท: กิจกรรม / ข่าวประกาศ / ประกาศงาน ── */
+.pub-feed-group + .pub-feed-group {
+    margin-top: 0.9rem;
+    padding-top: 0.7rem;
+    border-top: 1px dashed rgba(148, 163, 184, 0.28);
+}
+html[data-theme="dark"] .pub-feed-group + .pub-feed-group,
+html.dark .pub-feed-group + .pub-feed-group {
+    border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+.pub-feed-group-header {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.1rem 0.65rem 0.4rem;
+}
+
+.pub-feed-group-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
     flex-shrink: 0;
-    letter-spacing: 0.02em;
+}
+
+.pub-feed-group-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-main, #334155);
+    letter-spacing: 0.01em;
+    line-height: 1.4;
+}
+html[data-theme="dark"] .pub-feed-group-label,
+html.dark .pub-feed-group-label {
+    color: #e2e8f0;
+}
+
+.pub-feed-group-count {
+    margin-left: auto;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #94a3b8;
+    background: rgba(148, 163, 184, 0.12);
+    border-radius: 999px;
+    padding: 0.12rem 0.55rem;
+    line-height: 1.4;
 }
 
 .pub-post-title {
@@ -584,25 +625,58 @@ html.dark .follower-row:hover {
             </h2>
         </div>
         <div class="pub-posts-feed">
-            @forelse($posts as $post)
-                <a href="{{ $post['url'] }}" class="pub-post-row">
-                    <span class="pub-type-chip" style="background: {{ $post['color'] }};">{{ $post['typeLabel'] }}</span>
-                    <span class="pub-post-title">{{ $post['title'] }}</span>
-                    <span class="pub-post-date">
-                        @if($post['date'])
-                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                            {{ \Illuminate\Support\Carbon::parse($post['date'])->format('d/m/Y') }}
-                        @endif
-                    </span>
-                    <svg class="pub-post-arrow" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                </a>
-            @empty
+            @php
+                $postsByType = $posts->groupBy('type');
+                $feedGroups = [
+                    'activity' => [
+                        'label' => 'กิจกรรม',
+                        'color' => '#2563eb',
+                        'icon'  => '<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>',
+                    ],
+                    'announcement' => [
+                        'label' => 'ข่าวประกาศ',
+                        'color' => '#7c3aed',
+                        'icon'  => '<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>',
+                    ],
+                    'job' => [
+                        'label' => 'ประกาศงาน',
+                        'color' => '#ea580c',
+                        'icon'  => '<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>',
+                    ],
+                ];
+            @endphp
+            @foreach ($feedGroups as $type => $group)
+                @php $groupPosts = $postsByType->get($type, collect()); @endphp
+                @if ($groupPosts->isEmpty())
+                    @continue
+                @endif
+                <div class="pub-feed-group">
+                    <div class="pub-feed-group-header">
+                        <span class="pub-feed-group-icon" style="color: {{ $group['color'] }}; background: {{ $group['color'] }}1a;">{!! $group['icon'] !!}</span>
+                        <span class="pub-feed-group-label">{{ $group['label'] }}</span>
+                        <span class="pub-feed-group-count">{{ $groupPosts->count() }}</span>
+                    </div>
+                    @foreach ($groupPosts as $post)
+                        <a href="{{ $post['url'] }}" class="pub-post-row">
+                            <span class="pub-post-title">{{ $post['title'] }}</span>
+                            <span class="pub-post-date">
+                                @if($post['date'])
+                                    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    {{ \Illuminate\Support\Carbon::parse($post['date'])->format('d/m/Y') }}
+                                @endif
+                            </span>
+                            <svg class="pub-post-arrow" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </a>
+                    @endforeach
+                </div>
+            @endforeach
+            @if ($posts->isEmpty())
                 <x-empty-state
                     icon="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
                     title="ยังไม่มีผลงานที่เผยแพร่"
                     description="{{ $profileUser->isStaffOrAdmin() ? 'ผู้ใช้นี้ยังไม่เคยเผยแพร่กิจกรรมหรือประกาศงาน' : 'กดติดตามเพื่อรับข่าวสารจากผู้ใช้นี้ในอนาคต' }}"
                     size="sm" />
-            @endforelse
+            @endif
         </div>
     </div>
 
