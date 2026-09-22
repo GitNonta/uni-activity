@@ -2204,16 +2204,18 @@ html[data-theme="dark"] .notif-banner-close:hover {
     }
 }
 
-/* ── Unified Navbar Icon Buttons (Mobile / Header) ── */
+/* ── Unified Navbar Icon Buttons (Boxless / Clean Header) ── */
 .navbar-icon-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 34px;
     height: 34px;
-    border-radius: 9px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: transparent;
+    border: none;
+    outline: none;
+    box-shadow: none;
     color: #475569;
     cursor: pointer;
     transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
@@ -2221,54 +2223,56 @@ html[data-theme="dark"] .notif-banner-close:hover {
     text-decoration: none !important;
 }
 .navbar-icon-btn:hover {
-    background: #fff7ed;
+    background: rgba(234, 88, 12, 0.08);
     color: #ea580c;
-    border-color: #fed7aa;
+    border: none;
     transform: translateY(-1px);
 }
 .navbar-icon-btn:active {
     transform: translateY(0);
 }
 .navbar-icon-btn.active {
-    background: #ffedd5;
+    background: rgba(234, 88, 12, 0.12);
     color: #ea580c;
-    border-color: #fdba74;
+    border: none;
 }
 .navbar-icon-btn svg {
-    width: 17px;
-    height: 17px;
+    width: 18px;
+    height: 18px;
 }
 
 /* Dark mode for navbar-icon-btn */
 html[data-theme="dark"] .navbar-icon-btn {
-    background: #1c1c1f;
-    border-color: #27272a;
-    color: #a1a1aa;
+    background: transparent;
+    border: none;
+    color: #94a3b8;
 }
 html[data-theme="dark"] .navbar-icon-btn:hover {
-    background: #27272a;
-    color: #f97316;
-    border-color: #3f3f46;
+    background: rgba(251, 146, 60, 0.12);
+    color: #fb923c;
+    border: none;
 }
 html[data-theme="dark"] .navbar-icon-btn.active {
     background: rgba(234, 88, 12, 0.2);
-    color: #f97316;
-    border-color: rgba(249, 115, 22, 0.4);
+    color: #fb923c;
+    border: none;
 }
 
-/* ── Navbar Logout Button ── */
+/* ── Navbar Logout Button (Boxless / Clean) ── */
 .navbar-logout-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 4px;
     height: 34px;
-    padding: 0 10px;
-    border-radius: 9px;
-    border: 1px solid #e2e8f0;
-    background: #f8fafc;
+    padding: 0 8px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    background: transparent;
     color: #475569;
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
@@ -2276,23 +2280,23 @@ html[data-theme="dark"] .navbar-icon-btn.active {
     text-decoration: none;
 }
 .navbar-logout-btn:hover {
-    background: #fef2f2;
+    background: rgba(239, 68, 68, 0.08);
     color: #dc2626;
-    border-color: #fecaca;
+    border: none;
     transform: translateY(-1px);
 }
 .navbar-logout-btn:active {
     transform: translateY(0);
 }
 html[data-theme="dark"] .navbar-logout-btn {
-    background: #1c1c1f;
-    border-color: #27272a;
-    color: #a1a1aa;
+    background: transparent;
+    border: none;
+    color: #94a3b8;
 }
 html[data-theme="dark"] .navbar-logout-btn:hover {
-    background: rgba(220, 38, 38, 0.18);
+    background: rgba(239, 68, 68, 0.16);
     color: #f87171;
-    border-color: rgba(239, 68, 68, 0.35);
+    border: none;
 }
 
 /* ══════════════════════════════════════════════════════════════
