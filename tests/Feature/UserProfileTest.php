@@ -149,7 +149,7 @@ class UserProfileTest extends TestCase
         $this->assertDatabaseHas('notifications_custom', [
             'user_id' => $followerA->id,
             'type'    => 'new_post_from_following',
-            'url'     => route('jobs.show', $job->id),
+            'url'     => route('jobs.show', $job),
         ]);
         $this->assertDatabaseHas('notifications_custom', [
             'user_id' => $followerB->id,

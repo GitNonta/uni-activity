@@ -77,7 +77,7 @@ class UserProfileController extends Controller
         $followers = $user->followers()
             ->orderByDesc('follows.created_at')
             ->limit(50)
-            ->get(['users.id', 'users.full_name', 'users.profile_photo', 'users.role']);
+            ->get(['users.id', 'users.username', 'users.full_name', 'users.profile_photo', 'users.role']);
 
         return response()->json([
             'followers' => $followers->map(fn (User $u): array => [
@@ -98,7 +98,7 @@ class UserProfileController extends Controller
         $followings = $user->followings()
             ->orderByDesc('follows.created_at')
             ->limit(50)
-            ->get(['users.id', 'users.full_name', 'users.profile_photo', 'users.role']);
+            ->get(['users.id', 'users.username', 'users.full_name', 'users.profile_photo', 'users.role']);
 
         return response()->json([
             'following' => $followings->map(fn (User $u): array => [

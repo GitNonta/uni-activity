@@ -117,7 +117,7 @@
                     <img src="{{ Storage::url($act->image_path) }}" alt="{{ $act->title }}" style="width:100%; height:140px; object-fit:cover; background:#f1f5f9;">
                 @endif
                 <div style="padding:0.75rem;">
-                    <a href="{{ route('activities.show', $act->id) }}" style="font-weight:600; color:#1e293b; text-decoration:none;">{{ $act->title }}</a>
+                    <a href="{{ route('activities.show', $act) }}" style="font-weight:600; color:#1e293b; text-decoration:none;">{{ $act->title }}</a>
                     <p style="margin:4px 0 0; font-size:0.8rem; color:#94a3b8;">{{ $act->activity_date->format('d/m/Y') }} · {{ $act->category->name ?? '' }}</p>
                 </div>
             </div>

@@ -271,11 +271,11 @@
 {{-- ปุ่มคอมเมนต์ + สอบถาม --}}
 <div class="flex gap-2 mt-4 mb-2" style="flex-wrap:wrap;">
     <button class="btn btn-outline flex-1" onclick="document.getElementById('commentSection').scrollIntoView({behavior:'smooth'})">
-        <svg style="width:14px;height:14px;display:inline;margin-right:2px;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg> คอมเมนต์ ({{ $comments->count() }})
+        <x-icon name="chat" size="14" style="display:inline;margin-right:2px;vertical-align:-2px;" /> คอมเมนต์ ({{ $comments->count() }})
     </button>
     @auth
     <button class="btn btn-primary flex-1" id="openChatBtn" data-job-id="{{ $job->id }}" data-job-title="{{ $job->title }}" data-chat-url="{{ route('chat.show', $job->id) }}">
-        <svg style="width:14px;height:14px;display:inline;margin-right:2px;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg> แชทสอบถามผู้ดูแล
+        <x-icon name="chat" size="14" style="display:inline;margin-right:2px;vertical-align:-2px;" /> แชทสอบถามผู้ดูแล
     </button>
     @endauth
 </div>

@@ -153,7 +153,7 @@ class JobController extends Controller
                     'type'     => $j->job_type,
                     'compensation' => $j->compensation,
                     'image'    => $j->image_path ? Storage::url($j->image_path) : null,
-                    'url'      => route('jobs.show', $j->id),
+                    'url'      => route('jobs.show', $j),
                 ]);
         });
 

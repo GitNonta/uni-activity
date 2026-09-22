@@ -171,7 +171,7 @@ class ActivityController extends Controller
                     'date' => $a->activity_date->format('d/m/Y'),
                     'start' => $a->start_time, 'end' => $a->end_time, 'hours' => $a->activity_hours,
                     'image' => $a->image_path ? asset('storage/' . $a->image_path) : null,
-                    'url' => route('activities.show', $a->id),
+                    'url' => route('activities.show', $a),
                 ])
         );
 

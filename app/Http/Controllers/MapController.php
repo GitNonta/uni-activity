@@ -95,7 +95,7 @@ class MapController extends Controller
                     'badge_class' => $act->is_mandatory ? 'badge-red' : 'badge-orange',
                     'status' => $act->computed_status ?? $act->status,
                     'meta_info' => $act->activity_hours . ' ชม. | ' . ($act->activity_date ? $act->activity_date->format('d/m/Y') : ''),
-                    'detail_url' => route('activities.show', $act->id),
+                    'detail_url' => route('activities.show', $act),
                     'detail_button_text' => 'ดูรายละเอียดกิจกรรมเต็ม',
                     'checkin_radius' => (int) ($act->checkin_radius ?? 100),
                 ];
@@ -135,7 +135,7 @@ class MapController extends Controller
                     'badge_class' => 'badge-blue',
                     'status' => $job->status,
                     'meta_info' => ($job->compensation ? $job->compensation . ' | ' : '') . ($job->start_date ? 'เริ่ม ' . $job->start_date->format('d/m/Y') : ''),
-                    'detail_url' => route('jobs.show', $job->id),
+                    'detail_url' => route('jobs.show', $job),
                     'detail_button_text' => 'ดูรายละเอียดงานเต็ม',
                     'checkin_radius' => 150,
                 ];

@@ -783,7 +783,7 @@ html.dark .admin-search-result-row:hover {
                 }
             @endphp
             <a href="{{ route('admin.inbox.index') }}" class="sb-link {{ request()->routeIs('admin.inbox.*') ? 'active' : '' }}">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                <x-icon name="chat" size="20" />
                 <span class="sb-link-text">
                     กล่องข้อความแชท
                     <span id="adminSidebarBadge" style="background:#b91c1c;color:#fff;font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:999px;margin-left:4px;display:{{ $adminUnreadCount > 0 ? 'inline-block' : 'none' }};line-height:1.5;">{{ $adminUnreadCount }}</span>
@@ -1280,7 +1280,7 @@ window.AdminChatManager = (function() {
             img.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover;';
             avatarSpan.appendChild(img);
         } else {
-            avatarSpan.innerHTML = '<svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>';
+            avatarSpan.innerHTML = '<svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>';
         }
 
         const titleSpan = document.createElement('span');

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\HasSlugRouting;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Activity extends Model
 {
-    use HasFactory;
+    use HasFactory, HasSlugRouting;
 
     /** ฟิลด์ที่อนุญาตให้บันทึกผ่าน mass assignment */
     protected $fillable = [

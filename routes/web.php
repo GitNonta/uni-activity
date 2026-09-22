@@ -125,7 +125,11 @@ Route::get('/jobs/{job}', [JobController::class, 'show'])->name('jobs.show');
 Route::get('/map', [MapController::class, 'index'])->name('map.index');
 
 // ── โปรไฟล์สาธารณะของผู้ใช้ + ระบบติดตาม (Follow) ──
+// รูปแบบใหม่ /@{username} (เช่น /@somchai.j) — เหมือน handle ของโซเชียล
+// และคง /users/{username} เดิมไว้ (ทั้งสองรูปแบบเปิดหน้าเดียวกัน)
 // ดูโปรไฟล์ได้แม้ไม่ได้เข้าสู่ระบบ (ข้อมูลสาธารณะเท่านั้น) แต่กดติดตามต้อง login
+Route::get('/@{user}', [UserProfileController::class, 'show'])
+    ->where('user', '[A-Za-z0-9._-]+')->name('users.show.handle');
 Route::get('/users/{user}', [UserProfileController::class, 'show'])->name('users.show');
 Route::get('/users/{user}/followers', [UserProfileController::class, 'followers'])->name('users.followers');
 Route::get('/users/{user}/following', [UserProfileController::class, 'following'])->name('users.following');

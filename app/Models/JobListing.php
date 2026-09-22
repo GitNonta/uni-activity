@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasSlugRouting;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class JobListing extends Model
 {
-    use HasFactory;
+    use HasFactory, HasSlugRouting;
 
     protected $fillable = [
         'title', 'job_type', 'position', 'quota',

@@ -23,7 +23,88 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     /** ฟิลด์ที่อนุญาตให้บันทึกผ่าน mass assignment */
+    /** ผูก route ผ่าน username แทน id — URL แบบ /users/{username} */
+    public function getRouteKeyName(): string
+    {
+        return 'username';
+    }
+
+    protected static function booted(): void
+    {
+        // สร้าง username อัตโนมัติถ้าไม่ได้ระบุ (ครอบคลุม factory/seed/SSO/LINE/admin panel)
+        static::creating(function (self $user): void {
+            if (empty($user->username)) {
+                $user->username = self::generateUsername(
+                    $user->english_name,
+                    $user->full_name,
+                    $user->email ? explode('@', $user->email)[0] : null,
+                    $user->student_id ? 'user' . $user->student_id : null,
+                );
+            }
+        });
+    }
+
+    /** สร้าง username ที่ไม่ซ้ำจากตัวเลือกที่มี (fallback: user + id/สุ่ม) */
+    public static function generateUsername(?string ...$candidates): string
+    {
+        $normalized = array_values(array_filter(array_map(
+            fn (?string $c): ?string => self::normalizeUsername($c),
+            $candidates,
+        )));
+
+        if (empty($normalized)) {
+            $normalized = ['user-' . strtolower((string) \Illuminate\Support\Str::random(6))];
+        }
+
+        $base = $normalized[0];
+        $username = $base;
+        $i = 0;
+        while (self::query()->where('username', $username)->exists()) {
+            $i++;
+            $username = \Illuminate\Support\Str::limit($base, 56, '') . '-' . $i;
+            if ($i > 50) {
+                $username = 'user-' . strtolower((string) \Illuminate\Support\Str::random(8));
+                if (!self::query()->where('username', $username)->exists()) {
+                    break;
+                }
+            }
+        }
+
+        return $username;
+    }
+
+    /** ASCII-friendly username: a-z0-9 และขีด ยาวไม่เกิน 64 */
+    public static function normalizeUsername(?string $s): ?string
+    {
+        if ($s === null || trim($s) === '') {
+            return null;
+        }
+
+        $s = \Illuminate\Support\Str::ascii(trim($s));
+        $s = strtolower((string) preg_replace('/[^A-Za-z0-9]+/', '-', $s));
+        $s = trim($s, '-');
+
+        return $s !== '' ? \Illuminate\Support\Str::limit($s, 64, '') : null;
+    }
+
+    /** ถ้าไม่มี username (partial select / ข้อมูลเก่า) ใช้ id — resolveRouteBinding รองรับทั้งสองแบบ */
+    public function getRouteKey(): string
+    {
+        return $this->username ?: (string) $this->getKey();
+    }
+
+    /** ตัวเลขล้วน = ลิงก์รูปแบบเดิม (id) — ยังเปิด/ยิง API ได้เหมือนเดิม */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        if (ctype_digit((string) $value)) {
+            return $this->findOrFail((int) $value);
+        }
+
+        return static::query()->where($field ?: $this->getRouteKeyName(), $value)->firstOrFail();
+    }
+
     protected $fillable = [
+        'username',
         'student_id',
         'email',
         'password',

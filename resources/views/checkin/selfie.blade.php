@@ -389,10 +389,10 @@
         </div>
         <p class="error-modal-title">ไม่สามารถทำรายการได้</p>
         <p class="error-modal-body">{{ session('error') }}</p>
-        <button type="button" class="btn-error-close" onclick="window.location.href='{{ route('activities.show', $activity->id) }}'">กลับไปหน้ากิจกรรม</button>
+        <button type="button" class="btn-error-close" onclick="window.location.href='{{ route('activities.show', $activity) }}'">กลับไปหน้ากิจกรรม</button>
     </div>
 </div>
-<script>setTimeout(function() { window.location.href = "{{ route('activities.show', $activity->id) }}"; }, 5500);</script>
+<script>setTimeout(function() { window.location.href = "{{ route('activities.show', $activity) }}"; }, 5500);</script>
 @endif
 
 <form id="selfieForm" method="POST" action="{{ route('checkin.store', $token) }}" style="display:none;">

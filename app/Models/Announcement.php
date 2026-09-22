@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use App\Models\Concerns\HasSlugRouting;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Announcement extends Model
 {
-    use HasFactory;
+    use HasFactory, HasSlugRouting;
 
     protected $fillable = [
         'title',

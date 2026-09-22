@@ -126,19 +126,13 @@
                     </svg>
                 </button>
                 <a href="{{ route('map.index') }}" class="navbar-icon-btn {{ request()->routeIs('map.*') ? 'active' : '' }}" title="แผนที่">
-                    <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5.764v15M9 3.236v15"/>
-                    </svg>
+                    <x-icon name="map" size="18" />
                 </a>
                 <a href="{{ route('jobs.index') }}" class="navbar-icon-btn {{ request()->routeIs('jobs.*') ? 'active' : '' }}" title="หางาน / ฝึกงาน">
-                    <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <rect width="20" height="14" x="2" y="7" rx="2" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><circle cx="12" cy="13" r="1" fill="currentColor"/>
-                    </svg>
+                    <x-icon name="job" size="18" />
                 </a>
                 <a href="{{ route('announcements.index') }}" class="navbar-icon-btn {{ request()->routeIs('announcements.*') ? 'active' : '' }}" title="ประกาศข่าวสาร">
-                    <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m3 11 18-5v12L3 14v-3z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>
-                    </svg>
+                    <x-icon name="announcement" size="18" />
                 </a>
                 <form method="POST" action="{{ route('logout') }}" style="margin:0">
                     @csrf
@@ -201,9 +195,7 @@
                     </svg>
                 </button>
                 <a href="{{ route('map.index') }}" class="navbar-icon-btn {{ request()->routeIs('map.*') ? 'active' : '' }}" title="แผนที่">
-                    <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5.764v15M9 3.236v15"/>
-                    </svg>
+                    <x-icon name="map" size="18" />
                 </a>
                 <a href="{{ route('login') }}" class="btn btn-sm btn-primary" style="padding:.35rem .75rem; font-size:.8rem; display:inline-flex; align-items:center; gap:5px; border-radius:9px;">
                     <svg class="icon-sm" style="width:14px; height:14px; margin:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
@@ -808,7 +800,7 @@
         <div id="chatFloatPanel" style="display:none;width:360px;height:520px;background:#fff;border-radius:20px;box-shadow:0 12px 40px rgba(0,0,0,.18),0 4px 12px rgba(0,0,0,.08);overflow:hidden;flex-direction:column;">
             <div id="cfHeader" style="background:linear-gradient(135deg,#f97316 0%,#ea580c 55%,#c2410c 100%);padding:.6rem .85rem;display:flex;align-items:center;gap:.5rem;flex-shrink:0;box-shadow:0 2px 8px rgba(194,65,12,.35);">
                 <button id="cfBackBtn" onclick="cfBackToList()" style="display:none;width:30px;height:30px;min-width:30px;align-items:center;justify-content:center;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);color:#fff;cursor:pointer;padding:0;border-radius:50%;" aria-label="ย้อนกลับ"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg></button>
-                <span id="cfHeaderTitle" style="color:#fff;font-weight:700;font-size:.88rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:.5rem;"><span style="width:30px;height:30px;min-width:30px;border-radius:50%;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;"><svg style="width:15px;height:15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg></span> <span style="overflow:hidden;text-overflow:ellipsis;">ข้อความของฉัน</span></span>
+                <span id="cfHeaderTitle" style="color:#fff;font-weight:700;font-size:.88rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:.5rem;"><span style="width:30px;height:30px;min-width:30px;border-radius:50%;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;"><x-icon name="chat" size="15" /></span> <span style="overflow:hidden;text-overflow:ellipsis;">ข้อความของฉัน</span></span>
                 <button id="cfProfileBtn" onclick="cfOpenProfile()" style="display:none;width:30px;height:30px;min-width:30px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);color:#fff;cursor:pointer;padding:0;border-radius:50%;align-items:center;justify-content:center;transition:background .15s;" aria-label="ดูโปรไฟล์" title="ดูโปรไฟล์"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></button>
                 <button onclick="closeChatWidget()" style="width:30px;height:30px;min-width:30px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);color:#fff;cursor:pointer;padding:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;transition:background .15s;" aria-label="ปิด"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
             </div>

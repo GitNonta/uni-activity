@@ -47,17 +47,17 @@ class NotifyFollowersOfNewPost implements ShouldQueue
             $event instanceof ActivityPublished => [
                 'กิจกรรมใหม่จากผู้ที่คุณติดตาม',
                 "{$author->full_name} เผยแพร่กิจกรรม: {$post->title}",
-                route('activities.show', $post->id),
+                route('activities.show', $post),
             ],
             $event instanceof JobPublished => [
                 'ประกาศงานใหม่จากผู้ที่คุณติดตาม',
                 "{$author->full_name} เปิดรับสมัครงาน: {$post->title}",
-                route('jobs.show', $post->id),
+                route('jobs.show', $post),
             ],
             default => [
                 'ข่าวประกาศใหม่จากผู้ที่คุณติดตาม',
                 "{$author->full_name} เผยแพร่ข่าวประกาศ: {$post->title}",
-                route('announcements.show', $post->id),
+                route('announcements.show', $post),
             ],
         };
 

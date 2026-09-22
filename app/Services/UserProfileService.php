@@ -104,46 +104,47 @@ class UserProfileService
      */
     private function getRecentPosts(User $user): Collection
     {
-        $activities = DB::table('activities')
+        // ใช้ Eloquent (ไม่ใช่ DB::table) เพื่อให้ route() ได้ URL แบบ slug จาก getRouteKey()
+        $activities = \App\Models\Activity::query()
             ->where('created_by', $user->id)
             ->orderByDesc('created_at')
             ->limit(self::RECENT_POSTS_LIMIT)
-            ->get(['id', 'title', 'activity_date', 'created_at'])
-            ->map(fn (object $a): array => [
+            ->get(['id', 'slug', 'title', 'activity_date', 'created_at'])
+            ->map(fn (\App\Models\Activity $a): array => [
                 'type'      => 'activity',
                 'typeLabel' => 'กิจกรรม',
                 'title'     => $a->title,
                 'date'      => $a->activity_date ?? $a->created_at,
-                'url'       => route('activities.show', $a->id),
+                'url'       => route('activities.show', $a),
                 'color'     => '#2563eb',
             ]);
 
-        $jobs = DB::table('job_listings')
+        $jobs = \App\Models\JobListing::query()
             ->where('created_by', $user->id)
             ->orderByDesc('created_at')
             ->limit(self::RECENT_POSTS_LIMIT)
-            ->get(['id', 'title', 'start_date', 'created_at'])
-            ->map(fn (object $j): array => [
+            ->get(['id', 'slug', 'title', 'start_date', 'created_at'])
+            ->map(fn (\App\Models\JobListing $j): array => [
                 'type'      => 'job',
                 'typeLabel' => 'ประกาศงาน',
                 'title'     => $j->title,
                 'date'      => $j->start_date ?? $j->created_at,
-                'url'       => route('jobs.show', $j->id),
+                'url'       => route('jobs.show', $j),
                 'color'     => '#ea580c',
             ]);
 
-        $announcements = DB::table('announcements')
+        $announcements = \App\Models\Announcement::query()
             ->where('created_by', $user->id)
             ->where('is_active', true)
             ->orderByDesc('created_at')
             ->limit(self::RECENT_POSTS_LIMIT)
-            ->get(['id', 'title', 'created_at'])
-            ->map(fn (object $n): array => [
+            ->get(['id', 'slug', 'title', 'created_at'])
+            ->map(fn (\App\Models\Announcement $n): array => [
                 'type'      => 'announcement',
                 'typeLabel' => 'ข่าวประกาศ',
                 'title'     => $n->title,
                 'date'      => $n->created_at,
-                'url'       => route('announcements.show', $n->id),
+                'url'       => route('announcements.show', $n),
                 'color'     => '#7c3aed',
             ]);
 

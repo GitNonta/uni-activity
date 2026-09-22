@@ -845,7 +845,7 @@
     {{-- Header --}}
     <header class="chat-header">
         <div class="chat-header-info">
-            <a href="{{ $job->id > 0 ? route('jobs.show', $job->id) : route('jobs.index') }}" class="chat-back-btn" title="ย้อนกลับ">
+            <a href="{{ $job->id > 0 ? route('jobs.show', $job) : route('jobs.index') }}" class="chat-back-btn" title="ย้อนกลับ">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </a>
             <div>

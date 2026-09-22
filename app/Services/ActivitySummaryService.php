@@ -162,7 +162,7 @@ class ActivitySummaryService
                     'color'        => '#16a34a',
                     'bg'           => '#f0fdf4',
                     'icon'         => 'check',
-                    'action_url'   => route('activities.show', $act->id),
+                    'action_url'   => route('activities.show', $act),
                     'action_label' => 'เช็คอิน',
                 ]);
                 continue;
@@ -182,7 +182,7 @@ class ActivitySummaryService
                     'color'        => '#d97706',
                     'bg'           => '#fffbeb',
                     'icon'         => 'clock',
-                    'action_url'   => route('activities.show', $act->id),
+                    'action_url'   => route('activities.show', $act),
                     'action_label' => 'ดูรายละเอียด',
                 ]);
             }
@@ -216,7 +216,7 @@ class ActivitySummaryService
                     'color'        => '#0369a1',
                     'bg'           => '#f0f9ff',
                     'icon'         => 'pending',
-                    'action_url'   => route('activities.show', $act->id),
+                    'action_url'   => route('activities.show', $act),
                     'action_label' => 'ดูกิจกรรม',
                 ]);
             }
@@ -231,7 +231,7 @@ class ActivitySummaryService
                     'color'        => '#b45309',
                     'bg'           => '#fef3c7',
                     'icon'         => 'clock',
-                    'action_url'   => route('activities.show', $act->id),
+                    'action_url'   => route('activities.show', $act),
                     'action_label' => 'ดูกิจกรรม (อย่าลืมสแกนออกงาน)',
                 ]);
             }
@@ -341,7 +341,7 @@ class ActivitySummaryService
                 'start'         => $dateStr . 'T' . ($act->start_time ?? '08:00'),
                 'end'           => $dateStr . 'T' . ($act->end_time ?? '17:00'),
                 'color'         => $color,
-                'url'           => route('activities.show', $act->id),
+                'url'           => route('activities.show', $act),
                 'extendedProps' => [
                     'location'       => $act->location,
                     'hours'          => $act->activity_hours,
@@ -435,7 +435,7 @@ class ActivitySummaryService
                         'type'  => 'checkin_open',
                         'title' => 'เช็คอินได้แล้ว!',
                         'body'  => $act->title,
-                        'url'   => route('activities.show', $act->id),
+                        'url'   => route('activities.show', $act),
                         'icon'  => '🟢',
                     ]);
                 } elseif (
@@ -447,7 +447,7 @@ class ActivitySummaryService
                         'type'  => 'checkin_soon',
                         'title' => 'เช็คอินเปิดใน ' . now()->diffForHumans($act->checkin_open_at, true),
                         'body'  => $act->title,
-                        'url'   => route('activities.show', $act->id),
+                        'url'   => route('activities.show', $act),
                         'icon'  => '🔔',
                     ]);
                 }
