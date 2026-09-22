@@ -226,11 +226,17 @@ html.dark .pub-manage-btn:hover {
 /* ── Stats Bar (Minimalist Row) ── */
 .pub-stats-bar {
     display: flex;
-    align-items: flex-start;
-    gap: clamp(1.5rem, 5vw, 2.75rem);
-    padding: 1rem 0;
+    align-items: center;
+    justify-content: space-evenly;
+    padding: 1.15rem 0;
     border-top: 1px solid rgba(226, 232, 240, 0.6);
     border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+}
+@media (min-width: 640px) {
+    .pub-stats-bar {
+        justify-content: center;
+        gap: 4.5rem;
+    }
 }
 html[data-theme="dark"] .pub-stats-bar,
 html.dark .pub-stats-bar {
@@ -241,13 +247,18 @@ html.dark .pub-stats-bar {
 .pub-stat-unit {
     display: inline-flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 0.15rem;
+    align-items: center;
+    text-align: center;
+    gap: 0.2rem;
     cursor: default;
-    transition: opacity 0.15s ease;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+    min-width: 72px;
 }
 .pub-stat-unit.clickable {
     cursor: pointer;
+}
+.pub-stat-unit.clickable:hover {
+    transform: translateY(-1px);
 }
 .pub-stat-unit.clickable:hover .pub-stat-num,
 .pub-stat-unit.clickable:hover .pub-stat-label {
