@@ -55,6 +55,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureRateLimiters();
         $this->configureOutboundProxy();
         $this->registerConsoleCommandLogger();
+        $this->registerFollowerNotificationEvents();
     }
 
     /**
@@ -172,6 +173,14 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(ActivityPublished::class,    SendLineActivityNotification::class);
         Event::listen(JobPublished::class,         SendLineJobNotification::class);
         Event::listen(AnnouncementPublished::class, SendLineAnnouncementNotification::class);
+    }
+
+    /** ลงทะเบียน Event → Listener สำหรับแจ้งเตือนผู้ติดตามเมื่อมีโพสต์ใหม่ */
+    private function registerFollowerNotificationEvents(): void
+    {
+        Event::listen(ActivityPublished::class,     \App\Listeners\NotifyFollowersOfNewPost::class);
+        Event::listen(JobPublished::class,          \App\Listeners\NotifyFollowersOfNewPost::class);
+        Event::listen(AnnouncementPublished::class, \App\Listeners\NotifyFollowersOfNewPost::class);
     }
 
     /**

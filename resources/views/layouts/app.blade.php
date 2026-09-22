@@ -364,7 +364,8 @@
                             textEl.textContent = first.body;
                         }
                         if (linkEl) {
-                            linkEl.href = first.url;
+                            // ใช้ url จากการแจ้งเตือนถ้ามี (deep-link) ไม่เช่นนั้น fallback เป็น url กิจกรรม
+                            linkEl.href = first.url && first.url !== '#' ? first.url : (first.body_url || first.url);
                         }
                         if (btnTextEl) {
                             btnTextEl.textContent = first.type === 'checkin_open' ? 'เช็คอินทันที' : 'ไปที่กิจกรรม';
@@ -808,6 +809,7 @@
             <div id="cfHeader" style="background:linear-gradient(135deg,#f97316 0%,#ea580c 55%,#c2410c 100%);padding:.6rem .85rem;display:flex;align-items:center;gap:.5rem;flex-shrink:0;box-shadow:0 2px 8px rgba(194,65,12,.35);">
                 <button id="cfBackBtn" onclick="cfBackToList()" style="display:none;width:30px;height:30px;min-width:30px;align-items:center;justify-content:center;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);color:#fff;cursor:pointer;padding:0;border-radius:50%;" aria-label="ย้อนกลับ"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg></button>
                 <span id="cfHeaderTitle" style="color:#fff;font-weight:700;font-size:.88rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:.5rem;"><span style="width:30px;height:30px;min-width:30px;border-radius:50%;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;"><svg style="width:15px;height:15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg></span> <span style="overflow:hidden;text-overflow:ellipsis;">ข้อความของฉัน</span></span>
+                <button id="cfProfileBtn" onclick="cfOpenProfile()" style="display:none;width:30px;height:30px;min-width:30px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);color:#fff;cursor:pointer;padding:0;border-radius:50%;align-items:center;justify-content:center;transition:background .15s;" aria-label="ดูโปรไฟล์" title="ดูโปรไฟล์"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></button>
                 <button onclick="closeChatWidget()" style="width:30px;height:30px;min-width:30px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);color:#fff;cursor:pointer;padding:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;transition:background .15s;" aria-label="ปิด"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
             </div>
             <div id="cfViewList" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;">
@@ -887,17 +889,38 @@
         }
         window.cfBackToList = function () { showListView(); loadThreads(); };
 
-        window.showChatView = function(jobId, jobTitle) {
+        window.showChatView = function(jobId, jobTitle, staffProfileUrl, staffName) {
             currentJobId = jobId;
             currentRoomId = null;
             document.getElementById('cfViewList').style.display = 'none';
             document.getElementById('cfViewChat').style.display = 'flex';
             document.getElementById('cfBackBtn').style.display = 'inline-block';
             document.getElementById('cfHeaderTitle').textContent = jobTitle;
+
+            // ปุ่มดูโปรไฟล์ของคู่สนทนา (แสดงเมื่อรู้จัก URL โปรไฟล์)
+            var profileBtn = document.getElementById('cfProfileBtn');
+            if (profileBtn) {
+                if (staffProfileUrl) {
+                    profileBtn.style.display = 'inline-flex';
+                    profileBtn.setAttribute('data-url', staffProfileUrl);
+                    profileBtn.title = 'ดูโปรไฟล์ของ ' + (staffName || 'ผู้สนทนา');
+                } else {
+                    profileBtn.style.display = 'none';
+                    profileBtn.removeAttribute('data-url');
+                }
+            }
+
             loadMessages(jobId);
             fetch('/jobs/' + jobId + '/chat/read', { method: 'POST', headers: { 'X-CSRF-TOKEN': CSRF } });
             var idx = threads.findIndex(function(t){ return t.job_id == jobId; });
             if (idx >= 0) { threads[idx].unread = 0; recalcBadge(); }
+        };
+
+        // เปิดหน้าโปรไฟล์จากหน้าแชทใน widget
+        window.cfOpenProfile = function () {
+            var btn = document.getElementById('cfProfileBtn');
+            var url = btn ? btn.getAttribute('data-url') : null;
+            if (url) window.open(url, '_blank');
         };
 
         function loadThreads() {
@@ -957,7 +980,7 @@
                 ? '<span style="color:#047857;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#059669;display:inline-block;"></span> กำลังใช้งาน</span>' 
                 : '<span style="color:#475569;">' + formatLastSeen(supportLastSeen) + '</span>';
             
-            var supportChatHtml = '<div onclick="showChatView(0, \'ติดต่อสอบถามเจ้าหน้าที่\')" style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;cursor:pointer;" class="chat-list-item ' + (isSupportUnread ? 'unread' : '') + '">'
+            var supportChatHtml = '<div onclick="showChatView(0, \'ติดต่อสอบถามเจ้าหน้าที่\', null, null)" style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;cursor:pointer;" class="chat-list-item ' + (isSupportUnread ? 'unread' : '') + '">'
                 + '<div style="position:relative;flex-shrink:0;">'
                 + '<div style="width:34px;height:34px;border-radius:50%;background:#ffedd5;color:#c2410c;display:flex;align-items:center;justify-content:center;">'
                 + '<svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.05 2a9 9 0 0 1 8 7.94"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.05 6A5 5 0 0 1 18 10"/></svg>'
@@ -997,7 +1020,7 @@
                     avatarHtml = '<div style="width:34px;height:34px;border-radius:50%;background:#c2410c;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0;">' + safeTitle.charAt(0).toUpperCase() + '</div>';
                 }
 
-                return '<div onclick="showChatView(' + t.job_id + ',\'' + safeTitle + '\')" '
+                return '<div onclick="showChatView(' + t.job_id + ',\'' + safeTitle + '\', ' + (t.staff_profile_url ? '\'' + String(t.staff_profile_url).replace(/&/g,'&amp;').replace(/'/g,'&#39;') + '\'' : 'null') + ', ' + (t.staff_name ? '\'' + String(t.staff_name).replace(/&/g,'&amp;').replace(/'/g,'&#39;') + '\'' : 'null') + ')" '
                     + 'style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;cursor:pointer;" class="chat-list-item ' + (isUnread ? 'unread' : '') + '">'
                     + '<div style="position:relative;flex-shrink:0;">'
                     + avatarHtml

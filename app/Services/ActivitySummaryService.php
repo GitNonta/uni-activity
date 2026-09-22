@@ -382,6 +382,8 @@ class ActivitySummaryService
                     'attendance_approved'   => '🎓',
                     'attendance_rejected'   => '⚠️',
                     'registration'          => '📝',
+                    'new_follower'          => '👤',
+                    'new_post_from_following' => '📣',
                     default                 => '🔔',
                 };
 
@@ -390,7 +392,8 @@ class ActivitySummaryService
                     'type'  => $dn->type,
                     'title' => $dn->title,
                     'body'  => $dn->message,
-                    'url'   => '#',
+                    // deep-link จากคอลัมน์ url (เช่น โปรไฟล์ผู้ติดตามใหม่ / โพสต์ใหม่จากผู้ที่ติดตาม)
+                    'url'   => $dn->url ?? '#',
                     'icon'  => $icon,
                     'db'    => true,
                 ]);

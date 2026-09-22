@@ -827,6 +827,17 @@
             background: #27272a;
             color: #a1a1aa;
         }
+
+        html[data-theme="dark"] .chat-profile-link {
+            background: #27272a !important;
+            border-color: #3f3f46 !important;
+            color: #a1a1aa !important;
+        }
+
+        html[data-theme="dark"] .chat-profile-link:hover {
+            background: #3f3f46 !important;
+            color: #f4f4f5 !important;
+        }
     }
 </style>
 
@@ -869,6 +880,12 @@
             <span id="onlineStatusLabel" data-last-seen="{{ $staffLastSeen?->toISOString() }}" style="font-size:0.75rem;color:var(--chat-text-muted);font-weight:500;">
                 <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>{{ $offlineText }}
             </span>
+            {{-- ดูโปรไฟล์ผู้ที่แชทด้วย --}}
+            @if($staffUser)
+                <a href="{{ route('users.show', $staffUser) }}" class="chat-profile-link" title="ดูโปรไฟล์ของ {{ $staffUser->full_name }}" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;min-width:30px;border-radius:50%;background:#f1f5f9;border:1px solid #e2e8f0;color:#64748b;cursor:pointer;transition:all 0.2s;text-decoration:none;">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                </a>
+            @endif
         </div>
     </header>
 

@@ -31,6 +31,7 @@ use App\Http\Controllers\Admin\AdminInboxController;
 use App\Http\Controllers\UserStatusController;
 use App\Http\Controllers\LineController;
 use App\Http\Controllers\MapController;
+use App\Http\Controllers\UserProfileController;
 use Illuminate\Support\Facades\Route;
 
 // ── Diagnostic endpoint สำหรับ Local / Testing เท่านั้น (ห้ามเปิด Public บน Production) ──
@@ -122,6 +123,16 @@ Route::get('/announcements/{announcement}', [StudentAnnouncementController::clas
 Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
 Route::get('/jobs/{job}', [JobController::class, 'show'])->name('jobs.show');
 Route::get('/map', [MapController::class, 'index'])->name('map.index');
+
+// ── โปรไฟล์สาธารณะของผู้ใช้ + ระบบติดตาม (Follow) ──
+// ดูโปรไฟล์ได้แม้ไม่ได้เข้าสู่ระบบ (ข้อมูลสาธารณะเท่านั้น) แต่กดติดตามต้อง login
+Route::get('/users/{user}', [UserProfileController::class, 'show'])->name('users.show');
+Route::get('/users/{user}/followers', [UserProfileController::class, 'followers'])->name('users.followers');
+Route::get('/users/{user}/following', [UserProfileController::class, 'following'])->name('users.following');
+Route::middleware('auth')->group(function () {
+    Route::post('/users/{user}/follow', [UserProfileController::class, 'follow'])->middleware('throttle:status')->name('users.follow');
+    Route::post('/users/{user}/unfollow', [UserProfileController::class, 'unfollow'])->middleware('throttle:status')->name('users.unfollow');
+});
 // ✅ FIXED V2: Public map pins for logged-out visitors (activities/jobs/landmarks are public data,
 // identical to what /activities & /jobs pages already expose). Rate-limited to prevent scraping.
 // Live user coordinates stay protected in the auth-only update-location route below.

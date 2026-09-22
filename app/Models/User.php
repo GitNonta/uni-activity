@@ -104,6 +104,32 @@ class User extends Authenticatable
         return $this->hasMany(ActivityFeedback::class);
     }
 
+    /** ความสัมพันธ์: ผู้ใช้ที่คนนี้กดติดตาม (กำลังติดตาม) */
+    public function followings(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'follows', 'follower_id', 'following_id')
+            ->withTimestamps();
+    }
+
+    /** ความสัมพันธ์: ผู้ใช้ที่กดติดตามคนนี้ (ผู้ติดตาม) */
+    public function followers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id')
+            ->withTimestamps();
+    }
+
+    /** ตรวจสอบว่าผู้ใช้นี้กดติดตามผู้ใช้อื่นอยู่หรือไม่ */
+    public function isFollowing(User $other): bool
+    {
+        return $this->followings()->where('following_id', $other->id)->exists();
+    }
+
+    /** จำนวนผู้ติดตามของผู้ใช้นี้ */
+    public function followersCount(): int
+    {
+        return (int) $this->followers()->count();
+    }
+
     /** คำนวณชั่วโมงกิจกรรมรวมทั้งหมดที่เข้าร่วม */
     public function totalHours(): float
     {
