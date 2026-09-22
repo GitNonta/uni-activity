@@ -1,4 +1,4 @@
-{{-- หน้าโปรไฟล์สาธารณะของผู้ใช้: ข้อมูล + สถิติ + ผลงานล่าสุด + ปุ่มติดตาม (UI แบบไร้ Box สไตล์โมเดิร์นคลีน) --}}
+{{-- หน้าโปรไฟล์สาธารณะของผู้ใช้: ข้อมูล + สถิติ + ผลงานล่าสุด + ปุ่มติดตาม (UI แบบไร้ Box เรียบร้อย มินิมอล) --}}
 @extends('layouts.app')
 @section('title', 'โปรไฟล์ — ' . ($profileUser->full_name ?? 'ผู้ใช้'))
 
@@ -6,24 +6,39 @@
 
 <style>
 .pub-profile-container {
-    max-width: 820px;
+    max-width: 800px;
     margin: 0 auto;
-    padding: 0.75rem 0.5rem 3.5rem 0.5rem;
+    padding: 1.25rem 0.75rem 4rem 0.75rem;
 }
 
-/* ── Hero Profile Header (ไร้ Box) ── */
-.pub-hero {
+/* ── Hero Profile Header (ไร้ Box คลีน เรียบหรู) ── */
+.pub-hero-wrap {
     display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+    gap: 1.5rem;
+    padding-bottom: 1.75rem;
 }
-html[data-theme="dark"] .pub-hero,
-html.dark .pub-hero {
-    border-bottom-color: rgba(39, 39, 42, 0.8);
+@media (max-width: 640px) {
+    .pub-hero-wrap {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1.25rem;
+    }
+}
+
+.pub-hero-main {
+    display: flex;
+    align-items: center;
+    gap: 1.35rem;
+    flex: 1;
+    min-width: 0;
+}
+@media (max-width: 480px) {
+    .pub-hero-main {
+        align-items: flex-start;
+        gap: 1rem;
+    }
 }
 
 .pub-avatar-wrap {
@@ -32,7 +47,7 @@ html.dark .pub-hero {
 
 .pub-user-meta {
     flex: 1;
-    min-width: 260px;
+    min-width: 0;
 }
 
 .pub-name-row {
@@ -43,11 +58,12 @@ html.dark .pub-hero {
 }
 
 .pub-name {
-    font-size: 1.45rem;
+    font-size: 1.5rem;
     font-weight: 800;
     color: var(--text-main, #0f172a);
     margin: 0;
-    line-height: 1.3;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
 }
 html[data-theme="dark"] .pub-name,
 html.dark .pub-name {
@@ -64,6 +80,7 @@ html.dark .pub-name {
     border-radius: 999px;
     font-size: 0.72rem;
     font-weight: 700;
+    letter-spacing: 0.02em;
 }
 html[data-theme="dark"] .pub-role-tag,
 html.dark .pub-role-tag {
@@ -73,38 +90,62 @@ html.dark .pub-role-tag {
 
 .pub-english-name {
     color: #64748b;
-    font-size: 0.92rem;
-    font-weight: 600;
-    margin: 0.2rem 0 0.45rem 0;
-    line-height: 1.4;
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin: 0.25rem 0 0.5rem 0;
+    line-height: 1.3;
 }
 html[data-theme="dark"] .pub-english-name,
 html.dark .pub-english-name {
     color: #94a3b8;
 }
 
-.pub-tags-row {
+.pub-meta-line {
     display: flex;
+    align-items: center;
     gap: 0.45rem;
     flex-wrap: wrap;
-    align-items: center;
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 500;
+    margin-top: 0.35rem;
+}
+html[data-theme="dark"] .pub-meta-line,
+html.dark .pub-meta-line {
+    color: #94a3b8;
 }
 
-.pub-sub-tag {
-    background: rgba(148, 163, 184, 0.12);
-    color: #475569;
+.pub-meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
     padding: 0.2rem 0.65rem;
+    background: rgba(148, 163, 184, 0.12);
     border-radius: 999px;
-    font-size: 0.75rem;
+    color: #475569;
+    font-size: 0.76rem;
     font-weight: 600;
 }
-html[data-theme="dark"] .pub-sub-tag,
-html.dark .pub-sub-tag {
+html[data-theme="dark"] .pub-meta-pill,
+html.dark .pub-meta-pill {
     background: rgba(255, 255, 255, 0.08);
     color: #cbd5e1;
 }
 
-/* ── ปุ่มติดตาม / จัดการโปรไฟล์ (Pill Button ไร้กรอบการ์ด) ── */
+/* ── ปุ่มติดตาม / จัดการโปรไฟล์ ── */
+.pub-action-wrap {
+    flex-shrink: 0;
+}
+@media (max-width: 640px) {
+    .pub-action-wrap {
+        width: 100%;
+    }
+    .pub-action-wrap .follow-btn,
+    .pub-action-wrap .pub-manage-btn {
+        width: 100%;
+    }
+}
+
 .follow-btn {
     display: inline-flex;
     align-items: center;
@@ -113,12 +154,13 @@ html.dark .pub-sub-tag {
     padding: 0.55rem 1.4rem;
     border-radius: 999px;
     font-weight: 700;
-    font-size: 0.9rem;
-    border: 1px solid #ea580c;
+    font-size: 0.88rem;
+    border: 1.5px solid #ea580c;
     cursor: pointer;
     transition: all 0.2s ease;
     line-height: 1.5;
-    min-width: 124px;
+    min-width: 126px;
+    text-decoration: none;
 }
 .follow-btn.is-following {
     background: transparent;
@@ -138,6 +180,7 @@ html.dark .pub-sub-tag {
 .follow-btn.not-following:hover {
     background: #c2410c;
     transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.35);
 }
 html[data-theme="dark"] .follow-btn.is-following,
 html.dark .follow-btn.is-following {
@@ -155,10 +198,10 @@ html.dark .follow-btn.is-following:hover {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    padding: 0.55rem 1.3rem;
+    padding: 0.55rem 1.35rem;
     background: transparent;
     color: #ea580c;
-    border: 1px solid rgba(234, 88, 12, 0.4);
+    border: 1.5px solid rgba(234, 88, 12, 0.4);
     border-radius: 999px;
     font-weight: 600;
     font-size: 0.88rem;
@@ -180,18 +223,20 @@ html.dark .pub-manage-btn:hover {
     background: rgba(251, 146, 60, 0.12) !important;
 }
 
-/* ── แถบสถิติแบบไร้ Box (Minimal Stat Counters) ── */
+/* ── Stats Bar (Minimalist Row) ── */
 .pub-stats-bar {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1.75rem;
     padding: 1.15rem 0;
-    border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+    border-top: 1px solid rgba(226, 232, 240, 0.6);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.6);
     flex-wrap: wrap;
 }
 html[data-theme="dark"] .pub-stats-bar,
 html.dark .pub-stats-bar {
-    border-bottom-color: rgba(39, 39, 42, 0.8);
+    border-top-color: rgba(39, 39, 42, 0.7);
+    border-bottom-color: rgba(39, 39, 42, 0.7);
 }
 
 .pub-stat-unit {
@@ -235,107 +280,71 @@ html.dark .pub-stat-label {
     width: 4px;
     height: 4px;
     border-radius: 50%;
-    background: rgba(148, 163, 184, 0.45);
+    background: rgba(148, 163, 184, 0.4);
 }
 
-/* ── ส่วนข้อมูลและผลงานแบบไร้ Card Box ── */
+/* ── Posts Section (Clean Feed List) ── */
 .pub-section {
-    padding: 1.75rem 0;
-    border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+    padding-top: 1.75rem;
 }
-.pub-section:last-of-type {
-    border-bottom: none;
-}
-html[data-theme="dark"] .pub-section,
-html.dark .pub-section {
-    border-bottom-color: rgba(39, 39, 42, 0.8);
+
+.pub-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
 }
 
 .pub-section-title {
-    font-size: 1.05rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: var(--text-main, #0f172a);
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin: 0 0 1.25rem 0;
+    gap: 0.55rem;
+    margin: 0;
+    letter-spacing: -0.01em;
 }
 html[data-theme="dark"] .pub-section-title,
 html.dark .pub-section-title {
     color: #f8fafc;
 }
 
-/* ข้อมูลผู้ใช้แบบคลีน ไร้ Box */
-.pub-info-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1.25rem 2rem;
-}
-.pub-info-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-}
-.pub-info-icon-wrap {
-    color: #ea580c;
-    flex-shrink: 0;
-    margin-top: 2px;
-}
-html[data-theme="dark"] .pub-info-icon-wrap,
-html.dark .pub-info-icon-wrap {
-    color: #fb923c;
-}
-.pub-info-label {
-    font-size: 0.74rem;
-    color: #94a3b8;
-    font-weight: 600;
-    margin: 0 0 0.15rem 0;
-    line-height: 1.3;
-}
-.pub-info-value {
-    font-size: 0.92rem;
-    font-weight: 600;
-    color: var(--text-main, #1e293b);
-    margin: 0;
-    line-height: 1.4;
-}
-html[data-theme="dark"] .pub-info-value,
-html.dark .pub-info-value {
-    color: #e2e8f0;
-}
-
-/* รายการผลงานแบบฟีดคลีน ไร้ Card Box */
 .pub-posts-feed {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.35rem;
 }
+
 .pub-post-row {
     display: flex;
     align-items: center;
     gap: 0.85rem;
-    padding: 0.85rem 0.5rem;
-    border-radius: 10px;
+    padding: 0.85rem 0.65rem;
+    border-radius: 12px;
     text-decoration: none;
     color: inherit;
-    transition: background 0.15s ease, padding-left 0.15s ease;
+    transition: all 0.18s ease;
 }
 .pub-post-row:hover {
     background: rgba(148, 163, 184, 0.08);
-    padding-left: 0.85rem;
+    transform: translateX(4px);
 }
 html[data-theme="dark"] .pub-post-row:hover,
 html.dark .pub-post-row:hover {
     background: rgba(255, 255, 255, 0.05);
 }
+
 .pub-type-chip {
     font-size: 0.7rem;
     font-weight: 700;
-    padding: 0.18rem 0.6rem;
+    padding: 0.2rem 0.65rem;
     border-radius: 999px;
     color: #ffffff;
     flex-shrink: 0;
+    letter-spacing: 0.02em;
 }
+
 .pub-post-title {
     flex: 1;
     min-width: 0;
@@ -359,12 +368,17 @@ html[data-theme="dark"] .pub-post-row:hover .pub-post-title,
 html.dark .pub-post-row:hover .pub-post-title {
     color: #fb923c;
 }
+
 .pub-post-date {
     flex-shrink: 0;
     font-size: 0.78rem;
     color: #94a3b8;
     line-height: 1.4;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
 }
+
 .pub-post-arrow {
     flex-shrink: 0;
     color: #cbd5e1;
@@ -372,7 +386,7 @@ html.dark .pub-post-row:hover .pub-post-title {
 }
 .pub-post-row:hover .pub-post-arrow {
     color: #ea580c;
-    transform: translateX(3px);
+    transform: translateX(2px);
 }
 html[data-theme="dark"] .pub-post-arrow,
 html.dark .pub-post-arrow {
@@ -445,9 +459,9 @@ html.dark .follower-row:hover {
 
 <div class="pub-profile-container">
 
-    {{-- ── Hero Section (ไร้ Box Card) ── --}}
-    <div class="pub-hero">
-        <div style="display: flex; align-items: center; gap: 1.25rem; flex: 1; min-width: 250px;">
+    {{-- ── Hero Section (ไร้ Box คลีน เรียบหรู จัดเรียงครบจบในที่เดียว) ── --}}
+    <div class="pub-hero-wrap">
+        <div class="pub-hero-main">
             <div class="pub-avatar-wrap">
                 <x-avatar :user="$profileUser" size="88" style="border: 2px solid rgba(148, 163, 184, 0.25); box-shadow: 0 2px 8px rgba(0,0,0,0.08);" />
             </div>
@@ -468,19 +482,42 @@ html.dark .follower-row:hover {
                     <p class="pub-english-name">{{ $profileUser->english_name }}</p>
                 @endif
 
-                <div class="pub-tags-row">
+                {{-- รายละเอียดสังกัด / ตำแหน่ง / คณะ / สาขา / ชั้นปี --}}
+                <div class="pub-meta-line">
+                    @if($profileUser->isStaffOrAdmin())
+                        @if($profileUser->position || $profileUser->organization)
+                            <span class="pub-meta-pill">
+                                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                                {{ $profileUser->position ?? $profileUser->organization }}
+                            </span>
+                        @endif
+                    @else
+                        @if($profileUser->year)
+                            <span class="pub-meta-pill">
+                                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                ปี {{ $profileUser->year }}
+                            </span>
+                        @endif
+                        @if($profileUser->program)
+                            <span class="pub-meta-pill">
+                                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
+                                {{ $profileUser->program }}
+                            </span>
+                        @endif
+                    @endif
+
                     @if($profileUser->faculty)
-                        <span class="pub-sub-tag">{{ $profileUser->faculty }}</span>
+                        <span class="pub-meta-pill">{{ $profileUser->faculty }}</span>
                     @endif
                     @if($profileUser->department)
-                        <span class="pub-sub-tag">{{ $profileUser->department }}</span>
+                        <span class="pub-meta-pill">{{ $profileUser->department }}</span>
                     @endif
                 </div>
             </div>
         </div>
 
         {{-- ปุ่มติดตาม / จัดการโปรไฟล์ --}}
-        <div>
+        <div class="pub-action-wrap">
             @if($viewerIsSelf)
                 <a href="{{ route('student.profile') }}" class="pub-manage-btn">
                     <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
@@ -511,7 +548,7 @@ html.dark .follower-row:hover {
         </div>
     </div>
 
-    {{-- ── แถบสถิติแบบไร้ Box (Minimal Counters) ── --}}
+    {{-- ── แถบสถิติ (Social Style Minimalist Counters) ── --}}
     <div class="pub-stats-bar">
         <div class="pub-stat-unit clickable" onclick="openFollowerModal('followers')" title="ดูรายชื่อผู้ติดตาม">
             <span class="pub-stat-num" id="followersCount">{{ number_format($followersCount) }}</span>
@@ -529,73 +566,14 @@ html.dark .follower-row:hover {
         </div>
     </div>
 
-    {{-- ── ข้อมูลผู้ใช้ (ไร้ Card Box) ── --}}
+    {{-- ── ผลงานและกิจกรรมที่เผยแพร่ (ไร้ Card Box สะอาดตา) ── --}}
     <div class="pub-section">
-        <h2 class="pub-section-title">
-            <svg width="19" height="19" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
-            ข้อมูลผู้ใช้
-        </h2>
-        <div class="pub-info-list">
-            <div class="pub-info-row">
-                <div class="pub-info-icon-wrap">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                </div>
-                <div>
-                    <p class="pub-info-label">บทบาท</p>
-                    <p class="pub-info-value">{{ match($profileUser->role) { 'admin' => 'ผู้ดูแลระบบ', 'staff' => 'เจ้าหน้าที่', default => 'นักศึกษา' } }}</p>
-                </div>
-            </div>
-
-            @if($profileUser->isStaffOrAdmin())
-                <div class="pub-info-row">
-                    <div class="pub-info-icon-wrap">
-                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                    </div>
-                    <div>
-                        <p class="pub-info-label">ตำแหน่ง / หน่วยงาน</p>
-                        <p class="pub-info-value">{{ $profileUser->position ?? $profileUser->organization ?? '-' }}</p>
-                    </div>
-                </div>
-            @else
-                @if($profileUser->year)
-                    <div class="pub-info-row">
-                        <div class="pub-info-icon-wrap">
-                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-                        </div>
-                        <div>
-                            <p class="pub-info-label">ชั้นปี</p>
-                            <p class="pub-info-value">ปี {{ $profileUser->year }}</p>
-                        </div>
-                    </div>
-                @endif
-                @if($profileUser->program)
-                    <div class="pub-info-row">
-                        <div class="pub-info-icon-wrap">
-                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
-                        </div>
-                        <div>
-                            <p class="pub-info-label">หลักสูตร</p>
-                            <p class="pub-info-value">{{ $profileUser->program }}</p>
-                        </div>
-                    </div>
-                @endif
-            @endif
+        <div class="pub-section-header">
+            <h2 class="pub-section-title">
+                <svg width="19" height="19" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                ผลงานและกิจกรรมที่เผยแพร่
+            </h2>
         </div>
-
-        @if($viewerIsSelf && $profileUser->isStudent())
-            <p style="font-size: 0.75rem; color: #94a3b8; margin: 1rem 0 0 0; line-height: 1.5; display: flex; align-items: center; gap: 0.35rem;">
-                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                ข้อมูลส่วนตัวที่ละเอียด (รหัสนักศึกษา, อีเมล, ชั่วโมงกิจกรรม) แสดงเฉพาะในหน้าโปรไฟล์ของคุณ
-            </p>
-        @endif
-    </div>
-
-    {{-- ── ผลงานล่าสุดที่โพสต์ (ไร้ Card Box) ── --}}
-    <div class="pub-section">
-        <h2 class="pub-section-title">
-            <svg width="19" height="19" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-            ผลงานล่าสุดที่โพสต์
-        </h2>
         <div class="pub-posts-feed">
             @forelse($posts as $post)
                 <a href="{{ $post['url'] }}" class="pub-post-row">
@@ -603,6 +581,7 @@ html.dark .follower-row:hover {
                     <span class="pub-post-title">{{ $post['title'] }}</span>
                     <span class="pub-post-date">
                         @if($post['date'])
+                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                             {{ \Illuminate\Support\Carbon::parse($post['date'])->format('d/m/Y') }}
                         @endif
                     </span>
@@ -611,8 +590,8 @@ html.dark .follower-row:hover {
             @empty
                 <x-empty-state
                     icon="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                    title="ยังไม่มีผลงานที่โพสต์"
-                    description="{{ $profileUser->isStaffOrAdmin() ? 'ผู้ใช้นี้ยังไม่เคยโพสต์กิจกรรมหรือประกาศ' : 'กดติดตามเพื่อรับข่าวสารจากผู้ใช้นี้ในอนาคต' }}"
+                    title="ยังไม่มีผลงานที่เผยแพร่"
+                    description="{{ $profileUser->isStaffOrAdmin() ? 'ผู้ใช้นี้ยังไม่เคยเผยแพร่กิจกรรมหรือประกาศงาน' : 'กดติดตามเพื่อรับข่าวสารจากผู้ใช้นี้ในอนาคต' }}"
                     size="sm" />
             @endforelse
         </div>
