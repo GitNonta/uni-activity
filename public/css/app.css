@@ -3596,7 +3596,7 @@ html.dark .page-filter-btn-outline:hover {
 .act-search-input {
     width: 100%;
     height: 38px;
-    padding: 0 0.85rem 0 34px;
+    padding: 0 42px 0 14px;
     border-radius: 12px;
     font-size: 0.82rem;
     line-height: 1.4;
@@ -3611,6 +3611,36 @@ html.dark .page-filter-btn-outline:hover {
 .act-search-input:focus {
     border-color: #ea580c;
     box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
+}
+
+.act-search-submit-icon-btn {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    background: #ea580c;
+    color: #ffffff;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    padding: 0;
+    flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+.act-search-submit-icon-btn:hover {
+    background: #c2410c;
+    transform: translateY(-50%) scale(1.05);
+}
+
+.act-search-submit-icon-btn:active {
+    transform: translateY(-50%) scale(0.95);
 }
 
 .act-search-btn-group {
@@ -3804,7 +3834,7 @@ html.dark .act-filter-clear-btn:hover {
     .act-search-btn-group .page-filter-btn-outline {
         flex: 1;
         min-width: 0;
-        padding: 0 0.4rem;
+        padding: 0 0.5rem;
     }
     .act-filter-select-wrap {
         flex: 1 1 100%;

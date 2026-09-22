@@ -18,14 +18,12 @@
 <form method="GET" action="{{ route('jobs.index') }}" class="act-search-bar" id="jobSearchForm">
     <div class="act-search-main-row">
         <div class="act-search-input-wrap">
-            <svg class="act-search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             <input type="text" name="search" value="{{ request('search') }}" placeholder="ค้นหาชื่องาน / ตำแหน่ง / สถานที่..." class="act-search-input">
+            <button type="submit" class="act-search-submit-icon-btn" title="ค้นหา" aria-label="ค้นหา">
+                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </button>
         </div>
         <div class="act-search-btn-group">
-            <button type="submit" class="act-search-submit-btn">
-                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                <span>ค้นหา</span>
-            </button>
             <button type="button" id="toggleJobFilterBtn" class="act-filter-toggle-btn {{ $hasSearched ? 'active' : '' }}" onclick="toggleJobFilters()" title="แสดง/ซ่อนตัวกรอง">
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
                 <span>ตัวกรอง</span>
