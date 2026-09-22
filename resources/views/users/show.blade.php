@@ -226,12 +226,11 @@ html.dark .pub-manage-btn:hover {
 /* ── Stats Bar (Minimalist Row) ── */
 .pub-stats-bar {
     display: flex;
-    align-items: center;
-    gap: 1.75rem;
-    padding: 1.15rem 0;
+    align-items: flex-start;
+    gap: clamp(1.5rem, 5vw, 2.75rem);
+    padding: 1rem 0;
     border-top: 1px solid rgba(226, 232, 240, 0.6);
     border-bottom: 1px solid rgba(226, 232, 240, 0.6);
-    flex-wrap: wrap;
 }
 html[data-theme="dark"] .pub-stats-bar,
 html.dark .pub-stats-bar {
@@ -241,22 +240,25 @@ html.dark .pub-stats-bar {
 
 .pub-stat-unit {
     display: inline-flex;
-    align-items: baseline;
-    gap: 0.45rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
     cursor: default;
     transition: opacity 0.15s ease;
 }
 .pub-stat-unit.clickable {
     cursor: pointer;
 }
-.pub-stat-unit.clickable:hover .pub-stat-num {
+.pub-stat-unit.clickable:hover .pub-stat-num,
+.pub-stat-unit.clickable:hover .pub-stat-label {
     color: #ea580c;
 }
 .pub-stat-num {
-    font-size: 1.25rem;
+    font-size: 1.35rem;
     font-weight: 800;
     color: var(--text-main, #0f172a);
-    line-height: 1;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
     transition: color 0.15s ease;
 }
 html[data-theme="dark"] .pub-stat-num,
@@ -264,23 +266,21 @@ html.dark .pub-stat-num {
     color: #f8fafc;
 }
 html[data-theme="dark"] .pub-stat-unit.clickable:hover .pub-stat-num,
-html.dark .pub-stat-unit.clickable:hover .pub-stat-num {
+html.dark .pub-stat-unit.clickable:hover .pub-stat-num,
+html[data-theme="dark"] .pub-stat-unit.clickable:hover .pub-stat-label,
+html.dark .pub-stat-unit.clickable:hover .pub-stat-label {
     color: #fb923c;
 }
 .pub-stat-label {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     color: #64748b;
     font-weight: 500;
+    line-height: 1.2;
+    transition: color 0.15s ease;
 }
 html[data-theme="dark"] .pub-stat-label,
 html.dark .pub-stat-label {
     color: #94a3b8;
-}
-.pub-stat-dot {
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: rgba(148, 163, 184, 0.4);
 }
 
 /* ── Posts Section (Clean Feed List) ── */
@@ -554,12 +554,10 @@ html.dark .follower-row:hover {
             <span class="pub-stat-num" id="followersCount">{{ number_format($followersCount) }}</span>
             <span class="pub-stat-label">ผู้ติดตาม</span>
         </div>
-        <span class="pub-stat-dot"></span>
         <div class="pub-stat-unit clickable" onclick="openFollowerModal('following')" title="ดูรายชื่อที่กำลังติดตาม">
             <span class="pub-stat-num">{{ number_format($followingCount) }}</span>
             <span class="pub-stat-label">กำลังติดตาม</span>
         </div>
-        <span class="pub-stat-dot"></span>
         <div class="pub-stat-unit">
             <span class="pub-stat-num">{{ number_format($stats['total']) }}</span>
             <span class="pub-stat-label">ผลงานที่โพสต์</span>
