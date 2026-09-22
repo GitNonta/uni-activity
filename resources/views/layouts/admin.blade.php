@@ -1262,15 +1262,41 @@ window.AdminChatManager = (function() {
             }
         };
 
-        const avatarContent = photoUrl
-            ? '<img src="' + photoUrl + '" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">'
-            : '<svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>';
+        // สร้าง avatar + ชื่อผู้สนทนาด้วย DOM API — title/photo มาจากข้อมูลผู้ใช้
+        // (นักศึกษาแก้ได้) จึงห้ามต่อเข้า innerHTML โดยตรง กัน stored XSS
+        const avatarSpan = document.createElement('span');
+        avatarSpan.className = 'acw-avatar';
+        let safePhotoSrc = null;
+        if (photoUrl) {
+            try {
+                const u = new URL(photoUrl, window.location.origin);
+                if (u.protocol === 'http:' || u.protocol === 'https:') safePhotoSrc = u.href;
+            } catch (e) { /* URL ไม่ถูกต้อง → ใช้ avatar fallback */ }
+        }
+        if (safePhotoSrc) {
+            const img = document.createElement('img');
+            img.src = safePhotoSrc;
+            img.alt = '';
+            img.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover;';
+            avatarSpan.appendChild(img);
+        } else {
+            avatarSpan.innerHTML = '<svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>';
+        }
 
         const titleSpan = document.createElement('span');
         titleSpan.className = 'acw-title';
-        titleSpan.innerHTML = '<span class="acw-avatar">' + avatarContent + '</span>'
-            + '<span class="acw-title-text"><span class="acw-title-name">' + title + '</span>'
-            + '<span class="acw-title-sub"><span class="acw-live-dot"></span>แชทสด</span></span>';
+        const titleText = document.createElement('span');
+        titleText.className = 'acw-title-text';
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'acw-title-name';
+        nameSpan.textContent = title;
+        const subSpan = document.createElement('span');
+        subSpan.className = 'acw-title-sub';
+        subSpan.innerHTML = '<span class="acw-live-dot"></span>แชทสด';
+        titleText.appendChild(nameSpan);
+        titleText.appendChild(subSpan);
+        titleSpan.appendChild(avatarSpan);
+        titleSpan.appendChild(titleText);
 
         const actions = document.createElement('div');
         actions.className = 'acw-actions';

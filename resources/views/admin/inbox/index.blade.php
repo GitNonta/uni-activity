@@ -42,7 +42,12 @@ html[data-theme="dark"] .inbox-read-text { color: #a1a1aa !important; }
         $unread = $thread['unread'] ?? 0;
         $time   = $thread['last_time'];
     @endphp
-    <a href="javascript:void(0)" onclick="if(window.AdminChatManager) window.AdminChatManager.openChat('{{ route('admin.inbox.show', [$thread['job_id'], $thread['student_id']]) }}', '{{ addslashes($thread['student_name']) }}', '{{ $thread['job_id'] }}_{{ $thread['student_id'] }}', '{{ $thread['student_photo'] ?? '' }}'); else window.location.href='{{ route('admin.inbox.show', [$thread['job_id'], $thread['student_id']]) }}';"
+    <a href="{{ route('admin.inbox.show', [$thread['job_id'], $thread['student_id']]) }}"
+       data-admin-chat="1"
+       data-chat-url="{{ route('admin.inbox.show', [$thread['job_id'], $thread['student_id']]) }}"
+       data-chat-title="{{ $thread['student_name'] }}"
+       data-chat-id="{{ $thread['job_id'] }}_{{ $thread['student_id'] }}"
+       data-chat-photo="{{ $thread['student_photo'] ?? '' }}"
        class="inbox-thread-item {{ $unread > 0 ? 'unread' : '' }}"
        style="display:flex;align-items:center;gap:1rem;padding:.9rem 1.25rem;border-bottom:1px solid #f1f5f9;text-decoration:none;color:inherit;">
 
@@ -254,6 +259,24 @@ document.addEventListener('DOMContentLoaded', function() {
         setInterval(function() {
             window.updateStudentOnlineDots();
         }, 15000);
+
+        // เปิดแชทผ่าน delegated handler — ข้อมูลผู้สนทนาอ่านจาก data-* attributes
+        // ไม่ฝังใน inline onclick (กัน XSS จากชื่อนักศึกษา/URL รูปโปรไฟล์)
+        document.addEventListener('click', function (e) {
+            var item = e.target.closest('[data-admin-chat]');
+            if (!item) return;
+            e.preventDefault();
+            if (window.AdminChatManager) {
+                window.AdminChatManager.openChat(
+                    item.getAttribute('data-chat-url'),
+                    item.getAttribute('data-chat-title'),
+                    item.getAttribute('data-chat-id'),
+                    item.getAttribute('data-chat-photo') || null
+                );
+            } else {
+                window.location.href = item.getAttribute('data-chat-url');
+            }
+        });
 
         window.addEventListener('beforeunload', function() {
             if (window.Echo) {
