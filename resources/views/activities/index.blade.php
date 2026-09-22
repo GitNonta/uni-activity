@@ -3,36 +3,46 @@
 @section('description', 'ค้นหาและลงทะเบียนเข้าร่วมกิจกรรมของมหาวิทยาลัย - ดูกิจกรรมที่กำลังเปิดรับสมัครและที่จัดขึ้นแล้ว')
 
 @section('content')
-<div class="flex items-center gap-3 mb-4">
-    <h1 class="font-bold" style="font-size:1.5rem; margin:0; line-height:1.5;">รายการกิจกรรม</h1>
-    <a href="{{ route('jobs.index') }}" class="btn btn-outline" style="border-radius:20px; padding: 0.25rem 0.75rem; font-size:0.85rem; display:inline-flex; align-items:center; gap:4px; color:#92400e; border-color:#fde68a; background:#fef3c7; font-weight:600; line-height:1.5;">
-        <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
-        แนะนำ หางาน / Part-time
+<div class="act-header-row">
+    <h1 class="act-header-title">รายการกิจกรรม</h1>
+    <a href="{{ route('jobs.index') }}" class="act-rec-job-pill" title="แนะนำ หางาน / Part-time">
+        <x-icon name="job" size="13" />
+        <span>แนะนำ หางาน / Part-time</span>
     </a>
 </div>
 
-{{-- ฟอร์มค้นหาและกรองหมวดหมู่ --}}
-<form method="GET" action="{{ route('activities.index') }}" class="flex gap-2 mb-4" style="flex-wrap:wrap;">
-    <input type="text" name="search" value="{{ request('search') }}" placeholder="ค้นหากิจกรรม..." class="form-control flex-1" style="min-width:200px;">
-    <select name="category" class="form-control" style="width:auto;">
-        <option value="">ทุกหมวดหมู่</option>
-        @foreach($categories as $cat)
-            <option value="{{ $cat->id }}" {{ request('category') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
-        @endforeach
-    </select>
-    <select name="scope" class="form-control" style="width:auto;">
-        <option value="">ทุกระดับ</option>
-        <option value="university" {{ request('scope') == 'university' ? 'selected' : '' }}>มหาวิทยาลัย</option>
-        <option value="faculty" {{ request('scope') == 'faculty' ? 'selected' : '' }}>คณะ</option>
-        <option value="department" {{ request('scope') == 'department' ? 'selected' : '' }}>สาขา</option>
-    </select>
-    <button type="submit" class="btn btn-primary">ค้นหา</button>
-    @if($geoActivities->count())
-    <a href="{{ route('map.index', ['type' => 'activity']) }}" class="btn btn-outline" style="white-space:nowrap;">
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display:inline;vertical-align:-2px;margin-right:4px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-        แผนที่กิจกรรม
-    </a>
-    @endif
+{{-- ฟอร์มค้นหาและกรองหมวดหมู่ (Rounded & Airy UI) --}}
+<form method="GET" action="{{ route('activities.index') }}" class="page-filter-bar">
+    <div class="page-filter-search-wrap">
+        <svg class="page-filter-search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input type="text" name="search" value="{{ request('search') }}" placeholder="ค้นหากิจกรรม..." class="page-filter-input">
+    </div>
+    <div class="page-filter-select-group">
+        <select name="category" class="page-filter-select" aria-label="เลือกหมวดหมู่">
+            <option value="">ทุกหมวดหมู่</option>
+            @foreach($categories as $cat)
+                <option value="{{ $cat->id }}" {{ request('category') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+            @endforeach
+        </select>
+        <select name="scope" class="page-filter-select" aria-label="เลือกระดับ">
+            <option value="">ทุกระดับ</option>
+            <option value="university" {{ request('scope') == 'university' ? 'selected' : '' }}>มหาวิทยาลัย</option>
+            <option value="faculty" {{ request('scope') == 'faculty' ? 'selected' : '' }}>คณะ</option>
+            <option value="department" {{ request('scope') == 'department' ? 'selected' : '' }}>สาขา</option>
+        </select>
+    </div>
+    <div class="page-filter-actions">
+        <button type="submit" class="page-filter-btn-primary">
+            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <span>ค้นหา</span>
+        </button>
+        @if($geoActivities->count())
+        <a href="{{ route('map.index', ['type' => 'activity']) }}" class="page-filter-btn-outline" title="ดูบนแผนที่">
+            <x-icon name="map" size="14" />
+            <span>แผนที่กิจกรรม</span>
+        </a>
+        @endif
+    </div>
 </form>
 
 {{-- แถบจัดเรียงลำดับอัจฉริยะ (Smart Sorting Tabs) --}}

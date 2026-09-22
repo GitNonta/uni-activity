@@ -3,37 +3,49 @@
 @section('title', 'หางาน / Part-time')
 
 @section('content')
-<h1 class="font-bold mb-4" style="font-size:1.5rem;">
-    <svg class="icon" style="display:inline;vertical-align:-3px;margin-right:.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-    ประกาศรับสมัครงาน
-</h1>
+<div class="act-header-row">
+    <h1 class="act-header-title">
+        <x-icon name="job" size="20" style="display:inline;vertical-align:-3px;margin-right:.25rem;" />
+        ประกาศรับสมัครงาน
+    </h1>
+</div>
 
-{{-- ฟอร์มค้นหาและกรอง --}}
-<form method="GET" action="{{ route('jobs.index') }}" class="flex gap-2 mb-4" style="flex-wrap:wrap;">
-    <input type="text" name="search" value="{{ request('search') }}" placeholder="ค้นหาชื่องาน / ตำแหน่ง / สถานที่..." class="form-control flex-1" style="min-width:200px;">
-    <select name="job_type" class="form-control" style="width:auto;">
-        <option value="">ทุกประเภท</option>
-        <option value="general" {{ request('job_type') == 'general' ? 'selected' : '' }}>งานทั่วไป</option>
-        <option value="parttime" {{ request('job_type') == 'parttime' ? 'selected' : '' }}>Part-time</option>
-    </select>
-    <select name="status" class="form-control" style="width:auto;">
-        <option value="">ทุกสถานะ</option>
-        <option value="open" {{ request('status') == 'open' ? 'selected' : '' }}>เปิดรับสมัคร</option>
-        <option value="closed" {{ request('status') == 'closed' ? 'selected' : '' }}>ปิดรับสมัคร</option>
-        <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>เสร็จสิ้น</option>
-    </select>
-    <select name="gender" class="form-control" style="width:auto;">
-        <option value="">ทุกเพศ</option>
-        <option value="male" {{ request('gender') == 'male' ? 'selected' : '' }}>ชาย</option>
-        <option value="female" {{ request('gender') == 'female' ? 'selected' : '' }}>หญิง</option>
-    </select>
-    <button type="submit" class="btn btn-primary">ค้นหา</button>
-    @if($geoJobs->count())
-    <a href="{{ route('map.index', ['type' => 'job']) }}" class="btn btn-outline" style="white-space:nowrap;">
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display:inline;vertical-align:-2px;margin-right:4px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-        แผนที่งาน
-    </a>
-    @endif
+{{-- ฟอร์มค้นหาและกรอง (Rounded & Airy UI) --}}
+<form method="GET" action="{{ route('jobs.index') }}" class="page-filter-bar">
+    <div class="page-filter-search-wrap">
+        <svg class="page-filter-search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input type="text" name="search" value="{{ request('search') }}" placeholder="ค้นหาชื่องาน / ตำแหน่ง / สถานที่..." class="page-filter-input">
+    </div>
+    <div class="page-filter-select-group">
+        <select name="job_type" class="page-filter-select" aria-label="เลือกประเภทงาน">
+            <option value="">ทุกประเภท</option>
+            <option value="general" {{ request('job_type') == 'general' ? 'selected' : '' }}>งานทั่วไป</option>
+            <option value="parttime" {{ request('job_type') == 'parttime' ? 'selected' : '' }}>Part-time</option>
+        </select>
+        <select name="status" class="page-filter-select" aria-label="เลือกสถานะ">
+            <option value="">ทุกสถานะ</option>
+            <option value="open" {{ request('status') == 'open' ? 'selected' : '' }}>เปิดรับสมัคร</option>
+            <option value="closed" {{ request('status') == 'closed' ? 'selected' : '' }}>ปิดรับสมัคร</option>
+            <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>เสร็จสิ้น</option>
+        </select>
+        <select name="gender" class="page-filter-select" aria-label="เลือกเพศ">
+            <option value="">ทุกเพศ</option>
+            <option value="male" {{ request('gender') == 'male' ? 'selected' : '' }}>ชาย</option>
+            <option value="female" {{ request('gender') == 'female' ? 'selected' : '' }}>หญิง</option>
+        </select>
+    </div>
+    <div class="page-filter-actions">
+        <button type="submit" class="page-filter-btn-primary">
+            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <span>ค้นหา</span>
+        </button>
+        @if($geoJobs->count())
+        <a href="{{ route('map.index', ['type' => 'job']) }}" class="page-filter-btn-outline" title="ดูบนแผนที่">
+            <x-icon name="map" size="14" />
+            <span>แผนที่งาน</span>
+        </a>
+        @endif
+    </div>
 </form>
 
 {{-- แถบจัดเรียงลำดับอัจฉริยะ (Smart Sorting Tabs) --}}
