@@ -322,17 +322,18 @@ html.dark .pub-section-title {
 }
 
 .pub-posts-feed {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 0.9rem;
+    align-items: start;
 }
 
 .pub-post-row {
     display: flex;
     align-items: center;
-    gap: 0.85rem;
-    padding: 0.85rem 0.65rem;
-    border-radius: 12px;
+    gap: 0.6rem;
+    padding: 0.6rem 0.55rem;
+    border-radius: 10px;
     text-decoration: none;
     color: inherit;
     transition: all 0.18s ease;
@@ -346,22 +347,28 @@ html.dark .pub-post-row:hover {
     background: rgba(255, 255, 255, 0.05);
 }
 
-/* ── กลุ่มโพสต์แยกตามประเภท: กิจกรรม / ข่าวประกาศ / ประกาศงาน ── */
-.pub-feed-group + .pub-feed-group {
-    margin-top: 0.9rem;
-    padding-top: 0.7rem;
-    border-top: 1px dashed rgba(148, 163, 184, 0.28);
+/* ── กลุ่มโพสต์แยกตามประเภท: กิจกรรม / ข่าวประกาศ / ประกาศงาน (คอลัมน์) ── */
+.pub-feed-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+    background: rgba(148, 163, 184, 0.06);
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    border-radius: 14px;
+    padding: 0.55rem 0.35rem;
 }
-html[data-theme="dark"] .pub-feed-group + .pub-feed-group,
-html.dark .pub-feed-group + .pub-feed-group {
-    border-top-color: rgba(255, 255, 255, 0.08);
+html[data-theme="dark"] .pub-feed-group,
+html.dark .pub-feed-group {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
 }
 
 .pub-feed-group-header {
     display: flex;
     align-items: center;
     gap: 0.55rem;
-    padding: 0.1rem 0.65rem 0.4rem;
+    padding: 0.15rem 0.55rem 0.4rem;
 }
 
 .pub-feed-group-icon {
