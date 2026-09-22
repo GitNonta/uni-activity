@@ -916,12 +916,37 @@
             if (idx >= 0) { threads[idx].unread = 0; recalcBadge(); }
         };
 
-        // เปิดหน้าโปรไฟล์จากหน้าแชทใน widget
+        // เปิดหน้าโปรไฟล์จากหน้าแชทใน widget (อนุญาตเฉพาะ http/https เท่านั้น)
+        window.cfSafeOpen = function (url) {
+            try {
+                var u = new URL(url, window.location.origin);
+                if (u.protocol !== 'http:' && u.protocol !== 'https:') return;
+                window.open(u.href, '_blank', 'noopener');
+            } catch (e) { /* URL ไม่ถูกต้อง — ไม่เปิด */ }
+        };
         window.cfOpenProfile = function () {
             var btn = document.getElementById('cfProfileBtn');
             var url = btn ? btn.getAttribute('data-url') : null;
-            if (url) window.open(url, '_blank');
+            if (url) cfSafeOpen(url);
         };
+
+        // Escape สำหรับ attribute value (ครบทั้ง 5 อักขระ)
+        function cfEscHtml(s) {
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        // Delegated click handler สำหรับรายการแชท — ข้อมูลส่งผ่าน data-* attributes
+        // ไม่ฝังใน inline onclick (กัน XSS จากชื่องาน/ชื่อเจ้าหน้าที่/URL โปรไฟล์)
+        document.addEventListener('click', function (e) {
+            var item = e.target.closest('[data-fdx-item]');
+            if (!item) return;
+            showChatView(
+                item.getAttribute('data-job-id'),
+                item.getAttribute('data-job-title'),
+                item.getAttribute('data-staff-profile-url') || null,
+                item.getAttribute('data-staff-name') || null
+            );
+        });
 
         function loadThreads() {
             var url = THREADS_URL + '?_t=' + new Date().getTime();
@@ -980,7 +1005,7 @@
                 ? '<span style="color:#047857;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#059669;display:inline-block;"></span> กำลังใช้งาน</span>' 
                 : '<span style="color:#475569;">' + formatLastSeen(supportLastSeen) + '</span>';
             
-            var supportChatHtml = '<div onclick="showChatView(0, \'ติดต่อสอบถามเจ้าหน้าที่\', null, null)" style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;cursor:pointer;" class="chat-list-item ' + (isSupportUnread ? 'unread' : '') + '">'
+            var supportChatHtml = '<div data-fdx-item="1" data-job-id="0" data-job-title="ติดต่อสอบถามเจ้าหน้าที่" data-staff-profile-url="" data-staff-name="" style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;cursor:pointer;" class="chat-list-item ' + (isSupportUnread ? 'unread' : '') + '">'
                 + '<div style="position:relative;flex-shrink:0;">'
                 + '<div style="width:34px;height:34px;border-radius:50%;background:#ffedd5;color:#c2410c;display:flex;align-items:center;justify-content:center;">'
                 + '<svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.05 2a9 9 0 0 1 8 7.94"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.05 6A5 5 0 0 1 18 10"/></svg>'
@@ -1006,7 +1031,7 @@
                 var isArchived = !!t.job_deleted;
                 var titlePrefix = isArchived ? '<span style="font-size:.6rem;color:#b45309;background:#fef3c7;border:1px solid #fcd34d;border-radius:999px;padding:1px 6px;margin-right:4px;vertical-align:1px;">ลบแล้ว</span>' : '';
                 var preview = t.last_message ? (t.last_message.length > 32 ? t.last_message.slice(0,32)+'…' : t.last_message) : '<svg style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> ไฟล์แนบ';
-                var safeTitle = (t.job_title || 'งานกิจกรรม').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                var safeTitle = String(t.job_title || 'งานกิจกรรม').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 var threadLastSeen = t.staff_last_seen || null;
                 var isJobOnline = isStaffMemberOnline(t.staff_id);
                 var threadStatusHtml = isJobOnline 
@@ -1020,7 +1045,7 @@
                     avatarHtml = '<div style="width:34px;height:34px;border-radius:50%;background:#c2410c;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0;">' + safeTitle.charAt(0).toUpperCase() + '</div>';
                 }
 
-                return '<div onclick="showChatView(' + t.job_id + ',\'' + safeTitle + '\', ' + (t.staff_profile_url ? '\'' + String(t.staff_profile_url).replace(/&/g,'&amp;').replace(/'/g,'&#39;') + '\'' : 'null') + ', ' + (t.staff_name ? '\'' + String(t.staff_name).replace(/&/g,'&amp;').replace(/'/g,'&#39;') + '\'' : 'null') + ')" '
+                return '<div data-fdx-item="1" data-job-id="' + t.job_id + '" data-job-title="' + cfEscHtml(t.job_title || 'งานกิจกรรม') + '" data-staff-profile-url="' + cfEscHtml(t.staff_profile_url || '') + '" data-staff-name="' + cfEscHtml(t.staff_name || '') + '" '
                     + 'style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;cursor:pointer;" class="chat-list-item ' + (isUnread ? 'unread' : '') + '">'
                     + '<div style="position:relative;flex-shrink:0;">'
                     + avatarHtml

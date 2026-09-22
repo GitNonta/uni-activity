@@ -382,8 +382,8 @@ class ActivitySummaryService
                     'attendance_approved'   => '🎓',
                     'attendance_rejected'   => '⚠️',
                     'registration'          => '📝',
-                    'new_follower'          => '👤',
-                    'new_post_from_following' => '📣',
+                    'new_follower'            => 'FOLLOW',
+                    'new_post_from_following' => 'POST',
                     default                 => '🔔',
                 };
 
