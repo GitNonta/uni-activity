@@ -74,7 +74,9 @@ trait HasSlugRouting
 
     public function getRouteKey(): string
     {
-        return (string) $this->getAttribute('slug');
+        $slug = (string) $this->getAttribute('slug');
+
+        return $slug !== '' ? $slug : (string) $this->getKey();
     }
 
     public function getRouteKeyName(): string

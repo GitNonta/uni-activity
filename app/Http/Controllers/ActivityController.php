@@ -157,7 +157,7 @@ class ActivityController extends Controller
         // posted activities land on the map without waiting out the TTL.
         $geoActivities = ListCache::remember(ListCache::GROUP_ACTIVITIES, 'geo_map', 600, fn() =>
             Activity::query()
-                ->select(['id', 'title', 'location', 'latitude', 'longitude', 'activity_date', 'start_time', 'end_time', 'activity_hours', 'image_path'])
+                ->select(['id', 'slug', 'title', 'location', 'latitude', 'longitude', 'activity_date', 'start_time', 'end_time', 'activity_hours', 'image_path'])
                 ->whereNotNull('latitude')
                 ->whereNotNull('longitude')
                 ->whereIn('status', ['upcoming', 'open', 'ongoing'])
