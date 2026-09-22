@@ -11,39 +11,84 @@
     </a>
 </div>
 
-{{-- ฟอร์มค้นหาและกรองหมวดหมู่ (Rounded & Airy UI) --}}
-<form method="GET" action="{{ route('activities.index') }}" class="page-filter-bar">
-    <div class="page-filter-search-wrap">
-        <svg class="page-filter-search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        <input type="text" name="search" value="{{ request('search') }}" placeholder="ค้นหากิจกรรม..." class="page-filter-input">
+@php
+    $hasSearched = request()->filled('search') || request()->filled('category') || request()->filled('scope');
+@endphp
+
+{{-- ฟอร์มค้นหาและตัวกรอง (แสดงตัวกรองหลังการค้นหา หรือเมื่อกดปุ่มตัวกรอง) --}}
+<form method="GET" action="{{ route('activities.index') }}" class="act-search-bar" id="activitySearchForm">
+    <div class="act-search-main-row">
+        <div class="act-search-input-wrap">
+            <svg class="act-search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="ค้นหากิจกรรม..." class="act-search-input">
+        </div>
+        <div class="act-search-btn-group">
+            <button type="submit" class="act-search-submit-btn">
+                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <span>ค้นหา</span>
+            </button>
+            <button type="button" id="toggleFilterBtn" class="act-filter-toggle-btn {{ $hasSearched ? 'active' : '' }}" onclick="toggleActFilters()" title="แสดง/ซ่อนตัวกรอง">
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                <span>ตัวกรอง</span>
+                @if($hasSearched)
+                    <span class="act-filter-count-dot"></span>
+                @endif
+            </button>
+            @if($geoActivities->count())
+            <a href="{{ route('map.index', ['type' => 'activity']) }}" class="page-filter-btn-outline" title="ดูบนแผนที่">
+                <x-icon name="map" size="14" />
+                <span>แผนที่</span>
+            </a>
+            @endif
+        </div>
     </div>
-    <div class="page-filter-select-group">
-        <select name="category" class="page-filter-select" aria-label="เลือกหมวดหมู่">
-            <option value="">ทุกหมวดหมู่</option>
-            @foreach($categories as $cat)
-                <option value="{{ $cat->id }}" {{ request('category') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
-            @endforeach
-        </select>
-        <select name="scope" class="page-filter-select" aria-label="เลือกระดับ">
-            <option value="">ทุกระดับ</option>
-            <option value="university" {{ request('scope') == 'university' ? 'selected' : '' }}>มหาวิทยาลัย</option>
-            <option value="faculty" {{ request('scope') == 'faculty' ? 'selected' : '' }}>คณะ</option>
-            <option value="department" {{ request('scope') == 'department' ? 'selected' : '' }}>สาขา</option>
-        </select>
-    </div>
-    <div class="page-filter-actions">
-        <button type="submit" class="page-filter-btn-primary">
-            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            <span>ค้นหา</span>
-        </button>
-        @if($geoActivities->count())
-        <a href="{{ route('map.index', ['type' => 'activity']) }}" class="page-filter-btn-outline" title="ดูบนแผนที่">
-            <x-icon name="map" size="14" />
-            <span>แผนที่กิจกรรม</span>
-        </a>
-        @endif
+
+    {{-- ตัวกรอง: แสดงหลังการค้นหา หรือเมื่อกดปุ่มตัวกรอง --}}
+    <div id="actFilterPanel" class="act-filter-panel" style="{{ $hasSearched ? '' : 'display:none;' }}">
+        <div class="act-filter-grid">
+            <div class="act-filter-select-wrap">
+                <select name="category" class="page-filter-select" aria-label="เลือกหมวดหมู่" style="width:100%;" onchange="document.getElementById('activitySearchForm').submit()">
+                    <option value="">ทุกหมวดหมู่</option>
+                    @foreach($categories as $cat)
+                        <option value="{{ $cat->id }}" {{ request('category') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="act-filter-select-wrap">
+                <select name="scope" class="page-filter-select" aria-label="เลือกระดับ" style="width:100%;" onchange="document.getElementById('activitySearchForm').submit()">
+                    <option value="">ทุกระดับ</option>
+                    <option value="university" {{ request('scope') == 'university' ? 'selected' : '' }}>มหาวิทยาลัย</option>
+                    <option value="faculty" {{ request('scope') == 'faculty' ? 'selected' : '' }}>คณะ</option>
+                    <option value="department" {{ request('scope') == 'department' ? 'selected' : '' }}>สาขา</option>
+                </select>
+            </div>
+            @if($hasSearched)
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+                <a href="{{ route('activities.index') }}" class="act-filter-clear-btn" title="ล้างการค้นหาและตัวกรองทั้งหมด">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    <span>ล้างค่า</span>
+                </a>
+            </div>
+            @endif
+        </div>
     </div>
 </form>
+
+<script nonce="{{ request()->attributes->get('csp_nonce') }}">
+function toggleActFilters() {
+    var p = document.getElementById('actFilterPanel');
+    var btn = document.getElementById('toggleFilterBtn');
+    if (!p) return;
+    var isHidden = (p.style.display === 'none' || p.style.display === '');
+    if (isHidden) {
+        p.style.display = 'block';
+        if (btn) btn.classList.add('active');
+    } else {
+        p.style.display = 'none';
+        if (btn && !{{ $hasSearched ? 'true' : 'false' }}) btn.classList.remove('active');
+    }
+}
+</script>
 
 {{-- แถบจัดเรียงลำดับอัจฉริยะ (Smart Sorting Tabs) --}}
 @php
