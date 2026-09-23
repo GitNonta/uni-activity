@@ -179,8 +179,8 @@ type ProcSession struct {
 // Note: on modern OpenSSH (>= 9.0) scp is served through the SFTP subsystem,
 // so an active scp transfer IS an sftp-server process on the server side —
 // those transfers are reported in the sftp list.
-func GetActiveSessions() (ssh []string, sftp []ProcSession, scp []ProcSession) {
-	ssh = make([]string, 0)
+func GetActiveSessions() (ssh []ProcSession, sftp []ProcSession, scp []ProcSession) {
+	ssh = make([]ProcSession, 0)
 	sftp = make([]ProcSession, 0)
 	scp = make([]ProcSession, 0)
 	entries, err := os.ReadDir("/proc")
@@ -206,7 +206,7 @@ func GetActiveSessions() (ssh []string, sftp []ProcSession, scp []ProcSession) {
 		// Any per-connection sshd child (legacy "sshd: ..." or modern
 		// "sshd-session") is an active SSH session.
 		if (strings.Contains(cmd, "sshd:") || strings.Contains(cmd, "sshd-session")) && !isSSHDDaemon {
-			ssh = append(ssh, fmt.Sprintf("PID %d: %s", pid, cmd))
+			ssh = append(ssh, ProcSession{PID: pid, Cmd: cmd})
 		}
 
 		// SFTP subsystem sessions (also carries scp traffic on OpenSSH >= 9.0)

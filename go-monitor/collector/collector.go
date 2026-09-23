@@ -153,22 +153,26 @@ func (c *Collector) Collect() ([]byte, error) {
 	cfURL := tunnel.GetActiveURL()
 	sshSessions, sftpSessions, scpSessions := services.GetActiveSessions()
 
-	// Track transfer session open/close events and persist history across restarts
+	// Track session open/close events and persist history across restarts
+	// (SSH joins sftp/scp so the dashboard keeps a session log instead of
+	// going blank the moment the last connection closes).
+	c.trackTransferEvents("ssh", sshSessions)
 	c.trackTransferEvents("sftp", sftpSessions)
 	c.trackTransferEvents("scp", scpSessions)
+
+	// UI-facing session strings (FullStats.SSHSessions stays []string for
+	// backward compatibility with already-deployed dashboard bundles).
+	sshSessionStrings := make([]string, 0, len(sshSessions))
+	for _, s := range sshSessions {
+		sshSessionStrings = append(sshSessionStrings, fmt.Sprintf("PID %d: %s", s.PID, s.Cmd))
+	}
 
 	// Deploy log (last 20 lines of git-sync.log) + per-channel streams
 	deployLog := tailFile(filepath.Join(c.projectRoot, "storage", "logs", "git-sync.log"), 20)
 	gitChannel := tailFile(filepath.Join(c.projectRoot, "storage", "logs", "git-sync.log"), 12)
-	sshChannel := ""
-	for _, s := range sshSessions {
-		sshChannel += s + "\n"
-	}
-	if sshChannel == "" {
-		sshChannel = "No active SSH sessions."
-	}
-	sftpChannel := c.buildTransferChannel("sftp", len(sftpSessions))
-	scpChannel := c.buildTransferChannel("scp", len(scpSessions))
+	sshChannel := c.buildTransferChannel("ssh", len(sshSessions), sshSessions)
+	sftpChannel := c.buildTransferChannel("sftp", len(sftpSessions), sftpSessions)
+	scpChannel := c.buildTransferChannel("scp", len(scpSessions), scpSessions)
 
 	c.inspMu.Lock()
 	inspectorCopy := make([]interface{}, len(c.inspector))
@@ -265,7 +269,7 @@ func (c *Collector) Collect() ([]byte, error) {
 		GithubDeployLogs: map[string]interface{}{"status": "ok"},
 		Events:           getDeployEvents(c.projectRoot),
 		AILog:            c.aiLogText(), // real UDP-received lines; empty until the AI service ships logs
-		SSHSessions:      sshSessions,
+		SSHSessions:      sshSessionStrings,
 		SFTPSessions:     len(sftpSessions),
 		SCPSessions:      len(scpSessions),
 		ListeningPorts:   services.GetListeningPorts(),
@@ -338,12 +342,12 @@ func (c *Collector) ProjectRoot() string {
 // transferHistoryLimit caps the number of remembered transfer events per kind.
 const transferHistoryLimit = 30
 
-// transferKinds are the tracked transfer process kinds.
-var transferKinds = []string{"sftp", "scp"}
+// transferKinds are the tracked session kinds.
+var transferKinds = []string{"ssh", "sftp", "scp"}
 
-// trackTransferEvents diffs the currently-running transfer PIDs of a kind
-// ("sftp" or "scp") against the previous scan and records open/close events
-// into an in-memory ring that is also persisted to
+// trackTransferEvents diffs the currently-running session PIDs of a kind
+// ("ssh", "sftp" or "scp") against the previous scan and records open/close
+// events into an in-memory ring that is also persisted to
 // storage/logs/<kind>-history.log so history survives agent restarts.
 func (c *Collector) trackTransferEvents(kind string, current []services.ProcSession) {
 	c.trMu.Lock()
@@ -375,13 +379,13 @@ func (c *Collector) trackTransferEvents(kind string, current []services.ProcSess
 		cur[s.PID] = true
 		if !c.transferActive[kind][s.PID] {
 			c.transferActive[kind][s.PID] = true
-			c.appendTransferEvent(kind, fmt.Sprintf("[%s] OPEN  PID %d — %s transfer session started", now, s.PID, label))
+			c.appendTransferEvent(kind, fmt.Sprintf("[%s] OPEN  PID %d — %s session started (%s)", now, s.PID, label, s.Cmd))
 		}
 	}
 	for pid := range c.transferActive[kind] {
 		if !cur[pid] {
 			delete(c.transferActive[kind], pid)
-			c.appendTransferEvent(kind, fmt.Sprintf("[%s] CLOSE PID %d — %s transfer session ended", now, pid, label))
+			c.appendTransferEvent(kind, fmt.Sprintf("[%s] CLOSE PID %d — %s session ended", now, pid, label))
 		}
 	}
 }
@@ -414,9 +418,9 @@ func (c *Collector) loadTransferHistory(kind string) {
 	c.transferHistory[kind] = append(c.transferHistory[kind], lines...)
 }
 
-// buildTransferChannel renders a transfer tab (SFTP/SCP): live count on top,
-// followed by the recent open/close event history, newest first.
-func (c *Collector) buildTransferChannel(kind string, activeCount int) string {
+// buildTransferChannel renders a session tab (SSH/SFTP/SCP): live sessions on
+// top, followed by the recent open/close event history, newest first.
+func (c *Collector) buildTransferChannel(kind string, activeCount int, active []services.ProcSession) string {
 	c.trMu.Lock()
 	hist := make([]string, len(c.transferHistory[kind]))
 	copy(hist, c.transferHistory[kind])
@@ -425,14 +429,17 @@ func (c *Collector) buildTransferChannel(kind string, activeCount int) string {
 	label := strings.ToUpper(kind)
 	var b strings.Builder
 	if activeCount > 0 {
-		b.WriteString(fmt.Sprintf("● %d active %s transfer session(s) right now\n", activeCount, label))
+		b.WriteString(fmt.Sprintf("● %d active %s session(s) right now\n", activeCount, label))
+		for _, s := range active {
+			b.WriteString(fmt.Sprintf("  ● PID %d — %s\n", s.PID, s.Cmd))
+		}
 	} else {
-		b.WriteString(fmt.Sprintf("○ No active %s transfers right now\n", label))
+		b.WriteString(fmt.Sprintf("○ No active %s sessions right now\n", label))
 	}
 	if kind == "scp" {
 		b.WriteString("(modern OpenSSH serves scp over the SFTP subsystem — those transfers appear in the SFTP history)\n")
 	}
-	b.WriteString("\nRecent transfer history:\n")
+	b.WriteString("\nRecent session history:\n")
 	if len(hist) == 0 {
 		b.WriteString(fmt.Sprintf("  (no %s transfer events recorded yet)", label))
 	} else {
