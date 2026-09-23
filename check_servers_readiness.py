@@ -41,8 +41,9 @@ SERVERS = [
             ("web workers (serve)", "pgrep -fc 'artisan serve' || echo 0"),
             ("queue worker", "pgrep -fc 'queue:work' || echo 0"),
             ("watchdog", "pgrep -f watch_web_workers >/dev/null && echo RUNNING || echo NOT-RUNNING"),
-            ("DB reach S1 :5432", "timeout 3 sh -c 'echo > /dev/tcp/192.168.1.222/5432' 2>/dev/null && echo REACHABLE || echo UNREACHABLE"),
-            ("Valkey reach S1 :6379", "timeout 3 sh -c 'echo > /dev/tcp/192.168.1.222/6379' 2>/dev/null && echo REACHABLE || echo UNREACHABLE"),
+            # bash (not sh/dash) — /dev/tcp is a bash-only feature; Termux sh is dash
+            ("DB reach S1 :5432", "timeout 3 bash -c 'echo > /dev/tcp/192.168.1.222/5432' 2>/dev/null && echo REACHABLE || echo UNREACHABLE"),
+            ("Valkey reach S1 :6379", "timeout 3 bash -c 'echo > /dev/tcp/192.168.1.222/6379' 2>/dev/null && echo REACHABLE || echo UNREACHABLE"),
         ],
     },
 ]
