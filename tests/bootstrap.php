@@ -16,6 +16,18 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
+// no-dev vendor (production deploys run `composer install --no-dev`): the
+// dev-only packages PHPUnit needs at runtime are still required. Load them
+// manually when present so the suite can run against such a vendor tree.
+foreach ([
+    __DIR__ . '/../vendor/mockery/mockery/library/Mockery.php',
+    __DIR__ . '/../vendor/mockery/mockery/library/helpers.php',
+] as $__mockerySource) {
+    if (is_file($__mockerySource)) {
+        require_once $__mockerySource;
+    }
+}
+
 $phpunitXml = simplexml_load_file(__DIR__ . '/../phpunit.xml');
 
 if ($phpunitXml === false || !isset($phpunitXml->php->env)) {
