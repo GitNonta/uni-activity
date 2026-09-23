@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -39,6 +40,67 @@ func runAndLog(cmd *exec.Cmd, logWriter io.Writer) error {
 	}
 
 	return cmd.Wait()
+}
+
+// octaneRunning reports whether a Laravel Octane server is currently running
+// on this device. Octane is optional here: production serves via `php artisan
+// serve` workers + php-fpm, so `octane:reload` only makes sense when Octane
+// actually exists (otherwise it fails with "Octane server is not running").
+func octaneRunning() bool {
+	out, err := exec.Command("pgrep", "-f", "octane:start").Output()
+	return err == nil && len(strings.TrimSpace(string(out))) > 0
+}
+
+// reloadAppRuntime reloads the PHP application runtime after a deploy.
+//   - Octane running  -> `php artisan octane:reload`
+//   - Otherwise       -> rolling restart of `artisan serve` listeners
+//     (kill the php -S listeners first, then the wrappers,
+//     then respawn on the same ports — mirrors deploy.yml)
+func reloadAppRuntime() {
+	if octaneRunning() {
+		if err := exec.Command("php", "artisan", "octane:reload").Run(); err != nil {
+			log.Printf("⚠️ octane:reload failed: %v", err)
+		}
+		return
+	}
+
+	ports := []string{"8000", "8002", "8003"}
+	for _, port := range ports {
+		// Kill the php -S LISTENERS by PID first (killing only the wrapper
+		// orphans the child, which keeps holding the port).
+		if out, err := exec.Command("sh", "-c",
+			"netstat -tlnp 2>/dev/null | grep ':"+port+" ' | grep -oE '[0-9]+/php' | cut -d/ -f1 | sort -u").Output(); err == nil {
+			for _, pidStr := range strings.Fields(string(out)) {
+				if pid, err := strconv.Atoi(strings.TrimSpace(pidStr)); err == nil && pid > 0 {
+					_ = exec.Command("kill", "-9", strconv.Itoa(pid)).Run()
+				}
+			}
+		}
+		_ = exec.Command("pkill", "-f", "artisan serve --host 0.0.0.0 --port "+port).Run()
+	}
+
+	phpBin := "/data/data/com.termux/files/usr/bin/php"
+	if _, err := os.Stat(phpBin); err != nil {
+		phpBin = "php"
+	}
+	for _, port := range ports {
+		cmd := exec.Command(phpBin, "artisan", "serve", "--host", "0.0.0.0", "--port", port)
+		cmd.Dir = config.AppConfig.ProjectRoot
+		cmd.SysProcAttr = detachSysProcAttr()
+		logFile, err := os.OpenFile(
+			filepath.Join(config.AppConfig.ProjectRoot, "storage", "logs", "serve-"+port+".log"),
+			os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+		if err == nil {
+			cmd.Stdout = logFile
+			cmd.Stderr = logFile
+		}
+		if err := cmd.Start(); err != nil {
+			log.Printf("⚠️ failed to restart artisan serve on port %s: %v", port, err)
+		}
+		if logFile != nil {
+			logFile.Close() // parent-side copy not needed after Start()
+		}
+	}
 }
 
 // TriggerManualDeploy pulls latest git changes and reloads application
@@ -96,11 +158,18 @@ func TriggerManualDeploy(clearCache bool) {
 	cmdBuild.Dir = appDir
 	_ = runAndLog(cmdBuild, f)
 
-	// 5. Reload Octane
-	fmt.Fprintf(f, "Reloading Laravel Octane...\n")
-	cmdOctane := exec.Command("php", "artisan", "octane:reload")
-	cmdOctane.Dir = appDir
-	_ = runAndLog(cmdOctane, f)
+	// 5. Reload app runtime (Octane if running, else rolling restart of artisan serve)
+	fmt.Fprintf(f, "Reloading application runtime...\n")
+	if octaneRunning() {
+		fmt.Fprintf(f, "Octane detected — reloading Octane...\n")
+		cmdOctane := exec.Command("php", "artisan", "octane:reload")
+		cmdOctane.Dir = appDir
+		_ = runAndLog(cmdOctane, f)
+	} else {
+		fmt.Fprintf(f, "No Octane — performing rolling restart of artisan serve workers...\n")
+		reloadAppRuntime()
+		fmt.Fprintf(f, "artisan serve workers restarted.\n")
+	}
 
 	fmt.Fprintf(f, "Deploy finished successfully.\n")
 
@@ -117,19 +186,18 @@ func TriggerManualDeploy(clearCache bool) {
 	}
 }
 
-// TriggerRestart restarts php-fpm or octane
+// TriggerRestart restarts the PHP application runtime (php-fpm + app servers)
 func TriggerRestart() {
 	appDir := config.AppConfig.ProjectRoot
 	_ = exec.Command("pkill", "-9", "-f", "php-fpm").Run()
 	cmd := exec.Command("nohup", "php-fpm")
 	cmd.Dir = appDir
+	cmd.SysProcAttr = detachSysProcAttr()
 	_ = cmd.Start()
 
-	cmdOctane := exec.Command("php", "artisan", "octane:reload")
-	cmdOctane.Dir = appDir
-	_ = cmdOctane.Run()
+	reloadAppRuntime()
 
-	telegram.Send("🔄 <b>PHP-FPM / Octane Server Restarted</b> via Go Monitor")
+	telegram.Send("🔄 <b>PHP-FPM / App Servers Restarted</b> via Go Monitor")
 }
 
 // TriggerRollback rolls back git repository to specific commit hash
@@ -163,9 +231,17 @@ func TriggerRollback(commitHash string) {
 	cmdBuild.Dir = appDir
 	_ = runAndLog(cmdBuild, f)
 
-	cmdOctane := exec.Command("php", "artisan", "octane:reload")
-	cmdOctane.Dir = appDir
-	_ = runAndLog(cmdOctane, f)
+	fmt.Fprintf(f, "Reloading application runtime...\n")
+	if octaneRunning() {
+		fmt.Fprintf(f, "Octane detected — reloading Octane...\n")
+		cmdOctane := exec.Command("php", "artisan", "octane:reload")
+		cmdOctane.Dir = appDir
+		_ = runAndLog(cmdOctane, f)
+	} else {
+		fmt.Fprintf(f, "No Octane — performing rolling restart of artisan serve workers...\n")
+		reloadAppRuntime()
+		fmt.Fprintf(f, "artisan serve workers restarted.\n")
+	}
 
 	perCommitLog := filepath.Join(appDir, "storage", "logs", fmt.Sprintf("git-sync-%s.log", commitHash))
 	_ = copyFile(syncLog, perCommitLog)
