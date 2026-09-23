@@ -7,277 +7,460 @@
 <h1 class="font-bold mt-2 mb-4" style="font-size:1.5rem;">แก้ไข: {{ $activity->title }}</h1>
 
 {{-- ฟอร์มแก้ไขกิจกรรม: เหมือนฟอร์มสร้างแต่เพิ่มสถานะและใช้ PUT method --}}
-<div class="card">
-    <div class="card-body">
-        <form method="POST" action="{{ route('admin.activities.update', $activity->id) }}" enctype="multipart/form-data">
-            @csrf @method('PUT')
-            <div class="form-group">
-                <label class="form-label">ชื่อกิจกรรม</label>
-                <input type="text" name="title" value="{{ old('title', $activity->title) }}" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label">รายละเอียด</label>
-                <textarea name="description" rows="6" class="form-control">{{ old('description', $activity->description) }}</textarea>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">สถานที่</label>
-                    <input type="text" name="location" value="{{ old('location', $activity->location) }}" class="form-control" required>
+<div style="max-width: 1040px; margin: 0 auto;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.25rem;">
+        <div>
+            <a href="{{ route('admin.activities.index') }}" class="text-sm text-primary" style="display:inline-flex; align-items:center; gap:4px; font-weight:600; text-decoration:none;">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                <span>กลับหน้ารายการกิจกรรม</span>
+            </a>
+            <h1 class="font-bold mt-1" style="font-size:1.6rem; color:var(--text-main, #0f172a);">แก้ไขกิจกรรม: {{ $activity->title }}</h1>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+            @include('components.status-badge', ['status' => $activity->computed_status])
+        </div>
+    </div>
+
+    <form method="POST" action="{{ route('admin.activities.update', $activity->id) }}" enctype="multipart/form-data" id="activityEditForm">
+        @csrf @method('PUT')
+
+        {{-- ── หมวดที่ 1: ข้อมูลทั่วไปของกิจกรรม ── --}}
+        <div class="card mb-4" style="border-radius:12px; overflow:hidden;">
+            <div class="card-header" style="padding:1rem 1.35rem; background:var(--bg-subtle, #f8fafc); border-bottom:1px solid var(--border-color, #e2e8f0); display:flex; align-items:center; gap:0.65rem;">
+                <div style="width:34px; height:34px; border-radius:8px; background:rgba(234,88,12,0.12); color:#ea580c; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">หมวดหมู่</label>
-                    <select name="category_id" class="form-control" required>
-                        @foreach($categories as $cat)
-                            <option value="{{ $cat->id }}" {{ $activity->category_id == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-            {{-- ระดับกิจกรรม: มหาวิทยาลัย / คณะ / สาขา --}}
-            <div class="form-group">
-                <label class="form-label">ระดับกิจกรรม</label>
-                <select name="scope" id="scopeSelect" class="form-control" required onchange="toggleScopeFields()">
-                    <option value="university" {{ old('scope', $activity->scope) == 'university' ? 'selected' : '' }}>ระดับมหาวิทยาลัย</option>
-                    <option value="faculty" {{ old('scope', $activity->scope) == 'faculty' ? 'selected' : '' }}>ระดับคณะ</option>
-                    <option value="department" {{ old('scope', $activity->scope) == 'department' ? 'selected' : '' }}>ระดับสาขา</option>
-                </select>
-            </div>
-            <div class="form-row" id="scopeDetailRow" style="display:none;">
-                <div class="form-group" id="facultyGroup">
-                    <label class="form-label">คณะ</label>
-                    <select name="faculty" id="facultyInput" class="form-control" onchange="updateDepartmentsScope()">
-                        <option value="">เลือกคณะ</option>
-                        @foreach(config('faculties') as $faculty => $deps)
-                            <option value="{{ $faculty }}" label="{{ $faculty }}" {{ old('faculty', $activity->faculty) == $faculty ? 'selected' : '' }}>{{ $faculty }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="form-group" id="departmentGroup" style="display:none;">
-                    <label class="form-label">สาขา</label>
-                    <select name="department" id="departmentInput" class="form-control">
-                        <option value="">เลือกสาขาวิชา</option>
-                    </select>
+                <div>
+                    <h3 style="margin:0; font-size:1.05rem; font-weight:700; color:var(--text-main, #0f172a);">1. ข้อมูลทั่วไปของกิจกรรม (General Information)</h3>
+                    <p class="text-xs text-muted" style="margin:0.15rem 0 0 0;">กำหนดชื่อ รายละเอียด สถานที่ หมวดหมู่ และการจำกัดจำนวนผู้เข้าร่วม</p>
                 </div>
             </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem;">
-                        <label class="form-label" style="margin-bottom:0;">วันที่จัดกิจกรรม</label>
-                        <label class="checkbox-label" style="margin:0; font-size:.8rem; color:#475569; font-weight:500;">
-                            <input type="checkbox" name="is_multiday" id="isMultidayCheck" value="1" onchange="toggleMultiday()" {{ old('is_multiday', $activity->is_multiday) ? 'checked' : '' }}> จัดหลายวัน
-                        </label>
-                    </div>
-                    <div style="display:flex; gap:0.5rem; align-items:center;">
-                        <input type="date" name="activity_date" id="activityDate" value="{{ old('activity_date', $activity->activity_date->format('Y-m-d')) }}" class="form-control" required style="flex:1;" onchange="autoFillDates(); renderMultidaySchedule();">
-                        <span id="endDateSeparator" style="display:{{ old('is_multiday', $activity->is_multiday) ? 'inline' : 'none' }};">ถึง</span>
-                        <input type="date" name="end_date" id="endDate" value="{{ old('end_date', $activity->end_date ? $activity->end_date->format('Y-m-d') : '') }}" class="form-control" style="flex:1; display:{{ old('is_multiday', $activity->is_multiday) ? 'block' : 'none' }};" onchange="renderMultidaySchedule();">
-                    </div>
+            <div class="card-body" style="padding:1.35rem 1.5rem;">
+                <div class="form-group mb-4">
+                    <label class="form-label" style="font-weight:600;">ชื่อกิจกรรม <span style="color:#ef4444;">*</span></label>
+                    <input type="text" name="title" value="{{ old('title', $activity->title) }}" class="form-control" required placeholder="ระบุชื่อกิจกรรมให้ชัดเจน">
                 </div>
-                <div class="form-group">
-                    <label class="form-label">ชั่วโมงกิจกรรม</label>
-                    {{-- auto-calc จากเวลาเริ่ม-สิ้นสุด เว้นแต่จะติ๊ก 'ระบุเอง' --}}
-                    <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem;">
-                        <label class="checkbox-label" style="margin:0;font-size:.8rem;color:#475569;font-weight:500;">
-                            <input type="checkbox" id="customHoursCheck" onchange="toggleCustomHours(this)" checked> ระบุชั่วโมงกิจกรรมเอง
-                        </label>
-                    </div>
-                    <input type="number" name="activity_hours" id="activityHours"
-                        value="{{ old('activity_hours', $activity->activity_hours) }}" step="0.5" min="0.5" class="form-control" required>
-                    <p class="text-xs text-muted" style="margin-top:.2rem;" id="hoursHint">ระบุชั่วโมงกิจกรรมด้วยตัวเอง</p>
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">เวลาเริ่ม</label>
-                    <input type="time" name="start_time" id="startTime" value="{{ old('start_time', \Carbon\Carbon::parse($activity->start_time)->format('H:i')) }}" class="form-control" required onchange="autoCalcHours(); autoFillDates()">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">เวลาสิ้นสุด</label>
-                    <input type="time" name="end_time" id="endTime" value="{{ old('end_time', \Carbon\Carbon::parse($activity->end_time)->format('H:i')) }}" class="form-control" required onchange="autoCalcHours(); autoFillDates()">
-                    <small id="crossDayHint" class="text-muted" style="display:{{ old('is_multiday', $activity->is_multiday) ? 'block' : 'none' }}; margin-top:4px;">(ข้ามวันได้)</small>
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="form-label">จำนวนผู้เข้าร่วมสูงสุด</label>
-                <input type="number" name="max_participants" value="{{ old('max_participants', $activity->max_participants) }}" min="1" class="form-control" required>
-            </div>
-            <div class="form-row">
-            <div class="form-group" style="padding:.6rem .8rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;margin-bottom:.75rem;display:flex;align-items:center;justify-content:space-between;">
-                <p class="text-xs" style="color:#16a34a;margin:0;display:flex;align-items:center;gap:0.35rem;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.5 4.5 3 6h8c1.5-1.5 3-3.5 3-6a7 7 0 0 0-7-7z"/></svg> คลิกปุ่มด้านขวาเพื่อตั้งค่าเวลาลงทะเบียน / เช็คอิน / เช็คเอาต์ อัตโนมัติจากวันที่จัดกิจกรรม</p>
-                <button type="button" class="btn btn-outline btn-sm" onclick="autoFillDates()" style="white-space:nowrap;margin-left:.5rem;flex-shrink:0;">ตั้งค่าอัตโนมัติ</button>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">เปิดลงทะเบียน</label>
-                    <input type="datetime-local" name="register_open_at" id="registerOpenInput" value="{{ old('register_open_at', $activity->register_open_at->format('Y-m-d\TH:i')) }}" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">ปิดลงทะเบียน</label>
-                    <input type="datetime-local" name="register_close_at" id="registerCloseInput" value="{{ old('register_close_at', $activity->register_close_at->format('Y-m-d\TH:i')) }}" class="form-control" required>
-                </div>
-            </div>
-            {{-- ส่วนเวลาเช็คอิน/เช็คเอาต์สำหรับกิจกรรมวันเดียว (ซ่อนอัตโนมัติเมื่อเลือกจัดกิจกรรมหลายวัน เพื่อไม่ให้ทับซ้อน) --}}
-            <div id="singleDayCheckinCheckoutSection">
+
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label">เปิดเช็คอิน</label>
-                        <input type="datetime-local" name="checkin_open_at" id="checkinOpenInput" value="{{ old('checkin_open_at', $activity->checkin_open_at->format('Y-m-d\TH:i')) }}" class="form-control" required>
+                        <label class="form-label" style="font-weight:600;">หมวดหมู่กิจกรรม <span style="color:#ef4444;">*</span></label>
+                        <select name="category_id" class="form-control" required>
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->id }}" {{ $activity->category_id == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">ปิดเช็คอิน</label>
-                        <input type="datetime-local" name="checkin_close_at" id="checkinCloseInput" value="{{ old('checkin_close_at', $activity->checkin_close_at->format('Y-m-d\TH:i')) }}" class="form-control" required>
+                        <label class="form-label" style="font-weight:600;">สถานที่จัดกิจกรรม <span style="color:#ef4444;">*</span></label>
+                        <input type="text" name="location" value="{{ old('location', $activity->location) }}" class="form-control" required placeholder="เช่น ห้องประชุม 1 อาคารเรียนรวม">
                     </div>
                 </div>
-                <div class="form-group" id="noCheckoutGroup" style="display:none; margin-bottom: 0.5rem;">
-                    <label class="checkbox-label" style="margin:0; font-size:.8rem; color:#475569; font-weight:500;">
-                        <input type="checkbox" name="is_no_checkout" id="isNoCheckoutCheck" value="1" onchange="toggleNoCheckout()" {{ old('is_no_checkout', is_null($activity->checkout_open_at) && is_null($activity->checkout_close_at)) ? 'checked' : '' }}> ไม่ระบุเวลาสแกนออกงาน (บันทึกกิจกรรมได้ตลอดเวลา)
-                    </label>
-                </div>
-                <div class="form-row" id="checkoutTimeRow">
-                    <div class="form-group">
-                        <label class="form-label">เปิดบันทึกกิจกรรม (ออกงาน)</label>
-                        <input type="datetime-local" name="checkout_open_at" id="checkoutOpenInput" value="{{ old('checkout_open_at', $activity->checkout_open_at ? $activity->checkout_open_at->format('Y-m-d\TH:i') : '') }}" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">ปิดบันทึกกิจกรรม (ออกงาน)</label>
-                        <input type="datetime-local" name="checkout_close_at" id="checkoutCloseInput" value="{{ old('checkout_close_at', $activity->checkout_close_at ? $activity->checkout_close_at->format('Y-m-d\TH:i') : '') }}" class="form-control" required>
-                    </div>
-                </div>
-            </div>
-            <div class="form-group" id="minHoursGroup" style="display:none;">
-                <label class="form-label">ชั่วโมงขั้นต่ำที่ต้องเข้าร่วมก่อนเช็คเอาต์</label>
-                <div style="display:flex; align-items:center; gap:0.5rem;">
-                    <input type="number" name="min_hours_before_checkout" id="minHoursInput" value="{{ old('min_hours_before_checkout', $activity->min_hours_before_checkout ?? 0) }}" min="0" step="0.5" class="form-control" style="max-width: 150px;">
-                    <span class="text-muted text-sm">ชั่วโมง (0 = ไม่มีขั้นต่ำ, สามารถบันทึกออกงานได้ทันที)</span>
-                </div>
-            </div>
 
-            <!-- Multi-Day Daily Schedule & Hours Section -->
-            <div id="multidayScheduleSection" class="multiday-schedule-wrap" style="display:none;">
-                <div class="multiday-header-border" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1rem; padding-bottom:0.75rem;">
-                    <div>
-                        <h4 class="multiday-title" style="margin:0; font-size:0.95rem; font-weight:700; display:flex; align-items:center; gap:0.5rem;">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                                <line x1="16" y1="2" x2="16" y2="6"></line>
-                                <line x1="8" y1="2" x2="8" y2="6"></line>
-                                <line x1="3" y1="10" x2="21" y2="10"></line>
-                            </svg>
-                            กำหนดการเช็คอิน-เช็คเอาต์ และชั่วโมงกิจกรรมแยกรายวัน (Daily Schedule & Hours)
-                        </h4>
-                        <p class="text-xs text-muted" style="margin:0.25rem 0 0 0;">
-                            ระบุเวลาเปิด-ปิดเช็คอิน เช็คเอาต์ และชั่วโมงกิจกรรมสำหรับแต่ละวันของกิจกรรม
-                        </p>
+                <div class="form-group mb-4">
+                    <label class="form-label" style="font-weight:600;">รายละเอียดกิจกรรม</label>
+                    <textarea name="description" rows="5" class="form-control" placeholder="รายละเอียด วัตถุประสงค์ กำหนดการ หรือข้อปฏิบัติต่างๆ">{{ old('description', $activity->description) }}</textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight:600;">ระดับกิจกรรม <span style="color:#ef4444;">*</span></label>
+                        <select name="scope" id="scopeSelect" class="form-control" required onchange="toggleScopeFields()">
+                            <option value="university" {{ old('scope', $activity->scope) == 'university' ? 'selected' : '' }}>ระดับมหาวิทยาลัย</option>
+                            <option value="faculty" {{ old('scope', $activity->scope) == 'faculty' ? 'selected' : '' }}>ระดับคณะ</option>
+                            <option value="department" {{ old('scope', $activity->scope) == 'department' ? 'selected' : '' }}>ระดับสาขา</option>
+                        </select>
                     </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight:600;">สถานะกิจกรรม <span style="color:#ef4444;">*</span></label>
+                        @php
+                            $statusOptions = [
+                                'upcoming' => 'กำลังจะเปิด',
+                                'open' => 'เปิดรับสมัคร',
+                                'full' => 'เต็มแล้ว',
+                                'ongoing' => 'กำลังจัดกิจกรรม',
+                                'done' => 'เสร็จสิ้น',
+                                'cancelled' => 'ยกเลิก'
+                            ];
+                        @endphp
+                        <select name="status" class="form-control" required>
+                            @foreach($statusOptions as $val => $label)
+                                <option value="{{ $val }}" {{ $activity->status == $val ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
+                {{-- แถบคณะและสาขาเมื่อเลือก Scope ย่อย --}}
+                <div class="form-row" id="scopeDetailRow" style="display:none;">
+                    <div class="form-group" id="facultyGroup">
+                        <label class="form-label" style="font-weight:600;">คณะที่จัดกิจกรรม</label>
+                        <select name="faculty" id="facultyInput" class="form-control" onchange="updateDepartmentsScope()">
+                            <option value="">เลือกคณะ</option>
+                            @foreach(config('faculties') as $faculty => $deps)
+                                <option value="{{ $faculty }}" label="{{ $faculty }}" {{ old('faculty', $activity->faculty) == $faculty ? 'selected' : '' }}>{{ $faculty }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-group" id="departmentGroup" style="display:none;">
+                        <label class="form-label" style="font-weight:600;">สาขาวิชา</label>
+                        <select name="department" id="departmentInput" class="form-control">
+                            <option value="">เลือกสาขาวิชา</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight:600;">จำนวนผู้เข้าร่วมสูงสุด (คน) <span style="color:#ef4444;">*</span></label>
+                        <input type="number" name="max_participants" value="{{ old('max_participants', $activity->max_participants) }}" min="1" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight:600;">รูปภาพหน้าปกกิจกรรม (เปลี่ยนได้)</label>
+                        <input type="file" name="image" accept="image/*" class="form-control">
+                        @if($activity->image_path)
+                            <div style="display:flex; align-items:center; gap:0.6rem; margin-top:0.4rem; padding:0.4rem 0.6rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px;">
+                                <img src="{{ Storage::url($activity->image_path) }}" alt="" style="width:36px; height:36px; object-fit:cover; border-radius:4px;">
+                                <span class="text-xs text-muted" style="flex:1;">มีรูปภาพหน้าปกเดิมอยู่แล้ว (เลือกไฟล์ใหม่หากต้องการเปลี่ยน)</span>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── หมวดที่ 2: กำหนดการและชั่วโมงกิจกรรม ── --}}
+        <div class="card mb-4" style="border-radius:12px; overflow:hidden;">
+            <div class="card-header" style="padding:1rem 1.35rem; background:var(--bg-subtle, #f8fafc); border-bottom:1px solid var(--border-color, #e2e8f0); display:flex; align-items:center; gap:0.65rem;">
+                <div style="width:34px; height:34px; border-radius:8px; background:rgba(37,99,235,0.12); color:#2563eb; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </div>
+                <div>
+                    <h3 style="margin:0; font-size:1.05rem; font-weight:700; color:var(--text-main, #0f172a);">2. กำหนดการและชั่วโมงกิจกรรม (Schedule & Hours)</h3>
+                    <p class="text-xs text-muted" style="margin:0.15rem 0 0 0;">กำหนดวัน เวลาเริ่ม-สิ้นสุด และการนับชั่วโมงกิจกรรม</p>
+                </div>
+            </div>
+            <div class="card-body" style="padding:1.35rem 1.5rem;">
+                <div class="form-row">
+                    <div class="form-group">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.4rem;">
+                            <label class="form-label" style="margin-bottom:0; font-weight:600;">วันที่จัดกิจกรรม <span style="color:#ef4444;">*</span></label>
+                            <label class="checkbox-label" style="margin:0; font-size:.8rem; color:#475569; font-weight:500;">
+                                <input type="checkbox" name="is_multiday" id="isMultidayCheck" value="1" onchange="toggleMultiday()" {{ old('is_multiday', $activity->is_multiday) ? 'checked' : '' }}> จัดหลายวัน (Multi-day)
+                            </label>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; align-items:center;">
+                            <input type="date" name="activity_date" id="activityDate" value="{{ old('activity_date', $activity->activity_date->format('Y-m-d')) }}" class="form-control" required style="flex:1;" onchange="autoFillDates(); renderMultidaySchedule();">
+                            <span id="endDateSeparator" style="display:{{ old('is_multiday', $activity->is_multiday) ? 'inline' : 'none' }}; font-weight:600; color:#64748b;">ถึง</span>
+                            <input type="date" name="end_date" id="endDate" value="{{ old('end_date', $activity->end_date ? $activity->end_date->format('Y-m-d') : '') }}" class="form-control" style="flex:1; display:{{ old('is_multiday', $activity->is_multiday) ? 'block' : 'none' }};" onchange="renderMultidaySchedule();">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.4rem;">
+                            <label class="form-label" style="margin-bottom:0; font-weight:600;">ชั่วโมงกิจกรรม <span style="color:#ef4444;">*</span></label>
+                            <label class="checkbox-label" style="margin:0; font-size:.8rem; color:#475569; font-weight:500;">
+                                <input type="checkbox" id="customHoursCheck" onchange="toggleCustomHours(this)" checked> ระบุชั่วโมงเอง
+                            </label>
+                        </div>
+                        <input type="number" name="activity_hours" id="activityHours" value="{{ old('activity_hours', $activity->activity_hours) }}" step="0.5" min="0.5" class="form-control" required>
+                        <p class="text-xs text-muted" style="margin-top:.25rem;" id="hoursHint">ระบุชั่วโมงกิจกรรมด้วยตัวเอง</p>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight:600;">เวลาเริ่มกิจกรรม <span style="color:#ef4444;">*</span></label>
+                        <input type="time" name="start_time" id="startTime" value="{{ old('start_time', \Carbon\Carbon::parse($activity->start_time)->format('H:i')) }}" class="form-control" required onchange="autoCalcHours(); autoFillDates()">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight:600;">เวลาสิ้นสุดกิจกรรม <span style="color:#ef4444;">*</span></label>
+                        <input type="time" name="end_time" id="endTime" value="{{ old('end_time', \Carbon\Carbon::parse($activity->end_time)->format('H:i')) }}" class="form-control" required onchange="autoCalcHours(); autoFillDates()">
+                        <small id="crossDayHint" class="text-muted" style="display:{{ old('is_multiday', $activity->is_multiday) ? 'block' : 'none' }}; margin-top:4px;">(ข้ามวันได้)</small>
+                    </div>
+                </div>
+
+                {{-- Multi-Day Daily Schedule & Hours Section --}}
+                <div id="multidayScheduleSection" class="multiday-schedule-wrap" style="display:none; margin-top:1.25rem;">
+                    <div class="multiday-header-border" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid #e2e8f0;">
+                        <div>
+                            <h4 class="multiday-title" style="margin:0; font-size:0.95rem; font-weight:700; display:flex; align-items:center; gap:0.5rem;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                                กำหนดการเช็คอิน-เช็คเอาต์ และชั่วโมงกิจกรรมแยกรายวัน (Daily Schedule & Hours)
+                            </h4>
+                            <p class="text-xs text-muted" style="margin:0.25rem 0 0 0;">
+                                ระบุเวลาเปิด-ปิดเช็คอิน เช็คเอาต์ และชั่วโมงกิจกรรมสำหรับแต่ละวันของกิจกรรม
+                            </p>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <button type="button" onclick="applyDay1ToAll()" class="btn btn-outline btn-sm" style="font-size:0.75rem; display:inline-flex; align-items:center; gap:0.35rem; padding:0.35rem 0.65rem;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                ใช้เวลาวันแรกกับทุกวัน
+                            </button>
+                            <span id="multidayTotalHoursBadge" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-size:0.75rem; font-weight:700; padding:0.35rem 0.65rem; border-radius:8px; display:inline-flex; align-items:center; gap:0.35rem;">
+                                รวมชั่วโมงกิจกรรม: <span id="multidayTotalHoursText" style="font-weight:800; font-size:0.85rem; margin-left:2px;">0</span> ชม.
+                            </span>
+                        </div>
+                    </div>
+
+                    <div id="multidayDaysContainer" style="display:flex; flex-direction:column; gap:0.85rem;">
+                        {{-- Daily rows generated dynamically via JavaScript --}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── หมวดที่ 3: ช่วงเวลาลงทะเบียนและการเช็คอิน ── --}}
+        <div class="card mb-4" style="border-radius:12px; overflow:hidden;">
+            <div class="card-header" style="padding:1rem 1.35rem; background:var(--bg-subtle, #f8fafc); border-bottom:1px solid var(--border-color, #e2e8f0); display:flex; align-items:center; gap:0.65rem;">
+                <div style="width:34px; height:34px; border-radius:8px; background:rgba(22,163,74,0.12); color:#16a34a; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div>
+                    <h3 style="margin:0; font-size:1.05rem; font-weight:700; color:var(--text-main, #0f172a);">3. ช่วงเวลาลงทะเบียนและการเช็คอิน (Registration & Attendance Timeframes)</h3>
+                    <p class="text-xs text-muted" style="margin:0.15rem 0 0 0;">กำหนดช่วงเวลาเปิด-ปิดรับสมัคร และช่วงเวลาเปิดให้สแกนเข้า/ออกงาน</p>
+                </div>
+            </div>
+            <div class="card-body" style="padding:1.35rem 1.5rem;">
+                {{-- กล่องแนะนำและปุ่มตั้งค่าเวลาอัตโนมัติ --}}
+                <div style="padding:.75rem 1rem; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; margin-bottom:1.25rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+                    <p class="text-xs" style="color:#16a34a; margin:0; display:flex; align-items:center; gap:0.4rem; font-weight:500;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.5 4.5 3 6h8c1.5-1.5 3-3.5 3-6a7 7 0 0 0-7-7z"/></svg>
+                        <span>คลิกปุ่มด้านขวาเพื่อตั้งค่าเวลาลงทะเบียน / เช็คอิน / เช็คเอาต์ อัตโนมัติจากวันที่และเวลาจัดกิจกรรม</span>
+                    </p>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="autoFillDates()" style="white-space:nowrap; background:#ffffff; border-color:#86efac; color:#15803d; font-weight:600;">
+                        ตั้งค่าอัตโนมัติ
+                    </button>
+                </div>
+
+                {{-- เวลาเปิด-ปิดลงทะเบียน --}}
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight:600;">เปิดลงทะเบียน <span style="color:#ef4444;">*</span></label>
+                        <input type="datetime-local" name="register_open_at" id="registerOpenInput" value="{{ old('register_open_at', $activity->register_open_at->format('Y-m-d\TH:i')) }}" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight:600;">ปิดลงทะเบียน <span style="color:#ef4444;">*</span></label>
+                        <input type="datetime-local" name="register_close_at" id="registerCloseInput" value="{{ old('register_close_at', $activity->register_close_at->format('Y-m-d\TH:i')) }}" class="form-control" required>
+                    </div>
+                </div>
+
+                {{-- ส่วนเวลาเช็คอิน/เช็คเอาต์สำหรับกิจกรรมวันเดียว (ซ่อนอัตโนมัติเมื่อเลือกจัดกิจกรรมหลายวัน) --}}
+                <div id="singleDayCheckinCheckoutSection">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight:600;">เปิดเช็คอิน (เข้างาน) <span style="color:#ef4444;">*</span></label>
+                            <input type="datetime-local" name="checkin_open_at" id="checkinOpenInput" value="{{ old('checkin_open_at', $activity->checkin_open_at->format('Y-m-d\TH:i')) }}" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight:600;">ปิดเช็คอิน (เข้างาน) <span style="color:#ef4444;">*</span></label>
+                            <input type="datetime-local" name="checkin_close_at" id="checkinCloseInput" value="{{ old('checkin_close_at', $activity->checkin_close_at->format('Y-m-d\TH:i')) }}" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="noCheckoutGroup" style="display:none; margin-bottom: 0.75rem;">
+                        <label class="checkbox-label" style="margin:0; font-size:.85rem; color:#475569; font-weight:500;">
+                            <input type="checkbox" name="is_no_checkout" id="isNoCheckoutCheck" value="1" onchange="toggleNoCheckout()" {{ old('is_no_checkout', is_null($activity->checkout_open_at) && is_null($activity->checkout_close_at)) ? 'checked' : '' }}>
+                            <span>ไม่ระบุเวลาสแกนออกงาน (บันทึกกิจกรรมได้ตลอดเวลา)</span>
+                        </label>
+                    </div>
+
+                    <div class="form-row" id="checkoutTimeRow">
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight:600;">เปิดบันทึกกิจกรรม (ออกงาน) <span style="color:#ef4444;">*</span></label>
+                            <input type="datetime-local" name="checkout_open_at" id="checkoutOpenInput" value="{{ old('checkout_open_at', $activity->checkout_open_at ? $activity->checkout_open_at->format('Y-m-d\TH:i') : '') }}" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight:600;">ปิดบันทึกกิจกรรม (ออกงาน) <span style="color:#ef4444;">*</span></label>
+                            <input type="datetime-local" name="checkout_close_at" id="checkoutCloseInput" value="{{ old('checkout_close_at', $activity->checkout_close_at ? $activity->checkout_close_at->format('Y-m-d\TH:i') : '') }}" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" id="minHoursGroup" style="display:none; margin-top:0.75rem;">
+                    <label class="form-label" style="font-weight:600;">ชั่วโมงขั้นต่ำที่ต้องเข้าร่วมก่อนเช็คเอาต์</label>
                     <div style="display:flex; align-items:center; gap:0.5rem;">
-                        <button type="button" onclick="applyDay1ToAll()" class="btn btn-outline btn-sm" style="font-size:0.75rem; display:inline-flex; align-items:center; gap:0.35rem; padding:0.35rem 0.65rem;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                            </svg>
-                            ใช้เวลาวันแรกกับทุกวัน
-                        </button>
-                        <span id="multidayTotalHoursBadge" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-size:0.75rem; font-weight:700; padding:0.35rem 0.65rem; border-radius:8px; display:inline-flex; align-items:center; gap:0.35rem;">
-                            รวมชั่วโมงกิจกรรม: <span id="multidayTotalHoursText" style="font-weight:800; font-size:0.85rem; margin-left:2px;">0</span> ชม.
-                        </span>
+                        <input type="number" name="min_hours_before_checkout" id="minHoursInput" value="{{ old('min_hours_before_checkout', $activity->min_hours_before_checkout ?? 0) }}" min="0" step="0.5" class="form-control" style="max-width: 150px;">
+                        <span class="text-muted text-sm">ชั่วโมง (0 = ไม่มีขั้นต่ำ, สามารถบันทึกออกงานได้ทันที)</span>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <div id="multidayDaysContainer" style="display:flex; flex-direction:column; gap:0.85rem;">
-                    <!-- Daily rows generated dynamically via JavaScript -->
+        {{-- ── หมวดที่ 4: พิกัดสถานที่และแผนที่ ── --}}
+        <div class="card mb-4" style="border-radius:12px; overflow:hidden;">
+            <div class="card-header" style="padding:1rem 1.35rem; background:var(--bg-subtle, #f8fafc); border-bottom:1px solid var(--border-color, #e2e8f0); display:flex; align-items:center; gap:0.65rem;">
+                <div style="width:34px; height:34px; border-radius:8px; background:rgba(217,70,239,0.12); color:#d946ef; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                </div>
+                <div>
+                    <h3 style="margin:0; font-size:1.05rem; font-weight:700; color:var(--text-main, #0f172a);">4. แผนที่และพิกัดเช็คอิน GPS (Map & Geofencing)</h3>
+                    <p class="text-xs text-muted" style="margin:0.15rem 0 0 0;">ปักหมุดตำแหน่งจัดกิจกรรมเพื่ออนุมัติการเช็คอินของนักศึกษาที่อยู่ในรัศมีโดยอัตโนมัติ</p>
                 </div>
             </div>
-
-            <div class="form-group">
-                <label class="form-label">สถานะ</label>
-                @php
-                    $statusOptions = [
-                        'upcoming' => 'กำลังจะเปิด',
-                        'open' => 'เปิดรับสมัคร',
-                        'full' => 'เต็มแล้ว',
-                        'ongoing' => 'กำลังจัดกิจกรรม',
-                        'done' => 'เสร็จสิ้น',
-                        'cancelled' => 'ยกเลิก'
-                    ];
-                @endphp
-                <select name="status" class="form-control">
-                    @foreach($statusOptions as $val => $label)
-                        <option value="{{ $val }}" {{ $activity->status == $val ? 'selected' : '' }}>{{ $label }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #e2e8f0;">
-                <p class="font-semi text-sm mb-2">พิกัดสถานที่จัดกิจกรรม</p>
-                <p class="text-xs text-muted mb-3">คลิกบนแผนที่เพื่อปักหมุด หรือกดปุ่มตำแหน่งปัจจุบัน — นักศึกษาที่อยู่ในรัศมีจะได้รับอนุมัติอัตโนมัติ</p>
-                <div style="display:flex;gap:.5rem;margin-bottom:.75rem;flex-wrap:wrap;">
-                    <div style="flex:1;min-width:180px;position:relative;">
+            <div class="card-body" style="padding:1.35rem 1.5rem;">
+                <div style="display:flex; gap:.5rem; margin-bottom:.75rem; flex-wrap:wrap;">
+                    <div style="flex:1; min-width:220px; position:relative;">
                         <input type="text" id="mapSearch" class="form-control" placeholder="ค้นหาสถานที่..." autocomplete="off">
-                        <div id="searchResults" class="location-search-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.1);max-height:300px;overflow-y:auto;z-index:1000;margin-top:4px;"></div>
+                        <div id="searchResults" class="location-search-dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,.15); max-height:300px; overflow-y:auto; z-index:1000; margin-top:4px; background:#ffffff;"></div>
                     </div>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="goToMyLocation()">
-                        <svg class="icon-sm" style="display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="goToMyLocation()" style="display:inline-flex; align-items:center; gap:0.35rem;">
+                        <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                         ตำแหน่งปัจจุบัน
                     </button>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="clearPin()" style="color:#dc2626;border-color:#fca5a5;">ลบหมุด</button>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="clearPin()" style="color:#dc2626; border-color:#fca5a5;">
+                        ลบหมุด
+                    </button>
                 </div>
-                <div id="map" style="height:350px;border-radius:8px;border:1px solid #e2e8f0;margin-bottom:.75rem;z-index:0;"></div>
+
+                <div id="map" style="height:350px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:1rem; z-index:0;"></div>
                 <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude', $activity->latitude) }}">
                 <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude', $activity->longitude) }}">
+
                 <div class="form-row">
-                    <div class="form-group" style="flex:1;">
-                        <label class="form-label">รัศมีเช็คอินอัตโนมัติ (เมตร)</label>
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight:600;">รัศมีเช็คอินอัตโนมัติ (เมตร) <span style="color:#ef4444;">*</span></label>
                         <input type="number" name="checkin_radius" id="checkin_radius" value="{{ old('checkin_radius', $activity->checkin_radius ?? 200) }}" min="10" max="5000" class="form-control" oninput="updateRadius()">
+                        <p class="text-xs text-muted" style="margin-top:0.25rem;">ระยะที่อนุญาตให้นักศึกษาเช็คอินได้ (แนะนำ 100 - 300 เมตร)</p>
                     </div>
-                    <div class="form-group" style="flex:1;">
-                        <label class="form-label">พิกัดที่เลือก</label>
-                        <input type="text" id="coordDisplay" class="form-control" readonly placeholder="ยังไม่ได้ปักหมุด" style="background:#f8fafc;color:#64748b;">
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight:600;">พิกัดที่เลือก (Latitude, Longitude)</label>
+                        <input type="text" id="coordDisplay" class="form-control" readonly placeholder="ยังไม่ได้ปักหมุด" style="background:#f8fafc; color:#64748b;">
+                        <p class="text-xs text-muted" style="margin-top:0.25rem;">คลิกบนแผนที่หรือปักหมุดเพื่ออัปเดตพิกัด</p>
                     </div>
                 </div>
             </div>
-            <div class="form-group">
-                <label class="form-label">รูปภาพ (เปลี่ยนได้)</label>
-                <input type="file" name="image" accept="image/*" class="form-control">
-            </div>
-            <div class="form-group">
-                <label class="checkbox-label">
-                    <input type="checkbox" name="is_mandatory" value="1" {{ $activity->is_mandatory ? 'checked' : '' }}> กิจกรรมบังคับ
-                </label>
-            </div>
-            <div class="form-group">
-                <label class="checkbox-label">
-                    <input type="checkbox" name="allow_walkin" value="1" {{ old('allow_walkin', $activity->allow_walkin) ? 'checked' : '' }}> อนุญาตให้สแกนเข้างานโดยไม่ต้องลงทะเบียนล่วงหน้า (เปิดรับ Walk-in)
-                </label>
-            </div>
-            <div class="form-group">
-                <label class="checkbox-label">
-                    <input type="checkbox" name="require_attendance_approval" value="1" {{ $activity->require_attendance_approval ? 'checked' : '' }}> ต้องตรวจสอบการเช็คอิน (Manual Approval)
-                </label>
-                <p class="text-xs text-muted" style="margin-left: 1.5rem; margin-top: 0.15rem;">หากติ๊กเลือก นักศึกษาที่สแกน QR จะมีสถานะ "รอตรวจสอบ" จนกว่าผู้จัดจะกดอนุมัติ</p>
-            </div>
-            <div class="form-group" style="padding: 1rem; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc;">
-                <label class="checkbox-label" style="font-weight: bold; margin-bottom: 0.5rem;">
-                    <input type="checkbox" name="require_face_scan" id="requireFaceScan" value="1" onchange="toggleFaceScanMethod()" {{ old('require_face_scan', $activity->require_face_scan) ? 'checked' : '' }}> 
-                    บังคับสแกนใบหน้า (Face Scan Verification)
-                </label>
-                <p class="text-xs text-muted" style="margin-left: 1.5rem; margin-top: 0.15rem; margin-bottom: 1rem;">เมื่อเช็คอิน/เช็คเอาท์ นักศึกษาจะต้องถ่ายรูปหน้าเพื่อยืนยันตัวตนกับรูปในระบบ หากนำติ๊กออก ระบบจะบันทึกเวลาให้ทันทีเมื่อตำแหน่ง GPS ถูกต้อง</p>
-                
-                <div id="faceScanMethodDiv" style="margin-left: 1.5rem;">
-                    <label class="form-label" style="font-size: 0.9rem;">ระบบประมวลผลใบหน้า (Face Scan Method)</label>
-                    <select name="face_scan_method" class="form-control" style="max-width: 400px; font-size: 0.9rem;">
-                        <option value="python" {{ old('face_scan_method', $activity->face_scan_method) == 'python' ? 'selected' : '' }}>Python AI Server (ความแม่นยำสูง, 512-d, แนะนำ)</option>
-                        <option value="js" {{ old('face_scan_method', $activity->face_scan_method) == 'js' ? 'selected' : '' }}>Client-side FaceAPI.js (ประมวลผลบนมือถือนักศึกษา, 128-d)</option>
-                    </select>
-                    <small class="text-muted" style="display: block; margin-top: 0.25rem;">* หากเลือก Python AI แต่เซิร์ฟเวอร์ตอบสนองช้า ระบบจะสลับไปใช้ Client-side JS ให้โดยอัตโนมัติ (Auto-Failover)</small>
+        </div>
+
+        {{-- ── หมวดที่ 5: เงื่อนไขและการยืนยันตัวตน ── --}}
+        <div class="card mb-4" style="border-radius:12px; overflow:hidden;">
+            <div class="card-header" style="padding:1rem 1.35rem; background:var(--bg-subtle, #f8fafc); border-bottom:1px solid var(--border-color, #e2e8f0); display:flex; align-items:center; gap:0.65rem;">
+                <div style="width:34px; height:34px; border-radius:8px; background:rgba(99,102,241,0.12); color:#6366f1; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                </div>
+                <div>
+                    <h3 style="margin:0; font-size:1.05rem; font-weight:700; color:var(--text-main, #0f172a);">5. เงื่อนไขและการยืนยันตัวตน (Rules & Verification Settings)</h3>
+                    <p class="text-xs text-muted" style="margin:0.15rem 0 0 0;">กำหนดข้อบังคับ การเปิดรับ Walk-in และการตรวจสอบใบหน้านักศึกษา</p>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary btn-lg">บันทึก</button>
-        </form>
-    </div>
+            <div class="card-body" style="padding:1.35rem 1.5rem;">
+                <div style="display:flex; flex-direction:column; gap:0.85rem; margin-bottom:1.25rem;">
+                    <label class="checkbox-label" style="padding:0.75rem 1rem; border:1px solid #e2e8f0; border-radius:8px; background:var(--bg-subtle, #f8fafc); cursor:pointer;">
+                        <input type="checkbox" name="is_mandatory" value="1" {{ $activity->is_mandatory ? 'checked' : '' }}>
+                        <div>
+                            <span style="font-weight:600; color:var(--text-main, #1e293b);">กิจกรรมบังคับ (Mandatory Activity)</span>
+                            <p class="text-xs text-muted" style="margin:0.15rem 0 0 0;">กำหนดให้นักศึกษาทุกคนในระดับที่เลือกต้องเข้าร่วมกิจกรรมนี้</p>
+                        </div>
+                    </label>
+
+                    <label class="checkbox-label" style="padding:0.75rem 1rem; border:1px solid #e2e8f0; border-radius:8px; background:var(--bg-subtle, #f8fafc); cursor:pointer;">
+                        <input type="checkbox" name="allow_walkin" value="1" {{ old('allow_walkin', $activity->allow_walkin) ? 'checked' : '' }}>
+                        <div>
+                            <span style="font-weight:600; color:var(--text-main, #1e293b);">อนุญาตให้สแกนเข้างานโดยไม่ต้องลงทะเบียนล่วงหน้า (เปิดรับ Walk-in)</span>
+                            <p class="text-xs text-muted" style="margin:0.15rem 0 0 0;">นักศึกษาสามารถเดินมาสแกน QR หน้างานและบันทึกเวลาได้ทันที</p>
+                        </div>
+                    </label>
+
+                    <label class="checkbox-label" style="padding:0.75rem 1rem; border:1px solid #e2e8f0; border-radius:8px; background:var(--bg-subtle, #f8fafc); cursor:pointer;">
+                        <input type="checkbox" name="require_attendance_approval" value="1" {{ $activity->require_attendance_approval ? 'checked' : '' }}>
+                        <div>
+                            <span style="font-weight:600; color:var(--text-main, #1e293b);">ต้องตรวจสอบการเช็คอิน (Manual Staff Approval)</span>
+                            <p class="text-xs text-muted" style="margin:0.15rem 0 0 0;">เมื่อสแกนแล้ว นักศึกษาจะมีสถานะ "รอตรวจสอบ" จนกว่าเจ้าหน้าที่จะกดอนุมัติ</p>
+                        </div>
+                    </label>
+                </div>
+
+                {{-- การยืนยันตัวตนด้วยการสแกนใบหน้า --}}
+                <div style="padding: 1.15rem; border: 1.5px solid #fed7aa; border-radius: 10px; background: #fffaf5;">
+                    <label class="checkbox-label" style="font-weight: bold; margin-bottom: 0.5rem; cursor:pointer;">
+                        <input type="checkbox" name="require_face_scan" id="requireFaceScan" value="1" onchange="toggleFaceScanMethod()" {{ old('require_face_scan', $activity->require_face_scan) ? 'checked' : '' }}> 
+                        <span style="font-size:0.95rem; color:#9a3412;">บังคับสแกนใบหน้า (Face Scan Verification)</span>
+                    </label>
+                    <p class="text-xs text-muted" style="margin-left: 1.6rem; margin-top: 0.15rem; margin-bottom: 1rem; line-height:1.5;">
+                        เมื่อเช็คอิน/เช็คเอาท์ นักศึกษาจะต้องถ่ายรูปใบหน้าเพื่อยืนยันตัวตนเปรียบเทียบกับรูปถ่ายในฐานข้อมูล หากปิดตัวเลือกนี้ ระบบจะบันทึกเวลาให้ทันทีเมื่อตำแหน่ง GPS ถูกต้อง
+                    </p>
+                    
+                    <div id="faceScanMethodDiv" style="margin-left: 1.6rem;">
+                        <label class="form-label" style="font-size: 0.88rem; font-weight:600; color:#431407;">ระบบประมวลผลใบหน้า (Face Scan Method)</label>
+                        <select name="face_scan_method" class="form-control" style="max-width: 440px; font-size: 0.88rem;">
+                            <option value="python" {{ old('face_scan_method', $activity->face_scan_method) == 'python' ? 'selected' : '' }}>Python AI Server (ความแม่นยำสูง, 512-d, แนะนำ)</option>
+                            <option value="js" {{ old('face_scan_method', $activity->face_scan_method) == 'js' ? 'selected' : '' }}>Client-side FaceAPI.js (ประมวลผลบนมือถือนักศึกษา, 128-d)</option>
+                        </select>
+                        <small class="text-muted" style="display: block; margin-top: 0.35rem;">* หากเลือก Python AI แต่เซิร์ฟเวอร์ตอบสนองช้า ระบบจะสลับไปใช้ Client-side JS ให้โดยอัตโนมัติ (Auto-Failover)</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── แถบปุ่มบันทึก (Action Footer) ── --}}
+        <div class="card mb-6" style="border-radius:12px; padding:1.25rem 1.5rem; background:var(--bg-subtle, #f8fafc); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+                <svg width="20" height="20" fill="none" stroke="#16a34a" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span class="text-xs text-muted">ตรวจสอบความถูกต้องของข้อมูลทั้งหมดก่อนกดบันทึก</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+                <a href="{{ route('admin.activities.index') }}" class="btn btn-outline" style="min-width:100px; justify-content:center;">
+                    ยกเลิก
+                </a>
+                <button type="submit" class="btn btn-primary btn-lg" style="min-width:160px; justify-content:center; gap:0.5rem; font-weight:700;">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span>บันทึกการแก้ไข</span>
+                </button>
+            </div>
+        </div>
+    </form>
 </div>
 @endsection
 
 @section('styles')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+<style>
+/* ── Activity Edit Layout Enhancements ── */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0.85rem;
+    }
+}
+html[data-theme="dark"] .card-header,
+html.dark .card-header {
+    background: #18181b !important;
+    border-bottom-color: #27272a !important;
+}
+html[data-theme="dark"] .card-header h3,
+html.dark .card-header h3 {
+    color: #f4f4f5 !important;
+}
+html[data-theme="dark"] .checkbox-label {
+    background: #1c1c1f !important;
+    border-color: #27272a !important;
+}
+html[data-theme="dark"] .checkbox-label span {
+    color: #f4f4f5 !important;
+}
+html[data-theme="dark"] #searchResults {
+    background: #1c1c1f !important;
+    border: 1px solid #27272a !important;
+}
+html[data-theme="dark"] #coordDisplay {
+    background: #18181b !important;
+    color: #a1a1aa !important;
+    border-color: #27272a !important;
+}
+</style>
 @endsection
 
 @section('scripts')

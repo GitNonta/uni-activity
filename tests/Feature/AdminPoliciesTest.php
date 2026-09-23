@@ -185,5 +185,21 @@ class AdminPoliciesTest extends TestCase
         $response->assertSee('self-end');
         $response->assertSee('กรอง');
     }
+
+    public function test_admin_can_view_activity_edit_page_with_structured_card_sections(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $activity = $this->createActivity($admin);
+
+        $response = $this->actingAs($admin)->get(route('admin.activities.edit', $activity->id));
+
+        $response->assertOk();
+        $response->assertSee('1. ข้อมูลทั่วไปของกิจกรรม');
+        $response->assertSee('2. กำหนดการและชั่วโมงกิจกรรม');
+        $response->assertSee('3. ช่วงเวลาลงทะเบียนและการเช็คอิน');
+        $response->assertSee('4. แผนที่และพิกัดเช็คอิน GPS');
+        $response->assertSee('5. เงื่อนไขและการยืนยันตัวตน');
+        $response->assertSee('บันทึกการแก้ไข');
+    }
 }
 
