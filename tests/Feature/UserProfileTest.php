@@ -191,4 +191,27 @@ class UserProfileTest extends TestCase
         $response->assertViewHas('isFollowing', true);
         $response->assertViewHas('followersCount', 1);
     }
+
+    public function test_profile_view_has_message_button_for_other_users(): void
+    {
+        $staff = $this->createStaff();
+        $student = User::factory()->create(['role' => 'student']);
+
+        $response = $this->actingAs($student)->get(route('users.show', $staff));
+
+        $response->assertOk();
+        $response->assertSee('pubMessageBtn');
+        $response->assertSee('ส่งข้อความ');
+    }
+
+    public function test_own_profile_view_does_not_have_message_button(): void
+    {
+        $student = User::factory()->create(['role' => 'student']);
+
+        $response = $this->actingAs($student)->get(route('users.show', $student));
+
+        $response->assertOk();
+        $response->assertDontSee('<button type="button" class="pub-message-btn"', false);
+        $response->assertSee('จัดการโปรไฟล์ของฉัน');
+    }
 }

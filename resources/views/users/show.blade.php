@@ -132,18 +132,70 @@ html.dark .pub-meta-pill {
     color: #cbd5e1;
 }
 
-/* ── ปุ่มติดตาม / จัดการโปรไฟล์ ── */
+/* ── ปุ่มติดตาม / จัดการโปรไฟล์ / ส่งข้อความ ── */
 .pub-action-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
     flex-shrink: 0;
 }
 @media (max-width: 640px) {
     .pub-action-wrap {
         width: 100%;
+        gap: 0.5rem;
     }
     .pub-action-wrap .follow-btn,
+    .pub-action-wrap .pub-message-btn {
+        flex: 1;
+        width: auto;
+        min-width: 0;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
     .pub-action-wrap .pub-manage-btn {
         width: 100%;
     }
+}
+
+.pub-message-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.55rem 1.35rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.88rem;
+    background: #f1f5f9;
+    color: #334155;
+    border: 1.5px solid #cbd5e1;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    line-height: 1.5;
+    min-width: 126px;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+.pub-message-btn:hover {
+    background: #e2e8f0;
+    border-color: #94a3b8;
+    color: #0f172a;
+    transform: translateY(-1px);
+}
+.pub-message-btn:active {
+    transform: translateY(0);
+}
+html[data-theme="dark"] .pub-message-btn,
+html.dark .pub-message-btn {
+    background: #27272a !important;
+    border-color: #3f3f46 !important;
+    color: #f4f4f5 !important;
+}
+html[data-theme="dark"] .pub-message-btn:hover,
+html.dark .pub-message-btn:hover {
+    background: #3f3f46 !important;
+    border-color: #ea580c !important;
+    color: #fb923c !important;
 }
 
 .follow-btn {
@@ -608,7 +660,7 @@ html.dark .follower-row:hover {
             </div>
         </div>
 
-        {{-- ปุ่มติดตาม / จัดการโปรไฟล์ --}}
+        {{-- ปุ่มติดตาม / จัดการโปรไฟล์ / ส่งข้อความ --}}
         <div class="pub-action-wrap">
             @if($viewerIsSelf)
                 <a href="{{ route('student.profile') }}" class="pub-manage-btn">
@@ -631,10 +683,28 @@ html.dark .follower-row:hover {
                     </svg>
                     <span id="followBtnText">{{ $isFollowing ? 'ติดตามอยู่' : 'ติดตาม' }}</span>
                 </button>
+                <button type="button"
+                    class="pub-message-btn"
+                    id="pubMessageBtn"
+                    data-target-id="{{ $profileUser->id }}"
+                    data-target-name="{{ $profileUser->full_name }}"
+                    data-target-url="{{ route('users.show', $profileUser) }}"
+                    title="ส่งข้อความถึง {{ $profileUser->full_name }}">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                    </svg>
+                    <span>ส่งข้อความ</span>
+                </button>
             @else
                 <a href="{{ route('login') }}" class="follow-btn not-following" style="text-decoration: none;">
                     <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     ติดตาม
+                </a>
+                <a href="{{ route('login') }}" class="pub-message-btn" style="text-decoration: none;" title="เข้าสู่ระบบเพื่อส่งข้อความ">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                    </svg>
+                    <span>ส่งข้อความ</span>
                 </a>
             @endif
         </div>
@@ -815,6 +885,23 @@ html.dark .follower-row:hover {
             .finally(function () {
                 followBtn.disabled = false;
             });
+        });
+    }
+
+    // ── ปุ่มส่งข้อความ (Direct Chat Widget / Page) ──
+    var msgBtn = document.getElementById('pubMessageBtn');
+    if (msgBtn) {
+        msgBtn.addEventListener('click', function () {
+            var targetId = parseInt(this.getAttribute('data-target-id'), 10);
+            var targetName = this.getAttribute('data-target-name') || 'ผู้ใช้';
+            var targetUrl = this.getAttribute('data-target-url') || '';
+
+            if (typeof window.openChatWidget === 'function' && typeof window.showChatView === 'function') {
+                window.openChatWidget();
+                window.showChatView(-targetId, targetName, targetUrl, targetName);
+            } else {
+                window.location.href = '/jobs/-' + targetId + '/chat';
+            }
         });
     }
 
