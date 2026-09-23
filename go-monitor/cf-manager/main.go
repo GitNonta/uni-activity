@@ -601,8 +601,13 @@ func startTunnels() (httpURL, sshURL string, err error) {
 		"nohup cloudflared tunnel --url %s --protocol http2 --edge-ip-version 4 --no-autoupdate > %s 2>&1 &",
 		tunnelTarget, logHTTP,
 	)
-	if e := exec.Command("sh", "-c", httpCmd).Start(); e != nil {
+	httpRunner := exec.Command("sh", "-c", httpCmd)
+	if e := httpRunner.Start(); e != nil {
 		log.Printf("[CF-MGR] ⚠️  HTTP tunnel start failed: %v", e)
+	} else {
+		// Reap the sh wrapper once it exits — without Wait() it lingers as a
+		// zombie child of cf-manager forever (one per tunnel restart).
+		go func() { _ = httpRunner.Wait() }()
 	}
 	time.Sleep(1 * time.Second)
 
@@ -612,8 +617,11 @@ func startTunnels() (httpURL, sshURL string, err error) {
 			"nohup cloudflared tunnel --url ssh://127.0.0.1:8022 --protocol http2 --edge-ip-version 4 --no-autoupdate > %s 2>&1 &",
 			logSSH,
 		)
-		if e := exec.Command("sh", "-c", sshCmd).Start(); e != nil {
+		sshRunner := exec.Command("sh", "-c", sshCmd)
+		if e := sshRunner.Start(); e != nil {
 			log.Printf("[CF-MGR] ⚠️  SSH tunnel start failed: %v", e)
+		} else {
+			go func() { _ = sshRunner.Wait() }() // reap — see HTTP tunnel comment
 		}
 	}
 

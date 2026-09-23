@@ -577,8 +577,13 @@ func DoRestartTunnel() (string, error) {
 		"nohup cloudflared tunnel --url %s --protocol http2 --edge-ip-version 4 --no-autoupdate > %s 2>&1 &",
 		targetURL, logHTTPPath,
 	)
-	if err := exec.Command("sh", "-c", httpCmd).Start(); err != nil {
+	httpRunner := exec.Command("sh", "-c", httpCmd)
+	if err := httpRunner.Start(); err != nil {
 		log.Printf("[Tunnel] ⚠️  Failed to start HTTP tunnel: %v", err)
+	} else {
+		// Reap the sh wrapper once it exits — without Wait() it lingers as a
+		// zombie child of the monitor forever (one per tunnel restart).
+		go func() { _ = httpRunner.Wait() }()
 	}
 	time.Sleep(1 * time.Second)
 
@@ -587,8 +592,11 @@ func DoRestartTunnel() (string, error) {
 		"nohup cloudflared tunnel --url http://127.0.0.1:80 --protocol http2 --edge-ip-version 4 --no-autoupdate > %s 2>&1 &",
 		logSSHPath,
 	)
-	if err := exec.Command("sh", "-c", sshCmd).Start(); err != nil {
+	sshRunner := exec.Command("sh", "-c", sshCmd)
+	if err := sshRunner.Start(); err != nil {
 		log.Printf("[Tunnel] ⚠️  Failed to start SSH tunnel: %v", err)
+	} else {
+		go func() { _ = sshRunner.Wait() }() // reap — see HTTP tunnel comment
 	}
 
 	// Step 7: Poll logs for new URLs (max 50s)

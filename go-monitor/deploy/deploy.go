@@ -96,6 +96,8 @@ func reloadAppRuntime() {
 		}
 		if err := cmd.Start(); err != nil {
 			log.Printf("⚠️ failed to restart artisan serve on port %s: %v", port, err)
+		} else {
+			go func() { _ = cmd.Wait() }() // reap on exit — prevent zombie accumulation
 		}
 		if logFile != nil {
 			logFile.Close() // parent-side copy not needed after Start()
@@ -193,7 +195,9 @@ func TriggerRestart() {
 	cmd := exec.Command("nohup", "php-fpm")
 	cmd.Dir = appDir
 	cmd.SysProcAttr = detachSysProcAttr()
-	_ = cmd.Start()
+	if err := cmd.Start(); err == nil {
+		go func() { _ = cmd.Wait() }() // reap on exit — prevent zombie accumulation
+	}
 
 	reloadAppRuntime()
 
