@@ -42,58 +42,206 @@
     opacity: 0;
 }
 
-/* Student Profile Dark Theme & Card Components */
-.student-stat-pill {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 0.75rem 1.25rem;
-    text-align: center;
-    flex: 1;
-    min-width: 100px;
+/* Student Profile Unified Card & Seamless Components */
+.student-profile-card {
+    padding: 1.5rem;
 }
-html[data-theme="dark"] .student-stat-pill,
-html.dark .student-stat-pill {
-    background: #141416 !important;
-    border-color: #27272a !important;
-}
-html[data-theme="dark"] .student-stat-pill p,
-html.dark .student-stat-pill p {
-    color: #f4f4f5 !important;
+@media (max-width: 640px) {
+    .student-profile-card {
+        padding: 1.25rem 1rem;
+    }
 }
 
-.student-idcard-btn {
+.student-profile-header {
     display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+}
+@media (max-width: 640px) {
+    .student-profile-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+}
+
+.student-profile-info {
+    display: flex;
+    align-items: center;
+    gap: 1.15rem;
+    flex: 1;
+    min-width: 250px;
+}
+@media (max-width: 480px) {
+    .student-profile-info {
+        align-items: flex-start;
+        gap: 0.85rem;
+    }
+}
+
+.student-profile-action {
+    flex-shrink: 0;
+}
+@media (max-width: 640px) {
+    .student-profile-action {
+        width: 100%;
+    }
+    .student-profile-action .student-idcard-action-btn {
+        width: 100%;
+    }
+}
+
+.student-idcard-action-btn {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    width: 100%;
-    padding: 0.875rem;
-    background: #ffffff;
+    padding: 0.6rem 1.25rem;
+    background: #fff7ed;
     color: #c2410c;
     border: 1px solid #fed7aa;
     border-radius: 10px;
     font-weight: 600;
-    text-decoration: none;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    transition: background 0.2s, border-color 0.2s;
+    font-size: 0.88rem;
     cursor: pointer;
-    line-height: 1.5;
+    transition: all 0.2s ease;
+    line-height: 1.4;
+    white-space: nowrap;
 }
-.student-idcard-btn:hover {
-    background: #fff7ed;
+.student-idcard-action-btn:hover {
+    background: #ffedd5;
     border-color: #f97316;
+    transform: translateY(-1px);
 }
-html[data-theme="dark"] .student-idcard-btn,
-html.dark .student-idcard-btn {
-    background: #1c1c1f !important;
+html[data-theme="dark"] .student-idcard-action-btn,
+html.dark .student-idcard-action-btn {
+    background: #27272a !important;
     border-color: #3f3f46 !important;
     color: #fb923c !important;
 }
-html[data-theme="dark"] .student-idcard-btn:hover,
-html.dark .student-idcard-btn:hover {
-    background: #27272a !important;
+html[data-theme="dark"] .student-idcard-action-btn:hover,
+html.dark .student-idcard-action-btn:hover {
+    background: #3f3f46 !important;
     border-color: #ea580c !important;
+}
+
+/* ── แถบสถิติไร้ Box (Seamless Stats Row) ── */
+.student-stats-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    padding: 1.15rem 0;
+    margin: 1.25rem 0 1.35rem 0;
+    border-top: 1px solid rgba(226, 232, 240, 0.8);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+}
+html[data-theme="dark"] .student-stats-bar,
+html.dark .student-stats-bar {
+    border-top-color: rgba(39, 39, 42, 0.8) !important;
+    border-bottom-color: rgba(39, 39, 42, 0.8) !important;
+}
+
+.student-stat-unit {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 0.2rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.student-stat-num {
+    font-size: 1.45rem;
+    font-weight: 800;
+    line-height: 1.15;
+    color: var(--text-main, #0f172a);
+    letter-spacing: -0.02em;
+}
+.student-stat-num.highlight {
+    color: #ea580c;
+}
+html[data-theme="dark"] .student-stat-num,
+html.dark .student-stat-num {
+    color: #f8fafc !important;
+}
+html[data-theme="dark"] .student-stat-num.highlight,
+html.dark .student-stat-num.highlight {
+    color: #fb923c !important;
+}
+
+.student-stat-label {
+    font-size: 0.74rem;
+    color: #64748b;
+    font-weight: 500;
+    line-height: 1.3;
+}
+html[data-theme="dark"] .student-stat-label,
+html.dark .student-stat-label {
+    color: #94a3b8 !important;
+}
+
+/* ── ข้อมูลประวัตินักศึกษา (Student Details Grid) ── */
+.student-details-section {
+    padding-top: 0.25rem;
+}
+.student-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.1rem;
+}
+@media (max-width: 480px) {
+    .student-details-grid {
+        grid-template-columns: 1fr;
+        gap: 0.85rem;
+    }
+}
+
+.student-detail-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+.student-detail-icon {
+    color: #64748b;
+    margin-top: 0.15rem;
+    flex-shrink: 0;
+}
+html[data-theme="dark"] .student-detail-icon,
+html.dark .student-detail-icon {
+    color: #94a3b8 !important;
+}
+
+.student-detail-text {
+    flex: 1;
+    min-width: 0;
+}
+.student-detail-label {
+    font-size: 0.72rem;
+    color: #64748b;
+    margin: 0 0 0.15rem 0;
+    font-weight: 500;
+    line-height: 1.2;
+}
+html[data-theme="dark"] .student-detail-label,
+html.dark .student-detail-label {
+    color: #94a3b8 !important;
+}
+
+.student-detail-value {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-main, #1e293b);
+    margin: 0;
+    line-height: 1.4;
+    word-break: break-word;
+}
+html[data-theme="dark"] .student-detail-value,
+html.dark .student-detail-value {
+    color: #f1f5f9 !important;
 }
 
 .recent-attendance-item {
@@ -214,11 +362,12 @@ html.dark .line-unlink-btn:hover {
     border-color: rgba(239, 68, 68, 0.3) !important;
 }
 </style>
-<div class="card mb-4" style="padding: 1.5rem;">
-    <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; justify-content: space-between;">
-        
+
+{{-- 1. ข้อมูลส่วนตัวและสถิติภาพรวม (รวมข้อมูลโปรไฟล์ บัตรนักศึกษา สถิติไร้ Box และประวัตินักศึกษา) --}}
+<div class="card mb-4 student-profile-card">
+    <div class="student-profile-header">
         {{-- Profile Info (Left) --}}
-        <div style="display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 250px;">
+        <div class="student-profile-info">
             <div style="position: relative; flex-shrink: 0;">
                 <label for="photoInput" style="cursor: pointer; display: block;">
                     @if($user->profile_photo)
@@ -233,7 +382,7 @@ html.dark .line-unlink-btn:hover {
                         @if($user->line_user_id)
                             <div class="swap-badge-1" title="ผูกบัญชี LINE สำเร็จแล้ว">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="#06c755">
-                                    <path d="M22.5 12.5c0-1.58-.8-2.97-2-3.79.44-1.61.04-3.35-1.11-4.5-1.15-1.15-2.89-1.55-4.5-1.11-.82-1.2-2.21-2-3.79-2s-2.97.8-3.79 2c-1.61-.44-3.35-.04-4.5 1.11-1.15 1.15-1.55 2.89-1.11 4.5-1.2.82-2 2.21-2 3.79s.8 2.97 2 3.79c-.44 1.61-.04 3.35 1.11 4.5 1.15 1.15 2.89 1.55 4.5 1.11.82 1.2 2.21 2 3.79 2s2.97-.8 3.79-2c1.61.44 3.35.04 4.5-1.11 1.15-1.15 1.55-2.89 1.11-4.5 1.2-.82 2-2.21 2-3.79zm-12.21 4.21l-3.5-3.5 1.41-1.41 2.09 2.09 5.68-5.68 1.41 1.41-7.09 7.09z"/>
+                                    <path d="M22.5 12.5c0-1.58-.8-2.97-2-3.79.44-1.61.04-3.35-1.11-4.5-1.15-1.15-2.89-1.55-4.5-1.11-.82-1.2-2.21-2-3.79s-2.97.8-3.79 2c-1.61-.44-3.35-.04-4.5 1.11-1.15 1.15-1.55 2.89-1.11 4.5-1.2.82-2 2.21-2 3.79s.8 2.97 2 3.79c-.44 1.61-.04 3.35 1.11 4.5 1.15 1.15 2.89 1.55 4.5 1.11.82 1.2 2.21 2 3.79 2s2.97-.8 3.79-2c1.61.44 3.35.04 4.5-1.11 1.15-1.15 1.55-2.89 1.11-4.5 1.2-.82 2-2.21 2-3.79zm-12.21 4.21l-3.5-3.5 1.41-1.41 2.09 2.09 5.68-5.68 1.41 1.41-7.09 7.09z"/>
                                 </svg>
                             </div>
                             <div class="swap-badge-2" title="อัปโหลดรูปโปรไฟล์">
@@ -244,7 +393,7 @@ html.dark .line-unlink-btn:hover {
                         @endif
                     </div>
                 </label>
-                    <form id="photoForm" method="POST" action="{{ route('profile.photo.upload') }}" enctype="multipart/form-data" style="display:none;">
+                <form id="photoForm" method="POST" action="{{ route('profile.photo.upload') }}" enctype="multipart/form-data" style="display:none;">
                     @csrf
                     <input type="hidden" name="face_descriptor" id="faceDescriptorInput">
                     <input type="file" id="photoInput" name="profile_photo" accept="image/jpeg,image/png,image/webp"
@@ -257,23 +406,23 @@ html.dark .line-unlink-btn:hover {
             </div>
             <div style="flex: 1; min-width: 0;">
                 <div style="display: flex; align-items: center; gap: 8px; margin: 0 0 0.25rem 0;">
-                    <h1 style="font-size: 1.25rem; font-weight: 700; color: var(--text-main, #1e293b); margin: 0; line-height: 1.5;">{{ $user->full_name }}</h1>
+                    <h1 style="font-size: 1.25rem; font-weight: 700; color: var(--text-main, #1e293b); margin: 0; line-height: 1.4;">{{ $user->full_name }}</h1>
                     @if($user->line_user_id)
                         <span title="ผูกบัญชี LINE เรียบร้อยแล้ว" style="display: inline-flex; align-items: center; justify-content: center;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="#06c755">
-                                <path d="M22.5 12.5c0-1.58-.8-2.97-2-3.79.44-1.61.04-3.35-1.11-4.5-1.15-1.15-2.89-1.55-4.5-1.11-.82-1.2-2.21-2-3.79-2s-2.97.8-3.79 2c-1.61-.44-3.35-.04-4.5 1.11-1.15 1.15-1.55 2.89-1.11 4.5-1.2.82-2 2.21-2 3.79s.8 2.97 2 3.79c-.44 1.61-.04 3.35 1.11 4.5 1.15 1.15 2.89 1.55 4.5 1.11.82 1.2 2.21 2 3.79 2s2.97-.8 3.79-2c1.61.44 3.35.04 4.5-1.11 1.15-1.15 1.55-2.89 1.11-4.5 1.2-.82 2-2.21 2-3.79zm-12.21 4.21l-3.5-3.5 1.41-1.41 2.09 2.09 5.68-5.68 1.41 1.41-7.09 7.09z"/>
+                                <path d="M22.5 12.5c0-1.58-.8-2.97-2-3.79.44-1.61.04-3.35-1.11-4.5-1.15-1.15-2.89-1.55-4.5-1.11-.82-1.2-2.21-2-3.79s-2.97.8-3.79 2c-1.61-.44-3.35-.04-4.5 1.11-1.15 1.15-1.55 2.89-1.11 4.5-1.2.82-2 2.21-2 3.79s.8 2.97 2 3.79c-.44 1.61-.04 3.35 1.11 4.5 1.15 1.15 2.89 1.55 4.5 1.11.82 1.2 2.21 2 3.79 2s2.97-.8 3.79-2c1.61.44 3.35.04 4.5-1.11 1.15-1.15 1.55-2.89 1.11-4.5 1.2-.82 2-2.21 2-3.79zm-12.21 4.21l-3.5-3.5 1.41-1.41 2.09 2.09 5.68-5.68 1.41 1.41-7.09 7.09z"/>
                             </svg>
                         </span>
                     @endif
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px; margin: 0 0 0.4rem 0;">
-                    <p style="color: #64748b; font-size: 0.95rem; font-weight: 600; margin: 0;">{{ $user->english_name ?? '(กำลังประมวลผลชื่อภาษาอังกฤษ...)' }}</p>
+                <div style="display: flex; align-items: center; gap: 8px; margin: 0 0 0.35rem 0;">
+                    <p style="color: #64748b; font-size: 0.92rem; font-weight: 600; margin: 0;">{{ $user->english_name ?? '(กำลังประมวลผลชื่อภาษาอังกฤษ...)' }}</p>
                     <button onclick="editEnglishName('{{ addslashes($user->english_name) }}')" style="background: none; border: none; color: #ea580c; cursor: pointer; padding: 0; display: flex; align-items: center;" title="แก้ไขชื่อภาษาอังกฤษ">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                     </button>
                 </div>
-                <p style="color: #64748b; font-size: 0.9rem; margin: 0 0 0.4rem 0; font-weight: 500;">{{ $user->student_id }}</p>
-                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <p style="color: #64748b; font-size: 0.88rem; margin: 0 0 0.4rem 0; font-weight: 500;">{{ $user->student_id }}</p>
+                <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
                     <span style="background: #ffedd5; color: #c2410c; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600;">
                         {{ $user->program ?? 'นักศึกษา' }}
                     </span>
@@ -288,74 +437,72 @@ html.dark .line-unlink-btn:hover {
             </div>
         </div>
 
-        {{-- Stats (Right) --}}
-        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-            <div class="student-stat-pill">
-                <p style="font-size: 1.5rem; font-weight: 700; color: #c2410c; line-height: 1.5; margin: 0;">{{ number_format($totalHours, 1) }}</p>
-                <p style="font-size: 0.75rem; color: #475569; margin-top: 0.35rem; font-weight: 500; line-height: 1.5;">ชั่วโมงรวม</p>
-            </div>
-            <div class="student-stat-pill">
-                <p style="font-size: 1.5rem; font-weight: 700; color: var(--text-main, #1e293b); line-height: 1.5; margin: 0;">{{ $totalActivities }}</p>
-                <p style="font-size: 0.75rem; color: #475569; margin-top: 0.35rem; font-weight: 500; line-height: 1.5;">กิจกรรม</p>
-            </div>
-            <div class="student-stat-pill">
-                <p style="font-size: 1.5rem; font-weight: 700; color: var(--text-main, #1e293b); line-height: 1.5; margin: 0;">{{ number_format($totalRequired, 0) }}</p>
-                <p style="font-size: 0.75rem; color: #475569; margin-top: 0.35rem; font-weight: 500; line-height: 1.5;">เป้าหมาย (ชม.)</p>
-            </div>
+        {{-- ID Card Button (Integrated in Header) --}}
+        <div class="student-profile-action">
+            <button type="button" onclick="openCardModal()" class="student-idcard-action-btn" title="เปิดดูบัตรประจำตัวนักศึกษา">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
+                <span>บัตรประจำตัวนักศึกษา</span>
+            </button>
         </div>
     </div>
-</div>
 
-{{-- QR Code Button (Changed to Modal Popup) --}}
-<div style="margin-bottom: 1.5rem;">
-    <button onclick="openCardModal()" class="student-idcard-btn">
-        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
-        บัตรประจำตัวนักศึกษา
-    </button>
-</div>
+    {{-- แถบสถิติ (Social Style Minimalist Row — ไร้ Box เด็ดขาด) --}}
+    <div class="student-stats-bar">
+        <div class="student-stat-unit">
+            <span class="student-stat-num highlight">{{ number_format($totalHours, 1) }}</span>
+            <span class="student-stat-label">ชั่วโมงรวม</span>
+        </div>
+        <div class="student-stat-unit">
+            <span class="student-stat-num">{{ $totalActivities }}</span>
+            <span class="student-stat-label">กิจกรรม</span>
+        </div>
+        <div class="student-stat-unit">
+            <span class="student-stat-num">{{ number_format($totalRequired, 0) }}</span>
+            <span class="student-stat-label">เป้าหมาย (ชม.)</span>
+        </div>
+    </div>
 
-{{-- 2. ข้อมูลส่วนตัว --}}
-<div class="card mb-4">
-    <div class="card-body" style="padding: 1.5rem;">
-        <h2 class="font-bold mb-4" style="font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
-            <svg width="20" height="20" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
-            ข้อมูลประวัตินักศึกษา
+    {{-- ข้อมูลประวัตินักศึกษา (Integrated Inside Profile Card) --}}
+    <div class="student-details-section">
+        <h2 class="font-bold mb-3" style="font-size: 0.95rem; display: flex; align-items: center; gap: 0.45rem; color: var(--text-main, #334155);">
+            <svg width="18" height="18" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
+            <span>ข้อมูลประวัตินักศึกษา</span>
         </h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.25rem;">
-            <div style="display: flex; gap: 0.75rem;">
-                <div style="color: #475569; margin-top: 0.1rem;">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+        <div class="student-details-grid">
+            <div class="student-detail-item">
+                <div class="student-detail-icon">
+                    <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                 </div>
-                <div>
-                    <p class="text-xs text-muted" style="margin-bottom: 0.15rem; font-weight: 500;">คณะ</p>
-                    <p class="text-sm" style="font-weight: 600; color: var(--text-main, #334155);">{{ $user->faculty ?? '-' }}</p>
-                </div>
-            </div>
-            <div style="display: flex; gap: 0.75rem;">
-                <div style="color: #475569; margin-top: 0.1rem;">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                </div>
-                <div>
-                    <p class="text-xs text-muted" style="margin-bottom: 0.15rem; font-weight: 500;">สาขา</p>
-                    <p class="text-sm" style="font-weight: 600; color: var(--text-main, #334155);">{{ $user->department ?? '-' }}</p>
+                <div class="student-detail-text">
+                    <p class="student-detail-label">คณะ</p>
+                    <p class="student-detail-value">{{ $user->faculty ?? '-' }}</p>
                 </div>
             </div>
-            <div style="display: flex; gap: 0.75rem;">
-                <div style="color: #475569; margin-top: 0.1rem;">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+            <div class="student-detail-item">
+                <div class="student-detail-icon">
+                    <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                 </div>
-                <div>
-                    <p class="text-xs text-muted" style="margin-bottom: 0.15rem; font-weight: 500;">ชั้นปี</p>
-                    <p class="text-sm" style="font-weight: 600; color: var(--text-main, #334155);">{{ $user->year ? 'ปี ' . $user->year : '-' }}</p>
+                <div class="student-detail-text">
+                    <p class="student-detail-label">สาขา</p>
+                    <p class="student-detail-value">{{ $user->department ?? '-' }}</p>
                 </div>
             </div>
-            <div style="display: flex; gap: 0.75rem;">
-                <div style="color: #475569; margin-top: 0.1rem;">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            <div class="student-detail-item">
+                <div class="student-detail-icon">
+                    <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
                 </div>
-                <div>
-                    <p class="text-xs text-muted" style="margin-bottom: 0.15rem; font-weight: 500;">อีเมล</p>
-                    <p class="text-sm" style="font-weight: 600; color: var(--text-main, #334155);">{{ $user->email ?? '-' }}</p>
+                <div class="student-detail-text">
+                    <p class="student-detail-label">ชั้นปี</p>
+                    <p class="student-detail-value">{{ $user->year ? 'ปี ' . $user->year : '-' }}</p>
+                </div>
+            </div>
+            <div class="student-detail-item">
+                <div class="student-detail-icon">
+                    <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                </div>
+                <div class="student-detail-text">
+                    <p class="student-detail-label">อีเมล</p>
+                    <p class="student-detail-value">{{ $user->email ?? '-' }}</p>
                 </div>
             </div>
         </div>
