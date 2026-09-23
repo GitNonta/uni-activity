@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -162,6 +163,12 @@ func (s *HTTPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 7b. API Endpoints — Log File Viewer
+	if path == "/api/log-file" {
+		s.handleLogFile(w, r)
+		return
+	}
+
 	// 8. Special Files
 	if path == "/ssh-to-server.sh" {
 		scriptPath := "/data/data/com.termux/files/home/ssh-to-server.sh"
@@ -207,6 +214,43 @@ func (s *HTTPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.ServeFile(w, r, filePath)
+}
+
+// handleLogFile serves the tail of a single log file from storage/logs.
+// GET /api/log-file?name=git-sync.log&lines=200
+func (s *HTTPServer) handleLogFile(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "method not allowed"})
+		return
+	}
+
+	name := r.URL.Query().Get("name")
+	lines, _ := strconv.Atoi(r.URL.Query().Get("lines"))
+	if lines <= 0 {
+		lines = 200
+	}
+
+	if name == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "missing 'name' query parameter"})
+		return
+	}
+
+	content, err := collector.ReadLogFileTail(s.collector.ProjectRoot(), name, lines)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": err.Error()})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "ok",
+		"name":    name,
+		"lines":   lines,
+		"content": content,
+	})
 }
 
 func (s *HTTPServer) handleClusterMetrics(w http.ResponseWriter, r *http.Request) {

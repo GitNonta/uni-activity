@@ -189,6 +189,8 @@ class StudentControllerTest extends TestCase
         $response->assertOk();
         $response->assertViewIs('student.summary');
         $response->assertViewHasAll(['totalHours', 'totalRequired', 'byCategory']);
+        $response->assertSee('cat-summary-list');
+        $response->assertDontSee('card mb-2');
     }
 
     public function test_student_can_fetch_calendar_events_json(): void

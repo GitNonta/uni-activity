@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -21,52 +23,52 @@ import (
 )
 
 type FullStats struct {
-	Timestamp        int64                  `json:"timestamp"`
-	Uptime           string                 `json:"uptime"`
-	ServerInfo       map[string]string      `json:"server_info"`
-	CFUrl            string                 `json:"cf_url"`
-	CFStatus         map[string]interface{} `json:"cf_status"`
-	Speedtest        map[string]interface{} `json:"speedtest"`
-	LineStatus       map[string]interface{} `json:"line_status"`
-	Memory           sysinfo.MemoryStats    `json:"memory"`
-	Load             []float64              `json:"load"`
-	Temp             string                 `json:"temp"`
-	Battery          sysinfo.BatteryStats   `json:"battery"`
-	Disk             sysinfo.DiskStats      `json:"disk"`
-	Services         map[string]string      `json:"services"`
-	Network          sysinfo.NetworkStats   `json:"network"`
-	NetworkInfo      map[string]string      `json:"network_info"`
-	Logs             []string               `json:"logs"`
-	Inspector        []interface{}          `json:"inspector"`
-	DeployLog        string                 `json:"deploy_log"`
-	DeployChannels   map[string]interface{} `json:"deploy_channels"`
-	LogFilesInfo     map[string]interface{} `json:"log_files_info"`
-	GithubDeployLogs map[string]interface{} `json:"github_deploy_logs"`
-	Events           []interface{}          `json:"events"`
-	AILog            string                 `json:"ai_log"`
-	SSHSessions      []string               `json:"ssh_sessions"`
-	SFTPSessions     int                    `json:"sftp_sessions"`
-	SCPSessions      int                    `json:"scp_sessions"`
-	ListeningPorts   []int                  `json:"listening_ports"`
-	AdvancedMetrics  map[string]interface{} `json:"advanced_metrics"`
-	PublicIP         string                 `json:"public_ip"`
-	AICluster        map[string]interface{} `json:"ai_cluster"`
-	Proxy            map[string]interface{} `json:"proxy"`
-	Alerts           []alerts.AlertItem     `json:"alerts"`
+	Timestamp        int64                    `json:"timestamp"`
+	Uptime           string                   `json:"uptime"`
+	ServerInfo       map[string]string        `json:"server_info"`
+	CFUrl            string                   `json:"cf_url"`
+	CFStatus         map[string]interface{}   `json:"cf_status"`
+	Speedtest        map[string]interface{}   `json:"speedtest"`
+	LineStatus       map[string]interface{}   `json:"line_status"`
+	Memory           sysinfo.MemoryStats      `json:"memory"`
+	Load             []float64                `json:"load"`
+	Temp             string                   `json:"temp"`
+	Battery          sysinfo.BatteryStats     `json:"battery"`
+	Disk             sysinfo.DiskStats        `json:"disk"`
+	Services         map[string]string        `json:"services"`
+	Network          sysinfo.NetworkStats     `json:"network"`
+	NetworkInfo      map[string]string        `json:"network_info"`
+	Logs             []string                 `json:"logs"`
+	Inspector        []interface{}            `json:"inspector"`
+	DeployLog        string                   `json:"deploy_log"`
+	DeployChannels   map[string]interface{}   `json:"deploy_channels"`
+	LogFilesInfo     map[string]interface{}   `json:"log_files_info"`
+	GithubDeployLogs map[string]interface{}   `json:"github_deploy_logs"`
+	Events           []interface{}            `json:"events"`
+	AILog            string                   `json:"ai_log"`
+	SSHSessions      []string                 `json:"ssh_sessions"`
+	SFTPSessions     int                      `json:"sftp_sessions"`
+	SCPSessions      int                      `json:"scp_sessions"`
+	ListeningPorts   []int                    `json:"listening_ports"`
+	AdvancedMetrics  map[string]interface{}   `json:"advanced_metrics"`
+	PublicIP         string                   `json:"public_ip"`
+	AICluster        map[string]interface{}   `json:"ai_cluster"`
+	Proxy            map[string]interface{}   `json:"proxy"`
+	Alerts           []alerts.AlertItem       `json:"alerts"`
 	AlertsHistory    []map[string]interface{} `json:"alerts_history"`
 }
 
 type Collector struct {
-	mu                 sync.RWMutex
-	cachedStats        *FullStats
-	cachedJSON         []byte
-	projectRoot        string
-	publicIP           string
-	inspector          []interface{}
-	inspMu             sync.Mutex
-	OnInspectorAdded   func([]byte) // called immediately when a new log arrives
-	aiLog              []string     // plain-text lines from the AI face service
-	aiLogMu            sync.Mutex
+	mu               sync.RWMutex
+	cachedStats      *FullStats
+	cachedJSON       []byte
+	projectRoot      string
+	publicIP         string
+	inspector        []interface{}
+	inspMu           sync.Mutex
+	OnInspectorAdded func([]byte) // called immediately when a new log arrives
+	aiLog            []string     // plain-text lines from the AI face service
+	aiLogMu          sync.Mutex
 }
 
 // AddAILogLine appends one line of AI-service log text (received via UDP
@@ -241,7 +243,7 @@ func (c *Collector) Collect() ([]byte, error) {
 		Inspector:        inspectorCopy,
 		DeployLog:        deployLog,
 		DeployChannels:   map[string]interface{}{"deploy": "ready", "git": "ok"},
-		LogFilesInfo:     map[string]interface{}{"count": 5, "total_size_mb": 12.4},
+		LogFilesInfo:     getLogFilesInfo(c.projectRoot),
 		GithubDeployLogs: map[string]interface{}{"status": "ok"},
 		Events:           getDeployEvents(c.projectRoot),
 		AILog:            c.aiLogText(), // real UDP-received lines; empty until the AI service ships logs
@@ -310,6 +312,11 @@ func (c *Collector) GetCachedJSON() []byte {
 	return c.cachedJSON
 }
 
+// ProjectRoot returns the root directory the collector was initialized with.
+func (c *Collector) ProjectRoot() string {
+	return c.projectRoot
+}
+
 // PatchInspectorJSON returns a new JSON blob identical to the cached snapshot
 // but with the inspector field replaced with the current in-memory slice.
 // This is a fast alternative to a full Collect() for real-time inspector push.
@@ -362,6 +369,155 @@ done:
 	return []byte(patched)
 }
 
+// getLogFilesInfo scans <projectRoot>/storage/logs and returns metadata for
+// viewable log files, sorted newest-first. Only regular files that look like
+// logs (skip dotfiles, locks, sockets) are listed, capped at maxLogFiles.
+func getLogFilesInfo(projectRoot string) map[string]interface{} {
+	const (
+		logDir      = "storage/logs"
+		maxLogFiles = 50
+		maxFileMB   = 50.0 // files larger than this are listed but not viewable
+	)
+
+	res := map[string]interface{}{
+		"count":         0,
+		"total_size_mb": 0.0,
+		"files":         []map[string]interface{}{},
+	}
+
+	entries, err := os.ReadDir(filepath.Join(projectRoot, logDir))
+	if err != nil {
+		return res
+	}
+
+	type logFile struct {
+		name      string
+		sizeBytes int64
+		modTime   time.Time
+	}
+	files := make([]logFile, 0, len(entries))
+	var totalBytes int64
+
+	for _, e := range entries {
+		if e.IsDir() || strings.HasPrefix(e.Name(), ".") {
+			continue
+		}
+		info, err := e.Info()
+		if err != nil || !info.Mode().IsRegular() {
+			continue
+		}
+		// Skip non-log artifacts: locks, sockets, json state files
+		name := e.Name()
+		if strings.HasSuffix(name, ".lock") || strings.HasSuffix(name, ".sock") {
+			continue
+		}
+		files = append(files, logFile{name: name, sizeBytes: info.Size(), modTime: info.ModTime()})
+		totalBytes += info.Size()
+	}
+
+	sort.Slice(files, func(i, j int) bool { return files[i].modTime.After(files[j].modTime) })
+
+	if len(files) > maxLogFiles {
+		files = files[:maxLogFiles]
+	}
+
+	out := make([]map[string]interface{}, 0, len(files))
+	for _, f := range files {
+		out = append(out, map[string]interface{}{
+			"name":       f.name,
+			"size_bytes": f.sizeBytes,
+			"size_kb":    int(f.sizeBytes / 1024),
+			"size_mb":    math.Round(float64(f.sizeBytes)/(1024*1024)*10) / 10,
+			"modified":   f.modTime.Format("2006-01-02 15:04:05"),
+			"viewable":   float64(f.sizeBytes) <= maxFileMB*1024*1024,
+		})
+	}
+
+	res["count"] = len(out)
+	res["total_size_mb"] = math.Round(float64(totalBytes)/(1024*1024)*10) / 10
+	res["files"] = out
+	return res
+}
+
+// ReadLogFileTail returns the last <lines> lines of the named log file inside
+// <projectRoot>/storage/logs. The name is sanitized: no path separators, no
+// dotfiles — reads can never escape the log directory.
+func ReadLogFileTail(projectRoot string, name string, lines int) (string, error) {
+	if lines <= 0 {
+		lines = 200
+	}
+	if lines > 2000 {
+		lines = 2000
+	}
+
+	if name == "" || strings.ContainsAny(name, "/\\") || strings.HasPrefix(name, ".") || strings.Contains(name, "..") {
+		return "", fmt.Errorf("invalid log file name")
+	}
+
+	full := filepath.Join(projectRoot, "storage", "logs", name)
+	f, err := os.Open(full)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	info, err := f.Stat()
+	if err != nil {
+		return "", err
+	}
+	if !info.Mode().IsRegular() {
+		return "", fmt.Errorf("not a regular file")
+	}
+
+	const maxScan = 8 << 20 // never scan more than 8MB back
+	scanFrom := int64(0)
+	if info.Size() > maxScan {
+		scanFrom = info.Size() - maxScan
+	}
+	if _, err := f.Seek(scanFrom, io.SeekStart); err != nil {
+		return "", err
+	}
+	data, err := io.ReadAll(f)
+	if err != nil {
+		return "", err
+	}
+
+	trimmed := string(data)
+	if scanFrom > 0 {
+		// Drop the partial first line caused by the mid-file seek
+		if idx := strings.Index(trimmed, "\n"); idx >= 0 {
+			trimmed = trimmed[idx+1:]
+		} else {
+			trimmed = ""
+		}
+	}
+	trimmed = strings.TrimLeft(trimmed, "\n")
+	allLines := strings.Split(trimmed, "\n")
+	if len(allLines) > lines {
+		allLines = allLines[len(allLines)-lines:]
+	}
+
+	if scanFrom > 0 {
+		header := fmt.Sprintf("[showing last %d lines — file is %s total]\n\n", lines, humanBytes(info.Size()))
+		return header + strings.Join(allLines, "\n"), nil
+	}
+	return strings.Join(allLines, "\n"), nil
+}
+
+func humanBytes(n int64) string {
+	const unit = 1024
+	if n < unit {
+		return fmt.Sprintf("%d B", n)
+	}
+	d := float64(n)
+	for _, u := range []string{"KB", "MB", "GB"} {
+		d /= unit
+		if d < unit {
+			return fmt.Sprintf("%.1f %s", d, u)
+		}
+	}
+	return fmt.Sprintf("%.1f TB", d/unit)
+}
 
 func getDeployEvents(projectRoot string) []interface{} {
 	gitBin := "git"

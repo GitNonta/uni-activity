@@ -8,6 +8,9 @@ export function DeployCard({ deployLog, deployChannels = {}, logFilesInfo = { co
   const [channelTab, setChannelTab] = useState('all'); // 'all' | 'ssh' | 'scp' | 'sftp' | 'git' | 'file'
   const [selectedLogFile, setSelectedLogFile] = useState(null);
   const [showLogFilesDropdown, setShowLogFilesDropdown] = useState(false);
+  const [fileContent, setFileContent] = useState('');
+  const [fileLoading, setFileLoading] = useState(false);
+  const [fileError, setFileError] = useState('');
   const [isAllLogsMenuOpen, setIsAllLogsMenuOpen] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   
@@ -25,7 +28,29 @@ export function DeployCard({ deployLog, deployChannels = {}, logFilesInfo = { co
     if (consoleRef.current && logOrder === 'Ascending') {
       consoleRef.current.scrollTop = consoleRef.current.scrollHeight;
     }
-  }, [deployLog, logOrder]);
+  }, [deployLog, fileContent, logOrder]);
+
+  // Fetch selected log file content from the monitor API
+  useEffect(() => {
+    if (channelTab !== 'file' || !selectedLogFile) return undefined;
+    let cancelled = false;
+    setFileLoading(true);
+    setFileError('');
+    fetch(`/api/log-file?name=${encodeURIComponent(selectedLogFile.name)}&lines=400`)
+      .then(r => r.json().then(j => ({ ok: r.ok, j })))
+      .then(({ ok, j }) => {
+        if (cancelled) return;
+        if (!ok || j.status !== 'ok') throw new Error(j.message || 'Failed to load log file');
+        setFileContent(j.content || '');
+      })
+      .catch(err => {
+        if (cancelled) return;
+        setFileError(err.message || 'Failed to load log file');
+        setFileContent('');
+      })
+      .finally(() => { if (!cancelled) setFileLoading(false); });
+    return () => { cancelled = true; };
+  }, [channelTab, selectedLogFile]);
 
   // Process logs
   const logLines = deployLog ? deployLog.split('\n').filter(line => line.trim()) : [];
@@ -682,7 +707,11 @@ export function DeployCard({ deployLog, deployChannels = {}, logFilesInfo = { co
           >
             <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all', fontSize: '0.85rem', lineHeight: '1.6', color: '#cbd5e1' }}>
               {channelTab === 'file' && selectedLogFile
-                ? (selectedLogFile.content || `[Empty log file: ${selectedLogFile.name}]`)
+                ? (fileLoading
+                    ? `Loading ${selectedLogFile.name}...`
+                    : (fileError
+                        ? `Error loading ${selectedLogFile.name}: ${fileError}`
+                        : (fileContent || `[Empty log file: ${selectedLogFile.name}]`)))
                 : (channelTab === 'ssh'
                     ? (deployChannels?.ssh || 'No active SSH session logs.')
                     : (channelTab === 'scp' 
