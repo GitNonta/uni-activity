@@ -163,7 +163,14 @@ func GetListeningPorts() []int {
 	return ports
 }
 
-// GetActiveSessions counts SSH/SFTP/SCP sessions by scanning /proc.
+// SFTPSession describes one active SFTP subsystem process.
+type SFTPSession struct {
+	PID  int
+	Cmd  string
+	Time time.Time
+}
+
+// GetActiveSessions scans /proc for SSH/SFTP/SCP activity.
 // Supports both process models:
 //   - OpenSSH <= 9.7: per-connection children appear as "sshd: user@pts",
 //     SFTP handled by a separate "sftp-server" process, SCP by an "scp" child.
@@ -172,8 +179,9 @@ func GetListeningPorts() []int {
 //
 // Note: on modern OpenSSH (>= 9.0) scp is served through the SFTP subsystem,
 // so an active scp transfer IS an sftp-server process on the server side.
-func GetActiveSessions() (ssh []string, sftpCount int, scpCount int) {
+func GetActiveSessions() (ssh []string, sftp []SFTPSession, scpCount int) {
 	ssh = make([]string, 0)
+	sftp = make([]SFTPSession, 0)
 	entries, err := os.ReadDir("/proc")
 	if err != nil {
 		return
@@ -202,7 +210,7 @@ func GetActiveSessions() (ssh []string, sftpCount int, scpCount int) {
 
 		// SFTP subsystem sessions (also carries scp traffic on OpenSSH >= 9.0)
 		if strings.Contains(cmd, "sftp-server") {
-			sftpCount++
+			sftp = append(sftp, SFTPSession{PID: pid, Cmd: cmd})
 		}
 		// Legacy scp child process (OpenSSH <= 8.x protocol)
 		if strings.Contains(cmd, "scp ") {

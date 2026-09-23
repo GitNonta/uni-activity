@@ -69,6 +69,11 @@ type Collector struct {
 	OnInspectorAdded func([]byte) // called immediately when a new log arrives
 	aiLog            []string     // plain-text lines from the AI face service
 	aiLogMu          sync.Mutex
+
+	sftpMu          sync.Mutex
+	sftpActive      map[int]bool // PIDs currently running an SFTP subsystem
+	sftpHistoryPath string
+	sftpHistory     []string
 }
 
 // AddAILogLine appends one line of AI-service log text (received via UDP
@@ -146,7 +151,10 @@ func (c *Collector) Collect() ([]byte, error) {
 	}
 
 	cfURL := tunnel.GetActiveURL()
-	sshSessions, sftp, scp := services.GetActiveSessions()
+	sshSessions, sftpSessions, scp := services.GetActiveSessions()
+
+	// Track SFTP session open/close events and persist history across restarts
+	c.trackSFTPEvents(sftpSessions)
 
 	// Deploy log (last 20 lines of git-sync.log) + per-channel streams
 	deployLog := tailFile(filepath.Join(c.projectRoot, "storage", "logs", "git-sync.log"), 20)
@@ -158,7 +166,7 @@ func (c *Collector) Collect() ([]byte, error) {
 	if sshChannel == "" {
 		sshChannel = "No active SSH sessions."
 	}
-	sftpChannel := fmt.Sprintf("%d active SFTP subsystem session(s).", sftp)
+	sftpChannel := c.buildSFTPChannel(len(sftpSessions))
 	scpChannel := fmt.Sprintf("%d active SCP transfer session(s).", scp)
 
 	c.inspMu.Lock()
@@ -257,7 +265,7 @@ func (c *Collector) Collect() ([]byte, error) {
 		Events:           getDeployEvents(c.projectRoot),
 		AILog:            c.aiLogText(), // real UDP-received lines; empty until the AI service ships logs
 		SSHSessions:      sshSessions,
-		SFTPSessions:     sftp,
+		SFTPSessions:     len(sftpSessions),
 		SCPSessions:      scp,
 		ListeningPorts:   services.GetListeningPorts(),
 		AdvancedMetrics: map[string]interface{}{
@@ -324,6 +332,97 @@ func (c *Collector) GetCachedJSON() []byte {
 // ProjectRoot returns the root directory the collector was initialized with.
 func (c *Collector) ProjectRoot() string {
 	return c.projectRoot
+}
+
+// sftpHistoryLimit caps the number of remembered SFTP transfer events.
+const sftpHistoryLimit = 30
+
+// trackSFTPEvents diffs the currently-running sftp-server PIDs against the
+// previous scan and records open/close events into an in-memory ring that is
+// also persisted to storage/logs/sftp-history.log so history survives agent
+// restarts.
+func (c *Collector) trackSFTPEvents(current []services.SFTPSession) {
+	c.sftpMu.Lock()
+	defer c.sftpMu.Unlock()
+
+	if c.sftpActive == nil {
+		c.sftpActive = make(map[int]bool)
+	}
+	if c.sftpHistoryPath == "" {
+		c.sftpHistoryPath = filepath.Join(c.projectRoot, "storage", "logs", "sftp-history.log")
+		if c.sftpHistory == nil {
+			c.loadSFTPHistory()
+		}
+	}
+
+	now := time.Now().Format("2006-01-02 15:04:05")
+	cur := make(map[int]bool, len(current))
+	for _, s := range current {
+		cur[s.PID] = true
+		if !c.sftpActive[s.PID] {
+			c.sftpActive[s.PID] = true
+			c.appendSFTPEvent(fmt.Sprintf("[%s] OPEN  PID %d — SFTP transfer session started", now, s.PID))
+		}
+	}
+	for pid := range c.sftpActive {
+		if !cur[pid] {
+			delete(c.sftpActive, pid)
+			c.appendSFTPEvent(fmt.Sprintf("[%s] CLOSE PID %d — SFTP transfer session ended", now, pid))
+		}
+	}
+}
+
+// appendSFTPEvent appends one event line to the ring + persist file.
+// Callers must hold c.sftpMu.
+func (c *Collector) appendSFTPEvent(line string) {
+	c.sftpHistory = append(c.sftpHistory, line)
+	if len(c.sftpHistory) > sftpHistoryLimit {
+		c.sftpHistory = c.sftpHistory[len(c.sftpHistory)-sftpHistoryLimit:]
+	}
+	f, err := os.OpenFile(c.sftpHistoryPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err == nil {
+		fmt.Fprintln(f, line)
+		f.Close()
+	}
+}
+
+// loadSFTPHistory seeds the in-memory ring from the persisted file.
+// Callers must hold c.sftpMu.
+func (c *Collector) loadSFTPHistory() {
+	b, err := os.ReadFile(c.sftpHistoryPath)
+	if err != nil {
+		return
+	}
+	lines := strings.Split(strings.TrimRight(string(b), "\n"), "\n")
+	if len(lines) > sftpHistoryLimit {
+		lines = lines[len(lines)-sftpHistoryLimit:]
+	}
+	c.sftpHistory = append(c.sftpHistory, lines...)
+}
+
+// buildSFTPChannel renders the SFTP tab content: live count on top, followed
+// by the recent transfer history (open/close events).
+func (c *Collector) buildSFTPChannel(activeCount int) string {
+	c.sftpMu.Lock()
+	hist := make([]string, len(c.sftpHistory))
+	copy(hist, c.sftpHistory)
+	c.sftpMu.Unlock()
+
+	var b strings.Builder
+	if activeCount > 0 {
+		b.WriteString(fmt.Sprintf("● %d active SFTP transfer session(s) right now\n", activeCount))
+	} else {
+		b.WriteString("○ No active SFTP transfers right now\n")
+	}
+	b.WriteString("\nRecent transfer history:\n")
+	if len(hist) == 0 {
+		b.WriteString("  (no SFTP transfer events recorded yet)")
+	} else {
+		for i := len(hist) - 1; i >= 0; i-- { // newest first
+			b.WriteString("  " + hist[i] + "\n")
+		}
+	}
+	return strings.TrimRight(b.String(), "\n")
 }
 
 // PatchInspectorJSON returns a new JSON blob identical to the cached snapshot
