@@ -70,10 +70,10 @@ type Collector struct {
 	aiLog            []string     // plain-text lines from the AI face service
 	aiLogMu          sync.Mutex
 
-	sftpMu          sync.Mutex
-	sftpActive      map[int]bool // PIDs currently running an SFTP subsystem
-	sftpHistoryPath string
-	sftpHistory     []string
+	trMu             sync.Mutex
+	transferActive   map[string]map[int]bool // kind -> active PIDs ("sftp", "scp")
+	transferHistPath map[string]string
+	transferHistory  map[string][]string
 }
 
 // AddAILogLine appends one line of AI-service log text (received via UDP
@@ -151,10 +151,11 @@ func (c *Collector) Collect() ([]byte, error) {
 	}
 
 	cfURL := tunnel.GetActiveURL()
-	sshSessions, sftpSessions, scp := services.GetActiveSessions()
+	sshSessions, sftpSessions, scpSessions := services.GetActiveSessions()
 
-	// Track SFTP session open/close events and persist history across restarts
-	c.trackSFTPEvents(sftpSessions)
+	// Track transfer session open/close events and persist history across restarts
+	c.trackTransferEvents("sftp", sftpSessions)
+	c.trackTransferEvents("scp", scpSessions)
 
 	// Deploy log (last 20 lines of git-sync.log) + per-channel streams
 	deployLog := tailFile(filepath.Join(c.projectRoot, "storage", "logs", "git-sync.log"), 20)
@@ -166,8 +167,8 @@ func (c *Collector) Collect() ([]byte, error) {
 	if sshChannel == "" {
 		sshChannel = "No active SSH sessions."
 	}
-	sftpChannel := c.buildSFTPChannel(len(sftpSessions))
-	scpChannel := fmt.Sprintf("%d active SCP transfer session(s).", scp)
+	sftpChannel := c.buildTransferChannel("sftp", len(sftpSessions))
+	scpChannel := c.buildTransferChannel("scp", len(scpSessions))
 
 	c.inspMu.Lock()
 	inspectorCopy := make([]interface{}, len(c.inspector))
@@ -266,7 +267,7 @@ func (c *Collector) Collect() ([]byte, error) {
 		AILog:            c.aiLogText(), // real UDP-received lines; empty until the AI service ships logs
 		SSHSessions:      sshSessions,
 		SFTPSessions:     len(sftpSessions),
-		SCPSessions:      scp,
+		SCPSessions:      len(scpSessions),
 		ListeningPorts:   services.GetListeningPorts(),
 		AdvancedMetrics: map[string]interface{}{
 			"cpu_freqs":  sysinfo.GetCPUFreqs(),
@@ -334,89 +335,106 @@ func (c *Collector) ProjectRoot() string {
 	return c.projectRoot
 }
 
-// sftpHistoryLimit caps the number of remembered SFTP transfer events.
-const sftpHistoryLimit = 30
+// transferHistoryLimit caps the number of remembered transfer events per kind.
+const transferHistoryLimit = 30
 
-// trackSFTPEvents diffs the currently-running sftp-server PIDs against the
-// previous scan and records open/close events into an in-memory ring that is
-// also persisted to storage/logs/sftp-history.log so history survives agent
-// restarts.
-func (c *Collector) trackSFTPEvents(current []services.SFTPSession) {
-	c.sftpMu.Lock()
-	defer c.sftpMu.Unlock()
+// transferKinds are the tracked transfer process kinds.
+var transferKinds = []string{"sftp", "scp"}
 
-	if c.sftpActive == nil {
-		c.sftpActive = make(map[int]bool)
+// trackTransferEvents diffs the currently-running transfer PIDs of a kind
+// ("sftp" or "scp") against the previous scan and records open/close events
+// into an in-memory ring that is also persisted to
+// storage/logs/<kind>-history.log so history survives agent restarts.
+func (c *Collector) trackTransferEvents(kind string, current []services.ProcSession) {
+	c.trMu.Lock()
+	defer c.trMu.Unlock()
+
+	if c.transferActive == nil {
+		c.transferActive = make(map[string]map[int]bool)
 	}
-	if c.sftpHistoryPath == "" {
-		c.sftpHistoryPath = filepath.Join(c.projectRoot, "storage", "logs", "sftp-history.log")
-		if c.sftpHistory == nil {
-			c.loadSFTPHistory()
+	if c.transferActive[kind] == nil {
+		c.transferActive[kind] = make(map[int]bool)
+	}
+	if c.transferHistory == nil {
+		c.transferHistory = make(map[string][]string)
+	}
+	if c.transferHistPath == nil {
+		c.transferHistPath = make(map[string]string)
+	}
+	if _, ok := c.transferHistPath[kind]; !ok {
+		c.transferHistPath[kind] = filepath.Join(c.projectRoot, "storage", "logs", kind+"-history.log")
+		if _, loaded := c.transferHistory[kind]; !loaded {
+			c.loadTransferHistory(kind)
 		}
 	}
 
 	now := time.Now().Format("2006-01-02 15:04:05")
+	label := strings.ToUpper(kind)
 	cur := make(map[int]bool, len(current))
 	for _, s := range current {
 		cur[s.PID] = true
-		if !c.sftpActive[s.PID] {
-			c.sftpActive[s.PID] = true
-			c.appendSFTPEvent(fmt.Sprintf("[%s] OPEN  PID %d — SFTP transfer session started", now, s.PID))
+		if !c.transferActive[kind][s.PID] {
+			c.transferActive[kind][s.PID] = true
+			c.appendTransferEvent(kind, fmt.Sprintf("[%s] OPEN  PID %d — %s transfer session started", now, s.PID, label))
 		}
 	}
-	for pid := range c.sftpActive {
+	for pid := range c.transferActive[kind] {
 		if !cur[pid] {
-			delete(c.sftpActive, pid)
-			c.appendSFTPEvent(fmt.Sprintf("[%s] CLOSE PID %d — SFTP transfer session ended", now, pid))
+			delete(c.transferActive[kind], pid)
+			c.appendTransferEvent(kind, fmt.Sprintf("[%s] CLOSE PID %d — %s transfer session ended", now, pid, label))
 		}
 	}
 }
 
-// appendSFTPEvent appends one event line to the ring + persist file.
-// Callers must hold c.sftpMu.
-func (c *Collector) appendSFTPEvent(line string) {
-	c.sftpHistory = append(c.sftpHistory, line)
-	if len(c.sftpHistory) > sftpHistoryLimit {
-		c.sftpHistory = c.sftpHistory[len(c.sftpHistory)-sftpHistoryLimit:]
+// appendTransferEvent appends one event line to the ring + persist file.
+// Callers must hold c.trMu.
+func (c *Collector) appendTransferEvent(kind string, line string) {
+	c.transferHistory[kind] = append(c.transferHistory[kind], line)
+	if len(c.transferHistory[kind]) > transferHistoryLimit {
+		c.transferHistory[kind] = c.transferHistory[kind][len(c.transferHistory[kind])-transferHistoryLimit:]
 	}
-	f, err := os.OpenFile(c.sftpHistoryPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	f, err := os.OpenFile(c.transferHistPath[kind], os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err == nil {
 		fmt.Fprintln(f, line)
 		f.Close()
 	}
 }
 
-// loadSFTPHistory seeds the in-memory ring from the persisted file.
-// Callers must hold c.sftpMu.
-func (c *Collector) loadSFTPHistory() {
-	b, err := os.ReadFile(c.sftpHistoryPath)
+// loadTransferHistory seeds the in-memory ring from the persisted file.
+// Callers must hold c.trMu.
+func (c *Collector) loadTransferHistory(kind string) {
+	b, err := os.ReadFile(c.transferHistPath[kind])
 	if err != nil {
 		return
 	}
 	lines := strings.Split(strings.TrimRight(string(b), "\n"), "\n")
-	if len(lines) > sftpHistoryLimit {
-		lines = lines[len(lines)-sftpHistoryLimit:]
+	if len(lines) > transferHistoryLimit {
+		lines = lines[len(lines)-transferHistoryLimit:]
 	}
-	c.sftpHistory = append(c.sftpHistory, lines...)
+	c.transferHistory[kind] = append(c.transferHistory[kind], lines...)
 }
 
-// buildSFTPChannel renders the SFTP tab content: live count on top, followed
-// by the recent transfer history (open/close events).
-func (c *Collector) buildSFTPChannel(activeCount int) string {
-	c.sftpMu.Lock()
-	hist := make([]string, len(c.sftpHistory))
-	copy(hist, c.sftpHistory)
-	c.sftpMu.Unlock()
+// buildTransferChannel renders a transfer tab (SFTP/SCP): live count on top,
+// followed by the recent open/close event history, newest first.
+func (c *Collector) buildTransferChannel(kind string, activeCount int) string {
+	c.trMu.Lock()
+	hist := make([]string, len(c.transferHistory[kind]))
+	copy(hist, c.transferHistory[kind])
+	c.trMu.Unlock()
 
+	label := strings.ToUpper(kind)
 	var b strings.Builder
 	if activeCount > 0 {
-		b.WriteString(fmt.Sprintf("● %d active SFTP transfer session(s) right now\n", activeCount))
+		b.WriteString(fmt.Sprintf("● %d active %s transfer session(s) right now\n", activeCount, label))
 	} else {
-		b.WriteString("○ No active SFTP transfers right now\n")
+		b.WriteString(fmt.Sprintf("○ No active %s transfers right now\n", label))
+	}
+	if kind == "scp" {
+		b.WriteString("(modern OpenSSH serves scp over the SFTP subsystem — those transfers appear in the SFTP history)\n")
 	}
 	b.WriteString("\nRecent transfer history:\n")
 	if len(hist) == 0 {
-		b.WriteString("  (no SFTP transfer events recorded yet)")
+		b.WriteString(fmt.Sprintf("  (no %s transfer events recorded yet)", label))
 	} else {
 		for i := len(hist) - 1; i >= 0; i-- { // newest first
 			b.WriteString("  " + hist[i] + "\n")
