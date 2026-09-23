@@ -282,9 +282,9 @@ export function EventsCard({ eventsData, publicIp, connected = true, onEventClic
                   justifyContent: 'center'
                 }}
               >
-                <span style={{ transform: showDeployMenu ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', fontSize: '0.7rem' }}>
-                  ▲
-                </span>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: showDeployMenu ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+                  <path d="M19 9l-7 7-7-7" />
+                </svg>
               </button>
             </div>
 
@@ -321,14 +321,10 @@ export function EventsCard({ eventsData, publicIp, connected = true, onEventClic
                     if (!window.confirm(`Are you sure you want to rollback/deploy commit ${hash}?`)) return;
                     try {
                       setLoadingAction(true);
-                      const host = window.location.hostname;
-                      const protocol = window.location.protocol;
-                      const port = window.location.port ? `:${window.location.port}` : (host === 'localhost' ? ':8000' : '');
-                      const baseUrl = import.meta.env.VITE_API_URL || `${protocol}//${host}${port}`;
-                      const res = await fetch(`${baseUrl}/api/deploy/rollback`, {
+                      const res = await fetch('/api/deploy/rollback', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ commit: hash })
+                        body: JSON.stringify({ commit: hash, commit_hash: hash })
                       });
                       if (!res.ok) throw new Error("Request failed");
                       alert("Deployment triggered! Please wait a few seconds.");
@@ -350,11 +346,7 @@ export function EventsCard({ eventsData, publicIp, connected = true, onEventClic
                     if (!window.confirm("Are you sure you want to clear build cache and deploy?")) return;
                     try {
                       setLoadingAction(true);
-                      const host = window.location.hostname;
-                      const protocol = window.location.protocol;
-                      const port = window.location.port ? `:${window.location.port}` : (host === 'localhost' ? ':8000' : '');
-                      const baseUrl = import.meta.env.VITE_API_URL || `${protocol}//${host}${port}`;
-                      const res = await fetch(`${baseUrl}/api/deploy/manual?clear_cache=true`);
+                      const res = await fetch('/api/deploy/manual?clear_cache=true', { method: 'POST' });
                       if (!res.ok) throw new Error("Request failed");
                       alert("Cache clear & deployment triggered!");
                     } catch (err) {
@@ -376,11 +368,7 @@ export function EventsCard({ eventsData, publicIp, connected = true, onEventClic
                     if (!window.confirm("Are you sure you want to restart the service (PHP-FPM and Monitor)?")) return;
                     try {
                       setLoadingAction(true);
-                      const host = window.location.hostname;
-                      const protocol = window.location.protocol;
-                      const port = window.location.port ? `:${window.location.port}` : (host === 'localhost' ? ':8000' : '');
-                      const baseUrl = import.meta.env.VITE_API_URL || `${protocol}//${host}${port}`;
-                      const res = await fetch(`${baseUrl}/api/deploy/restart`);
+                      const res = await fetch('/api/deploy/restart', { method: 'POST' });
                       if (!res.ok) throw new Error("Request failed");
                       alert("Restart triggered! The service will come back in a few seconds.");
                     } catch (err) {

@@ -117,6 +117,16 @@ func (s *HTTPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 6. API Endpoints — Git Deployment & Services
+	if strings.HasPrefix(path, "/api/deploy/status") {
+		deploy.HandleDeployStatus(w, r)
+		return
+	}
+
+	if strings.HasPrefix(path, "/api/deploy/log") {
+		deploy.HandleDeployCommitLog(w, r)
+		return
+	}
+
 	if strings.HasPrefix(path, "/api/deploy/manual") {
 		deploy.HandleManualDeploy(w, r)
 		return

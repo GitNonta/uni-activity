@@ -12,16 +12,58 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"uni-activity/go-monitor/config"
 	"uni-activity/go-monitor/telegram"
 )
 
+type DeployStatusInfo struct {
+	IsDeploying bool     `json:"is_deploying"`
+	Status      string   `json:"status"` // "idle", "running", "success", "failed"
+	CurrentStep string   `json:"current_step"`
+	StartedAt   string   `json:"started_at"`
+	FinishedAt  string   `json:"finished_at"`
+	CommitHash  string   `json:"commit_hash"`
+	CommitMsg   string   `json:"commit_msg"`
+	Error       string   `json:"error"`
+	OutputLines []string `json:"output_lines"`
+}
+
+var (
+	deployMu     sync.RWMutex
+	deployStatus = DeployStatusInfo{
+		Status:      "idle",
+		CurrentStep: "Ready",
+		OutputLines: []string{},
+	}
+)
+
+func GetDeployStatus() DeployStatusInfo {
+	deployMu.RLock()
+	defer deployMu.RUnlock()
+	return deployStatus
+}
+
+func updateDeployStep(step string, logLine string) {
+	deployMu.Lock()
+	defer deployMu.Unlock()
+	deployStatus.CurrentStep = step
+	if logLine != "" {
+		deployStatus.OutputLines = append(deployStatus.OutputLines, logLine)
+		if len(deployStatus.OutputLines) > 500 {
+			deployStatus.OutputLines = deployStatus.OutputLines[len(deployStatus.OutputLines)-500:]
+		}
+	}
+}
+
 func runAndLog(cmd *exec.Cmd, logWriter io.Writer) error {
 	cmdStr := strings.Join(cmd.Args, " ")
 	ts := time.Now().Format("2006-01-02 15:04:05")
-	fmt.Fprintf(logWriter, "[%s] > %s\n", ts, cmdStr)
+	line := fmt.Sprintf("[%s] > %s", ts, cmdStr)
+	fmt.Fprintln(logWriter, line)
+	updateDeployStep(deployStatus.CurrentStep, line)
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -36,7 +78,9 @@ func runAndLog(cmd *exec.Cmd, logWriter io.Writer) error {
 	scanner := bufio.NewScanner(stdout)
 	for scanner.Scan() {
 		ts = time.Now().Format("2006-01-02 15:04:05")
-		fmt.Fprintf(logWriter, "[%s] %s\n", ts, scanner.Text())
+		txt := fmt.Sprintf("[%s] %s", ts, scanner.Text())
+		fmt.Fprintln(logWriter, txt)
+		updateDeployStep(deployStatus.CurrentStep, txt)
 	}
 
 	return cmd.Wait()
@@ -118,21 +162,56 @@ func TriggerManualDeploy(clearCache bool) {
 	}
 	defer f.Close()
 
-	ts := time.Now().Format("2006-01-02 15:04:05")
-	fmt.Fprintf(f, "[%s] Manual deploy triggered via Go Monitor Web UI.\n", ts)
+	nowStr := time.Now().Format("2006-01-02 15:04:05")
+	deployMu.Lock()
+	deployStatus = DeployStatusInfo{
+		IsDeploying: true,
+		Status:      "running",
+		CurrentStep: "Starting deployment...",
+		StartedAt:   nowStr,
+		FinishedAt:  "",
+		OutputLines: []string{fmt.Sprintf("[%s] Manual deploy initiated via Go Monitor.", nowStr)},
+	}
+	deployMu.Unlock()
+
+	defer func() {
+		deployMu.Lock()
+		deployStatus.IsDeploying = false
+		if deployStatus.Status == "running" {
+			deployStatus.Status = "success"
+			deployStatus.CurrentStep = "Deployment finished successfully"
+			deployStatus.FinishedAt = time.Now().Format("2006-01-02 15:04:05")
+		}
+		deployMu.Unlock()
+	}()
+
+	fmt.Fprintf(f, "[%s] Manual deploy triggered via Go Monitor Web UI.\n", nowStr)
 
 	// 1. Git fetch & reset
+	updateDeployStep("Pulling latest code from origin/main...", "")
 	cmdFetch := exec.Command("git", "fetch", "origin", "main")
 	cmdFetch.Dir = appDir
-	_ = runAndLog(cmdFetch, f)
+	if err := runAndLog(cmdFetch, f); err != nil {
+		deployMu.Lock()
+		deployStatus.Status = "failed"
+		deployStatus.Error = fmt.Sprintf("git fetch failed: %v", err)
+		deployMu.Unlock()
+		return
+	}
 
 	cmdReset := exec.Command("git", "reset", "--hard", "origin/main")
 	cmdReset.Dir = appDir
-	_ = runAndLog(cmdReset, f)
+	if err := runAndLog(cmdReset, f); err != nil {
+		deployMu.Lock()
+		deployStatus.Status = "failed"
+		deployStatus.Error = fmt.Sprintf("git reset failed: %v", err)
+		deployMu.Unlock()
+		return
+	}
 
 	// 2. Clear cache if requested
 	if clearCache {
-		fmt.Fprintf(f, "Clearing cache...\n")
+		updateDeployStep("Clearing framework caches...", "")
 		cmdCache := exec.Command("php", "artisan", "cache:clear")
 		cmdCache.Dir = appDir
 		_ = runAndLog(cmdCache, f)
@@ -147,6 +226,7 @@ func TriggerManualDeploy(clearCache bool) {
 	}
 
 	// 3. Clear routes and config
+	updateDeployStep("Clearing routes and configuration...", "")
 	cmdConfig := exec.Command("php", "artisan", "config:clear")
 	cmdConfig.Dir = appDir
 	_ = runAndLog(cmdConfig, f)
@@ -156,12 +236,13 @@ func TriggerManualDeploy(clearCache bool) {
 	_ = runAndLog(cmdRoute, f)
 
 	// 4. Build assets
+	updateDeployStep("Building production frontend assets with Vite...", "")
 	cmdBuild := exec.Command("npm", "run", "build")
 	cmdBuild.Dir = appDir
 	_ = runAndLog(cmdBuild, f)
 
 	// 5. Reload app runtime (Octane if running, else rolling restart of artisan serve)
-	fmt.Fprintf(f, "Reloading application runtime...\n")
+	updateDeployStep("Reloading application runtime & workers...", "")
 	if octaneRunning() {
 		fmt.Fprintf(f, "Octane detected — reloading Octane...\n")
 		cmdOctane := exec.Command("php", "artisan", "octane:reload")
@@ -175,16 +256,32 @@ func TriggerManualDeploy(clearCache bool) {
 
 	fmt.Fprintf(f, "Deploy finished successfully.\n")
 
-	// Per-commit log copy
-	cmdHash := exec.Command("git", "rev-parse", "--short", "origin/main")
+	// Per-commit log copy & commit info
+	cmdHash := exec.Command("git", "rev-parse", "--short", "HEAD")
 	cmdHash.Dir = appDir
+	hash := ""
 	if hashBytes, err := cmdHash.Output(); err == nil {
-		hash := strings.TrimSpace(string(hashBytes))
-		if hash != "" {
-			perCommitLog := filepath.Join(appDir, "storage", "logs", fmt.Sprintf("git-sync-%s.log", hash))
-			_ = copyFile(syncLog, perCommitLog)
-			telegram.Send(fmt.Sprintf("🚀 <b>Deployment Succeeded!</b>\n━━━━━━━━━━━━━━━━━━━━\nCommit: <code>%s</code>\nStatus: Octane Reloaded", hash))
-		}
+		hash = strings.TrimSpace(string(hashBytes))
+	}
+	cmdMsg := exec.Command("git", "log", "-1", "--pretty=%s")
+	cmdMsg.Dir = appDir
+	msg := ""
+	if msgBytes, err := cmdMsg.Output(); err == nil {
+		msg = strings.TrimSpace(string(msgBytes))
+	}
+
+	deployMu.Lock()
+	deployStatus.CommitHash = hash
+	deployStatus.CommitMsg = msg
+	deployStatus.Status = "success"
+	deployStatus.CurrentStep = "Deployment finished successfully."
+	deployStatus.FinishedAt = time.Now().Format("2006-01-02 15:04:05")
+	deployMu.Unlock()
+
+	if hash != "" {
+		perCommitLog := filepath.Join(appDir, "storage", "logs", fmt.Sprintf("git-sync-%s.log", hash))
+		_ = copyFile(syncLog, perCommitLog)
+		telegram.Send(fmt.Sprintf("🚀 <b>Deployment Succeeded!</b>\n━━━━━━━━━━━━━━━━━━━━\nCommit: <code>%s</code>\nMessage: %s\nStatus: Runtime Reloaded", hash, msg))
 	}
 }
 
@@ -216,13 +313,44 @@ func TriggerRollback(commitHash string) {
 	}
 	defer f.Close()
 
-	ts := time.Now().Format("2006-01-02 15:04:05")
-	fmt.Fprintf(f, "[%s] Rollback executed to commit %s via Go Monitor Web UI.\n", ts, commitHash)
+	nowStr := time.Now().Format("2006-01-02 15:04:05")
+	deployMu.Lock()
+	deployStatus = DeployStatusInfo{
+		IsDeploying: true,
+		Status:      "running",
+		CurrentStep: fmt.Sprintf("Rolling back to commit %s...", commitHash),
+		StartedAt:   nowStr,
+		FinishedAt:  "",
+		CommitHash:  commitHash,
+		OutputLines: []string{fmt.Sprintf("[%s] Rollback initiated to %s via Go Monitor.", nowStr, commitHash)},
+	}
+	deployMu.Unlock()
 
+	defer func() {
+		deployMu.Lock()
+		deployStatus.IsDeploying = false
+		if deployStatus.Status == "running" {
+			deployStatus.Status = "success"
+			deployStatus.CurrentStep = fmt.Sprintf("Rollback to %s completed", commitHash)
+			deployStatus.FinishedAt = time.Now().Format("2006-01-02 15:04:05")
+		}
+		deployMu.Unlock()
+	}()
+
+	fmt.Fprintf(f, "[%s] Rollback executed to commit %s via Go Monitor Web UI.\n", nowStr, commitHash)
+
+	updateDeployStep(fmt.Sprintf("Resetting code to commit %s...", commitHash), "")
 	cmdReset := exec.Command("git", "reset", "--hard", commitHash)
 	cmdReset.Dir = appDir
-	_ = runAndLog(cmdReset, f)
+	if err := runAndLog(cmdReset, f); err != nil {
+		deployMu.Lock()
+		deployStatus.Status = "failed"
+		deployStatus.Error = fmt.Sprintf("git reset failed: %v", err)
+		deployMu.Unlock()
+		return
+	}
 
+	updateDeployStep("Clearing configuration & routes...", "")
 	cmdConfig := exec.Command("php", "artisan", "config:clear")
 	cmdConfig.Dir = appDir
 	_ = runAndLog(cmdConfig, f)
@@ -231,11 +359,12 @@ func TriggerRollback(commitHash string) {
 	cmdRoute.Dir = appDir
 	_ = runAndLog(cmdRoute, f)
 
+	updateDeployStep("Rebuilding frontend assets with Vite...", "")
 	cmdBuild := exec.Command("npm", "run", "build")
 	cmdBuild.Dir = appDir
 	_ = runAndLog(cmdBuild, f)
 
-	fmt.Fprintf(f, "Reloading application runtime...\n")
+	updateDeployStep("Reloading application runtime...", "")
 	if octaneRunning() {
 		fmt.Fprintf(f, "Octane detected — reloading Octane...\n")
 		cmdOctane := exec.Command("php", "artisan", "octane:reload")
@@ -298,22 +427,69 @@ func HandleRestart(w http.ResponseWriter, r *http.Request) {
 func HandleRollback(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
-	var req struct {
-		CommitHash string `json:"commit_hash"`
+	// Support both JSON body { "commit_hash": "..." } or { "commit": "..." }, or URL query
+	commitHash := r.URL.Query().Get("commit_hash")
+	if commitHash == "" {
+		commitHash = r.URL.Query().Get("commit")
 	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.CommitHash == "" {
+
+	if commitHash == "" && r.Body != nil {
+		var req map[string]interface{}
+		if err := json.NewDecoder(r.Body).Decode(&req); err == nil {
+			if h, ok := req["commit_hash"].(string); ok && h != "" {
+				commitHash = h
+			} else if h, ok := req["commit"].(string); ok && h != "" {
+				commitHash = h
+			}
+		}
+	}
+
+	commitHash = strings.TrimSpace(commitHash)
+	if commitHash == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"status":  "error",
-			"message": "Missing or invalid commit_hash",
+			"message": "Missing commit or commit_hash",
 		})
 		return
 	}
 
-	go TriggerRollback(req.CommitHash)
+	go TriggerRollback(commitHash)
 
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"status":  "ok",
-		"message": fmt.Sprintf("Rollback to commit %s initiated!", req.CommitHash),
+		"message": fmt.Sprintf("Rollback to commit %s initiated!", commitHash),
+	})
+}
+
+func HandleDeployStatus(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	json.NewEncoder(w).Encode(GetDeployStatus())
+}
+
+func HandleDeployCommitLog(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	hash := strings.TrimSpace(r.URL.Query().Get("hash"))
+	if hash == "" {
+		hash = strings.TrimSpace(r.URL.Query().Get("commit"))
+	}
+	appDir := config.AppConfig.ProjectRoot
+	var content string
+	if hash != "" {
+		path := filepath.Join(appDir, "storage", "logs", fmt.Sprintf("git-sync-%s.log", hash))
+		if b, err := os.ReadFile(path); err == nil {
+			content = string(b)
+		}
+	}
+	if content == "" {
+		path := filepath.Join(appDir, "storage", "logs", "git-sync.log")
+		if b, err := os.ReadFile(path); err == nil {
+			content = string(b)
+		}
+	}
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "ok",
+		"hash":    hash,
+		"content": content,
 	})
 }

@@ -136,11 +136,15 @@ export default function App() {
                     : '')
               }
               deployChannels={data?.deploy_channels}
+              deployStatus={data?.deploy_status}
               logFilesInfo={data?.log_files_info}
               sshSessions={data?.ssh_sessions}
               sftpSessions={data?.sftp_sessions}
               scpSessions={data?.scp_sessions}
+              events={data?.events}
+              githubDeployLogs={data?.github_deploy_logs}
               selectedEvent={selectedEvent}
+              onSelectEvent={handleEventDeployClick}
               onBack={() => {
                 setSelectedEvent(null)
                 window.history.pushState(null, '', '#events')
@@ -174,13 +178,25 @@ export default function App() {
         {activeTab === 'status'    && <Status data={data} />}
         {activeTab === 'deploy'    && (
           <DeployCard
-            deployLog={data?.deploy_log}
+            deployLog={
+              selectedEvent
+                ? (data?.github_deploy_logs?.[selectedEvent.hash] || data?.github_deploy_logs?.latest || '')
+                : data?.deploy_log
+            }
             deployChannels={data?.deploy_channels}
+            deployStatus={data?.deploy_status}
             logFilesInfo={data?.log_files_info}
             sshSessions={data?.ssh_sessions}
             sftpSessions={data?.sftp_sessions}
             scpSessions={data?.scp_sessions}
+            events={data?.events}
+            githubDeployLogs={data?.github_deploy_logs}
             selectedEvent={selectedEvent}
+            onSelectEvent={handleEventDeployClick}
+            onBack={() => {
+              setSelectedEvent(null)
+              window.history.pushState(null, '', '#deploy')
+            }}
           />
         )}
         {activeTab === 'documentation' && <Documentation />}

@@ -16,6 +16,7 @@ import (
 
 	"uni-activity/go-monitor/alerts"
 	"uni-activity/go-monitor/config"
+	"uni-activity/go-monitor/deploy"
 	"uni-activity/go-monitor/services"
 	"uni-activity/go-monitor/speedtest"
 	"uni-activity/go-monitor/sysinfo"
@@ -42,6 +43,7 @@ type FullStats struct {
 	Inspector        []interface{}            `json:"inspector"`
 	DeployLog        string                   `json:"deploy_log"`
 	DeployChannels   map[string]interface{}   `json:"deploy_channels"`
+	DeployStatus     deploy.DeployStatusInfo  `json:"deploy_status"`
 	LogFilesInfo     map[string]interface{}   `json:"log_files_info"`
 	GithubDeployLogs map[string]interface{}   `json:"github_deploy_logs"`
 	Events           []interface{}            `json:"events"`
@@ -167,9 +169,16 @@ func (c *Collector) Collect() ([]byte, error) {
 		sshSessionStrings = append(sshSessionStrings, fmt.Sprintf("PID %d: %s", s.PID, s.Cmd))
 	}
 
-	// Deploy log (last 20 lines of git-sync.log) + per-channel streams
-	deployLog := tailFile(filepath.Join(c.projectRoot, "storage", "logs", "git-sync.log"), 20)
-	gitChannel := tailFile(filepath.Join(c.projectRoot, "storage", "logs", "git-sync.log"), 12)
+	// Deploy log (last 100 lines of git-sync.log) + per-channel streams
+	curDeployStatus := deploy.GetDeployStatus()
+	deployLog := tailFile(filepath.Join(c.projectRoot, "storage", "logs", "git-sync.log"), 100)
+	if curDeployStatus.IsDeploying && len(curDeployStatus.OutputLines) > 0 {
+		deployLog = strings.Join(curDeployStatus.OutputLines, "\n")
+	}
+	gitChannel := tailFile(filepath.Join(c.projectRoot, "storage", "logs", "git-sync.log"), 30)
+	if curDeployStatus.IsDeploying && len(curDeployStatus.OutputLines) > 0 {
+		gitChannel = strings.Join(curDeployStatus.OutputLines, "\n")
+	}
 	sshChannel := c.buildTransferChannel("ssh", len(sshSessions), sshSessions)
 	sftpChannel := c.buildTransferChannel("sftp", len(sftpSessions), sftpSessions)
 	scpChannel := c.buildTransferChannel("scp", len(scpSessions), scpSessions)
@@ -265,8 +274,9 @@ func (c *Collector) Collect() ([]byte, error) {
 			"sftp":   sftpChannel,
 			"scp":    scpChannel,
 		},
+		DeployStatus:     curDeployStatus,
 		LogFilesInfo:     getLogFilesInfo(c.projectRoot),
-		GithubDeployLogs: map[string]interface{}{"status": "ok"},
+		GithubDeployLogs: getGithubDeployLogs(c.projectRoot),
 		Events:           getDeployEvents(c.projectRoot),
 		AILog:            c.aiLogText(), // real UDP-received lines; empty until the AI service ships logs
 		SSHSessions:      sshSessionStrings,
@@ -719,4 +729,37 @@ func getDeployEvents(projectRoot string) []interface{} {
 		})
 	}
 	return events
+}
+
+func getGithubDeployLogs(projectRoot string) map[string]interface{} {
+	res := map[string]interface{}{
+		"status": "ok",
+	}
+
+	logDir := filepath.Join(projectRoot, "storage", "logs")
+	entries, err := os.ReadDir(logDir)
+	if err == nil {
+		for _, e := range entries {
+			if e.IsDir() {
+				continue
+			}
+			name := e.Name()
+			if strings.HasPrefix(name, "git-sync-") && strings.HasSuffix(name, ".log") {
+				hash := strings.TrimSuffix(strings.TrimPrefix(name, "git-sync-"), ".log")
+				if hash != "" {
+					b, err := os.ReadFile(filepath.Join(logDir, name))
+					if err == nil {
+						res[hash] = string(b)
+					}
+				}
+			}
+		}
+	}
+
+	// Always provide latest git-sync.log
+	if b, err := os.ReadFile(filepath.Join(logDir, "git-sync.log")); err == nil {
+		res["latest"] = string(b)
+	}
+
+	return res
 }
