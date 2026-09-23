@@ -28,7 +28,7 @@ func CheckAllServices() ServiceStatusMap {
 		"Queue Worker":                "Stopped",
 		"AI Biometrics Face Service":  "Stopped",
 		// key the monitor-ui AiScanner card reads (App.jsx serviceStatus)
-		"AI Scan Service":             "Stopped",
+		"AI Scan Service": "Stopped",
 	}
 
 	// 1. Port checks via fast TCP connect (50ms timeout)
@@ -163,7 +163,15 @@ func GetListeningPorts() []int {
 	return ports
 }
 
-// GetActiveSessions counts SSH/SFTP/SCP sessions by scanning /proc
+// GetActiveSessions counts SSH/SFTP/SCP sessions by scanning /proc.
+// Supports both process models:
+//   - OpenSSH <= 9.7: per-connection children appear as "sshd: user@pts",
+//     SFTP handled by a separate "sftp-server" process, SCP by an "scp" child.
+//   - OpenSSH >= 9.8 (incl. 10.x): per-connection children appear as
+//     "sshd-session" instead of "sshd: ...".
+//
+// Note: on modern OpenSSH (>= 9.0) scp is served through the SFTP subsystem,
+// so an active scp transfer IS an sftp-server process on the server side.
 func GetActiveSessions() (ssh []string, sftpCount int, scpCount int) {
 	ssh = make([]string, 0)
 	entries, err := os.ReadDir("/proc")
@@ -183,12 +191,20 @@ func GetActiveSessions() (ssh []string, sftpCount int, scpCount int) {
 			continue
 		}
 		cmd := strings.ReplaceAll(string(cmdBytes), "\x00", " ")
-		if strings.Contains(cmd, "sshd:") && !strings.Contains(cmd, "sshd -D") {
-			ssh = append(ssh, fmt.Sprintf("PID %d: %s", pid, strings.TrimSpace(cmd)))
+		cmd = strings.TrimSpace(cmd)
+
+		isSSHDDaemon := strings.Contains(cmd, "sshd -D")
+		// Any per-connection sshd child (legacy "sshd: ..." or modern
+		// "sshd-session") is an active SSH session.
+		if (strings.Contains(cmd, "sshd:") || strings.Contains(cmd, "sshd-session")) && !isSSHDDaemon {
+			ssh = append(ssh, fmt.Sprintf("PID %d: %s", pid, cmd))
 		}
+
+		// SFTP subsystem sessions (also carries scp traffic on OpenSSH >= 9.0)
 		if strings.Contains(cmd, "sftp-server") {
 			sftpCount++
 		}
+		// Legacy scp child process (OpenSSH <= 8.x protocol)
 		if strings.Contains(cmd, "scp ") {
 			scpCount++
 		}

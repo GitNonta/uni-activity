@@ -148,15 +148,18 @@ func (c *Collector) Collect() ([]byte, error) {
 	cfURL := tunnel.GetActiveURL()
 	sshSessions, sftp, scp := services.GetActiveSessions()
 
-	// Deploy logs
-	deployLog := ""
-	if b, err := os.ReadFile(filepath.Join(c.projectRoot, "storage/logs/git-sync.log")); err == nil {
-		lines := strings.Split(string(b), "\n")
-		if len(lines) > 20 {
-			lines = lines[len(lines)-20:]
-		}
-		deployLog = strings.Join(lines, "\n")
+	// Deploy log (last 20 lines of git-sync.log) + per-channel streams
+	deployLog := tailFile(filepath.Join(c.projectRoot, "storage", "logs", "git-sync.log"), 20)
+	gitChannel := tailFile(filepath.Join(c.projectRoot, "storage", "logs", "git-sync.log"), 12)
+	sshChannel := ""
+	for _, s := range sshSessions {
+		sshChannel += s + "\n"
 	}
+	if sshChannel == "" {
+		sshChannel = "No active SSH sessions."
+	}
+	sftpChannel := fmt.Sprintf("%d active SFTP subsystem session(s).", sftp)
+	scpChannel := fmt.Sprintf("%d active SCP transfer session(s).", scp)
 
 	c.inspMu.Lock()
 	inspectorCopy := make([]interface{}, len(c.inspector))
@@ -239,10 +242,16 @@ func (c *Collector) Collect() ([]byte, error) {
 			"dns":       "1.1.1.1",
 			"local_ip":  "192.168.1.222",
 		},
-		Logs:             []string{},
-		Inspector:        inspectorCopy,
-		DeployLog:        deployLog,
-		DeployChannels:   map[string]interface{}{"deploy": "ready", "git": "ok"},
+		Logs:      []string{},
+		Inspector: inspectorCopy,
+		DeployLog: deployLog,
+		DeployChannels: map[string]interface{}{
+			"deploy": deployLog,
+			"git":    gitChannel,
+			"ssh":    sshChannel,
+			"sftp":   sftpChannel,
+			"scp":    scpChannel,
+		},
 		LogFilesInfo:     getLogFilesInfo(c.projectRoot),
 		GithubDeployLogs: map[string]interface{}{"status": "ok"},
 		Events:           getDeployEvents(c.projectRoot),
@@ -437,6 +446,26 @@ func getLogFilesInfo(projectRoot string) map[string]interface{} {
 	res["total_size_mb"] = math.Round(float64(totalBytes)/(1024*1024)*10) / 10
 	res["files"] = out
 	return res
+}
+
+// tailFile returns the last n non-empty lines of a text file, or an empty
+// string if the file does not exist.
+func tailFile(path string, n int) string {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return ""
+	}
+	lines := strings.Split(strings.TrimRight(string(b), "\n"), "\n")
+	if len(lines) > n {
+		lines = lines[len(lines)-n:]
+	}
+	out := make([]string, 0, len(lines))
+	for _, l := range lines {
+		if strings.TrimSpace(l) != "" {
+			out = append(out, l)
+		}
+	}
+	return strings.Join(out, "\n")
 }
 
 // ReadLogFileTail returns the last <lines> lines of the named log file inside
