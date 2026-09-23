@@ -11,14 +11,14 @@
 </div>
 
 {{-- ฟอร์มค้นหาและกรองตามสถานะ --}}
-<form method="GET" action="{{ route('admin.activities.index') }}" class="flex gap-2 mb-6 items-end" style="flex-wrap:wrap;">
+<form method="GET" action="{{ route('admin.activities.index') }}" class="flex gap-2 mb-6 items-end" style="flex-wrap:wrap; align-items:flex-end;">
     <div style="flex:1; min-width:200px;">
         <label class="form-label">ค้นหา</label>
-        <input type="text" name="search" value="{{ request('search') }}" placeholder="ชื่อกิจกรรม..." class="form-control">
+        <input type="text" name="search" value="{{ request('search') }}" placeholder="ชื่อกิจกรรม..." class="form-control" style="height:42px;">
     </div>
     <div style="width:180px;max-width:100%;">
         <label class="form-label">สถานะ</label>
-        <select name="status" class="form-control">
+        <select name="status" class="form-control" style="height:42px;">
             <option value="">ทุกสถานะ</option>
             @php
                 $statusMap = [
@@ -35,10 +35,13 @@
             @endforeach
         </select>
     </div>
-    <button type="submit" class="btn btn-primary" style="height:42px;">
+    <button type="submit" class="btn btn-primary self-end" style="height:42px; border-radius:8px; display:inline-flex; align-items:center; gap:0.4rem; padding:0 1.25rem; white-space:nowrap;">
         <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        กรอง
+        <span>กรอง</span>
     </button>
+    @if(request('search') || request('status'))
+        <a href="{{ route('admin.activities.index') }}" class="btn btn-outline self-end" style="height:42px; border-radius:8px; display:inline-flex; align-items:center; padding:0 1rem; white-space:nowrap;">ล้าง</a>
+    @endif
 </form>
 
 {{-- ตารางกิจกรรม: ชื่อ, วันที่, สถานะ, ผู้สมัคร, ปุ่มจัดการ (ผู้เข้าร่วม / แก้ไข / ลบ) --}}

@@ -112,6 +112,10 @@ table th { font-weight: 600; color: #475569; background: #f8fafc; line-height: 1
 .flex-col { flex-direction: column; }
 .flex-wrap { flex-wrap: wrap; }
 .items-center { align-items: center; }
+.items-start { align-items: flex-start; }
+.items-end { align-items: flex-end; }
+.self-end { align-self: flex-end; }
+.self-center { align-self: center; }
 .justify-between { justify-content: space-between; }
 .justify-center { justify-content: center; }
 .flex-1 { flex: 1; }

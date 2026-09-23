@@ -173,4 +173,17 @@ class AdminPoliciesTest extends TestCase
         $response->assertRedirect();
         $this->assertDatabaseHas('attendances', ['id' => $attB->id, 'status' => 'approved']);
     }
+
+    public function test_admin_activities_index_search_form_renders_aligned_filter_button(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $response = $this->actingAs($admin)->get(route('admin.activities.index'));
+
+        $response->assertOk();
+        $response->assertSee('items-end');
+        $response->assertSee('self-end');
+        $response->assertSee('กรอง');
+    }
 }
+
