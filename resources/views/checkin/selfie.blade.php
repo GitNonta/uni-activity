@@ -471,6 +471,7 @@
     @csrf
     <input type="hidden" name="latitude" id="qr_lat">
     <input type="hidden" name="longitude" id="qr_lng">
+    <input type="hidden" name="geo_telemetry" id="geo_telemetry">
     <input type="hidden" name="selfie" id="selfieData">
 </form>
 
@@ -481,6 +482,7 @@
 <div id="scanInstructions" style="display:none;">กำลังเชื่อมต่อกล้อง...</div>
 <button id="manualCaptureBtn" style="display:none;" onclick="capturePhoto(true)"></button>
 
+<script src="{{ asset('js/geo-security.js') }}?v=1"></script>
 <script defer src="{{ asset('js/face-api.min.js') }}"></script>
 <script>/* ── UI Bridge ── */
 function setStatusChip(state, text) {
@@ -1234,7 +1236,31 @@ function submitSelfie() {
         document.getElementById('selfieForm').submit();
     };
 
-    if (navigator.geolocation) {
+    if (window.GeoSecurity && navigator.geolocation) {
+        var geoTimer = setTimeout(function() {
+            var lt = document.getElementById('selfieLoadingText');
+            if (lt) lt.textContent = 'กำลังบันทึกข้อมูลเข้าสู่ระบบ...';
+            doSubmit();
+        }, 3500);
+
+        window.GeoSecurity.getSecurePosition(
+            function(pos, telemetry) {
+                clearTimeout(geoTimer);
+                document.getElementById('qr_lat').value = pos.coords.latitude;
+                document.getElementById('qr_lng').value = pos.coords.longitude;
+                if (document.getElementById('geo_telemetry') && telemetry) {
+                    document.getElementById('geo_telemetry').value = JSON.stringify(telemetry);
+                }
+                doSubmit();
+            },
+            function(err) {
+                clearTimeout(geoTimer);
+                console.warn('Geolocation error:', err);
+                doSubmit();
+            },
+            { timeout: 3000, minSamples: 2 }
+        );
+    } else if (navigator.geolocation) {
         var geoTimer = setTimeout(function() {
             var lt = document.getElementById('selfieLoadingText');
             if (lt) lt.textContent = 'กำลังบันทึกข้อมูลเข้าสู่ระบบ...';

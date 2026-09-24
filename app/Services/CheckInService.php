@@ -28,6 +28,7 @@ class CheckInService
         private readonly FaceVerificationService $faceVerificationService,
         private readonly CheckInRiskScoringService $riskScoringService,
         private readonly QrCodeService $qrCodeService,
+        private readonly GeoSecurityService $geoSecurityService,
     ) {}
 
     /**
@@ -40,6 +41,7 @@ class CheckInService
         ?string $selfieBase64 = null,
         ?float $latitude = null,
         ?float $longitude = null,
+        ?string $telemetry = null,
     ): array {
         $isCheckoutToken = ($activity->qr_checkout_token === $token);
 
@@ -115,6 +117,10 @@ class CheckInService
                 $metaData['liveness_score']    = (float) ($faceResult['liveness_score'] ?? ($faceResult['liveness']['score'] ?? 1.0));
                 $metaData['liveness_passed']   = $livenessPassed;
             }
+        }
+
+        if ($telemetry !== null) {
+            $metaData['geo_telemetry'] = $telemetry;
         }
 
         // 3. ดำเนินการบันทึก Check-in ผ่าน processCheckIn ภายใต้ Database Transaction
@@ -380,11 +386,45 @@ class CheckInService
 
                     // ตรวจสอบ Geofence (พิกัด GPS)
                     $entryDistance = null;
+                    $isMockLocation = false;
                     if ($activity->hasGeolocation()) {
                         if ($latitude === null || $longitude === null) {
                             return [
                                 'success' => false,
                                 'message' => 'กิจกรรมนี้จำเป็นต้องระบุพิกัด GPS กรุณาเปิดการระบุตำแหน่งบนอุปกรณ์ของคุณ',
+                            ];
+                        }
+
+                        // ตรวจสอบ Anti-Mock Location / Fake GPS
+                        $telemetryJson = $metaData['geo_telemetry'] ?? request()->input('geo_telemetry');
+                        $geoCheck = $this->geoSecurityService->verify(
+                            $latitude,
+                            $longitude,
+                            is_string($telemetryJson) ? $telemetryJson : null,
+                            $user,
+                            $activity
+                        );
+
+                        if ($geoCheck['is_mock']) {
+                            $isMockLocation = true;
+                            $detail = $geoCheck['detail'] ?? 'ตรวจพบการใช้แอปพลิเคชันจำลองตำแหน่ง (Fake GPS)';
+                            $this->secService->logEvent(
+                                eventType: 'fake_gps_blocked',
+                                userId:    $user->id,
+                                request:   request(),
+                                details:   [
+                                    'activity_id' => $activity->id,
+                                    'reason'      => $geoCheck['reason'],
+                                    'detail'      => $detail,
+                                    'lat'         => $latitude,
+                                    'lng'         => $longitude,
+                                    'telemetry'   => $geoCheck['telemetry_data'],
+                                ]
+                            );
+
+                            return [
+                                'success' => false,
+                                'message' => "การระบุตำแหน่งไม่ถูกต้อง: {$detail} — ระบบไม่อนุญาตให้ใช้ตำแหน่งจำลอง",
                             ];
                         }
 
@@ -426,6 +466,7 @@ class CheckInService
                         'has_geolocation'      => $activity->hasGeolocation(),
                         'distance_meters'      => $entryDistance,
                         'radius_meters'        => (float) $activity->radius_meters,
+                        'is_mock_location'     => $isMockLocation,
                         'is_shared_device'     => $isSharedDevice,
                         'other_accounts_count' => $otherCount,
                         'is_registered'        => (bool) $registration,
@@ -521,7 +562,46 @@ class CheckInService
                 // ตรวจสอบ Geofence ขาออก
                 $exitDistance = null;
                 if ($activity->hasGeolocation() && $latitude !== null && $longitude !== null) {
+                    // ตรวจสอบ Anti-Mock Location / Fake GPS ขาออก
+                    $telemetryJson = $metaData['geo_telemetry'] ?? request()->input('geo_telemetry');
+                    $geoCheck = $this->geoSecurityService->verify(
+                        $latitude,
+                        $longitude,
+                        is_string($telemetryJson) ? $telemetryJson : null,
+                        $user,
+                        $activity
+                    );
+
+                    if ($geoCheck['is_mock']) {
+                        $detail = $geoCheck['detail'] ?? 'ตรวจพบการใช้แอปพลิเคชันจำลองตำแหน่ง (Fake GPS)';
+                        $this->secService->logEvent(
+                            eventType: 'fake_gps_blocked',
+                            userId:    $user->id,
+                            request:   request(),
+                            details:   [
+                                'activity_id' => $activity->id,
+                                'action'      => 'checkout',
+                                'reason'      => $geoCheck['reason'],
+                                'detail'      => $detail,
+                                'lat'         => $latitude,
+                                'lng'         => $longitude,
+                                'telemetry'   => $geoCheck['telemetry_data'],
+                            ]
+                        );
+
+                        return [
+                            'success' => false,
+                            'message' => "การระบุตำแหน่งไม่ถูกต้อง: {$detail} — ระบบไม่อนุญาตให้ใช้ตำแหน่งจำลอง",
+                        ];
+                    }
+
                     $exitDistance = $this->calculateDistance((float) $activity->latitude, (float) $activity->longitude, (float) $latitude, (float) $longitude);
+                    if ($exitDistance > $activity->radius_meters) {
+                        return [
+                            'success' => false,
+                            'message' => 'คุณอยู่นอกพื้นที่กิจกรรม (ห่าง ' . round($exitDistance) . ' ม. กำหนดไว้ไม่เกิน ' . $activity->radius_meters . ' ม.)',
+                        ];
+                    }
                 }
 
                 // ตัดสินใจเรื่อง Auto Approve ท้ายกิจกรรม

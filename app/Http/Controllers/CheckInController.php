@@ -129,6 +129,7 @@ class CheckInController extends Controller
                 $request->filled('selfie') ? (string) $request->selfie : null,
                 $request->filled('latitude') ? (float) $request->latitude : null,
                 $request->filled('longitude') ? (float) $request->longitude : null,
+                $request->filled('geo_telemetry') ? (string) $request->geo_telemetry : null,
             );
         });
 

@@ -21,6 +21,7 @@
                 @csrf
                 <input type="hidden" name="latitude" id="qr_lat">
                 <input type="hidden" name="longitude" id="qr_lng">
+                <input type="hidden" name="geo_telemetry" id="geo_telemetry">
                 @if(isset($isCheckoutToken) && $isCheckoutToken)
                     <button type="submit" class="btn btn-primary btn-lg btn-block" onclick="return submitQrWithLocation(event)">บันทึกออกงาน (รับชั่วโมง)</button>
                 @else
@@ -33,22 +34,51 @@
 @endsection
 
 @section('scripts')
+<script src="{{ asset('js/geo-security.js') }}?v=1"></script>
 <script>
 function submitQrWithLocation(e) {
     e.preventDefault();
     var form = document.getElementById('qrCheckinForm');
-    if (navigator.geolocation) {
+    var btn = e.currentTarget || form.querySelector('button[type="submit"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'กำลังตรวจสอบพิกัด...'; }
+
+    var submitted = false;
+    var doSubmit = function() {
+        if (submitted) return;
+        submitted = true;
+        form.submit();
+    };
+
+    if (window.GeoSecurity && navigator.geolocation) {
+        var safetyTimer = setTimeout(doSubmit, 3500);
+        window.GeoSecurity.getSecurePosition(
+            function(pos, telemetry) {
+                clearTimeout(safetyTimer);
+                document.getElementById('qr_lat').value = pos.coords.latitude;
+                document.getElementById('qr_lng').value = pos.coords.longitude;
+                if (document.getElementById('geo_telemetry') && telemetry) {
+                    document.getElementById('geo_telemetry').value = JSON.stringify(telemetry);
+                }
+                doSubmit();
+            },
+            function() {
+                clearTimeout(safetyTimer);
+                doSubmit();
+            },
+            { timeout: 3000, minSamples: 2 }
+        );
+    } else if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             function(pos) {
                 document.getElementById('qr_lat').value = pos.coords.latitude;
                 document.getElementById('qr_lng').value = pos.coords.longitude;
-                form.submit();
+                doSubmit();
             },
-            function() { form.submit(); },
-            { enableHighAccuracy: true, timeout: 10000 }
+            function() { doSubmit(); },
+            { enableHighAccuracy: true, timeout: 5000 }
         );
     } else {
-        form.submit();
+        doSubmit();
     }
     return false;
 }

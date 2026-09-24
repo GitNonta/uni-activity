@@ -62,24 +62,30 @@ class CheckInRiskScoringService
         // ── 2. Geolocation / GPS Factor (Max 25 pts) ──
         $hasGeo = (bool) ($factors['has_geolocation'] ?? false);
         if ($hasGeo) {
-            $distance = $factors['distance_meters'] ?? null;
-            $radius   = (float) ($factors['radius_meters'] ?? 100.0);
-
-            if ($distance === null) {
+            $isMockGeo = (bool) ($factors['is_mock_location'] ?? false);
+            if ($isMockGeo) {
                 $breakdown['geolocation_risk'] = 25;
-                $reasons[] = "ไม่พบพิกัด GPS สำหรับกิจกรรมที่กำหนด Geofence";
+                $reasons[] = "ตรวจพบการใช้งานแอปจำลองตำแหน่ง (Fake GPS / Mock Location)";
             } else {
-                $dist = (float) $distance;
-                if ($dist <= ($radius * 0.8)) {
-                    $breakdown['geolocation_risk'] = 0;
-                } elseif ($dist <= $radius) {
-                    $breakdown['geolocation_risk'] = 5;
-                } elseif ($dist <= ($radius * 1.5)) {
-                    $breakdown['geolocation_risk'] = 15;
-                    $reasons[] = "พิกัด GPS อยู่ใกล้ขอบเขตพื้นที่ (" . round($dist) . " ม. / กำหนด " . round($radius) . " ม.)";
-                } else {
+                $distance = $factors['distance_meters'] ?? null;
+                $radius   = (float) ($factors['radius_meters'] ?? 100.0);
+
+                if ($distance === null) {
                     $breakdown['geolocation_risk'] = 25;
-                    $reasons[] = "พิกัด GPS อยู่นอกพื้นที่กิจกรรม (" . round($dist) . " ม. / กำหนด " . round($radius) . " ม.)";
+                    $reasons[] = "ไม่พบพิกัด GPS สำหรับกิจกรรมที่กำหนด Geofence";
+                } else {
+                    $dist = (float) $distance;
+                    if ($dist <= ($radius * 0.8)) {
+                        $breakdown['geolocation_risk'] = 0;
+                    } elseif ($dist <= $radius) {
+                        $breakdown['geolocation_risk'] = 5;
+                    } elseif ($dist <= ($radius * 1.5)) {
+                        $breakdown['geolocation_risk'] = 15;
+                        $reasons[] = "พิกัด GPS อยู่ใกล้ขอบเขตพื้นที่ (" . round($dist) . " ม. / กำหนด " . round($radius) . " ม.)";
+                    } else {
+                        $breakdown['geolocation_risk'] = 25;
+                        $reasons[] = "พิกัด GPS อยู่นอกพื้นที่กิจกรรม (" . round($dist) . " ม. / กำหนด " . round($radius) . " ม.)";
+                    }
                 }
             }
         }
