@@ -380,7 +380,7 @@ class CheckInService
                             ];
                         }
 
-                        $entryDistance = $this->calculateDistance($activity->latitude, $activity->longitude, $latitude, $longitude);
+                        $entryDistance = $this->calculateDistance((float) $activity->latitude, (float) $activity->longitude, (float) $latitude, (float) $longitude);
                         if ($entryDistance > $activity->radius_meters) {
                             return [
                                 'success' => false,
@@ -513,7 +513,7 @@ class CheckInService
                 // ตรวจสอบ Geofence ขาออก
                 $exitDistance = null;
                 if ($activity->hasGeolocation() && $latitude !== null && $longitude !== null) {
-                    $exitDistance = $this->calculateDistance($activity->latitude, $activity->longitude, $latitude, $longitude);
+                    $exitDistance = $this->calculateDistance((float) $activity->latitude, (float) $activity->longitude, (float) $latitude, (float) $longitude);
                 }
 
                 // ตัดสินใจเรื่อง Auto Approve ท้ายกิจกรรม
@@ -553,8 +553,13 @@ class CheckInService
      * คำนวณระยะทางระหว่าง 2 จุดบนพื้นโลกด้วยสูตร Haversine
      * @return float ระยะทางหน่วยเมตร
      */
-    private function calculateDistance(float $lat1, float $lon1, float $lat2, float $lon2): float
+    private function calculateDistance(float|string|null $lat1, float|string|null $lon1, float|string|null $lat2, float|string|null $lon2): float
     {
+        $lat1 = (float) ($lat1 ?? 0.0);
+        $lon1 = (float) ($lon1 ?? 0.0);
+        $lat2 = (float) ($lat2 ?? 0.0);
+        $lon2 = (float) ($lon2 ?? 0.0);
+
         $earthRadius = 6371000; // รัศมีโลก (เมตร)
 
         $dLat = deg2rad($lat2 - $lat1);

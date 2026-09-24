@@ -41,7 +41,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 if ($whitelist) {
                     $allowedIps = array_map('trim', explode(',', $whitelist));
                     if (!in_array($request->ip(), $allowedIps, strict: true)) {
-                        return response()->view('errors::403', ['errors' => new \Illuminate\Support\ViewErrorBag, 'exception' => new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException('Access to admin panel is restricted.')], 403);
+                        $view = view()->exists('errors.403') ? 'errors.403' : (view()->exists('errors.500') ? 'errors.500' : null);
+                        return $view
+                            ? response()->view($view, ['errors' => new \Illuminate\Support\ViewErrorBag, 'exception' => new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException('Access to admin panel is restricted.')], 403)
+                            : response('Access to admin panel is restricted.', 403);
                     }
                 }
                 return $next($request);
@@ -123,10 +126,10 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Not Found'], 404);
             }
-            return response()->view('errors::404', [
-                'errors' => new \Illuminate\Support\ViewErrorBag,
-                'exception' => $e,
-            ], 404);
+            $view = view()->exists('errors.404') ? 'errors.404' : (view()->exists('errors.500') ? 'errors.500' : null);
+            return $view
+                ? response()->view($view, ['errors' => new \Illuminate\Support\ViewErrorBag, 'exception' => $e], 404)
+                : response('Not Found', 404);
         });
 
         // Custom 403 page
@@ -134,10 +137,10 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Forbidden'], 403);
             }
-            return response()->view('errors::403', [
-                'errors' => new \Illuminate\Support\ViewErrorBag,
-                'exception' => $e,
-            ], 403);
+            $view = view()->exists('errors.403') ? 'errors.403' : (view()->exists('errors.500') ? 'errors.500' : null);
+            return $view
+                ? response()->view($view, ['errors' => new \Illuminate\Support\ViewErrorBag, 'exception' => $e], 403)
+                : response('Forbidden', 403);
         });
 
         // Custom error page for any unhandled exception
@@ -170,20 +173,20 @@ return Application::configure(basePath: dirname(__DIR__))
                         },
                     ], $statusCode);
                 }
-                return response()->view('errors::' . $statusCode, [
-                    'errors' => new \Illuminate\Support\ViewErrorBag,
-                    'exception' => $e,
-                ], $statusCode);
+                $view = view()->exists("errors.{$statusCode}") ? "errors.{$statusCode}" : (view()->exists('errors.500') ? 'errors.500' : null);
+                return $view
+                    ? response()->view($view, ['errors' => new \Illuminate\Support\ViewErrorBag, 'exception' => $e], $statusCode)
+                    : response($e->getMessage() ?: 'Error', $statusCode);
             }
 
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Server Error'], 500);
             }
-            $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
-            return response()->view('errors::' . $statusCode, [
-                'errors' => new \Illuminate\Support\ViewErrorBag,
-                'exception' => $e,
-            ], $statusCode);
+            $statusCode = method_exists($e, 'getStatusCode') ? (int) $e->getStatusCode() : 500;
+            $view = view()->exists("errors.{$statusCode}") ? "errors.{$statusCode}" : (view()->exists('errors.500') ? 'errors.500' : null);
+            return $view
+                ? response()->view($view, ['errors' => new \Illuminate\Support\ViewErrorBag, 'exception' => $e], $statusCode)
+                : response('Server Error', $statusCode);
         });
 
         // ❌ FIX: Handle Redis connection failures gracefully — prevent 500 on every page
@@ -208,9 +211,9 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json(['message' => 'CSRF token mismatch.'], 419);
             }
 
-            return response()->view('errors::419', [
-                'errors' => new \Illuminate\Support\ViewErrorBag,
-                'exception' => $e,
-            ], 419);
+            $view = view()->exists('errors.419') ? 'errors.419' : (view()->exists('errors.500') ? 'errors.500' : null);
+            return $view
+                ? response()->view($view, ['errors' => new \Illuminate\Support\ViewErrorBag, 'exception' => $e], 419)
+                : response('CSRF token mismatch.', 419);
         });
     })->create();

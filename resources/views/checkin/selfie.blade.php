@@ -25,7 +25,7 @@
         /* Full-screen camera on EVERY device (phone + tablet + desktop):
            the old split side-panel layout is retired; the camera fills the
            viewport and all controls float over it. */
-        .camera-area { position:absolute; inset:0; background:#000; }
+        .camera-area { position:absolute; inset:0; background:linear-gradient(135deg, #0a1628 0%, #0f2040 100%); }
         .side-panel { display:none !important; }
 
         /* Desktop / tablet split-panel media queries removed — full-screen for all */
@@ -394,6 +394,18 @@
 </div>
 <script>setTimeout(function() { window.location.href = "{{ route('activities.show', $activity) }}"; }, 5500);</script>
 @endif
+
+<!-- ── PROCESSING / LOADING OVERLAY ── -->
+<div id="selfieLoadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(10,22,40,0.88);backdrop-filter:blur(12px);z-index:9990;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:1.5rem;">
+    <div style="width:68px;height:68px;border-radius:50%;background:rgba(234,88,12,0.15);border:1px solid rgba(234,88,12,0.4);display:flex;align-items:center;justify-content:center;margin-bottom:1.25rem;">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite;">
+            <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
+            <path d="M12 2a10 10 0 0 1 10 10"/>
+        </svg>
+    </div>
+    <p id="selfieLoadingTitle" style="font-size:1.15rem;font-weight:700;color:#ffffff;margin-bottom:0.5rem;">กำลังประมวลผลการเช็คอิน...</p>
+    <p id="selfieLoadingText" style="font-size:0.875rem;color:rgba(255,255,255,0.7);max-width:300px;line-height:1.5;">กำลังตรวจสอบพิกัด GPS และส่งข้อมูลไปยังระบบ</p>
+</div>
 
 <form id="selfieForm" method="POST" action="{{ route('checkin.store', $token) }}" style="display:none;">
     @csrf
@@ -952,9 +964,42 @@ function showStatus(msg,type) {
     setStatusChip(typeMap[type]||'connecting',msg);
 }
 function submitSelfie() {
-    var btn=document.getElementById('submitBtn');btn.disabled=true;btn.textContent='กำลังบันทึก...';
-    if(navigator.geolocation){navigator.geolocation.getCurrentPosition(function(pos){document.getElementById('qr_lat').value=pos.coords.latitude;document.getElementById('qr_lng').value=pos.coords.longitude;document.getElementById('selfieForm').submit();},function(){document.getElementById('selfieForm').submit();},{enableHighAccuracy:true,timeout:5000});}
-    else{document.getElementById('selfieForm').submit();}
+    var overlay = document.getElementById('selfieLoadingOverlay');
+    if (overlay) overlay.style.display = 'flex';
+    var btn = document.getElementById('submitBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'กำลังบันทึก...'; }
+
+    var submitted = false;
+    var doSubmit = function() {
+        if (submitted) return;
+        submitted = true;
+        document.getElementById('selfieForm').submit();
+    };
+
+    if (navigator.geolocation) {
+        var geoTimer = setTimeout(function() {
+            var lt = document.getElementById('selfieLoadingText');
+            if (lt) lt.textContent = 'กำลังบันทึกข้อมูลเข้าสู่ระบบ...';
+            doSubmit();
+        }, 3500);
+
+        navigator.geolocation.getCurrentPosition(
+            function(pos) {
+                clearTimeout(geoTimer);
+                document.getElementById('qr_lat').value = pos.coords.latitude;
+                document.getElementById('qr_lng').value = pos.coords.longitude;
+                doSubmit();
+            },
+            function(err) {
+                clearTimeout(geoTimer);
+                console.warn('Geolocation error:', err);
+                doSubmit();
+            },
+            { enableHighAccuracy: true, timeout: 3000, maximumAge: 10000 }
+        );
+    } else {
+        doSubmit();
+    }
 }
 </script>
 </body>
