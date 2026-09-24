@@ -15,20 +15,20 @@
     </div>
 </div>
 
-{{-- Navigation Tabs for Settings & Privacy --}}
+{{-- Navigation Tabs for Settings & Profile --}}
 <div style="display:flex; gap:0.5rem; border-bottom:1px solid #e2e8f0; margin-bottom:1.5rem;">
-    <a href="{{ route('admin.settings.index', ['tab' => 'privacy']) }}" style="padding:0.75rem 1.25rem; font-weight:600; font-size:0.9rem; text-decoration:none; border-bottom: 2px solid {{ in_array($activeTab, ['privacy', 'profile']) ? '#c2410c' : 'transparent' }}; color: {{ in_array($activeTab, ['privacy', 'profile']) ? '#c2410c' : '#475569' }}; display:flex; align-items:center; gap:0.5rem; line-height:1.5;">
-        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-        ตั้งค่าความเป็นส่วนตัว & ข้อมูลส่วนตัว
-    </a>
     <a href="{{ route('admin.settings.index', ['tab' => 'general']) }}" style="padding:0.75rem 1.25rem; font-weight:600; font-size:0.9rem; text-decoration:none; border-bottom: 2px solid {{ $activeTab === 'general' ? '#c2410c' : 'transparent' }}; color: {{ $activeTab === 'general' ? '#c2410c' : '#475569' }}; display:flex; align-items:center; gap:0.5rem; line-height:1.5;">
         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
         ตั้งค่าทั่วไป & SSO
     </a>
+    <a href="{{ route('admin.settings.index', ['tab' => 'privacy']) }}" style="padding:0.75rem 1.25rem; font-weight:600; font-size:0.9rem; text-decoration:none; border-bottom: 2px solid {{ in_array($activeTab, ['privacy', 'profile']) ? '#c2410c' : 'transparent' }}; color: {{ in_array($activeTab, ['privacy', 'profile']) ? '#c2410c' : '#475569' }}; display:flex; align-items:center; gap:0.5rem; line-height:1.5;">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        ข้อมูลส่วนตัวผู้ดูแล & รหัสผ่าน
+    </a>
 </div>
 
 @if(in_array($activeTab, ['privacy', 'api-keys', 'profile']))
-    {{-- 🔒 แท็บตั้งค่าความเป็นส่วนตัว & ข้อมูลส่วนตัว (ฟอร์มที่ย้ายมาจากโปรไฟล์) --}}
+    {{-- แท็บตั้งค่าข้อมูลส่วนตัวผู้ดูแล & รหัสผ่าน --}}
     <div style="display:flex; flex-direction:column; gap:1.5rem; max-width: 900px;">
         <form method="POST" action="{{ route('admin.profile.update') }}">
             @csrf
@@ -150,72 +150,26 @@
                 </div>
             </div>
 
-            {{-- 3. API Keys & Tokens (ตั้งค่าความเป็นส่วนตัว) --}}
-            <div class="card mb-6" style="border-radius:12px;">
-                <div class="card-header" style="padding:1rem 1.5rem;">
-                    <div class="flex items-center gap-2">
-                        <svg style="width:20px; height:20px; color:#059669;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+            {{-- 3. ลิงก์เชื่อมโยงไปยังการจัดการ API Keys --}}
+            <div class="card mb-6" style="border-radius:12px; border:1px solid #e2e8f0; background:#f8fafc;">
+                <div class="card-body" style="padding:1.25rem 1.5rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+                    <div style="display:flex; align-items:center; gap:0.875rem;">
+                        <div style="width:40px; height:40px; border-radius:10px; background:#eff6ff; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                            <svg style="width:20px; height:20px; color:#2563eb;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                            </svg>
+                        </div>
                         <div>
-                            <h3 class="font-semi" style="font-size:1rem;">API Keys & Tokens (ตั้งค่าความเป็นส่วนตัว)</h3>
-                            <p class="text-xs text-muted mt-0.5" style="font-weight:normal;">จัดการ Personal Access Token สำหรับการเชื่อมต่อแอปพลิเคชันหรือระบบภายนอกอย่างปลอดภัย</p>
+                            <h4 style="font-weight:700; font-size:0.925rem; color:#1e293b; margin:0;">จัดการ Personal Access Tokens & คีย์ API</h4>
+                            <p style="font-size:0.8rem; color:#64748b; margin:0.2rem 0 0 0;">สร้างและเพิกถอน Token สำหรับเชื่อมต่อภายนอกหรือ Web API ได้ที่เมนูคีย์ API โดยเฉพาะ</p>
                         </div>
                     </div>
-                </div>
-                <div class="card-body" style="padding:1.5rem;">
-                    @if(session('new_token'))
-                        <div style="background:#ecfdf5; border:1px solid #a7f3d0; border-radius:8px; padding:1rem; margin-bottom:1.25rem;">
-                            <div style="font-weight:700; color:#065f46; font-size:0.9rem; margin-bottom:0.35rem; display:flex; align-items:center; gap:6px;">
-                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
-                                <span>Token ใหม่ถูกสร้างเรียบร้อยแล้ว:</span>
-                            </div>
-                            <div style="font-family:monospace; background:#ffffff; padding:0.6rem 0.8rem; border-radius:6px; border:1px solid #6ee7b7; color:#047857; font-size:0.85rem; word-break:break-all;">
-                                {{ session('new_token') }}
-                            </div>
-                            <p style="font-size:0.75rem; color:#047857; margin-top:0.35rem; font-weight:500; display:flex; align-items:center; gap:4px;">
-                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                                <span>กรุณาคัดลอก Token นี้เก็บไว้ทันที เนื่องจากระบบจะแสดงเพียงครั้งเดียวเพื่อความปลอดภัย</span>
-                            </p>
-                        </div>
-                    @endif
-
-                    <div style="overflow-x:auto;">
-                        <table class="table" style="width:100%; font-size:0.85rem; border-collapse:collapse;">
-                            <thead>
-                                <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0; text-align:left;">
-                                    <th style="padding:0.6rem 0.75rem; color:#475569; font-weight:600;">ชื่อ Token</th>
-                                    <th style="padding:0.6rem 0.75rem; color:#475569; font-weight:600;">ใช้งานล่าสุด</th>
-                                    <th style="padding:0.6rem 0.75rem; color:#475569; font-weight:600;">วันที่สร้าง</th>
-                                    <th style="padding:0.6rem 0.75rem; color:#475569; font-weight:600; text-align:right;">การจัดการ</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($tokens ?? [] as $token)
-                                    <tr style="border-bottom:1px solid #f1f5f9;">
-                                        <td style="padding:0.65rem 0.75rem; font-weight:600; color:#1e293b;">{{ $token->name }}</td>
-                                        <td style="padding:0.65rem 0.75rem; color:#64748b;">{{ $token->last_used_at ? $token->last_used_at->diffForHumans() : 'ยังไม่เคยใช้งาน' }}</td>
-                                        <td style="padding:0.65rem 0.75rem; color:#64748b;">{{ $token->created_at ? $token->created_at->format('d/m/Y H:i') : '-' }}</td>
-                                        <td style="padding:0.65rem 0.75rem; text-align:right;">
-                                            <button type="button" onclick="event.preventDefault(); if(confirm('ยืนยันลบ API Key นี้?')) document.getElementById('delete-token-{{ $token->id }}').submit();" style="background:none; border:none; color:#ef4444; font-size:0.8rem; cursor:pointer; font-weight:500;">
-                                                ลบ Token
-                                            </button>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="4">
-                                            <div class="empty-state-row" style="padding:2rem 1rem;">
-                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
-                                                </svg>
-                                                <div class="empty-state-row-title">ยังไม่มีการสร้าง API Key ในระบบ</div>
-                                                <div class="empty-state-row-desc">สร้าง Token ด้านบนเพื่อเชื่อมต่อกับระบบภายนอก</div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+                    <a href="{{ route('admin.api-keys.index') }}" class="btn btn-outline" style="display:inline-flex; align-items:center; gap:0.4rem; font-size:0.85rem; font-weight:600; padding:0.5rem 1rem; border-radius:8px; text-decoration:none;">
+                        <span>ไปยังหน้าจัดการคีย์ API</span>
+                        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </a>
                 </div>
             </div>
 
@@ -228,12 +182,6 @@
                 </button>
             </div>
         </form>
-        @foreach($tokens ?? [] as $token)
-            <form id="delete-token-{{ $token->id }}" action="{{ route('admin.api-keys.destroy', $token->id) }}" method="POST" style="display:none;">
-                @csrf
-                @method('DELETE')
-            </form>
-        @endforeach
     </div>
 @else
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; align-items: start;">

@@ -7,13 +7,16 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 use Laravel\Sanctum\PersonalAccessToken;
 
 class ApiKeyController extends Controller
 {
-    public function index(): RedirectResponse
+    public function index(): View
     {
-        return redirect()->route('admin.settings.index', ['tab' => 'api-keys']);
+        $tokens = auth()->user()->tokens()->latest()->get();
+
+        return view('admin.api-keys.index', compact('tokens'));
     }
 
     public function store(Request $request): RedirectResponse
