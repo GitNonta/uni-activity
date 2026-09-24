@@ -119,7 +119,7 @@ pca_reducer = None       # Optional[PCA] — stays None until re-fit on fdx corp
 fdx_backend: Optional[FdxBackend] = None  # fdx D3D11 embedder (activity-check decoder)
 depth_liveness: Optional[DepthLivenessAnalyzer] = None  # depth-stream signal (optional)
 
-LIVENESS_THRESHOLD = float(os.environ.get("LIVENESS_THRESHOLD", "0.58"))
+LIVENESS_THRESHOLD = float(os.environ.get("LIVENESS_THRESHOLD", "0.65"))
 # insightface-fallback match threshold. Both embedders share the w600k_mbf
 # space, so this and FDX_MATCH_THRESHOLD live on the same score scale.
 # Calibrated on 100 ground-truth CelebA identities (face_dx/
@@ -891,11 +891,16 @@ async def verify_face(
 
     if check_liveness and liveness_detector is not None and USE_LIVENESS:
         try:
-            # Crop aligned face for liveness analysis
-            face_crop = crop_aligned_face(work_img, face) if face is not None else work_img
-            landmarks = face.kps if (face is not None and hasattr(face, "kps")) else None
+            # Crop aligned face for liveness analysis with relative landmark coordinates
+            if face is not None:
+                full_box = get_full_face_bbox(face, work_img.shape)
+                face_crop = work_img[full_box[1]:full_box[3], full_box[0]:full_box[2]]
+                landmarks_rel = (face.kps - np.array([full_box[0], full_box[1]])) if hasattr(face, "kps") and face.kps is not None else None
+            else:
+                face_crop = work_img
+                landmarks_rel = None
 
-            liv_result: LivenessResult = liveness_detector.check(face_crop, landmarks)
+            liv_result: LivenessResult = liveness_detector.check(face_crop, landmarks_rel)
             liveness_passed = liv_result.is_live
             liveness_score  = liv_result.liveness_score
             liveness_checks = liv_result.checks
@@ -934,6 +939,16 @@ async def verify_face(
         msg = f"Face verified ✓ ({score_pct:.1f}%) — Liveness confirmed"
     elif not is_match:
         msg = f"Face does not match ({score_pct:.1f}%)"
+    elif not liveness_passed:
+        rej = liveness_checks.get("rejection_reason") or "photo_attack"
+        if rej == "screen_moire_detected":
+            msg = f"Face matches ({score_pct:.1f}%) but liveness check failed (Screen moiré detected)"
+        elif rej == "glass_glare_detected":
+            msg = f"Face matches ({score_pct:.1f}%) but liveness check failed (Screen glass glare detected)"
+        elif rej == "color_gamut_rejected":
+            msg = f"Face matches ({score_pct:.1f}%) but liveness check failed (Photo/Color gamut rejected)"
+        else:
+            msg = f"Face matches ({score_pct:.1f}%) but liveness check failed (possible photo attack)"
     elif not depth_checks.get("available", False):
         msg = f"Face matches ({score_pct:.1f}%) but liveness check failed"
     elif depth_checks.get("motion_ok", True):

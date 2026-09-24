@@ -1,35 +1,36 @@
 """
-Passive Liveness Detection Module
-====================================
-ตรวจว่าใบหน้าที่สแกนเป็น "คนจริง" หรือ "ภาพถ่าย/จอ"
-โดยใช้เทคนิค Passive (ไม่ต้องให้ผู้ใช้ทำอะไรเพิ่ม):
+Passive Liveness & Anti-Spoofing Detection Engine
+=================================================
+ตรวจจับการโจมตีด้วยภาพถ่ายและหน้าจอดิจิทัล (Presentation Attack Detection - ISO/IEC 30107-3)
+ป้องกันการสแกนรูปจากรูปถ่าย, กระดาษพิมพ์, และหน้าจอสมาร์ทโฟน/แท็บเล็ต:
 
-1. LBP Texture Analysis  — ผิวจริงมี micro-texture ที่พิมพ์ไม่ได้
-2. FFT Frequency Analysis — ภาพถ่ายจากจอ/สิ่งพิมพ์มี pattern ซ้ำๆ
-3. Eye Aspect Ratio (EAR) — ตาต้องเปิดอยู่ (ภาพนิ่งไม่กระพริบ)
-4. Color Channel Variance — ใบหน้าจริงมีสีสมดุลกว่าภาพพิมพ์
-
-ผลลัพธ์: liveness_score (0-1), is_live (bool), per-check breakdown
+1. 2D FFT Screen Moiré & Harmonic Peak Analysis (วิเคราะห์คลื่นแทรกสอดจากพิกเซลจอ LCD/OLED)
+2. Specular Screen Glare & Glass Reflection (ตรวจแสงสะท้อนจอกระจกและขอบสะท้อนแสง)
+3. Color Gamut & YCbCr Skin Locus (ตรวจช่วงสีผิวจริง ป้องกันจอเร่งแสงสีฟ้า และภาพพิมพ์สีเพี้ยน)
+4. LBP & Gradient Micro-Texture (วิเคราะห์ความละเอียดพื้นผิวผิวหนังจริง)
+5. True Eye Morphology & Contrast (วิเคราะห์ม่านตาและตาขาว)
 """
 
 from __future__ import annotations
 import numpy as np
 import cv2
 import logging
+import os
 from dataclasses import dataclass, field
+from typing import Optional
 
 logger = logging.getLogger("Liveness")
 
-
 # ─────────────────────────────────────────────
-# Config — ปรับ threshold ได้ตาม environment
+# Config & Thresholds
 # ─────────────────────────────────────────────
-TEXTURE_WEIGHT   = 0.40   # LBP texture
-FREQUENCY_WEIGHT = 0.30   # FFT high-freq ratio
-EAR_WEIGHT       = 0.20   # Eye openness
-COLOR_WEIGHT     = 0.10   # Channel variance
+TEXTURE_WEIGHT   = 0.25   # LBP / gradient micro-texture
+MOIRE_WEIGHT     = 0.30   # 2D FFT screen moire / periodic artifact
+GLARE_WEIGHT     = 0.15   # Specular glass / screen glare
+COLOR_WEIGHT     = 0.15   # YCbCr skin locus & dynamic range
+EYE_WEIGHT       = 0.15   # Eye contrast & morphology
 
-LIVENESS_THRESHOLD = 0.58  # ต่ำกว่านี้ = ถ่ายรูป/จอ
+LIVENESS_THRESHOLD = 0.65  # Calibrated threshold (rejects < 0.65)
 
 
 @dataclass
@@ -37,250 +38,243 @@ class LivenessResult:
     is_live: bool
     liveness_score: float
     texture_score: float
-    frequency_score: float
-    ear_score: float          # 0 = ตาปิด, 1 = ตาเปิด
+    frequency_score: float    # Moire / frequency score
+    ear_score: float          # Eye morphology / contrast score
     color_score: float
+    glare_score: float
     message: str
+    rejection_reason: Optional[str] = None
     checks: dict = field(default_factory=dict)
 
 
 # ─────────────────────────────────────────────
-# 1. LBP Texture Analysis
+# 1. 2D FFT Screen Moiré & Periodic Artifact
 # ─────────────────────────────────────────────
-def compute_lbp(gray: np.ndarray, radius: int = 1, n_points: int = 8) -> np.ndarray:
+def detect_screen_moire(gray: np.ndarray) -> tuple[float, float]:
     """
-    Local Binary Pattern — วัด micro-texture ของผิวหน้า
-    ผิวจริง: สม่ำเสมอ, gradient นุ่ม
-    ภาพพิมพ์/จอ: noise pattern สูง, พิกเซลเป็นกลุ่ม
-    """
-    rows, cols = gray.shape
-    lbp = np.zeros_like(gray, dtype=np.uint8)
-
-    for i in range(radius, rows - radius):
-        for j in range(radius, cols - radius):
-            center = gray[i, j]
-            code = 0
-            for k in range(n_points):
-                angle = 2 * np.pi * k / n_points
-                x = int(round(i + radius * np.cos(angle)))
-                y = int(round(j + radius * np.sin(angle)))
-                x = np.clip(x, 0, rows - 1)
-                y = np.clip(y, 0, cols - 1)
-                if gray[x, y] >= center:
-                    code |= (1 << k)
-            lbp[i, j] = code
-
-    return lbp
-
-
-def lbp_texture_score(face_img: np.ndarray) -> float:
-    """
-    คำนวณ texture uniformity score
-    ใบหน้าจริง: LBP histogram มี entropy ปานกลาง (สม่ำเสมอ)
-    ภาพจากจอ: entropy สูง (noisy) หรือ ต่ำมาก (oversaturated)
-    คืนค่า: 0-1 (1 = likely real)
+    วิเคราะห์ 2D Fourier Power Spectrum หาคลื่น Moiré ที่เกิดจากตาราง Subpixel ของหน้าจอ (LCD/OLED)
+    ภาพจริง: การกระจายตัวของพลังงานเป็นแบบ 1/f Smooth Falloff
+    ภาพจากจอ: มี Spike หรือ Harmonic Peaks นอกแกน DC ชัดเจน
+    คืนค่า: (score 0-1, peak_ratio)
     """
     try:
-        # Resize ให้เล็กก่อน ประหยัด CPU
-        small = cv2.resize(face_img, (64, 64))
-        gray = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY) if len(small.shape) == 3 else small
+        small = cv2.resize(gray, (96, 96))
+        f = np.fft.fft2(small.astype(np.float32))
+        fshift = np.fft.fftshift(f)
+        mag = np.abs(fshift)
 
-        # ใช้ OpenCV built-in LBP approximation ผ่าน gradient variance
-        # (LBP แบบ loop ช้าไป บน Termux ใช้ gradient แทน)
-        laplacian = cv2.Laplacian(gray, cv2.CV_64F)
-        var = laplacian.var()
+        h, w = mag.shape
+        cy, cx = h // 2, w // 2
+        y, x = np.ogrid[:h, :w]
+        dc_mask = (x - cx)**2 + (y - cy)**2 <= 8**2
 
-        # Calibrate: ผิวจริงมี variance ~200-1500
-        # จอ/สิ่งพิมพ์: ต่ำมาก (<100) หรือสูงมาก (>3000)
-        if var < 50:
-            score = 0.2   # flat/blurry = likely photo on glass
-        elif var < 100:
-            score = 0.45
-        elif var < 200:
-            score = 0.65  # borderline
-        elif var < 1800:
-            score = 0.85  # normal skin texture
+        mag_no_dc = mag.copy()
+        mag_no_dc[dc_mask] = 0.0
+
+        sorted_peaks = np.sort(mag_no_dc.flatten())[-20:]
+        median_val = np.median(mag_no_dc[~dc_mask])
+        peak_ratio = float(np.mean(sorted_peaks) / (median_val + 1e-5))
+
+        # Calibrated peak ratio on screen replay vs real skin
+        if peak_ratio > 20.0:
+            score = 0.15  # Heavy screen moire detected
+        elif peak_ratio > 17.0:
+            score = 0.38  # Screen artifact likely
+        elif peak_ratio > 15.5:
+            score = 0.65  # Borderline
         else:
-            score = 0.50  # too noisy (might be low-light + grain)
+            score = 0.92  # Natural skin spectrum
 
-        logger.debug(f"LBP gradient variance: {var:.1f} → score: {score:.2f}")
-        return float(score)
-
+        return float(score), round(peak_ratio, 2)
     except Exception as e:
-        logger.warning(f"LBP texture error: {e}")
-        return 0.5  # neutral if error
+        logger.warning(f"Moire detection error: {e}")
+        return 0.60, 0.0
 
 
 # ─────────────────────────────────────────────
-# 2. FFT Frequency Analysis
+# 2. Specular Screen Glare & Glass Reflection
 # ─────────────────────────────────────────────
-def fft_frequency_score(face_img: np.ndarray) -> float:
+def detect_specular_glare(face_bgr: np.ndarray, gray: np.ndarray) -> tuple[float, float]:
     """
-    วิเคราะห์ high-frequency content ด้วย FFT
-    ผิวจริง: high-freq content กระจายสม่ำเสมอ
-    ภาพจากจอ/พิมพ์: มี moiré pattern → spike ใน FFT spectrum
-    คืนค่า: 0-1 (1 = likely real)
+    ตรวจจับแสงสะท้อนจอกระจกสมาร์ทโฟน/แท็บเล็ต หรือผิวกระดาษอัดรูปมันวาว
+    ผิวกระจกจอ: มีจุดอิ่มตัวสีขาว (Y > 240) ที่มีขอบชันมาก (high gradient boundary)
+    ผิวจริง: แสงตกกระทบจะกระจายแบบ Subsurface Scattering ขอบนุ่ม
+    คืนค่า: (score 0-1, sharpness)
     """
     try:
-        small = cv2.resize(face_img, (64, 64))
-        gray = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY) if len(small.shape) == 3 else small
-        gray_f = np.float32(gray)
+        h, w = gray.shape
+        bright_mask = gray > 240
+        num_bright = int(np.sum(bright_mask))
+        bright_ratio = num_bright / float(h * w)
 
-        # FFT
-        fft = np.fft.fft2(gray_f)
-        fft_shift = np.fft.fftshift(fft)
-        magnitude = np.log(np.abs(fft_shift) + 1)
+        if bright_ratio > 0.002:  # มีจุดสว่างจ้าเกิน 0.2% ของใบหน้า
+            lap = cv2.Laplacian(gray, cv2.CV_64F)
+            lap_bright = float(np.mean(np.abs(lap)[bright_mask]))
 
-        # แบ่ง low / high frequency zones
-        h, w = magnitude.shape
-        center_h, center_w = h // 2, w // 2
-        radius_low = 8  # Low-freq zone
+            if lap_bright > 18.0:
+                score = 0.20  # Sharp glare boundary typical of screen glass
+            elif lap_bright > 10.0:
+                score = 0.45  # Glare present
+            else:
+                score = 0.75  # Soft natural highlight
+            return float(score), round(lap_bright, 2)
 
-        mask_low = np.zeros((h, w), dtype=bool)
-        for i in range(h):
-            for j in range(w):
-                if (i - center_h)**2 + (j - center_w)**2 <= radius_low**2:
-                    mask_low[i, j] = True
+        return 0.90, 0.0  # No harsh glass glare
+    except Exception as e:
+        logger.warning(f"Specular glare error: {e}")
+        return 0.70, 0.0
 
-        low_energy  = magnitude[mask_low].mean()
-        high_energy = magnitude[~mask_low].mean()
 
-        if low_energy == 0:
-            return 0.5
+# ─────────────────────────────────────────────
+# 3. YCbCr Skin Locus & Dynamic Range Analysis
+# ─────────────────────────────────────────────
+def analyze_color_locus(face_bgr: np.ndarray) -> tuple[float, dict]:
+    """
+    วิเคราะห์การกระจายตัวของสีใน YCbCr Color Space และ Dynamic Range
+    ผิวคนจริง: Cb อยู่ระหว่าง 77-127, Cr อยู่ระหว่าง 133-173, และ Cr > Cb เสมอ
+    จอแสดงผล: มักมีสัดส่วนแสงสีฟ้า (Blue Channel) สูงผิดปกติจากการเร่งหลอด LED
+    ภาพพิมพ์กระดาษ: มี Contrast และ Dynamic Range ต่ำ ดำไม่สนิท
+    """
+    try:
+        if len(face_bgr.shape) != 3:
+            return 0.50, {}
 
-        ratio = high_energy / low_energy
+        b, g, r = cv2.split(face_bgr)
+        r_mean, g_mean, b_mean = float(r.mean()), float(g.mean()), float(b.mean())
+        blue_ratio = b_mean / (r_mean + 1e-5)
 
-        # ภาพจริง: ratio ปกติ 0.4-0.75
-        # ภาพจากจอ: ratio ต่ำ (<0.3) เพราะโลว์ฟรีค dominate
-        if ratio < 0.20:
-            score = 0.2
-        elif ratio < 0.35:
-            score = 0.50
-        elif ratio < 0.45:
-            score = 0.70
-        elif ratio < 0.80:
-            score = 0.90  # sweet spot
+        ycbcr = cv2.cvtColor(face_bgr, cv2.COLOR_BGR2YCrCb)
+        y_chan = ycbcr[:, :, 0]
+        cr = ycbcr[:, :, 1]
+        cb = ycbcr[:, :, 2]
+
+        skin_mask = (cr > 133) & (cr < 173) & (cb > 77) & (cb < 127) & (cr > cb)
+        skin_pct = float(np.mean(skin_mask))
+
+        y_p5, y_p95 = float(np.percentile(y_chan, 5)), float(np.percentile(y_chan, 95))
+        dyn_range = y_p95 - y_p5
+
+        score = 0.88
+        penalty_reasons = []
+
+        if blue_ratio > 0.92:
+            score -= 0.35
+            penalty_reasons.append("high_blue_bias")
+        if skin_pct < 0.30:
+            score -= 0.25
+            penalty_reasons.append("non_skin_locus")
+        if dyn_range < 75:
+            score -= 0.30
+            penalty_reasons.append("compressed_dynamic_range")
+
+        score = float(np.clip(score, 0.15, 1.0))
+        details = {
+            "skin_pct": round(skin_pct, 3),
+            "blue_ratio": round(blue_ratio, 3),
+            "dyn_range": round(dyn_range, 1),
+            "penalties": penalty_reasons,
+        }
+        return score, details
+    except Exception as e:
+        logger.warning(f"Color locus error: {e}")
+        return 0.50, {}
+
+
+# ─────────────────────────────────────────────
+# 4. LBP & Gradient Micro-Texture
+# ─────────────────────────────────────────────
+def analyze_texture(gray: np.ndarray) -> tuple[float, float]:
+    """
+    คำนวณ micro-texture ของผิวหน้าผ่าน Laplacian Variance
+    ผิวจริง: variance สม่ำเสมอ ~150-1600
+    ภาพพิมพ์/จอ: ต่ำมาก (<60, เบลอ/แบน) หรือสูงมาก (>2800, เม็ดสกรีน)
+    """
+    try:
+        small = cv2.resize(gray, (96, 96))
+        lap = cv2.Laplacian(small, cv2.CV_64F)
+        var = float(lap.var())
+
+        if var < 60:
+            score = 0.20  # Flat / blurred photo
+        elif var < 150:
+            score = 0.55  # Borderline low texture
+        elif var < 1600:
+            score = 0.88  # Normal living skin texture
+        elif var < 2800:
+            score = 0.60  # Noisy / low light
         else:
-            score = 0.65  # very high freq = possible noise
+            score = 0.35  # Extreme pixel grid / moire noise
 
-        logger.debug(f"FFT high/low ratio: {ratio:.3f} → score: {score:.2f}")
-        return float(score)
-
+        return float(score), round(var, 1)
     except Exception as e:
-        logger.warning(f"FFT frequency error: {e}")
-        return 0.5
+        logger.warning(f"Texture analysis error: {e}")
+        return 0.50, 0.0
 
 
 # ─────────────────────────────────────────────
-# 3. Eye Aspect Ratio (EAR)
+# 5. Eye Morphology & Iris-Sclera Contrast
 # ─────────────────────────────────────────────
-def eye_aspect_ratio_score(face_img: np.ndarray, landmarks_5pt: np.ndarray | None = None) -> float:
+def analyze_eye_morphology(gray: np.ndarray, landmarks_5pt: np.ndarray | None) -> tuple[float, float]:
     """
-    ตรวจว่าตาเปิดอยู่หรือไม่
-    ใช้ 5-point landmarks จาก InsightFace: [left_eye, right_eye, nose, left_mouth, right_mouth]
-    ถ้าไม่มี landmarks ใช้ brightness variance บริเวณตาแทน
-    คืนค่า: 0-1 (1 = ตาเปิด)
+    วิเคราะห์ความคมชัดและคอนทราสต์บริเวณดวงตา (ม่านตากับตาขาว)
+    ตาคนจริง: ม่านตามืดตัดกับตาขาวชัดเจน (contrast > 50)
+    ภาพพิมพ์/ภาพจอถ่ายซ้ำ: บริเวณตาจะแบน คอนทราสต์ต่ำ
     """
     try:
+        h, w = gray.shape
+        eye_score = 0.75
+        contrast = 50.0
+
         if landmarks_5pt is not None and len(landmarks_5pt) >= 2:
-            # มี 5-point landmarks
-            left_eye  = landmarks_5pt[0]
-            right_eye = landmarks_5pt[1]
+            le, re = landmarks_5pt[0], landmarks_5pt[1]
+            eye_dist = float(np.linalg.norm(le - re))
+            if eye_dist > 15:
+                ew = int(eye_dist * 0.28)
+                lx, ly = int(le[0]), int(le[1])
+                y1, y2 = max(0, ly - ew), min(h, ly + ew)
+                x1, x2 = max(0, lx - ew), min(w, lx + ew)
+                eye_crop = gray[y1:y2, x1:x2]
 
-            # ถ้าตา 2 ข้างอยู่ในระดับใกล้เคียงกัน = ตาเปิด
-            eye_diff_y = abs(left_eye[1] - right_eye[1])
-            eye_dist_x = abs(left_eye[0] - right_eye[0])
-            if eye_dist_x == 0:
-                return 0.5
+                if eye_crop.size > 20:
+                    p10, p90 = float(np.percentile(eye_crop, 10)), float(np.percentile(eye_crop, 90))
+                    contrast = p90 - p10
+                    if contrast < 30:
+                        eye_score = 0.25  # Washed out / flat print
+                    elif contrast > 60:
+                        eye_score = 0.88  # High clarity live eye
+                    else:
+                        eye_score = 0.65
 
-            # ตาเปิด = y ไม่ต่างกันมาก, x ห่างพอควร
-            ratio = eye_diff_y / eye_dist_x
-            score = max(0.2, 1.0 - ratio * 4)  # ยิ่ง symmetric ยิ่งดี
-            return float(min(1.0, score))
-
-        # Fallback: ตรวจจาก brightness ในบริเวณตา (upper 40% of face)
-        h, w = face_img.shape[:2]
-        eye_region = face_img[int(h*0.15):int(h*0.5), int(w*0.1):int(w*0.9)]
-        if eye_region.size == 0:
-            return 0.5
-
-        gray_eye = cv2.cvtColor(eye_region, cv2.COLOR_BGR2GRAY) if len(eye_region.shape) == 3 else eye_region
-        # ตาเปิด = มี dark regions (iris) ใน eye area
-        dark_ratio = np.mean(gray_eye < 80)  # สัดส่วนพิกเซลมืด
-
-        score = 0.5 + (dark_ratio - 0.05) * 4
-        score = float(np.clip(score, 0.2, 1.0))
-        logger.debug(f"EAR fallback dark_ratio: {dark_ratio:.3f} → score: {score:.2f}")
-        return score
-
+        return float(eye_score), round(contrast, 1)
     except Exception as e:
-        logger.warning(f"EAR error: {e}")
-        return 0.6  # slightly positive default
+        logger.warning(f"Eye morphology error: {e}")
+        return 0.65, 0.0
 
 
 # ─────────────────────────────────────────────
-# 4. Color Channel Variance
-# ─────────────────────────────────────────────
-def color_variance_score(face_img: np.ndarray) -> float:
-    """
-    ผิวหน้าจริงมี R > G > B และ variance ต่างกันระหว่าง channel
-    ภาพจากจอ: channel balance แบบ RGB ที่ flat กว่า
-    คืนค่า: 0-1 (1 = looks like real skin)
-    """
-    try:
-        if len(face_img.shape) != 3:
-            return 0.5
-
-        small = cv2.resize(face_img, (32, 32))
-        b, g, r = cv2.split(small)
-
-        r_mean = r.mean()
-        g_mean = g.mean()
-        b_mean = b.mean()
-
-        # ผิวหน้าจริง: R > G > B
-        skin_order = (r_mean > g_mean) and (g_mean > b_mean)
-
-        # Channel imbalance (ใบหน้าจริงมี R-B gap ใหญ่กว่า)
-        rb_gap = r_mean - b_mean
-        rb_score = min(1.0, rb_gap / 40.0)  # normalize ให้ gap=40 → score=1
-
-        # Saturation variance
-        hsv = cv2.cvtColor(small, cv2.COLOR_BGR2HSV)
-        sat_var = hsv[:, :, 1].var()
-        sat_score = min(1.0, sat_var / 1500.0)
-
-        score = (0.4 * rb_score) + (0.3 * sat_score) + (0.3 * (1.0 if skin_order else 0.3))
-        logger.debug(f"Color: r={r_mean:.0f} g={g_mean:.0f} b={b_mean:.0f} gap={rb_gap:.0f} → score={score:.2f}")
-        return float(np.clip(score, 0.0, 1.0))
-
-    except Exception as e:
-        logger.warning(f"Color variance error: {e}")
-        return 0.5
-
-
-# ─────────────────────────────────────────────
-# Main Liveness Checker
+# Main Liveness Detector Class
 # ─────────────────────────────────────────────
 class LivenessDetector:
     """
-    Passive Liveness Detector
-    ใช้งาน: detector = LivenessDetector(); result = detector.check(face_img)
+    Multi-Signal Passive Anti-Spoofing Detector
+    ตรวจจับทั้ง Printed Photos และ Screen Replay Attacks พร้อมกลไก Veto ปฏิเสธทันที
     """
 
     def __init__(
         self,
         threshold: float = LIVENESS_THRESHOLD,
         texture_w: float = TEXTURE_WEIGHT,
-        frequency_w: float = FREQUENCY_WEIGHT,
-        ear_w: float = EAR_WEIGHT,
+        moire_w: float = MOIRE_WEIGHT,
+        glare_w: float = GLARE_WEIGHT,
         color_w: float = COLOR_WEIGHT,
+        eye_w: float = EYE_WEIGHT,
     ) -> None:
-        self.threshold   = threshold
-        self.texture_w   = texture_w
-        self.frequency_w = frequency_w
-        self.ear_w       = ear_w
-        self.color_w     = color_w
+        self.threshold = threshold
+        self.texture_w = texture_w
+        self.moire_w   = moire_w
+        self.glare_w   = glare_w
+        self.color_w   = color_w
+        self.eye_w     = eye_w
         logger.info(f"LivenessDetector initialized (threshold={threshold})")
 
     def check(
@@ -290,43 +284,101 @@ class LivenessDetector:
     ) -> LivenessResult:
         """
         ตรวจ liveness จากภาพใบหน้าที่ crop แล้ว (BGR numpy array)
-        landmarks_5pt: 5-point array จาก InsightFace (optional, ช่วย EAR accuracy)
         """
-        texture_score   = lbp_texture_score(face_img)
-        frequency_score = fft_frequency_score(face_img)
-        ear_score       = eye_aspect_ratio_score(face_img, landmarks_5pt)
-        color_score     = color_variance_score(face_img)
+        if face_img is None or face_img.size == 0:
+            return LivenessResult(
+                is_live=False,
+                liveness_score=0.0,
+                texture_score=0.0,
+                frequency_score=0.0,
+                ear_score=0.0,
+                color_score=0.0,
+                glare_score=0.0,
+                message="Invalid empty face image",
+                rejection_reason="no_image",
+            )
 
-        # Weighted sum
-        liveness_score = (
-            self.texture_w   * texture_score   +
-            self.frequency_w * frequency_score +
-            self.ear_w       * ear_score       +
-            self.color_w     * color_score
+        gray = cv2.cvtColor(face_img, cv2.COLOR_BGR2GRAY) if len(face_img.shape) == 3 else face_img
+
+        # 1. Texture analysis
+        tex_score, lap_var = analyze_texture(gray)
+
+        # 2. 2D FFT Moire analysis
+        moire_score, peak_ratio = detect_screen_moire(gray)
+
+        # 3. Specular glare analysis
+        glare_score, glare_sharp = detect_specular_glare(face_img, gray)
+
+        # 4. Color & skin locus analysis
+        color_score, color_details = analyze_color_locus(face_img)
+
+        # 5. Eye morphology analysis
+        eye_score, eye_contrast = analyze_eye_morphology(gray, landmarks_5pt)
+
+        # Composite weighted sum
+        total_score = (
+            self.texture_w * tex_score +
+            self.moire_w   * moire_score +
+            self.glare_w   * glare_score +
+            self.color_w   * color_score +
+            self.eye_w     * eye_score
         )
-        liveness_score = float(np.clip(liveness_score, 0.0, 1.0))
-        is_live = liveness_score >= self.threshold
+        total_score = float(np.clip(total_score, 0.0, 1.0))
 
-        msg = "Liveness confirmed" if is_live else "Liveness check failed (possible photo attack)"
+        # ─────────────────────────────────────────────
+        # Veto Logic for Unambiguous Attacks
+        # ─────────────────────────────────────────────
+        is_live = total_score >= self.threshold
+        rejection_reason = None
+
+        if moire_score <= 0.20:
+            is_live = False
+            rejection_reason = "screen_moire_detected"
+            msg = "Liveness check failed (Screen moiré detected)"
+        elif glare_score <= 0.25 and glare_sharp > 15.0:
+            is_live = False
+            rejection_reason = "glass_glare_detected"
+            msg = "Liveness check failed (Glass reflection detected)"
+        elif color_score <= 0.25:
+            is_live = False
+            rejection_reason = "color_gamut_rejected"
+            msg = "Liveness check failed (Color gamut / print detected)"
+        elif total_score < self.threshold:
+            is_live = False
+            rejection_reason = "composite_liveness_below_threshold"
+            msg = f"Liveness check failed (Score {total_score:.2f} < {self.threshold})"
+        else:
+            msg = "Liveness confirmed"
 
         logger.info(
-            f"Liveness: texture={texture_score:.2f} freq={frequency_score:.2f} "
-            f"ear={ear_score:.2f} color={color_score:.2f} "
-            f"→ total={liveness_score:.2f} live={is_live}"
+            f"Liveness: tex={tex_score:.2f} moire={moire_score:.2f}(pk={peak_ratio}) "
+            f"glare={glare_score:.2f} col={color_score:.2f} eye={eye_score:.2f} "
+            f"→ total={total_score:.2f} live={is_live} ({rejection_reason or 'OK'})"
         )
 
+        checks = {
+            "texture": round(tex_score, 3),
+            "laplacian_var": lap_var,
+            "moire": round(moire_score, 3),
+            "moire_peak_ratio": peak_ratio,
+            "glare": round(glare_score, 3),
+            "glare_sharpness": glare_sharp,
+            "color": round(color_score, 3),
+            "color_details": color_details,
+            "eye": round(eye_score, 3),
+            "eye_contrast": eye_contrast,
+            "rejection_reason": rejection_reason,
+        }
+
         return LivenessResult(
-            is_live        = is_live,
-            liveness_score = round(liveness_score, 4),
-            texture_score  = round(texture_score, 4),
-            frequency_score= round(frequency_score, 4),
-            ear_score      = round(ear_score, 4),
-            color_score    = round(color_score, 4),
-            message        = msg,
-            checks={
-                "texture":   round(texture_score, 3),
-                "frequency": round(frequency_score, 3),
-                "ear":       round(ear_score, 3),
-                "color":     round(color_score, 3),
-            },
+            is_live=is_live,
+            liveness_score=round(total_score, 4),
+            texture_score=round(tex_score, 4),
+            frequency_score=round(moire_score, 4),
+            ear_score=round(eye_score, 4),
+            color_score=round(color_score, 4),
+            glare_score=round(glare_score, 4),
+            message=msg,
+            rejection_reason=rejection_reason,
+            checks=checks,
         )

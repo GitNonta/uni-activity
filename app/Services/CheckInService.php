@@ -75,9 +75,17 @@ class CheckInService
 
             // หาก Server ตรวจไม่ผ่าน หรือติด Liveness Anti-Spoofing -> ปฏิเสธทันที
             if (!$passed || !$livenessPassed) {
+                $rejReason = $faceResult['liveness_checks']['rejection_reason'] ?? null;
+                $livenessDetail = match ($rejReason) {
+                    'screen_moire_detected' => 'ตรวจพบการใช้หน้าจอดิจิทัล (Screen Replay)',
+                    'glass_glare_detected' => 'ตรวจพบแสงสะท้อนจอกระจกหรือแผ่นฟิล์ม',
+                    'color_gamut_rejected' => 'ตรวจพบภาพถ่ายหรือภาพพิมพ์ (Photo Attack)',
+                    default => 'ตรวจพบรูปถ่ายหรือภาพปลอมบนหน้าจอ',
+                };
+
                 $reason = !$passed 
                     ? "ใบหน้าไม่ตรงกับข้อมูลในระบบ (คะแนนความคล้ายคลึง: " . round($score, 1) . "%)" 
-                    : "การตรวจสอบ Liveness ไม่ผ่าน (ตรวจพบรูปถ่าย/ภาพปลอมบนหน้าจอ)";
+                    : "การตรวจสอบ Liveness ไม่ผ่าน ({$livenessDetail})";
 
                 Log::warning("Face Verification Rejected for user {$user->id} on activity {$activity->id}: {$reason}");
 

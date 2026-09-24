@@ -127,6 +127,52 @@
             transition: color 0.25s, transform 0.2s;
         }
 
+        /* ── Liveness Guidance Pill HUD ── */
+        .liveness-pill {
+            margin-top: 0.65rem;
+            background: rgba(10, 20, 38, 0.88);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1.5px solid rgba(249, 115, 22, 0.4);
+            border-radius: 9999px;
+            padding: 0.45rem 1.15rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            max-width: 90vw;
+            text-align: center;
+        }
+        .liveness-pill.liveness-blink-step {
+            border-color: rgba(251, 191, 36, 0.85);
+            background: rgba(30, 22, 10, 0.90);
+            color: #fef08a;
+            box-shadow: 0 4px 24px rgba(245, 158, 11, 0.35);
+            animation: livenessPulse 1.8s ease-in-out infinite;
+        }
+        .liveness-pill.liveness-success {
+            border-color: rgba(52, 211, 153, 0.9);
+            background: rgba(6, 36, 26, 0.92);
+            color: #a7f3d0;
+            box-shadow: 0 4px 24px rgba(52, 211, 153, 0.35);
+        }
+        .liveness-pill.liveness-warning {
+            border-color: rgba(239, 68, 68, 0.85);
+            background: rgba(45, 12, 16, 0.92);
+            color: #fca5a5;
+            box-shadow: 0 4px 24px rgba(239, 68, 68, 0.35);
+        }
+        .liveness-icon { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        @keyframes livenessPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+
         /* ── Toast notifications (top, stacked) ── */
         #toastStack { position:fixed; top:calc(0.7rem + env(safe-area-inset-top,0px)); left:50%; transform:translateX(-50%); z-index:10001; display:flex; flex-direction:column; gap:0.5rem; width:min(92vw,460px); pointer-events:none; }
         .toast { display:flex; align-items:center; gap:0.6rem; background:rgba(10,22,40,0.92); border:1px solid var(--white-15); border-left:4px solid var(--blue-light); border-radius:12px; padding:0.7rem 0.95rem; font-size:0.82rem; color:var(--white); backdrop-filter:blur(14px); box-shadow:0 8px 30px rgba(0,0,0,0.45); opacity:0; transform:translateY(-12px); transition:opacity 0.28s ease, transform 0.28s ease; }
@@ -365,6 +411,16 @@
         <div id="scoreDisplayPanel" class="hud-score-pill">
             <span id="scoreValuePanel">—</span>
         </div>
+        <!-- ── Active Liveness Guidance Pill ── -->
+        <div id="livenessInstructionPill" class="liveness-pill">
+            <span class="liveness-icon" id="livenessIcon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+            </span>
+            <span id="livenessText">วางใบหน้าให้อยู่ในกรอบ...</span>
+        </div>
         <!-- Technical elements and status kept hidden for script safety -->
         <div style="display:none;" aria-hidden="true">
             <div id="statusChip"><span class="status-dot"></span><span id="statusChipText"></span></div>
@@ -595,14 +651,184 @@ function playErrorSound() {
    so every init attempt only produced a console warning and all its
    call sites were dead branches around the legacy scan loop. */
 
-var detectionInterval=null,isScanningActive=true;
+/* ── Real-Time Active Liveness (Anti-Spoofing: Blink & Micro-Motion Detector) ── */
+var isLivenessConfirmed = false;
+var blinkVerified = false;
+var earHistory = [];
+var facePresenceTime = 0;
+var staticFrameCount = 0;
+var lastLandmarkDist = null;
+var pendingVerification = null;
+var detectionInterval = null;
+var isScanningActive = true;
+
+var SVG_LIVENESS_ICONS = {
+    eye: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>',
+    eyeBlink: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><line x1="3" y1="3" x2="21" y2="21"/></svg>',
+    check: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>',
+    alert: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+    scan: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M7 12h10"/></svg>'
+};
+
+function setLivenessState(state, text) {
+    var pill = document.getElementById('livenessInstructionPill');
+    var iconEl = document.getElementById('livenessIcon');
+    var textEl = document.getElementById('livenessText');
+    var guide = document.getElementById('faceGuide');
+    if (!pill || !textEl) return;
+    
+    textEl.textContent = text;
+    pill.className = 'liveness-pill';
+    
+    if (state === 'prompt') {
+        pill.classList.add('liveness-blink-step');
+        if (iconEl) iconEl.innerHTML = SVG_LIVENESS_ICONS.eye;
+    } else if (state === 'success') {
+        pill.classList.add('liveness-success');
+        if (iconEl) iconEl.innerHTML = SVG_LIVENESS_ICONS.check;
+        if (guide && !guide.classList.contains('success-ring')) {
+            guide.classList.remove('warning-ring', 'error-ring');
+            guide.classList.add('scanning-ring');
+        }
+    } else if (state === 'warning') {
+        pill.classList.add('liveness-warning');
+        if (iconEl) iconEl.innerHTML = SVG_LIVENESS_ICONS.alert;
+        if (guide && !guide.classList.contains('success-ring')) {
+            guide.classList.remove('scanning-ring');
+            guide.classList.add('warning-ring');
+        }
+    } else {
+        if (iconEl) iconEl.innerHTML = SVG_LIVENESS_ICONS.scan;
+    }
+}
+
+function computeEAR(eyePoints) {
+    if (!eyePoints || eyePoints.length < 6) return 0.3;
+    function dist(p1, p2) {
+        var dx = p1.x - p2.x, dy = p1.y - p2.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+    var v1 = dist(eyePoints[1], eyePoints[5]);
+    var v2 = dist(eyePoints[2], eyePoints[4]);
+    var h  = dist(eyePoints[0], eyePoints[3]);
+    if (h < 1e-4) return 0.3;
+    return (v1 + v2) / (2.0 * h);
+}
+
+function updateActiveLiveness(landmarks) {
+    if (!landmarks || !landmarks.positions || landmarks.positions.length < 68) return;
+    var pts = landmarks.positions;
+    var now = Date.now();
+    
+    // Left eye: 36-41, Right eye: 42-47
+    var leftEye = pts.slice(36, 42);
+    var rightEye = pts.slice(42, 48);
+    var earL = computeEAR(leftEye);
+    var earR = computeEAR(rightEye);
+    var ear = (earL + earR) / 2.0;
+
+    earHistory.push({ ear: ear, ts: now });
+    if (earHistory.length > 30) earHistory.shift();
+    
+    var noseTip = pts[30];
+    var leftEyeCenter = { x: (pts[36].x + pts[39].x)/2, y: (pts[36].y + pts[39].y)/2 };
+    var noseEyeDist = Math.hypot(noseTip.x - leftEyeCenter.x, noseTip.y - leftEyeCenter.y);
+    
+    if (lastLandmarkDist !== null) {
+        var deltaDist = Math.abs(noseEyeDist - lastLandmarkDist);
+        if (deltaDist < 0.25) {
+            staticFrameCount++;
+        } else {
+            staticFrameCount = Math.max(0, staticFrameCount - 1);
+        }
+    }
+    lastLandmarkDist = noseEyeDist;
+    
+    if (facePresenceTime === 0) facePresenceTime = now;
+    var presenceDuration = now - facePresenceTime;
+
+    var ears = earHistory.map(function(item) { return item.ear; }).sort(function(a,b){return a-b;});
+    var topCount = Math.max(1, Math.floor(ears.length * 0.3));
+    var openBaseline = ears.slice(ears.length - topCount).reduce(function(a,b){return a+b;}, 0) / topCount;
+    
+    // Detect authentic live blink: open -> dip < 0.21 -> recover > 80% baseline
+    if (!blinkVerified && earHistory.length >= 8) {
+        var minEar = Math.min.apply(null, earHistory.map(function(h){ return h.ear; }));
+        var latestEar = ear;
+        var dipRatio = minEar / (openBaseline + 1e-4);
+        
+        if (minEar < 0.21 && dipRatio < 0.72 && latestEar > Math.max(0.23, openBaseline * 0.78)) {
+            blinkVerified = true;
+            isLivenessConfirmed = true;
+            setLivenessState('success', 'ยืนยันตัวตนเรียบร้อย');
+            playSuccessSound();
+            
+            // If match was already confirmed by server, finish checkin!
+            if (pendingVerification) {
+                var p = pendingVerification;
+                pendingVerification = null;
+                processScanResult(p);
+            }
+            return;
+        }
+    }
+
+    // Natural micro-motion / parallax confirmation for live human holding still
+    if (!blinkVerified && presenceDuration > 2500) {
+        var earSpan = ears[ears.length - 1] - ears[0];
+        if (earSpan > 0.08) {
+            isLivenessConfirmed = true;
+            setLivenessState('success', 'ยืนยันตัวตนเรียบร้อย');
+            if (pendingVerification) {
+                var pv = pendingVerification;
+                pendingVerification = null;
+                processScanResult(pv);
+            }
+            return;
+        } else if (staticFrameCount > 18 && earSpan < 0.02) {
+            // Static photo attack detected!
+            setLivenessState('warning', 'ตรวจพบลักษณะภาพนิ่ง — กรุณากะพริบตาเพื่อยืนยัน');
+            return;
+        }
+    }
+
+    if (!isLivenessConfirmed) {
+        setLivenessState('prompt', 'กรุณากะพริบตา 1 ครั้งเพื่อยืนยันตัวตน');
+    }
+}
+
+async function detectAndDrawFace() {
+    if (!isScanningActive || stopScanning) return;
+    var video = document.getElementById('cameraPreview');
+    if (!video || video.readyState < 2 || !isFaceApiLoaded) return;
+    
+    try {
+        var det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.45 })).withFaceLandmarks();
+        if (det) {
+            _faceDetCache.result = det;
+            _faceDetCache.ts = Date.now();
+            updateActiveLiveness(det.landmarks);
+        } else {
+            facePresenceTime = 0;
+            staticFrameCount = 0;
+            if (!isLivenessConfirmed) {
+                setLivenessState('waiting', 'มองตรงที่กล้องให้อยู่ในกรอบ...');
+            }
+        }
+    } catch(e) {}
+}
+
+function startRealtimeDetection() {
+    if (detectionInterval) clearInterval(detectionInterval);
+    detectionInterval = setInterval(detectAndDrawFace, 160);
+}
+function stopRealtimeDetection() {
+    if (detectionInterval) { clearInterval(detectionInterval); detectionInterval = null; }
+}
 function initFaceLandmarksCanvas() {}
-async function detectAndDrawFace() {}
 function updateRealFaceDetectionPoints(landmarks) {}
 function updateGuideFramePosition(box) {}
 function resetGuideToCenter() {}
-function startRealtimeDetection() {}
-function stopRealtimeDetection() {}
 
 /**
  * FaceGate — lightweight TinyFaceDetector pre-flight before Python /verify.
@@ -808,6 +1034,7 @@ async function processScanResult(result) {
     var guide=document.getElementById('faceGuide');
     if(guide)guide.classList.replace('scanning-ring','success-ring');
     setStatusChip('success','ยืนยันตัวตนสำเร็จ!');
+    setLivenessState('success', 'ยืนยันตัวตนสำเร็จ (คนจริง)');
     playSuccessSound();
     capturePhoto(true);
 }
@@ -908,11 +1135,38 @@ async function performPythonVerification(base64Image) {
         if(fg){fg.classList.remove('warning-ring');if(!fg.classList.contains('scanning-ring'))fg.classList.add('scanning-ring');}
         pythonFailCount=0;
         var score=result.score_percentage||0,passed=result.is_match||false;
-        console.log('[scan-ui] Frame ' + framesSent + ' -> ' + score.toFixed(1) + '% (match=' + passed + ')');
+        var livenessPassed = (result.liveness_passed !== false);
+        console.log('[scan-ui] Frame ' + framesSent + ' -> ' + score.toFixed(1) + '% (match=' + passed + ', live=' + livenessPassed + ')');
         var procTime=result.processing_ms||ms;
         setScore(score.toFixed(0)+'%',passed?'#34d399':'#fcd34d');
         updateAccuracy(score);
-        if(passed)await processScanResult({confidence:score/100,passed:true,score:score,source:'python_primary',processingTime:procTime});
+
+        if (!livenessPassed) {
+            var rejReason = (result.liveness_checks && result.liveness_checks.rejection_reason) || 'photo_detected';
+            var rejText = 'ตรวจพบการใช้ภาพถ่าย — กรุณาใช้ใบหน้าจริง';
+            if (rejReason === 'screen_moire_detected') {
+                rejText = 'ตรวจพบหน้าจอดิจิทัล (Screen Replay) — กรุณาใช้คนจริง';
+            } else if (rejReason === 'glass_glare_detected') {
+                rejText = 'ตรวจพบแสงสะท้อนจอกระจก — กรุณาใช้คนจริง';
+            } else if (rejReason === 'color_gamut_rejected') {
+                rejText = 'ตรวจพบภาพถ่าย/ภาพพิมพ์ — กรุณาใช้คนจริง';
+            }
+            setScore('—', '#f87171');
+            setStatusChip('error', rejText);
+            setLivenessState('warning', rejText);
+            showToast(rejText, 'error');
+            return;
+        }
+
+        if (passed) {
+            if (isLivenessConfirmed) {
+                await processScanResult({confidence:score/100,passed:true,score:score,source:'python_primary',processingTime:procTime});
+            } else {
+                pendingVerification = {confidence:score/100,passed:true,score:score,source:'python_primary',processingTime:procTime};
+                setLivenessState('prompt', 'ใบหน้าตรงกัน — กรุณากะพริบตาเพื่อยืนยัน');
+                setStatusChip('scanning', 'ใบหน้าตรงกัน — กรุณากะพริบตา 1 ครั้ง');
+            }
+        }
     } catch(e){
         if(timer){clearTimeout(timer);timer=null;}
         console.warn('Python verification failed:',e);pythonFailCount++;
