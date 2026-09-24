@@ -71,9 +71,23 @@ def estimate_norm(lmk: np.ndarray, image_size: int = 112) -> np.ndarray:
     dst[:, 0] += diff_x
 
     from skimage import transform as trans
-    tform = trans.SimilarityTransform()
-    tform.estimate(lmk, dst)
+    if hasattr(trans.SimilarityTransform, "from_estimate"):
+        tform = trans.SimilarityTransform.from_estimate(lmk, dst)
+    else:
+        tform = trans.SimilarityTransform()
+        tform.estimate(lmk, dst)
     return tform.params[0:2, :]
+
+
+def _make_optimized_session_options(intra_threads: int = 4) -> ort.SessionOptions:
+    """Create tuned ONNX SessionOptions for high-throughput inference."""
+    so = ort.SessionOptions()
+    so.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+    so.intra_op_num_threads = intra_threads
+    so.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
+    so.log_severity_level = 3  # Suppress internal ONNX runtime warning logs
+    return so
+
 
 
 def norm_crop(img: np.ndarray, landmark: np.ndarray, image_size: int = 112) -> np.ndarray:
@@ -153,10 +167,20 @@ class NativeSCRFD:
     sorted by det_score (descending), best face first.
     """
 
-    def __init__(self, onnx_path: str, providers: Optional[Sequence[str]] = None):
+    def __init__(
+        self,
+        onnx_path: str,
+        providers: Optional[Sequence[str]] = None,
+        sess_options: Optional[ort.SessionOptions] = None,
+    ):
         self.onnx_path = onnx_path
+        if sess_options is None:
+            sess_options = _make_optimized_session_options(intra_threads=4)
         self.session = ort.InferenceSession(
-            onnx_path, providers=list(providers) if providers else ["CPUExecutionProvider"])
+            onnx_path,
+            sess_options=sess_options,
+            providers=list(providers) if providers else ["CPUExecutionProvider"],
+        )
         self.center_cache: dict = {}
         self._init_vars()
 
@@ -309,10 +333,20 @@ class NativeArcFace:
     insightface distinguishes face.embedding from face.normed_embedding.
     """
 
-    def __init__(self, onnx_path: str, providers: Optional[Sequence[str]] = None):
+    def __init__(
+        self,
+        onnx_path: str,
+        providers: Optional[Sequence[str]] = None,
+        sess_options: Optional[ort.SessionOptions] = None,
+    ):
         self.onnx_path = onnx_path
+        if sess_options is None:
+            sess_options = _make_optimized_session_options(intra_threads=2)
         self.session = ort.InferenceSession(
-            onnx_path, providers=list(providers) if providers else ["CPUExecutionProvider"])
+            onnx_path,
+            sess_options=sess_options,
+            providers=list(providers) if providers else ["CPUExecutionProvider"],
+        )
 
         # Same heuristic as arcface_onnx.ArcFaceONNX.__init__.
         find_sub = find_mul = False

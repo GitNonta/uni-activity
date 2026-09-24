@@ -19,7 +19,7 @@
     "verify_same_person": {
       "pass": true,
       "detail": {
-        "sim": 0.9502,
+        "sim": 0.952,
         "embedder": "fdx-d3d11",
         "thr": 0.3
       }
@@ -27,7 +27,7 @@
     "verify_diff_person": {
       "pass": true,
       "detail": {
-        "sim": -0.0309
+        "sim": -0.0344
       }
     },
     "response_contract": {
@@ -38,7 +38,7 @@
       "pass": true,
       "detail": {
         "embedder": "native-arcface",
-        "sim": 1.0
+        "sim": 0.973
       }
     }
   }
