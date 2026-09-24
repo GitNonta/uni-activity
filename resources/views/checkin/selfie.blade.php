@@ -1,3 +1,7 @@
+@php
+    $profilePhotoUrl = $profilePhotoUrl ?? (auth()->user()?->profile_photo ? asset('storage/' . auth()->user()->profile_photo) : null);
+    $faceScanMethod  = $faceScanMethod ?? ($activity->face_scan_method ?? 'python');
+@endphp
 <!DOCTYPE html>
 <html lang="th">
 <head>

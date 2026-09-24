@@ -194,12 +194,13 @@ class CheckInController extends Controller
             ->firstOrFail();
 
         $user = auth()->user();
-        $profilePhotoUrl = $user->profile_photo ? asset('storage/' . $user->profile_photo) : null;
+        $profilePhotoUrl = $user?->profile_photo ? asset('storage/' . $user->profile_photo) : null;
+        $faceScanMethod  = $activity->face_scan_method ?? 'python';
 
         /* Never cache the scan page: a stale cached copy silently keeps
            running the old JS (old bugs, no pacemaker) and looks identical
            to a broken loop from the server side. */
-        $response = response()->view('checkin.selfie', compact('activity', 'token', 'att', 'profilePhotoUrl'));
+        $response = response()->view('checkin.selfie', compact('activity', 'token', 'att', 'profilePhotoUrl', 'faceScanMethod'));
         $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
         $response->headers->set('Pragma', 'no-cache');
         return $response;
