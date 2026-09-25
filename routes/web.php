@@ -18,6 +18,10 @@ use App\Http\Controllers\Admin\AdminRegistrationController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\StudentAdminController;
 use App\Http\Controllers\Admin\CategoryAdminController;
+use App\Http\Controllers\Admin\GraduationAuditAdminController;
+use App\Http\Controllers\Admin\GraduationCriteriaAdminController;
+use App\Http\Controllers\Student\StudentGraduationController;
+use App\Http\Controllers\Public\TranscriptVerificationController;
 use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\FeedbackAdminController;
@@ -210,6 +214,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/student/certificates/claim', [\App\Http\Controllers\Student\CertificateController::class, 'claim'])->name('student.certificates.claim');
     Route::get('/student/certificates/{certificate}/download', [\App\Http\Controllers\Student\CertificateController::class, 'download'])->name('student.certificates.download');
 
+    // ── ตรวจสอบสถานะการสำเร็จการศึกษาและ Official Transcript ──
+    Route::get('/student/graduation-status', [StudentGraduationController::class, 'status'])->name('student.graduation.status');
+    Route::get('/student/graduation-transcript', [StudentGraduationController::class, 'downloadTranscript'])->name('student.graduation.transcript');
+
     // ── LINE OAuth ──
     Route::get('/line/redirect', [LineController::class, 'redirect'])->name('line.redirect');
     Route::get('/line/callback', [LineController::class, 'callback'])->name('line.callback');
@@ -219,6 +227,7 @@ Route::middleware('auth')->group(function () {
 
 // ── ตรวจสอบใบรับรองกิจกรรมออนไลน์ (Public Verification, ไม่ต้อง Auth) ──
 Route::get('/certificates/verify/{code}', [\App\Http\Controllers\Public\CertificateVerificationController::class, 'verify'])->name('certificates.verify');
+Route::get('/transcripts/verify/{code}', [TranscriptVerificationController::class, 'verify'])->name('transcripts.verify');
 
 // ── LINE Webhook (ไม่ต้อง auth) ──
 Route::match(['get', 'post'], '/line/webhook', [LineController::class, 'webhook'])->name('line.webhook');
@@ -267,6 +276,15 @@ Route::middleware(['auth', 'role:staff', 'strip-hpp'])->prefix('admin')->name('a
     Route::post('students/import', [\App\Http\Controllers\Admin\StudentImportController::class, 'import'])->name('students.import.upload');
     Route::get('students/import/template', [\App\Http\Controllers\Admin\StudentImportController::class, 'downloadTemplate'])->name('students.import.template');
 
+
+    // ── ตรวจสอบการสำเร็จการศึกษา & Official Activity Transcript ──
+    Route::get('graduation-audit', [GraduationAuditAdminController::class, 'index'])->name('graduation.audit.index');
+    Route::get('graduation-audit/export', [GraduationAuditAdminController::class, 'export'])->name('graduation.audit.export');
+    Route::get('graduation-audit/students/{user}', [GraduationAuditAdminController::class, 'showStudentAudit'])->name('graduation.audit.show');
+    Route::get('graduation-audit/students/{user}/transcript', [GraduationAuditAdminController::class, 'downloadTranscript'])->name('graduation.audit.transcript');
+    Route::post('graduation-audit/students/{user}/alert', [GraduationAuditAdminController::class, 'sendDeficitAlert'])->name('graduation.audit.alert');
+    Route::get('graduation-criteria', [GraduationCriteriaAdminController::class, 'index'])->name('graduation.criteria.index');
+    Route::put('graduation-criteria', [GraduationCriteriaAdminController::class, 'update'])->name('graduation.criteria.update');
 
     // ── ประกาศ ──
     Route::resource('announcements', AnnouncementAdminController::class);

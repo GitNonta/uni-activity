@@ -642,6 +642,110 @@ class LineService
         ];
     }
 
+    /**
+     * สร้าง Flex Message แจ้งเตือนนักศึกษาที่ยังขาดชั่วโมงกิจกรรมสำหรับสำเร็จการศึกษา
+     *
+     * @param array<string, mixed> $auditResult
+     * @return array<string, mixed>
+     */
+    public function buildGraduationDeficitMessage(User $student, array $auditResult): array
+    {
+        $totalHours = number_format((float) ($auditResult['total_hours'] ?? 0), 1);
+        $minHours   = number_format((float) ($auditResult['min_total_hours'] ?? 100), 1);
+        $missingItems = $auditResult['missing_requirements'] ?? [];
+
+        $missingBoxes = [];
+        foreach (array_slice($missingItems, 0, 5) as $item) {
+            $missingBoxes[] = [
+                'type'     => 'box',
+                'layout'   => 'horizontal',
+                'contents' => [
+                    [
+                        'type'  => 'text',
+                        'text'  => '• ' . $item,
+                        'size'  => 'xs',
+                        'color' => '#dc2626',
+                        'wrap'  => true,
+                    ],
+                ],
+            ];
+        }
+
+        return [
+            'type'     => 'flex',
+            'altText'  => "แจ้งเตือนการสำเร็จการศึกษา: ชั่วโมงกิจกรรมของคุณยังไม่ครบตามเกณฑ์ ({$totalHours}/{$minHours} ชม.)",
+            'contents' => [
+                'type'   => 'bubble',
+                'header' => [
+                    'type'            => 'box',
+                    'layout'          => 'vertical',
+                    'backgroundColor' => '#fee2e2',
+                    'contents'        => [
+                        [
+                            'type'   => 'text',
+                            'text'   => 'แจ้งเตือนการสำเร็จการศึกษา',
+                            'weight' => 'bold',
+                            'color'  => '#b91c1c',
+                            'size'   => 'md',
+                        ],
+                        [
+                            'type'   => 'text',
+                            'text'   => 'ชั่วโมงกิจกรรมยังไม่ครบตามเกณฑ์หลักสูตร',
+                            'size'   => 'xs',
+                            'color'  => '#991b1b',
+                            'margin' => 'xs',
+                        ],
+                    ],
+                ],
+                'body' => [
+                    'type'     => 'box',
+                    'layout'   => 'vertical',
+                    'contents' => [
+                        [
+                            'type'   => 'text',
+                            'text'   => "สวัสดีคุณ " . ($student->full_name ?? 'นักศึกษา'),
+                            'weight' => 'bold',
+                            'size'   => 'sm',
+                            'color'  => '#1e293b',
+                        ],
+                        [
+                            'type'   => 'text',
+                            'text'   => "ระบบตรวจสอบพบว่าคุณมีชั่วโมงกิจกรรมสะสม {$totalHours} / {$minHours} ชม. และยังไม่ผ่านเกณฑ์การสำเร็จการศึกษาดังนี้:",
+                            'size'   => 'xs',
+                            'color'  => '#475569',
+                            'wrap'   => true,
+                            'margin' => 'sm',
+                        ],
+                        [
+                            'type'     => 'box',
+                            'layout'   => 'vertical',
+                            'margin'   => 'md',
+                            'spacing'  => 'sm',
+                            'contents' => $missingBoxes,
+                        ],
+                    ],
+                ],
+                'footer' => [
+                    'type'     => 'box',
+                    'layout'   => 'vertical',
+                    'contents' => [
+                        [
+                            'type'   => 'button',
+                            'style'  => 'primary',
+                            'color'  => '#4f46e5',
+                            'height' => 'sm',
+                            'action' => [
+                                'type'  => 'uri',
+                                'label' => 'ตรวจสอบสถานะ & กิจกรรม',
+                                'uri'   => $this->getRedirectUrl('/student/graduation-status'),
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+    }
+
     /** ดึงข้อมูล Profile ผู้ใช้จาก LINE ด้วย Access Token (cached 5 min) */
     public function getLineProfile(string $accessToken): ?array
     {
