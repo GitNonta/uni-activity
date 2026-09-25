@@ -1,562 +1,598 @@
-{{-- Admin Dashboard: Cardless, Boxless, Ultra-Minimalist UX/UI --}}
+{{-- หน้า Dashboard ผู้ดูแล: เข้ากับธีมระบบ 100% สถิติ + Unified Approval Queue + กิจกรรม + ประกาศงาน + ประกาศล่าสุด + Audit Logs --}}
 @extends('layouts.admin')
 @section('title', 'ภาพรวมระบบ')
 
 @section('styles')
 <style>
 /* ══════════════════════════════════════════════════════════
-   Cardless, Boxless, Ultra-Minimalist Design System
+   Admin Dashboard Theme Styles (Seamless with System Theme)
    ══════════════════════════════════════════════════════════ */
-.minimal-container {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-/* Hairline border rule using theme border variable */
-.hairline-b {
-    border-bottom: 1px solid var(--border, rgba(226, 232, 240, 0.8));
-}
-html[data-theme="dark"] .hairline-b,
-html.dark .hairline-b {
-    border-bottom-color: rgba(39, 39, 42, 0.9);
-}
-
-.hairline-t {
-    border-top: 1px solid var(--border, rgba(226, 232, 240, 0.8));
-}
-html[data-theme="dark"] .hairline-t,
-html.dark .hairline-t {
-    border-top-color: rgba(39, 39, 42, 0.9);
-}
-
-/* Metric Display (No Box, No Card, Pure Typography) */
-.metric-item {
-    display: flex;
-    flex-direction: column;
-    text-decoration: none;
-    color: inherit;
-    padding: 0.5rem 0;
-    transition: opacity 0.15s ease;
-}
-.metric-item:hover {
-    opacity: 0.8;
-}
-
-.metric-label {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--text-muted, #64748b);
-    letter-spacing: 0.025em;
-    margin-bottom: 0.35rem;
+.dashboard-stat-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
-.metric-value {
-    font-size: 2.25rem;
-    font-weight: 700;
-    line-height: 1.1;
-    color: var(--text-main, #0f172a);
-    letter-spacing: -0.03em;
+.dashboard-audit-row {
+    transition: background .15s;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    gap: .875rem;
+    padding: .875rem 1.25rem;
+    border-bottom: 1px solid var(--border, #f1f5f9);
+}
+.dashboard-audit-row:hover {
+    background: var(--surface-hover, #f8fafc);
+}
+html[data-theme="dark"] .dashboard-audit-row:hover,
+html.dark .dashboard-audit-row:hover {
+    background: #27272a !important;
 }
 
-.metric-sub {
-    font-size: 0.75rem;
-    color: var(--text-muted, #64748b);
-    margin-top: 0.35rem;
-}
-
-/* Minimalist Table */
-.minimal-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-.minimal-table th {
-    text-align: left;
-    font-size: 0.72rem;
+.dashboard-view-all-logs-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: .78rem;
     font-weight: 600;
-    color: var(--text-muted, #64748b);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    padding: 0.75rem 0.5rem;
-    border-bottom: 1px solid var(--border, #e2e8f0);
+    color: #c2410c;
+    background: #ffedd5;
+    border: 1px solid #fed7aa;
+    text-decoration: none;
+    transition: all .2s;
+    line-height: 1.5;
 }
-.minimal-table td {
-    padding: 0.95rem 0.5rem;
-    border-bottom: 1px solid var(--border, rgba(226, 232, 240, 0.6));
-    font-size: 0.85rem;
-    vertical-align: middle;
+.dashboard-view-all-logs-btn:hover {
+    background: #c2410c;
+    color: #fff;
+    border-color: #c2410c;
+    box-shadow: 0 2px 8px rgba(194,65,12,.25);
+    text-decoration: none;
 }
-html[data-theme="dark"] .minimal-table th,
-html.dark .minimal-table th {
-    border-bottom-color: #27272a;
+html[data-theme="dark"] .dashboard-view-all-logs-btn,
+html.dark .dashboard-view-all-logs-btn {
+    color: #fdba74;
+    background: rgba(194, 65, 12, 0.2);
+    border-color: rgba(194, 65, 12, 0.4);
 }
-html[data-theme="dark"] .minimal-table td,
-html.dark .minimal-table td {
-    border-bottom-color: rgba(39, 39, 42, 0.6);
-}
-.minimal-table tr:hover td {
-    background: rgba(0, 0, 0, 0.015);
-}
-html[data-theme="dark"] .minimal-table tr:hover td,
-html.dark .minimal-table tr:hover td {
-    background: rgba(255, 255, 255, 0.02);
+html[data-theme="dark"] .dashboard-view-all-logs-btn:hover,
+html.dark .dashboard-view-all-logs-btn:hover {
+    background: #ea580c;
+    color: #fff;
+    border-color: #ea580c;
 }
 
-/* Minimalist List Rows */
-.minimal-row {
+.approval-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 0.85rem 0.25rem;
-    border-bottom: 1px solid var(--border, rgba(226, 232, 240, 0.6));
-    text-decoration: none;
-    color: inherit;
-    transition: background 0.15s;
+    gap: .875rem;
+    padding: .85rem 1.15rem;
+    border-bottom: 1px solid var(--border, #fef3c7);
+    transition: background .2s;
 }
-html[data-theme="dark"] .minimal-row,
-html.dark .minimal-row {
-    border-bottom-color: rgba(39, 39, 42, 0.6);
+.approval-row:hover {
+    background: rgba(249, 115, 22, 0.04);
 }
-.minimal-row:last-child {
-    border-bottom: none;
-}
-.minimal-row:hover {
-    background: rgba(0, 0, 0, 0.015);
-}
-html[data-theme="dark"] .minimal-row:hover,
-html.dark .minimal-row:hover {
-    background: rgba(255, 255, 255, 0.02);
+html[data-theme="dark"] .approval-row:hover,
+html.dark .approval-row:hover {
+    background: rgba(255, 255, 255, 0.03);
 }
 
-/* Subtle Action Links */
-.action-link {
-    font-size: 0.78rem;
-    font-weight: 500;
-    color: var(--text-muted, #64748b);
-    text-decoration: none;
-    padding: 2px 6px;
-    border-radius: 4px;
-    transition: all 0.15s ease;
+/* Two column layout for jobs & announcements */
+.dashboard-grid-split {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
 }
-.action-link:hover {
-    color: var(--dash-primary, #ea580c);
-    background: rgba(234, 88, 12, 0.08);
+@media (min-width: 1024px) {
+    .dashboard-grid-split {
+        grid-template-columns: 1fr 1fr;
+    }
 }
 </style>
 @endsection
 
 @section('content')
-<div class="minimal-container space-y-10 py-1">
-
-    {{-- ═══ 1. Minimal Header (Clean, Floating, Content-first) ═══ --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 hairline-b">
-        <div>
-            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight" style="color: var(--text-main, #0f172a); margin: 0;">
-                ภาพรวมระบบ
-            </h1>
-            <p class="text-xs sm:text-sm text-muted mt-1">
-                สวัสดี, {{ auth()->user()->full_name ?? auth()->user()->name }} &nbsp;·&nbsp; {{ now()->locale('th')->isoFormat('D MMMM GGGG') }}
-            </p>
-        </div>
-        <div class="flex items-center gap-2">
-            <button type="button" onclick="document.getElementById('quickModal').classList.add('open')" class="btn btn-outline btn-sm flex items-center gap-1.5" style="border-radius: 8px;">
-                <svg style="width:14px;height:14px;color:#10b981;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                <span>บันทึกด่วน</span>
-            </button>
-            <a href="{{ route('admin.activities.create') }}" class="btn btn-primary btn-sm flex items-center gap-1.5" style="border-radius: 8px;">
-                <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                <span>สร้างกิจกรรม</span>
-            </a>
-        </div>
-    </div>
-
-    {{-- ═══ 2. Cardless & Boxless Key Metrics (Typography-First) ═══ --}}
-    @php
-        $totalPending = $stats['pendingRegistrations'] + $stats['pendingAttendances'];
-    @endphp
+{{-- ═══ 1. หัวข้อหน้า & ปุ่มการทำงาน ═══ --}}
+<div class="flex items-center justify-between mb-6" style="flex-wrap:wrap; gap:1rem;">
     <div>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 pb-6 hairline-b">
-            {{-- Metric 1: กิจกรรมทั้งหมด --}}
-            <a href="{{ route('admin.activities.index') }}" class="metric-item">
-                <div class="metric-label">
-                    <svg style="width:14px;height:14px;color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                    กิจกรรมทั้งหมด
-                </div>
-                <div class="metric-value">
-                    {{ number_format($stats['totalActivities']) }}
-                </div>
-                <div class="metric-sub">
-                    สัปดาห์นี้ <span class="font-semibold text-main">{{ $stats['upcomingThisWeek'] }}</span> กิจกรรม
-                </div>
-            </a>
-
-            {{-- Metric 2: เปิดรับสมัคร --}}
-            <a href="{{ route('admin.activities.index') }}" class="metric-item">
-                <div class="metric-label">
-                    <svg style="width:14px;height:14px;color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                    เปิดรับสมัคร
-                </div>
-                <div class="metric-value" style="color: #ea580c;">
-                    {{ number_format($stats['upcomingActivities']) }}
-                </div>
-                <div class="metric-sub">
-                    พร้อมให้นักศึกษาเข้าร่วม
-                </div>
-            </a>
-
-            {{-- Metric 3: นักศึกษา --}}
-            <a href="{{ route('admin.students.index') }}" class="metric-item">
-                <div class="metric-label">
-                    <svg style="width:14px;height:14px;color:#0ea5e9;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                    นักศึกษาในระบบ
-                </div>
-                <div class="metric-value">
-                    {{ number_format($stats['totalStudents']) }}
-                </div>
-                <div class="metric-sub">
-                    สมาชิกผู้ใช้งานทั้งหมด
-                </div>
-            </a>
-
-            {{-- Metric 4: รออนุมัติ --}}
-            <a href="{{ $totalPending > 0 ? '#approval-queue-section' : route('admin.activities.index') }}" class="metric-item">
-                <div class="metric-label">
-                    <svg style="width:14px;height:14px;color:#d97706;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    รออนุมัติทั้งหมด
-                </div>
-                <div class="metric-value" style="{{ $totalPending > 0 ? 'color: #d97706;' : '' }}" id="pending-badge-count">
-                    {{ $totalPending }}
-                </div>
-                <div class="metric-sub">
-                    สมัคร {{ $stats['pendingRegistrations'] }} · เช็คอิน {{ $stats['pendingAttendances'] }}
-                </div>
-            </a>
-        </div>
-
-        {{-- Secondary Metrics Line (Quiet, Non-intrusive) --}}
-        <div class="flex flex-wrap items-center gap-y-2 gap-x-6 pt-3 text-xs text-muted">
-            <a href="{{ route('admin.jobs.index') }}" class="hover:text-primary transition flex items-center gap-1.5">
-                <span class="w-1.5 h-1.5 rounded-full" style="background:#10b981;"></span>
-                <span>ประกาศงาน <strong>{{ number_format($stats['totalJobs']) }}</strong> งาน</span>
-            </a>
-            <span class="text-muted opacity-40">/</span>
-            <a href="{{ route('admin.inbox.index') }}" class="hover:text-primary transition flex items-center gap-1.5">
-                <span class="w-1.5 h-1.5 rounded-full" style="background:#f43f5e;"></span>
-                <span>ข้อความใหม่ <strong>{{ number_format($stats['unreadMessages']) }}</strong> ฉบับ</span>
-            </a>
-            <span class="text-muted opacity-40">/</span>
-            <a href="{{ route('admin.feedbacks.index') }}" class="hover:text-primary transition flex items-center gap-1.5">
-                <span class="w-1.5 h-1.5 rounded-full" style="background:#0ea5e9;"></span>
-                <span>ผลการประเมิน <strong>{{ number_format($stats['totalFeedbacks']) }}</strong> รายการ</span>
-            </a>
-        </div>
+        <h1 class="font-bold" style="font-size:1.5rem; margin:0; color:var(--text-main, #0f172a);">ภาพรวมระบบ</h1>
+        <p class="text-xs text-muted" style="margin-top:3px;">
+            ยินดีต้อนรับ, {{ auth()->user()->full_name ?? auth()->user()->name }} &nbsp;·&nbsp; {{ now()->locale('th')->isoFormat('D MMMM GGGG') }}
+        </p>
     </div>
+    <div class="flex items-center gap-2">
+        <button type="button" onclick="document.getElementById('quickModal').classList.add('open')" class="btn btn-success btn-sm">
+            <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <span>บันทึกกิจกรรมด่วน</span>
+        </button>
+        <a href="{{ route('admin.activities.create') }}" class="btn btn-primary btn-sm">
+            <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <span>สร้างกิจกรรม</span>
+        </a>
+    </div>
+</div>
 
-    {{-- ═══ 3. Unified Approval Queue (Cardless — แสดงเฉพาะเมื่อมีรายการค้าง) ═══ --}}
-    @php
-        $allPending = collect();
-        foreach($pendingRegistrations as $reg) {
-            $allPending->push([
-                'id'       => $reg->id,
-                'type'     => 'registration',
-                'name'     => $reg->user->full_name ?? '-',
-                'sid'      => $reg->user->student_id ?? '',
-                'faculty'  => $reg->user->faculty ?? '',
-                'activity' => $reg->activity->title ?? '-',
-                'time'     => $reg->created_at,
-                'detail'   => 'ขอลงทะเบียนเข้าร่วม',
-            ]);
-        }
-        foreach($pendingAttendances as $att) {
-            $allPending->push([
-                'id'       => $att->id,
-                'type'     => 'attendance',
-                'name'     => $att->user->full_name ?? '-',
-                'sid'      => $att->user->student_id ?? '',
-                'faculty'  => $att->user->faculty ?? '',
-                'activity' => $att->activity->title ?? '-',
-                'time'     => $att->created_at,
-                'detail'   => $att->distance_meters ? 'เช็คอิน GPS ห่าง '.number_format($att->distance_meters,0).' ม.' : 'บันทึกเช็คอิน',
-            ]);
-        }
-        $allPending = $allPending->sortByDesc('time');
-    @endphp
-
-    @if($totalPending > 0)
-    <div id="approval-queue-section" class="space-y-3">
-        <div class="flex items-center justify-between pb-2 hairline-b">
-            <div class="flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full" style="background: #f59e0b;"></span>
-                <h2 class="text-sm font-bold uppercase tracking-wider" style="color: var(--text-main, #0f172a); margin: 0;">
-                    รายการรออนุมัติ
-                </h2>
-                <span id="queue-count" class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background: rgba(245, 158, 11, 0.15); color: #d97706;">{{ $totalPending }}</span>
+{{-- ═══ 2. การ์ดสถิติหลักแถวที่ 1 (กิจกรรม / เปิดรับ / นักศึกษา / รออนุมัติ) ═══ --}}
+@php
+    $totalPending = $stats['pendingRegistrations'] + $stats['pendingAttendances'];
+@endphp
+<div class="grid-4 mb-4">
+    <a href="{{ route('admin.activities.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #ea580c; text-decoration:none;">
+        <div class="flex items-start justify-between">
+            <div>
+                <p class="stat-label">กิจกรรมทั้งหมด</p>
+                <p class="stat-value">{{ number_format($stats['totalActivities']) }}</p>
             </div>
-            <a href="{{ route('admin.activities.index') }}" class="text-xs font-medium text-muted hover:text-primary transition">ดูทั้งหมดในกิจกรรม &rarr;</a>
+            <div class="dashboard-stat-icon" style="background:rgba(234,88,12,0.1); color:#ea580c;">
+                <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+            </div>
         </div>
+        <p class="text-xs text-muted" style="margin-top:4px;">จัดในสัปดาห์นี้ <span class="font-semi text-primary">{{ $stats['upcomingThisWeek'] }}</span> กิจกรรม</p>
+    </a>
 
-        <div id="approval-queue" class="divide-y" style="border-color: var(--border, #e2e8f0);">
-            @foreach($allPending as $item)
-            <div class="minimal-row" id="row-{{ $item['type'] }}-{{ $item['id'] }}">
-                <div class="flex items-center gap-3 min-w-0">
-                    <span style="font-size:0.7rem;font-weight:600;padding:2px 7px;border-radius:4px;
-                        {{ $item['type'] === 'registration' ? 'background:rgba(234,88,12,0.1);color:#ea580c;' : 'background:rgba(16,185,129,0.1);color:#10b981;' }}">
-                        {{ $item['type'] === 'registration' ? 'สมัคร' : 'เช็คอิน' }}
-                    </span>
-                    <div class="min-w-0">
-                        <div class="font-semibold text-xs sm:text-sm truncate" style="color:var(--text-main, #0f172a);">
-                            {{ $item['name'] }}
-                            @if($item['sid']) <span class="text-muted font-normal text-xs">· {{ $item['sid'] }}</span> @endif
-                            @if($item['faculty']) <span class="text-muted font-normal text-xs">· {{ $item['faculty'] }}</span> @endif
-                        </div>
-                        <div class="text-xs text-muted truncate mt-0.5">
-                            <span class="font-medium" style="color:var(--text-main, #0f172a);">{{ Str::limit($item['activity'], 36, '...') }}</span>
-                            &nbsp;·&nbsp; {{ $item['detail'] }} &nbsp;·&nbsp; {{ $item['time']->diffForHumans() }}
-                        </div>
-                    </div>
+    <a href="{{ route('admin.activities.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #f97316; text-decoration:none;">
+        <div class="flex items-start justify-between">
+            <div>
+                <p class="stat-label">เปิดรับสมัคร</p>
+                <p class="stat-value primary">{{ number_format($stats['upcomingActivities']) }}</p>
+            </div>
+            <div class="dashboard-stat-icon" style="background:rgba(249,115,22,0.1); color:#f97316;">
+                <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            </div>
+        </div>
+        <p class="text-xs text-muted" style="margin-top:4px;">พร้อมให้นักศึกษาลงทะเบียน</p>
+    </a>
+
+    <a href="{{ route('admin.students.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #0284c7; text-decoration:none;">
+        <div class="flex items-start justify-between">
+            <div>
+                <p class="stat-label">นักศึกษาในระบบ</p>
+                <p class="stat-value" style="color:#0284c7;">{{ number_format($stats['totalStudents']) }}</p>
+            </div>
+            <div class="dashboard-stat-icon" style="background:rgba(2,132,199,0.1); color:#0284c7;">
+                <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            </div>
+        </div>
+        <p class="text-xs text-muted" style="margin-top:4px;">สมาชิกผู้ใช้งานทั้งหมด</p>
+    </a>
+
+    <a href="{{ $totalPending > 0 ? '#approval-queue-section' : route('admin.activities.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #d97706; text-decoration:none; position:relative;">
+        <div class="flex items-start justify-between">
+            <div>
+                <p class="stat-label">รออนุมัติทั้งหมด</p>
+                <p class="stat-value" style="color:{{ $totalPending > 0 ? '#d97706' : 'inherit' }};" id="pending-badge-count">{{ $totalPending }}</p>
+            </div>
+            <div class="dashboard-stat-icon" style="background:rgba(217,119,6,0.1); color:#d97706;">
+                <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+        </div>
+        <p class="text-xs text-muted" style="margin-top:4px;">สมัคร {{ $stats['pendingRegistrations'] }} · เช็คอิน {{ $stats['pendingAttendances'] }}</p>
+    </a>
+</div>
+
+{{-- ═══ 3. การ์ดสถิติแถวที่ 2 (งาน / ข้อความ / ประเมิน / สัปดาห์นี้) ═══ --}}
+<div class="grid-4 mb-6">
+    <a href="{{ route('admin.jobs.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #10b981; text-decoration:none;">
+        <div class="flex items-start justify-between">
+            <div>
+                <p class="stat-label">งานทั้งหมด</p>
+                <p class="stat-value" style="color:#059669;">{{ number_format($stats['totalJobs']) }}</p>
+            </div>
+            <div class="dashboard-stat-icon" style="background:rgba(16,185,129,0.1); color:#10b981;">
+                <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-8.995-1.745M16 6l4-4m0 0l-4-4m4 4H9a2 2 0 00-2 2v12a2 2 0 002 2h9a2 2 0 002-2V8a2 2 0 00-2-2z"/></svg>
+            </div>
+        </div>
+        <p class="text-xs text-muted" style="margin-top:4px;">พาร์ทไทม์ &amp; งานทั่วไป</p>
+    </a>
+
+    <a href="{{ route('admin.inbox.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #f43f5e; text-decoration:none;">
+        <div class="flex items-start justify-between">
+            <div>
+                <p class="stat-label">ข้อความใหม่</p>
+                <p class="stat-value" style="color:#e11d48;">{{ number_format($stats['unreadMessages']) }}</p>
+            </div>
+            <div class="dashboard-stat-icon" style="background:rgba(244,63,94,0.1); color:#f43f5e;">
+                <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            </div>
+        </div>
+        <p class="text-xs text-muted" style="margin-top:4px;">กล่องข้อความติดต่อ</p>
+    </a>
+
+    <a href="{{ route('admin.feedbacks.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #0ea5e9; text-decoration:none;">
+        <div class="flex items-start justify-between">
+            <div>
+                <p class="stat-label">ผลการประเมิน</p>
+                <p class="stat-value" style="color:#0284c7;">{{ number_format($stats['totalFeedbacks']) }}</p>
+            </div>
+            <div class="dashboard-stat-icon" style="background:rgba(14,165,233,0.1); color:#0ea5e9;">
+                <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+            </div>
+        </div>
+        <p class="text-xs text-muted" style="margin-top:4px;">แบบประเมินกิจกรรม</p>
+    </a>
+
+    <a href="{{ route('admin.activities.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #64748b; text-decoration:none;">
+        <div class="flex items-start justify-between">
+            <div>
+                <p class="stat-label">กิจกรรมสัปดาห์นี้</p>
+                <p class="stat-value" style="color:#475569;">{{ number_format($stats['upcomingThisWeek']) }}</p>
+            </div>
+            <div class="dashboard-stat-icon" style="background:rgba(100,116,139,0.1); color:#64748b;">
+                <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            </div>
+        </div>
+        <p class="text-xs text-muted" style="margin-top:4px;">กำหนดจัดในสัปดาห์นี้</p>
+    </a>
+</div>
+
+{{-- ═══ 4. Unified Approval Queue (แสดงเมื่อมีรายการค้าง) ═══ --}}
+@php
+    $allPending = collect();
+    foreach($pendingRegistrations as $reg) {
+        $allPending->push([
+            'id'       => $reg->id,
+            'type'     => 'registration',
+            'name'     => $reg->user->full_name ?? '-',
+            'sid'      => $reg->user->student_id ?? '',
+            'faculty'  => $reg->user->faculty ?? '',
+            'activity' => $reg->activity->title ?? '-',
+            'time'     => $reg->created_at,
+            'detail'   => 'ขอลงทะเบียนเข้าร่วม',
+        ]);
+    }
+    foreach($pendingAttendances as $att) {
+        $allPending->push([
+            'id'       => $att->id,
+            'type'     => 'attendance',
+            'name'     => $att->user->full_name ?? '-',
+            'sid'      => $att->user->student_id ?? '',
+            'faculty'  => $att->user->faculty ?? '',
+            'activity' => $att->activity->title ?? '-',
+            'time'     => $att->created_at,
+            'detail'   => $att->distance_meters ? 'เช็คอิน GPS ห่าง '.number_format($att->distance_meters,0).' ม.' : 'บันทึกเช็คอิน',
+        ]);
+    }
+    $allPending = $allPending->sortByDesc('time');
+@endphp
+
+@if($totalPending > 0)
+<div id="approval-queue-section" class="card mb-6">
+    <div class="card-header flex items-center justify-between" style="background:linear-gradient(135deg,#fff7ed,#fffbeb); border-bottom:2px solid #fbbf24;">
+        <div class="flex items-center gap-2">
+            <svg style="width:20px;height:20px;color:#d97706;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <h3 class="card-title" style="color:#92400e; line-height:1.5; margin:0;">
+                รออนุมัติทั้งหมด
+                <span id="queue-count" style="background:#b45309;color:#fff;border-radius:999px;padding:2px 10px;font-size:.8rem;margin-left:6px;line-height:1.5;">{{ $totalPending }}</span>
+            </h3>
+        </div>
+        <a href="{{ route('admin.activities.index') }}" class="btn btn-outline btn-sm">ดูทั้งหมดในกิจกรรม</a>
+    </div>
+    <div id="approval-queue" style="max-height:450px; overflow-y:auto;">
+        @foreach($allPending as $item)
+        <div class="approval-row" id="row-{{ $item['type'] }}-{{ $item['id'] }}">
+            {{-- Type Badge --}}
+            <span style="flex-shrink:0; font-size:.7rem; font-weight:600; padding:3px 8px; border-radius:999px;
+                {{ $item['type'] === 'registration' ? 'background:#ffedd5;color:#c2410c;' : 'background:#dcfce7;color:#15803d;' }}">
+                {{ $item['type'] === 'registration' ? 'ลงทะเบียน' : 'เช็คอิน' }}
+            </span>
+            {{-- Info --}}
+            <div style="flex:1; min-width:0;">
+                <div class="font-semi text-sm" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text-main, #0f172a);">
+                    {{ $item['name'] }}
+                    <span class="text-xs text-muted" style="font-weight:400;"> · รหัส {{ $item['sid'] }}</span>
+                    @if($item['faculty']) <span class="text-xs text-muted"> · {{ $item['faculty'] }}</span> @endif
                 </div>
-
-                <div class="flex items-center gap-1.5 flex-shrink-0">
-                    <button type="button" class="btn btn-success btn-sm py-1 px-2.5 text-xs flex items-center gap-1" style="border-radius:6px;"
-                        onclick="quickAction('approve','{{ $item['type'] }}',{{ $item['id'] }},this)">
-                        <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                        <span>อนุมัติ</span>
-                    </button>
-                    <button type="button" class="btn btn-outline btn-sm py-1 px-2 text-xs flex items-center gap-1 text-danger" style="border-radius:6px;"
-                        onclick="quickAction('reject','{{ $item['type'] }}',{{ $item['id'] }},this)">
-                        <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
-                        <span>ปฏิเสธ</span>
-                    </button>
+                <div class="text-xs text-muted" style="margin-top:2px;">
+                    <span class="font-semi text-primary" title="{{ $item['activity'] }}">{{ Str::limit($item['activity'], 38, '...') }}</span> &nbsp;·&nbsp; {{ $item['detail'] }} &nbsp;·&nbsp; {{ $item['time']->diffForHumans() }}
                 </div>
             </div>
-            @endforeach
+            {{-- Actions --}}
+            <div class="flex gap-1" style="flex-shrink:0;">
+                <button type="button" class="btn btn-success btn-sm"
+                    onclick="quickAction('approve','{{ $item['type'] }}',{{ $item['id'] }},this)"
+                    title="อนุมัติ">
+                    <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    <span>อนุมัติ</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm" style="color:#dc2626; border-color:#fca5a5;"
+                    onclick="quickAction('reject','{{ $item['type'] }}',{{ $item['id'] }},this)"
+                    title="ปฏิเสธ">
+                    <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                    <span>ปฏิเสธ</span>
+                </button>
+            </div>
         </div>
+        @endforeach
+    </div>
+    @if($totalPending > 8)
+    <div style="padding:.75rem 1.1rem; text-align:center; background:rgba(254, 243, 199, 0.4); border-top:1px solid rgba(245, 158, 11, 0.2);">
+        <span class="text-xs text-muted">แสดง 8 รายการล่าสุด — <a href="{{ route('admin.activities.index') }}" style="color:#d97706; font-weight:600;">ดูทั้งหมด {{ $totalPending }} รายการ</a></span>
     </div>
     @endif
+</div>
+@endif
 
-    {{-- ═══ 4. กิจกรรมล่าสุด (Cardless Minimal Table) ═══ --}}
-    <div class="space-y-3">
-        <div class="flex items-center justify-between pb-2 hairline-b">
-            <div>
-                <h2 class="text-sm font-bold uppercase tracking-wider" style="color: var(--text-main, #0f172a); margin: 0;">
-                    กิจกรรมล่าสุด
-                </h2>
-                <p class="text-xs text-muted mt-0.5">รายการกิจกรรมที่สร้างและเปิดรับสมัครล่าสุดในระบบ</p>
-            </div>
-            <a href="{{ route('admin.activities.index') }}" class="text-xs font-medium text-muted hover:text-primary transition">
-                ดูกิจกรรมทั้งหมด &rarr;
-            </a>
-        </div>
-
-        <div class="overflow-x-auto">
-            <table class="minimal-table">
-                <thead>
-                    <tr>
-                        <th>ชื่อกิจกรรม</th>
-                        <th class="text-center" style="width: 110px;">วันที่</th>
-                        <th class="text-center" style="width: 120px;">สถานะ</th>
-                        <th class="text-center" style="width: 130px;">ผู้เข้าร่วม</th>
-                        <th class="text-right" style="width: 100px;">จัดการ</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($recentActivities as $act)
-                    <tr>
-                        <td title="{{ $act->title }}">
-                            <a href="{{ route('admin.activities.show', $act->id) }}" class="font-semibold text-main hover:text-primary transition">
-                                {{ Str::limit($act->title, 42, '...') }}
-                            </a>
-                            <div class="text-xs text-muted mt-0.5">{{ $act->category->name ?? 'ทั่วไป' }}</div>
-                        </td>
-                        <td class="text-center text-xs text-muted">
-                            {{ $act->activity_date->format('d/m/Y') }}
-                        </td>
-                        <td class="text-center">
-                            @include('components.status-badge', ['status' => $act->computed_status])
-                        </td>
-                        <td class="text-center text-xs">
-                            @php
-                                $regCount = $act->registrations()->where('status','approved')->count();
-                                $attCount = $act->attendances()->where('status','approved')->count();
-                            @endphp
-                            <span class="font-medium text-main">{{ $regCount }}/{{ $act->max_participants }}</span>
-                            @if($attCount > 0)
-                                <span class="text-success ml-1">({{ $attCount }})</span>
-                            @endif
-                        </td>
-                        <td class="text-right">
-                            <div class="flex items-center justify-end gap-1">
-                                <a href="{{ route('admin.activities.show', $act->id) }}" class="action-link">ดู</a>
-                                <a href="{{ route('admin.activities.edit', $act->id) }}" class="action-link">แก้ไข</a>
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="5" class="py-8 text-center text-xs text-muted">ยังไม่มีกิจกรรมในระบบ</td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    {{-- ═══ 5. Split Minimal Feed: ประกาศงาน & ประกาศทั่วไป (ไร้ Card ไร้ Box) ═══ --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-
-        {{-- ฝั่งซ้าย: ประกาศงานล่าสุด --}}
-        <div class="space-y-3">
-            <div class="flex items-center justify-between pb-2 hairline-b">
-                <div class="flex items-center gap-2">
-                    <svg style="width:15px;height:15px;color:#10b981;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-8.995-1.745M16 6l4-4m0 0l-4-4m4 4H9a2 2 0 00-2 2v12a2 2 0 002 2h9a2 2 0 002-2V8a2 2 0 00-2-2z"/></svg>
-                    <h2 class="text-sm font-bold uppercase tracking-wider" style="color: var(--text-main, #0f172a); margin: 0;">
-                        ประกาศงานล่าสุด
-                    </h2>
-                </div>
-                <a href="{{ route('admin.jobs.index') }}" class="text-xs font-medium text-muted hover:text-primary transition">ดูทั้งหมด &rarr;</a>
-            </div>
-
-            <div>
-                @forelse($recentJobs as $job)
-                <div class="minimal-row">
-                    <div class="min-w-0">
-                        <a href="{{ route('admin.jobs.show', $job->id) }}" class="font-semibold text-xs sm:text-sm truncate block text-main hover:text-primary transition">
-                            {{ Str::limit($job->title, 34) }}
-                        </a>
-                        <div class="text-xs text-muted flex items-center gap-2 mt-0.5">
-                            <span>{{ $job->position }}</span>
-                            <span>·</span>
-                            <span>{{ $job->applications_count }} สมัคร</span>
+{{-- ═══ 5. กิจกรรมล่าสุด (ตารางระบบมาตรฐาน) ═══ --}}
+<div class="flex items-center justify-between mb-2">
+    <h2 class="font-bold flex items-center gap-2" style="font-size:1.15rem; color:var(--text-main, #0f172a);">
+        <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+        กิจกรรมล่าสุด
+    </h2>
+    <a href="{{ route('admin.activities.index') }}" class="btn btn-outline btn-sm">ดูกิจกรรมทั้งหมด</a>
+</div>
+<div class="card mb-6">
+    <div class="table-wrap">
+        <table class="responsive-table">
+            <thead>
+                <tr>
+                    <th>ชื่อกิจกรรม</th>
+                    <th class="text-center">วันที่</th>
+                    <th class="text-center">สถานะ</th>
+                    <th class="text-center">ผู้เข้าร่วม</th>
+                    <th class="text-right">จัดการ</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($recentActivities as $act)
+                <tr>
+                    <td data-label="ชื่อกิจกรรม" class="font-semi" title="{{ $act->title }}">
+                        <a href="{{ route('admin.activities.show', $act->id) }}" class="text-primary font-semi">{{ Str::limit($act->title, 42, '...') }}</a>
+                        <p class="text-xs text-muted" style="margin:2px 0 0 0;">{{ $act->category->name ?? 'ทั่วไป' }}</p>
+                    </td>
+                    <td data-label="วันที่" class="text-center text-muted">{{ $act->activity_date->format('d/m/Y') }}</td>
+                    <td data-label="สถานะ" class="text-center">@include('components.status-badge', ['status' => $act->computed_status])</td>
+                    <td data-label="ผู้เข้าร่วม" class="text-center">
+                        @php
+                            $regCount = $act->registrations()->where('status','approved')->count();
+                            $attCount = $act->attendances()->where('status','approved')->count();
+                        @endphp
+                        <span class="text-sm font-semi">{{ $regCount }}/{{ $act->max_participants }}</span>
+                        @if($attCount > 0)
+                            <span class="text-xs" style="color:#16a34a; display:inline-flex; align-items:center; gap:2px;">
+                                (<svg style="width:10px;height:10px;display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>{{ $attCount }})
+                            </span>
+                        @endif
+                    </td>
+                    <td data-label="จัดการ" class="text-right">
+                        <div class="flex justify-end gap-2" style="justify-content:flex-end;">
+                            <a href="{{ route('admin.activities.show', $act->id) }}" class="btn btn-outline btn-sm">ดู</a>
+                            <a href="{{ route('admin.activities.edit', $act->id) }}" class="btn btn-outline btn-sm">แก้ไข</a>
                         </div>
-                    </div>
-                    <div class="flex items-center gap-2 flex-shrink-0">
-                        <span class="text-xs font-medium px-2 py-0.5 rounded" style="font-size:0.68rem;
-                            {{ $job->status === 'open' ? 'background:rgba(16,185,129,0.12);color:#10b981;' : 'background:rgba(100,116,139,0.12);color:#64748b;' }}">
-                            {{ $job->status === 'open' ? 'เปิด' : 'ปิด' }}
-                        </span>
-                        <a href="{{ route('admin.jobs.show', $job->id) }}" class="action-link">ดู</a>
-                    </div>
-                </div>
+                    </td>
+                </tr>
                 @empty
-                <div class="py-6 text-center text-xs text-muted">ยังไม่มีประกาศงาน</div>
+                <tr>
+                    <td colspan="5">
+                        <div class="empty-state-row py-6 text-center">
+                            <svg class="icon-sm text-muted" style="width:36px;height:36px;margin:0 auto;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <div class="font-semi text-sm mt-2">ยังไม่มีกิจกรรม</div>
+                            <div class="text-xs text-muted">กดปุ่มสร้างกิจกรรมใหม่ด้านบนเพื่อเริ่มต้น</div>
+                        </div>
+                    </td>
+                </tr>
                 @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{{-- ═══ 6. สองคอลัมน์: ประกาศงานล่าสุด & ประกาศข่าวสารล่าสุด ═══ --}}
+<div class="dashboard-grid-split">
+
+    {{-- ฝั่งซ้าย: ประกาศงานล่าสุด --}}
+    <div>
+        <div class="flex items-center justify-between mb-2">
+            <h2 class="font-bold flex items-center gap-2" style="font-size:1.15rem; color:var(--text-main, #0f172a);">
+                <svg class="icon-sm" style="color:#10b981;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-8.995-1.745M16 6l4-4m0 0l-4-4m4 4H9a2 2 0 00-2 2v12a2 2 0 002 2h9a2 2 0 002-2V8a2 2 0 00-2-2z"/></svg>
+                ประกาศงานล่าสุด
+            </h2>
+            <a href="{{ route('admin.jobs.index') }}" class="btn btn-outline btn-sm">ดูทั้งหมด</a>
+        </div>
+        <div class="card">
+            <div class="table-wrap">
+                <table class="responsive-table">
+                    <thead>
+                        <tr>
+                            <th>หัวข้องาน</th>
+                            <th>ตำแหน่ง</th>
+                            <th class="text-center">สถานะ</th>
+                            <th class="text-center">ผู้สมัคร</th>
+                            <th class="text-right">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($recentJobs as $job)
+                        <tr>
+                            <td data-label="หัวข้องาน">
+                                <a href="{{ route('admin.jobs.show', $job->id) }}" class="text-primary font-semi">{{ Str::limit($job->title, 28) }}</a>
+                            </td>
+                            <td data-label="ตำแหน่ง" class="text-xs text-muted">{{ $job->position }}</td>
+                            <td data-label="สถานะ" class="text-center">
+                                @if($job->status === 'open')
+                                    <span class="badge badge-green">เปิด</span>
+                                @else
+                                    <span class="badge badge-gray">ปิด</span>
+                                @endif
+                            </td>
+                            <td data-label="ผู้สมัคร" class="text-center">
+                                <span class="badge badge-orange">{{ $job->applications_count }} คน</span>
+                            </td>
+                            <td data-label="จัดการ" class="text-right">
+                                <a href="{{ route('admin.jobs.show', $job->id) }}" class="btn btn-outline btn-sm">ดู</a>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" class="py-6 text-center text-xs text-muted">ยังไม่มีประกาศงาน</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
-
-        {{-- ฝั่งขวา: ประกาศทั่วไปล่าสุด --}}
-        <div class="space-y-3">
-            <div class="flex items-center justify-between pb-2 hairline-b">
-                <div class="flex items-center gap-2">
-                    <svg style="width:15px;height:15px;color:#f59e0b;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3-.204.904-.402 1.92-.402 3 0 1.08.198 2.096.402 3M2 9s1.5 2 2.5 2S7 9 7 9M2 9s1.5-2 2.5-2S7 9 7 9"/></svg>
-                    <h2 class="text-sm font-bold uppercase tracking-wider" style="color: var(--text-main, #0f172a); margin: 0;">
-                        ประกาศล่าสุด
-                    </h2>
-                </div>
-                <a href="{{ route('admin.announcements.index') }}" class="text-xs font-medium text-muted hover:text-primary transition">ดูทั้งหมด &rarr;</a>
-            </div>
-
-            <div>
-                @forelse($recentAnnouncements as $item)
-                <div class="minimal-row">
-                    <div class="min-w-0">
-                        <div class="font-semibold text-xs sm:text-sm truncate text-main" title="{{ $item->title }}">
-                            {{ Str::limit($item->title, 34) }}
-                        </div>
-                        <div class="text-xs text-muted flex items-center gap-2 mt-0.5">
-                            <span>{{ $item->target_faculty ?? 'ทุกคน' }}</span>
-                            <span>·</span>
-                            <span>{{ $item->created_at->format('d/m/Y') }}</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2 flex-shrink-0">
-                        <span class="text-xs font-medium px-2 py-0.5 rounded" style="font-size:0.68rem;
-                            {{ $item->is_active ? 'background:rgba(16,185,129,0.12);color:#10b981;' : 'background:rgba(100,116,139,0.12);color:#64748b;' }}">
-                            {{ $item->is_active ? 'เปิด' : 'ปิด' }}
-                        </span>
-                        <a href="{{ route('admin.announcements.edit', $item->id) }}" class="action-link">แก้ไข</a>
-                    </div>
-                </div>
-                @empty
-                <div class="py-6 text-center text-xs text-muted">ยังไม่มีประกาศ</div>
-                @endforelse
-            </div>
-        </div>
-
     </div>
 
-    {{-- ═══ 6. ประวัติการดำเนินงานล่าสุด (Audit Logs — Cardless & Borderless) ═══ --}}
-    @if(auth()->user()->isAdmin())
-    <div class="space-y-3 pt-2">
-        <div class="flex items-center justify-between pb-2 hairline-b">
-            <div class="flex items-center gap-2">
-                <svg style="width:15px;height:15px;color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                <h2 class="text-sm font-bold uppercase tracking-wider" style="color: var(--text-main, #0f172a); margin: 0;">
-                    ประวัติการดำเนินงานล่าสุด (Audit Logs)
-                </h2>
-            </div>
-            <a href="{{ route('admin.audit-logs.index') }}" class="text-xs font-medium text-muted hover:text-primary transition">
-                ดูประวัติทั้งหมด &rarr;
-            </a>
+    {{-- ฝั่งขวา: ประกาศล่าสุด --}}
+    <div>
+        <div class="flex items-center justify-between mb-2">
+            <h2 class="font-bold flex items-center gap-2" style="font-size:1.15rem; color:var(--text-main, #0f172a);">
+                <svg class="icon-sm" style="color:#f59e0b;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3-.204.904-.402 1.92-.402 3 0 1.08.198 2.096.402 3M2 9s1.5 2 2.5 2S7 9 7 9M2 9s1.5-2 2.5-2S7 9 7 9"/></svg>
+                ประกาศล่าสุด
+            </h2>
+            <a href="{{ route('admin.announcements.index') }}" class="btn btn-outline btn-sm">ดูทั้งหมด</a>
         </div>
-
-        <div>
-            @forelse($recentAuditLogs ?? [] as $log)
-            <a href="{{ route('admin.audit-logs.show', $log->id) }}" class="minimal-row">
-                <div class="min-w-0 flex-1">
-                    <div class="flex items-center justify-between gap-2">
-                        <span class="text-xs font-semibold text-main truncate">
-                            {{ $log->user->full_name ?? 'System' }}
-                        </span>
-                        <span class="text-xs text-muted" style="font-size:0.7rem; white-space:nowrap;">
-                            {{ $log->created_at->diffForHumans() }}
-                        </span>
-                    </div>
-                    <p class="text-xs text-muted truncate mt-0.5" style="margin:0;">{{ $log->description }}</p>
-                </div>
-                <div class="flex-shrink-0">
-                    <span class="text-xs font-medium px-2 py-0.5 rounded" style="background:rgba(100,116,139,0.1);color:#64748b;font-size:0.68rem;">
-                        {{ $log->action_label }}
-                    </span>
-                </div>
-            </a>
-            @empty
-            <div class="py-6 text-center text-xs text-muted">ไม่มีประวัติการดำเนินงานล่าสุด</div>
-            @endforelse
+        <div class="card">
+            <div class="table-wrap">
+                <table class="responsive-table">
+                    <thead>
+                        <tr>
+                            <th>หัวข้อ</th>
+                            <th>กลุ่มเป้าหมาย</th>
+                            <th class="text-center">สถานะ</th>
+                            <th class="text-right">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($recentAnnouncements as $item)
+                        <tr>
+                            <td data-label="หัวข้อ">
+                                <div class="font-semi text-sm truncate" style="max-width:200px;" title="{{ $item->title }}">{{ Str::limit($item->title, 26, '...') }}</div>
+                                <div class="text-xs text-muted">{{ $item->created_at->format('d/m/Y') }}</div>
+                            </td>
+                            <td data-label="กลุ่มเป้าหมาย"><span class="badge badge-orange">{{ $item->target_faculty ?? 'ทุกคน' }}</span></td>
+                            <td data-label="สถานะ" class="text-center">
+                                <span class="badge {{ $item->is_active ? 'badge-green' : 'badge-gray' }}">{{ $item->is_active ? 'เปิด' : 'ปิด' }}</span>
+                            </td>
+                            <td data-label="จัดการ" class="text-right">
+                                <a href="{{ route('admin.announcements.edit', $item->id) }}" class="btn btn-outline btn-sm">แก้ไข</a>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="4" class="py-6 text-center text-xs text-muted">ยังไม่มีประกาศ</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-    @endif
 
 </div>
 
+{{-- ═══ 7. ประวัติการดำเนินงานล่าสุด (Audit Logs — สำหรับ Admin) ═══ --}}
+@if(auth()->user()->isAdmin())
+<div class="mb-8">
+    <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+            <div style="width:32px;height:32px;background:rgba(234,88,12,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#ea580c;">
+                <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01"/></svg>
+            </div>
+            <div>
+                <h2 class="font-bold" style="font-size:1.15rem; margin:0; color:var(--text-main, #0f172a);">ประวัติการดำเนินงานล่าสุด</h2>
+                <p class="text-xs text-muted" style="margin:0;">Audit Logs บันทึกการเปลี่ยนแปลงในระบบ</p>
+            </div>
+        </div>
+        <a href="{{ route('admin.audit-logs.index') }}" class="dashboard-view-all-logs-btn">
+            ดูประวัติทั้งหมด
+            <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+        </a>
+    </div>
+
+    <div class="card" style="padding:0; overflow:hidden;">
+        @forelse($recentAuditLogs ?? [] as $log)
+        @php
+            $actionBg = match($log->action) {
+                'create', 'approve' => 'rgba(16, 185, 129, 0.1)',
+                'update', 'toggle'  => 'rgba(245, 158, 11, 0.1)',
+                'delete', 'reject'  => 'rgba(239, 68, 68, 0.1)',
+                'login'             => 'rgba(14, 165, 233, 0.1)',
+                default             => 'rgba(100, 116, 139, 0.1)',
+            };
+            $actionColor = match($log->action) {
+                'create', 'approve' => '#10b981',
+                'update', 'toggle'  => '#f59e0b',
+                'delete', 'reject'  => '#ef4444',
+                'login'             => '#0ea5e9',
+                default             => '#64748b',
+            };
+            $actionSvg = match($log->action) {
+                'create'  => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>',
+                'update'  => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>',
+                'delete'  => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>',
+                'approve' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>',
+                'reject'  => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>',
+                'login'   => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>',
+                default   => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4"/>',
+            };
+        @endphp
+        <a href="{{ route('admin.audit-logs.show', $log->id) }}" class="dashboard-audit-row">
+            <div style="width:34px; height:34px; border-radius:8px; background:{{ $actionBg }}; color:{{ $actionColor }}; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">{!! $actionSvg !!}</svg>
+            </div>
+            <div style="flex:1; min-width:0;">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:.5rem; margin-bottom:2px;">
+                    <span style="font-size:.85rem; font-weight:700; color:var(--text-main, #1e293b);">{{ $log->user->full_name ?? 'System' }}</span>
+                    <span style="font-size:.7rem; color:#94a3b8; white-space:nowrap; flex-shrink:0;">{{ $log->created_at->diffForHumans() }}</span>
+                </div>
+                <p style="font-size:.8rem; color:var(--text-muted, #64748b); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:0;">{{ $log->description }}</p>
+            </div>
+            <div style="flex-shrink:0;">
+                <span class="badge" style="background:{{ $actionBg }}; color:{{ $actionColor }}; font-size:0.7rem;">
+                    {{ $log->action_label }}
+                </span>
+            </div>
+            <svg style="width:14px;height:14px;color:#94a3b8;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+        @empty
+        <div class="empty-state-row py-6 text-center text-xs text-muted">
+            ไม่มีประวัติการดำเนินงานล่าสุด
+        </div>
+        @endforelse
+    </div>
+</div>
+@endif
+
 {{-- ═══ Modal สร้างกิจกรรมด่วน ═══ --}}
 <div id="quickModal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
-    <div class="modal" style="background: var(--surface, #ffffff); color: var(--text-main, #0f172a); border: 1px solid var(--border, #e2e8f0); max-width: 520px; border-radius: 14px;">
-        <div class="modal-header" style="background: var(--surface, #ffffff); border-bottom: 1px solid var(--border, #e2e8f0);">
-            <h2 style="display:flex; align-items:center; gap:0.5rem; color: var(--text-main, #0f172a); font-size:1.05rem; font-weight:700; margin:0;">
-                <svg class="icon-sm" style="display:inline;color:#10b981;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+    <div class="modal" style="background:var(--surface, #ffffff); color:var(--text-main, #0f172a); border:1px solid var(--border, #e2e8f0);">
+        <div class="modal-header" style="background:var(--surface, #ffffff); border-bottom:1px solid var(--border, #e2e8f0);">
+            <h2 style="display:flex; align-items:center; gap:0.5rem; color:var(--text-main, #0f172a); font-size:1.15rem; margin:0;">
+                <svg class="icon-sm" style="display:inline;color:#16a34a;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 บันทึกกิจกรรมด่วน
             </h2>
-            <button class="modal-close" style="color: var(--text-muted, #64748b);" onclick="document.getElementById('quickModal').classList.remove('open')" aria-label="ปิด">
+            <button class="modal-close" style="color:var(--text-muted, #64748b);" onclick="document.getElementById('quickModal').classList.remove('open')" aria-label="ปิด">
                 <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
-        <div class="modal-body" style="background: var(--surface, #ffffff); color: var(--text-main, #0f172a); padding: 1.25rem;">
+        <div class="modal-body" style="background:var(--surface, #ffffff); color:var(--text-main, #0f172a);">
             <form method="POST" action="{{ route('admin.activities.quick-store') }}">
                 @csrf
-                <div class="form-group mb-3">
-                    <label class="form-label" style="color: var(--text-main, #0f172a); font-weight:600; font-size:0.85rem;">ชื่อกิจกรรม <span class="text-danger">*</span></label>
-                    <input type="text" name="title" class="form-control" placeholder="เช่น สัมมนา AI เบื้องต้น, อบรม Excel" required autofocus>
+                <div class="form-group">
+                    <label class="form-label" style="color:var(--text-main, #0f172a);">ชื่อกิจกรรม <span class="text-danger">*</span></label>
+                    <input type="text" name="title" class="form-control" placeholder="เช่น ประชุมชมรม, อบรม Excel" required autofocus>
                 </div>
-                <div class="form-row mb-3" style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem;">
+                <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label" style="color: var(--text-main, #0f172a); font-weight:600; font-size:0.85rem;">สถานที่ <span class="text-danger">*</span></label>
-                        <input type="text" name="location" class="form-control" placeholder="เช่น อาคาร 1 ห้อง 101" required>
+                        <label class="form-label" style="color:var(--text-main, #0f172a);">สถานที่ <span class="text-danger">*</span></label>
+                        <input type="text" name="location" class="form-control" placeholder="เช่น ห้อง 101" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" style="color: var(--text-main, #0f172a); font-weight:600; font-size:0.85rem;">หมวดหมู่ <span class="text-danger">*</span></label>
+                        <label class="form-label" style="color:var(--text-main, #0f172a);">หมวดหมู่ <span class="text-danger">*</span></label>
                         <select name="category_id" class="form-control" required>
                             @foreach($categories as $cat)
                                 <option value="{{ $cat->id }}">{{ $cat->name }}</option>
@@ -564,32 +600,32 @@ html.dark .minimal-row:hover {
                         </select>
                     </div>
                 </div>
-                <div class="form-row mb-3" style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem;">
+                <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label" style="color: var(--text-main, #0f172a); font-weight:600; font-size:0.85rem;">วันที่จัดกิจกรรม <span class="text-danger">*</span></label>
+                        <label class="form-label" style="color:var(--text-main, #0f172a);">วันที่จัดกิจกรรม <span class="text-danger">*</span></label>
                         <input type="date" name="activity_date" class="form-control" value="{{ now()->addDays(3)->format('Y-m-d') }}" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" style="color: var(--text-main, #0f172a); font-weight:600; font-size:0.85rem;">ชั่วโมงกิจกรรม <span class="text-danger">*</span></label>
+                        <label class="form-label" style="color:var(--text-main, #0f172a);">ชั่วโมงกิจกรรม <span class="text-danger">*</span></label>
                         <input type="number" name="activity_hours" class="form-control" value="2" step="0.5" min="0.5" required>
                     </div>
                 </div>
-                <div class="form-row mb-3" style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem;">
+                <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label" style="color: var(--text-main, #0f172a); font-weight:600; font-size:0.85rem;">เวลาเริ่ม <span class="text-danger">*</span></label>
+                        <label class="form-label" style="color:var(--text-main, #0f172a);">เวลาเริ่ม <span class="text-danger">*</span></label>
                         <input type="time" name="start_time" class="form-control" value="09:00" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" style="color: var(--text-main, #0f172a); font-weight:600; font-size:0.85rem;">เวลาสิ้นสุด <span class="text-danger">*</span></label>
+                        <label class="form-label" style="color:var(--text-main, #0f172a);">เวลาสิ้นสุด <span class="text-danger">*</span></label>
                         <input type="time" name="end_time" class="form-control" value="12:00" required>
                     </div>
                 </div>
-                <p class="text-xs text-muted mb-4" style="color: var(--text-muted, #64748b);">* ค่าเริ่มต้นอัตโนมัติ: เปิดรับสมัครทันที, รับสมัครสูงสุด 50 คน</p>
+                <p class="text-xs text-muted mb-4" style="color:var(--text-muted, #64748b);">* ค่าเริ่มต้น: รับสมัคร 50 คน, เปิดรับสมัครทันที</p>
                 <div class="flex gap-2" style="justify-content:flex-end;">
                     <button type="button" class="btn btn-outline" onclick="document.getElementById('quickModal').classList.remove('open')">ยกเลิก</button>
-                    <button type="submit" class="btn btn-success flex items-center gap-1">
+                    <button type="submit" class="btn btn-success">
                         <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        <span>บันทึกกิจกรรม</span>
+                        บันทึกกิจกรรม
                     </button>
                 </div>
             </form>
@@ -597,7 +633,7 @@ html.dark .minimal-row:hover {
     </div>
 </div>
 
-{{-- Toast Notification Box --}}
+{{-- Toast notification --}}
 <div id="toast" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;
     background:#1e293b;color:#fff;padding:.75rem 1.25rem;border-radius:10px;
     font-size:.875rem;box-shadow:0 4px 24px rgba(0,0,0,.2);transition:opacity .3s;"></div>
@@ -616,10 +652,7 @@ function showToast(msg, ok) {
     t.style.background = ok ? '#15803d' : '#dc2626';
     t.style.display = 'block';
     t.style.opacity = '1';
-    setTimeout(() => {
-        t.style.opacity = '0';
-        setTimeout(() => t.style.display = 'none', 300);
-    }, 2800);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.style.display='none', 300); }, 2800);
 }
 
 function updateBadges(count) {
@@ -633,8 +666,7 @@ async function quickAction(action, type, id, btn) {
     const row = document.getElementById(`row-${type}-${id}`);
     const url = action === 'approve' ? APPROVE_URL : REJECT_URL;
     btn.disabled = true;
-    if (row) row.style.opacity = '0.5';
-
+    if (row) row.style.opacity = '.5';
     try {
         const res = await fetch(url, {
             method: 'POST',
@@ -644,7 +676,7 @@ async function quickAction(action, type, id, btn) {
         const data = await res.json();
         if (data.ok) {
             if (row) {
-                row.style.transition = 'all 0.25s ease';
+                row.style.transition = 'all .3s';
                 row.style.maxHeight = row.offsetHeight + 'px';
                 row.style.overflow = 'hidden';
                 requestAnimationFrame(() => {
@@ -652,15 +684,15 @@ async function quickAction(action, type, id, btn) {
                     row.style.padding = '0';
                     row.style.opacity = '0';
                 });
-                setTimeout(() => row.remove(), 260);
+                setTimeout(() => row.remove(), 320);
             }
             updateBadges(data.pending_count);
             showToast(data.message, true);
             if (data.pending_count === 0) {
-                setTimeout(() => location.reload(), 500);
+                setTimeout(() => location.reload(), 600);
             }
         } else {
-            showToast('เกิดข้อผิดพลาดในการประมวลผล', false);
+            showToast('เกิดข้อผิดพลาด', false);
             if (row) row.style.opacity = '1';
             btn.disabled = false;
         }
