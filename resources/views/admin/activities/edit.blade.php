@@ -42,7 +42,7 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label" style="font-weight:600;">สถานที่จัดกิจกรรม <span style="color:#ef4444;">*</span></label>
-                    <input type="text" name="location" value="{{ old('location', $activity->location) }}" class="form-control" required placeholder="เช่น ห้องประชุม 1 อาคารเรียนรวม">
+                    <input type="text" name="location" id="locationInput" value="{{ old('location', $activity->location) }}" class="form-control" required placeholder="เช่น ห้องประชุม 1 อาคารเรียนรวม" oninput="debouncedConflictCheck()">
                 </div>
             </div>
 
@@ -138,9 +138,9 @@
                         </label>
                     </div>
                     <div style="display:flex; gap:0.5rem; align-items:center;">
-                        <input type="date" name="activity_date" id="activityDate" value="{{ old('activity_date', $activity->activity_date->format('Y-m-d')) }}" class="form-control" required style="flex:1;" onchange="autoFillDates(); renderMultidaySchedule();">
+                        <input type="date" name="activity_date" id="activityDate" value="{{ old('activity_date', $activity->activity_date->format('Y-m-d')) }}" class="form-control" required style="flex:1;" onchange="autoFillDates(); renderMultidaySchedule(); debouncedConflictCheck();">
                         <span id="endDateSeparator" style="display:{{ old('is_multiday', $activity->is_multiday) ? 'inline' : 'none' }}; font-weight:600; color:#64748b;">ถึง</span>
-                        <input type="date" name="end_date" id="endDate" value="{{ old('end_date', $activity->end_date ? $activity->end_date->format('Y-m-d') : '') }}" class="form-control" style="flex:1; display:{{ old('is_multiday', $activity->is_multiday) ? 'block' : 'none' }};" onchange="renderMultidaySchedule();">
+                        <input type="date" name="end_date" id="endDate" value="{{ old('end_date', $activity->end_date ? $activity->end_date->format('Y-m-d') : '') }}" class="form-control" style="flex:1; display:{{ old('is_multiday', $activity->is_multiday) ? 'block' : 'none' }};" onchange="renderMultidaySchedule(); debouncedConflictCheck();">
                     </div>
                 </div>
 
@@ -159,12 +159,34 @@
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label" style="font-weight:600;">เวลาเริ่มกิจกรรม <span style="color:#ef4444;">*</span></label>
-                    <input type="time" name="start_time" id="startTime" value="{{ old('start_time', \Carbon\Carbon::parse($activity->start_time)->format('H:i')) }}" class="form-control" required onchange="autoCalcHours(); autoFillDates()">
+                    <input type="time" name="start_time" id="startTime" value="{{ old('start_time', \Carbon\Carbon::parse($activity->start_time)->format('H:i')) }}" class="form-control" required onchange="autoCalcHours(); autoFillDates(); debouncedConflictCheck();">
                 </div>
                 <div class="form-group">
                     <label class="form-label" style="font-weight:600;">เวลาสิ้นสุดกิจกรรม <span style="color:#ef4444;">*</span></label>
-                    <input type="time" name="end_time" id="endTime" value="{{ old('end_time', \Carbon\Carbon::parse($activity->end_time)->format('H:i')) }}" class="form-control" required onchange="autoCalcHours(); autoFillDates()">
+                    <input type="time" name="end_time" id="endTime" value="{{ old('end_time', \Carbon\Carbon::parse($activity->end_time)->format('H:i')) }}" class="form-control" required onchange="autoCalcHours(); autoFillDates(); debouncedConflictCheck();">
                     <small id="crossDayHint" class="text-muted" style="display:{{ old('is_multiday', $activity->is_multiday) ? 'block' : 'none' }}; margin-top:4px;">(ข้ามวันได้)</small>
+                </div>
+            </div>
+
+            {{-- ── กล่องแจ้งเตือน Conflict Warning แบบ Real-time ── --}}
+            <div id="conflictAlertBox" style="display:none; margin-top:0.75rem; margin-bottom:1rem; padding:0.85rem 1rem; border-radius:10px; background:#fef2f2; border:1px solid #f87171;">
+                <div style="display:flex; align-items:flex-start; gap:0.6rem;">
+                    <div style="color:#dc2626; flex-shrink:0; margin-top:1px;">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="font-weight:700; font-size:0.875rem; color:#991b1b;" id="conflictAlertTitle">
+                            คำเตือน: ตรวจพบการจัดกิจกรรมชนกันในสถานที่นี้!
+                        </div>
+                        <div style="font-size:0.8rem; color:#7f1d1d; margin-top:2px;" id="conflictAlertMsg"></div>
+                        <div id="conflictAlertItems" style="margin-top:0.5rem; display:grid; gap:0.4rem;"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="noConflictSuccessBox" style="display:none; margin-top:0.5rem; margin-bottom:1rem; padding:0.6rem 0.85rem; border-radius:8px; background:#f0fdf4; border:1px solid #86efac;">
+                <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.8rem; color:#15803d; font-weight:500;">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    สถานที่และช่วงเวลานี้ว่าง ไม่มีกิจกรรมอื่นทับซ้อน
                 </div>
             </div>
 
@@ -1246,5 +1268,106 @@ function autoFillDates() {
         }
     });
 }
+
+// ── Smart Conflict Check (Real-time Detection) ──
+var conflictTimer = null;
+function debouncedConflictCheck() {
+    clearTimeout(conflictTimer);
+    conflictTimer = setTimeout(performConflictCheck, 400);
+}
+
+function performConflictCheck() {
+    var locEl = document.getElementById('locationInput');
+    var dateEl = document.getElementById('activityDate');
+    var endDateEl = document.getElementById('endDate');
+    var startEl = document.getElementById('startTime');
+    var endEl = document.getElementById('endTime');
+
+    var alertBox = document.getElementById('conflictAlertBox');
+    var successBox = document.getElementById('noConflictSuccessBox');
+    var itemsBox = document.getElementById('conflictAlertItems');
+
+    var loc = locEl ? locEl.value.trim() : '';
+    var date = dateEl ? dateEl.value : '';
+    var endDate = endDateEl ? endDateEl.value : '';
+    var start = startEl ? startEl.value : '';
+    var end = endEl ? endEl.value : '';
+
+    if (!loc || !date) {
+        if (alertBox) alertBox.style.display = 'none';
+        if (successBox) successBox.style.display = 'none';
+        return;
+    }
+
+    var token = document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').content : '';
+
+    fetch('{{ route("admin.calendar.check-conflict") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': token
+        },
+        body: JSON.stringify({
+            location: loc,
+            activity_date: date,
+            end_date: endDate || null,
+            start_time: start || null,
+            end_time: end || null,
+            exclude_id: {{ (int) $activity->id }}
+        })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (!alertBox || !successBox || !itemsBox) return;
+
+        if (data.has_conflict && data.conflicts && data.conflicts.length > 0) {
+            successBox.style.display = 'none';
+            alertBox.style.display = 'block';
+            document.getElementById('conflictAlertMsg').textContent = data.message;
+            itemsBox.innerHTML = '';
+
+            data.conflicts.forEach(function(c) {
+                var div = document.createElement('div');
+                div.style.padding = '8px 12px';
+                div.style.borderRadius = '8px';
+                div.style.background = '#ffffff';
+                div.style.border = '1px solid #fca5a5';
+                div.style.fontSize = '0.8rem';
+                div.style.display = 'flex';
+                div.style.alignItems = 'center';
+                div.style.justifyContent = 'space-between';
+                div.style.gap = '8px';
+
+                div.innerHTML = `
+                    <div>
+                        <div style="font-weight:700; color:#991b1b;">${c.title}</div>
+                        <div style="font-size:0.72rem; color:#64748b; margin-top:2px;">
+                            วันที่ ${c.date_display} เวลา ${c.time_display} • ผู้สร้าง: ${c.creator}
+                        </div>
+                    </div>
+                    <a href="${c.view_url}" target="_blank" class="btn btn-xs btn-outline" style="padding:2px 8px; font-size:0.72rem; color:#991b1b; border-color:#f87171; white-space:nowrap;">
+                        เปิดดู
+                    </a>
+                `;
+                itemsBox.appendChild(div);
+            });
+        } else {
+            alertBox.style.display = 'none';
+            successBox.style.display = 'block';
+        }
+    })
+    .catch(function(err) {
+        console.error('Conflict check error:', err);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var loc = document.getElementById('locationInput') ? document.getElementById('locationInput').value : '';
+    var date = document.getElementById('activityDate') ? document.getElementById('activityDate').value : '';
+    if (loc && date) {
+        performConflictCheck();
+    }
+});
 </script>
 @endsection

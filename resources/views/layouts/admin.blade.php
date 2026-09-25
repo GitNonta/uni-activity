@@ -767,6 +767,10 @@ html.dark .admin-search-result-row:hover {
                 <x-icon name="activity" size="20" />
                 <span class="sb-link-text">กิจกรรม</span>
             </a>
+            <a href="{{ route('admin.calendar.index') }}" class="sb-link {{ request()->routeIs('admin.calendar.*') ? 'active' : '' }}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <span class="sb-link-text">ปฏิทินกิจกรรม</span>
+            </a>
             <div class="sb-section-label">ประกาศ & ประชาสัมพันธ์</div>
             <a href="{{ route('admin.announcements.index') }}" class="sb-link {{ request()->routeIs('admin.announcements.*') ? 'active' : '' }}">
                 <x-icon name="announcement" size="20" />

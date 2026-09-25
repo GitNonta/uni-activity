@@ -10,6 +10,7 @@ use App\Http\Controllers\CheckInController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\ProfilePhotoController;
 use App\Http\Controllers\Admin\ActivityAdminController;
+use App\Http\Controllers\Admin\ActivityCalendarAdminController;
 use App\Http\Controllers\Admin\AdminAttendanceController;
 use App\Http\Controllers\Admin\AdminQuickApprovalController;
 use App\Http\Controllers\Admin\AdminRegistrationController;
@@ -228,6 +229,11 @@ Route::middleware(['auth', 'role:staff', 'strip-hpp'])->prefix('admin')->name('a
 
     // ── กิจกรรม ──
     Route::resource('activities', ActivityAdminController::class);
+
+    // ── ปฏิทินกิจกรรมอัจฉริยะ (Master Calendar & Conflict Warning) ──
+    Route::get('calendar', [ActivityCalendarAdminController::class, 'index'])->name('calendar.index');
+    Route::get('calendar/events', [ActivityCalendarAdminController::class, 'events'])->name('calendar.events');
+    Route::post('calendar/check-conflict', [ActivityCalendarAdminController::class, 'checkConflict'])->name('calendar.check-conflict');
     Route::get('activities/{activity}/participants', [AdminAttendanceController::class, 'participants'])->name('activities.participants');
     Route::get('activities/{activity}/checkin', [AdminAttendanceController::class, 'monitor'])->name('activities.checkin');
     Route::get('activities/{activity}/pending-requests', [AdminRegistrationController::class, 'pendingRequests'])->name('activities.pending-requests');
