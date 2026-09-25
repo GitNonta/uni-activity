@@ -9,9 +9,9 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// ส่ง LINE reminder กิจกรรมพรุ่งนี้ ทุกวันเวลา 07:00
+// ส่ง Auto-Reminder กิจกรรม (ล่วงหน้า 1 วัน และ 2 ชั่วโมง) ทุก 15 นาที
 Schedule::command(SendActivityReminders::class)
-    ->dailyAt('07:00')
+    ->everyFifteenMinutes()
     ->withoutOverlapping()
     ->runInBackground()
     ->appendOutputTo(storage_path('logs/reminders.log'));

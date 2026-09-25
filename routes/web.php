@@ -10,6 +10,7 @@ use App\Http\Controllers\CheckInController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\ProfilePhotoController;
 use App\Http\Controllers\Admin\ActivityAdminController;
+use App\Http\Controllers\Admin\ActivityBroadcastAdminController;
 use App\Http\Controllers\Admin\ActivityCalendarAdminController;
 use App\Http\Controllers\Admin\AdminAttendanceController;
 use App\Http\Controllers\Admin\AdminQuickApprovalController;
@@ -229,6 +230,11 @@ Route::middleware(['auth', 'role:staff', 'strip-hpp'])->prefix('admin')->name('a
 
     // ── กิจกรรม ──
     Route::resource('activities', ActivityAdminController::class);
+
+    // ── บรอดแคสต์และแจ้งเตือนอัตโนมัติ (Activity Broadcast & Reminders) ──
+    Route::get('activities/{activity}/broadcast', [ActivityBroadcastAdminController::class, 'index'])->name('activities.broadcast');
+    Route::post('activities/{activity}/broadcast', [ActivityBroadcastAdminController::class, 'send'])->name('activities.broadcast.send');
+    Route::post('activities/{activity}/reminders/trigger', [ActivityBroadcastAdminController::class, 'triggerReminder'])->name('activities.reminders.trigger');
 
     // ── ปฏิทินกิจกรรมอัจฉริยะ (Master Calendar & Conflict Warning) ──
     Route::get('calendar', [ActivityCalendarAdminController::class, 'index'])->name('calendar.index');

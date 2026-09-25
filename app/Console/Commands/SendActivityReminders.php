@@ -4,68 +4,33 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Jobs\SendActivityReminderJob;
-use App\Models\Activity;
-use App\Models\Registration;
-use App\Models\User;
+use App\Services\ActivityNotificationService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class SendActivityReminders extends Command
 {
-    protected $signature   = 'reminders:send {--date= : วันที่ต้องการส่ง reminder (Y-m-d) ค่าเริ่มต้น: พรุ่งนี้}';
-    protected $description = 'ส่ง LINE reminder ให้นักศึกษาที่ลงทะเบียนกิจกรรมและผูก LINE แล้วผ่าน Background Queue';
+    protected $signature   = 'reminders:send {--window= : บังคับประเภท window (24h หรือ 2h)}';
+    protected $description = 'ส่ง Auto-Reminder ล่วงหน้า 24 ชม. และ 2 ชม. ก่อนกิจกรรมเริ่มเพื่อลด No-show rate (In-App + LINE)';
 
-    public function handle(): int
+    public function handle(ActivityNotificationService $service): int
     {
-        $targetDate = $this->option('date')
-            ? Carbon::parse((string) $this->option('date'))
-            : Carbon::tomorrow();
-
-        $this->info("ส่ง reminder สำหรับกิจกรรมวันที่: {$targetDate->toDateString()} ผ่าน Background Queue");
-
-        // ดึงกิจกรรมที่มีในวันนั้น
-        $activities = Activity::whereDate('activity_date', $targetDate)
-            ->where('status', '!=', 'cancelled')
-            ->get();
-
-        if ($activities->isEmpty()) {
-            $this->info('ไม่มีกิจกรรมในวันที่ระบุ');
-            return self::SUCCESS;
+        $window = $this->option('window');
+        if ($window && !in_array($window, ['24h', '2h'], true)) {
+            $this->error("Invalid window option. Allowed values: '24h', '2h'");
+            return self::FAILURE;
         }
 
-        $dispatchedCount = 0;
+        $this->info("กำลังประมวลผล Auto-Reminder กิจกรรม (Window: " . ($window ?? 'Auto 24h & 2h') . ")...");
 
-        foreach ($activities as $activity) {
-            // ดึงนักศึกษาที่ลงทะเบียนและผูก LINE แล้ว
-            $registrations = Registration::where('activity_id', $activity->id)
-                ->whereIn('status', ['registered', 'approved', 'waitlisted'])
-                ->with(['user' => function ($q) {
-                    $q->whereNotNull('line_user_id')
-                      ->where('line_notify_enabled', true);
-                }])
-                ->get()
-                ->filter(fn($r) => $r->user && $r->user->line_user_id);
+        $stats = $service->sendScheduledReminders($window);
 
-            foreach ($registrations as $registration) {
-                if ($registration->user_id) {
-                    SendActivityReminderJob::dispatch($registration->user_id, $activity->id)
-                        ->onQueue('notifications');
-                    $dispatchedCount++;
-                }
-            }
+        $this->info("✅ ประมวลผลเสร็จสิ้น:");
+        $this->line("  • กิจกรรมที่ตรวจสอบ: {$stats['activities_processed']} กิจกรรม");
+        $this->line("  • ส่งแจ้งเตือนล่วงหน้า 24 ชม. (1 วัน): {$stats['reminders_24h_sent']} ครั้ง");
+        $this->line("  • ส่งแจ้งเตือนล่วงหน้า 2 ชม.: {$stats['reminders_2h_sent']} ครั้ง");
 
-            $this->line("  ✓ {$activity->title}: เข้าคิวส่ง reminder ให้ {$registrations->count()} คน");
-        }
-
-        Log::info('Activity reminders dispatched to queue', [
-            'date'       => $targetDate->toDateString(),
-            'activities' => $activities->count(),
-            'dispatched' => $dispatchedCount,
-        ]);
-
-        $this->info("✅ นำส่ง reminder เข้า Queue สำเร็จ {$dispatchedCount} รายการ");
+        Log::info('Activity Auto-Reminders command finished', $stats);
 
         return self::SUCCESS;
     }

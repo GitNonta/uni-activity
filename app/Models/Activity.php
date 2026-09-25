@@ -124,6 +124,18 @@ class Activity extends Model
         return $this->hasMany(ActivityFeedback::class);
     }
 
+    /** ความสัมพันธ์: รายการบรอดแคสต์ข้อความในกิจกรรมนี้ */
+    public function broadcasts(): HasMany
+    {
+        return $this->hasMany(ActivityBroadcast::class)->orderByDesc('created_at');
+    }
+
+    /** ความสัมพันธ์: บันทึกประวัติการส่ง Auto-Reminder */
+    public function reminderLogs(): HasMany
+    {
+        return $this->hasMany(ActivityReminderLog::class);
+    }
+
     /** คำนวณคะแนนเฉลี่ยจากการประเมิน */
     public function getAverageRatingAttribute(): ?float
     {

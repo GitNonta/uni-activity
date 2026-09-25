@@ -417,7 +417,8 @@ class LineService
     }
 
     /** สร้างข้อความเตือนกิจกรรมพรุ่งนี้ */
-    public function buildReminderMessage(Activity $activity, string $studentName): array
+    /** สร้างข้อความเตือนกิจกรรม (รองรับทั้ง 24 ชม. และ 2 ชม. ก่อนเริ่ม) */
+    public function buildReminderMessage(Activity $activity, string $studentName, string $window = '24h'): array
     {
         $date      = $activity->activity_date
             ? \Carbon\Carbon::parse($activity->activity_date)->translatedFormat('j M Y') : '-';
@@ -427,20 +428,26 @@ class LineService
             ? \Carbon\Carbon::parse($activity->end_time)->format('H:i') : '';
         $timeText  = $startTime ? "{$startTime} - {$endTime} น." : '-';
 
+        $isTwoHours = $window === '2h';
+        $headerColor = $isTwoHours ? '#ea580c' : '#4f46e5';
+        $headerTitle = $isTwoHours ? '⏰ กิจกรรมจะเริ่มใน 2 ชม.!' : '⏰ แจ้งเตือนกิจกรรมพรุ่งนี้';
+        $subtitle    = $isTwoHours ? 'กิจกรรมของคุณกำลังจะเริ่มในอีก 2 ชั่วโมง:' : 'กิจกรรมของคุณพรุ่งนี้:';
+        $altText     = $isTwoHours ? "⏰ แจ้งเตือน: อีก 2 ชั่วโมง {$activity->title} จะเริ่มแล้ว!" : "⏰ แจ้งเตือน: {$activity->title} พรุ่งนี้!";
+
         return [
             'type'    => 'flex',
-            'altText' => "⏰ แจ้งเตือน: {$activity->title} พรุ่งนี้!",
+            'altText' => $altText,
             'contents' => [
                 'type'   => 'bubble',
                 'header' => [
                     'type'            => 'box',
                     'layout'          => 'vertical',
-                    'backgroundColor' => '#4f46e5',
+                    'backgroundColor' => $headerColor,
                     'paddingAll'      => '20px',
                     'contents'        => [
                         [
                             'type'   => 'text',
-                            'text'   => '⏰ แจ้งเตือนกิจกรรม',
+                            'text'   => $headerTitle,
                             'color'  => '#ffffff',
                             'weight' => 'bold',
                             'size'   => 'lg',
@@ -460,7 +467,7 @@ class LineService
                         ],
                         [
                             'type' => 'text',
-                            'text' => 'กิจกรรมของคุณพรุ่งนี้:',
+                            'text' => $subtitle,
                             'size' => 'sm',
                             'color' => '#888888',
                         ],
@@ -508,11 +515,124 @@ class LineService
                         [
                             'type'   => 'button',
                             'style'  => 'primary',
-                            'color'  => '#4f46e5',
+                            'color'  => $headerColor,
                             'height' => 'sm',
                             'action' => [
                                 'type'  => 'uri',
-                                'label' => 'ดูรายละเอียด',
+                                'label' => 'ดูรายละเอียด / เช็คอิน',
+                                'uri'   => $this->getRedirectUrl("/activities/{$activity->id}"),
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /** สร้าง Flex Message สำหรับประกาศด่วน / บรอดแคสต์ของกิจกรรม (ย้ายสถานที่ / เลื่อนเวลา) */
+    public function buildActivityBroadcastMessage(Activity $activity, string $title, string $message, string $type = 'general'): array
+    {
+        $badgeConfig = match ($type) {
+            'venue_change' => ['color' => '#dc2626', 'label' => '📍 แจ้งย้ายสถานที่จัดงาน'],
+            'reschedule'   => ['color' => '#d97706', 'label' => '⏰ แจ้งเปลี่ยนแปลงเวลา'],
+            'urgent'       => ['color' => '#b91c1c', 'label' => '🚨 ประกาศด่วน'],
+            default        => ['color' => '#0284c7', 'label' => '📢 ข่าวสารถึงผู้เข้าร่วม'],
+        };
+
+        $date      = $activity->activity_date
+            ? \Carbon\Carbon::parse($activity->activity_date)->translatedFormat('j M Y') : '-';
+        $startTime = $activity->start_time
+            ? \Carbon\Carbon::parse($activity->start_time)->format('H:i') : '';
+        $endTime   = $activity->end_time
+            ? \Carbon\Carbon::parse($activity->end_time)->format('H:i') : '';
+        $timeText  = $startTime ? "{$startTime} - {$endTime} น." : '-';
+
+        return [
+            'type'    => 'flex',
+            'altText' => "{$badgeConfig['label']}: {$title}",
+            'contents' => [
+                'type'   => 'bubble',
+                'header' => [
+                    'type'            => 'box',
+                    'layout'          => 'vertical',
+                    'backgroundColor' => $badgeConfig['color'],
+                    'paddingAll'      => '16px',
+                    'contents'        => [
+                        [
+                            'type'   => 'text',
+                            'text'   => $badgeConfig['label'],
+                            'color'  => '#ffffff',
+                            'weight' => 'bold',
+                            'size'   => 'sm',
+                        ],
+                        [
+                            'type'   => 'text',
+                            'text'   => $title,
+                            'color'  => '#ffffff',
+                            'weight' => 'bold',
+                            'size'   => 'lg',
+                            'wrap'   => true,
+                            'margin' => 'xs',
+                        ],
+                    ],
+                ],
+                'body' => [
+                    'type'     => 'box',
+                    'layout'   => 'vertical',
+                    'spacing'  => 'md',
+                    'contents' => [
+                        [
+                            'type'   => 'text',
+                            'text'   => $message,
+                            'size'   => 'sm',
+                            'color'  => '#333333',
+                            'wrap'   => true,
+                        ],
+                        [
+                            'type'     => 'box',
+                            'layout'   => 'vertical',
+                            'spacing'  => 'xs',
+                            'paddingAll' => '10px',
+                            'backgroundColor' => '#f8fafc',
+                            'cornerRadius'   => '8px',
+                            'contents' => [
+                                [
+                                    'type'   => 'text',
+                                    'text'   => "กิจกรรม: {$activity->title}",
+                                    'size'   => 'xs',
+                                    'weight' => 'bold',
+                                    'color'  => '#0f172a',
+                                    'wrap'   => true,
+                                ],
+                                [
+                                    'type'  => 'text',
+                                    'text'  => "📅 วันที่: {$date} ({$timeText})",
+                                    'size'  => 'xs',
+                                    'color' => '#64748b',
+                                ],
+                                [
+                                    'type'  => 'text',
+                                    'text'  => "📍 สถานที่: " . ($activity->location ?? 'ยังไม่ระบุ'),
+                                    'size'  => 'xs',
+                                    'color' => '#64748b',
+                                    'wrap'  => true,
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'footer' => [
+                    'type'     => 'box',
+                    'layout'   => 'vertical',
+                    'contents' => [
+                        [
+                            'type'   => 'button',
+                            'style'  => 'primary',
+                            'color'  => $badgeConfig['color'],
+                            'height' => 'sm',
+                            'action' => [
+                                'type'  => 'uri',
+                                'label' => 'เปิดดูกิจกรรมในระบบ',
                                 'uri'   => $this->getRedirectUrl("/activities/{$activity->id}"),
                             ],
                         ],

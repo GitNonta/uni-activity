@@ -65,3 +65,16 @@ Broadcast::channel('map.tracking', function ($user) {
     ];
 });
 
+// Channel ประกาศและบรอดแคสต์ข้อความด่วนประจำกิจกรรม
+Broadcast::channel('activity.{activityId}', function ($user, $activityId) {
+    if (!$user) {
+        return false;
+    }
+    if ($user->isStaffOrAdmin()) {
+        return true;
+    }
+    return \App\Models\Registration::where('activity_id', (int) $activityId)
+        ->where('user_id', $user->id)
+        ->exists();
+});
+
