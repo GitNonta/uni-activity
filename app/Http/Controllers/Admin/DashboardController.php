@@ -18,6 +18,7 @@ use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -30,7 +31,7 @@ class DashboardController extends Controller
         $userId = $user->id;
         $isStaff = $user->isStaff();
         $cacheTtl = 300; // 5 minutes
-        
+
         $cacheKey = $isStaff ? "admin_dashboard_stats_user_{$userId}" : "admin_dashboard_stats_global";
 
         // 1. Fetch main stats with caching
@@ -83,7 +84,53 @@ class DashboardController extends Controller
               ->count();
         });
 
-        // 3. Recent activity listings
+        // 3. Trend comparison (this month vs last month) for KPI trend indicators
+        $trendKey = $isStaff ? "dashboard_trend_user_{$userId}" : "dashboard_trend_global";
+        $trend = Cache::remember($trendKey, $cacheTtl, function () use ($isStaff, $userId): array {
+            $thisMonthStart = now()->startOfMonth();
+            $lastMonthStart = now()->subMonth()->startOfMonth();
+            $lastMonthEnd   = now()->subMonth()->endOfMonth();
+
+            $actQ  = $isStaff ? Activity::where('created_by', $userId) : Activity::query();
+            $regQ  = $isStaff ? Registration::whereHas('activity', fn($q) => $q->where('created_by', $userId)) : Registration::query();
+            $attQ  = $isStaff ? Attendance::whereHas('activity', fn($q) => $q->where('created_by', $userId)) : Attendance::query();
+
+            $thisAct  = (clone $actQ)->where('created_at', '>=', $thisMonthStart)->count();
+            $lastAct  = (clone $actQ)->whereBetween('created_at', [$lastMonthStart, $lastMonthEnd])->count();
+            $thisReg  = (clone $regQ)->where('created_at', '>=', $thisMonthStart)->count();
+            $lastReg  = (clone $regQ)->whereBetween('created_at', [$lastMonthStart, $lastMonthEnd])->count();
+            $thisAtt  = (clone $attQ)->where('created_at', '>=', $thisMonthStart)->count();
+            $lastAtt  = (clone $attQ)->whereBetween('created_at', [$lastMonthStart, $lastMonthEnd])->count();
+
+            $pct = static fn(int $curr, int $prev): int =>
+                $prev > 0 ? (int) round((($curr - $prev) / $prev) * 100) : ($curr > 0 ? 100 : 0);
+
+            return [
+                'activitiesPct'     => $pct($thisAct, $lastAct),
+                'registrationsPct'  => $pct($thisReg, $lastReg),
+                'attendancesPct'    => $pct($thisAtt, $lastAtt),
+            ];
+        });
+
+        // 4. Activity status breakdown for progress bars
+        $activityBreakdown = Cache::remember("activity_breakdown_{$cacheKey}", $cacheTtl, function () use ($isStaff, $userId): array {
+            $q = $isStaff ? Activity::where('created_by', $userId) : Activity::query();
+            $total    = (clone $q)->count();
+            $open     = (clone $q)->whereIn('status', ['open', 'upcoming'])->count();
+            $ongoing  = (clone $q)->where('status', 'ongoing')->count();
+            $closed   = (clone $q)->whereIn('status', ['closed', 'completed', 'cancelled'])->count();
+            return compact('total', 'open', 'ongoing', 'closed');
+        });
+
+        // 5. Approval rate this month
+        $approvalRate = Cache::remember("approval_rate_{$cacheKey}", $cacheTtl, function () use ($isStaff, $userId): int {
+            $q     = $isStaff ? Registration::whereHas('activity', fn($q) => $q->where('created_by', $userId)) : Registration::query();
+            $total = (clone $q)->whereIn('status', ['approved', 'rejected'])->where('created_at', '>=', now()->startOfMonth())->count();
+            $appr  = (clone $q)->where('status', 'approved')->where('created_at', '>=', now()->startOfMonth())->count();
+            return $total > 0 ? (int) round(($appr / $total) * 100) : 0;
+        });
+
+        // 6. Recent activity listings
         $recentActivitiesQuery = Activity::with('category')->orderByDesc('created_at');
         if ($isStaff) {
             $recentActivitiesQuery->where('created_by', $userId);
@@ -103,14 +150,14 @@ class DashboardController extends Controller
         $pendingAttendances = $pendingAttendancesQuery->take(8)->get();
 
         $categories = ActivityCategory::all();
-        
+
         $recentAuditLogsQuery = AdminAuditLog::with('user')->orderByDesc('created_at');
         if ($isStaff) {
             $recentAuditLogsQuery->where('user_id', $userId);
         }
         $recentAuditLogs = $recentAuditLogsQuery->take(6)->get();
 
-        // 4. Recent job listings (latest 5, with applicant counts — no N+1)
+        // 7. Recent job listings (latest 5, with applicant counts — no N+1)
         $recentJobsQuery = JobListing::query()->withCount('applications')->orderByDesc('created_at');
         if ($isStaff) {
             $recentJobsQuery->where('created_by', $userId);
@@ -119,7 +166,7 @@ class DashboardController extends Controller
             ->take(5)
             ->get(['id', 'title', 'position', 'job_type', 'status', 'image_path', 'quota', 'start_date', 'created_at']);
 
-        // 5. Recent announcements (latest 5)
+        // 8. Recent announcements (latest 5)
         $recentAnnouncementsQuery = Announcement::query()->orderByDesc('created_at');
         if ($isStaff) {
             $recentAnnouncementsQuery->where('created_by', $userId);
@@ -130,6 +177,9 @@ class DashboardController extends Controller
 
         return view('admin.dashboard', compact(
             'stats',
+            'trend',
+            'activityBreakdown',
+            'approvalRate',
             'recentActivities',
             'pendingRegistrations',
             'pendingAttendances',
