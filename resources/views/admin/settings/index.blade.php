@@ -25,6 +25,10 @@
         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
         ข้อมูลส่วนตัวผู้ดูแล & รหัสผ่าน
     </a>
+    <a href="{{ route('admin.settings.index', ['tab' => 'auto-approval']) }}" style="padding:0.75rem 1.25rem; font-weight:600; font-size:0.9rem; text-decoration:none; border-bottom: 2px solid {{ $activeTab === 'auto-approval' ? '#c2410c' : 'transparent' }}; color: {{ $activeTab === 'auto-approval' ? '#c2410c' : '#475569' }}; display:flex; align-items:center; gap:0.5rem; line-height:1.5;">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        กฎอนุมัติอัตโนมัติ (Auto-Approve)
+    </a>
 </div>
 
 @if(in_array($activeTab, ['privacy', 'api-keys', 'profile']))
@@ -183,6 +187,263 @@
             </div>
         </form>
     </div>
+@elseif($activeTab === 'auto-approval')
+    {{-- ═══ แท็บตั้งค่ากฎอนุมัติอัตโนมัติ (Smart Auto-Approval Rules) ═══ --}}
+    <div style="display:flex; flex-direction:column; gap:1.5rem; max-width: 960px;">
+
+        {{-- คำอธิบายฟีเจอร์และแนวคิด (Hero Banner) --}}
+        <div class="card" style="border-radius:12px; border:1px solid #fed7aa; background:linear-gradient(135deg, rgba(255,247,237,0.8), rgba(254,243,199,0.5)); padding:1.25rem 1.5rem;">
+            <div style="display:flex; align-items:flex-start; gap:1rem;">
+                <div style="width:44px; height:44px; border-radius:10px; background:#ffedd5; color:#c2410c; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <svg style="width:24px; height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                </div>
+                <div style="flex:1;">
+                    <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                        <h2 style="font-size:1.15rem; font-weight:700; color:#9a3412; margin:0;">ระบบกฎอนุมัติอัตโนมัติ (Smart Auto-Approval Rules)</h2>
+                        <span style="font-size:0.75rem; font-weight:700; background:#ea580c; color:#fff; padding:2px 8px; border-radius:999px;">AI Powered</span>
+                    </div>
+                    <p style="font-size:0.875rem; color:#475569; margin:0.35rem 0 0 0; line-height:1.6;">
+                        ช่วยลดภาระงานแอดมินในกิจกรรมที่มีคนเข้าร่วมหลักร้อยหลักพันคน โดยระบบจะตรวจสอบผลสแกนใบหน้า AI Confidence และระยะทาง GPS อัตโนมัติ หากข้อมูลผ่านเกณฑ์ความปลอดภัยครบถ้วน ระบบจะ<strong>อนุมัติและมอบชั่วโมงกิจกรรมทันที</strong> เฉพาะรายการที่มีความเสี่ยง (ใบหน้าไม่ชัดเจน หรือ GPS ไกลเกินเกณฑ์) ค่อยส่งเข้าคิว <strong>Approval Queue</strong> ให้แอดมินตรวจแบบ Manual
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <form action="{{ route('admin.settings.update') }}" method="POST">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="settings_section" value="auto_approval">
+            <input type="hidden" name="tab" value="auto-approval">
+
+            {{-- 1. การ์ดเปิด/ปิดสวิตช์หลัก --}}
+            <div class="card mb-6" style="border-radius:12px;">
+                <div class="card-header" style="padding:1rem 1.5rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <svg style="width:20px; height:20px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        <h3 class="font-semi" style="font-size:1rem; margin:0;">สถานะการทำงานของระบบกฎอนุมัติอัตโนมัติ</h3>
+                    </div>
+                    <span id="main-status-badge" style="font-size:0.8rem; font-weight:700; padding:3px 10px; border-radius:999px; {{ $settings['auto_approve_enabled'] ? 'background:#dcfce7; color:#15803d;' : 'background:#f1f5f9; color:#64748b;' }}">
+                        {{ $settings['auto_approve_enabled'] ? 'เปิดใช้งาน (Active)' : 'ปิดใช้งาน (Disabled)' }}
+                    </span>
+                </div>
+                <div class="card-body" style="padding:1.5rem;">
+                    <label style="display:flex; align-items:center; gap:0.875rem; cursor:pointer; user-select:none;">
+                        <input type="checkbox" name="auto_approve_enabled" id="auto_approve_enabled" value="1" {{ $settings['auto_approve_enabled'] ? 'checked' : '' }} style="width:20px; height:20px; accent-color:#ea580c; cursor:pointer;" onchange="updateAutoApproveToggleState()">
+                        <div>
+                            <span style="font-weight:700; font-size:0.95rem; color:var(--text-main, #0f172a);">เปิดใช้งานระบบกฎอนุมัติอัตโนมัติ (Smart Auto-Approval) ทั่วทั้งมหาวิทยาลัย</span>
+                            <p style="font-size:0.8rem; color:#64748b; margin:2px 0 0 0;">หากปิดใช้งาน รายการเช็คอินที่กิจกรรมเปิดการขออนุมัติไว้ จะต้องรอแอดมินกดอนุมัติด้วยตนเองทั้งหมด 100%</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            {{-- 2. การ์ดกำหนดเกณฑ์ความแม่นยำ AI และระยะห่าง GPS --}}
+            <div class="card mb-6" style="border-radius:12px;">
+                <div class="card-header" style="padding:1rem 1.5rem;">
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <svg style="width:20px; height:20px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                        </svg>
+                        <h3 class="font-semi" style="font-size:1rem; margin:0;">เกณฑ์การประเมินอนุมัติอัตโนมัติ (Decision Thresholds)</h3>
+                    </div>
+                    <p class="text-xs text-muted mt-1" style="font-weight:normal;">กำหนดค่าเกณฑ์ความเข้มงวดของระบบ หากนักศึกษาเช็คอินผ่านเกณฑ์เหล่านี้ ระบบจะอนุมัติทันที</p>
+                </div>
+                <div class="card-body" style="padding:1.5rem; display:flex; flex-direction:column; gap:1.75rem;">
+
+                    {{-- เกณฑ์ 1: คะแนน AI Face Match --}}
+                    <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap; gap:0.5rem;">
+                            <label style="font-weight:700; font-size:0.9rem; color:var(--text-main, #0f172a); display:flex; align-items:center; gap:0.5rem;">
+                                <svg style="width:18px; height:18px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                เกณฑ์ความเหมือนใบหน้า AI Face Match ขั้นต่ำ
+                            </label>
+                            <span style="font-size:0.85rem; font-weight:700; color:#c2410c; background:#ffedd5; padding:3px 10px; border-radius:6px;">
+                                ต้องได้คะแนน &ge; <span id="face-score-display">{{ number_format($settings['auto_approve_min_face_score'], 0) }}</span>%
+                            </span>
+                        </div>
+                        <p style="font-size:0.8rem; color:#64748b; margin-bottom:0.75rem;">
+                            เมื่อนักศึกษาถ่ายภาพเซลฟี่ AI บนเซิร์ฟเวอร์จะเปรียบเทียบกับภาพโปรไฟล์ หากคะแนนความเหมือนถึงเกณฑ์นี้จะถือว่าผ่านการยืนยันตัวตน
+                        </p>
+                        <div style="display:flex; align-items:center; gap:1rem;">
+                            <input type="range" id="face-score-slider" min="50" max="100" step="1" value="{{ $settings['auto_approve_min_face_score'] }}" style="flex:1; accent-color:#ea580c; cursor:pointer;" oninput="syncFaceScore(this.value)">
+                            <div style="display:flex; align-items:center; gap:4px; width:90px;">
+                                <input type="number" name="auto_approve_min_face_score" id="face-score-input" min="50" max="100" step="0.5" value="{{ $settings['auto_approve_min_face_score'] }}" class="form-control" style="text-align:center; font-weight:700; padding:0.4rem;" oninput="syncFaceScore(this.value)" required>
+                                <span style="font-weight:600; font-size:0.85rem; color:#475569;">%</span>
+                            </div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#94a3b8; margin-top:4px;">
+                            <span>50% (ผ่อนปรน)</span>
+                            <span style="font-weight:700; color:#ea580c;">80% (ค่าแนะนำมาตรฐาน)</span>
+                            <span>100% (เข้มงวดสูงสุด)</span>
+                        </div>
+                    </div>
+
+                    <div style="height:1px; background:var(--border, #f1f5f9);"></div>
+
+                    {{-- เกณฑ์ 2: ระยะห่าง GPS Geofence --}}
+                    <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap; gap:0.5rem;">
+                            <label style="font-weight:700; font-size:0.9rem; color:var(--text-main, #0f172a); display:flex; align-items:center; gap:0.5rem;">
+                                <svg style="width:18px; height:18px; color:#0284c7;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                                เกณฑ์ระยะห่าง GPS จากจุดจัดกิจกรรมสูงสุด
+                            </label>
+                            <span style="font-size:0.85rem; font-weight:700; color:#0369a1; background:#e0f2fe; padding:3px 10px; border-radius:6px;">
+                                ระยะห่างต้อง &le; <span id="distance-display">{{ number_format($settings['auto_approve_max_distance'], 0) }}</span> เมตร
+                            </span>
+                        </div>
+                        <p style="font-size:0.8rem; color:#64748b; margin-bottom:0.75rem;">
+                            ระยะห่างคำนวณจากพิกัด GPS อุปกรณ์ของนักศึกษาถึงจุดศูนย์กลางกิจกรรม หากระยะเกินเกณฑ์นี้จะถูกส่งเข้า Approval Queue ให้แอดมินพิจารณา
+                        </p>
+                        <div style="display:flex; align-items:center; gap:1rem;">
+                            <input type="range" id="distance-slider" min="5" max="300" step="5" value="{{ $settings['auto_approve_max_distance'] }}" style="flex:1; accent-color:#0284c7; cursor:pointer;" oninput="syncDistance(this.value)">
+                            <div style="display:flex; align-items:center; gap:4px; width:95px;">
+                                <input type="number" name="auto_approve_max_distance" id="distance-input" min="5" max="1000" step="1" value="{{ $settings['auto_approve_max_distance'] }}" class="form-control" style="text-align:center; font-weight:700; padding:0.4rem;" oninput="syncDistance(this.value)" required>
+                                <span style="font-weight:600; font-size:0.85rem; color:#475569;">ม.</span>
+                            </div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#94a3b8; margin-top:4px;">
+                            <span>5 ม. (ระยะใกล้มาก)</span>
+                            <span style="font-weight:700; color:#0284c7;">50 ม. (ค่าแนะนำครอบคลุมอาคาร)</span>
+                            <span>300 ม. (ลานกว้าง/กลางแจ้ง)</span>
+                        </div>
+                    </div>
+
+                    <div style="height:1px; background:var(--border, #f1f5f9);"></div>
+
+                    {{-- เกณฑ์ 3: ความปลอดภัยขั้นสูง (Liveness & Device Anti-Fraud) --}}
+                    <div>
+                        <label style="font-weight:700; font-size:0.9rem; color:var(--text-main, #0f172a); display:block; margin-bottom:0.75rem;">
+                            เงื่อนไขความปลอดภัยและป้องกันการทุจริตเพิ่มเติม
+                        </label>
+                        <div style="display:flex; flex-direction:column; gap:0.875rem;">
+                            {{-- Liveness Detection --}}
+                            <label style="display:flex; align-items:flex-start; gap:0.75rem; cursor:pointer; padding:0.75rem 1rem; border-radius:8px; border:1px solid var(--border, #e2e8f0); background:var(--surface, #f8fafc);">
+                                <input type="checkbox" name="auto_approve_require_liveness" value="1" {{ $settings['auto_approve_require_liveness'] ? 'checked' : '' }} style="margin-top:3px; width:18px; height:18px; accent-color:#ea580c; cursor:pointer;">
+                                <div>
+                                    <div style="font-weight:700; font-size:0.875rem; color:var(--text-main, #0f172a);">บังคับผ่านการตรวจจับบุคคลจริง (AI Passive Liveness Anti-Spoofing)</div>
+                                    <div style="font-size:0.775rem; color:#64748b; margin-top:2px;">
+                                        ป้องกันการใช้รูปถ่าย, หน้าจอมือถือ, หรือภาพพิมพ์สแกนแทน หากระบบสงสัยว่าไม่ใช่บุคคลจริง จะไม่ได้รับการอนุมัติอัตโนมัติ
+                                    </div>
+                                </div>
+                            </label>
+
+                            {{-- Shared Device Protection --}}
+                            <label style="display:flex; align-items:flex-start; gap:0.75rem; cursor:pointer; padding:0.75rem 1rem; border-radius:8px; border:1px solid var(--border, #e2e8f0); background:var(--surface, #f8fafc);">
+                                <input type="checkbox" name="auto_approve_prevent_shared_device" value="1" {{ $settings['auto_approve_prevent_shared_device'] ? 'checked' : '' }} style="margin-top:3px; width:18px; height:18px; accent-color:#ea580c; cursor:pointer;">
+                                <div>
+                                    <div style="font-weight:700; font-size:0.875rem; color:var(--text-main, #0f172a);">ระงับการอนุมัติอัตโนมัติเมื่อตรวจพบการใช้อุปกรณ์ซ้ำหลายบัญชี (Device Fingerprint)</div>
+                                    <div style="font-size:0.775rem; color:#64748b; margin-top:2px;">
+                                        หากตรวจพบว่าเครื่องเดียวกันมีการล็อกอินเช็คอินให้นักศึกษาหลายคนพร้อมกัน จะส่งเข้าคิวให้แอดมินตรวจสอบเพื่อป้องกันการเช็คอินแทนกัน
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            {{-- 3. การ์ดจำลองตัวอย่างการทำงาน (Live Logic Simulation) --}}
+            <div class="card mb-6" style="border-radius:12px; border:1px dashed #cbd5e1; background:var(--surface, #f8fafc);">
+                <div class="card-header" style="padding:1rem 1.5rem; background:transparent;">
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <svg style="width:18px; height:18px; color:#64748b;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <h4 style="font-size:0.9rem; font-weight:700; color:#334155; margin:0;">ตัวอย่างการตัดสินใจของระบบตามเกณฑ์ปัจจุบัน</h4>
+                    </div>
+                </div>
+                <div class="card-body" style="padding:0 1.5rem 1.5rem 1.5rem;">
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:1rem;">
+                        {{-- ตัวอย่างที่ 1: ผ่านเกณฑ์ (Auto-Approved) --}}
+                        <div style="border-radius:10px; border:1px solid #bbf7d0; background:#f0fdf4; padding:1rem;">
+                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+                                <span style="font-size:0.75rem; font-weight:700; color:#15803d; text-transform:uppercase;">กรณีผ่านเกณฑ์ครบถ้วน</span>
+                                <span style="font-size:0.7rem; font-weight:700; background:#22c55e; color:#fff; padding:2px 8px; border-radius:999px;">อนุมัติทันที</span>
+                            </div>
+                            <div style="font-size:0.85rem; color:#166534; font-weight:600; line-height:1.5;">
+                                AI ใบหน้า 88% (&ge; <span class="sim-face-val">{{ number_format($settings['auto_approve_min_face_score'], 0) }}</span>%)<br>
+                                ระยะ GPS 18 ม. (&le; <span class="sim-dist-val">{{ number_format($settings['auto_approve_max_distance'], 0) }}</span> ม.)
+                            </div>
+                            <div style="font-size:0.75rem; color:#15803d; margin-top:6px; line-height:1.4;">
+                                &bull; สถานะปรับเป็น "อนุมัติแล้ว" อัตโนมัติ<br>
+                                &bull; มอบชั่วโมงกิจกรรมให้นักศึกษาทันที<br>
+                                &bull; ไม่ต้องรอแอดมินกดอนุมัติในคิว
+                            </div>
+                        </div>
+
+                        {{-- ตัวอย่างที่ 2: ติดความเสี่ยง (Held for Manual Review) --}}
+                        <div style="border-radius:10px; border:1px solid #fde68a; background:#fffbeb; padding:1rem;">
+                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+                                <span style="font-size:0.75rem; font-weight:700; color:#92400e; text-transform:uppercase;">กรณีพบความเสี่ยง</span>
+                                <span style="font-size:0.7rem; font-weight:700; background:#d97706; color:#fff; padding:2px 8px; border-radius:999px;">ส่งเข้า Approval Queue</span>
+                            </div>
+                            <div style="font-size:0.85rem; color:#92400e; font-weight:600; line-height:1.5;">
+                                AI ใบหน้า 62% หรือ ระยะ GPS 85 ม.<br>
+                                หรือตรวจพบลักษณะอุปกรณ์ซ้ำ
+                            </div>
+                            <div style="font-size:0.75rem; color:#b45309; margin-top:6px; line-height:1.4;">
+                                &bull; สถานะเป็น "รออนุมัติ (pending)"<br>
+                                &bull; ส่งเข้า Approval Queue บนแดชบอร์ด<br>
+                                &bull; แสดง Risk Badge ให้แอดมินตรวจสอบเฉพาะเคสนี้
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ปุ่มบันทึกการตั้งค่า --}}
+            <div class="flex justify-end gap-2">
+                <a href="{{ route('admin.dashboard') }}" class="btn btn-outline" style="border-radius:8px;">ยกเลิก</a>
+                <button type="submit" class="btn btn-primary" style="background:#ea580c; color:white; border-radius:8px; font-weight:600; border:none; padding:0.65rem 1.75rem; box-shadow:0 2px 4px rgba(234,88,12,0.2); display:inline-flex; align-items:center; gap:0.5rem;">
+                    <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    <span>บันทึกกฎอนุมัติอัตโนมัติ</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+    function syncFaceScore(val) {
+        val = parseFloat(val) || 80;
+        document.getElementById('face-score-slider').value = val;
+        document.getElementById('face-score-input').value = val;
+        document.getElementById('face-score-display').textContent = Math.round(val);
+        document.querySelectorAll('.sim-face-val').forEach(el => el.textContent = Math.round(val));
+    }
+
+    function syncDistance(val) {
+        val = parseFloat(val) || 50;
+        document.getElementById('distance-slider').value = val;
+        document.getElementById('distance-input').value = val;
+        document.getElementById('distance-display').textContent = Math.round(val);
+        document.querySelectorAll('.sim-dist-val').forEach(el => el.textContent = Math.round(val));
+    }
+
+    function updateAutoApproveToggleState() {
+        const checked = document.getElementById('auto_approve_enabled').checked;
+        const badge = document.getElementById('main-status-badge');
+        if (checked) {
+            badge.textContent = 'เปิดใช้งาน (Active)';
+            badge.style.background = '#dcfce7';
+            badge.style.color = '#15803d';
+        } else {
+            badge.textContent = 'ปิดใช้งาน (Disabled)';
+            badge.style.background = '#f1f5f9';
+            badge.style.color = '#64748b';
+        }
+    }
+    </script>
 @else
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; align-items: start;">
     

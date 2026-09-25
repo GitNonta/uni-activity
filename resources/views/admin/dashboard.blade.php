@@ -252,14 +252,15 @@ html.dark .approval-row:hover {
     }
     foreach($pendingAttendances as $att) {
         $allPending->push([
-            'id'       => $att->id,
-            'type'     => 'attendance',
-            'name'     => $att->user->full_name ?? '-',
-            'sid'      => $att->user->student_id ?? '',
-            'faculty'  => $att->user->faculty ?? '',
-            'activity' => $att->activity->title ?? '-',
-            'time'     => $att->created_at,
-            'detail'   => $att->distance_meters ? 'เช็คอิน GPS ห่าง '.number_format($att->distance_meters,0).' ม.' : 'บันทึกเช็คอิน',
+            'id'           => $att->id,
+            'type'         => 'attendance',
+            'name'         => $att->user->full_name ?? '-',
+            'sid'          => $att->user->student_id ?? '',
+            'faculty'      => $att->user->faculty ?? '',
+            'activity'     => $att->activity->title ?? '-',
+            'time'         => $att->created_at,
+            'detail'       => $att->distance_meters ? 'เช็คอิน GPS ห่าง '.number_format($att->distance_meters,0).' ม.' : 'บันทึกเช็คอิน',
+            'risk_reasons' => $att->risk_reasons,
         ]);
     }
     $allPending = $allPending->sortByDesc('time');
@@ -273,7 +274,7 @@ html.dark .approval-row:hover {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
             <h3 class="card-title" style="color:#92400e; line-height:1.5; margin:0;">
-                รออนุมัติทั้งหมด
+                รออนุมัติทั้งหมด (คัดกรองเฉพาะรายการที่มีความเสี่ยง)
                 <span id="queue-count" style="background:#b45309;color:#fff;border-radius:999px;padding:2px 10px;font-size:.8rem;margin-left:6px;line-height:1.5;">{{ $totalPending }}</span>
             </h3>
         </div>
@@ -297,6 +298,16 @@ html.dark .approval-row:hover {
                 <div class="text-xs text-muted" style="margin-top:2px;">
                     <span class="font-semi text-primary" title="{{ $item['activity'] }}">{{ Str::limit($item['activity'], 38, '...') }}</span> &nbsp;·&nbsp; {{ $item['detail'] }} &nbsp;·&nbsp; {{ $item['time']->diffForHumans() }}
                 </div>
+                @if($item['type'] === 'attendance' && !empty($item['risk_reasons']))
+                <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:4px;">
+                    @foreach($item['risk_reasons'] as $reason)
+                    <span style="display:inline-flex; align-items:center; gap:3px; font-size:0.7rem; font-weight:600; padding:1px 6px; border-radius:4px; background:#fef2f2; color:#b91c1c; border:1px solid #fecaca;">
+                        <svg style="width:11px; height:11px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        {{ $reason }}
+                    </span>
+                    @endforeach
+                </div>
+                @endif
             </div>
             {{-- Actions --}}
             <div class="flex gap-1" style="flex-shrink:0;">

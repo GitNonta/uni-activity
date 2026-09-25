@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Events\AttendeeCheckedIn;
 use App\Models\Activity;
 use App\Models\Attendance;
+use App\Models\Notification;
 use App\Models\Registration;
 use App\Models\User;
 use Illuminate\Database\QueryException;
@@ -29,6 +30,7 @@ class CheckInService
         private readonly CheckInRiskScoringService $riskScoringService,
         private readonly QrCodeService $qrCodeService,
         private readonly GeoSecurityService $geoSecurityService,
+        private readonly AutoApprovalService $autoApprovalService,
     ) {}
 
     /**
@@ -282,10 +284,27 @@ class CheckInService
             'detector_pipeline' => $detectorPipeline,
         ]);
 
+        $autoApproved = false;
+        if ($activity->checkout_open_at === null && $attendance->status === 'pending') {
+            $autoApproveResult = $this->autoApprovalService->evaluate($activity, [
+                'face_match_passed' => $passed,
+                'face_match_score'  => $score,
+                'liveness_passed'   => $livenessPassed,
+                'distance_meters'   => $attendance->distance_meters,
+                'is_suspicious'     => (bool) $attendance->is_suspicious,
+            ]);
+
+            if ($autoApproveResult['approved']) {
+                $this->autoApprovalService->executeApproval($attendance);
+                $autoApproved = true;
+            }
+        }
+
         return [
             'score'           => $score,
             'passed'          => $passed,
             'liveness_passed' => $livenessPassed,
+            'auto_approved'   => $autoApproved,
         ];
     }
 
@@ -493,13 +512,27 @@ class CheckInService
                         ];
                     }
 
+                    // ประเมินผล Smart Auto-Approval เมื่อกิจกรรมไม่มีการเช็คเอาท์ (Single-step check-in โดยไม่มี qr_checkout_token)
+                    $hasCheckoutStep = !empty($activity->qr_checkout_token);
+                    $autoApproveResult = $this->autoApprovalService->evaluate($activity, [
+                        'face_match_passed' => $metaData['face_match_passed'] ?? null,
+                        'face_match_score'  => $metaData['face_match_score'] ?? null,
+                        'liveness_passed'   => $metaData['liveness_passed'] ?? null,
+                        'distance_meters'   => $entryDistance,
+                        'is_mock_location'  => $isMockLocation,
+                        'is_suspicious'     => $riskAssessment['is_suspicious'],
+                        'is_shared_device'  => $isSharedDevice,
+                    ]);
+
+                    $entryStatus = (!$hasCheckoutStep && $autoApproveResult['approved']) ? 'approved' : 'pending';
+
                     // สร้าง Attendance ใหม่แบบ Atomic
                     try {
                         $att = Attendance::create([
                             'user_id'             => $user->id,
                             'activity_id'         => $activity->id,
                             'method'              => $method,
-                            'status'              => 'pending',
+                            'status'              => $entryStatus,
                             'checkin_latitude'    => $latitude,
                             'checkin_longitude'   => $longitude,
                             'distance_meters'     => $entryDistance,
@@ -518,21 +551,40 @@ class CheckInService
                         return ['success' => false, 'message' => 'คุณเช็คอินไปแล้ว'];
                     }
 
+                    // หากได้รับการอนุมัติอัตโนมัติทันที
+                    if ($entryStatus === 'approved') {
+                        if ($registration && $registration->status === 'approved') {
+                            $registration->markAsCompleted();
+                        }
+
+                        Notification::create([
+                            'user_id' => $user->id,
+                            'title'   => 'อนุมัติชั่วโมงกิจกรรมอัตโนมัติ',
+                            'message' => "บันทึกการเข้าร่วมกิจกรรม \"{$activity->title}\" ผ่านเกณฑ์การตรวจสอบเรียบร้อยแล้ว ได้รับอนุมัติ {$activity->activity_hours} ชม.",
+                            'type'    => 'attendance_approved',
+                        ]);
+                    }
+
                     // ตรวจจับพฤติกรรมผิดปกติผ่าน Security Service เมื่อมีความเสี่ยงปานกลาง
                     if ($riskAssessment['is_suspicious']) {
                         $this->secService->checkAndLogSuspiciousCheckIn(request(), $user->id, $activity);
                     }
 
+                    $responseMsg = $entryStatus === 'approved'
+                        ? 'เช็คอินสำเร็จ และได้รับการอนุมัติชั่วโมงกิจกรรมอัตโนมัติแล้ว!'
+                        : (!$hasCheckoutStep ? 'เช็คอินสำเร็จ! ข้อมูลถูกส่งเข้าคิวรอผู้จัดตรวจสอบและอนุมัติชั่วโมง' : 'เช็คอินสำเร็จ!');
+
                     return [
                         'success'         => true,
-                        'message'         => 'เช็คอินสำเร็จ!',
+                        'message'         => $responseMsg,
                         'activity'        => $activity,
-                        'status'          => 'checked_in',
+                        'status'          => $entryStatus === 'approved' ? 'approved' : 'checked_in',
                         'distance'        => $entryDistance,
                         'selfie_required' => (bool) $activity->require_selfie,
                         'attendance_id'   => $att->id,
                         'risk_score'      => $riskAssessment['risk_score'],
                         'risk_level'      => $riskAssessment['risk_level'],
+                        'auto_approved'   => ($entryStatus === 'approved'),
                     ];
                 }
 
@@ -604,8 +656,18 @@ class CheckInService
                     }
                 }
 
-                // ตัดสินใจเรื่อง Auto Approve ท้ายกิจกรรม
-                $autoApproved = !$activity->require_attendance_approval;
+                // ตัดสินใจเรื่อง Auto Approve ท้ายกิจกรรมผ่าน Smart Auto-Approval
+                $autoApproveResult = $this->autoApprovalService->evaluate($activity, [
+                    'face_match_passed' => $metaData['checkout_face_match_passed'] ?? $attendance->face_match_passed ?? true,
+                    'face_match_score'  => $metaData['checkout_face_match_score'] ?? $attendance->face_match_score ?? null,
+                    'liveness_passed'   => $metaData['liveness_passed'] ?? $attendance->liveness_passed ?? true,
+                    'distance_meters'   => $exitDistance ?? $attendance->distance_meters,
+                    'is_mock_location'  => false,
+                    'is_suspicious'     => (bool) $attendance->is_suspicious,
+                    'is_shared_device'  => false,
+                ]);
+
+                $autoApproved = $autoApproveResult['approved'];
                 
                 // บันทึกการออกงาน (Finalize) ภายใน Transaction
                 $attendance->update([
@@ -620,18 +682,28 @@ class CheckInService
                     'status'                     => $autoApproved ? 'approved' : 'pending',
                 ]);
 
-                // ปรับสถานะการลงทะเบียนเป็น completed แบบ Atomic
-                if ($autoApproved && $registration) {
-                    $registration->markAsCompleted();
+                // ปรับสถานะการลงทะเบียนเป็น completed และแจ้งเตือนเมื่อ auto-approve
+                if ($autoApproved) {
+                    if ($registration && $registration->status === 'approved') {
+                        $registration->markAsCompleted();
+                    }
+
+                    Notification::create([
+                        'user_id' => $user->id,
+                        'title'   => 'อนุมัติชั่วโมงกิจกรรมอัตโนมัติ',
+                        'message' => "บันทึกการเข้าร่วมกิจกรรม \"{$activity->title}\" ผ่านเกณฑ์การตรวจสอบเรียบร้อยแล้ว ได้รับอนุมัติ {$activity->activity_hours} ชม.",
+                        'type'    => 'attendance_approved',
+                    ]);
                 }
 
                 return [
                     'success'       => true,
-                    'message'       => $autoApproved ? 'บันทึกกิจกรรมสำเร็จ! ได้รับชั่วโมงกิจกรรมแล้ว' : 'บันทึกกิจกรรมแล้ว รอผู้จัดอนุมัติชั่วโมง',
+                    'message'       => $autoApproved ? 'บันทึกกิจกรรมสำเร็จ! ได้รับการอนุมัติชั่วโมงกิจกรรมแล้ว' : 'บันทึกกิจกรรมแล้ว รอผู้จัดตรวจสอบและอนุมัติชั่วโมง',
                     'activity'      => $activity,
                     'status'        => $autoApproved ? 'approved' : 'pending',
                     'distance'      => $exitDistance,
                     'attendance_id' => $attendance->id,
+                    'auto_approved' => $autoApproved,
                 ];
             });
         });

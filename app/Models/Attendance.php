@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * โมเดลการเข้าร่วมกิจกรรม (Attendance)
@@ -36,6 +39,9 @@ class Attendance extends Model
         'selfie_photo_path',
         'face_match_score',
         'face_match_passed',
+        'liveness_score',
+        'liveness_passed',
+        'detector_pipeline',
         'selfie_reviewed',
         'selfie_review_result',
         'selfie_reviewed_by',
@@ -57,31 +63,65 @@ class Attendance extends Model
             'checkout_distance_meters' => 'decimal:2',
             'face_match_score'         => 'decimal:2',
             'face_match_passed'        => 'boolean',
+            'liveness_score'           => 'decimal:4',
+            'liveness_passed'          => 'boolean',
             'selfie_reviewed'          => 'boolean',
         ];
     }
 
     /** ความสัมพันธ์: การเข้าร่วมเป็นของผู้ใช้ */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
     /** ความสัมพันธ์: การเข้าร่วมสังกัดกิจกรรม */
-    public function activity()
+    public function activity(): BelongsTo
     {
         return $this->belongsTo(Activity::class);
     }
 
     /** ความสัมพันธ์: ผู้ตรวจสอบการเข้าร่วม (เจ้าหน้าที่) */
-    public function verifier()
+    public function verifier(): BelongsTo
     {
         return $this->belongsTo(User::class, 'verified_by');
     }
 
     /** ความสัมพันธ์: ผู้ตรวจสอบ selfie */
-    public function selfieReviewer()
+    public function selfieReviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'selfie_reviewed_by');
     }
+
+    /**
+     * ดึงรายการเหตุผลความเสี่ยงหรือเงื่อนไขที่ยังไม่ผ่านเกณฑ์การอนุมัติอัตโนมัติ
+     * @return array<int, string>
+     */
+    public function getRiskReasonsAttribute(): array
+    {
+        $reasons = [];
+
+        if ($this->face_match_score !== null && (float) $this->face_match_score < 80.0) {
+            $reasons[] = 'คะแนนใบหน้า ' . round((float) $this->face_match_score, 1) . '% (ต่ำกว่าเกณฑ์ 80%)';
+        }
+
+        if ($this->face_match_passed === false) {
+            $reasons[] = 'ใบหน้าไม่ตรงกับโปรไฟล์';
+        }
+
+        if ($this->liveness_passed === false) {
+            $reasons[] = 'ตรวจบุคคลจริง (Liveness) ไม่ผ่าน';
+        }
+
+        if ($this->distance_meters !== null && (float) $this->distance_meters > 50.0) {
+            $reasons[] = 'GPS ห่าง ' . round((float) $this->distance_meters) . ' ม. (เกินเกณฑ์ 50 ม.)';
+        }
+
+        if ($this->is_suspicious) {
+            $reasons[] = 'ตรวจพบความเสี่ยงหรืออุปกรณ์ซ้ำ';
+        }
+
+        return $reasons;
+    }
 }
+
