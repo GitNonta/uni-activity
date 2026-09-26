@@ -119,7 +119,7 @@ class OfficialTranscriptService
         /** @var DomPdfWrapper $pdf */
         $pdf = Pdf::loadView('pdf.official-activity-transcript', $data);
 
-        $pdf->setPaper('A4', 'portrait');
+        $pdf->setPaper('a4', 'portrait');
         $pdf->setOptions([
             'fontDir'                 => storage_path('fonts'),
             'fontCache'               => storage_path('fonts'),
@@ -127,7 +127,7 @@ class OfficialTranscriptService
             'isFontSubsettingEnabled' => true,
             'isHtml5ParserEnabled'    => true,
             'isRemoteEnabled'         => true,
-            'dpi'                     => 150,
+            'dpi'                     => 96,
         ]);
 
         return $pdf;

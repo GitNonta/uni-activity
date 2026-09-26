@@ -9,7 +9,7 @@
             margin: 0;
         }
         body {
-            font-family: 'Garuda', 'DejaVu Sans', sans-serif;
+            font-family: 'sarabun', 'thsarabun', sans-serif;
             margin: 0;
             padding: 0;
             background-color: #ffffff;

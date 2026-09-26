@@ -130,9 +130,13 @@ class CertificateService
         ])
         ->setPaper('a4', 'landscape')
         ->setOptions([
-            'defaultFont'          => 'sans-serif',
-            'isHtml5ParserEnabled' => true,
-            'isRemoteEnabled'      => true,
+            'fontDir'                 => storage_path('fonts'),
+            'fontCache'               => storage_path('fonts'),
+            'defaultFont'             => 'sarabun',
+            'isFontSubsettingEnabled' => true,
+            'isHtml5ParserEnabled'    => true,
+            'isRemoteEnabled'         => true,
+            'dpi'                     => 96,
         ]);
 
         $filename = "certificate_{$certificate->certificate_code}.pdf";

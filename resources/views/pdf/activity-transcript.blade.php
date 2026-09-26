@@ -1,15 +1,31 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Activity Transcript - {{ $user->student_id }}</title>
     @php
-        $logoPath      = public_path('images/pkru-logo.jpg');
-        $emblemPath    = public_path('images/--removebg-preview.png');
-        $watermarkPath = public_path('images/sd-removebg-preview.png');
-        $sig1Path      = public_path('images/signatures/signature1.png');
-        $sig2Path      = public_path('images/signatures/signature2.png');
-        $studentPhoto  = $user->profile_photo
-            ? storage_path('app/public/' . $user->profile_photo)
+        $toBase64 = function (?string $path): ?string {
+            if (!$path || !file_exists($path)) {
+                return null;
+            }
+            $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+            $mime = match ($ext) {
+                'jpg', 'jpeg' => 'image/jpeg',
+                'svg'         => 'image/svg+xml',
+                default       => 'image/png',
+            };
+            $content = file_get_contents($path);
+            return $content !== false ? 'data:' . $mime . ';base64,' . base64_encode($content) : null;
+        };
+
+        $emblemPath   = file_exists(public_path('images/pkru-emblem.png')) ? public_path('images/pkru-emblem.png') : public_path('images/--removebg-preview.png');
+        $emblemBase64 = $toBase64($emblemPath);
+        $sig1Path     = public_path('images/signatures/signature1.png');
+        $sig1Base64   = $toBase64($sig1Path);
+        $sig2Path     = public_path('images/signatures/signature2.png');
+        $sig2Base64   = $toBase64($sig2Path);
+        $studentPhoto = $user->profile_photo && file_exists(storage_path('app/public/' . $user->profile_photo))
+            ? $toBase64(storage_path('app/public/' . $user->profile_photo))
             : null;
 
         $levelLabel  = 'ควรปรับปรุง';
@@ -19,354 +35,345 @@
         elseif ($pct >= 60)  $levelLabel = 'ดี';
         elseif ($pct >= 40)  $levelLabel = 'พอใช้';
 
-        $docNumber = $user->student_id . now()->format('dmY') . rand(100,999);
+        $docNumber = 'AT-' . ($user->student_id ?: $user->id) . '-' . now()->format('Ymd') . '-' . rand(1000, 9999);
     @endphp
     <style>
-        @font-face {
-            font-family: 'sarabun';
-            src: url('{{ storage_path("fonts/Sarabun-Regular.ttf") }}') format('truetype');
-            font-weight: normal;
+        @page {
+            size: A4 portrait;
+            margin: 16mm 18mm 14mm 18mm;
         }
-        @font-face {
-            font-family: 'sarabun';
-            src: url('{{ storage_path("fonts/Sarabun-Bold.ttf") }}') format('truetype');
-            font-weight: bold;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'sarabun', 'TH Sarabun PSK', 'TH SarabunPSK', sans-serif;
-            font-size: 13pt;
-            color: #1a2744;
-            line-height: 1.6;
-            /* แก้ปัญหาสระซ้อน - เพิ่มระยะห่างตัวอักษร */
-            letter-spacing: 0.03em;
-            word-spacing: 0.08em;
-        }
-        .page {
-            padding: 1.2cm 1.8cm 1cm;
-            position: relative;
+            font-family: 'sarabun', 'thsarabun', sans-serif;
+            font-size: 10pt;
+            color: #0f172a;
+            line-height: 1.35;
         }
 
-        /* ─── Watermark ─── */
-        .watermark {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            width: 230px;
-            height: 330px;
-            transform: translate(-50%, -50%);
-            opacity: 0.06;
-            z-index: -1;
-        }
-
-        /* ─── Header ─── */
+        /* ── Header ── */
         .header-table {
             width: 100%;
-            border-collapse: collapse; 
-            margin-bottom: 4px; 
+            border-collapse: collapse;
+            margin-bottom: 2px;
         }
         .header-table td {
             vertical-align: middle;
-            padding: 0;
-        }
-        .header-center {
-            text-align: center;
-        }
-        .uni-en {
-            font-size: 14pt;
-            color: #000000;
-             text-align:left;
-            padding-left: 10px;
         }
         .uni-th {
             font-size: 14pt;
-            color: #000000;
-             text-align:left;
-             padding-left: 10px;
+            font-weight: bold;
+            color: #0f172a;
+            line-height: 1.25;
         }
-        .transcript-en {
+        .uni-en {
+            font-size: 9pt;
+            font-weight: bold;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 3px;
+        }
+        .doc-title-th {
             font-size: 13pt;
-            color: #000000;
-            margin-top: 6px;
+            font-weight: bold;
+            color: #1e3a8a;
+            line-height: 1.25;
         }
-        .transcript-th {
-            font-size: 13pt;
-            color: #000000;
-            margin-top: 6px;
-        }
-
-        .blue-line {
-            border: none;
-            border-top: 2.5px solid none;
-            margin: 6px 0 10px;
+        .doc-title-en {
+            font-size: 10pt;
+            font-weight: bold;
+            color: #1e3a8a;
+            letter-spacing: 0.06em;
         }
 
-        /* ─── Student Info ─── */
-        .info-table {
-            width: 100%;
-            border-collapse: collapse; 
-            margin-bottom: 8px;
+        .header-line {
+            border-top: 2px solid #1e3a8a;
+            border-bottom: 0.5px solid #94a3b8;
+            height: 3px;
+            margin: 5px 0 8px 0;
         }
-        .info-table td {
-            font-size: 10.5pt;
-            padding: 1.5px 3px;
-            vertical-align: top; 
-        }
-        .info-label {
-            font-weight: 10px;
-            white-space: nowrap;
-            color: #000000;
-        }
-        
 
-        /* ─── Category Table ─── */
-        .cat-table {
+        /* ── Student Information Box ── */
+        .info-wrap-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 6px 8px;
         }
-        .cat-table th {
-            font-size: 11pt;
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .info-table td {
+            font-size: 9.5pt;
+            padding: 2px 4px;
+            vertical-align: top;
+        }
+        .info-label {
             font-weight: bold;
-            color: #000000;
-            padding: 5px 8px;
-            border-bottom: 1.5px solid #1a2744;
-            text-align: left;
+            color: #334155;
+            white-space: nowrap;
         }
-        .cat-table th.r {
-            text-align: right;
-        }
-        .cat-table td {
-            font-size: 10.5pt;
-            padding: 3.5px 8px;
-            border-bottom: none;
-            color: #000000;
-        }
-        .cat-table td.r {
-            text-align: right;
-        }
-        .cat-table .indent {
-            padding-left: 20px;
-        }
-        .cat-table tr.total-row td {
-            font-weight: bold;
-            font-size: 11pt;
-            color: #1a2744;
-            border-top: 1.5px solid #1a2744;
-            border-bottom: 1.5px solid #1a2744;
-            padding-top: 5px;
-            padding-bottom: 5px;
+        .info-val {
+            color: #0f172a;
         }
 
-        /* ─── Result / Certificate ─── */
-        .result-box {
-            margin: 10px 0;
-            padding: 0 5px;
-            font-size: 10.5pt;
-            line-height: 1.6;
-        }
-        .result-box .level {
-            font-weight: bold;
-            text-decoration: underline;
-        }
-        .cert-text {
-            text-align: center;
-            font-size: 11.5pt;
-            font-weight: bold;
-            color: #1a2744;
-            margin: 18px 0 5px;
-            line-height: 1.7;
-        }
-        .cert-detail {
-            text-align: center;
+        /* ── Summary & Detail Tables ── */
+        .table-section-title {
             font-size: 10pt;
-            color: #333;
-            line-height: 1.6;
+            font-weight: bold;
+            color: #1e3a8a;
+            margin: 8px 0 4px;
+            border-left: 3px solid #1e3a8a;
+            padding-left: 6px;
+            line-height: 1.2;
         }
 
-        /* ─── Signature Area ─── */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 8px;
+            table-layout: fixed;
+        }
+        .data-table th {
+            font-size: 9pt;
+            font-weight: bold;
+            background-color: #f1f5f9;
+            color: #1e293b;
+            padding: 4px 6px;
+            border: 1px solid #cbd5e1;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .data-table td {
+            font-size: 8.5pt;
+            padding: 3.5px 6px;
+            border: 1px solid #cbd5e1;
+            color: #1e293b;
+            vertical-align: middle;
+        }
+        .data-table tr.total-row td {
+            font-weight: bold;
+            background-color: #f1f5f9;
+        }
+
+        /* ── Result Box ── */
+        .result-box {
+            padding: 6px 12px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            background-color: #ecfdf5;
+            border: 1px solid #059669;
+            color: #065f46;
+            text-align: center;
+        }
+        .result-box-title {
+            font-size: 10pt;
+            font-weight: bold;
+        }
+        .result-box-desc {
+            font-size: 8.5pt;
+            margin-top: 1px;
+        }
+
+        /* ── Certification Text ── */
+        .cert-block {
+            text-align: center;
+            margin: 10px 0 6px 0;
+            font-size: 9.5pt;
+            color: #1e293b;
+            line-height: 1.4;
+        }
+
+        /* ── Signatures ── */
         .sig-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 10px;
+            page-break-inside: avoid;
         }
         .sig-table td {
             width: 50%;
             text-align: center;
             vertical-align: top;
-            font-size: 10pt;
             padding: 0 10px;
-            color: #333;
         }
         .sig-title {
+            font-size: 9pt;
             font-weight: bold;
-            font-size: 10.5pt;
-            color: #1a2744;
+            color: #1e293b;
             margin-bottom: 2px;
         }
         .sig-img {
-            height: 50px;
-            margin: 2px auto;
+            height: 38px;
+            max-width: 120px;
+            margin: 1px auto;
+        }
+        .sig-placeholder {
+            height: 38px;
         }
         .sig-name {
-            font-size: 10pt;
-            margin-top: 0;
+            font-size: 9pt;
+            color: #334155;
+            font-weight: bold;
         }
         .sig-pos {
-            font-size: 9pt;
-            font-weight: bold;
-            color: #1a2744;
+            font-size: 8pt;
+            color: #64748b;
         }
 
-        /* ─── Footer ─── */
+        /* ── Footer ── */
         .footer-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
-            border-top: 1px solid #999;
+            margin-top: 8px;
+            border-top: 1px solid #cbd5e1;
             padding-top: 4px;
         }
         .footer-table td {
-            font-size: 8pt;
-            color: #888;
-            padding-top: 4px;
+            font-size: 7.5pt;
+            color: #64748b;
         }
     </style>
 </head>
 <body>
-<div class="page">
 
-    {{-- ═══════════════════ Watermark พื้นหลังโปร่งแสง ═══════════════════ --}}
-    @if(file_exists($watermarkPath))
-        <img src="{{ $watermarkPath }}" class="watermark">
-    @endif
-
-    {{-- ═══════════════════ ส่วนหัว: โลโก้ + ชื่อมหาวิทยาลัย ═══════════════════ --}}
+    {{-- ส่วนหัวทางการ: ตราสัญลักษณ์มหาวิทยาลัย + หัวเรื่องสองภาษา --}}
     <table class="header-table">
         <tr>
-            <td style="width:70px;">
-                @if(file_exists($emblemPath))
-                    <img src="{{ $emblemPath }}" style="width:100px;height:130px; margin-top: -50px; ">
+            <td style="width: 72px; text-align: left;">
+                @if(!empty($emblemBase64))
+                    <img src="{{ $emblemBase64 }}" style="width: 66px; height: auto;">
                 @endif
             </td>
-            <td class="header-center">
-                <div class="uni-en">Magic and Digital Technology University</div>
+            <td style="text-align: center; padding: 0 8px;">
                 <div class="uni-th">มหาวิทยาลัยเวทย์มนต์และเทคโนโลยีดิจิทัล</div>
-                <div style="height:1px;"></div>
-                <div class="transcript-en">Activity Transcript</div>
-                <div class="transcript-th">ใบแสดงผลการเข้าร่วมกิจกรรมนักศึกษา</div>
+                <div class="uni-en">Magic and Digital Technology University</div>
+                <div class="doc-title-th">ใบแสดงผลการเข้าร่วมกิจกรรมนักศึกษา</div>
+                <div class="doc-title-en">ACTIVITY TRANSCRIPT</div>
             </td>
-            <td style="width:75px;text-align:right;">
-                @if($studentPhoto && file_exists($studentPhoto))
-                    <img src="{{ $studentPhoto }}" style="width:100px;height:130px;object-fit:cover;border:1.5px solid #ccc;">
+            <td style="width: 72px; text-align: right;">
+                @if(!empty($studentPhoto))
+                    <img src="{{ $studentPhoto }}" style="width: 58px; height: 72px; object-fit: cover; border: 1px solid #cbd5e1; border-radius: 2px;">
                 @else
-                    <div style="width:68px;height:85px;border:1.5px solid #ccc;background:#f1f5f9;text-align:center;line-height:85px;font-size:7pt;color:#475569;">รูปนักศึกษา</div>
+                    <div style="width: 58px; height: 72px; border: 1px dashed #cbd5e1; background: #f8fafc; text-align: center; line-height: 72px; font-size: 7pt; color: #94a3b8;">รูปนักศึกษา</div>
                 @endif
             </td>
         </tr>
     </table>
 
-    <hr class="blue-line">
+    <div class="header-line"></div>
 
-    {{-- ═══════════════════ ข้อมูลนักศึกษา ═══════════════════ --}}
-    <table class="info-table">
+    {{-- ข้อมูลนักศึกษา --}}
+    <table class="info-wrap-table">
         <tr>
-            <td class="info-label" style="width:90px;">รหัสนักศึกษา</td>
-            <td class="info-val" style="width:130px;">{{ $user->student_id }}</td>
-            <td class="info-label" style="width:65px;">ชื่อ-สกุล</td>
-            <td class="info-val">{{ $user->full_name }}</td>
-        </tr>
-        <tr>
-            <td class="info-label">คณะ</td>
-            <td class="info-val" colspan="3">{{ $user->faculty ?? '-' }}</td>
-        </tr>
-        <tr>
-            <td class="info-label">สาขาวิชา</td>
-            <td class="info-val" colspan="3">{{ $user->department ?? '-' }}</td>
+            <td>
+                <table class="info-table">
+                    <tr>
+                        <td class="info-label" style="width: 110px;">รหัสนักศึกษา:</td>
+                        <td class="info-val" style="width: 140px; font-weight: bold;">{{ $user->student_id }}</td>
+                        <td class="info-label" style="width: 95px;">ชื่อ-นามสกุล:</td>
+                        <td class="info-val" style="font-weight: bold;">{{ $user->full_name }}</td>
+                    </tr>
+                    <tr>
+                        <td class="info-label">คณะ (Faculty):</td>
+                        <td class="info-val">{{ $user->faculty ?? '-' }}</td>
+                        <td class="info-label">สาขาวิชา:</td>
+                        <td class="info-val">{{ $user->department ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="info-label">ระดับการศึกษา:</td>
+                        <td class="info-val" colspan="3">ปริญญาตรี (ชั้นปีที่ {{ $user->year ?? '-' }})</td>
+                    </tr>
+                </table>
+            </td>
         </tr>
     </table>
 
-    <hr style="border:none;border-top:1px solid #00000000;margin:6px 0 10px;">
+    {{-- ผลการประเมินกิจกรรมรวม --}}
+    <div class="result-box">
+        <div class="result-box-title">ผลการเข้าร่วมกิจกรรมพัฒนานักศึกษาตามเกณฑ์มหาวิทยาลัย</div>
+        <div class="result-box-desc">
+            สะสมรวม <strong>{{ number_format($totalHours, 1) }}</strong> ชั่วโมง / เกณฑ์ขั้นต่ำ {{ number_format($totalRequired, 1) }} ชั่วโมง
+            (ระดับผลการประเมิน: <strong>{{ $levelLabel }}</strong>)
+        </div>
+    </div>
 
-    {{-- ═══════════════════ ตารางหมวดหมู่กิจกรรม + ชั่วโมง ═══════════════════ --}}
-    <table class="cat-table" style="border-collapse: separate; border-spacing: 0; border: 1px solid #000;">
+    {{-- ตารางหมวดหมู่กิจกรรม + ชั่วโมง --}}
+    <div class="table-section-title">สรุปชั่วโมงกิจกรรมจำแนกตามหมวดหมู่ (Activity Hours by Category)</div>
+    <table class="data-table">
         <thead>
             <tr>
-                <th style="border: 1px solid #000; padding: 5px 8px; text-align: center;">ประเภทกิจกรรม</th>
-                <th class="r" style="width:80px; border: 1px solid #000; padding: 5px 8px; text-align: center;">ชั่วโมง</th>
+                <th style="text-align: left; width: 50%;">หมวดหมู่กิจกรรม</th>
+                <th style="width: 25%;">เกณฑ์ที่กำหนด (ชม.)</th>
+                <th style="width: 25%;">ชั่วโมงที่สะสมได้ (ชม.)</th>
             </tr>
         </thead>
         <tbody>
             @foreach($byCategory as $cat)
             <tr>
-                <td class="indent" style="border-top: none; border-bottom: none; border-left: 1px solid #000; border-right: 1px solid #000; padding: 0.5px 8px;">- {{ $cat['name'] }}</td>
-                <td class="r" style="border-top: none; border-bottom: none; border-left: 1px solid #000; border-right: 1px solid #000;
-                   padding: 0.5px 2px; text-align: center;">{{ $cat['hours'] > 0 ? number_format($cat['hours'], 0) : 0 }}</td>
+                <td>{{ $cat['name'] }}</td>
+                <td style="text-align: center;">{{ number_format($cat['required'], 1) }}</td>
+                <td style="text-align: center; font-weight: bold;">{{ number_format($cat['hours'], 1) }}</td>
             </tr>
             @endforeach
             <tr class="total-row">
-                <td style="text-align:right;padding-right:30px; border: 1px solid #000; padding: 1px 8px; text-align: center">รวม</td>
-                <td class="r" style="border-top: none; border-bottom: none; border-right: 1px solid #000; padding: 5px 8px; text-align: center; border-top: 1px solid #000;" >{{ number_format($totalHours, 0) }}</td>
+                <td style="font-weight: bold;">รวมชั่วโมงกิจกรรมทั้งหมด</td>
+                <td style="text-align: center; font-weight: bold;">{{ number_format($totalRequired, 1) }}</td>
+                <td style="text-align: center; font-weight: bold; color: #1e3a8a;">{{ number_format($totalHours, 1) }}</td>
             </tr>
-            @if($totalHours > 0)
-            <tr>
-                <td colspan="2" style="border: 1px solid #000; padding: 1px; text-align: left; background: none; ">
-                    <p style="margin: 0; ">ผลการเข้าร่วมกิจกรรมตามที่มหาวิทยาลัยกำหนด</p>
-                    <p style="margin: 4px 0 0;">จำนวน <strong>{{ number_format($totalHours, 0) }}</strong> ชั่วโมง อยู่ในระดับ <span class="level" style="color: #000000;">{{ $levelLabel }}</span></p>
-                </td>
-            </tr>
-            @endif
         </tbody>
     </table>
 
-    
-
-    {{-- ═══════════════════ ข้อความรับรอง ═══════════════════ --}}
-    <div class="cert-text">
-        ขอรับรองว่าตลอดระยะเวลาที่เคยได้ศึกษา
-    </div>
-    <div class="cert-detail">
-        นักศึกษาเข้าร่วมกิจกรรมตามรายงานที่ได้บันทึกไว้ในระเบียนกิจกรรมนักศึกษาจริงทุกประการ
+    {{-- ข้อความรับรองทางการ --}}
+    <div class="cert-block">
+        ขอรับรองว่าตลอดระยะเวลาการศึกษา นักศึกษาได้เข้าร่วมกิจกรรมตามรายงานที่บันทึกไว้ในระเบียนกิจกรรมนักศึกษาจริงทุกประการ
     </div>
 
-    {{-- ═══════════════════ ลายเซ็น ═══════════════════ --}}
+    {{-- ส่วนลงนามทางการ (2 คอลัมน์) --}}
     <table class="sig-table">
         <tr>
             <td>
-                <div class="sig-title">ผู้ตรวจสอบ</div>
-                <div style="height:10px;"></div>
-                @if(file_exists($sig1Path))
-                    <img src="{{ $sig1Path }}" class="sig-img">
+                <div class="sig-title">ผู้ตรวจสอบข้อมูลกิจกรรม</div>
+                @if(!empty($sig1Base64))
+                    <img src="{{ $sig1Base64 }}" class="sig-img">
                 @else
-                    <div style="height:50px;"></div>
+                    <div class="sig-placeholder"></div>
                 @endif
-                <div class="sig-name">( ................................................ )</div>
-                <div class="sig-pos">ปฏิบัติหน้าที่ผู้อำนวยการกองพัฒนานักศึกษา</div>
+                <div class="sig-name">( อาจารย์ ดร.สมชาย ใจดี )</div>
+                <div class="sig-pos">ผู้อำนวยการกองพัฒนานักศึกษา</div>
             </td>
             <td>
-                <div class="sig-title">ออกให้ ณ วันที่ {{ now()->addYears(543)->locale('th')->translatedFormat('d F') }} {{ now()->year + 543 }}</div>
-                <div style="height:10px;"></div>
-                @if(file_exists($sig2Path))
-                    <img src="{{ $sig2Path }}" class="sig-img">
+                <div class="sig-title">ผู้อนุมัติเอกสารและรับรองผล</div>
+                @if(!empty($sig2Base64))
+                    <img src="{{ $sig2Base64 }}" class="sig-img">
                 @else
-                    <div style="height:50px;"></div>
+                    <div class="sig-placeholder"></div>
                 @endif
-                <div class="sig-name">( ................................................ )</div>
-                <div class="sig-pos">รองอธิการบดี ปฏิบัติราชการแทน</div>
-                <div class="sig-pos">อธิการบดีมหาวิทยาลัยเวทย์มนต์และเทคโนโลยีดิจิทัล </div>
+                <div class="sig-name">( ผู้ช่วยศาสตราจารย์ ดร.วิภาดา วิจิตรศิลป์ )</div>
+                <div class="sig-pos">รองอธิการบดีฝ่ายพัฒนานักศึกษาและศิษย์เก่าสัมพันธ์</div>
             </td>
         </tr>
     </table>
 
-    {{-- ═══════════════════ Footer ═══════════════════ --}}
+    {{-- Footer --}}
     <table class="footer-table">
         <tr>
-            <td style="text-align:left;">พิมพ์เมื่อวันที่ {{ now()->addYears(543)->locale('th')->translatedFormat('d F') }} {{ now()->year + 543 }}</td>
-            <td style="text-align:right;">เลขที่เอกสาร {{ $docNumber }}</td>
+            <td style="text-align: left;">
+                ออก ณ วันที่ {{ now()->addYears(543)->locale('th')->translatedFormat('d F') }} {{ now()->year + 543 }} | ระบบระเบียนกิจกรรมนักศึกษา
+            </td>
+            <td style="text-align: right;">
+                Document Ref: <strong>{{ $docNumber }}</strong>
+            </td>
         </tr>
     </table>
 
-</div>
 </body>
 </html>

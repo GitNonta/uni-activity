@@ -5,8 +5,8 @@
     <title>Official Activity Transcript - {{ $student->student_id }}</title>
     <style>
         @page {
-            margin: 10mm 14mm 10mm 14mm;
             size: A4 portrait;
+            margin: 16mm 18mm 14mm 18mm;
         }
         * {
             margin: 0;
@@ -24,49 +24,54 @@
         .header-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
         .header-table td {
             vertical-align: middle;
         }
         .uni-th {
-            font-size: 12.5pt;
+            font-size: 14pt;
             font-weight: bold;
             color: #0f172a;
             line-height: 1.25;
         }
         .uni-en {
-            font-size: 8.5pt;
+            font-size: 9pt;
             font-weight: bold;
             color: #475569;
             text-transform: uppercase;
-            letter-spacing: 0.04em;
+            letter-spacing: 0.05em;
             margin-bottom: 3px;
         }
         .doc-title-th {
-            font-size: 12pt;
+            font-size: 13pt;
             font-weight: bold;
             color: #1e3a8a;
             line-height: 1.25;
         }
         .doc-title-en {
-            font-size: 9.5pt;
+            font-size: 10pt;
             font-weight: bold;
             color: #1e3a8a;
             letter-spacing: 0.06em;
         }
 
         .header-line {
-            border: none;
             border-top: 2px solid #1e3a8a;
-            margin: 6px 0 8px 0;
+            border-bottom: 0.5px solid #94a3b8;
+            height: 3px;
+            margin: 5px 0 8px 0;
         }
 
-        /* ── Student Information ── */
+        /* ── Student Information Box ── */
         .info-wrap-table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 8px;
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 6px 8px;
         }
         .info-table {
             width: 100%;
@@ -74,7 +79,7 @@
         }
         .info-table td {
             font-size: 9.5pt;
-            padding: 1.5px 4px;
+            padding: 2px 4px;
             vertical-align: top;
         }
         .info-label {
@@ -88,7 +93,7 @@
 
         /* ── Audit Status Banner ── */
         .audit-badge-box {
-            padding: 5px 10px;
+            padding: 6px 12px;
             border-radius: 4px;
             margin-bottom: 8px;
             text-align: center;
@@ -104,7 +109,7 @@
             color: #991b1b;
         }
         .audit-badge-title {
-            font-size: 10pt;
+            font-size: 10.5pt;
             font-weight: bold;
         }
         .audit-badge-desc {
@@ -114,12 +119,12 @@
 
         /* ── Section Titles & Tables ── */
         .table-section-title {
-            font-size: 9.5pt;
+            font-size: 10pt;
             font-weight: bold;
             color: #1e3a8a;
             margin: 6px 0 3px;
             border-left: 3px solid #1e3a8a;
-            padding-left: 5px;
+            padding-left: 6px;
             line-height: 1.2;
         }
 
@@ -132,16 +137,16 @@
         .data-table th {
             font-size: 9pt;
             font-weight: bold;
-            background-color: #f8fafc;
+            background-color: #f1f5f9;
             color: #1e293b;
-            padding: 3.5px 5px;
+            padding: 4px 6px;
             border: 1px solid #cbd5e1;
             text-align: center;
             vertical-align: middle;
         }
         .data-table td {
             font-size: 8.5pt;
-            padding: 3px 5px;
+            padding: 3.5px 6px;
             border: 1px solid #cbd5e1;
             color: #1e293b;
             vertical-align: middle;
@@ -165,6 +170,7 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
+            page-break-inside: avoid;
         }
         .sig-table td {
             width: 50%;
@@ -202,7 +208,7 @@
             border-collapse: collapse;
             margin-top: 8px;
             border-top: 1px solid #cbd5e1;
-            padding-top: 3px;
+            padding-top: 4px;
         }
         .footer-table td {
             font-size: 7.5pt;
@@ -215,9 +221,9 @@
     {{-- ส่วนหัวทางการ: ตราสัญลักษณ์มหาวิทยาลัย + หัวเรื่องสองภาษา + QR Code --}}
     <table class="header-table">
         <tr>
-            <td style="width: 70px; text-align: left;">
+            <td style="width: 72px; text-align: left;">
                 @if(!empty($emblemBase64))
-                    <img src="{{ $emblemBase64 }}" style="width: 62px; height: auto;">
+                    <img src="{{ $emblemBase64 }}" style="width: 66px; height: auto;">
                 @endif
             </td>
             <td style="text-align: center; padding: 0 8px;">
@@ -226,18 +232,18 @@
                 <div class="doc-title-th">ใบแสดงผลการเข้าร่วมกิจกรรมพัฒนานักศึกษาตลอดหลักสูตร</div>
                 <div class="doc-title-en">OFFICIAL ACTIVITY TRANSCRIPT</div>
             </td>
-            <td style="width: 75px; text-align: right;">
+            <td style="width: 72px; text-align: right;">
                 @if(!empty($qrCodeBase64))
-                    <img src="data:image/svg+xml;base64,{{ $qrCodeBase64 }}" style="width: 62px; height: 62px; border: 1px solid #cbd5e1; padding: 1px;">
+                    <img src="data:image/svg+xml;base64,{{ $qrCodeBase64 }}" style="width: 64px; height: 64px; border: 1px solid #cbd5e1; padding: 1px;">
                     <div style="font-size: 6.5pt; color: #64748b; text-align: center; margin-top: 1px;">สแกนตรวจสอบ</div>
                 @endif
             </td>
         </tr>
     </table>
 
-    <hr class="header-line">
+    <div class="header-line"></div>
 
-    {{-- ข้อมูลนักศึกษา --}}
+    {{-- ข้อมูลนักศึกษา (กรอบมาตรฐานข้อมูลประวัติ) --}}
     <table class="info-wrap-table">
         <tr>
             <td style="vertical-align: top;">
@@ -267,8 +273,8 @@
                 </table>
             </td>
             @if(!empty($studentPhotoBase64))
-            <td style="width: 65px; text-align: right; vertical-align: top; padding-left: 6px;">
-                <img src="{{ $studentPhotoBase64 }}" style="width: 58px; height: 72px; object-fit: cover; border: 1px solid #cbd5e1; border-radius: 2px;">
+            <td style="width: 68px; text-align: right; vertical-align: top; padding-left: 8px;">
+                <img src="{{ $studentPhotoBase64 }}" style="width: 60px; height: 75px; object-fit: cover; border: 1px solid #cbd5e1; border-radius: 2px;">
             </td>
             @endif
         </tr>
@@ -381,7 +387,7 @@
         </tbody>
     </table>
 
-    {{-- ลายมือชื่อทางการ --}}
+    {{-- ลายมือชื่อทางการ (2 คอลัมน์สมบูรณ์) --}}
     <table class="sig-table">
         <tr>
             <td>
@@ -411,7 +417,7 @@
     <table class="footer-table">
         <tr>
             <td style="text-align: left;">
-                เอกสารทางการออก ณ วันที่ {{ $issueDateThai ?? $issueDate->format('d/m/Y') }} | ตรวจสอบความถูกต้องผ่านระบบระเบียนกิจกรรมนักศึกษา
+                เอกสารทางการออก ณ วันที่ {{ $issueDateThai ?? $issueDate->format('d/m/Y') }} | ตรวจสอบความถูกต้องผ่านระบบระเบียนกิจกรรมนักศึกษาดิจิทัล
             </td>
             <td style="text-align: right;">
                 Document Ref: <strong>{{ $docNumber }}</strong>
