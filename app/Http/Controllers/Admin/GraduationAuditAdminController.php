@@ -31,7 +31,7 @@ class GraduationAuditAdminController extends Controller
     public function index(Request $request): View
     {
         $filters = [
-            'year'       => $request->input('year', '4'), // เริ่มต้น: นักศึกษาชั้นปี 4
+            'year'       => $request->input('year', 'all'), // เริ่มต้น: ทุกชั้นปี (แสดงนักศึกษาจริงทั้งหมดในระบบ)
             'faculty'    => $request->input('faculty'),
             'department' => $request->input('department'),
             'status'     => $request->input('status'), // 'passed' | 'deficit'
@@ -115,7 +115,7 @@ class GraduationAuditAdminController extends Controller
     public function export(Request $request): StreamedResponse
     {
         $filters = [
-            'year'       => $request->input('year', '4'),
+            'year'       => $request->input('year', 'all'),
             'faculty'    => $request->input('faculty'),
             'department' => $request->input('department'),
             'status'     => $request->input('status'),

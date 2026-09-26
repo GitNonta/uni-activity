@@ -10,6 +10,7 @@ use App\Models\AdminAuditLog;
 use App\Models\Attendance;
 use App\Models\GraduationCriteria;
 use App\Models\Notification;
+use App\Models\Registration;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -88,6 +89,30 @@ class GraduationAuditService
             ->orderBy('checked_in_at', 'desc')
             ->get();
 
+        // รวมการลงทะเบียนกิจกรรมที่ได้รับการอนุมัติ (Registration status: approved) แต่ยังไม่มีแถวใน attendances
+        $existingActivityIds = $attendances->pluck('activity_id')->filter()->all();
+        $approvedRegistrations = Registration::with(['activity.category'])
+            ->where('user_id', $student->id)
+            ->where('status', 'approved')
+            ->whereNotIn('activity_id', $existingActivityIds)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        foreach ($approvedRegistrations as $reg) {
+            if ($reg->activity) {
+                $virtualAtt = new Attendance([
+                    'user_id'       => $student->id,
+                    'activity_id'   => $reg->activity_id,
+                    'status'        => 'approved',
+                    'method'        => 'registration_approved',
+                    'checked_in_at' => $reg->created_at,
+                    'is_verified'   => true,
+                ]);
+                $virtualAtt->setRelation('activity', $reg->activity);
+                $attendances->push($virtualAtt);
+            }
+        }
+
         // 1. คำนวณชั่วโมงรวม
         $totalHours = (float) $attendances->sum(fn(Attendance $a) => (float) ($a->activity?->activity_hours ?? 0));
         $minTotalHours = (float) $criteria->min_total_hours;
@@ -156,8 +181,20 @@ class GraduationAuditService
             if (is_numeric($catKey)) {
                 $categoryModel = $allCategories->get((int) $catKey);
                 $catName = $categoryModel ? $categoryModel->name : "หมวดหมู่ #{$catKey}";
-                $earned = (float) $attendances->filter(fn(Attendance $a) => $a->activity?->category_id === (int) $catKey)
-                    ->sum(fn(Attendance $a) => (float) ($a->activity?->activity_hours ?? 0));
+                $isVolunteer = $categoryModel && (str_contains($categoryModel->name, 'จิตอาสา') || str_contains($categoryModel->name, 'บำเพ็ญประโยชน์'));
+
+                if ($isVolunteer) {
+                    $earned = (float) $attendances->filter(function (Attendance $a) use ($catKey) {
+                        if ($a->activity?->category_id === (int) $catKey) {
+                            return true;
+                        }
+                        $name = $a->activity?->category?->name ?? '';
+                        return str_contains($name, 'จิตอาสา') || str_contains($name, 'บำเพ็ญประโยชน์');
+                    })->sum(fn(Attendance $a) => (float) ($a->activity?->activity_hours ?? 0));
+                } else {
+                    $earned = (float) $attendances->filter(fn(Attendance $a) => $a->activity?->category_id === (int) $catKey)
+                        ->sum(fn(Attendance $a) => (float) ($a->activity?->activity_hours ?? 0));
+                }
             } elseif ($catKey === 'volunteer' || str_contains(strtolower((string) $catKey), 'volunteer')) {
                 $catName = 'กิจกรรมจิตอาสาและบำเพ็ญประโยชน์';
                 $earned = (float) $attendances->filter(function (Attendance $a) {
@@ -232,7 +269,7 @@ class GraduationAuditService
      */
     public function getGraduationMetrics(array $filters = []): array
     {
-        $yearFilter = $filters['year'] ?? '4'; // ค่าเริ่มต้น: นักศึกษาชั้นปีที่ 4 (ปีสุดท้าย)
+        $yearFilter = $filters['year'] ?? 'all'; // ค่าเริ่มต้น: ทุกชั้นปี (แสดงนักศึกษาทั้งหมดตามฐานข้อมูลจริง)
         $facultyFilter = $filters['faculty'] ?? null;
         $departmentFilter = $filters['department'] ?? null;
         $statusFilter = $filters['status'] ?? null; // 'passed', 'deficit', or null
@@ -240,7 +277,7 @@ class GraduationAuditService
 
         $query = User::where('role', 'student')->where('is_active', true);
 
-        if ($yearFilter !== 'all' && is_numeric($yearFilter)) {
+        if ($yearFilter !== 'all' && !empty($yearFilter) && is_numeric($yearFilter)) {
             $query->where('year', (int) $yearFilter);
         }
 

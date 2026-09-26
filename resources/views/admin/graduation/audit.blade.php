@@ -48,7 +48,7 @@
 <div class="grid-4 mb-4" style="gap:1rem;">
     <div class="card stat-card" style="padding:1rem;background:#ffffff;border:1px solid #e2e8f0;border-radius:0.75rem;">
         <div class="flex items-center justify-between">
-            <span class="stat-label text-xs text-muted">นักศึกษาตามตัวกรอง (ปี {{ $report['filters']['year'] === 'all' ? 'ทุกชั้นปี' : $report['filters']['year'] }})</span>
+            <span class="stat-label text-xs text-muted">นักศึกษาตามตัวกรอง ({{ ($report['filters']['year'] === 'all' || empty($report['filters']['year'])) ? 'ทุกชั้นปี' : 'ปี ' . $report['filters']['year'] }})</span>
             <span style="color:#4f46e5;padding:0.3rem;background:#eef2ff;border-radius:0.375rem;">
                 <svg style="width:1.1rem;height:1.1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
             </span>
@@ -94,11 +94,11 @@
         <div style="min-width:130px;">
             <label class="block text-xs font-semibold text-muted mb-1">ชั้นปี</label>
             <select name="year" class="form-control" style="font-size:0.85rem;padding:0.4rem 0.6rem;border-radius:0.375rem;">
+                <option value="all" {{ ($report['filters']['year'] == 'all' || empty($report['filters']['year'])) ? 'selected' : '' }}>ทุกชั้นปี (ทั้งหมด)</option>
                 <option value="4" {{ ($report['filters']['year'] == '4') ? 'selected' : '' }}>ปี 4 (ปีสุดท้าย)</option>
                 <option value="3" {{ ($report['filters']['year'] == '3') ? 'selected' : '' }}>ปี 3</option>
                 <option value="2" {{ ($report['filters']['year'] == '2') ? 'selected' : '' }}>ปี 2</option>
                 <option value="1" {{ ($report['filters']['year'] == '1') ? 'selected' : '' }}>ปี 1</option>
-                <option value="all" {{ ($report['filters']['year'] == 'all') ? 'selected' : '' }}>ทุกชั้นปี</option>
             </select>
         </div>
 
@@ -249,7 +249,12 @@
                             @endif
                         </td>
                         <td style="padding:0.75rem;" class="text-right">
-                            <div class="flex justify-end gap-1" style="align-items:center;">
+                                {{-- ดูรายละเอียดการตรวจสอบ --}}
+                                <button type="button" class="btn btn-outline btn-sm text-xs flex items-center gap-1" style="padding:0.25rem 0.5rem;" onclick="openAuditModal({{ $s->id }})" title="ดูรายละเอียดชั่วโมงกิจกรรมรายคน">
+                                    <svg style="width:0.85rem;height:0.85rem;color:#0284c7;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                    <span>รายละเอียด</span>
+                                </button>
+
                                 {{-- พิมพ์ Official Transcript --}}
                                 <a href="{{ route('admin.graduation.audit.transcript', $s) }}" target="_blank" class="btn btn-outline btn-sm text-xs flex items-center gap-1" style="padding:0.25rem 0.5rem;" title="พิมพ์ Official Activity Transcript">
                                     <svg style="width:0.85rem;height:0.85rem;color:#4f46e5;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
@@ -275,4 +280,146 @@
         </div>
     @endif
 </div>
+
+{{-- Audit Detail Modal --}}
+<div id="auditDetailModal" class="modal-backdrop" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:9999;align-items:center;justify-content:center;padding:1rem;">
+    <div style="background:#ffffff;border-radius:0.75rem;max-width:620px;width:100%;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1),0 10px 10px -5px rgba(0,0,0,0.04);overflow:hidden;animation:modalFadeIn 0.2s ease;">
+        <div class="flex items-center justify-between" style="padding:1rem 1.25rem;border-bottom:1px solid #e2e8f0;background:#f8fafc;">
+            <div class="flex items-center gap-2">
+                <span style="display:inline-flex;padding:0.35rem;background:#e0e7ff;border-radius:0.375rem;color:#4338ca;">
+                    <svg style="width:1.1rem;height:1.1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                </span>
+                <h3 class="font-bold text-dark" style="margin:0;font-size:1.05rem;" id="modalStudentTitle">รายละเอียดการตรวจสอบชั่วโมงกิจกรรม</h3>
+            </div>
+            <button type="button" onclick="closeAuditModal()" style="border:none;background:transparent;cursor:pointer;color:#64748b;padding:0.25rem;border-radius:0.25rem;">
+                <svg style="width:1.25rem;height:1.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div style="padding:1.25rem;max-height:calc(85vh - 120px);overflow-y:auto;" id="modalBody">
+            <div class="text-center py-6 text-muted">กำลังโหลดข้อมูล...</div>
+        </div>
+        <div class="flex justify-end gap-2" style="padding:0.75rem 1.25rem;border-top:1px solid #e2e8f0;background:#f8fafc;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="closeAuditModal()">ปิด</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function openAuditModal(userId) {
+    const modal = document.getElementById('auditDetailModal');
+    const modalBody = document.getElementById('modalBody');
+    modal.style.display = 'flex';
+    modalBody.innerHTML = '<div class="text-center py-6 text-muted"><svg style="width:2rem;height:2rem;margin:0 auto 0.5rem;animation:spin 1s linear infinite;color:#6366f1;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg><p>กำลังดึงผลการตรวจสอบจากฐานข้อมูล...</p></div>';
+
+    fetch('/admin/graduation-audit/students/' + userId, {
+        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (!res.success) {
+            modalBody.innerHTML = '<div class="text-danger p-4 text-center">ไม่สามารถโหลดข้อมูลได้</div>';
+            return;
+        }
+        const d = res.data;
+        document.getElementById('modalStudentTitle').innerText = `${d.full_name} (${d.student_id})`;
+
+        const pct = Math.min(100, Math.round((d.total_hours / d.min_total_hours) * 100));
+        const statusBadge = d.is_eligible 
+            ? '<span class="badge" style="background:#ecfdf5;color:#059669;font-size:0.8rem;padding:0.35rem 0.65rem;">ผ่านเกณฑ์กิจกรรมครบถ้วน</span>'
+            : '<span class="badge" style="background:#fee2e2;color:#dc2626;font-size:0.8rem;padding:0.35rem 0.65rem;">ยังไม่ผ่านเกณฑ์กิจกรรม</span>';
+
+        let scopeHtml = '';
+        for (const [key, scope] of Object.entries(d.scope_audit)) {
+            scopeHtml += `
+                <div style="background:#f8fafc;padding:0.65rem 0.85rem;border-radius:0.5rem;border:1px solid #e2e8f0;margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <div class="font-medium text-xs text-dark">${scope.name}</div>
+                        <div class="text-xs text-muted">สะสมได้: ${Number(scope.earned).toFixed(1)} / เกณฑ์: ${Number(scope.required).toFixed(1)} ชม.</div>
+                    </div>
+                    <span class="badge" style="background:${scope.passed ? '#ecfdf5' : '#fee2e2'};color:${scope.passed ? '#059669' : '#dc2626'};font-size:0.75rem;">
+                        ${scope.passed ? 'ผ่าน' : 'ขาดอีก ' + Number(scope.deficit).toFixed(1) + ' ชม.'}
+                    </span>
+                </div>
+            `;
+        }
+
+        let catHtml = '';
+        for (const [key, cat] of Object.entries(d.category_audit)) {
+            catHtml += `
+                <div style="background:#f8fafc;padding:0.65rem 0.85rem;border-radius:0.5rem;border:1px solid #e2e8f0;margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <div class="font-medium text-xs text-dark">${cat.name}</div>
+                        <div class="text-xs text-muted">สะสมได้: ${Number(cat.earned).toFixed(1)} / เกณฑ์: ${Number(cat.required).toFixed(1)} ชม.</div>
+                    </div>
+                    <span class="badge" style="background:${cat.passed ? '#ecfdf5' : '#fee2e2'};color:${cat.passed ? '#059669' : '#dc2626'};font-size:0.75rem;">
+                        ${cat.passed ? 'ผ่าน' : 'ขาดอีก ' + Number(cat.deficit).toFixed(1) + ' ชม.'}
+                    </span>
+                </div>
+            `;
+        }
+
+        let missingHtml = '';
+        if (!d.is_eligible && d.missing_requirements && d.missing_requirements.length > 0) {
+            missingHtml = `
+                <div style="background:#fef2f2;border-left:4px solid #ef4444;padding:0.75rem 1rem;border-radius:0.5rem;margin-top:1rem;">
+                    <div class="font-bold text-xs" style="color:#991b1b;margin-bottom:0.25rem;">รายการชั่วโมงกิจกรรมที่ต้องสะสมเพิ่ม:</div>
+                    <ul style="margin:0;padding-left:1.25rem;font-size:0.8rem;color:#b91c1c;">
+                        ${d.missing_requirements.map(m => `<li>${m}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
+        modalBody.innerHTML = `
+            <div style="background:#f1f5f9;padding:0.85rem 1rem;border-radius:0.5rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+                <div>
+                    <div class="font-bold text-dark" style="font-size:0.95rem;">${d.student_id} - ${d.full_name}</div>
+                    <div class="text-xs text-muted">${d.faculty || '-'} / ${d.department || '-'} (ชั้นปีที่ ${d.year || '-'})</div>
+                </div>
+                <div>${statusBadge}</div>
+            </div>
+
+            <div style="margin-bottom:1rem;">
+                <div class="flex justify-between items-center mb-1 text-xs">
+                    <span class="font-medium text-dark">ชั่วโมงสะสมรวมทั้งหมด</span>
+                    <span class="font-bold ${d.total_hours >= d.min_total_hours ? 'text-success' : 'text-danger'}">${Number(d.total_hours).toFixed(1)} / ${Number(d.min_total_hours).toFixed(1)} ชม. (${pct}%)</span>
+                </div>
+                <div style="width:100%;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
+                    <div style="width:${pct}%;height:100%;background:${d.total_hours >= d.min_total_hours ? '#10b981' : '#6366f1'};border-radius:4px;transition:width 0.4s ease;"></div>
+                </div>
+            </div>
+
+            <div style="margin-bottom:0.75rem;">
+                <h4 class="font-bold text-xs text-muted uppercase tracking-wider mb-2">โครงสร้างขอบเขตกิจกรรม (Scope)</h4>
+                ${scopeHtml}
+            </div>
+
+            <div style="margin-bottom:0.75rem;">
+                <h4 class="font-bold text-xs text-muted uppercase tracking-wider mb-2">โครงสร้างหมวดหมู่กิจกรรม (Category)</h4>
+                ${catHtml || '<div class="text-xs text-muted">- ไม่มีข้อกำหนดเฉพาะหมวด -</div>'}
+            </div>
+
+            ${missingHtml}
+        `;
+    })
+    .catch(err => {
+        modalBody.innerHTML = '<div class="text-danger p-4 text-center">เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
+    });
+}
+
+function closeAuditModal() {
+    const modal = document.getElementById('auditDetailModal');
+    if (modal) modal.style.display = 'none';
+}
+</script>
+<style>
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+}
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+</style>
 @endsection

@@ -270,4 +270,68 @@ class GraduationAuditAndTranscriptTest extends TestCase
         $response->assertSee('เอกสารใบรับรองกิจกรรมถูกต้องตามระเบียบ');
         $response->assertSee($student->full_name);
     }
+
+    public function test_graduation_audit_defaults_to_all_years_and_shows_all_students(): void
+    {
+        $this->setupCriteriaAndCategories();
+        $staff = $this->createStaff();
+
+        $student1 = $this->createStudent(['year' => 1, 'student_id' => '6701000001', 'full_name' => 'นักศึกษา ปีหนึ่ง']);
+        $student2 = $this->createStudent(['year' => 2, 'student_id' => '6601000002', 'full_name' => 'นักศึกษา ปีสอง']);
+        $student4 = $this->createStudent(['year' => 4, 'student_id' => '6401000004', 'full_name' => 'นักศึกษา ปีสี่']);
+
+        // เรียกหน้าโดยไม่ส่ง parameter year (ต้องเป็น default: all)
+        $response = $this->actingAs($staff)->get(route('admin.graduation.audit.index'));
+
+        $response->assertStatus(200);
+        $response->assertSee($student1->student_id);
+        $response->assertSee($student2->student_id);
+        $response->assertSee($student4->student_id);
+        $response->assertSee('นักศึกษาตามตัวกรอง (ทุกชั้นปี)');
+    }
+
+    public function test_staff_can_view_student_audit_detail_api(): void
+    {
+        $this->setupCriteriaAndCategories();
+        $staff = $this->createStaff();
+        $student = $this->createStudent(['year' => 2]);
+
+        $response = $this->actingAs($staff)->getJson(route('admin.graduation.audit.show', $student));
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'data'    => [
+                'student_id' => $student->student_id,
+                'full_name'  => $student->full_name,
+            ],
+        ]);
+    }
+
+    public function test_approved_registration_is_counted_in_graduation_audit(): void
+    {
+        [$criteria, $volunteerCat, $academicCat] = $this->setupCriteriaAndCategories();
+        $student = $this->createStudent(['year' => 2]);
+
+        $act = $this->createActivity([
+            'title'          => 'กิจกรรมที่ลงทะเบียนอนุมัติ',
+            'scope'          => 'university',
+            'activity_hours' => 15.0,
+            'category_id'    => $academicCat->id,
+        ]);
+
+        // มีแค่ Registration ที่ approved ยังไม่มี Attendance row
+        \App\Models\Registration::create([
+            'user_id'     => $student->id,
+            'activity_id' => $act->id,
+            'status'      => 'approved',
+        ]);
+
+        /** @var GraduationAuditService $auditService */
+        $auditService = app(GraduationAuditService::class);
+        $result = $auditService->auditStudent($student, $criteria);
+
+        $this->assertEquals(15.0, $result['total_hours']);
+        $this->assertEquals(15.0, $result['scope_audit']['university']['earned']);
+    }
 }
