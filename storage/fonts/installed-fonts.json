@@ -1,6 +1,18 @@
 {
     "sarabun": {
-        "normal": "D:\\projects\\uni-activity\\storage\\fonts\/sarabun_normal_e9c01a87cb78497783f5bf9b95bf8a60",
+        "normal": "sarabun_normal_e9c01a87cb78497783f5bf9b95bf8a60",
         "bold": "sarabun_bold_87542e58f76331ca61d96424387dfe71"
+    },
+    "thsarabun": {
+        "normal": "sarabun_normal_e9c01a87cb78497783f5bf9b95bf8a60",
+        "bold": "sarabun_bold_87542e58f76331ca61d96424387dfe71"
+    },
+    "thsarabunpsk": {
+        "normal": "sarabun_normal_e9c01a87cb78497783f5bf9b95bf8a60",
+        "bold": "sarabun_bold_87542e58f76331ca61d96424387dfe71"
+    },
+    "tahoma": {
+        "normal": "tahoma_normal_a05736b5b3a081cae0dd1e0d29c02838",
+        "bold": "tahoma_bold_5dfa2f1798029191b629fa3996b86a9b"
     }
 }

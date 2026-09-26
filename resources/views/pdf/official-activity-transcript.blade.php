@@ -1,83 +1,80 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Official Activity Transcript - {{ $student->student_id }}</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        @page {
+            margin: 10mm 14mm 10mm 14mm;
+            size: A4 portrait;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
-            font-family: 'Garuda', 'DejaVu Sans', 'TH Sarabun PSK', sans-serif;
-            font-size: 10.5pt;
+            font-family: 'sarabun', 'thsarabun', sans-serif;
+            font-size: 10pt;
             color: #0f172a;
-            line-height: 1.4;
-            letter-spacing: 0.02em;
-        }
-        .page {
-            padding: 1.2cm 1.5cm 1cm;
-            position: relative;
-        }
-
-        /* ── Watermark ── */
-        .watermark {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            width: 280px;
-            height: 380px;
-            transform: translate(-50%, -50%);
-            opacity: 0.05;
-            z-index: -1;
+            line-height: 1.35;
         }
 
         /* ── Header ── */
         .header-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
         .header-table td {
             vertical-align: middle;
         }
-        .uni-en {
-            font-size: 12pt;
-            font-weight: bold;
-            color: #1e293b;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
         .uni-th {
-            font-size: 12pt;
+            font-size: 12.5pt;
             font-weight: bold;
-            color: #1e293b;
+            color: #0f172a;
+            line-height: 1.25;
         }
-        .doc-title-en {
-            font-size: 14pt;
+        .uni-en {
+            font-size: 8.5pt;
             font-weight: bold;
-            color: #1e3a8a;
-            margin-top: 4px;
-            letter-spacing: 0.08em;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 3px;
         }
         .doc-title-th {
-            font-size: 13pt;
+            font-size: 12pt;
             font-weight: bold;
             color: #1e3a8a;
+            line-height: 1.25;
+        }
+        .doc-title-en {
+            font-size: 9.5pt;
+            font-weight: bold;
+            color: #1e3a8a;
+            letter-spacing: 0.06em;
         }
 
         .header-line {
             border: none;
             border-top: 2px solid #1e3a8a;
-            margin: 8px 0 10px;
+            margin: 6px 0 8px 0;
         }
 
-        /* ── Student Info ── */
+        /* ── Student Information ── */
+        .info-wrap-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 8px;
+        }
         .info-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 12px;
         }
         .info-table td {
-            font-size: 10pt;
-            padding: 2px 4px;
+            font-size: 9.5pt;
+            padding: 1.5px 4px;
             vertical-align: top;
         }
         .info-label {
@@ -89,61 +86,65 @@
             color: #0f172a;
         }
 
-        /* ── Audit Status Box ── */
+        /* ── Audit Status Banner ── */
         .audit-badge-box {
-            padding: 8px 12px;
+            padding: 5px 10px;
             border-radius: 4px;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             text-align: center;
         }
         .audit-pass {
             background-color: #ecfdf5;
-            border: 1.5px solid #059669;
+            border: 1px solid #059669;
             color: #065f46;
         }
         .audit-fail {
             background-color: #fef2f2;
-            border: 1.5px solid #dc2626;
+            border: 1px solid #dc2626;
             color: #991b1b;
         }
         .audit-badge-title {
-            font-size: 12pt;
+            font-size: 10pt;
             font-weight: bold;
         }
         .audit-badge-desc {
-            font-size: 9.5pt;
-            margin-top: 2px;
+            font-size: 8.5pt;
+            margin-top: 1px;
         }
 
-        /* ── Summary & Detail Tables ── */
+        /* ── Section Titles & Tables ── */
         .table-section-title {
-            font-size: 10.5pt;
+            font-size: 9.5pt;
             font-weight: bold;
             color: #1e3a8a;
-            margin: 10px 0 4px;
+            margin: 6px 0 3px;
             border-left: 3px solid #1e3a8a;
-            padding-left: 6px;
+            padding-left: 5px;
+            line-height: 1.2;
         }
 
         .data-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
+            table-layout: fixed;
         }
         .data-table th {
-            font-size: 9.5pt;
+            font-size: 9pt;
             font-weight: bold;
             background-color: #f8fafc;
             color: #1e293b;
-            padding: 5px 6px;
+            padding: 3.5px 5px;
             border: 1px solid #cbd5e1;
             text-align: center;
+            vertical-align: middle;
         }
         .data-table td {
-            font-size: 9pt;
-            padding: 4px 6px;
+            font-size: 8.5pt;
+            padding: 3px 5px;
             border: 1px solid #cbd5e1;
             color: #1e293b;
+            vertical-align: middle;
         }
         .data-table tr.total-row td {
             font-weight: bold;
@@ -163,7 +164,7 @@
         .sig-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 10px;
         }
         .sig-table td {
             width: 50%;
@@ -172,21 +173,26 @@
             padding: 0 10px;
         }
         .sig-title {
-            font-size: 9.5pt;
+            font-size: 9pt;
             font-weight: bold;
             color: #1e293b;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
         .sig-img {
-            height: 45px;
-            margin: 2px auto;
+            height: 38px;
+            max-width: 120px;
+            margin: 1px auto;
+        }
+        .sig-placeholder {
+            height: 38px;
         }
         .sig-name {
-            font-size: 9.5pt;
+            font-size: 9pt;
             color: #334155;
+            font-weight: bold;
         }
         .sig-pos {
-            font-size: 8.5pt;
+            font-size: 8pt;
             color: #64748b;
         }
 
@@ -194,9 +200,9 @@
         .footer-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            margin-top: 8px;
             border-top: 1px solid #cbd5e1;
-            padding-top: 4px;
+            padding-top: 3px;
         }
         .footer-table td {
             font-size: 7.5pt;
@@ -205,31 +211,25 @@
     </style>
 </head>
 <body>
-<div class="page">
-
-    {{-- Watermark --}}
-    @if(!empty($watermarkPath) && file_exists($watermarkPath))
-        <img src="{{ $watermarkPath }}" class="watermark">
-    @endif
 
     {{-- ส่วนหัวทางการ: ตราสัญลักษณ์มหาวิทยาลัย + หัวเรื่องสองภาษา + QR Code --}}
     <table class="header-table">
         <tr>
-            <td style="width:85px;text-align:left;">
-                @if(!empty($emblemPath) && file_exists($emblemPath))
-                    <img src="{{ $emblemPath }}" style="width:80px;height:auto;max-height:100px;">
+            <td style="width: 70px; text-align: left;">
+                @if(!empty($emblemBase64))
+                    <img src="{{ $emblemBase64 }}" style="width: 62px; height: auto;">
                 @endif
             </td>
-            <td style="text-align:center;padding:0 10px;">
-                <div class="uni-en">Magic and Digital Technology University</div>
+            <td style="text-align: center; padding: 0 8px;">
                 <div class="uni-th">มหาวิทยาลัยเวทย์มนต์และเทคโนโลยีดิจิทัล</div>
-                <div class="doc-title-en">OFFICIAL ACTIVITY TRANSCRIPT</div>
+                <div class="uni-en">Magic and Digital Technology University</div>
                 <div class="doc-title-th">ใบแสดงผลการเข้าร่วมกิจกรรมพัฒนานักศึกษาตลอดหลักสูตร</div>
+                <div class="doc-title-en">OFFICIAL ACTIVITY TRANSCRIPT</div>
             </td>
-            <td style="width:85px;text-align:right;">
+            <td style="width: 75px; text-align: right;">
                 @if(!empty($qrCodeBase64))
-                    <img src="data:image/svg+xml;base64,{{ $qrCodeBase64 }}" style="width:75px;height:75px;border:1px solid #e2e8f0;padding:2px;">
-                    <div style="font-size:6.5pt;color:#64748b;text-align:center;margin-top:2px;">สแกนตรวจสอบ</div>
+                    <img src="data:image/svg+xml;base64,{{ $qrCodeBase64 }}" style="width: 62px; height: 62px; border: 1px solid #cbd5e1; padding: 1px;">
+                    <div style="font-size: 6.5pt; color: #64748b; text-align: center; margin-top: 1px;">สแกนตรวจสอบ</div>
                 @endif
             </td>
         </tr>
@@ -238,50 +238,54 @@
     <hr class="header-line">
 
     {{-- ข้อมูลนักศึกษา --}}
-    <table class="info-table">
+    <table class="info-wrap-table">
         <tr>
-            <td class="info-label" style="width:85px;">รหัสนักศึกษา:</td>
-            <td class="info-val" style="width:130px;font-weight:bold;">{{ $student->student_id }}</td>
-            <td class="info-label" style="width:80px;">ชื่อ-นามสกุล:</td>
-            <td class="info-val" style="font-weight:bold;">{{ $student->full_name }}</td>
-            <td rowspan="3" style="width:70px;text-align:right;vertical-align:middle;">
-                @if(!empty($studentPhoto) && file_exists($studentPhoto))
-                    <img src="{{ $studentPhoto }}" style="width:65px;height:80px;object-fit:cover;border:1px solid #cbd5e1;border-radius:2px;">
-                @endif
+            <td style="vertical-align: top;">
+                <table class="info-table">
+                    <tr>
+                        <td class="info-label" style="width: 110px;">รหัสนักศึกษา:</td>
+                        <td class="info-val" style="width: 140px; font-weight: bold;">{{ $student->student_id }}</td>
+                        <td class="info-label" style="width: 95px;">ชื่อ-นามสกุล:</td>
+                        <td class="info-val" style="font-weight: bold;">{{ $student->full_name }}</td>
+                    </tr>
+                    <tr>
+                        <td class="info-label">Student Name:</td>
+                        <td class="info-val">{{ $student->english_name ?: '-' }}</td>
+                        <td class="info-label">ระดับการศึกษา:</td>
+                        <td class="info-val">ปริญญาตรี (ชั้นปีที่ {{ $student->year ?: '-' }})</td>
+                    </tr>
+                    <tr>
+                        <td class="info-label">คณะ (Faculty):</td>
+                        <td class="info-val">{{ $student->faculty ?: '-' }}</td>
+                        <td class="info-label">สาขาวิชา:</td>
+                        <td class="info-val">{{ $student->department ?: '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="info-label">เกณฑ์หลักสูตร:</td>
+                        <td class="info-val" colspan="3">{{ $audit['criteria']->name ?? 'เกณฑ์มาตรฐานมหาวิทยาลัย' }}</td>
+                    </tr>
+                </table>
             </td>
-        </tr>
-        <tr>
-            <td class="info-label">Student Name:</td>
-            <td class="info-val" colspan="3">{{ $student->english_name ?: '-' }}</td>
-        </tr>
-        <tr>
-            <td class="info-label">คณะ (Faculty):</td>
-            <td class="info-val">{{ $student->faculty ?: '-' }}</td>
-            <td class="info-label">สาขาวิชา:</td>
-            <td class="info-val">{{ $student->department ?: '-' }}</td>
-        </tr>
-        <tr>
-            <td class="info-label">ระดับการศึกษา:</td>
-            <td class="info-val">ปริญญาตรี (ชั้นปีที่ {{ $student->year ?: '-' }})</td>
-            <td class="info-label">เกณฑ์หลักสูตร:</td>
-            <td class="info-val" colspan="2">{{ $audit['criteria']->name ?? 'เกณฑ์มาตรฐานมหาวิทยาลัย' }}</td>
+            @if(!empty($studentPhotoBase64))
+            <td style="width: 65px; text-align: right; vertical-align: top; padding-left: 6px;">
+                <img src="{{ $studentPhotoBase64 }}" style="width: 58px; height: 72px; object-fit: cover; border: 1px solid #cbd5e1; border-radius: 2px;">
+            </td>
+            @endif
         </tr>
     </table>
 
     {{-- ผลการตรวจสอบการสำเร็จการศึกษา (Graduation Audit Stamp) --}}
     @if($audit['is_eligible'])
         <div class="audit-badge-box audit-pass">
-            <div class="audit-badge-title">✓ ผ่านเกณฑ์กิจกรรมพัฒนานักศึกษาเพื่อการสำเร็จการศึกษา (GRADUATION REQUIREMENT MET)</div>
-            <div class="audit-badge-desc">นักศึกษามีชั่วโมงกิจกรรมครบถ้วนตามข้อบังคับมหาวิทยาลัยและโครงสร้างหลักสูตร (สะสมได้ {{ number_format($audit['total_hours'], 1) }} / เกณฑ์ {{ number_format($audit['min_total_hours'], 1) }} ชม.)</div>
+            <div class="audit-badge-title">ผ่านเกณฑ์กิจกรรมพัฒนานักศึกษาเพื่อการสำเร็จการศึกษา (GRADUATION REQUIREMENT MET)</div>
+            <div class="audit-badge-desc">นักศึกษามีชั่วโมงกิจกรรมครบถ้วนตามเกณฑ์หลักสูตร (สะสมได้ {{ number_format($audit['total_hours'], 1) }} / เกณฑ์ {{ number_format($audit['min_total_hours'], 1) }} ชม.)</div>
         </div>
     @else
         <div class="audit-badge-box audit-fail">
-            <div class="audit-badge-title">! อยู่ระหว่างการสะสมชั่วโมงกิจกรรม (IN PROGRESS - REQUIREMENT NOT YET MET)</div>
+            <div class="audit-badge-title">อยู่ระหว่างการสะสมชั่วโมงกิจกรรม (IN PROGRESS - REQUIREMENT NOT YET MET)</div>
             <div class="audit-badge-desc">
-                ชั่วโมงสะสมรวม {{ number_format($audit['total_hours'], 1) }} / {{ number_format($audit['min_total_hours'], 1) }} ชม.
-                @if(!empty($audit['missing_requirements']))
-                    ({{ implode(', ', $audit['missing_requirements']) }})
-                @endif
+                ชั่วโมงสะสมรวม {{ number_format($audit['total_hours'], 1) }} / เกณฑ์ {{ number_format($audit['min_total_hours'], 1) }} ชม.
+                (ยังขาดอีก {{ number_format(max(0, $audit['min_total_hours'] - $audit['total_hours']), 1) }} ชม. ให้ครบตามโครงสร้างเกณฑ์หลักสูตร)
             </div>
         </div>
     @endif
@@ -291,10 +295,10 @@
     <table class="data-table">
         <thead>
             <tr>
-                <th style="text-align:left;width:40%;">ประเภท / หมวดหมู่กิจกรรมตามเกณฑ์</th>
-                <th style="width:20%;">เกณฑ์ที่กำหนด (ชม.)</th>
-                <th style="width:20%;">ชั่วโมงที่สะสมได้ (ชม.)</th>
-                <th style="width:20%;">ผลการประเมิน</th>
+                <th style="text-align: left; width: 46%;">ประเภท / หมวดหมู่กิจกรรมตามเกณฑ์</th>
+                <th style="width: 18%;">เกณฑ์ที่กำหนด (ชม.)</th>
+                <th style="width: 18%;">ชั่วโมงสะสม (ชม.)</th>
+                <th style="width: 18%;">ผลการประเมิน</th>
             </tr>
         </thead>
         <tbody>
@@ -302,11 +306,11 @@
             @foreach($audit['scope_audit'] as $scopeKey => $scope)
             <tr>
                 <td>{{ $scope['name'] }}</td>
-                <td style="text-align:center;">{{ number_format($scope['required'], 1) }}</td>
-                <td style="text-align:center;font-weight:bold;">{{ number_format($scope['earned'], 1) }}</td>
-                <td style="text-align:center;">
+                <td style="text-align: center;">{{ number_format($scope['required'], 1) }}</td>
+                <td style="text-align: center; font-weight: bold;">{{ number_format($scope['earned'], 1) }}</td>
+                <td style="text-align: center;">
                     @if($scope['passed'])
-                        <span class="badge-pass">ผ่าน (PASS)</span>
+                        <span class="badge-pass">ผ่านเกณฑ์</span>
                     @else
                         <span class="badge-fail">ขาด {{ number_format($scope['deficit'], 1) }} ชม.</span>
                     @endif
@@ -318,11 +322,11 @@
             @foreach($audit['category_audit'] as $catKey => $cat)
             <tr>
                 <td>{{ $cat['name'] }}</td>
-                <td style="text-align:center;">{{ number_format($cat['required'], 1) }}</td>
-                <td style="text-align:center;font-weight:bold;">{{ number_format($cat['earned'], 1) }}</td>
-                <td style="text-align:center;">
+                <td style="text-align: center;">{{ number_format($cat['required'], 1) }}</td>
+                <td style="text-align: center; font-weight: bold;">{{ number_format($cat['earned'], 1) }}</td>
+                <td style="text-align: center;">
                     @if($cat['passed'])
-                        <span class="badge-pass">ผ่าน (PASS)</span>
+                        <span class="badge-pass">ผ่านเกณฑ์</span>
                     @else
                         <span class="badge-fail">ขาด {{ number_format($cat['deficit'], 1) }} ชม.</span>
                     @endif
@@ -331,12 +335,12 @@
             @endforeach
 
             <tr class="total-row">
-                <td style="font-weight:bold;">รวมชั่วโมงกิจกรรมตลอดหลักสูตร</td>
-                <td style="text-align:center;font-weight:bold;">{{ number_format($audit['min_total_hours'], 1) }}</td>
-                <td style="text-align:center;font-weight:bold;color:#1e3a8a;">{{ number_format($audit['total_hours'], 1) }}</td>
-                <td style="text-align:center;">
+                <td style="font-weight: bold;">รวมชั่วโมงกิจกรรมตลอดหลักสูตร</td>
+                <td style="text-align: center; font-weight: bold;">{{ number_format($audit['min_total_hours'], 1) }}</td>
+                <td style="text-align: center; font-weight: bold; color: #1e3a8a;">{{ number_format($audit['total_hours'], 1) }}</td>
+                <td style="text-align: center;">
                     @if($audit['is_eligible'])
-                        <span class="badge-pass">สมบูรณ์ (PASSED)</span>
+                        <span class="badge-pass">ครบเกณฑ์สมบูรณ์</span>
                     @else
                         <span class="badge-fail">ยังไม่ครบเกณฑ์</span>
                     @endif
@@ -347,59 +351,55 @@
 
     {{-- 2. ประวัติการเข้าร่วมกิจกรรมตลอดหลักสูตร (Detailed Activity History) --}}
     <div class="table-section-title">2. บัญชีรายการกิจกรรมที่ได้รับการรับรอง (Certified Activity Records)</div>
-    @if($attendances->isEmpty())
-        <div style="font-size:9pt;color:#64748b;padding:8px;border:1px dashed #cbd5e1;text-align:center;">
-            ยังไม่มีบันทึกประวัติการเข้าร่วมกิจกรรมที่ได้รับการอนุมัติในระบบ
-        </div>
-    @else
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th style="width:12%;">วันที่</th>
-                    <th style="text-align:left;width:48%;">ชื่อกิจกรรม</th>
-                    <th style="width:22%;">หมวดหมู่ / ระดับ</th>
-                    <th style="width:8%;">ชั่วโมง</th>
-                    <th style="width:10%;">สถานะ</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($attendances as $att)
-                <tr>
-                    <td style="text-align:center;">{{ $att->checked_in_at ? $att->checked_in_at->format('d/m/Y') : ($att->activity?->activity_date ? $att->activity->activity_date->format('d/m/Y') : '-') }}</td>
-                    <td>{{ $att->activity?->title ?? '-' }}</td>
-                    <td style="font-size:8.5pt;">
-                        {{ $att->activity?->category?->name ?? 'ทั่วไป' }}
-                        <span style="color:#64748b;">({{ $att->activity?->scope === 'university' ? 'มหาวิทยาลัย' : 'คณะ' }})</span>
-                    </td>
-                    <td style="text-align:center;font-weight:bold;">{{ number_format((float) ($att->activity?->activity_hours ?? 0), 1) }}</td>
-                    <td style="text-align:center;color:#059669;font-weight:bold;font-size:8pt;">อนุมัติแล้ว</td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-    @endif
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 12%;">วันที่</th>
+                <th style="text-align: left; width: 48%;">ชื่อกิจกรรม / โครงการ</th>
+                <th style="width: 24%;">หมวดหมู่ / ขอบเขต</th>
+                <th style="width: 16%;">ชั่วโมงกิจกรรม</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($attendances as $att)
+            <tr>
+                <td style="text-align: center;">{{ $att->checked_in_at ? $att->checked_in_at->format('d/m/Y') : ($att->activity?->activity_date ? $att->activity->activity_date->format('d/m/Y') : '-') }}</td>
+                <td>{{ $att->activity?->title ?? '-' }}</td>
+                <td style="font-size: 8pt;">
+                    {{ $att->activity?->category?->name ?? 'ทั่วไป' }}
+                    <span style="color: #64748b;">({{ $att->activity?->scope === 'university' ? 'ระดับมหาวิทยาลัย' : 'ระดับคณะ' }})</span>
+                </td>
+                <td style="text-align: center; font-weight: bold;">{{ number_format((float) ($att->activity?->activity_hours ?? 0), 1) }} ชม.</td>
+            </tr>
+            @empty
+            <tr>
+                <td colspan="4" style="text-align: center; color: #64748b; padding: 6px;">
+                    ยังไม่มีบันทึกประวัติการเข้าร่วมกิจกรรมที่ได้รับการอนุมัติในระบบ
+                </td>
+            </tr>
+            @endforelse
+        </tbody>
+    </table>
 
-    {{-- ════════ ลายมือชื่อทางการ ════════ --}}
+    {{-- ลายมือชื่อทางการ --}}
     <table class="sig-table">
         <tr>
             <td>
-                <div class="sig-title">ผู้ตรวจสอบข้อมูลกิจกรรม</div>
-                <div style="height:6px;"></div>
-                @if(!empty($sig1Path) && file_exists($sig1Path))
-                    <img src="{{ $sig1Path }}" class="sig-img">
+                <div class="sig-title">ผู้ตรวจสอบข้อมูลกิจกรรม (Audited by)</div>
+                @if(!empty($sig1Base64))
+                    <img src="{{ $sig1Base64 }}" class="sig-img">
                 @else
-                    <div style="height:45px;"></div>
+                    <div class="sig-placeholder"></div>
                 @endif
                 <div class="sig-name">( อาจารย์ ดร.สมชาย ใจดี )</div>
                 <div class="sig-pos">ผู้อำนวยการกองพัฒนานักศึกษา</div>
             </td>
             <td>
-                <div class="sig-title">ผู้อนุมัติเอกสารและรับรองผล</div>
-                <div style="height:6px;"></div>
-                @if(!empty($sig2Path) && file_exists($sig2Path))
-                    <img src="{{ $sig2Path }}" class="sig-img">
+                <div class="sig-title">ผู้อนุมัติเอกสารและรับรองผล (Approved by)</div>
+                @if(!empty($sig2Base64))
+                    <img src="{{ $sig2Base64 }}" class="sig-img">
                 @else
-                    <div style="height:45px;"></div>
+                    <div class="sig-placeholder"></div>
                 @endif
                 <div class="sig-name">( ผู้ช่วยศาสตราจารย์ ดร.วิภาดา วิจิตรศิลป์ )</div>
                 <div class="sig-pos">รองอธิการบดีฝ่ายพัฒนานักศึกษาและศิษย์เก่าสัมพันธ์</div>
@@ -410,15 +410,14 @@
     {{-- Footer ประทับเวลาและเลขที่เอกสาร --}}
     <table class="footer-table">
         <tr>
-            <td style="text-align:left;">
-                เอกสารทางการออก ณ วันที่ {{ $issueDate->addYears(543)->locale('th')->translatedFormat('d F') }} {{ $issueDate->year + 543 }} | ตรวจสอบผ่านระบบระเบียนกิจกรรมนักศึกษา
+            <td style="text-align: left;">
+                เอกสารทางการออก ณ วันที่ {{ $issueDateThai ?? $issueDate->format('d/m/Y') }} | ตรวจสอบความถูกต้องผ่านระบบระเบียนกิจกรรมนักศึกษา
             </td>
-            <td style="text-align:right;">
+            <td style="text-align: right;">
                 Document Ref: <strong>{{ $docNumber }}</strong>
             </td>
         </tr>
     </table>
 
-</div>
 </body>
 </html>

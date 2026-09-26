@@ -53,6 +53,22 @@ class OfficialTranscriptService
             ? storage_path('app/public/' . $student->profile_photo)
             : null;
 
+        // ฟังก์ชันแปลงภาพเป็น Data URI (Base64) เพื่อตัดปัญหา file protocol / chroot ใน Dompdf
+        $toBase64 = function (?string $path): ?string {
+            if (!$path || !file_exists($path)) {
+                return null;
+            }
+            $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+            $mime = match ($ext) {
+                'jpg', 'jpeg' => 'image/jpeg',
+                'svg'         => 'image/svg+xml',
+                'webp'        => 'image/webp',
+                default       => 'image/png',
+            };
+            $content = file_get_contents($path);
+            return $content !== false ? 'data:' . $mime . ';base64,' . base64_encode($content) : null;
+        };
+
         // ฟังก์ชันตัดปัญหาการซ้อนทับของสระภาษาไทย
         $normalizeText = function (?string $text): ?string {
             if (!$text) {
@@ -68,19 +84,28 @@ class OfficialTranscriptService
         $student->faculty    = $normalizeText($student->faculty);
         $student->department = $normalizeText($student->department);
 
+        $now = now();
+        $thaiMonths = [
+            1 => 'มกราคม', 2 => 'กุมภาพันธ์', 3 => 'มีนาคม', 4 => 'เมษายน',
+            5 => 'พฤษภาคม', 6 => 'มิถุนายน', 7 => 'กรกฎาคม', 8 => 'สิงหาคม',
+            9 => 'กันยายน', 10 => 'ตุลาคม', 11 => 'พฤศจิกายน', 12 => 'ธันวาคม',
+        ];
+        $issueDateThai = $now->format('j') . ' ' . ($thaiMonths[(int) $now->format('n')] ?? '') . ' ' . ((int) $now->format('Y') + 543);
+
         return [
-            'student'        => $student,
-            'audit'          => $auditResult,
-            'docNumber'      => $docNumber,
-            'verifyUrl'      => $verifyUrl,
-            'qrCodeBase64'   => $qrCodeSvg,
-            'emblemPath'     => $emblemPath,
-            'watermarkPath'  => $watermarkPath,
-            'sig1Path'       => file_exists($sig1Path) ? $sig1Path : null,
-            'sig2Path'       => file_exists($sig2Path) ? $sig2Path : null,
-            'studentPhoto'   => $studentPhoto,
-            'issueDate'      => now(),
-            'attendances'    => $auditResult['attendances'],
+            'student'            => $student,
+            'audit'              => $auditResult,
+            'docNumber'          => $docNumber,
+            'verifyUrl'          => $verifyUrl,
+            'qrCodeBase64'       => $qrCodeSvg,
+            'emblemBase64'       => $toBase64($emblemPath),
+            'watermarkBase64'    => null, // ปิด watermark ซ้อน เพื่อให้ตัวอักษรคมชัดไม่ถูกทับ
+            'sig1Base64'         => $toBase64(file_exists($sig1Path) ? $sig1Path : null),
+            'sig2Base64'         => $toBase64(file_exists($sig2Path) ? $sig2Path : null),
+            'studentPhotoBase64' => $toBase64($studentPhoto),
+            'issueDate'          => $now,
+            'issueDateThai'      => $issueDateThai,
+            'attendances'        => $auditResult['attendances'],
         ];
     }
 
@@ -96,10 +121,13 @@ class OfficialTranscriptService
 
         $pdf->setPaper('A4', 'portrait');
         $pdf->setOptions([
-            'defaultFont'          => 'sans-serif',
-            'isHtml5ParserEnabled' => true,
-            'isRemoteEnabled'      => true,
-            'dpi'                  => 150,
+            'fontDir'                 => storage_path('fonts'),
+            'fontCache'               => storage_path('fonts'),
+            'defaultFont'             => 'sarabun',
+            'isFontSubsettingEnabled' => true,
+            'isHtml5ParserEnabled'    => true,
+            'isRemoteEnabled'         => true,
+            'dpi'                     => 150,
         ]);
 
         return $pdf;
