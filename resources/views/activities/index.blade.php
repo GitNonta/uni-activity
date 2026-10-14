@@ -19,9 +19,12 @@
 <form method="GET" action="{{ route('activities.index') }}" class="act-search-bar" id="activitySearchForm">
     <div class="act-search-main-row">
         <div class="act-search-input-wrap">
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('act.search_placeholder') }}" class="act-search-input">
+            <input type="text" name="search" id="actSearchInput" value="{{ request('search') }}" placeholder="{{ __('act.search_placeholder') }}" class="act-search-input">
             @if($hasSearched)
-                {{-- หลังค้นหา: ปุ่มไอคอนกลายเป็นตัวกรอง (กด Enter ยังค้นหาซ้ำได้) --}}
+                {{-- หลังค้นหา: ปุ่มไอคอนกลายเป็นตัวกรอง (โฟกัส/พิมพ์ในช่อง → กลับเป็นปุ่มค้นหา, กด Enter ยังค้นหาซ้ำได้) --}}
+                <button type="submit" id="searchSwapSubmitBtn" class="act-search-submit-icon-btn" style="display:none;" title="{{ __('act.search') }}" aria-label="{{ __('act.search') }}">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </button>
                 <button type="button" id="toggleFilterBtn" class="act-search-submit-icon-btn as-filter active" onclick="toggleActFilters()" title="{{ __('act.filter') }}" aria-label="{{ __('act.filter') }}">
                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
                     @if(request()->filled('category') || request()->filled('scope'))
@@ -95,6 +98,18 @@ function toggleActFilters() {
         if (btn && !{{ $hasSearched ? 'true' : 'false' }}) btn.classList.remove('active');
     }
 }
+
+// สลับปุ่ตัวกรอง/ปุ่มค้นหา: โฟกัสหรือพิมพ์ในช่อง → แสดงปุ่มค้นหา, เลิกโฟกัส → กลับเป็นปุ่มตัวกรอง
+(function(){
+    var inp = document.getElementById('actSearchInput');
+    var bSearch = document.getElementById('searchSwapSubmitBtn');
+    var bFilter = document.getElementById('toggleFilterBtn');
+    if (!inp || !bSearch || !bFilter) return;
+    function showSearch() { bSearch.style.display = ''; bFilter.style.display = 'none'; }
+    function showFilter() { bFilter.style.display = ''; bSearch.style.display = 'none'; }
+    inp.addEventListener('focus', showSearch);
+    inp.addEventListener('blur', function() { setTimeout(showFilter, 160); });
+})();
 </script>
 
 {{-- แถบจัดเรียงลำดับอัจฉริยะ (Smart Sorting Tabs) --}}
