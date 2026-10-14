@@ -5,6 +5,7 @@ return array (
   'page_desc' => 'Search and register for university activities - browse open registrations and completed events',
   'job_pill' => 'Featured: Jobs / Part-time',
   'search' => 'Search',
+  'search_placeholder' => 'Search activities...',
   'filter' => 'Filters',
   'filter_toggle' => 'Show/hide filters',
   'select_category' => 'Select category',
