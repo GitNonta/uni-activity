@@ -100,3 +100,6 @@ Thumbs.db
 /.phpunit.cache/
 scratch/
 face_dx/identity_CelebA.txt
+.rr.yaml
+frankenphp
+lang/.extracted*.json

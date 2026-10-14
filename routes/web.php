@@ -78,6 +78,13 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+Route::get('/lang/{locale}', function ($locale) {
+    abort_unless(in_array($locale, ['th', 'en'], true), 404);
+    \Mcamara\LaravelLocalization\Facades\LaravelLocalization::setLocale($locale);
+    session(['locale' => $locale]);
+    return back();
+})->name('lang.switcher');
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [StudentAuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [StudentAuthController::class, 'login'])->middleware('throttle:student-login');
@@ -202,12 +209,6 @@ Route::middleware('auth')->group(function () {
     Route::get('activities/{activity}/feedback', [FeedbackController::class, 'create'])->name('feedback.create');
     Route::post('activities/{activity}/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
 
-    // ── i18n: สลับภาษา (th|en) ──
-    Route::get('/lang/{locale}', function ($locale) {
-        abort_unless(in_array($locale, ['th', 'en'], true), 404);
-        session(['locale' => $locale]);
-        return back();
-    })->name('lang.switcher');
 
     // ── ชำระค่าสมัคร (PromptPay soft-launch) ──
     Route::get('/activities/{activity}/payment', [\App\Http\Controllers\Student\PaymentController::class, 'show'])->name('activities.pay.show');
