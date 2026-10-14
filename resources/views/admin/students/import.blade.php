@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'นำเข้านักศึกษาแบบชุด (Bulk Student Import)')
+@section('title', __('นำเข้านักศึกษาแบบชุด (Bulk Student Import)'))
 
 @section('content')
 <div class="container-fluid" style="max-width:1000px; margin:0 auto; padding-bottom:3rem;">
@@ -9,29 +9,21 @@
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
         <div>
             <h1 style="font-size:1.6rem; font-weight:800; color:var(--text-main, #0f172a); margin:0; display:flex; align-items:center; gap:0.5rem;">
-                <svg style="width:26px; height:26px; color:#4f46e5;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-                นำเข้านักศึกษาแบบกลุ่ม (Bulk Import)
-            </h1>
-            <p style="color:var(--text-muted, #64748b); font-size:0.9rem; margin:0.25rem 0 0 0;">
-                เพิ่มหรืออัปเดตข้อมูลนักศึกษาจำนวนมากในคราวเดียวด้วยไฟล์ CSV หรือ Excel สำหรับช่วงเปิดภาคเรียน
-            </p>
+                <svg style="width:26px; height:26px; color:#4f46e5;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>{{ __('นำเข้านักศึกษาแบบกลุ่ม (Bulk Import)') }}            </h1>
+            <p style="color:var(--text-muted, #64748b); font-size:0.9rem; margin:0.25rem 0 0 0;">{{ __('เพิ่มหรืออัปเดตข้อมูลนักศึกษาจำนวนมากในคราวเดียวด้วยไฟล์ CSV หรือ Excel สำหรับช่วงเปิดภาคเรียน') }}            </p>
         </div>
 
         <div style="display:flex; align-items:center; gap:0.5rem;">
             <a href="{{ route('admin.students.import.template') }}" class="btn btn-outline" style="display:inline-flex; align-items:center; gap:6px; font-size:0.875rem; border-radius:8px; padding:0.5rem 1rem;">
-                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                ดาวน์โหลดแม่แบบ CSV (Template)
-            </a>
-            <a href="{{ route('admin.students.index') }}" class="btn btn-outline" style="font-size:0.875rem; border-radius:8px; padding:0.5rem 1rem;">
-                กลับหน้ารายชื่อ
-            </a>
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>{{ __('ดาวน์โหลดแม่แบบ CSV (Template)') }}            </a>
+            <a href="{{ route('admin.students.index') }}" class="btn btn-outline" style="font-size:0.875rem; border-radius:8px; padding:0.5rem 1rem;">{{ __('กลับหน้ารายชื่อ') }}            </a>
         </div>
     </div>
 
     @if(session('import_error'))
         <div style="background:#fee2e2; border:1px solid #fca5a5; color:#b91c1c; padding:1rem; border-radius:10px; margin-bottom:1.5rem; font-size:0.9rem; display:flex; align-items:flex-start; gap:.5rem; line-height:1.6;">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:2px;"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-            <span><strong>เกิดข้อผิดพลาดในการนำเข้า:</strong> {{ session('import_error') }}</span>
+            <span><strong>{{ __('เกิดข้อผิดพลาดในการนำเข้า:') }}</strong> {{ session('import_error') }}</span>
         </div>
     @endif
 
@@ -39,7 +31,7 @@
         
         <!-- Upload Form -->
         <div class="card" style="border-radius:14px; padding:1.75rem; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
-            <h2 style="font-size:1.1rem; font-weight:700; color:var(--text-main, #0f172a); margin-bottom:1rem;">อัปโหลดไฟล์ข้อมูลนักศึกษา</h2>
+            <h2 style="font-size:1.1rem; font-weight:700; color:var(--text-main, #0f172a); margin-bottom:1rem;">{{ __('อัปโหลดไฟล์ข้อมูลนักศึกษา') }}</h2>
 
             <form action="{{ route('admin.students.import.upload') }}" method="POST" enctype="multipart/form-data">
                 @csrf
@@ -48,16 +40,14 @@
                     <div style="width:48px; height:48px; background:rgba(79, 70, 229, 0.15); color:#6366f1; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 0.75rem auto;">
                         <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
                     </div>
-                    <div id="filePrompt" style="font-weight:600; color:var(--text-main, #1e293b); font-size:0.95rem; margin-bottom:0.25rem;">คลิกเพื่อเลือกไฟล์ หรือลากไฟล์มาวางที่นี่</div>
-                    <div id="fileNameDisplay" style="color:var(--text-muted, #64748b); font-size:0.8rem;">รองรับไฟล์ .CSV หรือ .XLSX (ขนาดสูงสุด 20MB)</div>
+                    <div id="filePrompt" style="font-weight:600; color:var(--text-main, #1e293b); font-size:0.95rem; margin-bottom:0.25rem;">{{ __('คลิกเพื่อเลือกไฟล์ หรือลากไฟล์มาวางที่นี่') }}</div>
+                    <div id="fileNameDisplay" style="color:var(--text-muted, #64748b); font-size:0.8rem;">{{ __('รองรับไฟล์ .CSV หรือ .XLSX (ขนาดสูงสุด 20MB)') }}</div>
                     <input type="file" name="file" id="fileInput" accept=".csv,.txt,.xlsx,.xls" style="display:none;" onchange="updateFileName(this)">
                 </div>
 
                 <div style="display:flex; justify-content:flex-end;">
                     <button type="submit" class="btn btn-primary" style="background:#4f46e5; border-color:#4f46e5; padding:0.6rem 1.5rem; font-weight:600; border-radius:8px; display:inline-flex; align-items:center; gap:6px;">
-                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                        เริ่มประมวลผลการนำเข้า
-                    </button>
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>{{ __('เริ่มประมวลผลการนำเข้า') }}                    </button>
                 </div>
             </form>
         </div>
@@ -66,25 +56,21 @@
         <div>
             <div class="card" style="border-radius:14px; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.05); margin-bottom:1.5rem;">
                 <h3 style="font-size:0.95rem; font-weight:700; color:var(--text-main, #0f172a); margin-bottom:0.75rem; display:flex; align-items:center; gap:6px;">
-                    <svg width="18" height="18" color="#3b82f6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    โครงสร้างคอลัมน์ในไฟล์
-                </h3>
+                    <svg width="18" height="18" color="#3b82f6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ __('โครงสร้างคอลัมน์ในไฟล์') }}                </h3>
                 <ul style="margin:0; padding-left:1.25rem; font-size:0.825rem; color:var(--text-muted, #475569); line-height:1.7;">
-                    <li><code style="color:#6366f1; font-weight:700;">student_id</code> (จำเป็น) — รหัสนักศึกษา 10 หลัก</li>
-                    <li><code style="color:#6366f1; font-weight:700;">full_name</code> (จำเป็น) — ชื่อและนามสกุล</li>
-                    <li><code>email</code> — ถ้าเว้นว่าง ระบบจะสร้าง <code style="font-size:0.75rem;">s{ID}@pkru.ac.th</code> ให้อัตโนมัติ</li>
-                    <li><code>faculty</code> — คณะ</li>
-                    <li><code>department</code> — สาขาวิชา</li>
-                    <li><code>year</code> — ชั้นปี (1-4)</li>
-                    <li><code>program</code> — ภาคปกติ / ภาคพิเศษ</li>
+                    <li><code style="color:#6366f1; font-weight:700;">student_id</code> {{ __('(จำเป็น) — รหัสนักศึกษา 10 หลัก') }}</li>
+                    <li><code style="color:#6366f1; font-weight:700;">full_name</code> {{ __('(จำเป็น) — ชื่อและนามสกุล') }}</li>
+                    <li><code>email</code> {{ __('— ถ้าเว้นว่าง ระบบจะสร้าง') }} <code style="font-size:0.75rem;">s{ID}@pkru.ac.th</code> {{ __('ให้อัตโนมัติ') }}</li>
+                    <li><code>faculty</code> {{ __('— คณะ') }}</li>
+                    <li><code>department</code> {{ __('— สาขาวิชา') }}</li>
+                    <li><code>year</code> {{ __('— ชั้นปี (1-4)') }}</li>
+                    <li><code>program</code> {{ __('— ภาคปกติ / ภาคพิเศษ') }}</li>
                 </ul>
             </div>
 
             <div style="background:var(--surface-hover, #f8fafc); border-radius:14px; padding:1.25rem; border:1px solid var(--border, #e2e8f0);">
-                <div style="font-weight:700; font-size:0.85rem; color:var(--text-main, #0f172a); margin-bottom:0.25rem;">ระบบทำงานแบบ Upsert:</div>
-                <div style="font-size:0.8rem; color:var(--text-muted, #64748b); line-height:1.5;">
-                    ถ้ารหัสนักศึกษามีอยู่ในระบบแล้ว จะทำการ<strong>อัปเดตข้อมูลให้ทันสมัย</strong>โดยไม่ลบประวัติการเช็คอินเดิม ส่วนนักศึกษาใหม่จะถูก<strong>สร้างบัญชีพร้อมใช้งาน</strong>ทันที
-                </div>
+                <div style="font-weight:700; font-size:0.85rem; color:var(--text-main, #0f172a); margin-bottom:0.25rem;">{{ __('ระบบทำงานแบบ Upsert:') }}</div>
+                <div style="font-size:0.8rem; color:var(--text-muted, #64748b); line-height:1.5;">{{ __('ถ้ารหัสนักศึกษามีอยู่ในระบบแล้ว จะทำการ') }}<strong>{{ __('อัปเดตข้อมูลให้ทันสมัย') }}</strong>{{ __('โดยไม่ลบประวัติการเช็คอินเดิม ส่วนนักศึกษาใหม่จะถูก') }}<strong>{{ __('สร้างบัญชีพร้อมใช้งาน') }}</strong>{{ __('ทันที') }}                </div>
             </div>
         </div>
 

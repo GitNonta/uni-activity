@@ -1,11 +1,11 @@
 @extends('layouts.app')
-@section('title', 'สมัครสมาชิก')
+@section('title', __('สมัครสมาชิก'))
 
 @section('content')
 <div class="container-sm" style="padding-top:2rem;">
     <div class="text-center mb-4">
-        <h1 class="font-bold" style="font-size:1.5rem;">สมัครสมาชิก</h1>
-        <p class="text-muted text-sm mt-1">กรอกข้อมูลเพื่อสร้างบัญชี</p>
+        <h1 class="font-bold" style="font-size:1.5rem;">{{ __('สมัครสมาชิก') }}</h1>
+        <p class="text-muted text-sm mt-1">{{ __('กรอกข้อมูลเพื่อสร้างบัญชี') }}</p>
     </div>
 
     {{-- ฟอร์มกรอกข้อมูลนักศึกษา --}}
@@ -14,22 +14,22 @@
             <form method="POST" action="{{ route('register') }}">
                 @csrf
                 <div class="form-group">
-                    <label for="student_id" class="form-label">รหัสนักศึกษา</label>
+                    <label for="student_id" class="form-label">{{ __('รหัสนักศึกษา') }}</label>
                     <input id="student_id" type="text" name="student_id" value="{{ old('student_id') }}"
                         class="form-control" placeholder="6XXXXXXXXX" required>
                     @error('student_id')<p class="form-error">{{ $message }}</p>@enderror
                 </div>
                 <div class="form-group">
-                    <label for="full_name" class="form-label">ชื่อ-นามสกุล</label>
+                    <label for="full_name" class="form-label">{{ __('ชื่อ-นามสกุล') }}</label>
                     <input id="full_name" type="text" name="full_name" value="{{ old('full_name') }}"
                         class="form-control" required>
                     @error('full_name')<p class="form-error">{{ $message }}</p>@enderror
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="faculty" class="form-label">คณะ</label>
+                        <label for="faculty" class="form-label">{{ __('คณะ') }}</label>
                         <select id="faculty" name="faculty" class="form-control" required onchange="updateDepartments()">
-                            <option value="">เลือกคณะ</option>
+                            <option value="">{{ __('เลือกคณะ') }}</option>
                             @foreach(config('faculties') as $faculty => $deps)
                                 <option value="{{ $faculty }}" {{ old('faculty') == $faculty ? 'selected' : '' }}>{{ $faculty }}</option>
                             @endforeach
@@ -37,18 +37,18 @@
                         @error('faculty')<p class="form-error">{{ $message }}</p>@enderror
                     </div>
                     <div class="form-group">
-                        <label for="department" class="form-label">สาขาวิชา</label>
+                        <label for="department" class="form-label">{{ __('สาขาวิชา') }}</label>
                         <select id="department" name="department" class="form-control" required disabled>
-                            <option value="">เลือกสาขาวิชา</option>
+                            <option value="">{{ __('เลือกสาขาวิชา') }}</option>
                         </select>
                         @error('department')<p class="form-error">{{ $message }}</p>@enderror
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="year" class="form-label">ชั้นปี</label>
+                        <label for="year" class="form-label">{{ __('ชั้นปี') }}</label>
                         <select id="year" name="year" class="form-control" required>
-                            <option value="">เลือกชั้นปี</option>
+                            <option value="">{{ __('เลือกชั้นปี') }}</option>
                             @for($i = 1; $i <= 6; $i++)
                                 <option value="{{ $i }}" {{ old('year') == $i ? 'selected' : '' }}>ปี {{ $i }}</option>
                             @endfor
@@ -56,22 +56,21 @@
                         @error('year')<p class="form-error">{{ $message }}</p>@enderror
                     </div>
                     <div class="form-group">
-                        <label for="program" class="form-label">ภาคเรียน</label>
+                        <label for="program" class="form-label">{{ __('ภาคเรียน') }}</label>
                         <select id="program" name="program" class="form-control" required>
-                            <option value="">เลือกภาคเรียน</option>
-                            <option value="ปกติ" {{ old('program') == 'ปกติ' ? 'selected' : '' }}>ปกติ (จันทร์-ศุกร์)</option>
-                            <option value="กศ.บป." {{ old('program') == 'กศ.บป.' ? 'selected' : '' }}>กศ.บป. (เสาร์-อาทิตย์)</option>
+                            <option value="">{{ __('เลือกภาคเรียน') }}</option>
+                            <option value="ปกติ" {{ old('program') == 'ปกติ' ? 'selected' : '' }}>{{ __('ปกติ (จันทร์-ศุกร์)') }}</option>
+                            <option value="กศ.บป." {{ old('program') == 'กศ.บป.' ? 'selected' : '' }}>{{ __('กศ.บป. (เสาร์-อาทิตย์)') }}</option>
                         </select>
                         @error('program')<p class="form-error">{{ $message }}</p>@enderror
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary btn-block btn-lg">สมัครสมาชิก</button>
+                <button type="submit" class="btn btn-primary btn-block btn-lg">{{ __('สมัครสมาชิก') }}</button>
             </form>
         </div>
     </div>
 
-    <p class="text-center text-sm text-muted mt-4">
-        มีบัญชีอยู่แล้ว? <a href="{{ route('login') }}" class="font-semi">เข้าสู่ระบบ</a>
+    <p class="text-center text-sm text-muted mt-4">{{ __('มีบัญชีอยู่แล้ว?') }} <a href="{{ route('login') }}" class="font-semi">{{ __('เข้าสู่ระบบ') }}</a>
     </p>
 </div>
 @endsection
@@ -85,7 +84,7 @@
 
     function updateDepartments() {
         const selectedFaculty = facultySelect.value;
-        departmentSelect.innerHTML = '<option value="">เลือกสาขาวิชา</option>';
+        departmentSelect.innerHTML = '<option value="">{{ __('เลือกสาขาวิชา') }}</option>';
         
         if (selectedFaculty && facultyData[selectedFaculty]) {
             departmentSelect.disabled = false;

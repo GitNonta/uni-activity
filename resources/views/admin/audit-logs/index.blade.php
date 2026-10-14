@@ -1,6 +1,6 @@
 {{-- หน้า Audit Log: แสดงประวัติการกระทำของ Admin ทั้งหมด (Premium UI) --}}
 @extends('layouts.admin')
-@section('title', 'Audit Logs — ประวัติการดำเนินงาน')
+@section('title', __('Audit Logs — ประวัติการดำเนินงาน'))
 
 @section('styles')
 <style>
@@ -396,7 +396,7 @@ html.dark .empty-state-icon { background: #27272a; }
         </div>
         <div>
             <h1 class="audit-title">Audit Logs</h1>
-            <p class="audit-subtitle">ประวัติการดำเนินงานของผู้ดูแลระบบทั้งหมด</p>
+            <p class="audit-subtitle">{{ __('ประวัติการดำเนินงานของผู้ดูแลระบบทั้งหมด') }}</p>
         </div>
     </div>
     <div class="audit-header-badges">
@@ -419,7 +419,7 @@ html.dark .empty-state-icon { background: #27272a; }
         </div>
         <div class="stat-info">
             <div class="stat-number">{{ number_format($stats['creates']) }}</div>
-            <div class="stat-label">สร้าง</div>
+            <div class="stat-label">{{ __('สร้าง') }}</div>
         </div>
     </div>
     <div class="stat-card stat-card-yellow">
@@ -428,7 +428,7 @@ html.dark .empty-state-icon { background: #27272a; }
         </div>
         <div class="stat-info">
             <div class="stat-number">{{ number_format($stats['updates']) }}</div>
-            <div class="stat-label">แก้ไข</div>
+            <div class="stat-label">{{ __('แก้ไข') }}</div>
         </div>
     </div>
     <div class="stat-card stat-card-red">
@@ -437,7 +437,7 @@ html.dark .empty-state-icon { background: #27272a; }
         </div>
         <div class="stat-info">
             <div class="stat-number">{{ number_format($stats['deletes']) }}</div>
-            <div class="stat-label">ลบ</div>
+            <div class="stat-label">{{ __('ลบ') }}</div>
         </div>
     </div>
     <div class="stat-card stat-card-blue">
@@ -446,7 +446,7 @@ html.dark .empty-state-icon { background: #27272a; }
         </div>
         <div class="stat-info">
             <div class="stat-number">{{ number_format($stats['logins']) }}</div>
-            <div class="stat-label">เข้าสู่ระบบ</div>
+            <div class="stat-label">{{ __('เข้าสู่ระบบ') }}</div>
         </div>
     </div>
 </div>
@@ -454,51 +454,47 @@ html.dark .empty-state-icon { background: #27272a; }
 {{-- ─── Filter Section ─── --}}
 <form method="GET" action="{{ route('admin.audit-logs.index') }}" class="audit-filter-card">
     <div class="audit-filter-header">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
-        ตัวกรองขั้นสูง
-    </div>
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>{{ __('ตัวกรองขั้นสูง') }}    </div>
     <div class="audit-filter-body">
         <div class="filter-grid">
             <div class="filter-field" style="flex:1.5;">
-                <label>ค้นหาคำอธิบาย</label>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="พิมพ์คำค้นหา..." class="form-control">
+                <label>{{ __('ค้นหาคำอธิบาย') }}</label>
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('พิมพ์คำค้นหา...') }}" class="form-control">
             </div>
             <div class="filter-field">
-                <label>ผู้ดำเนินการ</label>
+                <label>{{ __('ผู้ดำเนินการ') }}</label>
                 <select name="user_id" class="form-control">
-                    <option value="">— ทั้งหมด —</option>
+                    <option value="">{{ __('— ทั้งหมด —') }}</option>
                     @foreach($admins as $admin)
                         <option value="{{ $admin->id }}" {{ request('user_id') == $admin->id ? 'selected' : '' }}>{{ $admin->full_name }}</option>
                     @endforeach
                 </select>
             </div>
             <div class="filter-field">
-                <label>การกระทำ</label>
+                <label>{{ __('การกระทำ') }}</label>
                 <select name="action" class="form-control">
-                    <option value="">— ทั้งหมด —</option>
-                    <option value="create" {{ request('action') === 'create' ? 'selected' : '' }}>สร้าง</option>
-                    <option value="update" {{ request('action') === 'update' ? 'selected' : '' }}>แก้ไข</option>
-                    <option value="delete" {{ request('action') === 'delete' ? 'selected' : '' }}>ลบ</option>
-                    <option value="approve" {{ request('action') === 'approve' ? 'selected' : '' }}>อนุมัติ</option>
-                    <option value="reject" {{ request('action') === 'reject' ? 'selected' : '' }}>ปฏิเสธ</option>
-                    <option value="toggle" {{ request('action') === 'toggle' ? 'selected' : '' }}>สลับสถานะ</option>
-                    <option value="login" {{ request('action') === 'login' ? 'selected' : '' }}>เข้าสู่ระบบ</option>
+                    <option value="">{{ __('— ทั้งหมด —') }}</option>
+                    <option value="create" {{ request('action') === 'create' ? 'selected' : '' }}>{{ __('สร้าง') }}</option>
+                    <option value="update" {{ request('action') === 'update' ? 'selected' : '' }}>{{ __('แก้ไข') }}</option>
+                    <option value="delete" {{ request('action') === 'delete' ? 'selected' : '' }}>{{ __('ลบ') }}</option>
+                    <option value="approve" {{ request('action') === 'approve' ? 'selected' : '' }}>{{ __('อนุมัติ') }}</option>
+                    <option value="reject" {{ request('action') === 'reject' ? 'selected' : '' }}>{{ __('ปฏิเสธ') }}</option>
+                    <option value="toggle" {{ request('action') === 'toggle' ? 'selected' : '' }}>{{ __('สลับสถานะ') }}</option>
+                    <option value="login" {{ request('action') === 'login' ? 'selected' : '' }}>{{ __('เข้าสู่ระบบ') }}</option>
                 </select>
             </div>
             <div class="filter-field">
-                <label>จากวันที่</label>
+                <label>{{ __('จากวันที่') }}</label>
                 <input type="date" name="date_from" value="{{ request('date_from') }}" class="form-control">
             </div>
             <div class="filter-field">
-                <label>ถึงวันที่</label>
+                <label>{{ __('ถึงวันที่') }}</label>
                 <input type="date" name="date_to" value="{{ request('date_to') }}" class="form-control">
             </div>
             <div class="filter-actions">
                 <button type="submit" class="filter-btn-primary">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    กรอง
-                </button>
-                <a href="{{ route('admin.audit-logs.index') }}" class="filter-btn-clear">ล้าง</a>
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>{{ __('กรอง') }}                </button>
+                <a href="{{ route('admin.audit-logs.index') }}" class="filter-btn-clear">{{ __('ล้าง') }}</a>
             </div>
         </div>
     </div>
@@ -510,11 +506,11 @@ html.dark .empty-state-icon { background: #27272a; }
         <table>
             <thead>
                 <tr>
-                    <th style="width:150px;">เวลา</th>
-                    <th style="width:150px;">ผู้ดำเนินการ</th>
-                    <th style="width:100px;">การกระทำ</th>
-                    <th style="width:100px;">ประเภท</th>
-                    <th>คำอธิบาย</th>
+                    <th style="width:150px;">{{ __('เวลา') }}</th>
+                    <th style="width:150px;">{{ __('ผู้ดำเนินการ') }}</th>
+                    <th style="width:100px;">{{ __('การกระทำ') }}</th>
+                    <th style="width:100px;">{{ __('ประเภท') }}</th>
+                    <th>{{ __('คำอธิบาย') }}</th>
                     <th style="width:110px;">IP Address</th>
                     <th style="width:60px;"></th>
                 </tr>
@@ -570,9 +566,7 @@ html.dark .empty-state-icon { background: #27272a; }
                     <td class="td-ip">{{ $log->ip_address ?? '-' }}</td>
                     <td>
                         <a href="{{ route('admin.audit-logs.show', $log->id) }}" class="td-action-btn">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                            ดู
-                        </a>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>{{ __('ดู') }}                        </a>
                     </td>
                 </tr>
                 @empty
@@ -582,8 +576,8 @@ html.dark .empty-state-icon { background: #27272a; }
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                             </svg>
-                            <div class="empty-state-row-title">ยังไม่มีประวัติการดำเนินงาน</div>
-                            <div class="empty-state-row-desc">ประวัติจะปรากฏที่นี่เมื่อมีการดำเนินการใดๆ ในระบบ</div>
+                            <div class="empty-state-row-title">{{ __('ยังไม่มีประวัติการดำเนินงาน') }}</div>
+                            <div class="empty-state-row-desc">{{ __('ประวัติจะปรากฏที่นี่เมื่อมีการดำเนินการใดๆ ในระบบ') }}</div>
                         </div>
                     </td>
                 </tr>

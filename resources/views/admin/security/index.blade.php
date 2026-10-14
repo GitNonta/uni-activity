@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Security Logs — ระบบรักษาความปลอดภัย')
+@section('title', __('Security Logs — ระบบรักษาความปลอดภัย'))
 
 @section('styles')
 <style>
@@ -288,7 +288,7 @@ html.dark .btn-secondary:hover {
         </div>
         <div>
             <h1>Security Logs</h1>
-            <p>บันทึกพฤติกรรมต้องสงสัย และตรวจสอบความปลอดภัยของระบบ</p>
+            <p>{{ __('บันทึกพฤติกรรมต้องสงสัย และตรวจสอบความปลอดภัยของระบบ') }}</p>
         </div>
     </div>
     @if($summary['unreviewed'] > 0)
@@ -307,7 +307,7 @@ html.dark .btn-secondary:hover {
         </div>
         <div class="stat-info">
             <div class="stat-num">{{ $summary['total'] }}</div>
-            <div class="stat-label">เหตุการณ์ทั้งหมด</div>
+            <div class="stat-label">{{ __('เหตุการณ์ทั้งหมด') }}</div>
         </div>
     </div>
     <div class="stat-card">
@@ -316,7 +316,7 @@ html.dark .btn-secondary:hover {
         </div>
         <div class="stat-info">
             <div class="stat-num">{{ $summary['unreviewed'] }}</div>
-            <div class="stat-label">ยังไม่ได้ตรวจสอบ</div>
+            <div class="stat-label">{{ __('ยังไม่ได้ตรวจสอบ') }}</div>
         </div>
     </div>
     <div class="stat-card">
@@ -343,7 +343,7 @@ html.dark .btn-secondary:hover {
 <form method="GET" action="{{ route('admin.security-logs.index') }}" class="filter-bar">
     <div class="filter-group">
         <select name="event_type" class="filter-input">
-            <option value="">ทุกประเภทเหตุการณ์</option>
+            <option value="">{{ __('ทุกประเภทเหตุการณ์') }}</option>
             <option value="multi_account_login" @selected(request('event_type') === 'multi_account_login')>Multi-Account Login</option>
             <option value="suspicious_checkin"  @selected(request('event_type') === 'suspicious_checkin')>Suspicious Check-in</option>
             <option value="device_mismatch"     @selected(request('event_type') === 'device_mismatch')>Device Mismatch</option>
@@ -351,26 +351,22 @@ html.dark .btn-secondary:hover {
     </div>
     <div class="filter-group">
         <select name="reviewed" class="filter-input">
-            <option value="">สถานะทั้งหมด</option>
-            <option value="0" @selected(request('reviewed') === '0')>ยังไม่ตรวจสอบ</option>
-            <option value="1" @selected(request('reviewed') === '1')>ตรวจสอบแล้ว</option>
+            <option value="">{{ __('สถานะทั้งหมด') }}</option>
+            <option value="0" @selected(request('reviewed') === '0')>{{ __('ยังไม่ตรวจสอบ') }}</option>
+            <option value="1" @selected(request('reviewed') === '1')>{{ __('ตรวจสอบแล้ว') }}</option>
         </select>
     </div>
     <div class="filter-group" style="max-width: 180px;">
-        <input type="date" name="date" value="{{ request('date') }}" class="filter-input" placeholder="วันที่">
+        <input type="date" name="date" value="{{ request('date') }}" class="filter-input" placeholder="{{ __('วันที่') }}">
     </div>
     <div class="filter-group" style="max-width: 200px;">
-        <input type="text" name="ip" value="{{ request('ip') }}" class="filter-input" placeholder="ค้นหาด้วย IP Address">
+        <input type="text" name="ip" value="{{ request('ip') }}" class="filter-input" placeholder="{{ __('ค้นหาด้วย IP Address') }}">
     </div>
     
     <button type="submit" class="btn btn-primary">
-        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        ค้นหา
-    </button>
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>{{ __('ค้นหา') }}    </button>
     <a href="{{ route('admin.security-logs.index') }}" class="btn btn-secondary">
-        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-        รีเซ็ต
-    </a>
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>{{ __('รีเซ็ต') }}    </a>
 </form>
 
 {{-- Logs Table --}}
@@ -378,20 +374,20 @@ html.dark .btn-secondary:hover {
     @if($logs->isEmpty())
         <div class="empty-state">
             <svg class="empty-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-            <div class="empty-title">ไม่พบประวัติที่ต้องสงสัย</div>
-            <div class="empty-desc">ระบบยังไม่พบพฤติกรรมการใช้งานที่ผิดปกติในขณะนี้ หรือไม่พบข้อมูลตามเงื่อนไขที่ค้นหา</div>
+            <div class="empty-title">{{ __('ไม่พบประวัติที่ต้องสงสัย') }}</div>
+            <div class="empty-desc">{{ __('ระบบยังไม่พบพฤติกรรมการใช้งานที่ผิดปกติในขณะนี้ หรือไม่พบข้อมูลตามเงื่อนไขที่ค้นหา') }}</div>
         </div>
     @else
     <table class="log-table">
         <thead>
             <tr>
                 <th style="width: 60px;">ID</th>
-                <th>ประเภทเหตุการณ์</th>
-                <th>ข้อมูลผู้ใช้ (นักศึกษา)</th>
+                <th>{{ __('ประเภทเหตุการณ์') }}</th>
+                <th>{{ __('ข้อมูลผู้ใช้ (นักศึกษา)') }}</th>
                 <th>IP Address</th>
-                <th>เวลาที่เกิดเหตุ</th>
-                <th>สถานะ</th>
-                <th style="text-align: right;">จัดการ</th>
+                <th>{{ __('เวลาที่เกิดเหตุ') }}</th>
+                <th>{{ __('สถานะ') }}</th>
+                <th style="text-align: right;">{{ __('จัดการ') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -423,7 +419,7 @@ html.dark .btn-secondary:hover {
                             <span class="user-id">รหัส: {{ $log->user->student_id }}</span>
                         </div>
                     @else
-                        <span style="color:var(--text-muted);">ไม่ทราบตัวตน</span>
+                        <span style="color:var(--text-muted);">{{ __('ไม่ทราบตัวตน') }}</span>
                     @endif
                 </td>
                 <td style="font-family: monospace; color: var(--text-muted);">
@@ -438,28 +434,20 @@ html.dark .btn-secondary:hover {
                 <td>
                     @if($log->is_reviewed)
                         <div class="status-badge status-reviewed">
-                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            ตรวจสอบแล้ว
-                        </div>
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ __('ตรวจสอบแล้ว') }}                        </div>
                     @else
                         <div class="status-badge status-unreviewed">
-                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            รอตรวจสอบ
-                        </div>
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ __('รอตรวจสอบ') }}                        </div>
                     @endif
                 </td>
                 <td style="text-align: right;">
                     <div class="action-buttons" style="justify-content: flex-end;">
                         @if(!$log->is_reviewed)
                         <button class="btn btn-secondary btn-sm btn-review" onclick="markReviewed({{ $log->id }})">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                            รับทราบ
-                        </button>
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>{{ __('รับทราบ') }}                        </button>
                         @endif
                         <a href="{{ route('admin.security-logs.show', $log) }}" class="btn btn-secondary btn-sm">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                            รายละเอียด
-                        </a>
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>{{ __('รายละเอียด') }}                        </a>
                     </div>
                 </td>
             </tr>
@@ -485,9 +473,7 @@ async function markReviewed(id) {
         const statusTd = row.querySelector('.status-unreviewed').parentElement;
         statusTd.innerHTML = `
             <div class="status-badge status-reviewed">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                ตรวจสอบแล้ว
-            </div>
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ __('ตรวจสอบแล้ว') }}            </div>
         `;
         row.querySelector('.btn-review').remove();
     }

@@ -1,14 +1,12 @@
 {{-- หน้าจัดการหมวดหมู่กิจกรรม (Admin): ดู, สร้าง, แก้ไขเกณฑ์ชั่วโมง, ลบ --}}
 @extends('layouts.admin')
-@section('title', 'จัดการหมวดหมู่กิจกรรม')
+@section('title', __('จัดการหมวดหมู่กิจกรรม'))
 
 @section('content')
 <div class="flex items-center justify-between mb-4">
-    <h1 class="font-bold" style="font-size:1.4rem;">จัดการหมวดหมู่กิจกรรม</h1>
+    <h1 class="font-bold" style="font-size:1.4rem;">{{ __('จัดการหมวดหมู่กิจกรรม') }}</h1>
     <button type="button" onclick="document.getElementById('addModal').style.display='flex'" class="btn btn-primary btn-sm">
-        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-        เพิ่มหมวดหมู่
-    </button>
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>{{ __('เพิ่มหมวดหมู่') }}    </button>
 </div>
 
 {{-- Card: เกณฑ์ชั่วโมงรวมทั้งระบบ (แก้ไขได้) --}}
@@ -19,12 +17,12 @@
                 <p class="font-bold" style="font-size:.95rem;margin-bottom:.15rem;">
                     เกณฑ์ชั่วโมงรวมทั้งระบบ
                     @if($isOverridden)
-                        <span class="badge badge-green" style="font-size:.7rem;margin-left:.4rem;">กำหนดเอง</span>
+                        <span class="badge badge-green" style="font-size:.7rem;margin-left:.4rem;">{{ __('กำหนดเอง') }}</span>
                     @else
-                        <span class="badge" style="font-size:.7rem;margin-left:.4rem;background:#eff6ff;color:#1e40af;">คำนวณจากหมวดหมู่</span>
+                        <span class="badge" style="font-size:.7rem;margin-left:.4rem;background:#eff6ff;color:#1e40af;">{{ __('คำนวณจากหมวดหมู่') }}</span>
                     @endif
                 </p>
-                <p class="text-xs text-muted">ชั่วโมงขั้นต่ำรวมที่นักศึกษาต้องสะสมตลอดหลักสูตร</p>
+                <p class="text-xs text-muted">{{ __('ชั่วโมงขั้นต่ำรวมที่นักศึกษาต้องสะสมตลอดหลักสูตร') }}</p>
                 @if($isOverridden)
                     <p class="text-xs" style="color:#64748b;margin-top:.2rem;">ผลรวมจากหมวดหมู่: {{ number_format($categorySum, 1) }} ชม.</p>
                 @endif
@@ -39,17 +37,15 @@
                             class="form-control"
                             style="width:110px;font-size:1.25rem;font-weight:700;text-align:center;padding-right:2.5rem;"
                             id="totalHoursInput">
-                        <span style="position:absolute;right:.65rem;top:50%;transform:translateY(-50%);font-size:.7rem;color:#94a3b8;pointer-events:none;">ชม.</span>
+                        <span style="position:absolute;right:.65rem;top:50%;transform:translateY(-50%);font-size:.7rem;color:#94a3b8;pointer-events:none;">{{ __('ชม.') }}</span>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-sm">บันทึก</button>
+                    <button type="submit" class="btn btn-primary btn-sm">{{ __('บันทึก') }}</button>
                 </form>
                 @if($isOverridden)
                 <form method="POST" action="{{ route('admin.categories.required-hours.reset') }}">
                     @csrf @method('DELETE')
                     <button type="submit" class="btn btn-outline btn-sm" style="color:#64748b;font-size:.75rem;"
-                        onclick="return confirm('รีเซ็ตกลับไปใช้ผลรวมจากหมวดหมู่ ({{ number_format($categorySum, 1) }} ชม.)?')">
-                        รีเซ็ต
-                    </button>
+                        onclick="return confirm('รีเซ็ตกลับไปใช้ผลรวมจากหมวดหมู่ ({{ number_format($categorySum, 1) }} ชม.)?')">{{ __('รีเซ็ต') }}                    </button>
                 </form>
                 @endif
             </div>
@@ -69,11 +65,11 @@
         <table class="responsive-table">
             <thead>
                 <tr>
-                    <th>หมวดหมู่</th>
-                    <th>คำอธิบาย</th>
-                    <th class="text-center">เกณฑ์ชั่วโมง</th>
-                    <th class="text-center">จำนวนกิจกรรม</th>
-                    <th class="text-right">จัดการ</th>
+                    <th>{{ __('หมวดหมู่') }}</th>
+                    <th>{{ __('คำอธิบาย') }}</th>
+                    <th class="text-center">{{ __('เกณฑ์ชั่วโมง') }}</th>
+                    <th class="text-center">{{ __('จำนวนกิจกรรม') }}</th>
+                    <th class="text-right">{{ __('จัดการ') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -88,20 +84,18 @@
                     <td data-label="คำอธิบาย" class="text-sm text-muted line-clamp-1">{{ $cat->description ?? '-' }}</td>
                     <td data-label="เกณฑ์ชั่วโมง" class="text-center">
                         <span class="font-bold" style="color:#1e40af;font-size:1.1rem;">{{ number_format((float)$cat->required_hours, 1) }}</span>
-                        <span class="text-xs text-muted"> ชม.</span>
+                        <span class="text-xs text-muted"> {{ __('ชม.') }}</span>
                     </td>
                     <td data-label="จำนวนกิจกรรม" class="text-center text-sm">{{ $cat->activities_count }}</td>
                     <td data-label="จัดการ" class="text-right">
                         <div class="flex justify-end gap-2">
                             <button type="button" class="btn btn-outline btn-sm"
                                 onclick="openEditModal({{ $cat->id }}, '{{ addslashes($cat->name) }}', '{{ addslashes($cat->description ?? '') }}', {{ (float)$cat->required_hours }}, '{{ $cat->color ?? '#3B82F6' }}', {{ json_encode($cat->options ?? []) }})"
-                                style="font-size:.75rem;">
-                                แก้ไข
-                            </button>
+                                style="font-size:.75rem;">{{ __('แก้ไข') }}                            </button>
                             @if($cat->activities_count === 0)
                             <form method="POST" action="{{ route('admin.categories.destroy', $cat->id) }}" onsubmit="return confirm('ลบหมวดหมู่ {{ $cat->name }} ?')" style="margin:0;">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-sm" style="font-size:.75rem;background:#fee2e2;color:#b91c1c;border:none;line-height:1.5;">ลบ</button>
+                                <button type="submit" class="btn btn-sm" style="font-size:.75rem;background:#fee2e2;color:#b91c1c;border:none;line-height:1.5;">{{ __('ลบ') }}</button>
                             </form>
                             @endif
                         </div>
@@ -114,8 +108,8 @@
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
                             </svg>
-                            <div class="empty-state-row-title">ยังไม่มีหมวดหมู่กิจกรรม</div>
-                            <div class="empty-state-row-desc">กดปุ่ม เพิ่มหมวดหมู่ เพื่อสร้างหมวดหมู่ใหม่</div>
+                            <div class="empty-state-row-title">{{ __('ยังไม่มีหมวดหมู่กิจกรรม') }}</div>
+                            <div class="empty-state-row-desc">{{ __('กดปุ่ม เพิ่มหมวดหมู่ เพื่อสร้างหมวดหมู่ใหม่') }}</div>
                         </div>
                     </td>
                 </tr>
@@ -128,37 +122,37 @@
 {{-- Modal: เพิ่มหมวดหมู่ --}}
 <div id="addModal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.45);align-items:center;justify-content:center;">
     <div style="background:#fff;border-radius:12px;padding:1.5rem;width:100%;max-width:440px;margin:1rem;">
-        <h3 class="font-bold mb-4" style="font-size:1rem;">เพิ่มหมวดหมู่กิจกรรม</h3>
+        <h3 class="font-bold mb-4" style="font-size:1rem;">{{ __('เพิ่มหมวดหมู่กิจกรรม') }}</h3>
         <form method="POST" action="{{ route('admin.categories.store') }}">
             @csrf
             <div class="form-group">
-                <label class="form-label">ชื่อหมวดหมู่ <span style="color:#dc2626;">*</span></label>
-                <input type="text" name="name" class="form-control" required placeholder="เช่น จิตอาสา, วิชาการ, กีฬา">
+                <label class="form-label">{{ __('ชื่อหมวดหมู่') }} <span style="color:#dc2626;">*</span></label>
+                <input type="text" name="name" class="form-control" required placeholder="{{ __('เช่น จิตอาสา, วิชาการ, กีฬา') }}">
             </div>
             <div class="form-group">
-                <label class="form-label">คำอธิบาย</label>
-                <textarea name="description" rows="2" class="form-control" placeholder="คำอธิบายหมวดหมู่ (ไม่บังคับ)"></textarea>
+                <label class="form-label">{{ __('คำอธิบาย') }}</label>
+                <textarea name="description" rows="2" class="form-control" placeholder="{{ __('คำอธิบายหมวดหมู่ (ไม่บังคับ)') }}"></textarea>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">เกณฑ์ชั่วโมง <span style="color:#dc2626;">*</span></label>
+                    <label class="form-label">{{ __('เกณฑ์ชั่วโมง') }} <span style="color:#dc2626;">*</span></label>
                     <input type="number" name="required_hours" class="form-control" step="0.5" min="0" value="6" required>
-                    <p class="text-xs text-muted" style="margin-top:.25rem;">ชั่วโมงขั้นต่ำที่นักศึกษาต้องสะสม</p>
+                    <p class="text-xs text-muted" style="margin-top:.25rem;">{{ __('ชั่วโมงขั้นต่ำที่นักศึกษาต้องสะสม') }}</p>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">สี</label>
+                    <label class="form-label">{{ __('สี') }}</label>
                     <input type="color" name="color" class="form-control" value="#3B82F6" style="height:42px;padding:.2rem .4rem;">
                 </div>
             </div>
             <div class="form-group">
-                <label class="form-label">ตัวเลือกเพิ่มเติม (Options)</label>
+                <label class="form-label">{{ __('ตัวเลือกเพิ่มเติม (Options)') }}</label>
                 <div id="addOptionsContainer" class="space-y-2"></div>
-                <button type="button" onclick="addOptionRow('addOptionsContainer')" class="btn btn-outline btn-sm mt-2" style="font-size:.75rem;">+ เพิ่มตัวเลือก</button>
-                <p class="text-xs text-muted" style="margin-top:.25rem;">ตัวเลือกเพิ่มเติมสำหรับหมวดหมู่ (เช่น การแจ้งเตือน, การแสดงผลพิเศษ)</p>
+                <button type="button" onclick="addOptionRow('addOptionsContainer')" class="btn btn-outline btn-sm mt-2" style="font-size:.75rem;">{{ __('+ เพิ่มตัวเลือก') }}</button>
+                <p class="text-xs text-muted" style="margin-top:.25rem;">{{ __('ตัวเลือกเพิ่มเติมสำหรับหมวดหมู่ (เช่น การแจ้งเตือน, การแสดงผลพิเศษ)') }}</p>
             </div>
             <div class="flex gap-2 justify-end mt-4">
-                <button type="button" onclick="document.getElementById('addModal').style.display='none'" class="btn btn-outline">ยกเลิก</button>
-                <button type="submit" class="btn btn-primary">เพิ่มหมวดหมู่</button>
+                <button type="button" onclick="document.getElementById('addModal').style.display='none'" class="btn btn-outline">{{ __('ยกเลิก') }}</button>
+                <button type="submit" class="btn btn-primary">{{ __('เพิ่มหมวดหมู่') }}</button>
             </div>
         </form>
     </div>
@@ -167,37 +161,37 @@
 {{-- Modal: แก้ไขหมวดหมู่ --}}
 <div id="editModal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.45);align-items:center;justify-content:center;">
     <div style="background:#fff;border-radius:12px;padding:1.5rem;width:100%;max-width:440px;margin:1rem;">
-        <h3 class="font-bold mb-4" style="font-size:1rem;">แก้ไขหมวดหมู่กิจกรรม</h3>
+        <h3 class="font-bold mb-4" style="font-size:1rem;">{{ __('แก้ไขหมวดหมู่กิจกรรม') }}</h3>
         <form id="editForm" method="POST">
             @csrf @method('PATCH')
             <div class="form-group">
-                <label class="form-label">ชื่อหมวดหมู่ <span style="color:#dc2626;">*</span></label>
+                <label class="form-label">{{ __('ชื่อหมวดหมู่') }} <span style="color:#dc2626;">*</span></label>
                 <input type="text" name="name" id="editName" class="form-control" required>
             </div>
             <div class="form-group">
-                <label class="form-label">คำอธิบาย</label>
+                <label class="form-label">{{ __('คำอธิบาย') }}</label>
                 <textarea name="description" id="editDescription" rows="2" class="form-control"></textarea>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label" style="font-weight:600;color:#1e40af;">เกณฑ์ชั่วโมง <span style="color:#dc2626;">*</span></label>
+                    <label class="form-label" style="font-weight:600;color:#1e40af;">{{ __('เกณฑ์ชั่วโมง') }} <span style="color:#dc2626;">*</span></label>
                     <input type="number" name="required_hours" id="editHours" class="form-control" step="0.5" min="0" required style="border-color:#ea580c;font-size:1.1rem;">
-                    <p class="text-xs text-muted" style="margin-top:.25rem;">ชั่วโมงขั้นต่ำที่นักศึกษาต้องสะสม</p>
+                    <p class="text-xs text-muted" style="margin-top:.25rem;">{{ __('ชั่วโมงขั้นต่ำที่นักศึกษาต้องสะสม') }}</p>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">สี</label>
+                    <label class="form-label">{{ __('สี') }}</label>
                     <input type="color" name="color" id="editColor" class="form-control" style="height:42px;padding:.2rem .4rem;">
                 </div>
             </div>
             <div class="form-group">
-                <label class="form-label">ตัวเลือกเพิ่มเติม (Options)</label>
+                <label class="form-label">{{ __('ตัวเลือกเพิ่มเติม (Options)') }}</label>
                 <div id="editOptionsContainer" class="space-y-2"></div>
-                <button type="button" onclick="addOptionRow('editOptionsContainer')" class="btn btn-outline btn-sm mt-2" style="font-size:.75rem;">+ เพิ่มตัวเลือก</button>
-                <p class="text-xs text-muted" style="margin-top:.25rem;">ตัวเลือกเพิ่มเติมสำหรับหมวดหมู่ (เช่น การแจ้งเตือน, การแสดงผลพิเศษ)</p>
+                <button type="button" onclick="addOptionRow('editOptionsContainer')" class="btn btn-outline btn-sm mt-2" style="font-size:.75rem;">{{ __('+ เพิ่มตัวเลือก') }}</button>
+                <p class="text-xs text-muted" style="margin-top:.25rem;">{{ __('ตัวเลือกเพิ่มเติมสำหรับหมวดหมู่ (เช่น การแจ้งเตือน, การแสดงผลพิเศษ)') }}</p>
             </div>
             <div class="flex gap-2 justify-end mt-4">
-                <button type="button" onclick="document.getElementById('editModal').style.display='none'" class="btn btn-outline">ยกเลิก</button>
-                <button type="submit" class="btn btn-primary">บันทึก</button>
+                <button type="button" onclick="document.getElementById('editModal').style.display='none'" class="btn btn-outline">{{ __('ยกเลิก') }}</button>
+                <button type="submit" class="btn btn-primary">{{ __('บันทึก') }}</button>
             </div>
         </form>
     </div>
@@ -213,8 +207,8 @@ function addOptionRow(containerId, key = '', value = '') {
     const row = document.createElement('div');
     row.className = 'flex gap-2 items-center option-row';
     row.innerHTML = `
-        <input type="text" name="options[${optionIndex}][key]" value="${key}" placeholder="ชื่อตัวเลือก" class="form-control form-control-sm" style="flex:1;">
-        <input type="text" name="options[${optionIndex}][value]" value="${value}" placeholder="ค่า" class="form-control form-control-sm" style="flex:1;">
+        <input type="text" name="options[${optionIndex}][key]" value="${key}" placeholder="{{ __('ชื่อตัวเลือก') }}" class="form-control form-control-sm" style="flex:1;">
+        <input type="text" name="options[${optionIndex}][value]" value="${value}" placeholder="{{ __('ค่า') }}" class="form-control form-control-sm" style="flex:1;">
         <button type="button" onclick="this.parentElement.remove()" class="btn btn-sm" style="background:#fee2e2;color:#b91c1c;border:1px solid #fecaca;padding:.3rem .5rem;line-height:1.5;">×</button>
     `;
     container.appendChild(row);

@@ -6,9 +6,7 @@
             <img data-src="{{ Storage::url($job->image_path) }}" alt="{{ $job->title }}" class="lazy-img">
             @if(isset($isApplied) && $isApplied)
                 <span class="act-card-user-badge act-badge-registered">
-                    <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                    สมัครแล้ว
-                </span>
+                    <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>{{ __('สมัครแล้ว') }}                </span>
             @endif
         </div>
     @else
@@ -16,9 +14,7 @@
             <svg class="icon-xl" style="color:rgba(255,255,255,.3);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
             @if(isset($isApplied) && $isApplied)
                 <span class="act-card-user-badge act-badge-registered">
-                    <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                    สมัครแล้ว
-                </span>
+                    <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>{{ __('สมัครแล้ว') }}                </span>
             @endif
         </div>
     @endif
@@ -31,11 +27,11 @@
                     {{ $job->job_type === 'parttime' ? 'Part-time' : 'งานทั่วไป' }}
                 </span>
                 @if($job->status === 'open')
-                    <span class="badge badge-green">เปิดรับสมัคร</span>
+                    <span class="badge badge-green">{{ __('เปิดรับสมัคร') }}</span>
                 @elseif($job->status === 'closed')
-                    <span class="badge badge-red">ปิดรับสมัคร</span>
+                    <span class="badge badge-red">{{ __('ปิดรับสมัคร') }}</span>
                 @else
-                    <span class="badge badge-gray">เสร็จสิ้น</span>
+                    <span class="badge badge-gray">{{ __('เสร็จสิ้น') }}</span>
                 @endif
             </div>
 
@@ -63,7 +59,7 @@
             {{-- Progress bar --}}
             <div style="margin-top:.5rem;">
                 <div class="flex justify-between text-xs text-muted">
-                    <span>ยืนยันแล้ว</span>
+                    <span>{{ __('ยืนยันแล้ว') }}</span>
                     <span class="font-semi">{{ $job->confirmed_applicants }} / {{ $job->quota }} คน</span>
                 </div>
                 <div class="progress" style="margin-top:.25rem;">
@@ -80,7 +76,7 @@
                 {{ $job->start_date->format('d/m/Y') }}{{ $job->end_date ? ' – ' . $job->end_date->format('d/m/Y') : '' }}
             </span>
             @if($job->hasGeolocation())
-            <a href="{{ route('map.index', ['type' => 'job', 'id' => $job->id]) }}" class="act-map-btn" onclick="event.stopPropagation();" title="ดูแผนที่">
+            <a href="{{ route('map.index', ['type' => 'job', 'id' => $job->id]) }}" class="act-map-btn" onclick="event.stopPropagation();" title="{{ __('ดูแผนที่') }}">
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             </a>
             @endif

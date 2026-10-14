@@ -343,9 +343,7 @@
         <h1>
             <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 24px; height: 24px;">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            Walk-in เช็คอิน
-        </h1>
+            </svg>{{ __('Walk-in เช็คอิน') }}        </h1>
         <div class="activity-name">{{ $activity->title }}</div>
         <div class="meta">
             <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 14px; height: 14px; margin-right: 4px; vertical-align: middle;">
@@ -365,9 +363,7 @@
         <a href="{{ route('activities.show', $activity) }}" class="walkin-hero-btn">
             <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 14px; height: 14px;">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            ดูรายละเอียดกิจกรรม
-        </a>
+            </svg>{{ __('ดูรายละเอียดกิจกรรม') }}        </a>
     </div>
 
     {{-- Flash messages --}}
@@ -380,17 +376,17 @@
 
     {{-- Form กรอกรหัสนักศึกษา --}}
     <div class="walkin-form-card">
-        <label for="student_id">กรอกรหัสนักศึกษา</label>
+        <label for="student_id">{{ __('กรอกรหัสนักศึกษา') }}</label>
         <form method="POST" action="{{ route('checkin.walkin.store', $token) }}" id="walkinForm">
             @csrf
             <div class="walkin-input-row">
                 <input type="text" name="student_id" id="student_id"
-                       placeholder="เช่น 65012345"
+                       placeholder="{{ __('เช่น 65012345') }}"
                        value="{{ old('student_id') }}"
                        autocomplete="off"
                        autofocus
                        inputmode="numeric">
-                <button type="submit">เช็คอิน</button>
+                <button type="submit">{{ __('เช็คอิน') }}</button>
             </div>
         </form>
     </div>
@@ -399,7 +395,7 @@
     @if(auth()->check() && (auth()->user()->isStaff() || auth()->user()->isAdmin()))
     <div class="attendees-section">
         <div class="attendees-header">
-            <h2><span class="live-dot"></span> ผู้เข้าร่วมกิจกรรม</h2>
+            <h2><span class="live-dot"></span> {{ __('ผู้เข้าร่วมกิจกรรม') }}</h2>
             <span class="attendees-count" id="attendeeCount">{{ $attendances->count() }} คน</span>
         </div>
         <ul class="attendee-list" id="attendeeList">
@@ -413,7 +409,7 @@
                     <div class="time">{{ $att->checked_in_at?->format('H:i:s') ?? $att->created_at->format('H:i:s') }}</div>
                 </li>
             @empty
-                <li class="empty-attendees" id="emptyMsg">ยังไม่มีผู้เข้าร่วม</li>
+                <li class="empty-attendees" id="emptyMsg">{{ __('ยังไม่มีผู้เข้าร่วม') }}</li>
             @endforelse
         </ul>
     </div>
@@ -431,7 +427,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
             </div>
-            <h3 style="margin:0;font-size:1.3rem;font-weight:700;">เช็คอินสำเร็จ!</h3>
+            <h3 style="margin:0;font-size:1.3rem;font-weight:700;">{{ __('เช็คอินสำเร็จ!') }}</h3>
             <p style="margin:0.5rem 0 0;font-size:0.9rem;opacity:0.9;">
                 {{ session('checked_in_student')['name'] }} ({{ session('checked_in_student')['student_id'] }})
             </p>
@@ -439,16 +435,12 @@
 
         <!-- Content -->
         <div style="padding:2rem;">
-            <h4 style="margin:0 0 1rem;font-size:1.1rem;color:#1f2937;text-align:center;">
-                ช่วยประเมินกิจกรรมหน่อยนะครับ/คะ
-            </h4>
-            <p style="margin:0 0 1.5rem;color:#475569;text-align:center;font-size:0.9rem;line-height:1.5;">
-                ความคิดเห็นของคุณจะช่วยให้เราพัฒนากิจกรรมในครั้งต่อไป
-            </p>
+            <h4 style="margin:0 0 1rem;font-size:1.1rem;color:#1f2937;text-align:center;">{{ __('ช่วยประเมินกิจกรรมหน่อยนะครับ/คะ') }}            </h4>
+            <p style="margin:0 0 1.5rem;color:#475569;text-align:center;font-size:0.9rem;line-height:1.5;">{{ __('ความคิดเห็นของคุณจะช่วยให้เราพัฒนากิจกรรมในครั้งต่อไป') }}            </p>
 
             <!-- Rating Stars -->
             <div style="text-align:center;margin-bottom:1.5rem;">
-                <label style="display:block;margin-bottom:0.75rem;font-weight:600;color:#374151;">คะแนนความพึงพอใจ</label>
+                <label style="display:block;margin-bottom:0.75rem;font-weight:600;color:#374151;">{{ __('คะแนนความพึงพอใจ') }}</label>
                 <div id="starRating" style="display:flex;justify-content:center;gap:0.5rem;font-size:2rem;">
                     @for($i = 1; $i <= 5; $i++)
                         <span class="star" data-rating="{{ $i }}" style="cursor:pointer;color:#d1d5db;transition:all 0.2s;">
@@ -458,13 +450,13 @@
                         </span>
                     @endfor
                 </div>
-                <p id="ratingText" style="margin-top:0.5rem;color:#6b7280;font-size:0.85rem;">กรุณาเลือกคะแนน</p>
+                <p id="ratingText" style="margin-top:0.5rem;color:#6b7280;font-size:0.85rem;">{{ __('กรุณาเลือกคะแนน') }}</p>
             </div>
 
             <!-- Comment -->
             <div style="margin-bottom:1.5rem;">
-                <label for="feedbackComment" style="display:block;margin-bottom:0.5rem;font-weight:600;color:#374151;">ความคิดเห็นเพิ่มเติม (ไม่บังคับ)</label>
-                <textarea id="feedbackComment" rows="3" placeholder="บอกเราว่าคุณคิดอย่างไรกับกิจกรรมนี้..."
+                <label for="feedbackComment" style="display:block;margin-bottom:0.5rem;font-weight:600;color:#374151;">{{ __('ความคิดเห็นเพิ่มเติม (ไม่บังคับ)') }}</label>
+                <textarea id="feedbackComment" rows="3" placeholder="{{ __('บอกเราว่าคุณคิดอย่างไรกับกิจกรรมนี้...') }}"
                     style="width:100%;padding:0.75rem;border:2px solid #e5e7eb;border-radius:8px;font-size:0.9rem;font-family:inherit;resize:vertical;outline:none;transition:border-color 0.2s;"
                     onfocus="this.style.borderColor='#ea580c'"
                     onblur="this.style.borderColor='#e5e7eb'"></textarea>
@@ -472,12 +464,8 @@
 
             <!-- Action Buttons -->
             <div style="display:flex;gap:0.75rem;">
-                <button onclick="closeFeedbackModal()" style="flex:1;padding:0.75rem 1rem;border:2px solid #e5e7eb;background:white;color:#6b7280;border-radius:8px;font-weight:600;cursor:pointer;transition:all 0.2s;">
-                    ข้าม
-                </button>
-                <button onclick="submitFeedback()" style="flex:1;padding:0.75rem 1rem;background:#ea580c;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;transition:all 0.2s;">
-                    ส่งประเมิน
-                </button>
+                <button onclick="closeFeedbackModal()" style="flex:1;padding:0.75rem 1rem;border:2px solid #e5e7eb;background:white;color:#6b7280;border-radius:8px;font-weight:600;cursor:pointer;transition:all 0.2s;">{{ __('ข้าม') }}                </button>
+                <button onclick="submitFeedback()" style="flex:1;padding:0.75rem 1rem;background:#ea580c;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;transition:all 0.2s;">{{ __('ส่งประเมิน') }}                </button>
             </div>
         </div>
     </div>
@@ -604,7 +592,7 @@ function refreshAttendees() {
             if(!list) return;
             
             if (data.attendances.length === 0) {
-                list.innerHTML = '<li class="empty-attendees" id="emptyMsg">ยังไม่มีผู้เข้าร่วม</li>';
+                list.innerHTML = '<li class="empty-attendees" id="emptyMsg">{{ __('ยังไม่มีผู้เข้าร่วม') }}</li>';
                 return;
             }
 

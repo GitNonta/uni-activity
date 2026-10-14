@@ -3,7 +3,7 @@
 @section('title', $activity->title)
 
 @section('content')
-<a href="{{ route('activities.index') }}" class="text-sm text-primary">&larr; กลับ</a>
+<a href="{{ route('activities.index') }}" class="text-sm text-primary">{{ __('&larr; กลับ') }}</a>
 
 {{-- การ์ดแสดงข้อมูลกิจกรรม --}}
 <div class="card mt-2">
@@ -18,7 +18,7 @@
     <div class="card-body">
         <div class="flex items-center gap-2 mb-2">
             @include('components.status-badge', ['status' => $activity->computed_status])
-            @if($activity->is_mandatory)<span class="badge badge-red">บังคับ</span>@endif
+            @if($activity->is_mandatory)<span class="badge badge-red">{{ __('บังคับ') }}</span>@endif
             @if($activity->category)<span class="badge badge-orange">{{ $activity->category->name }}</span>@endif
         </div>
         <h1 class="font-bold" style="font-size:1.25rem;">{{ $activity->title }}</h1>
@@ -44,19 +44,17 @@
 
         @if($myWaitlisted && $waitlistRank > 0)
             <div class="mt-2 waitlist-position" style="background:#fef9c3; border:1px solid #fcd34d; border-radius:10px; padding:.55rem .7rem; font-size:.82rem;">
-                 <b>⏳ รายชื่อสำรอง — คิวที่ {{ $waitlistRank }}/{{ $waitlistTotal }}</b> — ระบบจะเลื่อนคิวอัตโนมัติเมื่อมีที่ว่าง
-              </div>}
+                 <b>⏳ รายชื่อสำรอง — คิวที่ {{ $waitlistRank }}/{{ $waitlistTotal }}</b> {{ __('— ระบบจะเลื่อนคิวอัตโนมัติเมื่อมีที่ว่าง') }}              </div>}
         @elseif($hasWaitlist)
-            <div class="mt-2 waitlist-position" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:.5rem .7rem; font-size:.78rem;">
-                 ⏳ กิจกรรมนี้มีผู้อยู่ในรายชื่อสำรอง <b>{{ $waitlistTotal }} คน</b>
+            <div class="mt-2 waitlist-position" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:.5rem .7rem; font-size:.78rem;">{{ __('⏳ กิจกรรมนี้มีผู้อยู่ในรายชื่อสำรอง') }} <b>{{ $waitlistTotal }} คน</b>
               </div>}
         @endif
 
 @php $isBookmarked = auth()->check() && \App\Models\ActivityBookmark::query()->where('user_id', auth()->id())->where('activity_id', $activity->id)->exists(); @endphp
 @if($activity->payment_required && $activity->fee_amount > 0)
         <div class="mt-2" style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:.6rem .8rem; font-size:.85rem; display:flex; justify-content:space-between; align-items:center; gap:.5rem;">
-            <span>💰 ค่าสมัคร <b>฿{{ number_format($activity->fee_amount, 2) }}</b> (PromptPay)</span>
-            <a href="{{ route('activities.pay.show', $activity) }}" class="btn btn-primary btn-sm" style="text-decoration:none;">ชำระเงิน</a>
+            <span>{{ __('💰 ค่าสมัคร') }} <b>฿{{ number_format($activity->fee_amount, 2) }}</b> (PromptPay)</span>
+            <a href="{{ route('activities.pay.show', $activity) }}" class="btn btn-primary btn-sm" style="text-decoration:none;">{{ __('ชำระเงิน') }}</a>
         </div>
         @endif
 
@@ -93,9 +91,7 @@
         <div class="grid-2" style="font-size:.875rem;">
             <div>
                 <span class="text-muted">
-                    <svg class="icon-sm" style="display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                    วันที่
-                </span>
+                    <svg class="icon-sm" style="display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>{{ __('วันที่') }}                </span>
                 <p class="font-semi">
                     {{ $activity->activity_date->format('d/m/Y') }}
                     @if($activity->is_multiday && $activity->end_date)
@@ -105,20 +101,16 @@
             </div>
             <div>
                 <span class="text-muted">
-                    <svg class="icon-sm" style="display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    เวลา
-                </span>
+                    <svg class="icon-sm" style="display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ __('เวลา') }}                </span>
                 <p class="font-semi">{{ \Carbon\Carbon::parse($activity->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($activity->end_time)->format('H:i') }}</p>
             </div>
             <div>
                 <span class="text-muted">
-                    <svg class="icon-sm" style="display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                    สถานที่
-                </span>
+                    <svg class="icon-sm" style="display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>{{ __('สถานที่') }}                </span>
                 <p class="font-semi">{{ $activity->location ?? '-' }}</p>
             </div>
             <div>
-                <span class="text-muted">ชั่วโมงกิจกรรม</span>
+                <span class="text-muted">{{ __('ชั่วโมงกิจกรรม') }}</span>
                 <p class="font-semi">{{ $activity->activity_hours }} ชม.</p>
             </div>
         </div>
@@ -126,18 +118,14 @@
         <div class="grid-2 mt-3" style="font-size:.875rem; background:#f8fafc; padding:12px; border-radius:10px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; border: 1px solid #f1f5f9;">
             <div>
                 <span class="text-muted" style="font-size: 0.8rem; display:flex; align-items:center; gap:5px;">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                    เปิด-ปิดลงทะเบียน
-                </span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>{{ __('เปิด-ปิดลงทะเบียน') }}                </span>
                 <p class="font-semi" style="font-size: 0.85rem; color:#475569; margin:4px 0 0; line-height:1.4;">
                     {{ $activity->register_open_at ? $activity->register_open_at->format('d/m/Y H:i') : '-' }}<br>ถึง {{ $activity->register_close_at ? $activity->register_close_at->format('d/m/Y H:i') : '-' }}
                 </p>
             </div>
             <div>
                 <span class="text-muted" style="font-size: 0.8rem; display:flex; align-items:center; gap:5px;">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
-                    เปิด-ปิดเช็คอินหน้างาน
-                </span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>{{ __('เปิด-ปิดเช็คอินหน้างาน') }}                </span>
                 <p class="font-semi" style="font-size: 0.85rem; color:#475569; margin:4px 0 0; line-height:1.4;">
                     {{ $activity->checkin_open_at ? $activity->checkin_open_at->format('d/m/Y H:i') : '-' }}<br>ถึง {{ $activity->checkin_close_at ? $activity->checkin_close_at->format('d/m/Y H:i') : '-' }}
                 </p>
@@ -153,9 +141,7 @@
                             <line x1="16" y1="2" x2="16" y2="6"></line>
                             <line x1="8" y1="2" x2="8" y2="6"></line>
                             <line x1="3" y1="10" x2="21" y2="10"></line>
-                        </svg>
-                        กำหนดการเช็คอินและชั่วโมงกิจกรรมรายวัน (Daily Schedule & Hours)
-                    </h4>
+                        </svg>{{ __('กำหนดการเช็คอินและชั่วโมงกิจกรรมรายวัน (Daily Schedule & Hours)') }}                    </h4>
                     <span style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-size:0.75rem; font-weight:700; padding:0.2rem 0.55rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.3rem;">
                         รวม {{ (float)$activity->activity_hours }} ชม.
                     </span>
@@ -184,9 +170,7 @@
                                         <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
                                         <polyline points="10 17 15 12 10 7"></polyline>
                                         <line x1="15" y1="12" x2="3" y2="12"></line>
-                                    </svg>
-                                    เช็คอิน (เข้างาน):
-                                </span>
+                                    </svg>{{ __('เช็คอิน (เข้างาน):') }}                                </span>
                                 <div style="font-size:0.78rem; color:#334155; margin-top:0.15rem;">
                                     {{ $day->checkin_open_at ? $day->checkin_open_at->format('H:i') : '-' }} - {{ $day->checkin_close_at ? $day->checkin_close_at->format('H:i') : '-' }} น.
                                 </div>
@@ -211,7 +195,7 @@
         {{-- แถบแสดงจำนวนผู้ลงทะเบียน --}}
         <div class="mb-4">
             <div class="flex justify-between text-sm mb-1">
-                <span class="text-muted">ผู้ลงทะเบียน</span>
+                <span class="text-muted">{{ __('ผู้ลงทะเบียน') }}</span>
                 <span class="font-semi">{{ $activity->getRegisteredCount() }}/{{ $activity->max_participants }}</span>
             </div>
             <div class="progress">
@@ -235,18 +219,12 @@
                     </div>
                 @elseif($userAttendance && $userAttendance->status === 'pending')
                     <div class="alert alert-info text-sm" style="background:#fef3c7;color:#92400e;border-color:#fde68a;">
-                        <svg class="icon-sm" style="display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        บันทึกแล้ว รออนุมัติ
-                    </div>
+                        <svg class="icon-sm" style="display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ __('บันทึกแล้ว รออนุมัติ') }}                    </div>
                 @elseif($userAttendance && $userAttendance->status === 'rejected')
-                    <div class="alert alert-error text-sm">
-                        บันทึกกิจกรรมถูกปฏิเสธ
-                    </div>
+                    <div class="alert alert-error text-sm">{{ __('บันทึกกิจกรรมถูกปฏิเสธ') }}                    </div>
                 @elseif(!$userAttendance && $userRegistration->status === 'approved' && ($activity->allow_early_checkin || (now() >= $activity->checkin_open_at && now() <= $activity->checkin_close_at)))
                     <div class="alert alert-info text-sm">
-                        <svg class="icon-sm" style="display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
-                        กรุณาสแกน QR Code หน้างานเพื่อเช็คอิน
-                    </div>
+                        <svg class="icon-sm" style="display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>{{ __('กรุณาสแกน QR Code หน้างานเพื่อเช็คอิน') }}                    </div>
                 @elseif($userRegistration->status === 'approved' && now() < $activity->checkin_open_at)
                     <div class="alert alert-info text-sm">
                         <svg class="icon-sm" style="display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -257,26 +235,23 @@
                 @if($userRegistration->status !== 'cancelled' && !$userAttendance)
                     <form method="POST" action="{{ route('registrations.destroy', $userRegistration->id) }}" class="mt-2">
                         @csrf @method('DELETE')
-                        <button type="submit" class="btn btn-danger btn-block" onclick="return confirm('ยืนยันยกเลิกการลงทะเบียน?')">ยกเลิกการลงทะเบียน</button>
+                        <button type="submit" class="btn btn-danger btn-block" onclick="return confirm('ยืนยันยกเลิกการลงทะเบียน?')">{{ __('ยกเลิกการลงทะเบียน') }}</button>
                     </form>
                 @endif
             @elseif($activity->computed_status === 'open' && $activity->getRemainingSlots() > 0)
                 <form method="POST" action="{{ route('activities.register', $activity->id) }}">
                     @csrf
-                    <button type="submit" class="btn btn-primary btn-block btn-lg">ลงทะเบียน</button>
+                    <button type="submit" class="btn btn-primary btn-block btn-lg">{{ __('ลงทะเบียน') }}</button>
                 </form>
             @else
-                <button disabled class="btn btn-outline btn-block">ไม่สามารถลงทะเบียนได้</button>
+                <button disabled class="btn btn-outline btn-block">{{ __('ไม่สามารถลงทะเบียนได้') }}</button>
             @endif
         @endauth
         @guest
             <div style="margin-top:16px; text-align:center;">
                 <a href="{{ route('login') }}" class="btn btn-primary btn-block btn-lg" style="text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-weight:700; border-radius:10px; width: 100%; box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);">
-                    <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-                    เข้าสู่ระบบเพื่อลงทะเบียน
-                </a>
-                <p class="text-xs mt-3 mb-0" style="color:#64748b;">
-                    ยังไม่มีบัญชีนักศึกษา? <a href="{{ route('register') }}" style="color:#ea580c; text-decoration:underline; font-weight:600;">สมัครสมาชิกที่นี่</a>
+                    <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>{{ __('เข้าสู่ระบบเพื่อลงทะเบียน') }}                </a>
+                <p class="text-xs mt-3 mb-0" style="color:#64748b;">{{ __('ยังไม่มีบัญชีนักศึกษา?') }} <a href="{{ route('register') }}" style="color:#ea580c; text-decoration:underline; font-weight:600;">{{ __('สมัครสมาชิกที่นี่') }}</a>
                 </p>
             </div>
         @endguest

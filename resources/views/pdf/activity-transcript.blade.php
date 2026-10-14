@@ -254,16 +254,16 @@
                 @endif
             </td>
             <td style="text-align: center; padding: 0 8px;">
-                <div class="uni-th">มหาวิทยาลัยเวทย์มนต์และเทคโนโลยีดิจิทัล</div>
+                <div class="uni-th">{{ __('มหาวิทยาลัยเวทย์มนต์และเทคโนโลยีดิจิทัล') }}</div>
                 <div class="uni-en">Magic and Digital Technology University</div>
-                <div class="doc-title-th">ใบแสดงผลการเข้าร่วมกิจกรรมนักศึกษา</div>
+                <div class="doc-title-th">{{ __('ใบแสดงผลการเข้าร่วมกิจกรรมนักศึกษา') }}</div>
                 <div class="doc-title-en">ACTIVITY TRANSCRIPT</div>
             </td>
             <td style="width: 72px; text-align: right;">
                 @if(!empty($studentPhoto))
                     <img src="{{ $studentPhoto }}" style="width: 58px; height: 72px; object-fit: cover; border: 1px solid #cbd5e1; border-radius: 2px;">
                 @else
-                    <div style="width: 58px; height: 72px; border: 1px dashed #cbd5e1; background: #f8fafc; text-align: center; line-height: 72px; font-size: 7pt; color: #94a3b8;">รูปนักศึกษา</div>
+                    <div style="width: 58px; height: 72px; border: 1px dashed #cbd5e1; background: #f8fafc; text-align: center; line-height: 72px; font-size: 7pt; color: #94a3b8;">{{ __('รูปนักศึกษา') }}</div>
                 @endif
             </td>
         </tr>
@@ -277,19 +277,19 @@
             <td>
                 <table class="info-table">
                     <tr>
-                        <td class="info-label" style="width: 110px;">รหัสนักศึกษา:</td>
+                        <td class="info-label" style="width: 110px;">{{ __('รหัสนักศึกษา:') }}</td>
                         <td class="info-val" style="width: 140px; font-weight: bold;">{{ $user->student_id }}</td>
-                        <td class="info-label" style="width: 95px;">ชื่อ-นามสกุล:</td>
+                        <td class="info-label" style="width: 95px;">{{ __('ชื่อ-นามสกุล:') }}</td>
                         <td class="info-val" style="font-weight: bold;">{{ $user->full_name }}</td>
                     </tr>
                     <tr>
-                        <td class="info-label">คณะ (Faculty):</td>
+                        <td class="info-label">{{ __('คณะ (Faculty):') }}</td>
                         <td class="info-val">{{ $user->faculty ?? '-' }}</td>
-                        <td class="info-label">สาขาวิชา:</td>
+                        <td class="info-label">{{ __('สาขาวิชา:') }}</td>
                         <td class="info-val">{{ $user->department ?? '-' }}</td>
                     </tr>
                     <tr>
-                        <td class="info-label">ระดับการศึกษา:</td>
+                        <td class="info-label">{{ __('ระดับการศึกษา:') }}</td>
                         <td class="info-val" colspan="3">ปริญญาตรี (ชั้นปีที่ {{ $user->year ?? '-' }})</td>
                     </tr>
                 </table>
@@ -299,21 +299,20 @@
 
     {{-- ผลการประเมินกิจกรรมรวม --}}
     <div class="result-box">
-        <div class="result-box-title">ผลการเข้าร่วมกิจกรรมพัฒนานักศึกษาตามเกณฑ์มหาวิทยาลัย</div>
-        <div class="result-box-desc">
-            สะสมรวม <strong>{{ number_format($totalHours, 1) }}</strong> ชั่วโมง / เกณฑ์ขั้นต่ำ {{ number_format($totalRequired, 1) }} ชั่วโมง
+        <div class="result-box-title">{{ __('ผลการเข้าร่วมกิจกรรมพัฒนานักศึกษาตามเกณฑ์มหาวิทยาลัย') }}</div>
+        <div class="result-box-desc">{{ __('สะสมรวม') }} <strong>{{ number_format($totalHours, 1) }}</strong> ชั่วโมง / เกณฑ์ขั้นต่ำ {{ number_format($totalRequired, 1) }} ชั่วโมง
             (ระดับผลการประเมิน: <strong>{{ $levelLabel }}</strong>)
         </div>
     </div>
 
     {{-- ตารางหมวดหมู่กิจกรรม + ชั่วโมง --}}
-    <div class="table-section-title">สรุปชั่วโมงกิจกรรมจำแนกตามหมวดหมู่ (Activity Hours by Category)</div>
+    <div class="table-section-title">{{ __('สรุปชั่วโมงกิจกรรมจำแนกตามหมวดหมู่ (Activity Hours by Category)') }}</div>
     <table class="data-table">
         <thead>
             <tr>
-                <th style="text-align: left; width: 50%;">หมวดหมู่กิจกรรม</th>
-                <th style="width: 25%;">เกณฑ์ที่กำหนด (ชม.)</th>
-                <th style="width: 25%;">ชั่วโมงที่สะสมได้ (ชม.)</th>
+                <th style="text-align: left; width: 50%;">{{ __('หมวดหมู่กิจกรรม') }}</th>
+                <th style="width: 25%;">{{ __('เกณฑ์ที่กำหนด (ชม.)') }}</th>
+                <th style="width: 25%;">{{ __('ชั่วโมงที่สะสมได้ (ชม.)') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -325,7 +324,7 @@
             </tr>
             @endforeach
             <tr class="total-row">
-                <td style="font-weight: bold;">รวมชั่วโมงกิจกรรมทั้งหมด</td>
+                <td style="font-weight: bold;">{{ __('รวมชั่วโมงกิจกรรมทั้งหมด') }}</td>
                 <td style="text-align: center; font-weight: bold;">{{ number_format($totalRequired, 1) }}</td>
                 <td style="text-align: center; font-weight: bold; color: #1e3a8a;">{{ number_format($totalHours, 1) }}</td>
             </tr>
@@ -333,32 +332,30 @@
     </table>
 
     {{-- ข้อความรับรองทางการ --}}
-    <div class="cert-block">
-        ขอรับรองว่าตลอดระยะเวลาการศึกษา นักศึกษาได้เข้าร่วมกิจกรรมตามรายงานที่บันทึกไว้ในระเบียนกิจกรรมนักศึกษาจริงทุกประการ
-    </div>
+    <div class="cert-block">{{ __('ขอรับรองว่าตลอดระยะเวลาการศึกษา นักศึกษาได้เข้าร่วมกิจกรรมตามรายงานที่บันทึกไว้ในระเบียนกิจกรรมนักศึกษาจริงทุกประการ') }}    </div>
 
     {{-- ส่วนลงนามทางการ (2 คอลัมน์) --}}
     <table class="sig-table">
         <tr>
             <td>
-                <div class="sig-title">ผู้ตรวจสอบข้อมูลกิจกรรม</div>
+                <div class="sig-title">{{ __('ผู้ตรวจสอบข้อมูลกิจกรรม') }}</div>
                 @if(!empty($sig1Base64))
                     <img src="{{ $sig1Base64 }}" class="sig-img">
                 @else
                     <div class="sig-placeholder"></div>
                 @endif
-                <div class="sig-name">( อาจารย์ ดร.สมชาย ใจดี )</div>
-                <div class="sig-pos">ผู้อำนวยการกองพัฒนานักศึกษา</div>
+                <div class="sig-name">{{ __('( อาจารย์ ดร.สมชาย ใจดี )') }}</div>
+                <div class="sig-pos">{{ __('ผู้อำนวยการกองพัฒนานักศึกษา') }}</div>
             </td>
             <td>
-                <div class="sig-title">ผู้อนุมัติเอกสารและรับรองผล</div>
+                <div class="sig-title">{{ __('ผู้อนุมัติเอกสารและรับรองผล') }}</div>
                 @if(!empty($sig2Base64))
                     <img src="{{ $sig2Base64 }}" class="sig-img">
                 @else
                     <div class="sig-placeholder"></div>
                 @endif
-                <div class="sig-name">( ผู้ช่วยศาสตราจารย์ ดร.วิภาดา วิจิตรศิลป์ )</div>
-                <div class="sig-pos">รองอธิการบดีฝ่ายพัฒนานักศึกษาและศิษย์เก่าสัมพันธ์</div>
+                <div class="sig-name">{{ __('( ผู้ช่วยศาสตราจารย์ ดร.วิภาดา วิจิตรศิลป์ )') }}</div>
+                <div class="sig-pos">{{ __('รองอธิการบดีฝ่ายพัฒนานักศึกษาและศิษย์เก่าสัมพันธ์') }}</div>
             </td>
         </tr>
     </table>

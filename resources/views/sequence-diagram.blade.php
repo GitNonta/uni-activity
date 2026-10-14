@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'ลำดับการใช้งานระบบกิจกรรมนักศึกษา')
+@section('title', __('ลำดับการใช้งานระบบกิจกรรมนักศึกษา'))
 
 @section('content')
 <style>
@@ -65,23 +65,23 @@
 <div class="sequence-page">
     <div class="sequence-intro">
         <h1 class="font-bold" style="font-size:1.5rem;">Sequence Diagram: Student Activity Flow</h1>
-        <p class="text-muted">ลำดับการใช้งานตั้งแต่ดูและเข้าร่วมกิจกรรม ไปจนถึงการสมัครล่วงหน้าและเข้าสู่หน้าล็อกอิน</p>
+        <p class="text-muted">{{ __('ลำดับการใช้งานตั้งแต่ดูและเข้าร่วมกิจกรรม ไปจนถึงการสมัครล่วงหน้าและเข้าสู่หน้าล็อกอิน') }}</p>
     </div>
 
     <div class="card" style="margin-bottom:1rem;">
         <div class="card-body" style="padding:1rem 1.25rem;">
-            <strong>ภาพรวม</strong>
-            <span class="text-muted text-sm"> นักศึกษาสามารถดูรายการกิจกรรมแบบสาธารณะได้ก่อนเข้าสู่ระบบ แต่ต้องล็อกอินก่อนยืนยันการมีส่วนร่วม หรือดำเนินการพรีรีจิสเตอร์ต่อ</span>
+            <strong>{{ __('ภาพรวม') }}</strong>
+            <span class="text-muted text-sm"> {{ __('นักศึกษาสามารถดูรายการกิจกรรมแบบสาธารณะได้ก่อนเข้าสู่ระบบ แต่ต้องล็อกอินก่อนยืนยันการมีส่วนร่วม หรือดำเนินการพรีรีจิสเตอร์ต่อ') }}</span>
         </div>
     </div>
 
-    <div class="sequence-board" role="img" aria-label="แผนภาพลำดับการใช้งานของนักศึกษา">
+    <div class="sequence-board" role="img" aria-label="{{ __('แผนภาพลำดับการใช้งานของนักศึกษา') }}">
         <div class="sequence-grid">
             <div class="sequence-corner"></div>
-            <div class="sequence-actor">Student<small>นักศึกษา</small></div>
-            <div class="sequence-actor">Activity Pages<small>หน้ากิจกรรม</small></div>
-            <div class="sequence-actor">Participation<small>การเข้าร่วมกิจกรรม</small></div>
-            <div class="sequence-actor">Login Page<small>หน้าล็อกอิน</small></div>
+            <div class="sequence-actor">Student<small>{{ __('นักศึกษา') }}</small></div>
+            <div class="sequence-actor">Activity Pages<small>{{ __('หน้ากิจกรรม') }}</small></div>
+            <div class="sequence-actor">Participation<small>{{ __('การเข้าร่วมกิจกรรม') }}</small></div>
+            <div class="sequence-actor">Login Page<small>{{ __('หน้าล็อกอิน') }}</small></div>
 
             <div style="position:relative; min-height:620px;">
                 <div class="phase" style="top:18px;">1. Discover</div>
@@ -92,40 +92,40 @@
 
             <div class="sequence-lane">
                 <div class="lifeline"></div>
-                <div class="message" style="top:58px;"><span class="message-line"></span><span class="message-head right"></span><span class="message-label">เปิดดูรายการกิจกรรม</span></div>
-                <div class="message" style="top:112px;"><span class="message-head left"></span><span class="message-line dashed"></span><span class="message-label">แสดงรายละเอียดกิจกรรม</span></div>
-                <div class="message" style="top:228px;"><span class="message-line"></span><span class="message-head right"></span><span class="message-label">เลือกเข้าร่วมกิจกรรม</span></div>
-                <div class="message" style="top:410px;"><span class="message-line"></span><span class="message-head right"></span><span class="message-label">ขอพรีรีจิสเตอร์</span></div>
-                <div class="message" style="top:490px;"><span class="message-head left"></span><span class="message-line dashed"></span><span class="message-label">แจ้งว่าต้องเข้าสู่ระบบ</span></div>
-                <div class="note" style="top:290px;">กิจกรรมและข้อมูลการเข้าร่วมถูกแสดงให้ผู้ใช้ตรวจสอบก่อนยืนยัน</div>
+                <div class="message" style="top:58px;"><span class="message-line"></span><span class="message-head right"></span><span class="message-label">{{ __('เปิดดูรายการกิจกรรม') }}</span></div>
+                <div class="message" style="top:112px;"><span class="message-head left"></span><span class="message-line dashed"></span><span class="message-label">{{ __('แสดงรายละเอียดกิจกรรม') }}</span></div>
+                <div class="message" style="top:228px;"><span class="message-line"></span><span class="message-head right"></span><span class="message-label">{{ __('เลือกเข้าร่วมกิจกรรม') }}</span></div>
+                <div class="message" style="top:410px;"><span class="message-line"></span><span class="message-head right"></span><span class="message-label">{{ __('ขอพรีรีจิสเตอร์') }}</span></div>
+                <div class="message" style="top:490px;"><span class="message-head left"></span><span class="message-line dashed"></span><span class="message-label">{{ __('แจ้งว่าต้องเข้าสู่ระบบ') }}</span></div>
+                <div class="note" style="top:290px;">{{ __('กิจกรรมและข้อมูลการเข้าร่วมถูกแสดงให้ผู้ใช้ตรวจสอบก่อนยืนยัน') }}</div>
             </div>
 
             <div class="sequence-lane">
                 <div class="lifeline"></div>
-                <div class="message" style="top:76px;"><span class="message-head left"></span><span class="message-line dashed"></span><span class="message-label">ส่งข้อมูลกิจกรรม</span></div>
-                <div class="message" style="top:246px;"><span class="message-head left"></span><span class="message-line dashed"></span><span class="message-label">แสดงสถานะ/เงื่อนไข</span></div>
-                <div class="message" style="top:428px;"><span class="message-head left"></span><span class="message-line dashed"></span><span class="message-label">เก็บคำขอไว้ชั่วคราว</span></div>
-                <div class="note" style="top:465px;">ยังไม่ถือว่าเข้าร่วมสำเร็จจนกว่าจะยืนยันตัวตน</div>
+                <div class="message" style="top:76px;"><span class="message-head left"></span><span class="message-line dashed"></span><span class="message-label">{{ __('ส่งข้อมูลกิจกรรม') }}</span></div>
+                <div class="message" style="top:246px;"><span class="message-head left"></span><span class="message-line dashed"></span><span class="message-label">{{ __('แสดงสถานะ/เงื่อนไข') }}</span></div>
+                <div class="message" style="top:428px;"><span class="message-head left"></span><span class="message-line dashed"></span><span class="message-label">{{ __('เก็บคำขอไว้ชั่วคราว') }}</span></div>
+                <div class="note" style="top:465px;">{{ __('ยังไม่ถือว่าเข้าร่วมสำเร็จจนกว่าจะยืนยันตัวตน') }}</div>
             </div>
 
             <div class="sequence-lane">
                 <div class="lifeline"></div>
-                <div class="message" style="top:262px;"><span class="message-line"></span><span class="message-head right"></span><span class="message-label">ตรวจสอบสิทธิ์เข้าร่วม</span></div>
-                <div class="message" style="top:318px;"><span class="message-head left"></span><span class="message-line dashed"></span><span class="message-label">พร้อมให้ยืนยัน</span></div>
-                <div class="message" style="top:442px;"><span class="message-line"></span><span class="message-head right"></span><span class="message-label">ส่งต่อไปล็อกอิน</span></div>
+                <div class="message" style="top:262px;"><span class="message-line"></span><span class="message-head right"></span><span class="message-label">{{ __('ตรวจสอบสิทธิ์เข้าร่วม') }}</span></div>
+                <div class="message" style="top:318px;"><span class="message-head left"></span><span class="message-line dashed"></span><span class="message-label">{{ __('พร้อมให้ยืนยัน') }}</span></div>
+                <div class="message" style="top:442px;"><span class="message-line"></span><span class="message-head right"></span><span class="message-label">{{ __('ส่งต่อไปล็อกอิน') }}</span></div>
             </div>
 
             <div class="sequence-lane">
                 <div class="lifeline"></div>
-                <div class="message" style="top:558px;"><span class="message-head left"></span><span class="message-line dashed"></span><span class="message-label">แสดงฟอร์มรหัสนักศึกษา</span></div>
-                <div class="note" style="top:585px;">ผู้ใช้ยังไม่ได้ล็อกอิน</div>
+                <div class="message" style="top:558px;"><span class="message-head left"></span><span class="message-line dashed"></span><span class="message-label">{{ __('แสดงฟอร์มรหัสนักศึกษา') }}</span></div>
+                <div class="note" style="top:585px;">{{ __('ผู้ใช้ยังไม่ได้ล็อกอิน') }}</div>
             </div>
         </div>
 
-        <div class="legend" aria-label="คำอธิบายสัญลักษณ์">
-            <span><i class="legend-line"></i> คำขอ / การกระทำ</span>
-            <span><i class="legend-line legend-dashed"></i> ผลลัพธ์ / การตอบกลับ</span>
-            <span>▱ หมายเหตุหรือเงื่อนไขของระบบ</span>
+        <div class="legend" aria-label="{{ __('คำอธิบายสัญลักษณ์') }}">
+            <span><i class="legend-line"></i> {{ __('คำขอ / การกระทำ') }}</span>
+            <span><i class="legend-line legend-dashed"></i> {{ __('ผลลัพธ์ / การตอบกลับ') }}</span>
+            <span>{{ __('▱ หมายเหตุหรือเงื่อนไขของระบบ') }}</span>
         </div>
     </div>
 </div>

@@ -3,7 +3,7 @@
 @section('title', 'ผู้เข้าร่วม - ' . $activity->title)
 
 @section('content')
-<a href="{{ route('admin.activities.show', $activity->id) }}" class="text-sm text-primary">&larr; กลับ</a>
+<a href="{{ route('admin.activities.show', $activity->id) }}" class="text-sm text-primary">{{ __('&larr; กลับ') }}</a>
 <h1 class="font-bold mt-2 mb-1" style="font-size:1.25rem;">ผู้เข้าร่วม: {{ $activity->title }}</h1>
 <p class="text-muted text-sm mb-4">{{ $activity->getRegisteredCount() }}/{{ $activity->max_participants }} คน</p>
 
@@ -13,12 +13,12 @@
         <table>
             <thead>
                 <tr>
-                    <th>รหัสนักศึกษา</th>
-                    <th>ชื่อ</th>
-                    <th>คณะ</th>
-                    <th>ภาคเรียน</th>
-                    <th class="text-center">สถานะ</th>
-                    <th class="text-right">จัดการ</th>
+                    <th>{{ __('รหัสนักศึกษา') }}</th>
+                    <th>{{ __('ชื่อ') }}</th>
+                    <th>{{ __('คณะ') }}</th>
+                    <th>{{ __('ภาคเรียน') }}</th>
+                    <th class="text-center">{{ __('สถานะ') }}</th>
+                    <th class="text-right">{{ __('จัดการ') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -61,11 +61,11 @@
                         @if($reg->status === 'pending')
                         <form method="POST" action="{{ route('admin.registrations.approve', $reg->id) }}" style="display:inline;">
                             @csrf
-                            <button type="submit" class="btn btn-success btn-sm">อนุมัติ</button>
+                            <button type="submit" class="btn btn-success btn-sm">{{ __('อนุมัติ') }}</button>
                         </form>
                         <form method="POST" action="{{ route('admin.registrations.reject', $reg->id) }}" style="display:inline;">
                             @csrf
-                            <button type="submit" class="btn btn-danger btn-sm">ปฏิเสธ</button>
+                            <button type="submit" class="btn btn-danger btn-sm">{{ __('ปฏิเสธ') }}</button>
                         </form>
                         @else
                         <span class="text-muted">-</span>
@@ -103,22 +103,22 @@
                     </td>
                     <td class="text-center">
                         @if($att->status === 'approved')
-                            <span class="badge badge-green">สำเร็จ</span>
+                            <span class="badge badge-green">{{ __('สำเร็จ') }}</span>
                         @elseif($att->status === 'pending')
-                            <span class="badge badge-yellow">รอการอนุมัติ</span>
+                            <span class="badge badge-yellow">{{ __('รอการอนุมัติ') }}</span>
                         @elseif($att->status === 'rejected')
-                            <span class="badge badge-red">ถูกปฏิเสธ</span>
+                            <span class="badge badge-red">{{ __('ถูกปฏิเสธ') }}</span>
                         @endif
                     </td>
                     <td class="text-right">
                         @if($att->status === 'pending')
                         <form method="POST" action="{{ route('admin.attendances.approve', $att->id) }}" style="display:inline;">
                             @csrf
-                            <button type="submit" class="btn btn-success btn-sm">อนุมัติ</button>
+                            <button type="submit" class="btn btn-success btn-sm">{{ __('อนุมัติ') }}</button>
                         </form>
                         <form method="POST" action="{{ route('admin.attendances.reject', $att->id) }}" style="display:inline;">
                             @csrf
-                            <button type="submit" class="btn btn-danger btn-sm">ปฏิเสธ</button>
+                            <button type="submit" class="btn btn-danger btn-sm">{{ __('ปฏิเสธ') }}</button>
                         </form>
                         @else
                         <span class="text-muted">-</span>
@@ -137,8 +137,8 @@
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                             </svg>
-                            <div class="empty-state-row-title">ยังไม่มีผู้เข้าร่วมกิจกรรม</div>
-                            <div class="empty-state-row-desc">เมื่อมีนักศึกษาลงทะเบียนหรือเช็คอิน จะแสดงรายชื่อที่นี่</div>
+                            <div class="empty-state-row-title">{{ __('ยังไม่มีผู้เข้าร่วมกิจกรรม') }}</div>
+                            <div class="empty-state-row-desc">{{ __('เมื่อมีนักศึกษาลงทะเบียนหรือเช็คอิน จะแสดงรายชื่อที่นี่') }}</div>
                         </div>
                     </td>
                 </tr>

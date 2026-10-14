@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'จัดการคีย์ API')
+@section('title', __('จัดการคีย์ API'))
 
 @section('content')
 <div class="flex items-center justify-between mb-6">
@@ -7,10 +7,8 @@
         <h1 class="font-bold flex items-center gap-3" style="font-size:1.5rem; color:var(--text-main, #1e293b);">
             <svg style="width:28px; height:28px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
-            </svg>
-            จัดการคีย์ API (API Keys)
-        </h1>
-        <p class="text-sm text-muted mt-1">สร้างและจัดการกุญแจสำหรับการเข้าถึง API ของระบบ เพื่อเชื่อมต่อกับแอปพลิเคชันหรือบริการภายนอกอย่างปลอดภัย</p>
+            </svg>{{ __('จัดการคีย์ API (API Keys)') }}        </h1>
+        <p class="text-sm text-muted mt-1">{{ __('สร้างและจัดการกุญแจสำหรับการเข้าถึง API ของระบบ เพื่อเชื่อมต่อกับแอปพลิเคชันหรือบริการภายนอกอย่างปลอดภัย') }}</p>
     </div>
 </div>
 

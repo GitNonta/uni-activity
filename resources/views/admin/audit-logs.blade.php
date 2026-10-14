@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>บันทึกประวัติการใช้งาน (Audit Logs)</title>
+    <title>{{ __('บันทึกประวัติการใช้งาน (Audit Logs)') }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,14 +28,14 @@
 </head>
 <body>
 <div class="container">
-    <h1>บันทึกกิจกรรมระบบ (Audit Logs)</h1>
-    <a href="{{ route('admin.dashboard') }}" class="btn" style="background:#5a67d8;color:#fff;padding:0.5rem 1rem;border-radius:6px;margin-bottom:1rem;display:inline-block;">กลับหน้าภาพรวม</a>
+    <h1>{{ __('บันทึกกิจกรรมระบบ (Audit Logs)') }}</h1>
+    <a href="{{ route('admin.dashboard') }}" class="btn" style="background:#5a67d8;color:#fff;padding:0.5rem 1rem;border-radius:6px;margin-bottom:1rem;display:inline-block;">{{ __('กลับหน้าภาพรวม') }}</a>
     <form method="GET" class="filter-form" action="{{ route('admin.audit-logs.index') }}">
-        <input type="number" name="user_id" placeholder="รหัสผู้ใช้ (User ID)" value="{{ request('user_id') }}" min="1" />
-        <input type="text" name="action" placeholder="การกระทำ (Action)" value="{{ request('action') }}" />
+        <input type="number" name="user_id" placeholder="{{ __('รหัสผู้ใช้ (User ID)') }}" value="{{ request('user_id') }}" min="1" />
+        <input type="text" name="action" placeholder="{{ __('การกระทำ (Action)') }}" value="{{ request('action') }}" />
         <input type="date" name="date_from" value="{{ request('date_from') }}" />
         <input type="date" name="date_to" value="{{ request('date_to') }}" />
-        <button type="submit">ค้นหา / กรองข้อมูล</button>
+        <button type="submit">{{ __('ค้นหา / กรองข้อมูล') }}</button>
     </form>
     <div style="overflow-x: auto; width: 100%; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 1rem; background: #fff;">
         <table style="margin-top: 0;">
@@ -78,8 +78,8 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                 </svg>
                             </div>
-                            <div style="font-weight:600;font-size:1rem;color:#1e293b;">ไม่พบประวัติการใช้งาน (No audit logs found)</div>
-                            <div style="font-size:0.875rem;color:#64748b;">ลองเปลี่ยนเงื่อนไขการค้นหาหรือกรองข้อมูลใหม่</div>
+                            <div style="font-weight:600;font-size:1rem;color:#1e293b;">{{ __('ไม่พบประวัติการใช้งาน (No audit logs found)') }}</div>
+                            <div style="font-size:0.875rem;color:#64748b;">{{ __('ลองเปลี่ยนเงื่อนไขการค้นหาหรือกรองข้อมูลใหม่') }}</div>
                         </div>
                     </td>
                 </tr>

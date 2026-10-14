@@ -1,24 +1,22 @@
 @extends('layouts.admin')
-@section('title', 'จัดการประกาศ')
+@section('title', __('จัดการประกาศ'))
 
 @section('content')
 <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
-    <h1 class="font-bold" style="font-size:1.4rem; white-space: nowrap;">จัดการประกาศ/ข่าวสาร</h1>
+    <h1 class="font-bold" style="font-size:1.4rem; white-space: nowrap;">{{ __('จัดการประกาศ/ข่าวสาร') }}</h1>
     <a href="{{ route('admin.announcements.create') }}" class="btn btn-primary btn-sm" style="white-space: nowrap;">
-        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-        สร้างประกาศใหม่
-    </a>
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>{{ __('สร้างประกาศใหม่') }}    </a>
 </div>
 
 <form method="GET" action="{{ route('admin.announcements.index') }}" class="card mb-4">
     <div class="card-body" style="padding:.875rem 1rem;">
         <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
             <div style="flex:1;min-width:200px;">
-                <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="ค้นหาหัวข้อประกาศ...">
+                <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="{{ __('ค้นหาหัวข้อประกาศ...') }}">
             </div>
-            <button type="submit" class="btn btn-primary" style="white-space:nowrap;">ค้นหา</button>
+            <button type="submit" class="btn btn-primary" style="white-space:nowrap;">{{ __('ค้นหา') }}</button>
             @if(request('search'))
-                <a href="{{ route('admin.announcements.index') }}" class="btn btn-outline" style="white-space:nowrap;">ล้าง</a>
+                <a href="{{ route('admin.announcements.index') }}" class="btn btn-outline" style="white-space:nowrap;">{{ __('ล้าง') }}</a>
             @endif
         </div>
     </div>
@@ -29,12 +27,12 @@
         <table class="responsive-table">
             <thead>
                 <tr>
-                    <th>หัวข้อ</th>
-                    <th>กลุ่มเป้าหมาย</th>
-                    <th>ประเภท</th>
-                    <th>ผู้สร้าง</th>
-                    <th class="text-center">สถานะ</th>
-                    <th class="text-right">จัดการ</th>
+                    <th>{{ __('หัวข้อ') }}</th>
+                    <th>{{ __('กลุ่มเป้าหมาย') }}</th>
+                    <th>{{ __('ประเภท') }}</th>
+                    <th>{{ __('ผู้สร้าง') }}</th>
+                    <th class="text-center">{{ __('สถานะ') }}</th>
+                    <th class="text-right">{{ __('จัดการ') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -48,7 +46,7 @@
                         @if($item->target_faculty)
                             <span class="badge badge-orange">{{ $item->target_faculty }}</span>
                         @else
-                            <span class="badge badge-orange">ทุกคน</span>
+                            <span class="badge badge-orange">{{ __('ทุกคน') }}</span>
                         @endif
                     </td>
                     <td data-label="ประเภท">
@@ -61,7 +59,7 @@
                         @if($item->published_at?->isFuture())
                             <div class="text-xs text-muted" style="margin-bottom:.35rem;">ตั้งเวลา {{ $item->published_at->format('d/m/Y H:i') }}</div>
                         @elseif($item->published_at)
-                            <div class="text-xs text-muted" style="margin-bottom:.35rem;">เผยแพร่แล้ว</div>
+                            <div class="text-xs text-muted" style="margin-bottom:.35rem;">{{ __('เผยแพร่แล้ว') }}</div>
                         @endif
                         <form method="POST" action="{{ route('admin.announcements.toggle-active', $item->id) }}" style="margin:0;">
                             @csrf @method('PATCH')
@@ -72,10 +70,10 @@
                     </td>
                     <td data-label="จัดการ" class="text-right">
                         <div class="flex justify-end gap-2">
-                            <a href="{{ route('admin.announcements.edit', $item->id) }}" class="btn btn-outline btn-sm">แก้ไข</a>
+                            <a href="{{ route('admin.announcements.edit', $item->id) }}" class="btn btn-outline btn-sm">{{ __('แก้ไข') }}</a>
                             <form method="POST" action="{{ route('admin.announcements.destroy', $item->id) }}" onsubmit="return confirm('ยืนยันลบประกาศนี้?')" style="margin:0;">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-sm" style="background:#fee2e2;color:#b91c1c; border:none; line-height:1.5;">ลบ</button>
+                                <button type="submit" class="btn btn-sm" style="background:#fee2e2;color:#b91c1c; border:none; line-height:1.5;">{{ __('ลบ') }}</button>
                             </form>
                         </div>
                     </td>
@@ -87,8 +85,8 @@
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
                             </svg>
-                            <div class="empty-state-row-title">ยังไม่มีประกาศ</div>
-                            <div class="empty-state-row-desc">กดปุ่มสร้างประกาศใหม่เพื่อเพิ่มข้อมูล</div>
+                            <div class="empty-state-row-title">{{ __('ยังไม่มีประกาศ') }}</div>
+                            <div class="empty-state-row-desc">{{ __('กดปุ่มสร้างประกาศใหม่เพื่อเพิ่มข้อมูล') }}</div>
                         </div>
                     </td>
                 </tr>

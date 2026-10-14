@@ -9,7 +9,7 @@
     </h1>
     <a href="{{ route('admin.users.index') }}" class="btn btn-outline btn-sm" style="display:inline-flex;align-items:center;gap:.35rem;">
         <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-        <span>กลับ</span>
+        <span>{{ __('กลับ') }}</span>
     </a>
 </div>
 
@@ -21,17 +21,17 @@
 
             {{-- บทบาท (แสดงอย่างเดียว) --}}
             <div class="mb-3">
-                <label class="form-label">บทบาท</label>
+                <label class="form-label">{{ __('บทบาท') }}</label>
                 <div>
                     @if($user->role === 'staff')
                         <span class="badge-role-staff">
                             <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                            <span>เจ้าหน้าที่</span>
+                            <span>{{ __('เจ้าหน้าที่') }}</span>
                         </span>
                     @else
                         <span class="badge-role-student">
                             <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
-                            <span>นักศึกษา</span>
+                            <span>{{ __('นักศึกษา') }}</span>
                         </span>
                     @endif
                 </div>
@@ -39,17 +39,17 @@
 
             {{-- ชื่อ-สกุล --}}
             <div class="mb-3">
-                <label class="form-label">ชื่อ-สกุล <span style="color:#dc2626;">*</span></label>
+                <label class="form-label">{{ __('ชื่อ-สกุล') }} <span style="color:#dc2626;">*</span></label>
                 <input type="text" name="full_name" value="{{ old('full_name', $user->full_name) }}" class="form-control" required>
                 @error('full_name') <div class="text-xs" style="color:#dc2626;margin-top:.25rem;">{{ $message }}</div> @enderror
             </div>
 
             {{-- อีเมล --}}
             <div class="mb-3">
-                <label class="form-label">อีเมล <span style="color:#dc2626;">*</span></label>
+                <label class="form-label">{{ __('อีเมล') }} <span style="color:#dc2626;">*</span></label>
                 @if($user->role === 'student')
                     <input type="email" name="email" value="{{ old('email', $user->email) }}" class="form-control" readonly style="background:var(--surface-hover, #f8fafc);color:var(--text-muted, #64748b);">
-                    <div class="text-xs text-muted mt-1">อีเมลนักศึกษาถูกตั้งค่าอัตโนมัติตามรหัสนักศึกษา</div>
+                    <div class="text-xs text-muted mt-1">{{ __('อีเมลนักศึกษาถูกตั้งค่าอัตโนมัติตามรหัสนักศึกษา') }}</div>
                 @else
                     <input type="email" name="email" value="{{ old('email', $user->email) }}" class="form-control" required>
                 @endif
@@ -58,12 +58,12 @@
 
             {{-- เพศสภาพ --}}
             <div class="mb-3">
-                <label class="form-label">เพศ</label>
+                <label class="form-label">{{ __('เพศ') }}</label>
                 <select name="gender" class="form-control">
-                    <option value="" {{ old('gender', $user->gender) == '' ? 'selected' : '' }}>ไม่ระบุ / อื่นๆ (Neutral)</option>
-                    <option value="male" {{ old('gender', $user->gender) == 'male' ? 'selected' : '' }}>ชาย (Male)</option>
-                    <option value="female" {{ old('gender', $user->gender) == 'female' ? 'selected' : '' }}>หญิง (Female)</option>
-                    <option value="other" {{ old('gender', $user->gender) == 'other' ? 'selected' : '' }}>อื่นๆ (Other)</option>
+                    <option value="" {{ old('gender', $user->gender) == '' ? 'selected' : '' }}>{{ __('ไม่ระบุ / อื่นๆ (Neutral)') }}</option>
+                    <option value="male" {{ old('gender', $user->gender) == 'male' ? 'selected' : '' }}>{{ __('ชาย (Male)') }}</option>
+                    <option value="female" {{ old('gender', $user->gender) == 'female' ? 'selected' : '' }}>{{ __('หญิง (Female)') }}</option>
+                    <option value="other" {{ old('gender', $user->gender) == 'other' ? 'selected' : '' }}>{{ __('อื่นๆ (Other)') }}</option>
                 </select>
                 @error('gender') <div class="text-xs" style="color:#dc2626;margin-top:.25rem;">{{ $message }}</div> @enderror
             </div>
@@ -71,7 +71,7 @@
             @if($user->role === 'student')
                 {{-- รหัสนักศึกษา --}}
                 <div class="mb-3">
-                    <label class="form-label">รหัสนักศึกษา <span style="color:#dc2626;">*</span></label>
+                    <label class="form-label">{{ __('รหัสนักศึกษา') }} <span style="color:#dc2626;">*</span></label>
                     <input type="text" name="student_id" value="{{ old('student_id', $user->student_id) }}" class="form-control" required>
                     @error('student_id') <div class="text-xs" style="color:#dc2626;margin-top:.25rem;">{{ $message }}</div> @enderror
                 </div>
@@ -79,9 +79,9 @@
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
                     {{-- คณะ --}}
                     <div class="mb-3">
-                        <label class="form-label">คณะ</label>
+                        <label class="form-label">{{ __('คณะ') }}</label>
                         <select id="faculty" name="faculty" class="form-control" onchange="updateDepartments()">
-                            <option value="">เลือกคณะ</option>
+                            <option value="">{{ __('เลือกคณะ') }}</option>
                             @foreach(config('faculties') as $faculty => $deps)
                                 <option value="{{ $faculty }}" label="{{ $faculty }}" {{ old('faculty', $user->faculty) == $faculty ? 'selected' : '' }}>{{ $faculty }}</option>
                             @endforeach
@@ -91,9 +91,9 @@
 
                     {{-- สาขา --}}
                     <div class="mb-3">
-                        <label class="form-label">สาขาวิชา</label>
+                        <label class="form-label">{{ __('สาขาวิชา') }}</label>
                         <select id="department" name="department" class="form-control" disabled>
-                            <option value="">เลือกสาขาวิชา</option>
+                            <option value="">{{ __('เลือกสาขาวิชา') }}</option>
                         </select>
                         @error('department') <div class="text-xs" style="color:#dc2626;margin-top:.25rem;">{{ $message }}</div> @enderror
                     </div>
@@ -102,9 +102,9 @@
                 {{-- ชั้นปี และ ภาคเรียน --}}
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
                     <div class="mb-3">
-                        <label class="form-label">ชั้นปี</label>
+                        <label class="form-label">{{ __('ชั้นปี') }}</label>
                         <select name="year" class="form-control">
-                            <option value="">ไม่ระบุ</option>
+                            <option value="">{{ __('ไม่ระบุ') }}</option>
                             @for($i = 1; $i <= 6; $i++)
                                 <option value="{{ $i }}" {{ old('year', $user->year) == $i ? 'selected' : '' }}>ปี {{ $i }}</option>
                             @endfor
@@ -113,11 +113,11 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">ภาคเรียน</label>
+                        <label class="form-label">{{ __('ภาคเรียน') }}</label>
                         <select name="program" class="form-control">
-                            <option value="">เลือกภาคเรียน</option>
-                            <option value="ปกติ" {{ old('program', $user->program) == 'ปกติ' ? 'selected' : '' }}>ปกติ (จันทร์-ศุกร์)</option>
-                            <option value="กศ.บป." {{ old('program', $user->program) == 'กศ.บป.' ? 'selected' : '' }}>กศ.บป. (เสาร์-อาทิตย์)</option>
+                            <option value="">{{ __('เลือกภาคเรียน') }}</option>
+                            <option value="ปกติ" {{ old('program', $user->program) == 'ปกติ' ? 'selected' : '' }}>{{ __('ปกติ (จันทร์-ศุกร์)') }}</option>
+                            <option value="กศ.บป." {{ old('program', $user->program) == 'กศ.บป.' ? 'selected' : '' }}>{{ __('กศ.บป. (เสาร์-อาทิตย์)') }}</option>
                         </select>
                         @error('program') <div class="text-xs" style="color:#dc2626;margin-top:.25rem;">{{ $message }}</div> @enderror
                     </div>
@@ -126,8 +126,8 @@
 
             {{-- รหัสผ่าน (เปลี่ยนรหัสผ่าน - ไม่บังคับ) --}}
             <div class="mb-3">
-                <label class="form-label">รหัสผ่านใหม่</label>
-                <input type="password" name="password" class="form-control" placeholder="เว้นว่างถ้าไม่ต้องการเปลี่ยน">
+                <label class="form-label">{{ __('รหัสผ่านใหม่') }}</label>
+                <input type="password" name="password" class="form-control" placeholder="{{ __('เว้นว่างถ้าไม่ต้องการเปลี่ยน') }}">
                 @error('password') <div class="text-xs" style="color:#dc2626;margin-top:.25rem;">{{ $message }}</div> @enderror
             </div>
 
@@ -136,15 +136,15 @@
                 <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;">
                     <input type="hidden" name="is_active" value="0">
                     <input type="checkbox" name="is_active" value="1" {{ old('is_active', $user->is_active) ? 'checked' : '' }} style="width:18px;height:18px;">
-                    <span class="text-sm">เปิดใช้งานบัญชี</span>
+                    <span class="text-sm">{{ __('เปิดใช้งานบัญชี') }}</span>
                 </label>
             </div>
 
             <hr style="margin:1rem 0;border-color:#e2e8f0;">
 
             <div style="display:flex;gap:.5rem;justify-content:flex-end;">
-                <a href="{{ route('admin.users.index') }}" class="btn btn-outline">ยกเลิก</a>
-                <button type="submit" class="btn btn-primary">บันทึกการแก้ไข</button>
+                <a href="{{ route('admin.users.index') }}" class="btn btn-outline">{{ __('ยกเลิก') }}</a>
+                <button type="submit" class="btn btn-primary">{{ __('บันทึกการแก้ไข') }}</button>
             </div>
         </form>
     </div>
@@ -153,7 +153,7 @@
 {{-- ข้อมูลเพิ่มเติม --}}
 <div class="card mt-4">
     <div class="card-body" style="padding:1rem;">
-        <h3 class="font-semi text-sm mb-2">ข้อมูลเพิ่มเติม</h3>
+        <h3 class="font-semi text-sm mb-2">{{ __('ข้อมูลเพิ่มเติม') }}</h3>
         <div class="text-xs text-muted">
             <p>สร้างเมื่อ: {{ $user->created_at?->format('d/m/Y H:i') ?? '-' }}</p>
             <p>แก้ไขล่าสุด: {{ $user->updated_at?->format('d/m/Y H:i') ?? '-' }}</p>
@@ -173,7 +173,7 @@
         if (!facultySelect || !departmentSelect) return;
         
         const selectedFaculty = facultySelect.value;
-        departmentSelect.innerHTML = '<option value="">เลือกสาขาวิชา</option>';
+        departmentSelect.innerHTML = '<option value="">{{ __('เลือกสาขาวิชา') }}</option>';
         
         if (selectedFaculty && facultyData[selectedFaculty]) {
             departmentSelect.disabled = false;

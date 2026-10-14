@@ -1,10 +1,10 @@
 {{-- หน้าสร้างกิจกรรมใหม่ (Admin): ฟอร์มกรอกข้อมูลครบถ้วน --}}
 @extends('layouts.admin')
-@section('title', 'สร้างกิจกรรม')
+@section('title', __('สร้างกิจกรรม'))
 
 @section('content')
-<a href="{{ route('admin.activities.index') }}" class="text-sm text-primary">&larr; กลับ</a>
-<h1 class="font-bold mt-2 mb-4" style="font-size:1.5rem;">สร้างกิจกรรมใหม่</h1>
+<a href="{{ route('admin.activities.index') }}" class="text-sm text-primary">{{ __('&larr; กลับ') }}</a>
+<h1 class="font-bold mt-2 mb-4" style="font-size:1.5rem;">{{ __('สร้างกิจกรรมใหม่') }}</h1>
 
 {{-- ฟอร์มสร้างกิจกรรม: ชื่อ, รายละเอียด, สถานที่, หมวด, วัน/เวลา, ชั่วโมง, จำนวนคน, ช่วงลงทะเบียน/เช็คอิน, รูป, บังคับ --}}
 <div class="card">
@@ -12,21 +12,21 @@
         <form method="POST" action="{{ route('admin.activities.store') }}" enctype="multipart/form-data">
             @csrf
             <div class="form-group">
-                <label class="form-label">ชื่อกิจกรรม</label>
+                <label class="form-label">{{ __('ชื่อกิจกรรม') }}</label>
                 <input type="text" name="title" value="{{ old('title') }}" class="form-control" required>
                 @error('title')<p class="form-error">{{ $message }}</p>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label">รายละเอียด</label>
+                <label class="form-label">{{ __('รายละเอียด') }}</label>
                 <textarea name="description" rows="6" class="form-control">{{ old('description') }}</textarea>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">สถานที่</label>
-                    <input type="text" name="location" id="locationInput" value="{{ old('location') }}" class="form-control" required placeholder="เช่น ห้องประชุม 1 อาคารเรียนรวม" oninput="debouncedConflictCheck()">
+                    <label class="form-label">{{ __('สถานที่') }}</label>
+                    <input type="text" name="location" id="locationInput" value="{{ old('location') }}" class="form-control" required placeholder="{{ __('เช่น ห้องประชุม 1 อาคารเรียนรวม') }}" oninput="debouncedConflictCheck()">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">หมวดหมู่</label>
+                    <label class="form-label">{{ __('หมวดหมู่') }}</label>
                     <select name="category_id" class="form-control" required>
                         @foreach($categories as $cat)
                             <option value="{{ $cat->id }}" {{ old('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
@@ -36,70 +36,66 @@
             </div>
             {{-- ระดับกิจกรรม: มหาวิทยาลัย / คณะ / สาขา --}}
             <div class="form-group">
-                <label class="form-label">ระดับกิจกรรม</label>
+                <label class="form-label">{{ __('ระดับกิจกรรม') }}</label>
                 <select name="scope" id="scopeSelect" class="form-control" required onchange="toggleScopeFields()">
-                    <option value="university" {{ old('scope', 'university') == 'university' ? 'selected' : '' }}>ระดับมหาวิทยาลัย</option>
-                    <option value="faculty" {{ old('scope') == 'faculty' ? 'selected' : '' }}>ระดับคณะ</option>
-                    <option value="department" {{ old('scope') == 'department' ? 'selected' : '' }}>ระดับสาขา</option>
+                    <option value="university" {{ old('scope', 'university') == 'university' ? 'selected' : '' }}>{{ __('ระดับมหาวิทยาลัย') }}</option>
+                    <option value="faculty" {{ old('scope') == 'faculty' ? 'selected' : '' }}>{{ __('ระดับคณะ') }}</option>
+                    <option value="department" {{ old('scope') == 'department' ? 'selected' : '' }}>{{ __('ระดับสาขา') }}</option>
                 </select>
             </div>
             <div class="form-row" id="scopeDetailRow" style="display:none;">
                 <div class="form-group" id="facultyGroup">
-                    <label class="form-label">คณะ</label>
+                    <label class="form-label">{{ __('คณะ') }}</label>
                     <select name="faculty" id="facultyInput" class="form-control" onchange="updateDepartmentsScope()">
-                        <option value="">เลือกคณะ</option>
+                        <option value="">{{ __('เลือกคณะ') }}</option>
                         @foreach(config('faculties') as $faculty => $deps)
                             <option value="{{ $faculty }}" {{ old('faculty') == $faculty ? 'selected' : '' }}>{{ $faculty }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="form-group" id="departmentGroup" style="display:none;">
-                    <label class="form-label">สาขา</label>
+                    <label class="form-label">{{ __('สาขา') }}</label>
                     <select name="department" id="departmentInput" class="form-control">
-                        <option value="">เลือกสาขาวิชา</option>
+                        <option value="">{{ __('เลือกสาขาวิชา') }}</option>
                     </select>
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem;">
-                        <label class="form-label" style="margin-bottom:0;">วันที่จัดกิจกรรม</label>
+                        <label class="form-label" style="margin-bottom:0;">{{ __('วันที่จัดกิจกรรม') }}</label>
                         <label class="checkbox-label" style="margin:0; font-size:.8rem; color:#475569; font-weight:500;">
-                            <input type="checkbox" name="is_multiday" id="isMultidayCheck" value="1" onchange="toggleMultiday()" {{ old('is_multiday') ? 'checked' : '' }}> จัดหลายวัน
-                        </label>
+                            <input type="checkbox" name="is_multiday" id="isMultidayCheck" value="1" onchange="toggleMultiday()" {{ old('is_multiday') ? 'checked' : '' }}> {{ __('จัดหลายวัน') }}                        </label>
                     </div>
                     <div style="display:flex; gap:0.5rem; align-items:center;">
                         <input type="date" name="activity_date" id="activityDate" value="{{ old('activity_date') }}" class="form-control" required style="flex:1;" onchange="autoFillDates(); renderMultidaySchedule(); debouncedConflictCheck();">
-                        <span id="endDateSeparator" style="display:none;">ถึง</span>
+                        <span id="endDateSeparator" style="display:none;">{{ __('ถึง') }}</span>
                         <input type="date" name="end_date" id="endDate" value="{{ old('end_date') }}" class="form-control" style="flex:1; display:none;" onchange="renderMultidaySchedule(); debouncedConflictCheck();">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">ชั่วโมงกิจกรรม</label>
+                    <label class="form-label">{{ __('ชั่วโมงกิจกรรม') }}</label>
                     {{-- auto-calc จากเวลาเริ่ม-สิ้นสุด เว้นแต่จะติ๊ก 'ระบุเอง' --}}
                     <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem;">
                         <label class="checkbox-label" style="margin:0;font-size:.8rem;color:#475569;font-weight:500;">
-                            <input type="checkbox" id="customHoursCheck" onchange="toggleCustomHours(this)" {{ old('custom_hours') ? 'checked' : '' }}> ระบุชั่วโมงกิจกรรมเอง
-                        </label>
+                            <input type="checkbox" id="customHoursCheck" onchange="toggleCustomHours(this)" {{ old('custom_hours') ? 'checked' : '' }}> {{ __('ระบุชั่วโมงกิจกรรมเอง') }}                        </label>
                     </div>
                     <input type="number" name="activity_hours" id="activityHours"
                         value="{{ old('activity_hours', 3) }}" step="0.5" min="0.5" class="form-control"
                         {{ old('custom_hours') ? '' : 'readonly' }}
                         style="{{ old('custom_hours') ? '' : 'background:#f8fafc;color:#475569;' }}" required>
-                    <p class="text-xs text-muted" style="margin-top:.2rem;" id="hoursHint">
-                        คำนวณอัตโนมัติจากเวลาเริ่ม–สิ้นสุด
-                    </p>
+                    <p class="text-xs text-muted" style="margin-top:.2rem;" id="hoursHint">{{ __('คำนวณอัตโนมัติจากเวลาเริ่ม–สิ้นสุด') }}                    </p>
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">เวลาเริ่ม</label>
+                    <label class="form-label">{{ __('เวลาเริ่ม') }}</label>
                     <input type="time" name="start_time" id="startTime" value="{{ old('start_time', '09:00') }}" class="form-control" required onchange="autoCalcHours(); autoFillDates(); debouncedConflictCheck();">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">เวลาสิ้นสุด</label>
+                    <label class="form-label">{{ __('เวลาสิ้นสุด') }}</label>
                     <input type="time" name="end_time" id="endTime" value="{{ old('end_time', '12:00') }}" class="form-control" required onchange="autoCalcHours(); autoFillDates(); debouncedConflictCheck();">
-                    <small id="crossDayHint" class="text-muted" style="display:none; margin-top:4px;">(ข้ามวันได้)</small>
+                    <small id="crossDayHint" class="text-muted" style="display:none; margin-top:4px;">{{ __('(ข้ามวันได้)') }}</small>
                 </div>
             </div>
 
@@ -110,9 +106,7 @@
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                     </div>
                     <div style="flex:1;">
-                        <div style="font-weight:700; font-size:0.875rem; color:#991b1b;" id="conflictAlertTitle">
-                            คำเตือน: ตรวจพบการจัดกิจกรรมชนกันในสถานที่นี้!
-                        </div>
+                        <div style="font-weight:700; font-size:0.875rem; color:#991b1b;" id="conflictAlertTitle">{{ __('คำเตือน: ตรวจพบการจัดกิจกรรมชนกันในสถานที่นี้!') }}                        </div>
                         <div style="font-size:0.8rem; color:#7f1d1d; margin-top:2px;" id="conflictAlertMsg"></div>
                         <div id="conflictAlertItems" style="margin-top:0.5rem; display:grid; gap:0.4rem;"></div>
                     </div>
@@ -120,24 +114,22 @@
             </div>
             <div id="noConflictSuccessBox" style="display:none; margin-bottom:1rem; padding:0.6rem 0.85rem; border-radius:8px; background:#f0fdf4; border:1px solid #86efac;">
                 <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.8rem; color:#15803d; font-weight:500;">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                    สถานที่และช่วงเวลานี้ว่าง ไม่มีกิจกรรมอื่นทับซ้อน
-                </div>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>{{ __('สถานที่และช่วงเวลานี้ว่าง ไม่มีกิจกรรมอื่นทับซ้อน') }}                </div>
             </div>
             <div class="form-group">
-                <label class="form-label">จำนวนผู้เข้าร่วมสูงสุด</label>
+                <label class="form-label">{{ __('จำนวนผู้เข้าร่วมสูงสุด') }}</label>
                 <input type="number" name="max_participants" value="{{ old('max_participants', 50) }}" min="1" class="form-control" required>
             </div>
             <div class="form-group" style="padding:.6rem .8rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;margin-bottom:.75rem;">
-                <p class="text-xs" style="color:#16a34a;margin:0;display:flex;align-items:center;gap:0.35rem;" id="autoFillHint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.5 4.5 3 6h8c1.5-1.5 3-3.5 3-6a7 7 0 0 0-7-7z"/></svg> เลือกวันที่จัดกิจกรรมแล้วระบบจะตั้งค่าเวลาลงทะเบียน / เช็คอิน / เช็คเอาต์ ให้อัตโนมัติ</p>
+                <p class="text-xs" style="color:#16a34a;margin:0;display:flex;align-items:center;gap:0.35rem;" id="autoFillHint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.5 4.5 3 6h8c1.5-1.5 3-3.5 3-6a7 7 0 0 0-7-7z"/></svg> {{ __('เลือกวันที่จัดกิจกรรมแล้วระบบจะตั้งค่าเวลาลงทะเบียน / เช็คอิน / เช็คเอาต์ ให้อัตโนมัติ') }}</p>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">เปิดลงทะเบียน</label>
+                    <label class="form-label">{{ __('เปิดลงทะเบียน') }}</label>
                     <input type="datetime-local" name="register_open_at" id="registerOpenInput" value="{{ old('register_open_at') }}" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">ปิดลงทะเบียน</label>
+                    <label class="form-label">{{ __('ปิดลงทะเบียน') }}</label>
                     <input type="datetime-local" name="register_close_at" id="registerCloseInput" value="{{ old('register_close_at') }}" class="form-control" required>
                 </div>
             </div>
@@ -145,35 +137,34 @@
             <div id="singleDayCheckinCheckoutSection">
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label">เปิดเช็คอิน</label>
+                        <label class="form-label">{{ __('เปิดเช็คอิน') }}</label>
                         <input type="datetime-local" name="checkin_open_at" id="checkinOpenInput" value="{{ old('checkin_open_at') }}" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">ปิดเช็คอิน</label>
+                        <label class="form-label">{{ __('ปิดเช็คอิน') }}</label>
                         <input type="datetime-local" name="checkin_close_at" id="checkinCloseInput" value="{{ old('checkin_close_at') }}" class="form-control" required>
                     </div>
                 </div>
                 <div class="form-group" id="noCheckoutGroup" style="display:none; margin-bottom: 0.5rem;">
                     <label class="checkbox-label" style="margin:0; font-size:.8rem; color:#475569; font-weight:500;">
-                        <input type="checkbox" name="is_no_checkout" id="isNoCheckoutCheck" value="1" onchange="toggleNoCheckout()" {{ old('is_no_checkout') ? 'checked' : '' }}> ไม่ระบุเวลาสแกนออกงาน (บันทึกกิจกรรมได้ตลอดเวลา)
-                    </label>
+                        <input type="checkbox" name="is_no_checkout" id="isNoCheckoutCheck" value="1" onchange="toggleNoCheckout()" {{ old('is_no_checkout') ? 'checked' : '' }}> {{ __('ไม่ระบุเวลาสแกนออกงาน (บันทึกกิจกรรมได้ตลอดเวลา)') }}                    </label>
                 </div>
                 <div class="form-row" id="checkoutTimeRow">
                     <div class="form-group">
-                        <label class="form-label">เปิดบันทึกกิจกรรม (ออกงาน)</label>
+                        <label class="form-label">{{ __('เปิดบันทึกกิจกรรม (ออกงาน)') }}</label>
                         <input type="datetime-local" name="checkout_open_at" id="checkoutOpenInput" value="{{ old('checkout_open_at') }}" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">ปิดบันทึกกิจกรรม (ออกงาน)</label>
+                        <label class="form-label">{{ __('ปิดบันทึกกิจกรรม (ออกงาน)') }}</label>
                         <input type="datetime-local" name="checkout_close_at" id="checkoutCloseInput" value="{{ old('checkout_close_at') }}" class="form-control" required>
                     </div>
                 </div>
             </div>
             <div class="form-group" id="minHoursGroup" style="display:none;">
-                <label class="form-label">ชั่วโมงขั้นต่ำที่ต้องเข้าร่วมก่อนเช็คเอาต์</label>
+                <label class="form-label">{{ __('ชั่วโมงขั้นต่ำที่ต้องเข้าร่วมก่อนเช็คเอาต์') }}</label>
                 <div style="display:flex; align-items:center; gap:0.5rem;">
                     <input type="number" name="min_hours_before_checkout" id="minHoursInput" value="{{ old('min_hours_before_checkout', 0) }}" min="0" step="0.5" class="form-control" style="max-width: 150px;">
-                    <span class="text-muted text-sm">ชั่วโมง (0 = ไม่มีขั้นต่ำ, สามารถบันทึกออกงานได้ทันที)</span>
+                    <span class="text-muted text-sm">{{ __('ชั่วโมง (0 = ไม่มีขั้นต่ำ, สามารถบันทึกออกงานได้ทันที)') }}</span>
                 </div>
             </div>
 
@@ -187,24 +178,16 @@
                                 <line x1="16" y1="2" x2="16" y2="6"></line>
                                 <line x1="8" y1="2" x2="8" y2="6"></line>
                                 <line x1="3" y1="10" x2="21" y2="10"></line>
-                            </svg>
-                            กำหนดการเช็คอิน-เช็คเอาต์ และชั่วโมงกิจกรรมแยกรายวัน (Daily Schedule & Hours)
-                        </h4>
-                        <p class="text-xs text-muted" style="margin:0.25rem 0 0 0;">
-                            ระบุเวลาเปิด-ปิดเช็คอิน เช็คเอาต์ และชั่วโมงกิจกรรมสำหรับแต่ละวันของกิจกรรม
-                        </p>
+                            </svg>{{ __('กำหนดการเช็คอิน-เช็คเอาต์ และชั่วโมงกิจกรรมแยกรายวัน (Daily Schedule & Hours)') }}                        </h4>
+                        <p class="text-xs text-muted" style="margin:0.25rem 0 0 0;">{{ __('ระบุเวลาเปิด-ปิดเช็คอิน เช็คเอาต์ และชั่วโมงกิจกรรมสำหรับแต่ละวันของกิจกรรม') }}                        </p>
                     </div>
                     <div style="display:flex; align-items:center; gap:0.5rem;">
                         <button type="button" onclick="applyDay1ToAll()" class="btn btn-outline btn-sm" style="font-size:0.75rem; display:inline-flex; align-items:center; gap:0.35rem; padding:0.35rem 0.65rem;">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                            </svg>
-                            ใช้เวลาวันแรกกับทุกวัน
-                        </button>
-                        <span id="multidayTotalHoursBadge" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-size:0.75rem; font-weight:700; padding:0.35rem 0.65rem; border-radius:8px; display:inline-flex; align-items:center; gap:0.35rem;">
-                            รวมชั่วโมงกิจกรรม: <span id="multidayTotalHoursText" style="font-weight:800; font-size:0.85rem; margin-left:2px;">0</span> ชม.
-                        </span>
+                            </svg>{{ __('ใช้เวลาวันแรกกับทุกวัน') }}                        </button>
+                        <span id="multidayTotalHoursBadge" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-size:0.75rem; font-weight:700; padding:0.35rem 0.65rem; border-radius:8px; display:inline-flex; align-items:center; gap:0.35rem;">{{ __('รวมชั่วโมงกิจกรรม:') }} <span id="multidayTotalHoursText" style="font-weight:800; font-size:0.85rem; margin-left:2px;">0</span> {{ __('ชม.') }}                        </span>
                     </div>
                 </div>
 
@@ -214,39 +197,37 @@
             </div>
 
             <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #e2e8f0;">
-                <p class="font-semi text-sm mb-2">พิกัดสถานที่จัดกิจกรรม</p>
-                <p class="text-xs text-muted mb-3">คลิกบนแผนที่เพื่อปักหมุด หรือกดปุ่มตำแหน่งปัจจุบัน — นักศึกษาที่อยู่ในรัศมีจะได้รับอนุมัติอัตโนมัติ</p>
+                <p class="font-semi text-sm mb-2">{{ __('พิกัดสถานที่จัดกิจกรรม') }}</p>
+                <p class="text-xs text-muted mb-3">{{ __('คลิกบนแผนที่เพื่อปักหมุด หรือกดปุ่มตำแหน่งปัจจุบัน — นักศึกษาที่อยู่ในรัศมีจะได้รับอนุมัติอัตโนมัติ') }}</p>
                 <div style="display:flex;gap:.5rem;margin-bottom:.75rem;flex-wrap:wrap;">
                     <div style="flex:1;min-width:180px;position:relative;">
-                        <input type="text" id="mapSearch" class="form-control" placeholder="ค้นหาสถานที่..." autocomplete="off">
+                        <input type="text" id="mapSearch" class="form-control" placeholder="{{ __('ค้นหาสถานที่...') }}" autocomplete="off">
                         <div id="searchResults" class="location-search-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.1);max-height:300px;overflow-y:auto;z-index:1000;margin-top:4px;"></div>
                     </div>
                     <button type="button" class="btn btn-outline btn-sm" onclick="goToMyLocation()">
-                        <svg class="icon-sm" style="display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                        ตำแหน่งปัจจุบัน
-                    </button>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="clearPin()" style="color:#dc2626;border-color:#fca5a5;">ลบหมุด</button>
+                        <svg class="icon-sm" style="display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>{{ __('ตำแหน่งปัจจุบัน') }}                    </button>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="clearPin()" style="color:#dc2626;border-color:#fca5a5;">{{ __('ลบหมุด') }}</button>
                 </div>
                 <div id="map" style="height:350px;border-radius:8px;border:1px solid #e2e8f0;margin-bottom:.75rem;z-index:0;"></div>
                 <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude') }}">
                 <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude') }}">
                 <div class="form-row">
                     <div class="form-group" style="flex:1;">
-                        <label class="form-label">รัศมีเช็คอินอัตโนมัติ (เมตร)</label>
+                        <label class="form-label">{{ __('รัศมีเช็คอินอัตโนมัติ (เมตร)') }}</label>
                         <input type="number" name="checkin_radius" id="checkin_radius" value="{{ old('checkin_radius', 200) }}" min="10" max="5000" class="form-control" oninput="updateRadius()">
                     </div>
                     <div class="form-group" style="flex:1;">
-                        <label class="form-label">พิกัดที่เลือก</label>
-                        <input type="text" id="coordDisplay" class="form-control" readonly placeholder="ยังไม่ได้ปักหมุด" style="background:#f8fafc;color:#64748b;">
+                        <label class="form-label">{{ __('พิกัดที่เลือก') }}</label>
+                        <input type="text" id="coordDisplay" class="form-control" readonly placeholder="{{ __('ยังไม่ได้ปักหมุด') }}" style="background:#f8fafc;color:#64748b;">
                     </div>
                 </div>
             </div>
             <div class="form-group">
-                <label class="form-label">รูปภาพ</label>
+                <label class="form-label">{{ __('รูปภาพ') }}</label>
                 <input type="file" name="image" accept="image/*" class="form-control">
                 <div id="imageUploadWrap" style="display:none;margin-top:.5rem;">
                     <div class="imgup-thumb" id="imageUploadThumb">
-                        <img id="imageUploadPreview" src="" alt="ตัวอย่างรูป">
+                        <img id="imageUploadPreview" src="" alt="{{ __('ตัวอย่างรูป') }}">
                         <span class="imgup-pct" id="imageUploadPct">0%</span>
                         <div class="imgup-progress"><span id="imageUploadBarFill"></span></div>
                     </div>
@@ -254,7 +235,7 @@
                     <svg style="width:16px;height:16px;flex-shrink:0;" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                     <span id="imageUploadName" style="font-size:.78rem;font-weight:600;color:#c2410c;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></span>
                     <span id="imageUploadSize" style="font-size:.72rem;color:#ea580c;flex-shrink:0;"></span>
-                    <button type="button" onclick="clearImageSelection()" title="ลบรูปที่เลือก" style="background:transparent;border:none;color:#dc2626;cursor:pointer;padding:3px;border-radius:4px;display:flex;align-items:center;justify-content:center;" aria-label="ลบรูป">
+                    <button type="button" onclick="clearImageSelection()" title="{{ __('ลบรูปที่เลือก') }}" style="background:transparent;border:none;color:#dc2626;cursor:pointer;padding:3px;border-radius:4px;display:flex;align-items:center;justify-content:center;" aria-label="{{ __('ลบรูป') }}">
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                     </div>
@@ -262,37 +243,32 @@
             </div>
             <div class="form-group">
                 <label class="checkbox-label">
-                    <input type="checkbox" name="is_mandatory" value="1" {{ old('is_mandatory') ? 'checked' : '' }}> กิจกรรมบังคับ
-                </label>
+                    <input type="checkbox" name="is_mandatory" value="1" {{ old('is_mandatory') ? 'checked' : '' }}> {{ __('กิจกรรมบังคับ') }}                </label>
             </div>
             <div class="form-group">
                 <label class="checkbox-label">
-                    <input type="checkbox" name="allow_walkin" value="1" {{ old('allow_walkin', true) ? 'checked' : '' }}> อนุญาตให้สแกนเข้างานโดยไม่ต้องลงทะเบียนล่วงหน้า (เปิดรับ Walk-in)
-                </label>
+                    <input type="checkbox" name="allow_walkin" value="1" {{ old('allow_walkin', true) ? 'checked' : '' }}> {{ __('อนุญาตให้สแกนเข้างานโดยไม่ต้องลงทะเบียนล่วงหน้า (เปิดรับ Walk-in)') }}                </label>
             </div>
             <div class="form-group">
                 <label class="checkbox-label">
-                    <input type="checkbox" name="require_attendance_approval" value="1" {{ old('require_attendance_approval') ? 'checked' : '' }}> ต้องตรวจสอบการเช็คอิน (Manual Approval)
-                </label>
-                <p class="text-xs text-muted" style="margin-left: 1.5rem; margin-top: 0.15rem;">หากติ๊กเลือก นักศึกษาที่สแกน QR จะมีสถานะ "รอตรวจสอบ" จนกว่าผู้จัดจะกดอนุมัติ</p>
+                    <input type="checkbox" name="require_attendance_approval" value="1" {{ old('require_attendance_approval') ? 'checked' : '' }}> {{ __('ต้องตรวจสอบการเช็คอิน (Manual Approval)') }}                </label>
+                <p class="text-xs text-muted" style="margin-left: 1.5rem; margin-top: 0.15rem;">{{ __('หากติ๊กเลือก นักศึกษาที่สแกน QR จะมีสถานะ "รอตรวจสอบ" จนกว่าผู้จัดจะกดอนุมัติ') }}</p>
                 </div>
             <div class="form-group" style="padding: 1rem; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc;">
                 <label class="checkbox-label" style="font-weight: bold; margin-bottom: 0.5rem;">
-                    <input type="checkbox" name="require_face_scan" id="requireFaceScan" value="1" onchange="toggleFaceScanMethod()" {{ old('require_face_scan', true) ? 'checked' : '' }}> 
-                    บังคับสแกนใบหน้า (Face Scan Verification)
-                </label>
-                <p class="text-xs text-muted" style="margin-left: 1.5rem; margin-top: 0.15rem; margin-bottom: 1rem;">เมื่อเช็คอิน/เช็คเอาท์ นักศึกษาจะต้องถ่ายรูปหน้าเพื่อยืนยันตัวตนกับรูปในระบบ หากนำติ๊กออก ระบบจะบันทึกเวลาให้ทันทีเมื่อตำแหน่ง GPS ถูกต้อง</p>
+                    <input type="checkbox" name="require_face_scan" id="requireFaceScan" value="1" onchange="toggleFaceScanMethod()" {{ old('require_face_scan', true) ? 'checked' : '' }}> {{ __('บังคับสแกนใบหน้า (Face Scan Verification)') }}                </label>
+                <p class="text-xs text-muted" style="margin-left: 1.5rem; margin-top: 0.15rem; margin-bottom: 1rem;">{{ __('เมื่อเช็คอิน/เช็คเอาท์ นักศึกษาจะต้องถ่ายรูปหน้าเพื่อยืนยันตัวตนกับรูปในระบบ หากนำติ๊กออก ระบบจะบันทึกเวลาให้ทันทีเมื่อตำแหน่ง GPS ถูกต้อง') }}</p>
                 
                 <div id="faceScanMethodDiv" style="margin-left: 1.5rem;">
-                    <label class="form-label" style="font-size: 0.9rem;">ระบบประมวลผลใบหน้า (Face Scan Method)</label>
+                    <label class="form-label" style="font-size: 0.9rem;">{{ __('ระบบประมวลผลใบหน้า (Face Scan Method)') }}</label>
                     <select name="face_scan_method" class="form-control" style="max-width: 400px; font-size: 0.9rem;">
-                        <option value="python" {{ old('face_scan_method') == 'python' ? 'selected' : '' }}>Python AI Server (ความแม่นยำสูง, 512-d, แนะนำ)</option>
-                        <option value="js" {{ old('face_scan_method') == 'js' ? 'selected' : '' }}>Client-side FaceAPI.js (ประมวลผลบนมือถือนักศึกษา, 128-d)</option>
+                        <option value="python" {{ old('face_scan_method') == 'python' ? 'selected' : '' }}>{{ __('Python AI Server (ความแม่นยำสูง, 512-d, แนะนำ)') }}</option>
+                        <option value="js" {{ old('face_scan_method') == 'js' ? 'selected' : '' }}>{{ __('Client-side FaceAPI.js (ประมวลผลบนมือถือนักศึกษา, 128-d)') }}</option>
                     </select>
-                    <small class="text-muted" style="display: block; margin-top: 0.25rem;">* หากเลือก Python AI แต่เซิร์ฟเวอร์ตอบสนองช้า ระบบจะสลับไปใช้ Client-side JS ให้โดยอัตโนมัติ (Auto-Failover)</small>
+                    <small class="text-muted" style="display: block; margin-top: 0.25rem;">{{ __('* หากเลือก Python AI แต่เซิร์ฟเวอร์ตอบสนองช้า ระบบจะสลับไปใช้ Client-side JS ให้โดยอัตโนมัติ (Auto-Failover)') }}</small>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary btn-lg">สร้างกิจกรรม</button>
+            <button type="submit" class="btn btn-primary btn-lg">{{ __('สร้างกิจกรรม') }}</button>
         </form>
     </div>
 </div>
@@ -514,7 +490,7 @@ function updateDepartmentsScope() {
     var deptInput = document.getElementById('departmentInput');
     var selectedFaculty = facultyInput.value;
     
-    deptInput.innerHTML = '<option value="">เลือกสาขาวิชา</option>';
+    deptInput.innerHTML = '<option value="">{{ __('เลือกสาขาวิชา') }}</option>';
     
     if (selectedFaculty && facultyData[selectedFaculty]) {
         facultyData[selectedFaculty].forEach(function(dep) {
@@ -625,11 +601,11 @@ function renderMultidaySchedule() {
                     <strong class="day-card-date" style="font-size:0.85rem;">${displayDate}</strong>
                 </div>
                 <div style="display:flex; align-items:center; gap:0.4rem;">
-                    <label class="text-xs text-muted" style="margin:0; font-weight:600;">ชั่วโมงกิจกรรมวันนี้:</label>
+                    <label class="text-xs text-muted" style="margin:0; font-weight:600;">{{ __('ชั่วโมงกิจกรรมวันนี้:') }}</label>
                     <input type="number" name="days[${idx}][activity_hours]" value="${hours}" step="0.5" min="0" max="100" 
                         class="form-control day-hours-input" style="width:80px; padding:0.25rem 0.5rem; font-size:0.8rem; font-weight:700;" 
                         oninput="calculateMultidayTotalHours()" required>
-                    <span class="text-xs text-muted">ชม.</span>
+                    <span class="text-xs text-muted">{{ __('ชม.') }}</span>
                 </div>
             </div>
 
@@ -642,12 +618,10 @@ function renderMultidaySchedule() {
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>
                             <polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                        เวลาจัดกิจกรรม
-                    </div>
+                        </svg>{{ __('เวลาจัดกิจกรรม') }}                    </div>
                     <div style="display:flex; gap:0.35rem; align-items:center;">
                         <input type="time" name="days[${idx}][start_time]" value="${startTime}" class="form-control" style="font-size:0.75rem; padding:0.25rem 0.4rem;">
-                        <span class="text-muted" style="font-size:0.7rem;">ถึง</span>
+                        <span class="text-muted" style="font-size:0.7rem;">{{ __('ถึง') }}</span>
                         <input type="time" name="days[${idx}][end_time]" value="${endTime}" class="form-control" style="font-size:0.75rem; padding:0.25rem 0.4rem;">
                     </div>
                 </div>
@@ -658,9 +632,7 @@ function renderMultidaySchedule() {
                             <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
                             <polyline points="10 17 15 12 10 7"></polyline>
                             <line x1="15" y1="12" x2="3" y2="12"></line>
-                        </svg>
-                        ช่วงเวลาเช็คอิน (เข้างาน)
-                    </div>
+                        </svg>{{ __('ช่วงเวลาเช็คอิน (เข้างาน)') }}                    </div>
                     <div style="display:flex; flex-direction:column; gap:0.3rem;">
                         <input type="datetime-local" name="days[${idx}][checkin_open_at]" value="${checkinOpen}" class="form-control" style="font-size:0.75rem; padding:0.25rem 0.4rem;" onchange="syncPrimaryTimes()" required>
                         <input type="datetime-local" name="days[${idx}][checkin_close_at]" value="${checkinClose}" class="form-control" style="font-size:0.75rem; padding:0.25rem 0.4rem;" onchange="syncPrimaryTimes()" required>
@@ -673,9 +645,7 @@ function renderMultidaySchedule() {
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                             <polyline points="16 17 21 12 16 7"></polyline>
                             <line x1="21" y1="12" x2="9" y2="12"></line>
-                        </svg>
-                        ช่วงเวลาเช็คเอาต์ (ออกงาน)
-                    </div>
+                        </svg>{{ __('ช่วงเวลาเช็คเอาต์ (ออกงาน)') }}                    </div>
                     <div style="display:flex; flex-direction:column; gap:0.3rem;">
                         <input type="datetime-local" name="days[${idx}][checkout_open_at]" value="${checkoutOpen}" class="form-control" style="font-size:0.75rem; padding:0.25rem 0.4rem;" onchange="syncPrimaryTimes()">
                         <input type="datetime-local" name="days[${idx}][checkout_close_at]" value="${checkoutClose}" class="form-control" style="font-size:0.75rem; padding:0.25rem 0.4rem;" onchange="syncPrimaryTimes()">
@@ -1133,9 +1103,7 @@ function performConflictCheck() {
                             วันที่ ${c.date_display} เวลา ${c.time_display} • ผู้สร้าง: ${c.creator}
                         </div>
                     </div>
-                    <a href="${c.view_url}" target="_blank" class="btn btn-xs btn-outline" style="padding:2px 8px; font-size:0.72rem; color:#991b1b; border-color:#f87171; white-space:nowrap;">
-                        เปิดดู
-                    </a>
+                    <a href="${c.view_url}" target="_blank" class="btn btn-xs btn-outline" style="padding:2px 8px; font-size:0.72rem; color:#991b1b; border-color:#f87171; white-space:nowrap;">{{ __('เปิดดู') }}                    </a>
                 `;
                 itemsBox.appendChild(div);
             });

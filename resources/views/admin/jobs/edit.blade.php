@@ -1,13 +1,11 @@
 {{-- Admin: แก้ไขประกาศงาน --}}
 @extends('layouts.admin')
-@section('title', 'แก้ไขประกาศงาน')
+@section('title', __('แก้ไขประกาศงาน'))
 
 @section('content')
-<a href="{{ route('admin.jobs.show', $job->id) }}" class="text-sm text-primary mb-2" style="display:inline-block;">&larr; กลับรายละเอียด</a>
+<a href="{{ route('admin.jobs.show', $job->id) }}" class="text-sm text-primary mb-2" style="display:inline-block;">{{ __('&larr; กลับรายละเอียด') }}</a>
 <h1 class="font-bold mb-4 flex items-center gap-2" style="font-size:1.25rem;">
-    <svg style="width:24px;height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-    แก้ไขประกาศงาน
-</h1>
+    <svg style="width:24px;height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>{{ __('แก้ไขประกาศงาน') }}</h1>
 
 @if($errors->any())
 <div class="alert alert-error">
@@ -24,89 +22,89 @@
     <div class="card">
         <div class="card-body">
             <div class="form-group">
-                <label class="form-label">หัวข้อพาดหัวงาน *</label>
+                <label class="form-label">{{ __('หัวข้อพาดหัวงาน *') }}</label>
                 <input type="text" name="title" value="{{ old('title', $job->title) }}" class="form-control" required>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">ประเภทงาน *</label>
+                    <label class="form-label">{{ __('ประเภทงาน *') }}</label>
                     <select name="job_type" class="form-control" required>
-                        <option value="general" {{ old('job_type', $job->job_type) == 'general' ? 'selected' : '' }}>งานทั่วไป</option>
+                        <option value="general" {{ old('job_type', $job->job_type) == 'general' ? 'selected' : '' }}>{{ __('งานทั่วไป') }}</option>
                         <option value="parttime" {{ old('job_type', $job->job_type) == 'parttime' ? 'selected' : '' }}>Part-time</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">ตำแหน่งงาน *</label>
+                    <label class="form-label">{{ __('ตำแหน่งงาน *') }}</label>
                     <input type="text" name="position" value="{{ old('position', $job->position) }}" class="form-control" required>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">จำนวนรับสมัคร *</label>
+                    <label class="form-label">{{ __('จำนวนรับสมัคร *') }}</label>
                     <input type="number" name="quota" value="{{ old('quota', $job->quota) }}" min="1" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">ค่าตอบแทน</label>
+                    <label class="form-label">{{ __('ค่าตอบแทน') }}</label>
                     <input type="text" name="compensation" value="{{ old('compensation', $job->compensation) }}" class="form-control">
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">ช่วงเวลางาน</label>
+                    <label class="form-label">{{ __('ช่วงเวลางาน') }}</label>
                     <input type="text" name="work_period" value="{{ old('work_period', $job->work_period) }}" class="form-control">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">การแต่งกาย</label>
+                    <label class="form-label">{{ __('การแต่งกาย') }}</label>
                     <input type="text" name="dresscode" value="{{ old('dresscode', $job->dresscode) }}" class="form-control">
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">เพศที่รับสมัคร *</label>
+                    <label class="form-label">{{ __('เพศที่รับสมัคร *') }}</label>
                     <select name="gender" class="form-control" required>
-                        <option value="any" {{ old('gender', $job->gender) == 'any' ? 'selected' : '' }}>ไม่จำกัดเพศ</option>
-                        <option value="male" {{ old('gender', $job->gender) == 'male' ? 'selected' : '' }}>ชาย</option>
-                        <option value="female" {{ old('gender', $job->gender) == 'female' ? 'selected' : '' }}>หญิง</option>
+                        <option value="any" {{ old('gender', $job->gender) == 'any' ? 'selected' : '' }}>{{ __('ไม่จำกัดเพศ') }}</option>
+                        <option value="male" {{ old('gender', $job->gender) == 'male' ? 'selected' : '' }}>{{ __('ชาย') }}</option>
+                        <option value="female" {{ old('gender', $job->gender) == 'female' ? 'selected' : '' }}>{{ __('หญิง') }}</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">สถานที่ปฏิบัติงาน *</label>
+                    <label class="form-label">{{ __('สถานที่ปฏิบัติงาน *') }}</label>
                     <input type="text" name="location" value="{{ old('location', $job->location) }}" class="form-control" required>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">วันเริ่มงาน *</label>
+                    <label class="form-label">{{ __('วันเริ่มงาน *') }}</label>
                     <input type="date" name="start_date" value="{{ old('start_date', $job->start_date?->format('Y-m-d')) }}" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">วันสิ้นสุดงาน</label>
+                    <label class="form-label">{{ __('วันสิ้นสุดงาน') }}</label>
                     <input type="date" name="end_date" value="{{ old('end_date', $job->end_date?->format('Y-m-d')) }}" class="form-control">
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label">รายละเอียดงาน</label>
+                <label class="form-label">{{ __('รายละเอียดงาน') }}</label>
                 <textarea name="description" rows="4" class="form-control">{{ old('description', $job->description) }}</textarea>
             </div>
 
             <div class="form-group">
-                <label class="form-label">หมายเหตุ</label>
+                <label class="form-label">{{ __('หมายเหตุ') }}</label>
                 <textarea name="note" rows="2" class="form-control">{{ old('note', $job->note) }}</textarea>
             </div>
 
             <div class="form-group">
-                <label class="form-label">รูปภาพประกอบ</label>
+                <label class="form-label">{{ __('รูปภาพประกอบ') }}</label>
                 @if($job->image_path)
-                    <img src="{{ Storage::url($job->image_path) }}" alt="รูปปัจจุบัน" style="max-height:120px;border-radius:8px;margin-bottom:.5rem;">
+                    <img src="{{ Storage::url($job->image_path) }}" alt="{{ __('รูปปัจจุบัน') }}" style="max-height:120px;border-radius:8px;margin-bottom:.5rem;">
                 @endif
                 <input type="file" name="image" accept="image/*" class="form-control">
-                <small class="text-xs text-muted">อัปโหลดรูปใหม่เพื่อแทนที่</small>
+                <small class="text-xs text-muted">{{ __('อัปโหลดรูปใหม่เพื่อแทนที่') }}</small>
             </div>
 
             <hr class="divider">
@@ -114,33 +112,30 @@
             {{-- แผนที่และการค้นหา --}}
             <div class="form-group">
                 <label class="form-label flex items-center gap-1">
-                    <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                    ระบุตำแหน่งสถานที่งาน
-                </label>
+                    <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>{{ __('ระบุตำแหน่งสถานที่งาน') }}                </label>
                 
                 <div class="flex gap-2" style="margin-bottom:.5rem;">
-                    <input type="text" id="mapSearchInput" class="form-control" placeholder="พิมพ์ชื่อสถานที่เพื่อค้นหา... (เช่น มหาวิทยาลัย, ชื่อตึก, ที่อยู่)">
+                    <input type="text" id="mapSearchInput" class="form-control" placeholder="{{ __('พิมพ์ชื่อสถานที่เพื่อค้นหา... (เช่น มหาวิทยาลัย, ชื่อตึก, ที่อยู่)') }}">
                     <button type="button" id="btnMapSearch" class="btn btn-primary" style="white-space:nowrap;padding:0.5rem 1rem;font-size:0.9rem;">
-                        <svg class="icon-sm" style="display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg> ค้นหา
-                    </button>
+                        <svg class="icon-sm" style="display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg> {{ __('ค้นหา') }}                    </button>
                 </div>
-                <div id="searchResultFeedback" class="text-xs" style="color:#ef4444;display:none;margin-bottom:.5rem;">ไม่พบข้อมูลสถานที่ กรุณาลองค้นหาด้วยคำอื่น</div>
+                <div id="searchResultFeedback" class="text-xs" style="color:#ef4444;display:none;margin-bottom:.5rem;">{{ __('ไม่พบข้อมูลสถานที่ กรุณาลองค้นหาด้วยคำอื่น') }}</div>
 
                 <div id="adminJobMap" style="height:350px;border-radius:8px;border:1px solid #e2e8f0;margin:.5rem 0;"></div>
-                <p class="text-xs text-muted mb-2">เคล็ดลับ: คุณสามารถลากหมุดบนแผนที่ <svg style="width:14px;height:14px;display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> หรือกรอกพิกัดลงในช่องด้านล่างเพื่อความแม่นยำได้</p>
+                <p class="text-xs text-muted mb-2">{{ __('เคล็ดลับ: คุณสามารถลากหมุดบนแผนที่') }} <svg style="width:14px;height:14px;display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> {{ __('หรือกรอกพิกัดลงในช่องด้านล่างเพื่อความแม่นยำได้') }}</p>
                 <div class="form-row">
                     <div class="form-group" style="margin-bottom:0;">
-                        <label class="form-label" style="font-size:0.8rem;">Latitude (ละติจูด)</label>
-                        <input type="number" step="any" name="latitude" id="latInput" value="{{ old('latitude', $job->latitude) }}" class="form-control" placeholder="ตัวอย่าง: 13.75633">
+                        <label class="form-label" style="font-size:0.8rem;">{{ __('Latitude (ละติจูด)') }}</label>
+                        <input type="number" step="any" name="latitude" id="latInput" value="{{ old('latitude', $job->latitude) }}" class="form-control" placeholder="{{ __('ตัวอย่าง: 13.75633') }}">
                     </div>
                     <div class="form-group" style="margin-bottom:0;">
-                        <label class="form-label" style="font-size:0.8rem;">Longitude (ลองจิจูด)</label>
-                        <input type="number" step="any" name="longitude" id="lngInput" value="{{ old('longitude', $job->longitude) }}" class="form-control" placeholder="ตัวอย่าง: 100.50182">
+                        <label class="form-label" style="font-size:0.8rem;">{{ __('Longitude (ลองจิจูด)') }}</label>
+                        <input type="number" step="any" name="longitude" id="lngInput" value="{{ old('longitude', $job->longitude) }}" class="form-control" placeholder="{{ __('ตัวอย่าง: 100.50182') }}">
                     </div>
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-block btn-lg mt-4">บันทึกการแก้ไข</button>
+            <button type="submit" class="btn btn-primary btn-block btn-lg mt-4">{{ __('บันทึกการแก้ไข') }}</button>
         </div>
     </div>
 </form>

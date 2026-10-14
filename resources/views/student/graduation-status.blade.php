@@ -1,6 +1,6 @@
 {{-- หน้าตรวจสอบสถานะความพร้อมจบการศึกษาและ Official Transcript ฝั่งนักศึกษา --}}
 @extends('layouts.app')
-@section('title', 'ตรวจสอบสถานะการสำเร็จการศึกษา (Graduation Status)')
+@section('title', __('ตรวจสอบสถานะการสำเร็จการศึกษา (Graduation Status)'))
 
 @section('content')
 <div style="max-width:850px;margin:2rem auto;padding:0 1rem;">
@@ -11,14 +11,14 @@
                 <span style="display:inline-flex;padding:0.4rem;background:#e0e7ff;border-radius:0.5rem;color:#4338ca;">
                     <svg style="width:1.35rem;height:1.35rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
                 </span>
-                <span>สถานะกิจกรรมเพื่อการสำเร็จการศึกษา</span>
+                <span>{{ __('สถานะกิจกรรมเพื่อการสำเร็จการศึกษา') }}</span>
             </h1>
-            <p class="text-xs text-muted mt-1">เกณฑ์ชั่วโมงกิจกรรมตามโครงสร้างหลักสูตรและตรวจสอบการส่งรายชื่อฝ่ายทะเบียน</p>
+            <p class="text-xs text-muted mt-1">{{ __('เกณฑ์ชั่วโมงกิจกรรมตามโครงสร้างหลักสูตรและตรวจสอบการส่งรายชื่อฝ่ายทะเบียน') }}</p>
         </div>
         <div>
             <a href="{{ route('student.graduation.transcript') }}" target="_blank" class="btn btn-primary btn-sm flex items-center gap-1" style="padding:0.5rem 1rem;">
                 <svg style="width:1rem;height:1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                <span>พิมพ์ Official Transcript</span>
+                <span>{{ __('พิมพ์ Official Transcript') }}</span>
             </a>
         </div>
     </div>
@@ -30,7 +30,7 @@
                 <svg style="width:1.5rem;height:1.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
             </div>
             <div>
-                <h3 class="font-bold text-dark" style="font-size:1.1rem;color:#065f46;">ยินดีด้วย! คุณผ่านเกณฑ์กิจกรรมเพื่อการสำเร็จการศึกษาแล้ว</h3>
+                <h3 class="font-bold text-dark" style="font-size:1.1rem;color:#065f46;">{{ __('ยินดีด้วย! คุณผ่านเกณฑ์กิจกรรมเพื่อการสำเร็จการศึกษาแล้ว') }}</h3>
                 <p class="text-xs mt-1" style="color:#047857;line-height:1.4;">
                     คุณสะสมชั่วโมงกิจกรรมครบถ้วนตามโครงสร้างหลักสูตรและข้อบังคับมหาวิทยาลัย (รวม {{ number_format($audit['total_hours'], 1) }} / {{ number_format($audit['min_total_hours'], 0) }} ชม.) ข้อมูลของคุณพร้อมสำหรับการประมวลผลสำเร็จการศึกษาจากฝ่ายทะเบียน
                 </p>
@@ -42,7 +42,7 @@
                 <svg style="width:1.5rem;height:1.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
             </div>
             <div>
-                <h3 class="font-bold" style="font-size:1.1rem;color:#991b1b;">คุณยังไม่ผ่านเกณฑ์ชั่วโมงกิจกรรมเพื่อการสำเร็จการศึกษา</h3>
+                <h3 class="font-bold" style="font-size:1.1rem;color:#991b1b;">{{ __('คุณยังไม่ผ่านเกณฑ์ชั่วโมงกิจกรรมเพื่อการสำเร็จการศึกษา') }}</h3>
                 <p class="text-xs mt-1" style="color:#b91c1c;line-height:1.4;">
                     ขณะนี้คุณมีชั่วโมงสะสม {{ number_format($audit['total_hours'], 1) }} ชม. จากเกณฑ์ขั้นต่ำ {{ number_format($audit['min_total_hours'], 0) }} ชม. และยังขาดคุณสมบัติต่อไปนี้:
                 </p>
@@ -59,7 +59,7 @@
     <div class="card mb-4" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:0.75rem;padding:1.5rem;">
         <h3 class="font-bold text-dark text-sm mb-3 flex items-center gap-2">
             <svg style="width:1.1rem;height:1.1rem;color:#4f46e5;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-            <span>รายละเอียดความคืบหน้ารายหมวดหมู่ (Curriculum Progress)</span>
+            <span>{{ __('รายละเอียดความคืบหน้ารายหมวดหมู่ (Curriculum Progress)') }}</span>
         </h3>
 
         <div style="display:flex;flex-direction:column;gap:1rem;">

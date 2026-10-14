@@ -845,13 +845,13 @@
     {{-- Header --}}
     <header class="chat-header">
         <div class="chat-header-info">
-            <a href="{{ $job->id > 0 ? route('jobs.show', $job) : route('jobs.index') }}" class="chat-back-btn" title="ย้อนกลับ">
+            <a href="{{ $job->id > 0 ? route('jobs.show', $job) : route('jobs.index') }}" class="chat-back-btn" title="{{ __('ย้อนกลับ') }}">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </a>
             <div>
                 <h2 style="margin:0;font-size:1.05rem;font-weight:700;color:var(--chat-text-main);display:flex;align-items:center;gap:6px;">
-                    <span>แชทกับผู้ดูแล</span>
-                    <span id="staffOnlineDot" style="display:none;width:8px;height:8px;background:#10b981;border-radius:50%;box-shadow:0 0 0 2px #fff;" title="ออนไลน์"></span>
+                    <span>{{ __('แชทกับผู้ดูแล') }}</span>
+                    <span id="staffOnlineDot" style="display:none;width:8px;height:8px;background:#10b981;border-radius:50%;box-shadow:0 0 0 2px #fff;" title="{{ __('ออนไลน์') }}"></span>
                 </h2>
                 <p style="margin:0;font-size:0.8rem;color:var(--chat-text-muted);">{{ $job->title ?? 'สอบถามข้อมูลเจ้าหน้าที่' }}</p>
             </div>
@@ -875,7 +875,7 @@
         @endphp
             <div style="display:flex;align-items:center;gap:0.5rem;">
                 @if(!empty($jobDeleted))
-                    <span style="display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;color:#b45309;background:#fef3c7;border:1px solid #fcd34d;border-radius:999px;padding:2px 10px;font-weight:600;">ประกาศถูกลบ</span>
+                    <span style="display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;color:#b45309;background:#fef3c7;border:1px solid #fcd34d;border-radius:999px;padding:2px 10px;font-weight:600;">{{ __('ประกาศถูกลบ') }}</span>
                 @endif
             <span id="onlineStatusLabel" data-last-seen="{{ $staffLastSeen?->toISOString() }}" style="font-size:0.75rem;color:var(--chat-text-muted);font-weight:500;">
                 <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>{{ $offlineText }}
@@ -940,18 +940,18 @@
                     @else
                         {{ mb_strtoupper(mb_substr($senderLabel, 0, 1)) }}
                     @endif
-                    <span class="staff-avatar-online-dot" style="display:none;position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="กำลังใช้งาน"></span>
+                    <span class="staff-avatar-online-dot" style="display:none;position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="{{ __('กำลังใช้งาน') }}"></span>
                 </div>
                 @endif
 
                 @if($isMine)
                 <div class="message-actions">
                     @if($msg->id == $lastMsg?->id)
-                    <button class="msg-action-btn msg-edit-btn" onclick="editMyMessage('{{ $msg->id }}')" title="แก้ไข">
+                    <button class="msg-action-btn msg-edit-btn" onclick="editMyMessage('{{ $msg->id }}')" title="{{ __('แก้ไข') }}">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                     </button>
                     @endif
-                    <button class="msg-action-btn" onclick="deleteMyMessage('{{ $msg->id }}')" title="ลบ">
+                    <button class="msg-action-btn" onclick="deleteMyMessage('{{ $msg->id }}')" title="{{ __('ลบ') }}">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                     </button>
                 </div>
@@ -971,7 +971,7 @@
                             @endphp
                             <div class="msg-text-body">{!! $linkifiedMsg !!}</div>
                             @if($msg->is_edited)
-                                <span class="edit-badge" style="font-size:0.65rem;opacity:0.8;margin-left:4px;">(แก้ไขแล้ว)</span>
+                                <span class="edit-badge" style="font-size:0.65rem;opacity:0.8;margin-left:4px;">{{ __('(แก้ไขแล้ว)') }}</span>
                             @endif
                         @endif
                         @foreach($msg->attachments ?? [] as $att)
@@ -1005,16 +1005,14 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
                     </svg>
                 </div>
-                <div style="font-weight:600;font-size:.95rem;color:var(--text-color, #1e293b);margin-bottom:.25rem;">ยังไม่มีข้อความ</div>
-                <div style="font-size:.85rem;color:var(--chat-text-muted, #64748b);">เริ่มต้นสนทนากับผู้ดูแลระบบได้เลย</div>
+                <div style="font-weight:600;font-size:.95rem;color:var(--text-color, #1e293b);margin-bottom:.25rem;">{{ __('ยังไม่มีข้อความ') }}</div>
+                <div style="font-size:.85rem;color:var(--chat-text-muted, #64748b);">{{ __('เริ่มต้นสนทนากับผู้ดูแลระบบได้เลย') }}</div>
             </div>
         @endforelse
 
         {{-- Floating new message indicator --}}
         <div id="scrollBottomBtn" class="scroll-bottom-badge" onclick="scrollBottom(true)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
-            ข้อความใหม่
-        </div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>{{ __('ข้อความใหม่') }}        </div>
     </div>
 
     {{-- Input Area --}}
@@ -1024,26 +1022,24 @@
             <div id="attachPreview" class="preview-container" style="display:none;"></div>
             
             <div class="input-group">
-                <label class="file-label" title="แนบไฟล์ (หรือวางรูปภาพ Ctrl+V)">
+                <label class="file-label" title="{{ __('แนบไฟล์ (หรือวางรูปภาพ Ctrl+V)') }}">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
                     <input type="file" id="fileInput" name="attachments[]" multiple style="display:none;">
                 </label>
 
-                <textarea id="msgInput" name="message" rows="1" class="chat-textarea" placeholder="พิมพ์ข้อความ... (กด Enter เพื่อส่ง, วางภาพด้วย Ctrl+V)"></textarea>
+                <textarea id="msgInput" name="message" rows="1" class="chat-textarea" placeholder="{{ __('พิมพ์ข้อความ... (กด Enter เพื่อส่ง, วางภาพด้วย Ctrl+V)') }}"></textarea>
 
-                <button type="submit" id="sendBtn" class="send-btn" title="ส่งข้อความ">
+                <button type="submit" id="sendBtn" class="send-btn" title="{{ __('ส่งข้อความ') }}">
                     <svg style="width:18px;height:18px;transform:rotate(45deg);margin-left:-2px;" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                 </button>
             </div>
             <div id="typingIndicator" class="typing-bar">
-                <span>ผู้ดูแลกำลังพิมพ์...</span>
+                <span>{{ __('ผู้ดูแลกำลังพิมพ์...') }}</span>
             </div>
         </form>
         @if(!empty($jobDeleted))
         <div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:0.9rem 1rem;background:var(--chat-surface, #fff);border-top:1px solid var(--chat-border, #e2e8f0);color:#b45309;font-size:0.85rem;font-weight:500;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 5 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 5-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-            ประกาศงานนี้ถูกลบแล้ว — ดูได้เฉพาะประวัติการแชทเท่านั้น
-        </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 5 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 5-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>{{ __('ประกาศงานนี้ถูกลบแล้ว — ดูได้เฉพาะประวัติการแชทเท่านั้น') }}        </div>
         @endif
     </div>
 </div>
@@ -1292,7 +1288,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 avatarHtml = label.charAt(0).toUpperCase();
             }
-            avatarHtml += `<span class="staff-avatar-online-dot" style="display:${dotDisplay};position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="กำลังใช้งาน"></span>`;
+            avatarHtml += `<span class="staff-avatar-online-dot" style="display:${dotDisplay};position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="{{ __('กำลังใช้งาน') }}"></span>`;
         }
         
         let attachmentsHtml = '';
@@ -1320,10 +1316,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isMine && !String(msg.id).startsWith('tmp-')) {
             actionsHtml = `
                 <div class="message-actions">
-                    <button class="msg-action-btn msg-edit-btn" onclick="editMyMessage('${msg.id}')" title="แก้ไข">
+                    <button class="msg-action-btn msg-edit-btn" onclick="editMyMessage('${msg.id}')" title="{{ __('แก้ไข') }}">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                     </button>
-                    <button class="msg-action-btn" onclick="deleteMyMessage('${msg.id}')" title="ลบ">
+                    <button class="msg-action-btn" onclick="deleteMyMessage('${msg.id}')" title="{{ __('ลบ') }}">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                     </button>
                 </div>`;
@@ -1344,7 +1340,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="message-info">${label}</div>
                 <div class="message-bubble" id="bubble-${msg.id}">
                     ${safeMessage ? `<div class="msg-text-body">${safeMessage}</div>` : ''}
-                    ${msg.is_edited ? '<span class="edit-badge" style="font-size:0.65rem;opacity:0.8;margin-left:4px;">(แก้ไขแล้ว)</span>' : ''}
+                    ${msg.is_edited ? '<span class="edit-badge" style="font-size:0.65rem;opacity:0.8;margin-left:4px;">{{ __('(แก้ไขแล้ว)') }}</span>' : ''}
                     ${attachmentsHtml}
                 </div>
                 <div style="display:flex;align-items:center;gap:0.35rem;margin-top:0.25rem;">
@@ -1380,7 +1376,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const bodyEl = bubble.querySelector('.msg-text-body');
                         if (bodyEl) bodyEl.innerHTML = linkify(text, true);
                         if (!bubble.querySelector('.edit-badge')) {
-                            bubble.insertAdjacentHTML('beforeend', '<span class="edit-badge" style="font-size:0.65rem;opacity:0.8;margin-left:4px;">(แก้ไขแล้ว)</span>');
+                            bubble.insertAdjacentHTML('beforeend', '<span class="edit-badge" style="font-size:0.65rem;opacity:0.8;margin-left:4px;">{{ __('(แก้ไขแล้ว)') }}</span>');
                         }
                     }
                 }
@@ -1525,7 +1521,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const bodyEl = bubble.querySelector('.msg-text-body');
                         if (bodyEl) bodyEl.innerHTML = linkify(data.message || data.body, false);
                         if (!bubble.querySelector('.edit-badge')) {
-                            bubble.insertAdjacentHTML('beforeend', '<span class="edit-badge" style="font-size:0.65rem;opacity:0.8;margin-left:4px;">(แก้ไขแล้ว)</span>');
+                            bubble.insertAdjacentHTML('beforeend', '<span class="edit-badge" style="font-size:0.65rem;opacity:0.8;margin-left:4px;">{{ __('(แก้ไขแล้ว)') }}</span>');
                         }
                     }
                 })
@@ -1631,7 +1627,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (dot) dot.style.display = isOnline ? 'inline-block' : 'none';
                 if (label) {
                     if (isOnline) {
-                        label.innerHTML = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#059669;box-shadow:0 0 8px #059669;margin-right:5px;"></span><span style="color:#047857;font-weight:600;">กำลังใช้งาน</span>';
+                        label.innerHTML = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#059669;box-shadow:0 0 8px #059669;margin-right:5px;"></span><span style="color:#047857;font-weight:600;">{{ __('กำลังใช้งาน') }}</span>';
                     } else {
                         const lastSeen = label.getAttribute('data-last-seen');
                         label.innerHTML = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>${formatLastSeen(lastSeen)}`;

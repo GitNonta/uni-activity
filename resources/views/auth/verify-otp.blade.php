@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'ยืนยัน OTP')
+@section('title', __('ยืนยัน OTP'))
 
 @section('styles')
 <style>
@@ -14,9 +14,8 @@
 @section('content')
 <div class="auth-container" style="max-width: 400px; margin: 4rem auto; padding: 2rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
     <div style="text-align: center; margin-bottom: 2rem;">
-        <h1 style="font-size: 1.5rem; font-weight: 700;">ยืนยันรหัส OTP</h1>
-        <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.5rem; line-height: 1.5;">
-            เราได้ส่งรหัสยืนยัน 6 หลักไปที่ <br>
+        <h1 style="font-size: 1.5rem; font-weight: 700;">{{ __('ยืนยันรหัส OTP') }}</h1>
+        <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.5rem; line-height: 1.5;">{{ __('เราได้ส่งรหัสยืนยัน 6 หลักไปที่') }} <br>
             <strong>{{ $email }}</strong>
         </p>
     </div>
@@ -26,7 +25,7 @@
         <input type="hidden" name="email" value="{{ $email }}">
 
         <div class="form-group" style="margin-bottom: 1.5rem;">
-            <label for="otp" style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: #475569;">รหัส OTP 6 หลัก</label>
+            <label for="otp" style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: #475569;">{{ __('รหัส OTP 6 หลัก') }}</label>
             <div class="otp-container" style="display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1rem;">
                 @for ($i = 0; $i < 6; $i++)
                     <input type="text" name="otp_part[]" maxlength="1" pattern="[0-9]*" inputmode="numeric" required
@@ -92,14 +91,12 @@
         </div>
 
         <button type="submit" id="verifySubmitBtn" class="btn btn-primary btn-block btn-lg" style="display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;">
-            <span>ยืนยันรหัส OTP</span>
+            <span>{{ __('ยืนยันรหัส OTP') }}</span>
         </button>
     </form>
 
     <div style="text-align: center; margin-top: 2rem;">
-        <p style="font-size: 0.8125rem; color: #64748b;">
-            ไม่ได้รับรหัส? 
-            <a href="{{ route('admin.password.request') }}" style="color: #ea580c; text-decoration: none; font-weight: 500;">ส่งใหม่อีกครั้ง</a>
+        <p style="font-size: 0.8125rem; color: #64748b;">{{ __('ไม่ได้รับรหัส?') }}            <a href="{{ route('admin.password.request') }}" style="color: #ea580c; text-decoration: none; font-weight: 500;">{{ __('ส่งใหม่อีกครั้ง') }}</a>
         </p>
     </div>
 </div>

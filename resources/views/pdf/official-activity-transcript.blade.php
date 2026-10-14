@@ -227,15 +227,15 @@
                 @endif
             </td>
             <td style="text-align: center; padding: 0 8px;">
-                <div class="uni-th">มหาวิทยาลัยเวทย์มนต์และเทคโนโลยีดิจิทัล</div>
+                <div class="uni-th">{{ __('มหาวิทยาลัยเวทย์มนต์และเทคโนโลยีดิจิทัล') }}</div>
                 <div class="uni-en">Magic and Digital Technology University</div>
-                <div class="doc-title-th">ใบแสดงผลการเข้าร่วมกิจกรรมพัฒนานักศึกษาตลอดหลักสูตร</div>
+                <div class="doc-title-th">{{ __('ใบแสดงผลการเข้าร่วมกิจกรรมพัฒนานักศึกษาตลอดหลักสูตร') }}</div>
                 <div class="doc-title-en">OFFICIAL ACTIVITY TRANSCRIPT</div>
             </td>
             <td style="width: 72px; text-align: right;">
                 @if(!empty($qrCodeBase64))
                     <img src="data:image/svg+xml;base64,{{ $qrCodeBase64 }}" style="width: 64px; height: 64px; border: 1px solid #cbd5e1; padding: 1px;">
-                    <div style="font-size: 6.5pt; color: #64748b; text-align: center; margin-top: 1px;">สแกนตรวจสอบ</div>
+                    <div style="font-size: 6.5pt; color: #64748b; text-align: center; margin-top: 1px;">{{ __('สแกนตรวจสอบ') }}</div>
                 @endif
             </td>
         </tr>
@@ -249,25 +249,25 @@
             <td style="vertical-align: top;">
                 <table class="info-table">
                     <tr>
-                        <td class="info-label" style="width: 110px;">รหัสนักศึกษา:</td>
+                        <td class="info-label" style="width: 110px;">{{ __('รหัสนักศึกษา:') }}</td>
                         <td class="info-val" style="width: 140px; font-weight: bold;">{{ $student->student_id }}</td>
-                        <td class="info-label" style="width: 95px;">ชื่อ-นามสกุล:</td>
+                        <td class="info-label" style="width: 95px;">{{ __('ชื่อ-นามสกุล:') }}</td>
                         <td class="info-val" style="font-weight: bold;">{{ $student->full_name }}</td>
                     </tr>
                     <tr>
                         <td class="info-label">Student Name:</td>
                         <td class="info-val">{{ $student->english_name ?: '-' }}</td>
-                        <td class="info-label">ระดับการศึกษา:</td>
+                        <td class="info-label">{{ __('ระดับการศึกษา:') }}</td>
                         <td class="info-val">ปริญญาตรี (ชั้นปีที่ {{ $student->year ?: '-' }})</td>
                     </tr>
                     <tr>
-                        <td class="info-label">คณะ (Faculty):</td>
+                        <td class="info-label">{{ __('คณะ (Faculty):') }}</td>
                         <td class="info-val">{{ $student->faculty ?: '-' }}</td>
-                        <td class="info-label">สาขาวิชา:</td>
+                        <td class="info-label">{{ __('สาขาวิชา:') }}</td>
                         <td class="info-val">{{ $student->department ?: '-' }}</td>
                     </tr>
                     <tr>
-                        <td class="info-label">เกณฑ์หลักสูตร:</td>
+                        <td class="info-label">{{ __('เกณฑ์หลักสูตร:') }}</td>
                         <td class="info-val" colspan="3">{{ $audit['criteria']->name ?? 'เกณฑ์มาตรฐานมหาวิทยาลัย' }}</td>
                     </tr>
                 </table>
@@ -283,12 +283,12 @@
     {{-- ผลการตรวจสอบการสำเร็จการศึกษา (Graduation Audit Stamp) --}}
     @if($audit['is_eligible'])
         <div class="audit-badge-box audit-pass">
-            <div class="audit-badge-title">ผ่านเกณฑ์กิจกรรมพัฒนานักศึกษาเพื่อการสำเร็จการศึกษา (GRADUATION REQUIREMENT MET)</div>
+            <div class="audit-badge-title">{{ __('ผ่านเกณฑ์กิจกรรมพัฒนานักศึกษาเพื่อการสำเร็จการศึกษา (GRADUATION REQUIREMENT MET)') }}</div>
             <div class="audit-badge-desc">นักศึกษามีชั่วโมงกิจกรรมครบถ้วนตามเกณฑ์หลักสูตร (สะสมได้ {{ number_format($audit['total_hours'], 1) }} / เกณฑ์ {{ number_format($audit['min_total_hours'], 1) }} ชม.)</div>
         </div>
     @else
         <div class="audit-badge-box audit-fail">
-            <div class="audit-badge-title">อยู่ระหว่างการสะสมชั่วโมงกิจกรรม (IN PROGRESS - REQUIREMENT NOT YET MET)</div>
+            <div class="audit-badge-title">{{ __('อยู่ระหว่างการสะสมชั่วโมงกิจกรรม (IN PROGRESS - REQUIREMENT NOT YET MET)') }}</div>
             <div class="audit-badge-desc">
                 ชั่วโมงสะสมรวม {{ number_format($audit['total_hours'], 1) }} / เกณฑ์ {{ number_format($audit['min_total_hours'], 1) }} ชม.
                 (ยังขาดอีก {{ number_format(max(0, $audit['min_total_hours'] - $audit['total_hours']), 1) }} ชม. ให้ครบตามโครงสร้างเกณฑ์หลักสูตร)
@@ -297,14 +297,14 @@
     @endif
 
     {{-- 1. ตารางสรุปการประเมินตามโครงสร้างเกณฑ์การสำเร็จการศึกษา (Summary by Criteria) --}}
-    <div class="table-section-title">1. สรุปผลการเข้าร่วมกิจกรรมตามเกณฑ์โครงสร้างหลักสูตร (Curriculum Activity Summary)</div>
+    <div class="table-section-title">{{ __('1. สรุปผลการเข้าร่วมกิจกรรมตามเกณฑ์โครงสร้างหลักสูตร (Curriculum Activity Summary)') }}</div>
     <table class="data-table">
         <thead>
             <tr>
-                <th style="text-align: left; width: 46%;">ประเภท / หมวดหมู่กิจกรรมตามเกณฑ์</th>
-                <th style="width: 18%;">เกณฑ์ที่กำหนด (ชม.)</th>
-                <th style="width: 18%;">ชั่วโมงสะสม (ชม.)</th>
-                <th style="width: 18%;">ผลการประเมิน</th>
+                <th style="text-align: left; width: 46%;">{{ __('ประเภท / หมวดหมู่กิจกรรมตามเกณฑ์') }}</th>
+                <th style="width: 18%;">{{ __('เกณฑ์ที่กำหนด (ชม.)') }}</th>
+                <th style="width: 18%;">{{ __('ชั่วโมงสะสม (ชม.)') }}</th>
+                <th style="width: 18%;">{{ __('ผลการประเมิน') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -316,7 +316,7 @@
                 <td style="text-align: center; font-weight: bold;">{{ number_format($scope['earned'], 1) }}</td>
                 <td style="text-align: center;">
                     @if($scope['passed'])
-                        <span class="badge-pass">ผ่านเกณฑ์</span>
+                        <span class="badge-pass">{{ __('ผ่านเกณฑ์') }}</span>
                     @else
                         <span class="badge-fail">ขาด {{ number_format($scope['deficit'], 1) }} ชม.</span>
                     @endif
@@ -332,7 +332,7 @@
                 <td style="text-align: center; font-weight: bold;">{{ number_format($cat['earned'], 1) }}</td>
                 <td style="text-align: center;">
                     @if($cat['passed'])
-                        <span class="badge-pass">ผ่านเกณฑ์</span>
+                        <span class="badge-pass">{{ __('ผ่านเกณฑ์') }}</span>
                     @else
                         <span class="badge-fail">ขาด {{ number_format($cat['deficit'], 1) }} ชม.</span>
                     @endif
@@ -341,14 +341,14 @@
             @endforeach
 
             <tr class="total-row">
-                <td style="font-weight: bold;">รวมชั่วโมงกิจกรรมตลอดหลักสูตร</td>
+                <td style="font-weight: bold;">{{ __('รวมชั่วโมงกิจกรรมตลอดหลักสูตร') }}</td>
                 <td style="text-align: center; font-weight: bold;">{{ number_format($audit['min_total_hours'], 1) }}</td>
                 <td style="text-align: center; font-weight: bold; color: #1e3a8a;">{{ number_format($audit['total_hours'], 1) }}</td>
                 <td style="text-align: center;">
                     @if($audit['is_eligible'])
-                        <span class="badge-pass">ครบเกณฑ์สมบูรณ์</span>
+                        <span class="badge-pass">{{ __('ครบเกณฑ์สมบูรณ์') }}</span>
                     @else
-                        <span class="badge-fail">ยังไม่ครบเกณฑ์</span>
+                        <span class="badge-fail">{{ __('ยังไม่ครบเกณฑ์') }}</span>
                     @endif
                 </td>
             </tr>
@@ -356,14 +356,14 @@
     </table>
 
     {{-- 2. ประวัติการเข้าร่วมกิจกรรมตลอดหลักสูตร (Detailed Activity History) --}}
-    <div class="table-section-title">2. บัญชีรายการกิจกรรมที่ได้รับการรับรอง (Certified Activity Records)</div>
+    <div class="table-section-title">{{ __('2. บัญชีรายการกิจกรรมที่ได้รับการรับรอง (Certified Activity Records)') }}</div>
     <table class="data-table">
         <thead>
             <tr>
-                <th style="width: 12%;">วันที่</th>
-                <th style="text-align: left; width: 48%;">ชื่อกิจกรรม / โครงการ</th>
-                <th style="width: 24%;">หมวดหมู่ / ขอบเขต</th>
-                <th style="width: 16%;">ชั่วโมงกิจกรรม</th>
+                <th style="width: 12%;">{{ __('วันที่') }}</th>
+                <th style="text-align: left; width: 48%;">{{ __('ชื่อกิจกรรม / โครงการ') }}</th>
+                <th style="width: 24%;">{{ __('หมวดหมู่ / ขอบเขต') }}</th>
+                <th style="width: 16%;">{{ __('ชั่วโมงกิจกรรม') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -379,9 +379,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="4" style="text-align: center; color: #64748b; padding: 6px;">
-                    ยังไม่มีบันทึกประวัติการเข้าร่วมกิจกรรมที่ได้รับการอนุมัติในระบบ
-                </td>
+                <td colspan="4" style="text-align: center; color: #64748b; padding: 6px;">{{ __('ยังไม่มีบันทึกประวัติการเข้าร่วมกิจกรรมที่ได้รับการอนุมัติในระบบ') }}                </td>
             </tr>
             @endforelse
         </tbody>
@@ -391,24 +389,24 @@
     <table class="sig-table">
         <tr>
             <td>
-                <div class="sig-title">ผู้ตรวจสอบข้อมูลกิจกรรม (Audited by)</div>
+                <div class="sig-title">{{ __('ผู้ตรวจสอบข้อมูลกิจกรรม (Audited by)') }}</div>
                 @if(!empty($sig1Base64))
                     <img src="{{ $sig1Base64 }}" class="sig-img">
                 @else
                     <div class="sig-placeholder"></div>
                 @endif
-                <div class="sig-name">( อาจารย์ ดร.สมชาย ใจดี )</div>
-                <div class="sig-pos">ผู้อำนวยการกองพัฒนานักศึกษา</div>
+                <div class="sig-name">{{ __('( อาจารย์ ดร.สมชาย ใจดี )') }}</div>
+                <div class="sig-pos">{{ __('ผู้อำนวยการกองพัฒนานักศึกษา') }}</div>
             </td>
             <td>
-                <div class="sig-title">ผู้อนุมัติเอกสารและรับรองผล (Approved by)</div>
+                <div class="sig-title">{{ __('ผู้อนุมัติเอกสารและรับรองผล (Approved by)') }}</div>
                 @if(!empty($sig2Base64))
                     <img src="{{ $sig2Base64 }}" class="sig-img">
                 @else
                     <div class="sig-placeholder"></div>
                 @endif
-                <div class="sig-name">( ผู้ช่วยศาสตราจารย์ ดร.วิภาดา วิจิตรศิลป์ )</div>
-                <div class="sig-pos">รองอธิการบดีฝ่ายพัฒนานักศึกษาและศิษย์เก่าสัมพันธ์</div>
+                <div class="sig-name">{{ __('( ผู้ช่วยศาสตราจารย์ ดร.วิภาดา วิจิตรศิลป์ )') }}</div>
+                <div class="sig-pos">{{ __('รองอธิการบดีฝ่ายพัฒนานักศึกษาและศิษย์เก่าสัมพันธ์') }}</div>
             </td>
         </tr>
     </table>

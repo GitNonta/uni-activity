@@ -5,31 +5,31 @@
             <th colspan="11">รายละเอียดกิจกรรม - {{ $activity->title }}</th>
         </tr>
         <tr>
-            <th colspan="2">วันที่จัด</th>
+            <th colspan="2">{{ __('วันที่จัด') }}</th>
             <th colspan="2">{{ $activity->activity_date->format('d/m/Y') }}</th>
-            <th colspan="2">หมวดหมู่</th>
+            <th colspan="2">{{ __('หมวดหมู่') }}</th>
             <th colspan="3">{{ $activity->category->name ?? '-' }}</th>
-            <th colspan="2">สถานะ</th>
+            <th colspan="2">{{ __('สถานะ') }}</th>
         </tr>
         <tr>
-            <th colspan="2">ชั่วโมง</th>
+            <th colspan="2">{{ __('ชั่วโมง') }}</th>
             <th colspan="2">{{ $activity->activity_hours }}</th>
-            <th colspan="2">จำนวน</th>
+            <th colspan="2">{{ __('จำนวน') }}</th>
             <th colspan="3">{{ $activity->registrations->count() }}/{{ $activity->max_participants }}</th>
             <th colspan="2">{{ $activity->status }}</th>
         </tr>
         <tr>
-            <th>รหัสนักศึกษา</th>
-            <th>ชื่อ-นามสกุล</th>
-            <th>คณะ</th>
-            <th>ชั้นปี</th>
-            <th>วันที่ลงทะเบียน</th>
-            <th>วันที่เข้าร่วม</th>
-            <th>ชั่วโมง</th>
-            <th>สถานะ</th>
-            <th>เวลาเช็คอิน</th>
-            <th>คะแนนประเมิน</th>
-            <th>ความคิดเห็น</th>
+            <th>{{ __('รหัสนักศึกษา') }}</th>
+            <th>{{ __('ชื่อ-นามสกุล') }}</th>
+            <th>{{ __('คณะ') }}</th>
+            <th>{{ __('ชั้นปี') }}</th>
+            <th>{{ __('วันที่ลงทะเบียน') }}</th>
+            <th>{{ __('วันที่เข้าร่วม') }}</th>
+            <th>{{ __('ชั่วโมง') }}</th>
+            <th>{{ __('สถานะ') }}</th>
+            <th>{{ __('เวลาเช็คอิน') }}</th>
+            <th>{{ __('คะแนนประเมิน') }}</th>
+            <th>{{ __('ความคิดเห็น') }}</th>
         </tr>
     </thead>
     <tbody>
@@ -73,7 +73,7 @@
     </tbody>
     <tfoot>
         <tr>
-            <td colspan="4"><strong>สรุป</strong></td>
+            <td colspan="4"><strong>{{ __('สรุป') }}</strong></td>
             <td><strong>{{ $activity->registrations->count() }} คน</strong></td>
             <td><strong>{{ $activity->attendances->count() }} คน</strong></td>
             <td><strong>{{ $activity->attendances->sum('activity.activity_hours') }} ชม.</strong></td>

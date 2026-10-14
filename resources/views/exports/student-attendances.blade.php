@@ -5,15 +5,15 @@
             <th colspan="9">ประวัติการเข้าร่วมกิจกรรม - {{ $student->full_name }} ({{ $student->student_id }})</th>
         </tr>
         <tr>
-            <th>รหัสกิจกรรม</th>
-            <th>ชื่อกิจกรรม</th>
-            <th>หมวดหมู่</th>
-            <th>วันที่จัด</th>
-            <th>ชั่วโมง</th>
-            <th>เวลาเช็คอิน</th>
-            <th>สถานะ</th>
-            <th>หมายเหตุ</th>
-            <th>บันทึกเมื่อ</th>
+            <th>{{ __('รหัสกิจกรรม') }}</th>
+            <th>{{ __('ชื่อกิจกรรม') }}</th>
+            <th>{{ __('หมวดหมู่') }}</th>
+            <th>{{ __('วันที่จัด') }}</th>
+            <th>{{ __('ชั่วโมง') }}</th>
+            <th>{{ __('เวลาเช็คอิน') }}</th>
+            <th>{{ __('สถานะ') }}</th>
+            <th>{{ __('หมายเหตุ') }}</th>
+            <th>{{ __('บันทึกเมื่อ') }}</th>
         </tr>
     </thead>
     <tbody>
@@ -47,7 +47,7 @@
     </tbody>
     <tfoot>
         <tr>
-            <td colspan="4"><strong>รวมทั้งหมด</strong></td>
+            <td colspan="4"><strong>{{ __('รวมทั้งหมด') }}</strong></td>
             <td><strong>{{ $attendances->sum('activity.activity_hours') }} ชั่วโมง</strong></td>
             <td colspan="4"><strong>{{ $attendances->count() }} กิจกรรม</strong></td>
         </tr>

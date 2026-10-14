@@ -148,7 +148,7 @@
     </style>
 </head>
 <body>
-    <button class="theme-toggle" type="button" onclick="toggleTheme()" aria-label="สลับธีมสี">
+    <button class="theme-toggle" type="button" onclick="toggleTheme()" aria-label="{{ __('สลับธีมสี') }}">
         <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path stroke-linecap="round" d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3l1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3l1.42-1.42"/></svg>
         <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="display:none"><path stroke-linecap="round" stroke-linejoin="round" d="M20.8 15.2A8.5 8.5 0 0 1 8.8 3.2 8.5 8.5 0 1 0 20.8 15.2Z"/></svg>
     </button>
@@ -198,34 +198,26 @@
             </div>
 
             <div class="content">
-                <p class="eyebrow">UniActivity · ศูนย์รวมกิจกรรม</p>
+                <p class="eyebrow">{{ __('UniActivity · ศูนย์รวมกิจกรรม') }}</p>
                 <p class="status" aria-label="รหัสข้อผิดพลาด {{ $code }}">{{ $code }}</p>
                 <h1 id="error-title">{{ $title }}</h1>
                 <p class="message">{{ $message }}</p>
                 <div class="actions">
                     @if ($code === '419')
                         <a class="button button-primary" href="{{ url('/login') }}">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5m5 5H3"/></svg>
-                            เข้าสู่ระบบใหม่
-                        </a>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5m5 5H3"/></svg>{{ __('เข้าสู่ระบบใหม่') }}                        </a>
                     @elseif ($code === '500' || $code === '503')
                         <button class="button button-primary" type="button" onclick="location.reload()">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M5 9a7 7 0 0 1 12-3l2 3M19 15a7 7 0 0 1-12 3l-2-3"/></svg>
-                            ลองใหม่อีกครั้ง
-                        </button>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M5 9a7 7 0 0 1 12-3l2 3M19 15a7 7 0 0 1-12 3l-2-3"/></svg>{{ __('ลองใหม่อีกครั้ง') }}                        </button>
                     @else
                         <a class="button button-primary" href="{{ url('/') }}">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V10Z"/></svg>
-                            กลับหน้าหลัก
-                        </a>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V10Z"/></svg>{{ __('กลับหน้าหลัก') }}                        </a>
                     @endif
                     <button class="button button-secondary" type="button" onclick="goBack()">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5m7 7-7-7 7-7"/></svg>
-                        ย้อนกลับ
-                    </button>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5m7 7-7-7 7-7"/></svg>{{ __('ย้อนกลับ') }}                    </button>
                 </div>
             </div>
-            <p class="footer">ระบบกิจกรรมนักศึกษา · ค้นหา ลงทะเบียน และร่วมกิจกรรม</p>
+            <p class="footer">{{ __('ระบบกิจกรรมนักศึกษา · ค้นหา ลงทะเบียน และร่วมกิจกรรม') }}</p>
         </section>
     </main>
 

@@ -1,22 +1,20 @@
 {{-- หน้ารายชื่อนักศึกษาทั้งหมด (Admin): ค้นหา + กรอง + active badges + progress bar + quick export --}}
 @extends('layouts.admin')
-@section('title', 'จัดการนักศึกษา')
+@section('title', __('จัดการนักศึกษา'))
 
 @section('content')
 <div class="flex items-center justify-between mb-4" style="flex-wrap:wrap;gap:.75rem;">
     <div>
-        <h1 class="font-bold" style="font-size:1.4rem;">จัดการนักศึกษา</h1>
-        <p class="text-sm text-muted">นักศึกษาทั้งหมด <strong>{{ $students->total() }}</strong> คน
+        <h1 class="font-bold" style="font-size:1.4rem;">{{ __('จัดการนักศึกษา') }}</h1>
+        <p class="text-sm text-muted">{{ __('นักศึกษาทั้งหมด') }} <strong>{{ $students->total() }}</strong> คน
             @if(request()->anyFilled(['search','faculty','department','year','program','completion']))
-                <span style="color:#f97316;font-weight:600;">(กรองแล้ว)</span>
+                <span style="color:#f97316;font-weight:600;">{{ __('(กรองแล้ว)') }}</span>
             @endif
         </p>
     </div>
     <div style="display:flex; align-items:center; gap:0.5rem;">
         <a href="{{ route('admin.students.import') }}" class="btn btn-primary btn-sm" style="background:#4f46e5; border-color:#4f46e5; display:inline-flex; align-items:center; gap:4px;">
-            <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-            นำเข้านักศึกษา (Import)
-        </a>
+            <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>{{ __('นำเข้านักศึกษา (Import)') }}        </a>
 
         {{-- Quick Export Button --}}
         <form method="POST" action="{{ route('admin.exports.students') }}" style="display:inline;">
@@ -55,9 +53,7 @@
         <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
     </a>
     @endforeach
-    <a href="{{ route('admin.students.index') }}" style="display:inline-flex;align-items:center;gap:4px;background:#e2e8f0;color:#334155;border-radius:999px;padding:4px 12px;font-size:.78rem;text-decoration:none;line-height:1.5;">
-        ล้างทั้งหมด ×
-    </a>
+    <a href="{{ route('admin.students.index') }}" style="display:inline-flex;align-items:center;gap:4px;background:#e2e8f0;color:#334155;border-radius:999px;padding:4px 12px;font-size:.78rem;text-decoration:none;line-height:1.5;">{{ __('ล้างทั้งหมด ×') }}    </a>
 </div>
 @endif
 
@@ -66,56 +62,56 @@
     <div class="card-body" style="padding:.875rem 1rem;">
         <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:flex-end;">
             <div style="flex:1;min-width:180px;">
-                <label class="form-label" style="font-size:.8rem;">ค้นหา</label>
-                <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="ชื่อ, รหัสนักศึกษา, คณะ, สาขา...">
+                <label class="form-label" style="font-size:.8rem;">{{ __('ค้นหา') }}</label>
+                <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="{{ __('ชื่อ, รหัสนักศึกษา, คณะ, สาขา...') }}">
             </div>
             <div style="min-width:140px;">
-                <label class="form-label" style="font-size:.8rem;">คณะ</label>
+                <label class="form-label" style="font-size:.8rem;">{{ __('คณะ') }}</label>
                 <select name="faculty" class="form-control">
-                    <option value="">ทุกคณะ</option>
+                    <option value="">{{ __('ทุกคณะ') }}</option>
                     @foreach($faculties as $f)
                         <option value="{{ $f }}" {{ request('faculty') == $f ? 'selected' : '' }}>{{ $f }}</option>
                     @endforeach
                 </select>
             </div>
             <div style="min-width:150px;">
-                <label class="form-label" style="font-size:.8rem;">สาขา</label>
+                <label class="form-label" style="font-size:.8rem;">{{ __('สาขา') }}</label>
                 <select name="department" class="form-control">
-                    <option value="">ทุกสาขา</option>
+                    <option value="">{{ __('ทุกสาขา') }}</option>
                     @foreach($departments as $d)
                         <option value="{{ $d }}" {{ request('department') == $d ? 'selected' : '' }}>{{ $d }}</option>
                     @endforeach
                 </select>
             </div>
             <div style="min-width:100px;">
-                <label class="form-label" style="font-size:.8rem;">ชั้นปี</label>
+                <label class="form-label" style="font-size:.8rem;">{{ __('ชั้นปี') }}</label>
                 <select name="year" class="form-control">
-                    <option value="">ทุกปี</option>
+                    <option value="">{{ __('ทุกปี') }}</option>
                     @foreach($years as $y)
                         <option value="{{ $y }}" {{ request('year') == $y ? 'selected' : '' }}>ปี {{ $y }}</option>
                     @endforeach
                 </select>
             </div>
             <div style="min-width:130px;">
-                <label class="form-label" style="font-size:.8rem;">ภาคเรียน</label>
+                <label class="form-label" style="font-size:.8rem;">{{ __('ภาคเรียน') }}</label>
                 <select name="program" class="form-control">
-                    <option value="">ทุกภาคเรียน</option>
+                    <option value="">{{ __('ทุกภาคเรียน') }}</option>
                     @foreach($programs as $p)
                         <option value="{{ $p }}" {{ request('program') == $p ? 'selected' : '' }}>{{ $p }}</option>
                     @endforeach
                 </select>
             </div>
             <div style="min-width:130px;">
-                <label class="form-label" style="font-size:.8rem;">ชั่วโมง</label>
+                <label class="form-label" style="font-size:.8rem;">{{ __('ชั่วโมง') }}</label>
                 <select name="completion" class="form-control">
-                    <option value="">ทุกสถานะ</option>
-                    <option value="complete"   {{ request('completion') === 'complete'   ? 'selected' : '' }}>ครบตามเกณฑ์</option>
-                    <option value="incomplete" {{ request('completion') === 'incomplete' ? 'selected' : '' }}>ยังไม่ครบเกณฑ์</option>
+                    <option value="">{{ __('ทุกสถานะ') }}</option>
+                    <option value="complete"   {{ request('completion') === 'complete'   ? 'selected' : '' }}>{{ __('ครบตามเกณฑ์') }}</option>
+                    <option value="incomplete" {{ request('completion') === 'incomplete' ? 'selected' : '' }}>{{ __('ยังไม่ครบเกณฑ์') }}</option>
                 </select>
             </div>
-            <button type="submit" class="btn btn-primary">ค้นหา</button>
+            <button type="submit" class="btn btn-primary">{{ __('ค้นหา') }}</button>
             @if(request()->anyFilled(['search','faculty','department','year','program','completion']))
-                <a href="{{ route('admin.students.index') }}" class="btn btn-outline">ล้าง</a>
+                <a href="{{ route('admin.students.index') }}" class="btn btn-outline">{{ __('ล้าง') }}</a>
             @endif
         </div>
     </div>
@@ -127,10 +123,10 @@
         <table>
             <thead>
                 <tr>
-                    <th>นักศึกษา</th>
-                    <th>คณะ / สาขา / ปี</th>
-                    <th style="text-align:center;min-width:140px;">ชั่วโมง</th>
-                    <th style="text-align:center;">กิจกรรม</th>
+                    <th>{{ __('นักศึกษา') }}</th>
+                    <th>{{ __('คณะ / สาขา / ปี') }}</th>
+                    <th style="text-align:center;min-width:140px;">{{ __('ชั่วโมง') }}</th>
+                    <th style="text-align:center;">{{ __('กิจกรรม') }}</th>
                     <th style="text-align:right;"></th>
                 </tr>
             </thead>
@@ -163,7 +159,7 @@
                     </td>
                     <td style="text-align:center;">
                         <div style="font-weight:700;font-size:1rem;color:{{ $barColor }};">
-                            {{ number_format($hrs, 1) }} <span class="text-xs text-muted" style="font-weight:400;">ชม.</span>
+                            {{ number_format($hrs, 1) }} <span class="text-xs text-muted" style="font-weight:400;">{{ __('ชม.') }}</span>
                         </div>
                         {{-- Mini Progress Bar --}}
                         <div style="background:#e2e8f0;border-radius:999px;height:5px;width:90px;margin:.25rem auto;">
@@ -176,9 +172,7 @@
                     <td style="text-align:center;" class="text-sm">{{ $student->approved_count }}</td>
                     <td style="text-align:right;">
                         <a href="{{ route('admin.students.show', $student->id) }}" class="btn btn-outline btn-sm">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                            จัดการ
-                        </a>
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>{{ __('จัดการ') }}                        </a>
                     </td>
                 </tr>
                 @empty
@@ -188,8 +182,8 @@
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                             </svg>
-                            <div class="empty-state-row-title">ไม่พบนักศึกษา</div>
-                            <div class="empty-state-row-desc">ลองเปลี่ยนเงื่อนไขการค้นหา หรือนำเข้านักศึกษาใหม่</div>
+                            <div class="empty-state-row-title">{{ __('ไม่พบนักศึกษา') }}</div>
+                            <div class="empty-state-row-desc">{{ __('ลองเปลี่ยนเงื่อนไขการค้นหา หรือนำเข้านักศึกษาใหม่') }}</div>
                         </div>
                     </td>
                 </tr>

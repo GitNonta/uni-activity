@@ -1,14 +1,14 @@
 {{-- หน้าลืมรหัสผ่านสำหรับ Staff --}}
 @extends('layouts.app')
-@section('title', 'ลืมรหัสผ่าน')
+@section('title', __('ลืมรหัสผ่าน'))
 
 @section('content')
 <div class="container" style="max-width:400px;margin:2rem auto;">
     <div class="card">
         <div class="card-body" style="padding:2rem;">
             <div style="text-align:center;margin-bottom:1.5rem;">
-                <h1 style="font-size:1.5rem;font-weight:700;margin-bottom:.5rem;line-height:1.5;">ลืมรหัสผ่าน</h1>
-                <p class="text-muted" style="font-size:.9rem;line-height:1.5;">กรอกอีเมลเพื่อรับลิงก์รีเซ็ตรหัสผ่าน</p>
+                <h1 style="font-size:1.5rem;font-weight:700;margin-bottom:.5rem;line-height:1.5;">{{ __('ลืมรหัสผ่าน') }}</h1>
+                <p class="text-muted" style="font-size:.9rem;line-height:1.5;">{{ __('กรอกอีเมลเพื่อรับลิงก์รีเซ็ตรหัสผ่าน') }}</p>
             </div>
 
             @if(session('status'))
@@ -21,7 +21,7 @@
                 @csrf
 
                 <div style="margin-bottom:1.5rem;">
-                    <label for="email" class="form-label">อีเมล</label>
+                    <label for="email" class="form-label">{{ __('อีเมล') }}</label>
                     <input type="email" id="email" name="email" class="form-control" 
                         value="{{ old('email') }}" 
                         placeholder="staff@example.com" 
@@ -32,15 +32,11 @@
                 </div>
 
                 <div style="margin-bottom:1rem;">
-                    <button type="submit" class="btn btn-primary btn-block" style="padding:.75rem;">
-                        ส่งลิงก์รีเซ็ตรหัสผ่าน
-                    </button>
+                    <button type="submit" class="btn btn-primary btn-block" style="padding:.75rem;">{{ __('ส่งลิงก์รีเซ็ตรหัสผ่าน') }}                    </button>
                 </div>
 
                 <div style="text-align:center;">
-                    <a href="{{ route('admin.login') }}" style="color:#64748b;font-size:.9rem;">
-                        &larr; กลับไปหน้าเข้าสู่ระบบ
-                    </a>
+                    <a href="{{ route('admin.login') }}" style="color:#64748b;font-size:.9rem;">{{ __('&larr; กลับไปหน้าเข้าสู่ระบบ') }}                    </a>
                 </div>
             </form>
         </div>

@@ -1,9 +1,9 @@
 {{-- หน้ามอนิเตอร์เช็คอิน (Admin): QR URL + เช็คอิน manual + รายชื่อผู้เช็คอินแล้ว --}}
 @extends('layouts.admin')
-@section('title', 'Monitor Check-in')
+@section('title', __('Monitor Check-in'))
 
 @section('content')
-<a href="{{ route('admin.activities.show', $activity->id) }}" class="text-sm text-primary">&larr; กลับ</a>
+<a href="{{ route('admin.activities.show', $activity->id) }}" class="text-sm text-primary">{{ __('&larr; กลับ') }}</a>
 <h1 class="font-bold mt-2 mb-1" style="font-size:1.25rem;">Monitor Check-in</h1>
 <p class="text-muted text-sm mb-4">{{ $activity->title }}</p>
 
@@ -11,37 +11,37 @@
     <div>
         {{-- QR Check-in URL สำหรับให้นักศึกษาสแกน --}}
         <div class="card mb-4">
-            <div class="card-header" style="background:#dcfce7;color:#166534;">QR สำหรับ "เข้างาน"</div>
+            <div class="card-header" style="background:#dcfce7;color:#166534;">{{ __('QR สำหรับ "เข้างาน"') }}</div>
             <div class="card-body text-center">
                 <code class="text-sm" style="word-break:break-all;">{{ url('/check-in/' . $activity->qr_token) }}</code>
-                <p class="text-xs text-muted mt-2">แสดง QR Code เพื่อเช็คอินเข้างาน (QR ที่ 1)</p>
+                <p class="text-xs text-muted mt-2">{{ __('แสดง QR Code เพื่อเช็คอินเข้างาน (QR ที่ 1)') }}</p>
                 <form method="POST" action="{{ route('admin.activities.regenerate-qr', $activity->id) }}" class="mt-3">
                     @csrf
-                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('ยืนยันสร้าง QR เข้างานใหม่? QR เดิมจะใช้งานไม่ได้ทันที')">สร้าง QR เข้างานใหม่</button>
+                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('ยืนยันสร้าง QR เข้างานใหม่? QR เดิมจะใช้งานไม่ได้ทันที')">{{ __('สร้าง QR เข้างานใหม่') }}</button>
                 </form>
             </div>
         </div>
 
         {{-- QR Check-out URL สำหรับให้นักศึกษาสแกน --}}
         <div class="card mb-4">
-            <div class="card-header" style="background:#ffedd5;color:#9a3412;">QR สำหรับ "ออกงาน (รับชั่วโมง)"</div>
+            <div class="card-header" style="background:#ffedd5;color:#9a3412;">{{ __('QR สำหรับ "ออกงาน (รับชั่วโมง)"') }}</div>
             <div class="card-body text-center">
                 <code class="text-sm" style="word-break:break-all;">{{ url('/check-in/' . $activity->qr_checkout_token) }}</code>
-                <p class="text-xs text-muted mt-2">แสดง QR Code เพื่อบันทึกออกงานและรับชั่วโมง (QR ที่ 2)</p>
+                <p class="text-xs text-muted mt-2">{{ __('แสดง QR Code เพื่อบันทึกออกงานและรับชั่วโมง (QR ที่ 2)') }}</p>
                 <form method="POST" action="{{ route('admin.activities.regenerate-checkout-qr', $activity->id) }}" class="mt-3">
                     @csrf
-                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('ยืนยันสร้าง QR ออกงานใหม่? QR เดิมจะใช้งานไม่ได้ทันที')">สร้าง QR ออกงานใหม่</button>
+                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('ยืนยันสร้าง QR ออกงานใหม่? QR เดิมจะใช้งานไม่ได้ทันที')">{{ __('สร้าง QR ออกงานใหม่') }}</button>
                 </form>
             </div>
         </div>
         {{-- ฟอร์มเช็คอิน manual: กรอกรหัสนักศึกษาเพื่อเช็คอินให้ --}}
         <div class="card">
-            <div class="card-header">เช็คอินด้วยตนเอง</div>
+            <div class="card-header">{{ __('เช็คอินด้วยตนเอง') }}</div>
             <div class="card-body">
                 <form method="POST" action="{{ route('admin.activities.manual-checkin', $activity->id) }}" class="flex gap-2">
                     @csrf
-                    <input type="text" name="student_id" placeholder="รหัสนักศึกษา" class="form-control flex-1" style="text-align:center;letter-spacing:2px;" required>
-                    <button type="submit" class="btn btn-success">เช็คอิน</button>
+                    <input type="text" name="student_id" placeholder="{{ __('รหัสนักศึกษา') }}" class="form-control flex-1" style="text-align:center;letter-spacing:2px;" required>
+                    <button type="submit" class="btn btn-success">{{ __('เช็คอิน') }}</button>
                 </form>
             </div>
         </div>
@@ -72,11 +72,11 @@
                     <div class="flex gap-1">
                         <form method="POST" action="{{ route('admin.attendances.approve', $att->id) }}">
                             @csrf
-                            <button type="submit" class="btn btn-success btn-sm">อนุมัติ</button>
+                            <button type="submit" class="btn btn-success btn-sm">{{ __('อนุมัติ') }}</button>
                         </form>
                         <form method="POST" action="{{ route('admin.attendances.reject', $att->id) }}">
                             @csrf
-                            <button type="submit" class="btn btn-danger btn-sm">ปฏิเสธ</button>
+                            <button type="submit" class="btn btn-danger btn-sm">{{ __('ปฏิเสธ') }}</button>
                         </form>
                     </div>
                 </div>
@@ -111,14 +111,14 @@
                                 <img src="{{ $att->user->profile_photo ? asset('storage/' . $att->user->profile_photo) : '' }}" 
                                      style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #cbd5e1;" 
                                      alt="Profile">
-                                <p class="text-xs text-muted mt-1">รูปโปรไฟล์</p>
+                                <p class="text-xs text-muted mt-1">{{ __('รูปโปรไฟล์') }}</p>
                             </div>
                             <div style="font-size:1.5rem;color:#94a3b8;">&larr;&rarr;</div>
                             <div style="text-align:center;">
                                 <img src="{{ asset('storage/' . $att->selfie_photo_path) }}" 
                                      style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #ef4444;" 
                                      alt="Selfie">
-                                <p class="text-xs text-muted mt-1" style="color:#ef4444;">Selfie ที่ถ่าย</p>
+                                <p class="text-xs text-muted mt-1" style="color:#ef4444;">{{ __('Selfie ที่ถ่าย') }}</p>
                             </div>
                         </div>
                     </div>
@@ -126,12 +126,12 @@
                         <form method="POST" action="{{ route('admin.attendances.review-selfie', $att->id) }}">
                             @csrf
                             <input type="hidden" name="action" value="approve">
-                            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('ยืนยันว่ารูปตรงกัน (อนุมัติ)?')">ใช่, คนเดียวกัน</button>
+                            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('ยืนยันว่ารูปตรงกัน (อนุมัติ)?')">{{ __('ใช่, คนเดียวกัน') }}</button>
                         </form>
                         <form method="POST" action="{{ route('admin.attendances.review-selfie', $att->id) }}">
                             @csrf
                             <input type="hidden" name="action" value="reject">
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('ยืนยันว่ารูปไม่ตรงกัน (ปฏิเสธการเช็คอิน)?')">ไม่ใช่, ปฏิเสธ</button>
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('ยืนยันว่ารูปไม่ตรงกัน (ปฏิเสธการเช็คอิน)?')">{{ __('ไม่ใช่, ปฏิเสธ') }}</button>
                         </form>
                     </div>
                 </div>
@@ -172,8 +172,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
                     </svg>
                 </div>
-                <p class="empty-state-title">ยังไม่มีการเช็คอิน</p>
-                <p class="empty-state-desc">รอการเช็คอินจากนักศึกษา หน้านี้จะอัปเดต real-time อัตโนมัติ</p>
+                <p class="empty-state-title">{{ __('ยังไม่มีการเช็คอิน') }}</p>
+                <p class="empty-state-desc">{{ __('รอการเช็คอินจากนักศึกษา หน้านี้จะอัปเดต real-time อัตโนมัติ') }}</p>
             </div>
             @endforelse
         </div>

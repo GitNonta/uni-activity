@@ -1,35 +1,29 @@
 {{-- หน้าปฏิทินกิจกรรม — FullCalendar.js --}}
 @extends('layouts.app')
-@section('title', 'ปฏิทินกิจกรรม')
+@section('title', __('ปฏิทินกิจกรรม'))
 
 @section('content')
 <div class="flex items-center justify-between mb-4">
     <div>
-        <h1 class="font-bold" style="font-size:1.5rem;">ปฏิทินกิจกรรม</h1>
-        <p class="text-sm text-muted">คลิกกิจกรรมเพื่อดูรายละเอียด</p>
+        <h1 class="font-bold" style="font-size:1.5rem;">{{ __('ปฏิทินกิจกรรม') }}</h1>
+        <p class="text-sm text-muted">{{ __('คลิกกิจกรรมเพื่อดูรายละเอียด') }}</p>
     </div>
     <a href="{{ route('student.my') }}" class="btn btn-outline btn-sm">
         <svg style="width:14px;height:14px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-        </svg>
-        กิจกรรมของฉัน
-    </a>
+        </svg>{{ __('กิจกรรมของฉัน') }}    </a>
 </div>
 
 {{-- Legend --}}
 <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem;">
     <div style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--text-muted, #475569);">
-        <span style="width:12px;height:12px;border-radius:3px;background:#f97316;display:inline-block;flex-shrink:0;"></span> ลงทะเบียนแล้ว
-    </div>
+        <span style="width:12px;height:12px;border-radius:3px;background:#f97316;display:inline-block;flex-shrink:0;"></span> {{ __('ลงทะเบียนแล้ว') }}    </div>
     <div style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--text-muted, #475569);">
-        <span style="width:12px;height:12px;border-radius:3px;background:#16a34a;display:inline-block;flex-shrink:0;"></span> เช็คอินแล้ว
-    </div>
+        <span style="width:12px;height:12px;border-radius:3px;background:#16a34a;display:inline-block;flex-shrink:0;"></span> {{ __('เช็คอินแล้ว') }}    </div>
     <div style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--text-muted, #475569);">
-        <span style="width:12px;height:12px;border-radius:3px;background:#0ea5e9;display:inline-block;flex-shrink:0;"></span> เปิดรับสมัคร
-    </div>
+        <span style="width:12px;height:12px;border-radius:3px;background:#0ea5e9;display:inline-block;flex-shrink:0;"></span> {{ __('เปิดรับสมัคร') }}    </div>
     <div style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--text-muted, #475569);">
-        <span style="width:12px;height:12px;border-radius:3px;background:#94a3b8;display:inline-block;flex-shrink:0;"></span> อื่นๆ
-    </div>
+        <span style="width:12px;height:12px;border-radius:3px;background:#94a3b8;display:inline-block;flex-shrink:0;"></span> {{ __('อื่นๆ') }}    </div>
 </div>
 
 {{-- FullCalendar container --}}
@@ -43,7 +37,7 @@
         <div id="eventModalHeader" style="padding:1rem 1.25rem .75rem;position:relative;">
             <div id="eventModalCategory" style="font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem;opacity:.8;"></div>
             <h3 id="eventModalTitle" style="font-size:1.05rem;font-weight:700;margin:0;color:var(--text-main, #1e293b);line-height:1.5;padding-right:2rem;"></h3>
-            <button onclick="closeEventModal()" style="position:absolute;top:.9rem;right:1rem;background:none;border:none;cursor:pointer;color:var(--text-muted, #475569);display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;transition:background .15s;" aria-label="ปิด">
+            <button onclick="closeEventModal()" style="position:absolute;top:.9rem;right:1rem;background:none;border:none;cursor:pointer;color:var(--text-muted, #475569);display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;transition:background .15s;" aria-label="{{ __('ปิด') }}">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
@@ -64,7 +58,7 @@
             </div>
             <div id="eventModalBadges" style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem;"></div>
             <div class="flex gap-2">
-                <a id="eventModalBtn" href="#" class="btn btn-primary" style="flex:1;justify-content:center;border-radius:10px;">ดูรายละเอียด</a>
+                <a id="eventModalBtn" href="#" class="btn btn-primary" style="flex:1;justify-content:center;border-radius:10px;">{{ __('ดูรายละเอียด') }}</a>
             </div>
         </div>
     </div>
@@ -125,9 +119,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Badges
             var badges = '';
-            if (ep.is_checked_in) badges += '<span style="background:#dcfce7;color:#15803d;border-radius:999px;padding:3px 10px;font-size:.75rem;font-weight:600;display:inline-flex;align-items:center;gap:3px;"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> เช็คอินแล้ว</span>';
-            else if (ep.is_registered) badges += '<span style="background:#ffedd5;color:#6d28d9;border-radius:999px;padding:3px 10px;font-size:.75rem;font-weight:600;">ลงทะเบียนแล้ว</span>';
-            if (ep.needs_feedback) badges += '<span style="background:#fef9c3;color:#a16207;border-radius:999px;padding:3px 10px;font-size:.75rem;font-weight:600;display:inline-flex;align-items:center;gap:3px;"><svg style="width:12px;height:12px;" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg> รอประเมิน</span>';
+            if (ep.is_checked_in) badges += '<span style="background:#dcfce7;color:#15803d;border-radius:999px;padding:3px 10px;font-size:.75rem;font-weight:600;display:inline-flex;align-items:center;gap:3px;"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> {{ __('เช็คอินแล้ว') }}</span>';
+            else if (ep.is_registered) badges += '<span style="background:#ffedd5;color:#6d28d9;border-radius:999px;padding:3px 10px;font-size:.75rem;font-weight:600;">{{ __('ลงทะเบียนแล้ว') }}</span>';
+            if (ep.needs_feedback) badges += '<span style="background:#fef9c3;color:#a16207;border-radius:999px;padding:3px 10px;font-size:.75rem;font-weight:600;display:inline-flex;align-items:center;gap:3px;"><svg style="width:12px;height:12px;" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg> {{ __('รอประเมิน') }}</span>';
             document.getElementById('eventModalBadges').innerHTML = badges;
 
             // Header color

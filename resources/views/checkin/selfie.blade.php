@@ -8,7 +8,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>ยืนยันตัวตน — สแกนใบหน้า</title>
+    <title>{{ __('ยืนยันตัวตน — สแกนใบหน้า') }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ file_exists(public_path('css/app.css')) ? md5_file(public_path('css/app.css')) : time() }}">
     <link rel="stylesheet" href="{{ asset('css/face-scan-animation.css') }}?v=1">
@@ -321,19 +321,17 @@
                 <svg width="22" height="22" fill="none" stroke="white" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
             <div>
-                <span class="panel-logo-name">ยืนยันตัวตน</span>
-                <span class="panel-logo-text">ระบบสแกนใบหน้าอัตโนมัติ</span>
+                <span class="panel-logo-name">{{ __('ยืนยันตัวตน') }}</span>
+                <span class="panel-logo-text">{{ __('ระบบสแกนใบหน้าอัตโนมัติ') }}</span>
             </div>
         </div>
         <div class="panel-divider"></div>
         <div class="panel-section">
             <a href="{{ route('activities.index') }}" class="back-link">
-                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-                กลับหน้ากิจกรรม
-            </a>
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>{{ __('กลับหน้ากิจกรรม') }}            </a>
         </div>
         <div class="panel-section">
-            <span class="panel-section-label">กิจกรรม</span>
+            <span class="panel-section-label">{{ __('กิจกรรม') }}</span>
             <div class="activity-card">
                 <p class="activity-title">{{ $activity->title }}</p>
                 <div class="activity-meta">
@@ -349,12 +347,12 @@
             </div>
         </div>        <div class="panel-divider"></div>
         <div class="panel-section">
-            <span class="panel-section-label">คำแนะนำ</span>
+            <span class="panel-section-label">{{ __('คำแนะนำ') }}</span>
             <ul class="instructions-list">
-                <li><span class="num">1</span>วางใบหน้าให้อยู่ในกรอบรูปรี</li>
-                <li><span class="num">2</span>มองตรงมายังกล้อง อย่าก้มหรือเงยหน้า</li>
-                <li><span class="num">3</span>ให้แสงสว่างเพียงพอ หลีกเลี่ยงแสงจ้าด้านหลัง</li>
-                <li><span class="num">4</span>ถืออุปกรณ์ให้นิ่ง ห่างจากกล้องประมาณ 40–60 ซม.</li>
+                <li><span class="num">1</span>{{ __('วางใบหน้าให้อยู่ในกรอบรูปรี') }}</li>
+                <li><span class="num">2</span>{{ __('มองตรงมายังกล้อง อย่าก้มหรือเงยหน้า') }}</li>
+                <li><span class="num">3</span>{{ __('ให้แสงสว่างเพียงพอ หลีกเลี่ยงแสงจ้าด้านหลัง') }}</li>
+                <li><span class="num">4</span>{{ __('ถืออุปกรณ์ให้นิ่ง ห่างจากกล้องประมาณ 40–60 ซม.') }}</li>
             </ul>
         </div>
     </aside>
@@ -373,8 +371,8 @@
         <div id="comparisonResult">
             <div class="comparison-faces">
                 <div class="comparison-face">
-                    <img id="profileThumb" src="{{ $profilePhotoUrl }}" alt="รูปโปรไฟล์">
-                    <span class="comparison-face-label">รูปในระบบ</span>
+                    <img id="profileThumb" src="{{ $profilePhotoUrl }}" alt="{{ __('รูปโปรไฟล์') }}">
+                    <span class="comparison-face-label">{{ __('รูปในระบบ') }}</span>
                 </div>
                 <div class="comparison-arrow">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -386,15 +384,13 @@
             </div>
             <p id="matchScoreText" class="comparison-score-text"></p>
             <p id="matchStatusText" class="comparison-status-text"></p>
-            <button type="button" id="submitBtn" class="btn-submit" disabled>กำลังบันทึกข้อมูล...</button>
+            <button type="button" id="submitBtn" class="btn-submit" disabled>{{ __('กำลังบันทึกข้อมูล...') }}</button>
         </div>
         @if(!$profilePhotoUrl)
         <div class="no-profile-warning">
             <div class="no-profile-warning-title">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                ยังไม่มีภาพถ่ายโปรไฟล์ในระบบ
-            </div>
-            <p class="no-profile-warning-text">ระบบจะบันทึก Selfie ไว้แต่ไม่สามารถเปรียบเทียบใบหน้าได้ กรุณาอัปโหลดรูปโปรไฟล์ภายหลัง</p>
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>{{ __('ยังไม่มีภาพถ่ายโปรไฟล์ในระบบ') }}            </div>
+            <p class="no-profile-warning-text">{{ __('ระบบจะบันทึก Selfie ไว้แต่ไม่สามารถเปรียบเทียบใบหน้าได้ กรุณาอัปโหลดรูปโปรไฟล์ภายหลัง') }}</p>
         </div>
         @endif
     </div>
@@ -405,7 +401,7 @@
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
         </a>
         <div class="mobile-header-info">
-            <div class="mobile-header-label">ยืนยันตัวตน</div>
+            <div class="mobile-header-label">{{ __('ยืนยันตัวตน') }}</div>
             <div class="mobile-header-title">{{ $activity->title }}</div>
         </div>
     </div>
@@ -423,7 +419,7 @@
                     <circle cx="12" cy="12" r="3"/>
                 </svg>
             </span>
-            <span id="livenessText">วางใบหน้าให้อยู่ในกรอบ...</span>
+            <span id="livenessText">{{ __('วางใบหน้าให้อยู่ในกรอบ...') }}</span>
         </div>
         <!-- Technical elements and status kept hidden for script safety -->
         <div style="display:none;" aria-hidden="true">
@@ -447,9 +443,9 @@
         <div class="error-modal-icon">
             <svg width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </div>
-        <p class="error-modal-title">ไม่สามารถทำรายการได้</p>
+        <p class="error-modal-title">{{ __('ไม่สามารถทำรายการได้') }}</p>
         <p class="error-modal-body">{{ session('error') }}</p>
-        <button type="button" class="btn-error-close" onclick="window.location.href='{{ route('activities.show', $activity) }}'">กลับไปหน้ากิจกรรม</button>
+        <button type="button" class="btn-error-close" onclick="window.location.href='{{ route('activities.show', $activity) }}'">{{ __('กลับไปหน้ากิจกรรม') }}</button>
     </div>
 </div>
 <script>setTimeout(function() { window.location.href = "{{ route('activities.show', $activity) }}"; }, 5500);</script>
@@ -463,8 +459,8 @@
             <path d="M12 2a10 10 0 0 1 10 10"/>
         </svg>
     </div>
-    <p id="selfieLoadingTitle" style="font-size:1.15rem;font-weight:700;color:#ffffff;margin-bottom:0.5rem;">กำลังประมวลผลการเช็คอิน...</p>
-    <p id="selfieLoadingText" style="font-size:0.875rem;color:rgba(255,255,255,0.7);max-width:300px;line-height:1.5;">กำลังตรวจสอบพิกัด GPS และส่งข้อมูลไปยังระบบ</p>
+    <p id="selfieLoadingTitle" style="font-size:1.15rem;font-weight:700;color:#ffffff;margin-bottom:0.5rem;">{{ __('กำลังประมวลผลการเช็คอิน...') }}</p>
+    <p id="selfieLoadingText" style="font-size:0.875rem;color:rgba(255,255,255,0.7);max-width:300px;line-height:1.5;">{{ __('กำลังตรวจสอบพิกัด GPS และส่งข้อมูลไปยังระบบ') }}</p>
 </div>
 
 <form id="selfieForm" method="POST" action="{{ route('checkin.store', $token) }}" style="display:none;">
@@ -479,7 +475,7 @@
 <div id="realtimeScore" style="display:none;"></div>
 <div id="livenessBadge" style="display:none;"></div>
 <div id="statusMsg" style="display:none;"></div>
-<div id="scanInstructions" style="display:none;">กำลังเชื่อมต่อกล้อง...</div>
+<div id="scanInstructions" style="display:none;">{{ __('กำลังเชื่อมต่อกล้อง...') }}</div>
 <button id="manualCaptureBtn" style="display:none;" onclick="capturePhoto(true)"></button>
 
 <script src="{{ asset('js/geo-security.js') }}?v=1"></script>

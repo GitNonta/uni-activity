@@ -30,41 +30,40 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1 style="color: #ea580c; margin: 0; font-size: 24px; display:flex; align-items:center; gap:8px;"><svg style="width:28px;height:28px;" fill="currentColor" viewBox="0 0 20 20"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z"/></svg> ระบบกิจกรรม</h1>
-            <p style="margin-top: 5px; color: #64748b;">การยืนยันตัวตนเพื่อเข้าสู่ระบบ</p>
+            <h1 style="color: #ea580c; margin: 0; font-size: 24px; display:flex; align-items:center; gap:8px;"><svg style="width:28px;height:28px;" fill="currentColor" viewBox="0 0 20 20"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z"/></svg> {{ __('ระบบกิจกรรม') }}</h1>
+            <p style="margin-top: 5px; color: #64748b;">{{ __('การยืนยันตัวตนเพื่อเข้าสู่ระบบ') }}</p>
         </div>
 
-        <p>สวัสดีคุณ <strong>{{ $fullName }}</strong>,</p>
-        <p>มีการพยายามเข้าสู่ระบบบัญชีของคุณ กรุณาใช้รหัส OTP ด้านล่างเพื่อดำเนินการต่อ:</p>
+        <p>{{ __('สวัสดีคุณ') }} <strong>{{ $fullName }}</strong>,</p>
+        <p>{{ __('มีการพยายามเข้าสู่ระบบบัญชีของคุณ กรุณาใช้รหัส OTP ด้านล่างเพื่อดำเนินการต่อ:') }}</p>
 
         <div class="otp-code">{{ $otp }}</div>
 
-        <p style="text-align: center; color: #64748b; font-size: 13px;">
-            รหัสนี้จะหมดอายุใน <strong>{{ $expiryMinutes }} นาที</strong>
+        <p style="text-align: center; color: #64748b; font-size: 13px;">{{ __('รหัสนี้จะหมดอายุใน') }} <strong>{{ $expiryMinutes }} นาที</strong>
         </p>
 
         <div class="info-box">
-            <h4 style="margin-top: 0; margin-bottom: 10px; color: #1e293b;">รายละเอียดการขอเข้าสู่ระบบ:</h4>
+            <h4 style="margin-top: 0; margin-bottom: 10px; color: #1e293b;">{{ __('รายละเอียดการขอเข้าสู่ระบบ:') }}</h4>
             <div class="info-item">
-                <span class="info-label">ที่อยู่ IP:</span>
+                <span class="info-label">{{ __('ที่อยู่ IP:') }}</span>
                 <span>{{ $ipAddress }}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">สถานที่ใกล้เคียง:</span>
+                <span class="info-label">{{ __('สถานที่ใกล้เคียง:') }}</span>
                 <span>{{ $location }}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">เวลา:</span>
+                <span class="info-label">{{ __('เวลา:') }}</span>
                 <span>{{ now()->format('d/m/Y H:i:s') }}</span>
             </div>
         </div>
 
-        <p class="warning">หากนี่ไม่ใช่การกระทำของคุณ โปรดระวัง! บัญชีของคุณอาจตกอยู่ในอันตราย</p>
-        <p>แนะนำให้คุณรีบเปลี่ยนรหัสผ่านทันทีหากคุณไม่ได้เป็นผู้ขอรหัสนี้</p>
+        <p class="warning">{{ __('หากนี่ไม่ใช่การกระทำของคุณ โปรดระวัง! บัญชีของคุณอาจตกอยู่ในอันตราย') }}</p>
+        <p>{{ __('แนะนำให้คุณรีบเปลี่ยนรหัสผ่านทันทีหากคุณไม่ได้เป็นผู้ขอรหัสนี้') }}</p>
 
         <div class="footer">
             <p>© {{ date('Y') }} {{ config('app.name') }}</p>
-            <p>นี่คืออีเมลอัตโนมัติเพื่อความปลอดภัย กรุณาอย่าตอบกลับ</p>
+            <p>{{ __('นี่คืออีเมลอัตโนมัติเพื่อความปลอดภัย กรุณาอย่าตอบกลับ') }}</p>
         </div>
     </div>
 </body>

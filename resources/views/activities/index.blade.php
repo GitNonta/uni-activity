@@ -1,13 +1,13 @@
 @extends('layouts.app')
-@section('title', 'รายการกิจกรรม')
-@section('description', 'ค้นหาและลงทะเบียนเข้าร่วมกิจกรรมของมหาวิทยาลัย - ดูกิจกรรมที่กำลังเปิดรับสมัครและที่จัดขึ้นแล้ว')
+@section('title', __('act.page_title'))
+@section('description', __('act.page_desc'))
 
 @section('content')
 <div class="act-header-row">
-    <h1 class="act-header-title">รายการกิจกรรม</h1>
-    <a href="{{ route('jobs.index') }}" class="act-rec-job-pill" title="แนะนำ หางาน / Part-time">
+    <h1 class="act-header-title">{{ __('act.page_title') }}</h1>
+    <a href="{{ route('jobs.index') }}" class="act-rec-job-pill" title="{{ __('act.job_pill') }}">
         <x-icon name="job" size="13" />
-        <span>แนะนำ หางาน / Part-time</span>
+        <span>{{ __('act.job_pill') }}</span>
     </a>
 </div>
 
@@ -19,15 +19,15 @@
 <form method="GET" action="{{ route('activities.index') }}" class="act-search-bar" id="activitySearchForm">
     <div class="act-search-main-row">
         <div class="act-search-input-wrap">
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="ค้นหากิจกรรม..." class="act-search-input">
-            <button type="submit" class="act-search-submit-icon-btn" title="ค้นหา" aria-label="ค้นหา">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('act.search_placeholder') }}" class="act-search-input">
+            <button type="submit" class="act-search-submit-icon-btn" title="{{ __('act.search') }}" aria-label="{{ __('act.search') }}">
                 <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             </button>
         </div>
         <div class="act-search-btn-group">
-            <button type="button" id="toggleFilterBtn" class="act-filter-toggle-btn {{ $hasSearched ? 'active' : '' }}" onclick="toggleActFilters()" title="แสดง/ซ่อนตัวกรอง">
+            <button type="button" id="toggleFilterBtn" class="act-filter-toggle-btn {{ $hasSearched ? 'active' : '' }}" onclick="toggleActFilters()" title="{{ __('act.filter_toggle') }}">
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
-                <span>ตัวกรอง</span>
+                <span>{{ __('act.filter') }}</span>
                 @if($hasSearched)
                     <span class="act-filter-count-dot"></span>
                 @endif
@@ -35,7 +35,7 @@
             @if($geoActivities->count())
             <a href="{{ route('map.index', ['type' => 'activity']) }}" class="page-filter-btn-outline" title="ดูบนแผนที่">
                 <x-icon name="map" size="14" />
-                <span>แผนที่</span>
+                <span>{{ __('app.map') }}</span>
             </a>
             @endif
         </div>
@@ -45,26 +45,26 @@
     <div id="actFilterPanel" class="act-filter-panel" style="{{ $hasSearched ? '' : 'display:none;' }}">
         <div class="act-filter-grid">
             <div class="act-filter-select-wrap">
-                <select name="category" class="page-filter-select" aria-label="เลือกหมวดหมู่" style="width:100%;" onchange="document.getElementById('activitySearchForm').submit()">
-                    <option value="">ทุกหมวดหมู่</option>
+                <select name="category" class="page-filter-select" aria-label="{{ __('act.select_category') }}" style="width:100%;" onchange="document.getElementById('activitySearchForm').submit()">
+                    <option value="">{{ __('act.all_categories') }}</option>
                     @foreach($categories as $cat)
                         <option value="{{ $cat->id }}" {{ request('category') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
                     @endforeach
                 </select>
             </div>
             <div class="act-filter-select-wrap">
-                <select name="scope" class="page-filter-select" aria-label="เลือกระดับ" style="width:100%;" onchange="document.getElementById('activitySearchForm').submit()">
-                    <option value="">ทุกระดับ</option>
-                    <option value="university" {{ request('scope') == 'university' ? 'selected' : '' }}>มหาวิทยาลัย</option>
-                    <option value="faculty" {{ request('scope') == 'faculty' ? 'selected' : '' }}>คณะ</option>
-                    <option value="department" {{ request('scope') == 'department' ? 'selected' : '' }}>สาขา</option>
+                <select name="scope" class="page-filter-select" aria-label="{{ __('act.select_scope') }}" style="width:100%;" onchange="document.getElementById('activitySearchForm').submit()">
+                    <option value="">{{ __('act.all_scopes') }}</option>
+                    <option value="university" {{ request('scope') == 'university' ? 'selected' : '' }}>{{ __('scope.university') }}</option>
+                    <option value="faculty" {{ request('scope') == 'faculty' ? 'selected' : '' }}>{{ __('scope.faculty') }}</option>
+                    <option value="department" {{ request('scope') == 'department' ? 'selected' : '' }}>{{ __('scope.department') }}</option>
                 </select>
             </div>
             @if($hasSearched)
             <div style="display:flex; align-items:center; gap:0.5rem;">
-                <a href="{{ route('activities.index') }}" class="act-filter-clear-btn" title="ล้างการค้นหาและตัวกรองทั้งหมด">
+                <a href="{{ route('activities.index') }}" class="act-filter-clear-btn" title="{{ __('act.clear_filters') }}">
                     <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                    <span>ล้างค่า</span>
+                    <span>{{ __('act.clear') }}</span>
                 </a>
             </div>
             @endif
@@ -95,37 +95,37 @@ function toggleActFilters() {
 <div class="sort-scroll-container mb-4">
     <span class="text-xs text-muted font-bold" style="white-space:nowrap;margin-right:2px;display:inline-flex;align-items:center;gap:4px;line-height:1.5;">
         <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/></svg>
-        เรียงตาม:
+        {{ __('act.sort_by') }}
     </span>
     <a href="{{ request()->fullUrlWithQuery(['sort' => 'recommended']) }}" 
        class="sort-pill {{ $currentSort === 'recommended' ? 'active' : '' }}">
         <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-        <span>แนะนำสำหรับคุณ</span>
+        <span>{{ __('act.sort_recommended') }}</span>
     </a>
     <a href="{{ request()->fullUrlWithQuery(['sort' => 'closing_soon']) }}" 
        class="sort-pill {{ $currentSort === 'closing_soon' ? 'active' : '' }}">
         <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-        <span>ใกล้ปิดรับ</span>
+        <span>{{ __('act.sort_closing') }}</span>
     </a>
     <a href="{{ request()->fullUrlWithQuery(['sort' => 'popular']) }}" 
        class="sort-pill {{ $currentSort === 'popular' ? 'active' : '' }}">
         <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
-        <span>ยอดนิยม</span>
+        <span>{{ __('act.sort_popular') }}</span>
     </a>
     <a href="{{ request()->fullUrlWithQuery(['sort' => 'upcoming']) }}" 
        class="sort-pill {{ $currentSort === 'upcoming' ? 'active' : '' }}">
         <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-        <span>จัดเร็วๆ นี้</span>
+        <span>{{ __('act.sort_upcoming') }}</span>
     </a>
     <a href="{{ request()->fullUrlWithQuery(['sort' => 'latest']) }}" 
        class="sort-pill {{ $currentSort === 'latest' ? 'active' : '' }}">
         <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        <span>มาใหม่</span>
+        <span>{{ __('act.sort_latest') }}</span>
     </a>
     <a href="{{ request()->fullUrlWithQuery(['sort' => 'completed']) }}"
        class="sort-pill {{ $currentSort === 'completed' ? 'active' : '' }}">
         <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        <span>เสร็จสิ้นแล้ว</span>
+        <span>{{ __('act.sort_completed') }}</span>
     </a>
 </div>
 
@@ -142,8 +142,8 @@ function toggleActFilters() {
             <x-empty-state
                 icon="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                 title="ไม่พบกิจกรรม"
-                description="ลองเปลี่ยนเงื่อนไขการค้นหาหรือเลือกหมวดหมู่อื่น"
-                actionLabel="ดูทุกกิจกรรม"
+                description="{{ __('act.not_found_desc') }}"
+                actionLabel="{{ __('act.view_all') }}"
                 actionUrl="{{ route('activities.index') }}"
                 size="lg"
             />
@@ -161,7 +161,7 @@ function toggleActFilters() {
 <div style="margin-top:3rem; padding-top:2rem; border-top:1px solid #e2e8f0;">
     <h2 style="font-size:1.1rem; font-weight:600; color:#64748b; padding:0.5rem 0; display:flex; align-items:center; gap:8px;">
         <svg style="width:20px; height:20px; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        กิจกรรมที่เสร็จสิ้นแล้ว <span style="font-weight:400; font-size:0.85rem;">({{ $completedActivities->total() }} รายการ)</span>
+        {{ __('act.completed_section') }} <span style="font-weight:400; font-size:0.85rem;">({{ $completedActivities->total() }} {{ __('act.items') }})</span>
     </h2>
     <div class="mt-3" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:1rem;">
         @forelse($completedActivities as $act)

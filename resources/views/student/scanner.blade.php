@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-    <title>สแกน QR Code</title>
+    <title>{{ __('สแกน QR Code') }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'Sarabun', sans-serif; }
@@ -63,7 +63,7 @@
 
     <!-- Status Messages -->
     <div class="status-container overlay-ui">
-        <div class="status-text" id="statusText">สแกน QR Code กิจกรรมเพื่อเข้างาน</div>
+        <div class="status-text" id="statusText">{{ __('สแกน QR Code กิจกรรมเพื่อเข้างาน') }}</div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
