@@ -36,7 +36,7 @@
                 </div>
 
                 <div style="text-align:center;">
-                    <a href="{{ route('admin.login') }}" style="color:#64748b;font-size:.9rem;">{{ __('&larr; กลับไปหน้าเข้าสู่ระบบ') }}                    </a>
+                    <a href="{{ route('admin.login') }}" style="color:#64748b;font-size:.9rem;">&larr; กลับไปหน้าเข้าสู่ระบบ                    </a>
                 </div>
             </form>
         </div>

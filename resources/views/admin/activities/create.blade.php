@@ -3,7 +3,7 @@
 @section('title', __('สร้างกิจกรรม'))
 
 @section('content')
-<a href="{{ route('admin.activities.index') }}" class="text-sm text-primary">{{ __('&larr; กลับ') }}</a>
+<a href="{{ route('admin.activities.index') }}" class="text-sm text-primary">&larr; กลับ</a>
 <h1 class="font-bold mt-2 mb-4" style="font-size:1.5rem;">{{ __('สร้างกิจกรรมใหม่') }}</h1>
 
 {{-- ฟอร์มสร้างกิจกรรม: ชื่อ, รายละเอียด, สถานที่, หมวด, วัน/เวลา, ชั่วโมง, จำนวนคน, ช่วงลงทะเบียน/เช็คอิน, รูป, บังคับ --}}

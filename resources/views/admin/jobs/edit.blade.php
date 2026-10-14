@@ -3,7 +3,7 @@
 @section('title', __('แก้ไขประกาศงาน'))
 
 @section('content')
-<a href="{{ route('admin.jobs.show', $job->id) }}" class="text-sm text-primary mb-2" style="display:inline-block;">{{ __('&larr; กลับรายละเอียด') }}</a>
+<a href="{{ route('admin.jobs.show', $job->id) }}" class="text-sm text-primary mb-2" style="display:inline-block;">&larr; กลับรายละเอียด</a>
 <h1 class="font-bold mb-4 flex items-center gap-2" style="font-size:1.25rem;">
     <svg style="width:24px;height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>{{ __('แก้ไขประกาศงาน') }}</h1>
 

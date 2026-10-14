@@ -3,7 +3,7 @@
 @section('title', $activity->title)
 
 @section('content')
-<a href="{{ route('activities.index') }}" class="text-sm text-primary">{{ __('&larr; กลับ') }}</a>
+<a href="{{ route('activities.index') }}" class="text-sm text-primary">&larr; กลับ</a>
 
 {{-- การ์ดแสดงข้อมูลกิจกรรม --}}
 <div class="card mt-2">

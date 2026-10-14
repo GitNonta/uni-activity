@@ -3,7 +3,7 @@
 @section('title', $job->title)
 
 @section('content')
-<a href="{{ route('admin.jobs.index') }}" class="text-sm text-primary mb-2" style="display:inline-block;">{{ __('&larr; กลับรายการ') }}</a>
+<a href="{{ route('admin.jobs.index') }}" class="text-sm text-primary mb-2" style="display:inline-block;">&larr; กลับรายการ</a>
 
 <div class="flex items-center justify-between mb-4" style="flex-wrap:wrap;gap:.5rem;">
     <h1 class="font-bold" style="font-size:1.25rem;">{{ $job->title }}</h1>

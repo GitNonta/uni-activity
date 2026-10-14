@@ -2,7 +2,7 @@
 @section('title', 'ชำระเงิน — '.$activity->title)
 
 @section('content')
-<a href="{{ route('activities.show', $activity) }}" class="text-sm text-primary">{{ __('&larr; กลับกิจกรรม') }}</a>
+<a href="{{ route('activities.show', $activity) }}" class="text-sm text-primary">&larr; กลับกิจกรรม</a>
 
 <div class="card mt-2">
     <div class="card-body" style="font-size:.875rem;">
