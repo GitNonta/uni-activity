@@ -191,7 +191,7 @@
 
                 <a href="{{ route('login') }}" class="btn btn-primary btn-sm" style="display:inline-flex; align-items:center; gap:4px;">
                     <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-                    {{ __('app.login') }}
+                    {{ __('login.title') }}
                 </a>
                 <a href="{{ route('register') }}" class="btn btn-outline btn-sm" style="display:inline-flex; align-items:center; gap:4px;">
                     {{ __('app.register') }}
@@ -213,7 +213,7 @@
                 </a>
                 <a href="{{ route('login') }}" class="btn btn-sm btn-primary" style="padding:.35rem .75rem; font-size:.8rem; display:inline-flex; align-items:center; gap:5px; border-radius:9px;">
                     <svg class="icon-sm" style="width:14px; height:14px; margin:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-                    {{ __('app.login') }}
+                    {{ __('login.title') }}
                 </a>
             </div>
             @endauth
@@ -307,7 +307,7 @@
         </a>
         <a href="{{ route('login') }}" class="bottom-nav-item {{ request()->routeIs('login') ? 'active' : '' }}">
             <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-            <span>{{ __('app.login') }}</span>
+            <span>{{ __('login.title') }}</span>
         </a>
     </nav>
     @endauth

@@ -1,0 +1,28 @@
+<?php
+
+return array (
+  'page_title' => 'Activities',
+  'page_desc' => 'Search and register for university activities - browse open registrations and completed events',
+  'job_pill' => 'Featured: Jobs / Part-time',
+  'search' => 'Search',
+  'filter' => 'Filters',
+  'filter_toggle' => 'Show/hide filters',
+  'select_category' => 'Select category',
+  'all_categories' => 'All categories',
+  'select_scope' => 'Select level',
+  'all_scopes' => 'All levels',
+  'clear_filters' => 'Clear search and filters',
+  'clear' => 'Clear',
+  'sort_by' => 'Sort by:',
+  'sort_recommended' => 'Recommended for you',
+  'sort_closing' => 'Closing soon',
+  'sort_popular' => 'Popular',
+  'sort_upcoming' => 'Upcoming soon',
+  'sort_latest' => 'Newest',
+  'sort_completed' => 'Completed',
+  'not_found' => 'No activities found',
+  'not_found_desc' => 'Try different search terms or pick another category',
+  'view_all' => 'View all activities',
+  'completed_section' => 'Completed activities',
+  'items' => 'items',
+);

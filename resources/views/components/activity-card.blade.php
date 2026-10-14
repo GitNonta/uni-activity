@@ -12,12 +12,12 @@
         @if($isAttended)
             <span class="act-card-user-badge act-badge-completed">
                 <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                สำเร็จ
+                {{ __('card.done') }}
             </span>
         @elseif($isRegistered)
             <span class="act-card-user-badge act-badge-registered">
                 <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                ลงทะเบียนแล้ว
+                {{ __('card.registered') }}
             </span>
         @endif
     </div>
@@ -26,7 +26,7 @@
             <div class="flex items-center justify-between act-card-badges">
                 <div class="flex items-center gap-1" style="flex-wrap:wrap;">
                     @include('components.status-badge', ['status' => $activity->computed_status])
-                    @if($activity->is_mandatory)<span class="badge badge-red">บังคับ</span>@endif
+                    @if($activity->is_mandatory)<span class="badge badge-red">{{ __('card.mandatory') }}</span>@endif
                 </div>
                 @if($activity->scope === 'faculty')
                     <span class="badge" style="background:#fef3c7;color:#92400e;font-size:.65rem;">{{ $activity->faculty }}</span>
@@ -48,12 +48,12 @@
         </div>
         <div class="act-card-footer">
             <div class="flex items-center gap-2">
-                <span>{{ $activity->activity_hours }} ชม.</span>
+                <span>{{ $activity->activity_hours }} {{ __('card.hours') }}</span>
                 <span>•</span>
-                <span>{{ $activity->getRegisteredCount() }}/{{ $activity->max_participants }} คน</span>
+                <span>{{ $activity->getRegisteredCount() }}/{{ $activity->max_participants }} {{ __('card.people') }}</span>
             </div>
             @if($activity->hasGeolocation())
-                <a href="{{ route('map.index', ['type' => 'activity', 'id' => $activity->id]) }}" class="act-map-btn" onclick="event.stopPropagation();" title="ดูตำแหน่งบนแผนที่">
+                <a href="{{ route('map.index', ['type' => 'activity', 'id' => $activity->id]) }}" class="act-map-btn" onclick="event.stopPropagation();" title="{{ __('card.view_map') }}">
                     <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 </a>
             @endif
