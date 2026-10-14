@@ -1,6 +1,6 @@
 {{-- หน้ารายการประกาศงานทั้งหมด: ค้นหา + กรอง + Grid Card --}}
 @extends('layouts.app')
-@section('title', 'หางาน / Part-time')
+@section('title', __('หางาน / Part-time')
 
 @section('content')
 <div class="act-header-row">
@@ -18,19 +18,32 @@
 <form method="GET" action="{{ route('jobs.index') }}" class="act-search-bar" id="jobSearchForm">
     <div class="act-search-main-row">
         <div class="act-search-input-wrap">
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="ค้นหาชื่องาน / ตำแหน่ง / สถานที่..." class="act-search-input">
-            <button type="submit" class="act-search-submit-icon-btn" title="ค้นหา" aria-label="ค้นหา">
-                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            </button>
+            <input type="text" name="search" id="jobSearchInput" value="{{ request('search') }}" placeholder="ค้นหาชื่องาน / ตำแหน่ง / สถานที่..." class="act-search-input" autocomplete="off" aria-haspopup="listbox" aria-controls="jobSuggestBox" aria-expanded="false">
+            <div id="jobSuggestBox" class="act-suggest-box" role="listbox" hidden></div>
+            @if($hasSearched)
+                {{-- หลังค้นหา: ปุ่มไอคอนกลายเป็นตัวกรอง (โฟกัส/พิมพ์ในช่อง → กลับเป็นปุ่มค้นหา, กด Enter ยังค้นหาซ้ำได้) --}}
+                <button type="submit" id="searchSwapSubmitBtn" class="act-search-submit-icon-btn" style="display:none;" title="ค้นหา" aria-label="ค้นหา">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </button>
+                <button type="button" id="toggleJobFilterBtn" class="act-search-submit-icon-btn as-filter active" onclick="toggleJobFilters()" title="ตัวกรอง" aria-label="ตัวกรอง">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                    @if(request()->filled('job_type') || request()->filled('status') || request()->filled('gender'))
+                        <span class="act-filter-count-dot"></span>
+                    @endif
+                </button>
+            @else
+                <button type="submit" class="act-search-submit-icon-btn" title="ค้นหา" aria-label="ค้นหา">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </button>
+            @endif
         </div>
         <div class="act-search-btn-group">
-            <button type="button" id="toggleJobFilterBtn" class="act-filter-toggle-btn {{ $hasSearched ? 'active' : '' }}" onclick="toggleJobFilters()" title="แสดง/ซ่อนตัวกรอง">
+            @if(!$hasSearched)
+            <button type="button" id="toggleJobFilterBtn" class="act-filter-toggle-btn" onclick="toggleJobFilters()" title="แสดง/ซ่อนตัวกรอง">
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
                 <span>ตัวกรอง</span>
-                @if($hasSearched)
-                    <span class="act-filter-count-dot"></span>
-                @endif
             </button>
+            @endif
             @if($geoJobs->count())
             <a href="{{ route('map.index', ['type' => 'job']) }}" class="page-filter-btn-outline" title="ดูบนแผนที่">
                 <x-icon name="map" size="14" />
@@ -91,6 +104,83 @@ function toggleJobFilters() {
         if (btn && !{{ $hasSearched ? 'true' : 'false' }}) btn.classList.remove('active');
     }
 }
+
+// สลับปุ่มตัวกรอง/ปุ่มค้นหา: โฟกัสหรือพิมพ์ในช่อง → แสดงปุ่มค้นหา, เลิกโฟกัส → กลับเป็นปุ่มตัวกรอง
+(function(){
+    var inp = document.getElementById('jobSearchInput');
+    var bSearch = document.getElementById('searchSwapSubmitBtn');
+    var bFilter = document.getElementById('toggleJobFilterBtn');
+    if (!inp || !bSearch || !bFilter) return;
+    function showSearch() { bSearch.style.display = ''; bFilter.style.display = 'none'; }
+    function showFilter() { bFilter.style.display = ''; bSearch.style.display = 'none'; }
+    inp.addEventListener('focus', showSearch);
+    inp.addEventListener('blur', function() { setTimeout(showFilter, 160); });
+})();
+
+// Typeahead: ใบ้งานตอนพิมพ์ + ซ่อนแผงตัวกรองระหว่างพิมพ์
+(function(){
+    var inp = document.getElementById('jobSearchInput');
+    var box = document.getElementById('jobSuggestBox');
+    var panel = document.getElementById('jobFilterPanel');
+    if (!inp || !box) return;
+    var hasSearched = {{ $hasSearched ? 'true' : 'false' }};
+    var suggestUrl = {!! json_encode(route('jobs.suggest')) !!};
+    var showUrl = {!! json_encode(route('jobs.show', ['job' => '_ID_'])) !!};
+    var timer = null, ctrl = null, items = [], active = -1;
+
+    function setPanel(show) { if (panel) panel.style.display = (show && hasSearched) ? 'block' : 'none'; }
+    function hideBox() { box.innerHTML = ''; box.hidden = true; items = []; active = -1; inp.setAttribute('aria-expanded', 'false'); }
+    function paintActive() {
+        for (var i = 0; i < box.children.length; i++) {
+            box.children[i].classList.toggle('act-suggest-active', i === active);
+        }
+    }
+    function go(id) { window.location.href = showUrl.replace('_ID_', encodeURIComponent(id)); }
+    function render(list) {
+        if (!list.length) { hideBox(); return; }
+        items = list; active = -1; box.innerHTML = '';
+        list.forEach(function (s) {
+            var d = document.createElement('div');
+            d.className = 'act-suggest-item';
+            d.setAttribute('role', 'option');
+            var t = document.createElement('span'); t.className = 'act-suggest-item-title'; t.textContent = s.title; // textContent = กัน XSS
+            var dt = document.createElement('span'); dt.className = 'act-suggest-item-date'; dt.textContent = s.date;
+            d.appendChild(t); d.appendChild(dt);
+            d.addEventListener('mousedown', function (ev) { ev.preventDefault(); go(s.id); });
+            box.appendChild(d);
+        });
+        box.hidden = false;
+        inp.setAttribute('aria-expanded', 'true');
+    }
+    function fetchSuggest(q) {
+        if (ctrl) ctrl.abort();
+        ctrl = new AbortController();
+        fetch(suggestUrl + '?q=' + encodeURIComponent(q), { signal: ctrl.signal, headers: { 'Accept': 'application/json' } })
+            .then(function (r) { return r.ok ? r.json() : { suggestions: [] }; })
+            .then(function (data) { render(data.suggestions || []); })
+            .catch(function () { /* request ถูกยกเลิกหรือล้มเหลว — เงียบไว้ */ });
+    }
+    inp.addEventListener('input', function () {
+        var q = inp.value.trim();
+        setPanel(!q); // พิมพ์อยู่ → ซ่อนแผงตัวกรอง; ลบหมด → คืนแผง (เฉพาะถ้าเคยค้นหาแล้ว)
+        if (!q) { hideBox(); if (timer) clearTimeout(timer); return; }
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(function () { fetchSuggest(q); }, 300);
+    });
+    inp.addEventListener('keydown', function (e) {
+        var open = !box.hidden;
+        if (e.key === 'ArrowDown' && open && items.length) { e.preventDefault(); active = (active + 1) % items.length; paintActive(); }
+        else if (e.key === 'ArrowUp' && open && items.length) { e.preventDefault(); active = (active - 1 + items.length) % items.length; paintActive(); }
+        else if (e.key === 'Escape') { hideBox(); }
+        else if (e.key === 'Enter' && open && active >= 0) { e.preventDefault(); go(items[active].id); }
+    });
+    inp.addEventListener('blur', function () {
+        setTimeout(function () {
+            if (!box.contains(document.activeElement)) hideBox();
+            setPanel(true); // เลิกพิมพ์ → คืนแผงตัวกรอง (เฉพาะถ้าเคยค้นหาแล้ว)
+        }, 160);
+    });
+})();
 </script>
 
 {{-- แถบจัดเรียงลำดับอัจฉริยะ (Smart Sorting Tabs) --}}
