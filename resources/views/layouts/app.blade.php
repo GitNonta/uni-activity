@@ -143,7 +143,7 @@
                 <a href="{{ route('announcements.index') }}" class="navbar-icon-btn {{ request()->routeIs('announcements.*') ? 'active' : '' }}" title="ประกาศข่าวสาร">
                     <x-icon name="announcement" size="18" />
                 </a>
-                <button type="button" class="navbar-icon-btn navbar-more-btn" data-more-toggle aria-label="เมนูเพิ่มเติม" title="เมนูเพิ่มเติม">
+                <button type="button" class="navbar-icon-btn navbar-more-btn" data-more-toggle aria-label="{{ __('เมนูเพิ่มเติม') }}" title="{{ __('เมนูเพิ่มเติม') }}">
                     <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
                 </button>
                 {{-- icons map/job ย้ายไปเมนู ⋯ (mobile sheet), ประกาศกลับมาที่บาร์แล้ว --}}
@@ -207,7 +207,7 @@
                     </svg>
                 </button>
                 {{-- ปุ่ม map (guest) มีใน bottom-nav แล้ว --}}
-                <button type="button" class="navbar-icon-btn navbar-more-btn" data-more-toggle aria-label="เมนูเพิ่มเติม" title="เมนูเพิ่มเติม">
+                <button type="button" class="navbar-icon-btn navbar-more-btn" data-more-toggle aria-label="{{ __('เมนูเพิ่มเติม') }}" title="{{ __('เมนูเพิ่มเติม') }}">
                     <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
                 </button>
 <a href="{{ route('login') }}" class="btn btn-sm btn-primary" style="padding:.35rem .75rem; font-size:.8rem; display:inline-flex; align-items:center; gap:5px; border-radius:9px;">
@@ -1955,7 +1955,7 @@
     @php $__hide_more_sheet = request()->routeIs('login*', 'admin.login*', 'register*', 'password.*', 'admin.password.*'); @endphp
     @if(!($__hide_more_sheet ?? false))
     <div id="mobile-sheet-backdrop" class="mobile-sheet-backdrop" data-sheet-close></div>
-    <div id="mobile-more-sheet" class="mobile-sheet" role="dialog" aria-modal="true" aria-label="เมนูเพิ่มเติม">
+    <div id="mobile-more-sheet" class="mobile-sheet" role="dialog" aria-modal="true" aria-label="{{ __('เมนูเพิ่มเติม') }}">
         <div class="mobile-sheet-grip"></div>
         <div class="mobile-sheet-head">
             @auth
@@ -1963,7 +1963,7 @@
             @else
             <span class="mobile-sheet-user">UNI Activity</span>
             @endauth
-            <button type="button" class="mobile-sheet-close" data-sheet-close aria-label="ปิดเมนู" title="ปิด">
+            <button type="button" class="mobile-sheet-close" data-sheet-close aria-label="{{ __('ปิดเมนู') }}" title="{{ __('ปิด') }}">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
@@ -1978,11 +1978,11 @@
         </div>
         @auth
         <a href="{{ route('map.index') }}" class="mobile-sheet-item">
-            <x-icon name="map" size="20" /> แผนที่
+            <x-icon name="map" size="20" /> {{ __('แผนที่') }}
             <span class="mobile-sheet-arrow">&#8250;</span>
         </a>
         <a href="{{ route('jobs.index') }}" class="mobile-sheet-item">
-            <x-icon name="job" size="20" /> หางาน / ฝึกงาน
+            <x-icon name="job" size="20" /> {{ __('หางาน / ฝึกงาน') }}
             <span class="mobile-sheet-arrow">&#8250;</span>
         </a>
         @endauth
