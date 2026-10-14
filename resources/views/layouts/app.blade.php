@@ -888,7 +888,7 @@
             document.getElementById('cfViewList').style.display = 'flex';
             document.getElementById('cfViewChat').style.display = 'none';
             document.getElementById('cfBackBtn').style.display = 'none';
-            document.getElementById('cfHeaderTitle').innerHTML = '<svg style="width:16px;height:16px;display:inline;vertical-align:-3px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 01-2 2h-5l-5 5v-5z"/></svg> ข้อความของฉัน';
+            document.getElementById('cfHeaderTitle').innerHTML = '<svg style="width:16px;height:16px;display:inline;vertical-align:-3px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 01-2 2h-5l-5 5v-5z"/></svg> {{ __('ข้อความของฉัน') }}';
         }
         window.cfBackToList = function () { showListView(); loadThreads(); };
 
@@ -906,7 +906,7 @@
                 if (staffProfileUrl) {
                     profileBtn.style.display = 'inline-flex';
                     profileBtn.setAttribute('data-url', staffProfileUrl);
-                    profileBtn.title = 'ดูโปรไฟล์ของ ' + (staffName || 'ผู้สนทนา');
+                    profileBtn.title = '{{ __('ดูโปรไฟล์ของ') }} ' + (staffName || '{{ __('ผู้สนทนา') }}');
                 } else {
                     profileBtn.style.display = 'none';
                     profileBtn.removeAttribute('data-url');
@@ -963,19 +963,19 @@
         }
 
         function formatLastSeen(lastSeenAt) {
-            if (!lastSeenAt) return 'ออฟไลน์';
+            if (!lastSeenAt) return '{{ __('ออฟไลน์') }}';
             var date = new Date(lastSeenAt);
-            if (isNaN(date.getTime())) return 'ออฟไลน์';
+            if (isNaN(date.getTime())) return '{{ __('ออฟไลน์') }}';
             var now = new Date();
             var diffSec = Math.max(0, Math.floor((now - date) / 1000));
             var diffMin = Math.floor(diffSec / 60);
             var diffHours = Math.floor(diffMin / 60);
             if (diffSec < 60) {
-                return 'ออนไลน์เมื่อสักครู่';
+                return '{{ __('ออนไลน์เมื่อสักครู่') }}';
             } else if (diffMin < 60) {
-                return 'ออนไลน์เมื่อ ' + diffMin + ' นาทีที่แล้ว';
+                return '{{ __('ออนไลน์เมื่อ') }} ' + diffMin + ' {{ __('นาทีที่แล้ว') }}';
             } else if (diffHours < 24) {
-                return 'ออนไลน์เมื่อ ' + diffHours + ' ชม. ที่แล้ว';
+                return '{{ __('ออนไลน์เมื่อ') }} ' + diffHours + ' {{ __('ชม. ที่แล้ว') }}';
             } else {
                 return 'ออนไลน์เมื่อ ' + date.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' }) + ' ' + date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
             }
@@ -1001,14 +1001,14 @@
             var supportThread = threads.find(function(t) { return t.job_id == 0; });
             
             var isSupportUnread = supportThread && (supportThread.unread || 0) > 0;
-            var supportPreview = supportThread && supportThread.last_message ? (supportThread.last_message.length > 32 ? supportThread.last_message.slice(0,32)+'…' : supportThread.last_message) : 'สอบถามปัญหาการใช้งาน';
+            var supportPreview = supportThread && supportThread.last_message ? (supportThread.last_message.length > 32 ? supportThread.last_message.slice(0,32)+'…' : supportThread.last_message) : '{{ __('สอบถามปัญหาการใช้งาน') }}';
             var supportLastSeen = (supportThread && supportThread.staff_last_seen) ? supportThread.staff_last_seen : (threads.length > 0 && threads[0].staff_last_seen ? threads[0].staff_last_seen : null);
             var isSupOnline = isStaffMemberOnline(0);
             var supportStatusHtml = isSupOnline 
                 ? '<span style="color:#047857;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#059669;display:inline-block;"></span>{{ __('กำลังใช้งาน') }}</span>' 
                 : '<span style="color:var(--text-muted);">' + formatLastSeen(supportLastSeen) + '</span>';
             
-            var supportChatHtml = '<div data-fdx-item="1" data-job-id="0" data-job-title="ติดต่อสอบถามเจ้าหน้าที่" data-staff-profile-url="" data-staff-name="" style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;cursor:pointer;" class="chat-list-item ' + (isSupportUnread ? 'unread' : '') + '">'
+            var supportChatHtml = '<div data-fdx-item="1" data-job-id="0" data-job-title="{{ __('ติดต่อสอบถามเจ้าหน้าที่') }}" data-staff-profile-url="" data-staff-name="" style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;cursor:pointer;" class="chat-list-item ' + (isSupportUnread ? 'unread' : '') + '">'
                 + '<div style="position:relative;flex-shrink:0;">'
                 + '<div style="width:34px;height:34px;border-radius:50%;background:var(--tint-orange);color:var(--tint-orange-text);display:flex;align-items:center;justify-content:center;">'
                 + '<svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.05 2a9 9 0 0 1 8 7.94"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.05 6A5 5 0 0 1 18 10"/></svg>'
@@ -1017,7 +1017,7 @@
                 + '</div>'
                 + '<div style="flex:1;min-width:0;">'
                 + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;">'
-                + '<div class="chat-title" style="font-size:.82rem;font-weight:' + (isSupportUnread?'700':'500') + ';color:var(--text-main);line-height:1.5;">ติดต่อสอบถามเจ้าหน้าที่</div>'
+                + '<div class="chat-title" style="font-size:.82rem;font-weight:' + (isSupportUnread?'700':'500') + ';color:var(--text-main);line-height:1.5;">{{ __('ติดต่อสอบถามเจ้าหน้าที่') }}</div>'
                 + '<div class="cf-thread-status cf-thread-status-0" data-job-id="0" data-staff-id="0" data-last-seen="' + (supportLastSeen || '') + '" style="font-size:.65rem;flex-shrink:0;line-height:1.5;">' + supportStatusHtml + '</div>'
                 + '</div>'
                 + '<div class="chat-preview" style="font-size:.7rem;color:' + (isSupportUnread?'#1e293b':'#475569') + ';font-weight:' + (isSupportUnread?'700':'400') + ';line-height:1.5;">' + supportPreview + '</div>'
@@ -1026,15 +1026,15 @@
                 + '</div>';
 
             if (!activeThreads.length) {
-                el.innerHTML = supportChatHtml + '<div style="padding:2rem 1rem;text-align:center;font-size:.83rem;color:var(--text-muted);line-height:1.5;">ยังไม่มีข้อความเกี่ยวกับงาน</div>';
+                el.innerHTML = supportChatHtml + '<div style="padding:2rem 1rem;text-align:center;font-size:.83rem;color:var(--text-muted);line-height:1.5;">{{ __('ยังไม่มีข้อความเกี่ยวกับงาน') }}</div>';
                 return;
             }
             el.innerHTML = supportChatHtml + activeThreads.map(function(t) {
                 var isUnread = (t.unread || 0) > 0;
                 var isArchived = !!t.job_deleted;
                 var titlePrefix = isArchived ? '<span style="font-size:.6rem;color:var(--tint-amber-text);background:var(--tint-amber);border:1px solid #fcd34d;border-radius:999px;padding:1px 6px;margin-right:4px;vertical-align:1px;">{{ __('ลบแล้ว') }}</span>' : '';
-                var preview = t.last_message ? (t.last_message.length > 32 ? t.last_message.slice(0,32)+'…' : t.last_message) : '<svg style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> ไฟล์แนบ';
-                var safeTitle = String(t.job_title || 'งานกิจกรรม').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                var preview = t.last_message ? (t.last_message.length > 32 ? t.last_message.slice(0,32)+'…' : t.last_message) : '<svg style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> {{ __('ไฟล์แนบ') }}';
+                var safeTitle = String(t.job_title || '{{ __('งานกิจกรรม') }}').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 var threadLastSeen = t.staff_last_seen || null;
                 var isJobOnline = isStaffMemberOnline(t.staff_id);
                 var threadStatusHtml = isJobOnline 
@@ -1048,7 +1048,7 @@
                     avatarHtml = '<div style="width:34px;height:34px;border-radius:50%;background:#c2410c;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0;">' + safeTitle.charAt(0).toUpperCase() + '</div>';
                 }
 
-                return '<div data-fdx-item="1" data-job-id="' + t.job_id + '" data-job-title="' + cfEscHtml(t.job_title || 'งานกิจกรรม') + '" data-staff-profile-url="' + cfEscHtml(t.staff_profile_url || '') + '" data-staff-name="' + cfEscHtml(t.staff_name || '') + '" '
+                return '<div data-fdx-item="1" data-job-id="' + t.job_id + '" data-job-title="' + cfEscHtml(t.job_title || '{{ __('งานกิจกรรม') }}') + '" data-staff-profile-url="' + cfEscHtml(t.staff_profile_url || '') + '" data-staff-name="' + cfEscHtml(t.staff_name || '') + '" '
                     + 'style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;cursor:pointer;" class="chat-list-item ' + (isUnread ? 'unread' : '') + '">'
                     + '<div style="position:relative;flex-shrink:0;">'
                     + avatarHtml
@@ -1068,11 +1068,11 @@
         window.showChatView = showChatView;
 
         function formatReadStatus(readAt, isRead) {
-            if (!readAt && !isRead) return 'ส่งแล้ว';
-            if (!readAt) return 'ส่งแล้ว';
+            if (!readAt && !isRead) return '{{ __('ส่งแล้ว') }}';
+            if (!readAt) return '{{ __('ส่งแล้ว') }}';
 
             var readTime = new Date(readAt);
-            if (isNaN(readTime.getTime())) return 'ส่งแล้ว';
+            if (isNaN(readTime.getTime())) return '{{ __('ส่งแล้ว') }}';
 
             var now = new Date();
             var diffSec = Math.max(0, Math.floor((now.getTime() - readTime.getTime()) / 1000));
@@ -1080,11 +1080,11 @@
             var diffHours = Math.floor(diffMin / 60);
 
             if (diffSec < 60) {
-                return 'เพิ่งอ่าน';
+                return '{{ __('เพิ่งอ่าน') }}';
             } else if (diffMin < 60) {
-                return 'อ่านเมื่อ ' + diffMin + ' นาทีที่แล้ว';
+                return '{{ __('อ่านเมื่อ') }} ' + diffMin + ' {{ __('นาทีที่แล้ว') }}';
             } else if (diffHours < 24) {
-                return 'อ่านเมื่อ ' + diffHours + ' ชม. ที่แล้ว';
+                return '{{ __('อ่านเมื่อ') }} ' + diffHours + ' {{ __('ชม. ที่แล้ว') }}';
             } else {
                 return 'อ่านเมื่อ ' + readTime.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
             }
@@ -1208,7 +1208,7 @@
                         if (!el.textContent.includes('(แก้ไขแล้ว)')) {
                             var editedSpan = document.createElement('span');
                             editedSpan.style.cssText = 'font-size:0.6rem;opacity:0.7;margin-left:5px;';
-                            editedSpan.textContent = '(แก้ไขแล้ว)';
+                            editedSpan.textContent = '{{ __('(แก้ไขแล้ว)') }}';
                             p.parentNode.appendChild(editedSpan);
                         }
                     }
@@ -1271,7 +1271,7 @@
                     cfNotice = document.createElement('div');
                     cfNotice.id = 'cfArchivedNotice';
                     cfNotice.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:6px;padding:.7rem .9rem;background:var(--surface-hover);font-size:.75rem;color:var(--tint-amber-text);font-weight:500;';
-                    cfNotice.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 5 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 5-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg> ประกาศงานนี้ถูกลบแล้ว — ดูได้เฉพาะประวัติการแชท';
+                    cfNotice.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 5 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 5-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg> {{ __('ประกาศงานนี้ถูกลบแล้ว — ดูได้เฉพาะประวัติการแชท') }}';
                     bar.parentNode.insertBefore(cfNotice, bar);
                     bar.style.display = 'none';
                 } else {
@@ -1306,7 +1306,7 @@
                 var avatarDiv = document.createElement('div');
                 avatarDiv.style.cssText = 'width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#475569;color:#fff;font-size:0.65rem;font-weight:700;position:relative;';
                 var photo = msg.user && msg.user.photo ? msg.user.photo : null;
-                var label = msg.user && msg.user.name ? msg.user.name : 'ผู้ดูแล';
+                var label = msg.user && msg.user.name ? msg.user.name : '{{ __('ผู้ดูแล') }}';
                 if (photo) {
                     var img = document.createElement('img');
                     img.src = photo;
@@ -1343,7 +1343,7 @@
             if (msg.is_edited) {
                 var editedSpan = document.createElement('span');
                 editedSpan.style.cssText = 'font-size:0.6rem;opacity:0.7;margin-left:5px;';
-                editedSpan.textContent = '(แก้ไขแล้ว)';
+                editedSpan.textContent = '{{ __('(แก้ไขแล้ว)') }}';
                 bubble.appendChild(editedSpan);
             }
             
@@ -1417,11 +1417,11 @@
                 };
 
                 if (isLastMine) {
-                    var editItem = createItem('แก้ไข', function() { window.editStudentMessage(msg.id); });
+                    var editItem = createItem('{{ __('แก้ไข') }}', function() { window.editStudentMessage(msg.id); });
                     editItem.className = 'cf-edit-item';
                     menu.appendChild(editItem);
                 }
-                menu.appendChild(createItem('ยกเลิกการส่ง', function() { window.deleteStudentMessage(msg.id); }));
+                menu.appendChild(createItem('{{ __('ยกเลิกการส่ง') }}', function() { window.deleteStudentMessage(msg.id); }));
                 
                 moreBtn.onclick = function(e) {
                     e.stopPropagation();
@@ -1446,7 +1446,7 @@
             statusDiv.innerHTML = '<span style="font-size:.6rem;color:var(--text-muted);line-height:1.5;">' + timeStr + '</span>';
             
             if (mine && isLastMine) {
-                var readText = isTemp ? 'กำลังส่ง...' : formatReadStatus(msg.read_at, msg.is_read);
+                var readText = isTemp ? '{{ __('กำลังส่ง...') }}' : formatReadStatus(msg.read_at, msg.is_read);
                 var statusText = document.createElement('span');
                 statusText.id = 'cf-status-' + msg.id;
                 statusText.className = 'cf-read-status';
@@ -1518,7 +1518,7 @@
                             if (!el.textContent.includes('(แก้ไขแล้ว)')) {
                                 var editedSpan = document.createElement('span');
                                 editedSpan.style.cssText = 'font-size:0.6rem;opacity:0.7;margin-left:5px;';
-                                editedSpan.textContent = '(แก้ไขแล้ว)';
+                                editedSpan.textContent = '{{ __('(แก้ไขแล้ว)') }}';
                                 p.parentNode.appendChild(editedSpan);
                             }
                         }
@@ -1599,7 +1599,7 @@
                     console.error('Chat Error:', err);
                     bubble.style.background = 'var(--tint-red-strong)'; // Error state
                     bubble.style.color = '#991b1b';
-                    alert(err.error || (err.errors && err.errors.message ? err.errors.message[0] : null) || 'ไม่สามารถส่งข้อความได้');
+                    alert(err.error || (err.errors && err.errors.message ? err.errors.message[0] : null) || '{{ __('ไม่สามารถส่งข้อความได้') }}');
                 });
         });
 
@@ -1670,7 +1670,7 @@
                         if (!el.textContent.includes('(แก้ไขแล้ว)')) {
                             var editedSpan = document.createElement('span');
                             editedSpan.style.cssText = 'font-size:0.6rem;opacity:0.7;margin-left:5px;';
-                            editedSpan.textContent = '(แก้ไขแล้ว)';
+                            editedSpan.textContent = '{{ __('(แก้ไขแล้ว)') }}';
                             p.parentNode.appendChild(editedSpan);
                         }
                     }
@@ -1793,14 +1793,14 @@
                     currentEditId = id;
 
                     var btn = document.getElementById('cfSendBtn');
-                    btn.innerHTML = '<svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> บันทึก';
+                    btn.innerHTML = '<svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> {{ __('บันทึก') }}';
                     btn.style.background = '#10b981';
 
                     if (!document.getElementById('cfCancelEditBtn')) {
                         var cancelBtn = document.createElement('button');
                         cancelBtn.id = 'cfCancelEditBtn';
                         cancelBtn.type = 'button';
-                        cancelBtn.innerHTML = 'ยกเลิก';
+                        cancelBtn.innerHTML = '{{ __('ยกเลิก') }}';
                         cancelBtn.style.cssText = 'background:#b91c1c; color:#fff; border:none; border-radius:12px; padding:0 1rem; font-weight:500; font-size:.95rem; cursor:pointer; height:42px; margin-right:4px;';
                         cancelBtn.onclick = function() {
                             currentEditId = null;

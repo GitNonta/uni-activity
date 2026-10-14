@@ -1914,5 +1914,8 @@
   "⚠️ กิจกรรมนี้กำหนดค่าสมัคร": "⚠️ This activity requires a fee",
   "✅ สถานะ:": "✅ Status:",
   "💰 ค่าสมัคร": "💰 Registration fee",
-  "💰 ชำระค่าสมัคร": "💰 Pay registration fee"
+  "💰 ชำระค่าสมัคร": "💰 Pay registration fee",
+  "ติดต่อสอบถามเจ้าหน้าที่": "Contact staff",
+  "ยังไม่มีข้อความเกี่ยวกับงาน": "No job-related messages yet",
+  "ประกาศงานนี้ถูกลบแล้ว — ดูได้เฉพาะประวัติการแชท": "This job post has been deleted — chat history is view-only"
 }
