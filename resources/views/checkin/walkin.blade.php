@@ -16,7 +16,7 @@
     <style>
         /* Mobile-first responsive design */
         body { 
-            background: #f1f5f9; 
+            background:var(--bg-main); 
             margin: 0; 
             font-family: system-ui, -apple-system, sans-serif;
             min-height: 100vh;
@@ -57,7 +57,7 @@
             line-height: 1.5;
         }
         .walkin-form-card {
-            background: #fff;
+            background:var(--surface);
             border-radius: 12px;
             padding: 1rem; /* Reduced for mobile */
             box-shadow: 0 2px 8px rgba(0,0,0,.06);
@@ -78,7 +78,7 @@
         .walkin-input-row input {
             flex: 1;
             padding: 1rem; /* Larger touch target */
-            border: 2px solid #e2e8f0;
+            border:var(--border);
             border-radius: 12px; /* More rounded */
             font-size: 1.1rem;
             font-weight: 600;
@@ -86,12 +86,12 @@
             outline: none;
             transition: border-color .2s, box-shadow .2s;
             text-align: center; /* Centered for mobile */
-            background: #f8fafc;
+            background:var(--surface-hover);
         }
         .walkin-input-row input:focus { 
             border-color: #ea580c; 
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-            background: #fff;
+            background:var(--surface);
         }
         .walkin-input-row button {
             padding: 1rem 1.5rem; /* Larger touch target */
@@ -151,7 +151,7 @@
             margin: 0; 
         }
         .attendee-item {
-            background: #fff;
+            background:var(--surface);
             border-radius: 12px; /* More rounded */
             padding: 1rem; /* More padding */
             margin-bottom: 0.75rem; /* More space */
@@ -179,12 +179,12 @@
             white-space: nowrap;
         }
         .attendee-item .sid { 
-            color: #64748b; 
+            color:var(--text-muted); 
             font-size: .85rem; /* Larger */
             margin-bottom: 0.25rem;
         }
         .attendee-item .faculty { 
-            color: #475569; 
+            color:var(--text-muted); 
             font-size: .8rem; 
             display: block;
             margin-top: 0.25rem;
@@ -193,7 +193,7 @@
         .attendee-item .time {
             text-align: right;
             font-size: .8rem;
-            color: #475569;
+            color:var(--text-muted);
             white-space: nowrap;
             flex-shrink: 0;
             margin-left: 0.75rem;
@@ -217,7 +217,7 @@
         .empty-attendees {
             text-align: center;
             padding: 3rem 1rem; /* More padding */
-            color: #475569;
+            color:var(--text-muted);
             font-size: .95rem;
             line-height: 1.5;
         }
@@ -255,7 +255,7 @@
             border-left-color: #22c55e;
         }
         .walkin-alert-error { 
-            background: #fee2e2; 
+            background:var(--tint-red-strong); 
             color: #991b1b; 
             border-left-color: #ef4444;
         }
@@ -436,7 +436,7 @@
         <!-- Content -->
         <div style="padding:2rem;">
             <h4 style="margin:0 0 1rem;font-size:1.1rem;color:#1f2937;text-align:center;">{{ __('ช่วยประเมินกิจกรรมหน่อยนะครับ/คะ') }}            </h4>
-            <p style="margin:0 0 1.5rem;color:#475569;text-align:center;font-size:0.9rem;line-height:1.5;">{{ __('ความคิดเห็นของคุณจะช่วยให้เราพัฒนากิจกรรมในครั้งต่อไป') }}            </p>
+            <p style="margin:0 0 1.5rem;color:var(--text-muted);text-align:center;font-size:0.9rem;line-height:1.5;">{{ __('ความคิดเห็นของคุณจะช่วยให้เราพัฒนากิจกรรมในครั้งต่อไป') }}            </p>
 
             <!-- Rating Stars -->
             <div style="text-align:center;margin-bottom:1.5rem;">
@@ -457,14 +457,14 @@
             <div style="margin-bottom:1.5rem;">
                 <label for="feedbackComment" style="display:block;margin-bottom:0.5rem;font-weight:600;color:#374151;">{{ __('ความคิดเห็นเพิ่มเติม (ไม่บังคับ)') }}</label>
                 <textarea id="feedbackComment" rows="3" placeholder="{{ __('บอกเราว่าคุณคิดอย่างไรกับกิจกรรมนี้...') }}"
-                    style="width:100%;padding:0.75rem;border:2px solid #e5e7eb;border-radius:8px;font-size:0.9rem;font-family:inherit;resize:vertical;outline:none;transition:border-color 0.2s;"
+                    style="width:100%;padding:0.75rem;border:var(--border);border-radius:8px;font-size:0.9rem;font-family:inherit;resize:vertical;outline:none;transition:border-color 0.2s;"
                     onfocus="this.style.borderColor='#ea580c'"
-                    onblur="this.style.borderColor='#e5e7eb'"></textarea>
+                    onblur="this.style.borderColor='var(--border)'"></textarea>
             </div>
 
             <!-- Action Buttons -->
             <div style="display:flex;gap:0.75rem;">
-                <button onclick="closeFeedbackModal()" style="flex:1;padding:0.75rem 1rem;border:2px solid #e5e7eb;background:white;color:#6b7280;border-radius:8px;font-weight:600;cursor:pointer;transition:all 0.2s;">{{ __('ข้าม') }}                </button>
+                <button onclick="closeFeedbackModal()" style="flex:1;padding:0.75rem 1rem;border:var(--border);background:white;color:#6b7280;border-radius:8px;font-weight:600;cursor:pointer;transition:all 0.2s;">{{ __('ข้าม') }}                </button>
                 <button onclick="submitFeedback()" style="flex:1;padding:0.75rem 1rem;background:#ea580c;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;transition:all 0.2s;">{{ __('ส่งประเมิน') }}                </button>
             </div>
         </div>

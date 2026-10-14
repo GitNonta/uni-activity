@@ -28,7 +28,7 @@
 }
 .cat-summary-item {
     padding: 0.95rem 0.25rem;
-    border-bottom: 1px solid var(--border-color, #e2e8f0);
+    border-bottom:var(--border));
     transition: background-color 0.15s ease;
 }
 .cat-summary-item:last-child {
@@ -48,15 +48,15 @@
 .cat-summary-pct {
     font-size: 0.78rem;
     font-weight: 700;
-    color: #475569;
-    background: #f1f5f9;
+    color:var(--text-muted);
+    background:var(--bg-main);
     padding: 0.15rem 0.5rem;
     border-radius: 999px;
     letter-spacing: 0.02em;
 }
 .cat-summary-pct.is-complete {
     background: #dcfce7;
-    color: #15803d;
+    color:var(--tint-green-text);
 }
 .cat-progress-track {
     height: 8px;
@@ -93,7 +93,7 @@
     gap: 4px;
 }
 .cat-summary-status.is-pass {
-    color: #16a34a;
+    color:var(--tint-green-text);
     font-weight: 600;
 }
 .cat-summary-hours {

@@ -109,7 +109,7 @@
 @endphp
 
 @if($sectionTitle && $registrations->isNotEmpty())
-<h2 class="font-bold mb-3 mt-2" style="font-size:.95rem;color:#64748b;">{{ $sectionTitle }}</h2>
+<h2 class="font-bold mb-3 mt-2" style="font-size:.95rem;color:var(--text-muted);">{{ $sectionTitle }}</h2>
 @endif
 
 @forelse($registrations as $reg)
@@ -159,7 +159,7 @@
                 @if($reg->status === 'approved' && !$att && in_array($status, ['upcoming','open','ongoing']))
                 <form method="POST" action="{{ route('registrations.destroy', $reg->id) }}">
                     @csrf @method('DELETE')
-                    <button type="submit" class="btn btn-outline btn-sm" style="color:#dc2626;border-color:#fca5a5;font-size:.72rem;" onclick="return confirm('ยืนยันยกเลิก?')">{{ __('ยกเลิก') }}</button>
+                    <button type="submit" class="btn btn-outline btn-sm" style="color:var(--tint-red-text);border-color:var(--tint-red-border);font-size:.72rem;" onclick="return confirm('ยืนยันยกเลิก?')">{{ __('ยกเลิก') }}</button>
                 </form>
                 @endif
             </div>
@@ -234,7 +234,7 @@
     .todo-title {
         font-size: .92rem;
         font-weight: 700;
-        color: #1e293b;
+        color:var(--text-main);
         letter-spacing: -0.01em;
         display: -webkit-box;
         -webkit-line-clamp: 2;

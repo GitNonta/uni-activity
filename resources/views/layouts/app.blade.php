@@ -399,8 +399,8 @@
     {{-- ── Floating Chat Widget ── --}}
     {{-- ── Floating Chat Widget Styles ── --}}
     <style nonce="{{ request()->attributes->get('csp_nonce') }}">
-    .chat-list-item { background: transparent; transition: all .15s ease; margin: 6px 8px; border-radius: 14px; border: 1px solid #f1f5f9; }
-    .chat-list-item:hover { background: #f8fafc; border-color: #e2e8f0; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    .chat-list-item { background: transparent; transition: all .15s ease; margin: 6px 8px; border-radius: 14px; border:var(--border); }
+    .chat-list-item:hover { background:var(--surface-hover); border-color:var(--border); transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
 
     /* Desktop widget entrance + header button feedback */
     #chatFloatPanel.cf-anim {
@@ -456,10 +456,10 @@
 
     /* Input & Bottom Bar Elements */
     .cf-chat-input-area {
-        border-top: 1px solid #e2e8f0;
+        border-top:var(--border);
         padding: .5rem .6rem;
         padding-bottom: calc(.5rem + env(safe-area-inset-bottom, 0px));
-        background: #fff;
+        background:var(--surface);
         flex-shrink: 0;
         width: 100%;
         box-sizing: border-box;
@@ -478,12 +478,12 @@
         font-family: inherit;
         max-height: 80px;
         overflow-y: auto;
-        background: #f8fafc;
-        color: #1e293b;
+        background:var(--surface-hover);
+        color:var(--text-main);
         transition: border-color .15s, background .15s, box-shadow .15s;
     }
     .cf-input-field:focus {
-        background: #fff;
+        background:var(--surface);
         border-color: #ea580c;
         box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.14);
     }
@@ -493,24 +493,24 @@
         height: 36px;
         min-width: 36px;
         border-radius: 50%;
-        background: #f1f5f9;
+        background:var(--bg-main);
         border: none;
         font-size: .9rem;
         line-height: 1.5;
         flex-shrink: 0;
-        color: #475569;
+        color:var(--text-muted);
         display: inline-flex;
         align-items: center;
         justify-content: center;
         transition: border-color .15s, color .15s, background .15s;
     }
     .cf-attach-label:hover {
-        background: #fff7ed;
+        background:var(--tint-orange);
         color: #ea580c;
     }
 
     .chat-link {
-        color: #dc2626 !important;
+        color:var(--tint-red-text) !important;
         text-decoration: underline !important;
         text-underline-offset: 3px;
         word-break: break-all;
@@ -520,7 +520,7 @@
     }
     .chat-link-mine {
         color: #ef4444 !important;
-        background: #ffffff;
+        background:var(--surface);
         padding: 1px 6px;
         border-radius: 6px;
         display: inline-block;
@@ -534,41 +534,41 @@
 
     /* Light Theme (Default & data-theme="light") */
     html[data-theme="light"] #chatFloatPanel { 
-        background: #ffffff !important; 
+        background:var(--surface) !important; 
         box-shadow: 0 8px 40px rgba(0,0,0,0.15) !important;
-        border: 1px solid #e2e8f0;
+        border:var(--border);
     }
     html[data-theme="light"] .chat-list-item { 
         background: transparent !important;
-        border-color: #f1f5f9 !important; 
+        border-color:var(--border) !important; 
     }
     html[data-theme="light"] .chat-list-item:hover { 
-        background: #f8fafc !important; 
-        border-color: #e2e8f0 !important; 
+        background:var(--surface-hover) !important; 
+        border-color:var(--border) !important; 
     }
     html[data-theme="light"] .chat-list-item .chat-title { 
-        color: #0f172a !important; 
+        color:var(--text-main) !important; 
     }
     html[data-theme="light"] .chat-list-item .chat-preview { 
-        color: #64748b !important; 
+        color:var(--text-muted) !important; 
     }
     html[data-theme="light"] .cf-chat-input-area {
-        background: #ffffff !important;
-        border-top-color: #e2e8f0 !important;
+        background:var(--surface) !important;
+        border-top-color:var(--border) !important;
     }
     html[data-theme="light"] .cf-input-field {
-        background: #ffffff !important;
+        background:var(--surface) !important;
         border-color: #cbd5e1 !important;
-        color: #1e293b !important;
+        color:var(--text-main) !important;
     }
     html[data-theme="light"] .cf-attach-label {
-        background: #f1f5f9 !important;
+        background:var(--bg-main) !important;
         border-color: #cbd5e1 !important;
-        color: #475569 !important;
+        color:var(--text-muted) !important;
     }
     html[data-theme="light"] #cfChatWindow, 
     html[data-theme="light"] #cfTypingBar {
-        background: #f8fafc !important;
+        background:var(--surface-hover) !important;
     }
 
     /* Dark Theme (data-theme="dark") */
@@ -714,7 +714,7 @@
         .cf-chat-input-area {
             padding: 0.45rem 0.55rem !important;
             padding-bottom: calc(0.45rem + env(safe-area-inset-bottom)) !important;
-            border-top: 1px solid #e2e8f0 !important;
+            border-top:var(--border) !important;
             box-shadow: 0 -2px 10px rgba(15, 23, 42, 0.06);
         }
 
@@ -733,8 +733,8 @@
             flex-shrink: 0 !important;
             border-radius: 50% !important;
             border: none !important;
-            background: #f1f5f9 !important;
-            color: #64748b !important;
+            background:var(--bg-main) !important;
+            color:var(--text-muted) !important;
         }
 
         .cf-input-field {
@@ -748,14 +748,14 @@
             line-height: 1.5 !important;
             min-width: 0 !important;
             flex: 1 1 auto !important;
-            background: #f8fafc !important;
+            background:var(--surface-hover) !important;
             border: 1.5px solid transparent !important;
             box-sizing: border-box !important;
             transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
         }
 
         .cf-input-field:focus {
-            background: #ffffff !important;
+            background:var(--surface) !important;
             border-color: #ea580c !important;
             box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.12) !important;
         }
@@ -811,7 +811,7 @@
     </style>
     
     <div id="chatFloatWidget" style="position:fixed;bottom:5.5rem;right:1.1rem;z-index:8500;display:flex;flex-direction:column;align-items:flex-end;gap:.5rem;">
-        <div id="chatFloatPanel" style="display:none;width:360px;height:520px;background:#fff;border-radius:20px;box-shadow:0 12px 40px rgba(0,0,0,.18),0 4px 12px rgba(0,0,0,.08);overflow:hidden;flex-direction:column;">
+        <div id="chatFloatPanel" style="display:none;width:360px;height:520px;background:var(--surface);border-radius:20px;box-shadow:0 12px 40px rgba(0,0,0,.18),0 4px 12px rgba(0,0,0,.08);overflow:hidden;flex-direction:column;">
             <div id="cfHeader" style="background:linear-gradient(135deg,#f97316 0%,#ea580c 55%,#c2410c 100%);padding:.6rem .85rem;display:flex;align-items:center;gap:.5rem;flex-shrink:0;box-shadow:0 2px 8px rgba(194,65,12,.35);">
                 <button id="cfBackBtn" onclick="cfBackToList()" style="display:none;width:30px;height:30px;min-width:30px;align-items:center;justify-content:center;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);color:#fff;cursor:pointer;padding:0;border-radius:50%;" aria-label="{{ __('ย้อนกลับ') }}"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg></button>
                 <span id="cfHeaderTitle" style="color:#fff;font-weight:700;font-size:.88rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:.5rem;"><span style="width:30px;height:30px;min-width:30px;border-radius:50%;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;"><x-icon name="chat" size="15" /></span> <span style="overflow:hidden;text-overflow:ellipsis;">{{ __('ข้อความของฉัน') }}</span></span>
@@ -820,12 +820,12 @@
             </div>
             <div id="cfViewList" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;">
                 <div id="cfListContent" style="flex:1;">
-                    <div style="padding:1.5rem;text-align:center;font-size:.85rem;color:#475569;line-height:1.5;">{{ __('กำลังโหลด...') }}</div>
+                    <div style="padding:1.5rem;text-align:center;font-size:.85rem;color:var(--text-muted);line-height:1.5;">{{ __('กำลังโหลด...') }}</div>
                 </div>
             </div>
             <div id="cfViewChat" style="display:none;flex-direction:column;flex:1;min-height:0;">
-                <div id="cfChatWindow" style="flex:1;overflow-y:auto;padding:.75rem;display:flex;flex-direction:column;gap:.45rem;background:#f8fafc;"></div>
-                <div id="cfTypingBar" style="display:none;align-items:center;padding:.4rem .75rem;background:#f8fafc;font-size:.72rem;color:#c2410c;line-height:1.5;">
+                <div id="cfChatWindow" style="flex:1;overflow-y:auto;padding:.75rem;display:flex;flex-direction:column;gap:.45rem;background:var(--surface-hover);"></div>
+                <div id="cfTypingBar" style="display:none;align-items:center;padding:.4rem .75rem;background:var(--surface-hover);font-size:.72rem;color:var(--tint-orange-text);line-height:1.5;">
                     <svg style="width:12px;height:12px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>{{ __('ผู้ดูแลกำลังพิมพ์...') }}</div>
                 <div class="cf-chat-input-area">
                     <div id="cfAttachPreview" style="display:none;gap:.3rem;flex-wrap:wrap;margin-bottom:.3rem;"></div>
@@ -1007,18 +1007,18 @@
             var isSupOnline = isStaffMemberOnline(0);
             var supportStatusHtml = isSupOnline 
                 ? '<span style="color:#047857;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#059669;display:inline-block;"></span>{{ __('กำลังใช้งาน') }}</span>' 
-                : '<span style="color:#475569;">' + formatLastSeen(supportLastSeen) + '</span>';
+                : '<span style="color:var(--text-muted);">' + formatLastSeen(supportLastSeen) + '</span>';
             
             var supportChatHtml = '<div data-fdx-item="1" data-job-id="0" data-job-title="ติดต่อสอบถามเจ้าหน้าที่" data-staff-profile-url="" data-staff-name="" style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;cursor:pointer;" class="chat-list-item ' + (isSupportUnread ? 'unread' : '') + '">'
                 + '<div style="position:relative;flex-shrink:0;">'
-                + '<div style="width:34px;height:34px;border-radius:50%;background:#ffedd5;color:#c2410c;display:flex;align-items:center;justify-content:center;">'
+                + '<div style="width:34px;height:34px;border-radius:50%;background:var(--tint-orange);color:var(--tint-orange-text);display:flex;align-items:center;justify-content:center;">'
                 + '<svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.05 2a9 9 0 0 1 8 7.94"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.05 6A5 5 0 0 1 18 10"/></svg>'
                 + '</div>'
                 + '<span class="cf-staff-online-dot cf-staff-online-dot-0" data-job-id="0" data-staff-id="0" style="display:' + (isSupOnline ? 'block' : 'none') + ';position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#059669;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #059669;" title="{{ __('กำลังใช้งาน') }}"></span>'
                 + '</div>'
                 + '<div style="flex:1;min-width:0;">'
                 + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;">'
-                + '<div class="chat-title" style="font-size:.82rem;font-weight:' + (isSupportUnread?'700':'500') + ';color:#1e293b;line-height:1.5;">ติดต่อสอบถามเจ้าหน้าที่</div>'
+                + '<div class="chat-title" style="font-size:.82rem;font-weight:' + (isSupportUnread?'700':'500') + ';color:var(--text-main);line-height:1.5;">ติดต่อสอบถามเจ้าหน้าที่</div>'
                 + '<div class="cf-thread-status cf-thread-status-0" data-job-id="0" data-staff-id="0" data-last-seen="' + (supportLastSeen || '') + '" style="font-size:.65rem;flex-shrink:0;line-height:1.5;">' + supportStatusHtml + '</div>'
                 + '</div>'
                 + '<div class="chat-preview" style="font-size:.7rem;color:' + (isSupportUnread?'#1e293b':'#475569') + ';font-weight:' + (isSupportUnread?'700':'400') + ';line-height:1.5;">' + supportPreview + '</div>'
@@ -1027,20 +1027,20 @@
                 + '</div>';
 
             if (!activeThreads.length) {
-                el.innerHTML = supportChatHtml + '<div style="padding:2rem 1rem;text-align:center;font-size:.83rem;color:#475569;line-height:1.5;">ยังไม่มีข้อความเกี่ยวกับงาน</div>';
+                el.innerHTML = supportChatHtml + '<div style="padding:2rem 1rem;text-align:center;font-size:.83rem;color:var(--text-muted);line-height:1.5;">ยังไม่มีข้อความเกี่ยวกับงาน</div>';
                 return;
             }
             el.innerHTML = supportChatHtml + activeThreads.map(function(t) {
                 var isUnread = (t.unread || 0) > 0;
                 var isArchived = !!t.job_deleted;
-                var titlePrefix = isArchived ? '<span style="font-size:.6rem;color:#b45309;background:#fef3c7;border:1px solid #fcd34d;border-radius:999px;padding:1px 6px;margin-right:4px;vertical-align:1px;">{{ __('ลบแล้ว') }}</span>' : '';
+                var titlePrefix = isArchived ? '<span style="font-size:.6rem;color:var(--tint-amber-text);background:var(--tint-amber);border:1px solid #fcd34d;border-radius:999px;padding:1px 6px;margin-right:4px;vertical-align:1px;">{{ __('ลบแล้ว') }}</span>' : '';
                 var preview = t.last_message ? (t.last_message.length > 32 ? t.last_message.slice(0,32)+'…' : t.last_message) : '<svg style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> ไฟล์แนบ';
                 var safeTitle = String(t.job_title || 'งานกิจกรรม').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 var threadLastSeen = t.staff_last_seen || null;
                 var isJobOnline = isStaffMemberOnline(t.staff_id);
                 var threadStatusHtml = isJobOnline 
                     ? '<span style="color:#047857;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#059669;display:inline-block;"></span>{{ __('กำลังใช้งาน') }}</span>' 
-                    : '<span style="color:#475569;">' + formatLastSeen(threadLastSeen) + '</span>';
+                    : '<span style="color:var(--text-muted);">' + formatLastSeen(threadLastSeen) + '</span>';
                 
                 var avatarHtml = '';
                 if (t.avatar) {
@@ -1232,7 +1232,7 @@
 
         function loadMessages(jobId) {
             var win = document.getElementById('cfChatWindow');
-            win.innerHTML = '<div style="padding:1.5rem;text-align:center;font-size:.82rem;color:#475569;line-height:1.5;">{{ __('กำลังโหลด...') }}</div>';
+            win.innerHTML = '<div style="padding:1.5rem;text-align:center;font-size:.82rem;color:var(--text-muted);line-height:1.5;">{{ __('กำลังโหลด...') }}</div>';
             fetch('/jobs/' + jobId + '/chat/messages', { headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' } })
                 .then(function(r){ return r.json(); })
                 .then(function(data) {
@@ -1271,7 +1271,7 @@
                 if (!old) {
                     cfNotice = document.createElement('div');
                     cfNotice.id = 'cfArchivedNotice';
-                    cfNotice.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:6px;padding:.7rem .9rem;background:#f8fafc;font-size:.75rem;color:#b45309;font-weight:500;';
+                    cfNotice.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:6px;padding:.7rem .9rem;background:var(--surface-hover);font-size:.75rem;color:var(--tint-amber-text);font-weight:500;';
                     cfNotice.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 5 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 5-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg> ประกาศงานนี้ถูกลบแล้ว — ดูได้เฉพาะประวัติการแชท';
                     bar.parentNode.insertBefore(cfNotice, bar);
                     bar.style.display = 'none';
@@ -1397,7 +1397,7 @@
                 
                 var moreBtn = document.createElement('button');
                 moreBtn.innerHTML = '<svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>';
-                moreBtn.style.cssText = 'background:transparent; border:none; cursor:pointer; padding:4px; color:#475569; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:all .2s; margin:0 4px;';
+                moreBtn.style.cssText = 'background:transparent; border:none; cursor:pointer; padding:4px; color:var(--text-muted); display:flex; align-items:center; justify-content:center; border-radius:50%; transition:all .2s; margin:0 4px;';
                 
                 var menu = document.createElement('div');
                 menu.className = 'msg-dropdown';
@@ -1444,7 +1444,7 @@
             var timeStr = new Date(msg.created_at).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
             var statusDiv = document.createElement('div');
             statusDiv.style.cssText = 'display:flex;align-items:center;gap:.25rem;margin-top:.1rem;';
-            statusDiv.innerHTML = '<span style="font-size:.6rem;color:#475569;line-height:1.5;">' + timeStr + '</span>';
+            statusDiv.innerHTML = '<span style="font-size:.6rem;color:var(--text-muted);line-height:1.5;">' + timeStr + '</span>';
             
             if (mine && isLastMine) {
                 var readText = isTemp ? 'กำลังส่ง...' : formatReadStatus(msg.read_at, msg.is_read);
@@ -1478,7 +1478,7 @@
             cfPreview.style.display = 'flex';
             Array.from(cfFileInput.files).forEach(function(f) {
                 var chip = document.createElement('span');
-                chip.style.cssText = 'background:#ffedd5;color:#9a3412;border-radius:6px;padding:.2rem .55rem;font-size:.78rem;display:flex;align-items:center;gap:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;';
+                chip.style.cssText = 'background:var(--tint-orange);color:var(--tint-orange-text);border-radius:6px;padding:.2rem .55rem;font-size:.78rem;display:flex;align-items:center;gap:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;';
                 if (f.type.startsWith('image/')) {
                     chip.innerHTML = '<svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>' + f.name;
                 } else {
@@ -1598,7 +1598,7 @@
                 })
                 .catch(function(err) {
                     console.error('Chat Error:', err);
-                    bubble.style.background = '#fee2e2'; // Error state
+                    bubble.style.background = 'var(--tint-red-strong)'; // Error state
                     bubble.style.color = '#991b1b';
                     alert(err.error || (err.errors && err.errors.message ? err.errors.message[0] : null) || 'ไม่สามารถส่งข้อความได้');
                 });
@@ -1723,7 +1723,7 @@
                         st.innerHTML = '<span style="color:#047857;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#059669;display:inline-block;"></span>{{ __('กำลังใช้งาน') }}</span>';
                     } else {
                         var lastSeen = st.getAttribute('data-last-seen');
-                        st.innerHTML = '<span style="color:#475569;line-height:1.5;">' + formatLastSeen(lastSeen) + '</span>';
+                        st.innerHTML = '<span style="color:var(--text-muted);line-height:1.5;">' + formatLastSeen(lastSeen) + '</span>';
                     }
                 });
 

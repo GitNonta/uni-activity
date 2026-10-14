@@ -373,7 +373,7 @@
                 </button>
             </div>
             <div id="gmapNearbyList" class="gmap-drawer-body">
-                <div style="padding:2rem;text-align:center;color:#475569;line-height:1.5;">{{ __('กำลังโหลดรายการสถานที่...') }}</div>
+                <div style="padding:2rem;text-align:center;color:var(--text-muted);line-height:1.5;">{{ __('กำลังโหลดรายการสถานที่...') }}</div>
             </div>
         </div>
     </div>
@@ -483,7 +483,7 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     pointer-events: auto;
     display: flex;
     align-items: center;
-    background: #ffffff;
+    background:var(--surface);
     border-radius: 28px;
     padding: 6px 14px 6px 8px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.16), 0 1px 4px rgba(0,0,0,0.08);
@@ -497,7 +497,7 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
 .gmap-back-btn {
     background: none;
     border: none;
-    color: #475569;
+    color:var(--text-muted);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -507,8 +507,8 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     transition: background 0.15s;
 }
 .gmap-back-btn:hover {
-    background: #f1f5f9;
-    color: #0f172a;
+    background:var(--bg-main);
+    color:var(--text-main);
 }
 .gmap-search-input {
     flex: 1;
@@ -518,13 +518,13 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     padding: 6px 10px;
     font-size: 0.95rem;
     font-weight: 500;
-    color: #0f172a;
+    color:var(--text-main);
     font-family: inherit;
 }
 .gmap-search-clear {
     background: #e2e8f0;
     border: none;
-    color: #64748b;
+    color:var(--text-muted);
     width: 22px;
     height: 22px;
     border-radius: 50%;
@@ -572,8 +572,8 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     font-size: 0.8rem;
     font-weight: 600;
     white-space: nowrap;
-    background: #ffffff;
-    color: #334155;
+    background:var(--surface);
+    color:var(--text-muted);
     border: 1px solid rgba(0,0,0,0.08);
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     cursor: pointer;
@@ -581,7 +581,7 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     flex-shrink: 0;
 }
 .gmap-chip:hover {
-    background: #f8fafc;
+    background:var(--surface-hover);
     transform: translateY(-1px);
 }
 .gmap-chip.active {
@@ -743,8 +743,8 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     width: 46px;
     height: 46px;
     border-radius: 50%;
-    background: #ffffff;
-    color: #334155;
+    background:var(--surface);
+    color:var(--text-muted);
     border: 1px solid rgba(0,0,0,0.06);
     box-shadow: 0 4px 14px rgba(0,0,0,0.18);
     display: flex;
@@ -790,7 +790,7 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     position: absolute;
     right: 14px;
     bottom: 80px;
-    background: #ffffff;
+    background:var(--surface);
     border-radius: 20px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     padding: 14px 16px;
@@ -804,7 +804,7 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     justify-content: space-between;
     font-weight: 700;
     font-size: 0.9rem;
-    color: #0f172a;
+    color:var(--text-main);
     margin-bottom: 12px;
 }
 .gmap-layer-grid {
@@ -823,16 +823,16 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     border: 2px solid transparent;
     font-size: 0.72rem;
     font-weight: 600;
-    color: #475569;
+    color:var(--text-muted);
     text-align: center;
     transition: all 0.15s;
 }
 .gmap-layer-card:hover {
-    background: #f8fafc;
+    background:var(--surface-hover);
 }
 .gmap-layer-card.active {
     border-color: #ea580c;
-    background: #fff7ed;
+    background:var(--tint-orange);
     color: #ea580c;
 }
 .gmap-layer-preview {
@@ -852,7 +852,7 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     left: 0;
     right: 0;
     z-index: 1200;
-    background: #ffffff;
+    background:var(--surface);
     border-top-left-radius: 24px;
     border-top-right-radius: 24px;
     box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.18);
@@ -965,7 +965,7 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     border-radius: 16px;
     overflow: hidden;
     flex-shrink: 0;
-    background: #f1f5f9;
+    background:var(--bg-main);
     box-shadow: 0 3px 10px rgba(0,0,0,0.08);
     border: 1px solid rgba(0,0,0,0.06);
 }
@@ -979,16 +979,16 @@ html[data-theme="dark"] .maplibregl-ctrl-attrib {
     transition: all 0.2s ease;
 }
 .gmap-thumb-fallback.bg-orange {
-    background: #fff7ed;
+    background:var(--tint-orange);
     color: #ea580c;
 }
 .gmap-thumb-fallback.bg-blue {
-    background: #f0f9ff;
+    background:var(--tint-blue);
     color: #0284c7;
 }
 .gmap-thumb-fallback.bg-green {
-    background: #f0fdf4;
-    color: #16a34a;
+    background:var(--tint-green);
+    color:var(--tint-green-text);
 }
 html[data-theme="dark"] .gmap-thumb-fallback.bg-orange {
     background: rgba(234, 88, 12, 0.18);
@@ -1019,7 +1019,7 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     padding: 2px 8px;
     border-radius: 10px;
 }
-.badge-orange { background: #ffedd5; color: #9a3412; }
+.badge-orange { background:var(--tint-orange); color:var(--tint-orange-text); }
 .badge-blue { background: #e0f2fe; color: #0369a1; }
 .badge-green { background: #dcfce7; color: #166534; }
 
@@ -1027,7 +1027,7 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     font-size: 0.72rem;
     font-weight: 700;
     color: #0369a1;
-    background: #f0f9ff;
+    background:var(--tint-blue);
     border: 1px solid #bae6fd;
     padding: 2px 8px;
     border-radius: 10px;
@@ -1041,7 +1041,7 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     font-weight: 800;
     margin: 2px 0 4px;
     line-height: 1.5;
-    color: #0f172a;
+    color:var(--text-main);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -1049,7 +1049,7 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
 }
 .gmap-sheet-subtitle {
     font-size: 0.8rem;
-    color: #64748b;
+    color:var(--text-muted);
     font-weight: 500;
     display: flex;
     align-items: center;
@@ -1062,9 +1062,9 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: #f1f5f9;
+    background:var(--bg-main);
     border: none;
-    color: #64748b;
+    color:var(--text-muted);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1074,7 +1074,7 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
 }
 .gmap-sheet-close:hover {
     background: #e2e8f0;
-    color: #0f172a;
+    color:var(--text-main);
 }
 
 /* Actions Row */
@@ -1115,11 +1115,11 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     box-shadow: 0 6px 18px rgba(234, 88, 12, 0.48);
 }
 .gmap-btn-route-select {
-    background: #f1f5f9;
-    color: #0f172a;
+    background:var(--bg-main);
+    color:var(--text-main);
     font-weight: 700;
     font-size: 0.85rem;
-    border: 1.5px solid #e2e8f0;
+    border:var(--border);
     border-radius: 14px;
     padding: 10px 13px;
     display: flex;
@@ -1136,11 +1136,11 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     transform: translateY(-1px);
 }
 .gmap-btn-native-detect {
-    background: #ffffff;
-    color: #0f172a;
+    background:var(--surface);
+    color:var(--text-main);
     font-weight: 700;
     font-size: 0.85rem;
-    border: 1.5px solid #e2e8f0;
+    border:var(--border);
     border-radius: 14px;
     padding: 10px 12px;
     display: flex;
@@ -1153,7 +1153,7 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     flex-shrink: 0;
 }
 .gmap-btn-native-detect:hover {
-    background: #f8fafc;
+    background:var(--surface-hover);
     border-color: #cbd5e1;
     transform: translateY(-1px);
 }
@@ -1161,9 +1161,9 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     width: 42px;
     height: 42px;
     border-radius: 14px;
-    background: #ffffff;
-    border: 1.5px solid #e2e8f0;
-    color: #475569;
+    background:var(--surface);
+    border:var(--border);
+    color:var(--text-muted);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1187,7 +1187,7 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     }
 }
 .gmap-btn-icon:hover {
-    background: #f8fafc;
+    background:var(--surface-hover);
     color: #ea580c;
     border-color: #cbd5e1;
 }
@@ -1208,17 +1208,17 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     transition: all 0.15s;
 }
 .card-walk {
-    background: #fff7ed;
+    background:var(--tint-orange);
     border: 1px solid #ffedd5;
 }
 .card-drive {
-    background: #f0f9ff;
+    background:var(--tint-blue);
     border: 1px solid #e0f2fe;
 }
 .gmap-eta-value {
     font-size: 0.95rem;
     font-weight: 800;
-    color: #0f172a;
+    color:var(--text-main);
 }
 
 /* Info Section */
@@ -1226,10 +1226,10 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    background: #f8fafc;
+    background:var(--surface-hover);
     border-radius: 16px;
     padding: 12px 14px;
-    border: 1px solid #f1f5f9;
+    border:var(--border);
 }
 .gmap-info-row {
     display: flex;
@@ -1237,7 +1237,7 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     gap: 10px;
 }
 .gmap-info-icon {
-    color: #64748b;
+    color:var(--text-muted);
     margin-top: 2px;
 }
 .gmap-info-text {
@@ -1245,7 +1245,7 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     min-width: 0;
 }
 .gmap-info-desc {
-    border-top: 1px solid #e2e8f0;
+    border-top:var(--border);
     padding-top: 8px;
 }
 #bs-desc-val {
@@ -1283,7 +1283,7 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     left: 0;
     right: 0;
     z-index: 1250;
-    background: #ffffff;
+    background:var(--surface);
     border-top-left-radius: 24px;
     border-top-right-radius: 24px;
     box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.2);
@@ -1302,20 +1302,20 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom:var(--border);
     padding-bottom: 10px;
 }
 .gmap-route-subtitle {
     font-size: 0.72rem;
     font-weight: 700;
-    color: #475569;
+    color:var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 .gmap-route-title {
     font-size: 1.1rem;
     font-weight: 800;
-    color: #0f172a;
+    color:var(--text-main);
     margin: 2px 0 0;
     line-height: 1.5;
 }
@@ -1330,8 +1330,8 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
 .gmap-mode-chip {
     flex: 1;
     min-width: 70px;
-    background: #f1f5f9;
-    color: #475569;
+    background:var(--bg-main);
+    color:var(--text-muted);
     border: 1.5px solid transparent;
     border-radius: 12px;
     padding: 8px 6px;
@@ -1348,7 +1348,7 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     background: #e2e8f0;
 }
 .gmap-mode-chip.active {
-    background: #fff7ed;
+    background:var(--tint-orange);
     color: #ea580c;
     border-color: #ea580c;
     box-shadow: 0 2px 8px rgba(234, 88, 12, 0.25);
@@ -1361,8 +1361,8 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     overflow-y: auto;
 }
 .gmap-route-card {
-    background: #f8fafc;
-    border: 2px solid #e2e8f0;
+    background:var(--surface-hover);
+    border:var(--border);
     border-radius: 16px;
     padding: 12px 14px;
     display: flex;
@@ -1372,11 +1372,11 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     transition: all 0.15s ease;
 }
 .gmap-route-card:hover {
-    background: #f1f5f9;
+    background:var(--bg-main);
     border-color: #cbd5e1;
 }
 .gmap-route-card.selected {
-    background: #fff7ed;
+    background:var(--tint-orange);
     border-color: #ea580c;
     box-shadow: 0 4px 14px rgba(234, 88, 12, 0.15);
 }
@@ -1394,16 +1394,16 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
 .gmap-route-card-time {
     font-size: 1.15rem;
     font-weight: 800;
-    color: #0f172a;
+    color:var(--text-main);
 }
 .gmap-route-card-dist {
     font-size: 0.85rem;
-    color: #64748b;
+    color:var(--text-muted);
     font-weight: 600;
 }
 .gmap-route-card-via {
     font-size: 0.78rem;
-    color: #64748b;
+    color:var(--text-muted);
 }
 .gmap-route-card-radio {
     width: 20px;
@@ -1423,7 +1423,7 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #fff;
+    background:var(--surface);
 }
 
 /* ── 6. Nearby Places Drawer ── */
@@ -1434,10 +1434,10 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     right: 14px;
     bottom: 24px;
     max-width: 440px;
-    background: #ffffff;
+    background:var(--surface);
     border-radius: 20px;
     box-shadow: 0 12px 40px rgba(0,0,0,0.25);
-    border: 1px solid #e2e8f0;
+    border:var(--border);
     z-index: 1200;
     display: flex;
     flex-direction: column;
@@ -1449,7 +1449,7 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     align-items: center;
     justify-content: space-between;
     padding: 14px 16px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom:var(--border);
 }
 .gmap-title-icon {
     width: 32px;
@@ -1465,9 +1465,9 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: #f1f5f9;
+    background:var(--bg-main);
     border: none;
-    color: #64748b;
+    color:var(--text-muted);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1488,13 +1488,13 @@ html[data-theme="dark"] .gmap-thumb-fallback.bg-green {
     gap: 12px;
     padding: 10px 12px;
     border-radius: 14px;
-    background: #f8fafc;
-    border: 1px solid #f1f5f9;
+    background:var(--surface-hover);
+    border:var(--border);
     cursor: pointer;
     transition: all 0.15s;
 }
 .gmap-place-card:hover {
-    background: #f1f5f9;
+    background:var(--bg-main);
     transform: translateY(-1px);
 }
 
@@ -3600,7 +3600,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
         }
 
         if (filtered.length === 0) {
-            listEl.innerHTML = '<div style="padding:2rem;text-align:center;color:#475569;font-size:0.88rem;line-height:1.5;">{{ __('ไม่พบสถานที่ตามเงื่อนไข') }}</div>';
+            listEl.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--text-muted);font-size:0.88rem;line-height:1.5;">{{ __('ไม่พบสถานที่ตามเงื่อนไข') }}</div>';
             return;
         }
 
@@ -3618,8 +3618,8 @@ html[data-theme="dark"] .gmap-sheet-handle {
                         ${loc.image ? `<img src="${loc.image}" alt="">` : `<div class="gmap-thumb-fallback"><svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg></div>`}
                     </div>
                     <div style="flex:1;min-width:0;">
-                        <div style="font-weight:700;font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#0f172a;line-height:1.5;">${loc.title}</div>
-                        <div style="font-size:0.75rem;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5;">${loc.location_name}</div>
+                        <div style="font-weight:700;font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-main);line-height:1.5;">${loc.title}</div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5;">${loc.location_name}</div>
                     </div>
                     ${distText ? `<span class="gmap-distance-chip">${distText}</span>` : ''}
                 </div>

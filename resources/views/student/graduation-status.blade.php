@@ -7,7 +7,7 @@
     {{-- Header --}}
     <div class="flex items-center justify-between mb-4" style="flex-wrap:wrap;gap:1rem;">
         <div>
-            <h1 class="font-bold flex items-center gap-2" style="font-size:1.35rem;color:#0f172a;">
+            <h1 class="font-bold flex items-center gap-2" style="font-size:1.35rem;color:var(--text-main);">
                 <span style="display:inline-flex;padding:0.4rem;background:#e0e7ff;border-radius:0.5rem;color:#4338ca;">
                     <svg style="width:1.35rem;height:1.35rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
                 </span>
@@ -37,16 +37,16 @@
             </div>
         </div>
     @else
-        <div style="background:#fef2f2;border:1.5px solid #ef4444;border-radius:0.75rem;padding:1.25rem 1.5rem;margin-bottom:1.5rem;" class="flex items-start gap-3">
-            <div style="width:2.5rem;height:2.5rem;border-radius:50%;background:#fee2e2;color:#dc2626;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <div style="background:var(--tint-red);border:1.5px solid #ef4444;border-radius:0.75rem;padding:1.25rem 1.5rem;margin-bottom:1.5rem;" class="flex items-start gap-3">
+            <div style="width:2.5rem;height:2.5rem;border-radius:50%;background:var(--tint-red-strong);color:var(--tint-red-text);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                 <svg style="width:1.5rem;height:1.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
             </div>
             <div>
                 <h3 class="font-bold" style="font-size:1.1rem;color:#991b1b;">{{ __('คุณยังไม่ผ่านเกณฑ์ชั่วโมงกิจกรรมเพื่อการสำเร็จการศึกษา') }}</h3>
-                <p class="text-xs mt-1" style="color:#b91c1c;line-height:1.4;">
+                <p class="text-xs mt-1" style="color:var(--tint-red-text);line-height:1.4;">
                     {{ __('ขณะนี้คุณมีชั่วโมงสะสม') }} {{ number_format($audit['total_hours'], 1) }} ชม. จากเกณฑ์ขั้นต่ำ {{ number_format($audit['min_total_hours'], 0) }} ชม. และยังขาดคุณสมบัติต่อไปนี้:
                 </p>
-                <ul class="text-xs mt-2" style="color:#b91c1c;padding-left:1.25rem;">
+                <ul class="text-xs mt-2" style="color:var(--tint-red-text);padding-left:1.25rem;">
                     @foreach($audit['missing_requirements'] as $missing)
                         <li>{{ $missing }}</li>
                     @endforeach
@@ -56,7 +56,7 @@
     @endif
 
     {{-- ตารางตรวจสอบรายหมวดหมู่ตามโครงสร้าง --}}
-    <div class="card mb-4" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:0.75rem;padding:1.5rem;">
+    <div class="card mb-4" style="background:var(--surface);border:var(--border);border-radius:0.75rem;padding:1.5rem;">
         <h3 class="font-bold text-dark text-sm mb-3 flex items-center gap-2">
             <svg style="width:1.1rem;height:1.1rem;color:#4f46e5;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
             <span>{{ __('รายละเอียดความคืบหน้ารายหมวดหมู่ (Curriculum Progress)') }}</span>
@@ -66,7 +66,7 @@
             {{-- ขอบเขตมหาวิทยาลัย --}}
             @if(isset($audit['scope_audit']['university']))
                 @php $uni = $audit['scope_audit']['university']; @endphp
-                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:0.5rem;padding:1rem;">
+                <div style="background:var(--surface-hover);border:var(--border);border-radius:0.5rem;padding:1rem;">
                     <div class="flex items-center justify-between mb-1">
                         <span class="font-bold text-sm text-dark">{{ $uni['name'] }}</span>
                         <span class="badge {{ $uni['passed'] ? 'badge-green' : 'badge-red' }}" style="font-size:0.75rem;">
@@ -86,7 +86,7 @@
             {{-- ขอบเขตคณะ --}}
             @if(isset($audit['scope_audit']['faculty']))
                 @php $fac = $audit['scope_audit']['faculty']; @endphp
-                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:0.5rem;padding:1rem;">
+                <div style="background:var(--surface-hover);border:var(--border);border-radius:0.5rem;padding:1rem;">
                     <div class="flex items-center justify-between mb-1">
                         <span class="font-bold text-sm text-dark">{{ $fac['name'] }}</span>
                         <span class="badge {{ $fac['passed'] ? 'badge-green' : 'badge-red' }}" style="font-size:0.75rem;">
@@ -105,7 +105,7 @@
 
             {{-- จิตอาสา --}}
             @foreach($audit['category_audit'] as $cat)
-                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:0.5rem;padding:1rem;">
+                <div style="background:var(--surface-hover);border:var(--border);border-radius:0.5rem;padding:1rem;">
                     <div class="flex items-center justify-between mb-1">
                         <span class="font-bold text-sm text-dark">{{ $cat['name'] }}</span>
                         <span class="badge {{ $cat['passed'] ? 'badge-green' : 'badge-red' }}" style="font-size:0.75rem;">

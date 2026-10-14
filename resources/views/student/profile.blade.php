@@ -99,9 +99,9 @@
     justify-content: center;
     gap: 0.5rem;
     padding: 0.6rem 1.25rem;
-    background: #fff7ed;
-    color: #c2410c;
-    border: 1px solid #fed7aa;
+    background:var(--tint-orange);
+    color:var(--tint-orange-text);
+    border:var(--tint-orange-border);
     border-radius: 10px;
     font-weight: 600;
     font-size: 0.88rem;
@@ -111,7 +111,7 @@
     white-space: nowrap;
 }
 .student-idcard-action-btn:hover {
-    background: #ffedd5;
+    background:var(--tint-orange);
     border-color: #f97316;
     transform: translateY(-1px);
 }
@@ -175,13 +175,13 @@ html.dark .student-stat-num.highlight {
 
 .student-stat-label {
     font-size: 0.74rem;
-    color: #64748b;
+    color:var(--text-muted);
     font-weight: 500;
     line-height: 1.3;
 }
 html[data-theme="dark"] .student-stat-label,
 html.dark .student-stat-label {
-    color: #94a3b8 !important;
+    color:var(--text-muted) !important;
 }
 
 /* ── ข้อมูลประวัตินักศึกษา (Student Details Grid) ── */
@@ -206,13 +206,13 @@ html.dark .student-stat-label {
     gap: 0.75rem;
 }
 .student-detail-icon {
-    color: #64748b;
+    color:var(--text-muted);
     margin-top: 0.15rem;
     flex-shrink: 0;
 }
 html[data-theme="dark"] .student-detail-icon,
 html.dark .student-detail-icon {
-    color: #94a3b8 !important;
+    color:var(--text-muted) !important;
 }
 
 .student-detail-text {
@@ -221,14 +221,14 @@ html.dark .student-detail-icon {
 }
 .student-detail-label {
     font-size: 0.72rem;
-    color: #64748b;
+    color:var(--text-muted);
     margin: 0 0 0.15rem 0;
     font-weight: 500;
     line-height: 1.2;
 }
 html[data-theme="dark"] .student-detail-label,
 html.dark .student-detail-label {
-    color: #94a3b8 !important;
+    color:var(--text-muted) !important;
 }
 
 .student-detail-value {
@@ -249,9 +249,9 @@ html.dark .student-detail-value {
     justify-content: space-between;
     align-items: center;
     padding: 1rem;
-    border: 1px solid #f1f5f9;
+    border:var(--border);
     border-radius: 10px;
-    background: #fafafa;
+    background:var(--surface-hover);
     transition: background 0.2s;
 }
 html[data-theme="dark"] .recent-attendance-item,
@@ -265,8 +265,8 @@ html.dark .recent-attendance-item {
     align-items: center;
     gap: 0.5rem;
     padding: 0.8rem 1.5rem;
-    background: #ffffff;
-    color: #475569;
+    background:var(--surface);
+    color:var(--text-muted);
     border: 1px solid #cbd5e1;
     border-radius: 999px;
     font-weight: 600;
@@ -276,8 +276,8 @@ html.dark .recent-attendance-item {
     transition: all 0.2s;
 }
 .pdf-download-btn:hover {
-    background: #f8fafc;
-    color: #1e293b;
+    background:var(--surface-hover);
+    color:var(--text-main);
 }
 html[data-theme="dark"] .pdf-download-btn,
 html.dark .pdf-download-btn {
@@ -297,8 +297,8 @@ html.dark .pdf-download-btn:hover {
     align-items: center;
     gap: 0.5rem;
     padding: 0.6rem;
-    background: #f8fafc;
-    border: 1px solid #f1f5f9;
+    background:var(--surface-hover);
+    border:var(--border);
     border-radius: 8px;
 }
 html[data-theme="dark"] .line-feature-pill,
@@ -316,8 +316,8 @@ html.dark .line-feature-pill span {
     align-items: center;
     justify-content: space-between;
     padding: 0.75rem 1rem;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background:var(--surface-hover);
+    border:var(--border);
     border-radius: 10px;
     margin-bottom: 0.75rem;
 }
@@ -336,8 +336,8 @@ html.dark .line-notify-toggle-box {
     padding: 0.6rem;
     border: 1px solid #cbd5e1;
     border-radius: 10px;
-    background: #fafafa;
-    color: #475569;
+    background:var(--surface-hover);
+    color:var(--text-muted);
     font-size: 0.85rem;
     font-weight: 500;
     cursor: pointer;
@@ -347,13 +347,13 @@ html.dark .line-notify-toggle-box {
 .line-unlink-btn:hover {
     color: #ef4444;
     border-color: #fecaca;
-    background: #fef2f2;
+    background:var(--tint-red);
 }
 html[data-theme="dark"] .line-unlink-btn,
 html.dark .line-unlink-btn {
     background: #141416 !important;
     border-color: #27272a !important;
-    color: #94a3b8 !important;
+    color:var(--text-muted) !important;
 }
 html[data-theme="dark"] .line-unlink-btn:hover,
 html.dark .line-unlink-btn:hover {
@@ -374,11 +374,11 @@ html.dark .line-unlink-btn:hover {
                         <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="profile"
                             style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #f8fafc; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                     @else
-                        <div style="width: 80px; height: 80px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; border: 3px solid #f8fafc; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <div style="width: 80px; height: 80px; border-radius: 50%; background:var(--bg-main); display: flex; align-items: center; justify-content: center; border: 3px solid #f8fafc; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                             <svg width="40" height="40" fill="none" stroke="#64748b" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                         </div>
                     @endif
-                    <div style="position: absolute; bottom: 0; right: 0; width: 28px; height: 28px; background: #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; overflow: hidden;">
+                    <div style="position: absolute; bottom: 0; right: 0; width: 28px; height: 28px; background:var(--surface); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.15); border:var(--border); overflow: hidden;">
                         @if($user->line_user_id)
                             <div class="swap-badge-1" title="{{ __('ผูกบัญชี LINE สำเร็จแล้ว') }}">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="#06c755">
@@ -401,7 +401,7 @@ html.dark .line-unlink-btn:hover {
                 </form>
                 {{-- Loading overlay for profile picture --}}
                 <div id="photoLoadingOverlay" style="position: absolute; inset: 0; background: rgba(255,255,255,0.8); border-radius: 50%; display: none; align-items: center; justify-content: center; z-index: 10;">
-                    <div style="width:24px;height:24px;border:3px solid #e2e8f0;border-top-color:#ea580c;border-radius:50%;animation:spin 1s linear infinite;"></div>
+                    <div style="width:24px;height:24px;border:var(--border);border-top-color:#ea580c;border-radius:50%;animation:spin 1s linear infinite;"></div>
                 </div>
             </div>
             <div style="flex: 1; min-width: 0;">
@@ -416,14 +416,14 @@ html.dark .line-unlink-btn:hover {
                     @endif
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px; margin: 0 0 0.35rem 0;">
-                    <p style="color: #64748b; font-size: 0.92rem; font-weight: 600; margin: 0;">{{ $user->english_name ?? __('(กำลังประมวลผลชื่อภาษาอังกฤษ...)') }}</p>
+                    <p style="color:var(--text-muted); font-size: 0.92rem; font-weight: 600; margin: 0;">{{ $user->english_name ?? __('(กำลังประมวลผลชื่อภาษาอังกฤษ...)') }}</p>
                     <button onclick="editEnglishName('{{ addslashes($user->english_name) }}')" style="background: none; border: none; color: #ea580c; cursor: pointer; padding: 0; display: flex; align-items: center;" title="{{ __('แก้ไขชื่อภาษาอังกฤษ') }}">
                         <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                     </button>
                 </div>
-                <p style="color: #64748b; font-size: 0.88rem; margin: 0 0 0.4rem 0; font-weight: 500;">{{ $user->student_id }}</p>
+                <p style="color:var(--text-muted); font-size: 0.88rem; margin: 0 0 0.4rem 0; font-weight: 500;">{{ $user->student_id }}</p>
                 <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-                    <span style="background: #ffedd5; color: #c2410c; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600;">
+                    <span style="background:var(--tint-orange); color:var(--tint-orange-text); padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600;">
                         {{ $user->program ?? __('นักศึกษา') }}
                     </span>
                     @if($user->profile_photo)
@@ -528,11 +528,11 @@ html.dark .line-unlink-btn:hover {
                         {{ number_format($cat['hours'], 1) }} / {{ number_format($cat['required'], 0) }} {{ __('ชม.') }}
                     </span>
                 </div>
-                <div style="height: 8px; background: #f1f5f9; border-radius: 999px; overflow: hidden; position: relative;">
+                <div style="height: 8px; background:var(--bg-main); border-radius: 999px; overflow: hidden; position: relative;">
                     <div style="position: absolute; top: 0; left: 0; height: 100%; width: {{ $p }}%; background: {{ $isCompleted ? '#10b981' : '#ea580c' }}; border-radius: 999px; transition: width 0.5s ease;"></div>
                 </div>
                 @if(!$isCompleted && $cat['required'] > 0)
-                <p class="text-xs" style="color: #475569; margin-top: 0.3rem; text-align: right; line-height: 1.5;">{{ __('ขาดอีก') }} {{ number_format($cat['required'] - $cat['hours'], 1) }} {{ __('ชม.') }}</p>
+                <p class="text-xs" style="color:var(--text-muted); margin-top: 0.3rem; text-align: right; line-height: 1.5;">{{ __('ขาดอีก') }} {{ number_format($cat['required'] - $cat['hours'], 1) }} {{ __('ชม.') }}</p>
                 @endif
             </div>
             @endforeach
@@ -557,7 +557,7 @@ html.dark .line-unlink-btn:hover {
             <div class="recent-attendance-item">
                 <div style="flex: 1; min-width: 0; padding-right: 1rem;">
                     <p style="font-size: 0.95rem; font-weight: 600; color: var(--text-main, #1e293b); margin: 0 0 0.2rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $att->activity->title }}">{{ Str::limit($att->activity->title, 45, '...') }}</p>
-                    <div style="display: flex; align-items: center; gap: 0.5rem; color: #64748b; font-size: 0.75rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; color:var(--text-muted); font-size: 0.75rem;">
                         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                         <span>{{ $att->checked_in_at?->format('d/m/Y H:i') ?? '-' }}</span>
                         @if($att->activity->category)
@@ -572,9 +572,9 @@ html.dark .line-unlink-btn:hover {
                             +{{ $att->activity->activity_hours }} {{ __('ชม.') }}
                         </span>
                     @elseif($att->status === 'pending')
-                        <span style="display: inline-flex; align-items: center; justify-content: center; background: #fffbeb; color: #92400e; font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 999px; border: 1px solid #fde68a; line-height: 1.5;">{{ __('รออนุมัติ') }}                        </span>
+                        <span style="display: inline-flex; align-items: center; justify-content: center; background:var(--tint-amber); color:var(--tint-amber-text); font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 999px; border:var(--tint-amber-border); line-height: 1.5;">{{ __('รออนุมัติ') }}                        </span>
                     @else
-                        <span style="display: inline-flex; align-items: center; justify-content: center; background: #fef2f2; color: #b91c1c; font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 999px; border: 1px solid #fecaca; line-height: 1.5;">{{ __('ปฏิเสธ') }}                        </span>
+                        <span style="display: inline-flex; align-items: center; justify-content: center; background:var(--tint-red); color:var(--tint-red-text); font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 999px; border: 1px solid #fecaca; line-height: 1.5;">{{ __('ปฏิเสธ') }}                        </span>
                     @endif
                 </div>
             </div>
@@ -600,13 +600,13 @@ html.dark .line-unlink-btn:hover {
 
         @if(auth()->user()->line_user_id)
             {{-- ═══ สถานะ: ผูกแล้ว ═══ --}}
-            <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; margin-bottom: 1rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background:var(--tint-green); border:var(--tint-green-border); border-radius: 10px; margin-bottom: 1rem;">
                 <div style="width: 36px; height: 36px; background: transparent; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                     <img src="{{ asset('images/line-logo.png') }}" alt="LINE" style="width: 32px; height: 32px; object-fit: contain; flex-shrink: 0;">
                 </div>
                 <div style="flex: 1; min-width: 0;">
-                    <p style="font-weight: 600; font-size: 0.9rem; color: #15803d; margin: 0;">{{ __('เชื่อมต่อ LINE สำเร็จ') }}</p>
-                    <p style="font-size: 0.75rem; color: #16a34a; margin: 0.1rem 0 0 0;">{{ auth()->user()->line_display_name ?? 'LINE Account' }}</p>
+                    <p style="font-weight: 600; font-size: 0.9rem; color:var(--tint-green-text); margin: 0;">{{ __('เชื่อมต่อ LINE สำเร็จ') }}</p>
+                    <p style="font-size: 0.75rem; color:var(--tint-green-text); margin: 0.1rem 0 0 0;">{{ auth()->user()->line_display_name ?? 'LINE Account' }}</p>
                 </div>
                 <svg width="18" height="18" fill="none" stroke="#16a34a" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
             </div>
@@ -622,15 +622,15 @@ html.dark .line-unlink-btn:hover {
                     <button type="submit"
                         style="position: relative; width: 44px; height: 24px; border-radius: 12px; border: none; cursor: pointer; transition: background 0.2s; background: {{ auth()->user()->line_notify_enabled ? '#06c755' : '#cbd5e1' }};"
                         title="{{ auth()->user()->line_notify_enabled ? 'คลิกเพื่อปิด' : 'คลิกเพื่อเปิด' }}">
-                        <span style="position: absolute; top: 3px; width: 18px; height: 18px; background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: left 0.2s; left: {{ auth()->user()->line_notify_enabled ? '23px' : '3px' }};"></span>
+                        <span style="position: absolute; top: 3px; width: 18px; height: 18px; background:var(--surface); border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: left 0.2s; left: {{ auth()->user()->line_notify_enabled ? '23px' : '3px' }};"></span>
                     </button>
                 </form>
             </div>
 
             @if(!auth()->user()->line_notify_enabled)
-            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; padding: 0.5rem 0.75rem; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; padding: 0.5rem 0.75rem; background:var(--tint-amber); border: 1px solid #fef3c7; border-radius: 8px;">
                 <svg width="14" height="14" fill="none" stroke="#d97706" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                <p style="font-size: 0.75rem; color: #b45309; margin: 0;">{{ __('การแจ้งเตือนปิดอยู่ — คุณจะไม่ได้รับข่าวสารทาง LINE') }}</p>
+                <p style="font-size: 0.75rem; color:var(--tint-amber-text); margin: 0;">{{ __('การแจ้งเตือนปิดอยู่ — คุณจะไม่ได้รับข่าวสารทาง LINE') }}</p>
             </div>
             @endif
 
@@ -651,14 +651,14 @@ html.dark .line-unlink-btn:hover {
                 ] as $item)
                 <div class="line-feature-pill">
                     <svg width="14" height="14" fill="none" stroke="#06c755" viewBox="0 0 24 24" style="flex-shrink: 0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="{{ $item['icon'] }}"/></svg>
-                    <span style="font-size: 0.75rem; font-weight: 500; color: #475569; line-height: 1.5;">{{ $item['text'] }}</span>
+                    <span style="font-size: 0.75rem; font-weight: 500; color:var(--text-muted); line-height: 1.5;">{{ $item['text'] }}</span>
                 </div>
                 @endforeach
             </div>
 
             <a href="{{ route('line.redirect') }}" style="display: flex; align-items: center; justify-content: center; gap: 0.55rem; width: 100%; padding: 0.8rem; background: #047857; color: #ffffff; border-radius: 10px; font-weight: 600; font-size: 0.95rem; text-decoration: none; box-shadow: 0 4px 6px rgba(4, 120, 87, 0.25); transition: transform 0.2s, box-shadow 0.2s; line-height: 1.5;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 8px rgba(4, 120, 87, 0.35)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(4, 120, 87, 0.25)';">
                 <img src="{{ asset('images/line-logo.png') }}" alt="LINE" style="width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; border-radius: 4px;">{{ __('เชื่อมต่อบัญชี LINE') }}            </a>
-            <p style="text-align: center; font-size: 0.75rem; color: #475569; margin: 0.75rem 0 0 0; line-height: 1.5;">{{ __('รับข้อมูลข่าวสารรวดเร็วผ่าน LINE Official Account') }}</p>
+            <p style="text-align: center; font-size: 0.75rem; color:var(--text-muted); margin: 0.75rem 0 0 0; line-height: 1.5;">{{ __('รับข้อมูลข่าวสารรวดเร็วผ่าน LINE Official Account') }}</p>
         @endif
     </div>
 </div>
@@ -676,7 +676,7 @@ html.dark .line-unlink-btn:hover {
 <div id="idCardModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);">
     <div id="idCardContainer" style="position: relative; animation: slideUp 0.3s ease-out; display: flex; flex-direction: column; align-items: center;">
         <!-- Close button -->
-        <button onclick="closeCardModal()" style="position: absolute; top: -15px; right: -15px; width: 32px; height: 32px; background: #fff; border: none; border-radius: 50%; box-shadow: 0 2px 10px rgba(0,0,0,0.25); cursor: pointer; z-index: 30; display: flex; align-items: center; justify-content: center; color: #333; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+        <button onclick="closeCardModal()" style="position: absolute; top: -15px; right: -15px; width: 32px; height: 32px; background:var(--surface); border: none; border-radius: 50%; box-shadow: 0 2px 10px rgba(0,0,0,0.25); cursor: pointer; z-index: 30; display: flex; align-items: center; justify-content: center; color: #333; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
 
@@ -696,18 +696,18 @@ html.dark .line-unlink-btn:hover {
                     
                     <!-- Header (Logo & Univ Name) -->
                     <div style="display: flex; align-items: center; padding: 15px 15px 0 15px; gap: 8px;">
-                        <div style="width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.15); background: #fff;">
+                        <div style="width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.15); background:var(--surface);">
                             <img src="{{ asset('images/pkru-logo.png') }}" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;" alt="PKRU Logo">
                         </div>
                         <div style="line-height: 1.5; margin-top: -5px; z-index: 2;">
-                            <div style="font-size: 16px; font-weight: 700; color: #1e293b !important; letter-spacing: -0.2px; line-height: 1.5;">{{ __('มหาวิทยาลัยราชภัฏภูเก็ต') }}</div>
-                            <div style="font-size: 8.5px; font-weight: 600; color: #334155 !important; letter-spacing: 0.3px; line-height: 1.5;">PHUKET RAJABHAT UNIVERSITY</div>
+                            <div style="font-size: 16px; font-weight: 700; color:var(--text-main) !important; letter-spacing: -0.2px; line-height: 1.5;">{{ __('มหาวิทยาลัยราชภัฏภูเก็ต') }}</div>
+                            <div style="font-size: 8.5px; font-weight: 600; color:var(--text-muted) !important; letter-spacing: 0.3px; line-height: 1.5;">PHUKET RAJABHAT UNIVERSITY</div>
                         </div>
                     </div>
 
                     <!-- Photo (Opaque frame with raised shadow, z-index: 20, 100% immune to glare/sheen) -->
                     <div style="width: 100%; display: flex; justify-content: center; margin-top: 15px; position: relative; z-index: 20;">
-                        <div style="background: #ffffff; padding: 3px; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.18); display: inline-block;">
+                        <div style="background:var(--surface); padding: 3px; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.18); display: inline-block;">
                             @if($user->profile_photo)
                                 <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="profile" style="width: 125px; height: 160px; object-fit: cover; border-radius: 2px; display: block; filter: none !important; opacity: 1 !important;">
                             @else
@@ -720,20 +720,20 @@ html.dark .line-unlink-btn:hover {
 
                     <!-- Details -->
                     <div style="padding: 15px 25px; z-index: 2; position: relative;">
-                        <div style="font-size: 11px; color: #1e293b !important; font-weight: 700; margin-bottom: 0px; line-height: 1.5;">{{ __('รหัสนักศึกษา :') }}</div>
-                        <div style="font-size: 24px; font-weight: 700; letter-spacing: 1px; color: #0f172a !important; margin-bottom: 8px; line-height: 1.5;">{{ $user->student_id }}</div>
+                        <div style="font-size: 11px; color:var(--text-main) !important; font-weight: 700; margin-bottom: 0px; line-height: 1.5;">{{ __('รหัสนักศึกษา :') }}</div>
+                        <div style="font-size: 24px; font-weight: 700; letter-spacing: 1px; color:var(--text-main) !important; margin-bottom: 8px; line-height: 1.5;">{{ $user->student_id }}</div>
                         
-                        <div style="font-size: 20px; font-weight: 700; color: #0f172a !important; line-height: 1.5; letter-spacing: -0.3px;">{{ $user->full_name }}</div>
+                        <div style="font-size: 20px; font-weight: 700; color:var(--text-main) !important; line-height: 1.5; letter-spacing: -0.3px;">{{ $user->full_name }}</div>
                         @if($user->english_name)
-                            <div style="font-size: 14px; font-weight: 700; color: #334155 !important; margin-bottom: 6px;">{{ strtoupper($user->english_name) }}</div>
+                            <div style="font-size: 14px; font-weight: 700; color:var(--text-muted) !important; margin-bottom: 6px;">{{ strtoupper($user->english_name) }}</div>
                         @else
-                            <div style="font-size: 12px; font-weight: 600; color: #475569 !important; margin-bottom: 6px; font-style: italic;">(No English Name)</div>
+                            <div style="font-size: 12px; font-weight: 600; color:var(--text-muted) !important; margin-bottom: 6px; font-style: italic;">(No English Name)</div>
                         @endif
                         
                         <!-- Thin divider -->
                         <div style="width: 100%; height: 1px; background: #e2e8f0; margin: 8px 0;"></div>
                         
-                        <div style="font-size: 14px; font-weight: 700; color: #1e293b !important;">{{ __('สาขา') }}{{ $user->department ?? 'วิทยาการคอมพิวเตอร์' }}</div>
+                        <div style="font-size: 14px; font-weight: 700; color:var(--text-main) !important;">{{ __('สาขา') }}{{ $user->department ?? 'วิทยาการคอมพิวเตอร์' }}</div>
                     </div>
 
                     <div style="flex: 1;"></div>
@@ -801,7 +801,7 @@ html.dark .line-unlink-btn:hover {
     width: 320px;
     height: 504px;
     background-color: #ffffff !important;
-    color: #0f172a !important;
+    color:var(--text-main) !important;
     border-radius: 16px;
     overflow: hidden;
     position: relative;
@@ -1006,15 +1006,15 @@ html.dark .line-unlink-btn:hover {
             iconEl.innerHTML = ICONS[state] || '';
             textEl.textContent = message;
             if (state === 'pending') {
-                banner.style.background = '#fffbeb';
-                banner.style.border = '1px solid #fde68a';
-                banner.style.color = '#92400e';
+                banner.style.background = 'var(--tint-amber)';
+                banner.style.border = 'var(--tint-amber-border)';
+                banner.style.color = 'var(--tint-amber-text)';
             } else if (state === 'success') {
                 banner.style.background = '#ecfdf5';
                 banner.style.border = '1px solid #a7f3d0';
                 banner.style.color = '#065f46';
             } else {
-                banner.style.background = '#fef2f2';
+                banner.style.background = 'var(--tint-red)';
                 banner.style.border = '1px solid #fecaca';
                 banner.style.color = '#991b1b';
             }

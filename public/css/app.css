@@ -36,6 +36,41 @@ html.dark {
     --text-muted: #a1a1aa;
 }
 
+/* ── Tints (พื้นโทนอ่อนแบบแยกโหมด) — ใช้เป็นค่า inline ใน blade ── */
+:root {
+    --tint-blue: #eff6ff;      --tint-blue-text: #1d4ed8;   --tint-blue-border: #bfdbfe;
+    --tint-green: #f0fdf4;     --tint-green-text: #15803d;  --tint-green-border: #bbf7d0;
+    --tint-red: #fef2f2;       --tint-red-strong: #fee2e2;  --tint-red-text: #b91c1c;   --tint-red-border: #fca5a5;
+    --tint-amber: #fffbeb;     --tint-amber-text: #92400e;  --tint-amber-border: #fde68a;
+    --tint-orange: #fff7ed;    --tint-orange-text: #c2410c; --tint-orange-border: #fed7aa;
+}
+
+html[data-theme="dark"],
+html.dark {
+    --tint-blue: rgba(59,130,246,.14);          --tint-blue-text: #93c5fd;   --tint-blue-border: #1e3a8a;
+    --tint-green: rgba(34,197,94,.14);          --tint-green-text: #86efac;  --tint-green-border: #14532d;
+    --tint-red: rgba(239,68,68,.12);            --tint-red-strong: rgba(239,68,68,.20);  --tint-red-text: #fca5a5;  --tint-red-border: #7f1d1d;
+    --tint-amber: rgba(245,158,11,.14);         --tint-amber-text: #fcd34d;  --tint-amber-border: #78350f;
+    --tint-orange: rgba(234,88,12,.16);         --tint-orange-text: #fb923c; --tint-orange-border: #7c2d12;
+}
+
+@media (prefers-color-scheme: dark) {
+    html:not([data-theme="light"]) {
+        --bg-main: #121214;
+        --surface: #18181b;
+        --surface-card: #18181b;
+        --surface-hover: #27272a;
+        --border: #27272a;
+        --text-main: #f4f4f5;
+        --text-muted: #a1a1aa;
+        --tint-blue: rgba(59,130,246,.14);          --tint-blue-text: #93c5fd;   --tint-blue-border: #1e3a8a;
+        --tint-green: rgba(34,197,94,.14);          --tint-green-text: #86efac;  --tint-green-border: #14532d;
+        --tint-red: rgba(239,68,68,.12);            --tint-red-strong: rgba(239,68,68,.20);  --tint-red-text: #fca5a5;  --tint-red-border: #7f1d1d;
+        --tint-amber: rgba(245,158,11,.14);         --tint-amber-text: #fcd34d;  --tint-amber-border: #78350f;
+        --tint-orange: rgba(234,88,12,.16);         --tint-orange-text: #fb923c; --tint-orange-border: #7c2d12;
+    }
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 ::selection { background: #ea580c; color: #ffffff; }
 ::-moz-selection { background: #ea580c; color: #ffffff; }

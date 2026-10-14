@@ -29,9 +29,9 @@
                     @if($activity->is_mandatory)<span class="badge badge-red">{{ __('card.mandatory') }}</span>@endif
                 </div>
                 @if($activity->scope === 'faculty')
-                    <span class="badge" style="background:#fef3c7;color:#92400e;font-size:.65rem;">{{ $activity->faculty }}</span>
+                    <span class="badge" style="background:var(--tint-amber);color:var(--tint-amber-text);font-size:.65rem;">{{ $activity->faculty }}</span>
                 @elseif($activity->scope === 'department')
-                    <span class="badge" style="background:#ffedd5;color:#5b21b6;font-size:.65rem;">{{ $activity->department }}</span>
+                    <span class="badge" style="background:var(--tint-orange);color:#5b21b6;font-size:.65rem;">{{ $activity->department }}</span>
                 @endif
             </div>
             <h3 class="font-semi line-clamp-2 act-card-title">

@@ -89,7 +89,7 @@ html.dark .pub-role-tag {
 }
 
 .pub-english-name {
-    color: #64748b;
+    color:var(--text-muted);
     font-size: 0.95rem;
     font-weight: 500;
     margin: 0.25rem 0 0.5rem 0;
@@ -97,7 +97,7 @@ html.dark .pub-role-tag {
 }
 html[data-theme="dark"] .pub-english-name,
 html.dark .pub-english-name {
-    color: #94a3b8;
+    color:var(--text-muted);
 }
 
 .pub-meta-line {
@@ -106,13 +106,13 @@ html.dark .pub-english-name {
     gap: 0.45rem;
     flex-wrap: wrap;
     font-size: 0.85rem;
-    color: #64748b;
+    color:var(--text-muted);
     font-weight: 500;
     margin-top: 0.35rem;
 }
 html[data-theme="dark"] .pub-meta-line,
 html.dark .pub-meta-line {
-    color: #94a3b8;
+    color:var(--text-muted);
 }
 
 .pub-meta-pill {
@@ -122,7 +122,7 @@ html.dark .pub-meta-line {
     padding: 0.2rem 0.65rem;
     background: rgba(148, 163, 184, 0.12);
     border-radius: 999px;
-    color: #475569;
+    color:var(--text-muted);
     font-size: 0.76rem;
     font-weight: 600;
 }
@@ -166,8 +166,8 @@ html.dark .pub-meta-pill {
     border-radius: 999px;
     font-weight: 700;
     font-size: 0.88rem;
-    background: #f1f5f9;
-    color: #334155;
+    background:var(--bg-main);
+    color:var(--text-muted);
     border: 1.5px solid #cbd5e1;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -178,8 +178,8 @@ html.dark .pub-meta-pill {
 }
 .pub-message-btn:hover {
     background: #e2e8f0;
-    border-color: #94a3b8;
-    color: #0f172a;
+    border-color:var(--text-muted);
+    color:var(--text-main);
     transform: translateY(-1px);
 }
 .pub-message-btn:active {
@@ -221,8 +221,8 @@ html.dark .pub-message-btn:hover {
 }
 .follow-btn.is-following:hover {
     background: rgba(234, 88, 12, 0.08);
-    border-color: #c2410c;
-    color: #c2410c;
+    border-color:var(--tint-orange-text);
+    color:var(--tint-orange-text);
 }
 .follow-btn.not-following {
     background: #ea580c;
@@ -336,14 +336,14 @@ html.dark .pub-stat-unit.clickable:hover .pub-stat-label {
 }
 .pub-stat-label {
     font-size: 0.75rem;
-    color: #64748b;
+    color:var(--text-muted);
     font-weight: 500;
     line-height: 1.2;
     transition: color 0.15s ease;
 }
 html[data-theme="dark"] .pub-stat-label,
 html.dark .pub-stat-label {
-    color: #94a3b8;
+    color:var(--text-muted);
 }
 
 /* ── Posts Section (Clean Feed List) ── */
@@ -401,19 +401,19 @@ html.dark .pub-feed-tabs {
     border-bottom: 2px solid transparent;
     cursor: pointer;
     font-family: inherit;
-    color: #94a3b8;
+    color:var(--text-muted);
     transition: color 0.15s ease, border-color 0.15s ease;
 }
 html[data-theme="dark"] .pub-feed-tab,
 html.dark .pub-feed-tab {
-    color: #64748b;
+    color:var(--text-muted);
 }
 .pub-feed-tab:hover {
-    color: #64748b;
+    color:var(--text-muted);
 }
 html[data-theme="dark"] .pub-feed-tab:hover,
 html.dark .pub-feed-tab:hover {
-    color: #94a3b8;
+    color:var(--text-muted);
 }
 .pub-feed-tab.is-active {
     color: var(--tab-color, #1e293b);
@@ -444,7 +444,7 @@ html.dark .pub-feed-tab:hover {
 .pub-feed-tab-count {
     font-size: 0.62rem;
     font-weight: 700;
-    color: #94a3b8;
+    color:var(--text-muted);
     background: rgba(148, 163, 184, 0.14);
     border-radius: 999px;
     padding: 0 0.4rem;
@@ -464,7 +464,7 @@ html.dark .pub-feed-tab:hover {
     padding: 1.4rem 0.5rem;
     text-align: center;
     font-size: 0.8rem;
-    color: #94a3b8;
+    color:var(--text-muted);
     line-height: 1.5;
 }
 
@@ -516,7 +516,7 @@ html.dark .pub-post-row:hover .pub-post-title {
 .pub-post-date {
     flex-shrink: 0;
     font-size: 0.78rem;
-    color: #94a3b8;
+    color:var(--text-muted);
     line-height: 1.4;
     display: inline-flex;
     align-items: center;
@@ -559,7 +559,7 @@ html.dark .pub-post-row:hover .pub-post-arrow {
 .follower-modal {
     width: min(92vw, 390px);
     max-height: 70vh;
-    background: #ffffff;
+    background:var(--surface);
     border-radius: 18px;
     overflow: hidden;
     display: flex;
@@ -585,7 +585,7 @@ html.dark .pub-post-row:hover .pub-post-arrow {
     border-bottom: none;
 }
 .follower-row:hover {
-    background: #f8fafc;
+    background:var(--surface-hover);
 }
 html[data-theme="dark"] .follower-modal,
 html.dark .follower-modal {
@@ -802,12 +802,12 @@ html.dark .follower-row:hover {
     <div class="follower-modal">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:0.9rem 1.15rem;border-bottom:1px solid rgba(226, 232, 240, 0.8);flex-shrink:0;">
             <h3 id="followerModalTitle" style="margin:0;font-size:1rem;font-weight:700;color:var(--text-main,#1e293b);line-height:1.5;">{{ __('รายชื่อ') }}</h3>
-            <button onclick="closeFollowerModal()" style="background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;color:#64748b;" aria-label="{{ __('ปิด') }}">
+            <button onclick="closeFollowerModal()" style="background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;color:var(--text-muted);" aria-label="{{ __('ปิด') }}">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
         <div id="followerModalBody" style="overflow-y:auto;flex:1;">
-            <div style="padding:1.5rem;text-align:center;font-size:0.83rem;color:#64748b;line-height:1.5;">{{ __('กำลังโหลด...') }}</div>
+            <div style="padding:1.5rem;text-align:center;font-size:0.83rem;color:var(--text-muted);line-height:1.5;">{{ __('กำลังโหลด...') }}</div>
         </div>
     </div>
 </div>
@@ -909,7 +909,7 @@ html.dark .follower-row:hover {
             : '{{ route('users.followers', $profileUser) }}';
 
         if (title) title.textContent = kind === 'following' ? 'กำลังติดตาม' : 'ผู้ติดตาม';
-        body.innerHTML = '<div style="padding:1.5rem;text-align:center;font-size:0.83rem;color:#64748b;line-height:1.5;">{{ __('กำลังโหลด...') }}</div>';
+        body.innerHTML = '<div style="padding:1.5rem;text-align:center;font-size:0.83rem;color:var(--text-muted);line-height:1.5;">{{ __('กำลังโหลด...') }}</div>';
         modal.classList.add('open');
 
         fetch(url, { headers: { 'Accept': 'application/json' }, cache: 'no-store' })
@@ -917,7 +917,7 @@ html.dark .follower-row:hover {
             .then(function (data) {
                 var list = (kind === 'following' ? data.following : data.followers) || [];
                 if (!list.length) {
-                    body.innerHTML = '<div style="padding:2rem 1rem;text-align:center;font-size:0.83rem;color:#64748b;line-height:1.5;">{{ __('ยังไม่มีรายชื่อ') }}</div>';
+                    body.innerHTML = '<div style="padding:2rem 1rem;text-align:center;font-size:0.83rem;color:var(--text-muted);line-height:1.5;">{{ __('ยังไม่มีรายชื่อ') }}</div>';
                     return;
                 }
                 body.innerHTML = list.map(function (u) {
@@ -926,16 +926,16 @@ html.dark .follower-row:hover {
                     var safeUrl = escHtml(u.url || '#');
                     var avatar = u.photo
                         ? '<img src="' + escHtml(u.photo) + '" alt="" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;">'
-                        : '<div style="width:38px;height:38px;border-radius:50%;background:#ffedd5;color:#c2410c;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;">' + escHtml((u.name || '?').charAt(0)) + '</div>';
+                        : '<div style="width:38px;height:38px;border-radius:50%;background:var(--tint-orange);color:var(--tint-orange-text);display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;">' + escHtml((u.name || '?').charAt(0)) + '</div>';
                     return '<a href="' + safeUrl + '" class="follower-row">' + avatar
                         + '<div style="flex:1;min-width:0;"><div style="font-size:0.87rem;font-weight:600;color:var(--text-main,#1e293b);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5;">' + name + '</div>'
-                        + '<div style="font-size:0.7rem;color:#94a3b8;line-height:1.5;">' + roleLabel + '</div></div>'
+                        + '<div style="font-size:0.7rem;color:var(--text-muted);line-height:1.5;">' + roleLabel + '</div></div>'
                         + '<svg width="14" height="14" fill="none" stroke="#94a3b8" viewBox="0 0 24 24" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>'
                         + '</a>';
                 }).join('');
             })
             .catch(function () {
-                body.innerHTML = '<div style="padding:2rem 1rem;text-align:center;font-size:0.83rem;color:#b91c1c;line-height:1.5;">{{ __('ไม่สามารถโหลดรายชื่อได้') }}</div>';
+                body.innerHTML = '<div style="padding:2rem 1rem;text-align:center;font-size:0.83rem;color:var(--tint-red-text);line-height:1.5;">{{ __('ไม่สามารถโหลดรายชื่อได้') }}</div>';
             });
     };
 

@@ -6,7 +6,7 @@
 <style>
     :root {
         --chat-bg: #f8fafc;
-        --chat-border: #e2e8f0;
+        --chat-border:var(--border);
         --chat-primary: #ea580c;
         --chat-primary-hover: #c2410c;
         --chat-text-main: #1e293b;
@@ -31,7 +31,7 @@
         align-items: center;
         justify-content: space-between;
         padding: 0.75rem 1rem;
-        background: #ffffff;
+        background:var(--surface);
         border: 1px solid var(--chat-border);
         border-radius: 16px;
         margin-bottom: 0.75rem;
@@ -51,7 +51,7 @@
         width: 34px;
         height: 34px;
         border-radius: 8px;
-        background: #f1f5f9;
+        background:var(--bg-main);
         color: var(--chat-text-muted);
         text-decoration: none;
         transition: all 0.2s;
@@ -178,7 +178,7 @@
     }
 
     .chat-link {
-        color: #dc2626 !important;
+        color:var(--tint-red-text) !important;
         text-decoration: underline !important;
         text-underline-offset: 3px;
         word-break: break-all;
@@ -189,7 +189,7 @@
     .message-mine .chat-link,
     .chat-link-mine {
         color: #ea580c !important;
-        background: #ffffff;
+        background:var(--surface);
         padding: 1px 6px;
         border-radius: 6px;
         display: inline-block;
@@ -203,7 +203,7 @@
         gap: 0.25rem;
         position: absolute;
         top: -12px;
-        background: #ffffff;
+        background:var(--surface);
         border: 1px solid var(--chat-border);
         border-radius: 20px;
         padding: 2px 6px;
@@ -219,13 +219,13 @@
         border: none;
         padding: 2px 4px;
         cursor: pointer;
-        color: #64748b;
+        color:var(--text-muted);
         border-radius: 4px;
         display: flex;
         align-items: center;
         justify-content: center;
     }
-    .msg-action-btn:hover { color: #c2410c; background: #ffedd5; }
+    .msg-action-btn:hover { color:var(--tint-orange-text); background:var(--tint-orange); }
 
     .attachment-img {
         max-width: 100%;
@@ -270,8 +270,8 @@
 
     .preview-item {
         padding: 0.3rem 0.65rem;
-        background: #fff7ed;
-        border: 1px solid #fed7aa;
+        background:var(--tint-orange);
+        border:var(--tint-orange-border);
         border-radius: 16px;
         font-size: 0.75rem;
         color: var(--chat-primary);
@@ -292,7 +292,7 @@
         justify-content: center;
         width: 42px;
         height: 42px;
-        background: #f8fafc;
+        background:var(--surface-hover);
         border: 1px solid var(--chat-border);
         border-radius: 50%;
         cursor: pointer;
@@ -301,7 +301,7 @@
     }
     .file-label:hover {
         border-color: #fdba74;
-        background: #fff7ed;
+        background:var(--tint-orange);
         color: var(--chat-primary);
     }
 
@@ -315,11 +315,11 @@
         outline: none;
         max-height: 120px;
         line-height: 1.5;
-        background: #f8fafc;
+        background:var(--surface-hover);
         transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
     }
     .chat-textarea:focus {
-        background: #ffffff;
+        background:var(--surface);
         border-color: var(--chat-primary);
         box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.14);
     }
@@ -392,7 +392,7 @@
     }
 
     #noMsg {
-        background: #ffffff;
+        background:var(--surface);
         border: 1px dashed var(--chat-border);
         border-radius: 16px;
         padding: 1.5rem 2rem;
@@ -606,7 +606,7 @@
             padding: 0.45rem 0.55rem;
             border: none;
             border-radius: 0;
-            background: #ffffff;
+            background:var(--surface);
             border-top: 1px solid var(--chat-border);
             box-shadow: 0 -2px 10px rgba(15, 23, 42, 0.06);
         }
@@ -624,9 +624,9 @@
         }
 
         .file-label {
-            background: #f1f5f9;
+            background:var(--bg-main);
             border: none;
-            color: #64748b;
+            color:var(--text-muted);
         }
 
         .file-label:active {
@@ -639,13 +639,13 @@
             border-radius: 20px;
             padding: 0.55rem 0.9rem;
             font-size: 0.9rem;
-            background: #f8fafc;
+            background:var(--surface-hover);
             border: 1.5px solid transparent;
             transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
         }
 
         .chat-textarea:focus {
-            background: #ffffff;
+            background:var(--surface);
             border-color: #ea580c;
             box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.12);
         }
@@ -875,14 +875,14 @@
         @endphp
             <div style="display:flex;align-items:center;gap:0.5rem;">
                 @if(!empty($jobDeleted))
-                    <span style="display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;color:#b45309;background:#fef3c7;border:1px solid #fcd34d;border-radius:999px;padding:2px 10px;font-weight:600;">{{ __('ประกาศถูกลบ') }}</span>
+                    <span style="display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;color:var(--tint-amber-text);background:var(--tint-amber);border:1px solid #fcd34d;border-radius:999px;padding:2px 10px;font-weight:600;">{{ __('ประกาศถูกลบ') }}</span>
                 @endif
             <span id="onlineStatusLabel" data-last-seen="{{ $staffLastSeen?->toISOString() }}" style="font-size:0.75rem;color:var(--chat-text-muted);font-weight:500;">
                 <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>{{ $offlineText }}
             </span>
             {{-- ดูโปรไฟล์ผู้ที่แชทด้วย --}}
             @if($staffUser)
-                <a href="{{ route('users.show', $staffUser) }}" class="chat-profile-link" title="ดูโปรไฟล์ของ {{ $staffUser->full_name }}" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;min-width:30px;border-radius:50%;background:#f1f5f9;border:1px solid #e2e8f0;color:#64748b;cursor:pointer;transition:all 0.2s;text-decoration:none;">
+                <a href="{{ route('users.show', $staffUser) }}" class="chat-profile-link" title="ดูโปรไฟล์ของ {{ $staffUser->full_name }}" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;min-width:30px;border-radius:50%;background:var(--bg-main);border:var(--border);color:var(--text-muted);cursor:pointer;transition:all 0.2s;text-decoration:none;">
                     <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 </a>
             @endif
@@ -1038,7 +1038,7 @@
             </div>
         </form>
         @if(!empty($jobDeleted))
-        <div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:0.9rem 1rem;background:var(--chat-surface, #fff);border-top:1px solid var(--chat-border, #e2e8f0);color:#b45309;font-size:0.85rem;font-weight:500;">
+        <div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:0.9rem 1rem;background:var(--chat-surface, #fff);border-top:var(--border));color:var(--tint-amber-text);font-size:0.85rem;font-weight:500;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 5 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 5-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>{{ __('ประกาศงานนี้ถูกลบแล้ว — ดูได้เฉพาะประวัติการแชทเท่านั้น') }}        </div>
         @endif
     </div>
