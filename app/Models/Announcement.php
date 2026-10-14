@@ -16,7 +16,9 @@ class Announcement extends Model
 
     protected $fillable = [
         'title',
+        'title_en',
         'content',
+        'content_en',
         'image_path',
         'target_faculty',
         'type',
@@ -24,6 +26,43 @@ class Announcement extends Model
         'published_at',
         'created_by',
     ];
+
+
+    /**
+     * [tag:2026-10-14-translation] แปลภาษาโพสต์: ให้การแสดงผลหน้าละแพร่ธงกับ locale
+     * อ่านแบบ title/content — เข้าสู่หน้า website ธง EN จะส่งค่าให้แสดงตามแหล่ง EN ที่เตรียมไว้
+     */
+    public function getTitleAttribute($value)
+    {
+        if (app()->getLocale() === 'en' && filled($this->attributes['title_en'] ?? null)) {
+            return (string) $this->attributes['title_en'];
+        }
+
+        return $value ?? null;
+    }
+
+    public function getContentAttribute($value)
+    {
+        if (app()->getLocale() === 'en' && filled($this->attributes['content_en'] ?? null)) {
+            return (string) $this->attributes['content_en'];
+        }
+
+        return $value ?? null;
+    }
+
+    /**
+     * Accessor สำหรับแบบฟอร์ม admin — ให้ได้ข้อความไทยต้นฉบับเสมอ ทำให้จะผูกแก้ไขขอมูลภาษาไทยได้จ้างจำก
+     */
+    public function getTitleThAttribute(): ?string
+    {
+        return (string) ($this->attributes['title'] ?? '');
+    }
+
+    public function getContentThAttribute(): ?string
+    {
+        return (string) ($this->attributes['content'] ?? '');
+    }
+
 
     protected function casts(): array
     {

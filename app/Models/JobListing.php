@@ -15,13 +15,76 @@ class JobListing extends Model
     use HasFactory, HasSlugRouting;
 
     protected $fillable = [
-        'title', 'job_type', 'position', 'quota',
-        'work_period', 'compensation', 'location',
+        'title', 'title_en', 'job_type', 'position', 'position_en', 'quota',
+        'work_period', 'compensation', 'location', 'location_en',
         'start_date', 'end_date', 'dresscode', 'gender',
-        'note', 'description', 'status',
+        'note', 'note_en', 'description', 'description_en', 'status',
         'latitude', 'longitude', 'image_path',
         'created_by',
     ];
+
+
+    /**
+     * [tag:2026-10-14-translation] แปลภาษาโพสต์ — ประกาศงาน
+     */
+    public function getTitleAttribute($value)
+    {
+        if (app()->getLocale() === 'en' && filled($this->attributes['title_en'] ?? null)) {
+            return (string) $this->attributes['title_en'];
+        }
+
+        return $value ?? null;
+    }
+
+    public function getPositionAttribute($value)
+    {
+        if (app()->getLocale() === 'en' && filled($this->attributes['position_en'] ?? null)) {
+            return (string) $this->attributes['position_en'];
+        }
+
+        return $value ?? null;
+    }
+
+    public function getDescriptionAttribute($value)
+    {
+        if (app()->getLocale() === 'en' && filled($this->attributes['description_en'] ?? null)) {
+            return (string) $this->attributes['description_en'];
+        }
+
+        return $value ?? null;
+    }
+
+    public function getLocationAttribute($value)
+    {
+        if (app()->getLocale() === 'en' && filled($this->attributes['location_en'] ?? null)) {
+            return (string) $this->attributes['location_en'];
+        }
+
+        return $value ?? null;
+    }
+
+    public function getNoteAttribute($value)
+    {
+        if (app()->getLocale() === 'en' && filled($this->attributes['note_en'] ?? null)) {
+            return (string) $this->attributes['note_en'];
+        }
+
+        return $value ?? null;
+    }
+
+    /**
+     * Accessor สำรอง — ค่าไทยต้นฉบับสำหรับฟอร์มแก้ไข admin
+     */
+    public function getTitleThAttribute(): ?string
+    {
+        return (string) ($this->attributes['title'] ?? '');
+    }
+
+    public function getPositionThAttribute(): ?string
+    {
+        return (string) ($this->attributes['position'] ?? '');
+    }
+
 
     protected function casts(): array
     {

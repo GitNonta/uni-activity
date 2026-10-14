@@ -38,6 +38,10 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->applyRedisFallback();
 
+        // ── [tag:2026-10-14-translation] แปลโพสต์ (ประกาศ + งาน) อัตโนมัติเมื่อบันทึก ──
+        \App\Models\Announcement::observe(\App\Observers\TranslatableObserver::class);
+        \App\Models\JobListing::observe(\App\Observers\TranslatableObserver::class);
+
         \Carbon\Carbon::setLocale('th');
 
         if (file_exists(app_path('Helpers/TextHelper.php'))) {
