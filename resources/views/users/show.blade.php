@@ -639,7 +639,7 @@ html.dark .follower-row:hover {
                         @if($profileUser->year)
                             <span class="pub-meta-pill">
                                 <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-                                ปี {{ $profileUser->year }}
+                                {{ __('ปี') }}{{ $profileUser->year }}
                             </span>
                         @endif
                         @if($profileUser->program)
@@ -687,7 +687,7 @@ html.dark .follower-row:hover {
                     data-target-id="{{ $profileUser->id }}"
                     data-target-name="{{ $profileUser->full_name }}"
                     data-target-url="{{ route('users.show', $profileUser) }}"
-                    title="ส่งข้อความถึง {{ $profileUser->full_name }}">
+                    title="{{ __('ส่งข้อความถึง') }}{{ $profileUser->full_name }}">
                     <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                     </svg>
@@ -820,7 +820,7 @@ html.dark .follower-row:hover {
     var CSRF = document.querySelector('meta[name="csrf-token"]').content;
     var followBtn = document.getElementById('followBtn');
 
-    // ── แท็บโพสต์สไตล์ Instagram: สลับแผงตามประเภท (กิจกรรม/ข่าวประกาศ/ประกาศงาน) ──
+    // ── แท็บโพสต์สไตล์ Instagram: สลับแผงตามประเภท (กิจกรรม/ข่าวประกาศ/ประกาศงาน)──
     document.querySelectorAll('.pub-feed-tab').forEach(function (tab) {
         tab.addEventListener('click', function () {
             var type = tab.getAttribute('data-feed-tab');
@@ -835,14 +835,14 @@ html.dark .follower-row:hover {
         });
     });
 
-    // ── Escape ข้อความก่อนใส่ลง innerHTML ทุกครั้ง (ป้องกัน XSS จากชื่อผู้ใช้) ──
+    // ── Escape ข้อความก่อนใส่ลง innerHTML ทุกครั้ง (ป้องกัน XSS จากชื่อผู้ใช้)──
     function escHtml(s) {
         return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
             return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
         });
     }
 
-    // ── ปุ่มติดตาม / เลิกติดตาม (fetch + optimistic UI) ──
+    // ── ปุ่มติดตาม / เลิกติดตาม (fetch+ optimistic UI) ──
     if (followBtn) {
         followBtn.addEventListener('click', function () {
             var isFollowing = followBtn.dataset.isFollowing === '1';
@@ -858,11 +858,11 @@ html.dark .follower-row:hover {
             })
             .then(function (r) { return r.json(); })
             .then(function (data) {
-                if (!data.success) throw new Error(data.message || 'เกิดข้อผิดพลาด');
+                if (!data.success) throw new Error(data.message || '{{ __('เกิดข้อผิดพลาด') }}');
                 followBtn.dataset.isFollowing = data.is_following ? '1' : '0';
                 followBtn.classList.toggle('is-following', !!data.is_following);
                 followBtn.classList.toggle('not-following', !data.is_following);
-                if (text) text.textContent = data.is_following ? 'ติดตามอยู่' : 'ติดตาม';
+                if (text) text.textContent = data.is_following ? '{{ __('ติดตามอยู่') }}' : '{{ __('ติดตาม') }}';
                 if (icon) {
                     icon.innerHTML = data.is_following
                         ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>'
@@ -874,7 +874,7 @@ html.dark .follower-row:hover {
                 }
             })
             .catch(function (err) {
-                alert(err.message || 'ไม่สามารถติดตามได้ในขณะนี้');
+                alert(err.message || '{{ __('ไม่สามารถติดตามได้ในขณะนี้') }}');
             })
             .finally(function () {
                 followBtn.disabled = false;
@@ -882,12 +882,12 @@ html.dark .follower-row:hover {
         });
     }
 
-    // ── ปุ่มส่งข้อความ (Direct Chat Widget / Page) ──
+    // ── ปุ่มส่งข้อความ (Direct Chat Widget / Page)──
     var msgBtn = document.getElementById('pubMessageBtn');
     if (msgBtn) {
         msgBtn.addEventListener('click', function () {
             var targetId = parseInt(this.getAttribute('data-target-id'), 10);
-            var targetName = this.getAttribute('data-target-name') || 'ผู้ใช้';
+            var targetName = this.getAttribute('data-target-name') || '{{ __('ผู้ใช้') }}';
             var targetUrl = this.getAttribute('data-target-url') || '';
 
             if (typeof window.openChatWidget === 'function' && typeof window.showChatView === 'function') {
@@ -899,7 +899,7 @@ html.dark .follower-row:hover {
         });
     }
 
-    // ── Modal รายชื่อผู้ติดตาม / กำลังติดตาม ──
+    // ── Modal รายชื่อผู้ติดตาม / กำลังติดตาม──
     window.openFollowerModal = function (kind) {
         var modal = document.getElementById('followerModal');
         var title = document.getElementById('followerModalTitle');

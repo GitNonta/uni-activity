@@ -932,16 +932,16 @@ html.dark .line-unlink-btn:hover {
     function editEnglishName(currentName) {
         if (typeof Swal !== 'undefined') {
             Swal.fire({
-                title: 'แก้ไขชื่อภาษาอังกฤษ',
-                text: 'หากระบบแปลชื่อภาษาอังกฤษของคุณไม่ถูกต้อง สามารถแก้ไขได้ที่นี่',
+                title: '{{ __('แก้ไขชื่อภาษาอังกฤษ') }}',
+                text: '{{ __('หากระบบแปลชื่อภาษาอังกฤษของคุณไม่ถูกต้อง สามารถแก้ไขได้ที่นี่') }}',
                 input: 'text',
                 inputValue: currentName || "",
                 showCancelButton: true,
-                confirmButtonText: 'บันทึก',
-                cancelButtonText: 'ยกเลิก',
+                confirmButtonText: '{{ __('บันทึก') }}',
+                cancelButtonText: '{{ __('ยกเลิก') }}',
                 inputValidator: (value) => {
                     if (!value) {
-                        return 'กรุณาระบุชื่อภาษาอังกฤษ!'
+                        return '{{ __('กรุณาระบุชื่อภาษาอังกฤษ!') }}'
                     }
                 }
             }).then((result) => {
@@ -951,7 +951,7 @@ html.dark .line-unlink-btn:hover {
                 }
             });
         } else {
-            let newName = prompt("กรุณาระบุชื่อ-นามสกุลภาษาอังกฤษของคุณ:\n(หากระบบแปลผิด สามารถแก้ไขได้)", currentName || "");
+            let newName = prompt("{{ __('กรุณาระบุชื่อ-นามสกุลภาษาอังกฤษของคุณ:') }}\n({{ __('หากระบบแปลผิด สามารถแก้ไขได้)') }}", currentName || "");
             if (newName !== null && newName.trim() !== "") {
                 document.getElementById('englishNameInput').value = newName.trim();
                 document.getElementById('editEnglishNameForm').submit();
@@ -1031,14 +1031,14 @@ html.dark .line-unlink-btn:hover {
                     if (!data.success) return;
                     if (!data.has_photo) return;
                     if (data.decoded) {
-                        render('success', 'ถอดรหัสใบหน้าสำเร็จ (512D) — ระบบพร้อมใช้งานสำหรับเช็คอิน');
+                        render('success', '{{ __('ถอดรหัสใบหน้าสำเร็จ (512D) — ระบบพร้อมใช้งานสำหรับเช็คอิน') }}');
                         stopPolling();
                     } else if (pollsLeft > 0) {
                         pollsLeft--;
-                        render('pending', 'กำลังถอดรหัสใบหน้า (512D) ผ่าน Background Queue...');
+                        render('pending', '{{ __('กำลังถอดรหัสใบหน้า (512D) ผ่าน Background Queue...') }}');
                         timer = setTimeout(poll, 2000);
                     } else {
-                        render('error', 'ยังไม่สามารถถอดรหัสใบหน้าได้ (ใช้เวลานานกว่าปกติ) — ลองอัปโหลดรูปใหม่อีกครั้ง');
+                        render('error', '{{ __('ยังไม่สามารถถอดรหัสใบหน้าได้ (ใช้เวลานานกว่าปกติ) — ลองอัปโหลดรูปใหม่อีกครั้ง') }}');
                         stopPolling();
                     }
                 })
@@ -1051,16 +1051,16 @@ html.dark .line-unlink-btn:hover {
         }
 
         window.startFaceStatusPolling = function () {
-            render('pending', 'กำลังอัปโหลดรูปโปรไฟล์...');
+            render('pending', '{{ __('กำลังอัปโหลดรูปโปรไฟล์...') }}');
             pollsLeft = 45;
             stopPolling();
             timer = setTimeout(poll, 3000);
         };
 
-        // ── Auto-resume: เข้าหน้านี้โดยมีรูปแต่ยังไม่มีเวกเตอร์ → resume polling ──
+        // ── Auto-resume: เข้าหน้านี้โดยมีรูปแต่ยังไม่มีเวกเตอร์→ resume polling ──
         @if(isset($user) && $user->profile_photo && $user->face_descriptor === null)
             pollsLeft = 45;
-            render('pending', 'กำลังถอดรหัสใบหน้า (512D) ผ่าน Background Queue...');
+            render('pending', '{{ __('กำลังถอดรหัสใบหน้า (512D) ผ่าน Background Queue...') }}');
             timer = setTimeout(poll, 1500);
         @endif
     })();

@@ -219,7 +219,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(q) + '&countrycodes=th&limit=1')
             .then(function(r) { return r.json(); })
             .then(function(data) {
-                searchBtn.innerHTML = '<svg class="icon-sm" style="display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg> ค้นหา';
+                searchBtn.innerHTML = '<svg class="icon-sm" style="display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg> {{ __('ค้นหา') }}';
                 searchBtn.disabled = false;
 
                 if(data && data.length > 0) {
@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .catch(function() {
-                searchBtn.innerHTML = '<svg class="icon-sm" style="display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg> ค้นหา';
+                searchBtn.innerHTML = '<svg class="icon-sm" style="display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg> {{ __('ค้นหา') }}';
                 searchBtn.disabled = false;
                 alert('{{ __('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์ค้นหาแผนที่') }}');
             });

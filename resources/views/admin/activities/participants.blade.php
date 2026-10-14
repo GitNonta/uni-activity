@@ -4,8 +4,8 @@
 
 @section('content')
 <a href="{{ route('admin.activities.show', $activity->id) }}" class="text-sm text-primary">&larr; {{ __('กลับ') }}</a>
-<h1 class="font-bold mt-2 mb-1" style="font-size:1.25rem;">ผู้เข้าร่วม: {{ $activity->title }}</h1>
-<p class="text-muted text-sm mb-4">{{ $activity->getRegisteredCount() }}/{{ $activity->max_participants }} คน</p>
+<h1 class="font-bold mt-2 mb-1" style="font-size:1.25rem;">{{ __('ผู้เข้าร่วม:') }}{{ $activity->title }}</h1>
+<p class="text-muted text-sm mb-4">{{ $activity->getRegisteredCount() }}/{{ $activity->max_participants }} {{ __('คน') }}</p>
 
 {{-- ตารางผู้ลงทะเบียน: รหัส, ชื่อ, คณะ, สถานะ, ปุ่มอนุมัติ/ปฏิเสธ (แสดงเฉพาะสถานะ pending) --}}
 <div class="card">

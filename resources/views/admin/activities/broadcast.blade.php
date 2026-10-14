@@ -102,7 +102,7 @@
             </span>
         </div>
         <p class="font-bold text-dark mt-2" style="font-size:0.95rem;">{{ $activity->activity_date->format('d/m/Y') }}</p>
-        <p class="text-xs text-muted">{{ \Carbon\Carbon::parse($activity->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($activity->end_time)->format('H:i') }} น. ({{ $activity->location ?? '-' }})</p>
+        <p class="text-xs text-muted">{{ \Carbon\Carbon::parse($activity->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($activity->end_time)->format('H:i') }} {{ __('น. (') }}{{ $activity->location ?? '-' }})</p>
     </div>
 </div>
 
@@ -177,7 +177,7 @@
                 <label class="block text-xs font-semibold text-dark mb-1">{{ __('กลุ่มนักศึกษาเป้าหมาย') }} <span class="text-danger">*</span></label>
                 <select name="target_audience" id="targetAudience" class="form-control" style="width:100%;border-radius:0.5rem;font-size:0.875rem;" required onchange="updatePreview()">
                     <option value="approved" {{ old('target_audience', 'approved') == 'approved' ? 'selected' : '' }}>
-                        {{ __('เฉพาะผู้ที่ได้รับการอนุมัติแล้วเท่านั้น') }} ({{ $stats['approved_count'] }} {{ __('คน') }}) [แนะนำ]
+                        {{ __('เฉพาะผู้ที่ได้รับการอนุมัติแล้วเท่านั้น') }} ({{ $stats['approved_count'] }} {{ __('คน') }}) [{{ __('แนะนำ') }}]
                     </option>
                     <option value="all" {{ old('target_audience') == 'all' ? 'selected' : '' }}>
                         {{ __('นักศึกษาทุกคนที่ลงทะเบียน (รวมรออนุมัติ/ตัวสำรอง') }}) ({{ $stats['total_registered'] }} {{ __('คน') }})
@@ -212,7 +212,7 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width:100%;padding:0.75rem;font-size:0.95rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:0.5rem;" onclick="return confirm('ยืนยันส่งข้อความบรอดแคสต์ไปยังนักศึกษาใน{{ __('กิจกรรม') }}นี้ทันที?')">
+            <button type="submit" class="btn btn-primary" style="width:100%;padding:0.75rem;font-size:0.95rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:0.5rem;" onclick="return confirm('ยืนยันส่งข้อความบรอดแคสต์ไปยังนักศึกษาใน{{ __('กิจกรรม') }}{{ __('นี้ทันที?') }}')">
                 <svg style="width:1.1rem;height:1.1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
                 <span>{{ __('บรอดแคสต์ส่งข้อความด่วนทันที') }}</span>
             </button>
@@ -247,7 +247,7 @@
                                 @if($stats['reminder_24h'])
                                     <span class="text-success font-medium flex items-center gap-1">
                                         <svg style="width:0.85rem;height:0.85rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                        {{ __('ส่งแล้วเมื่อ') }} {{ \Carbon\Carbon::parse($stats['reminder_24h']->sent_at)->format('d/m/Y H:i') }} (ถึง {{ $stats['reminder_24h']->recipients_count }} {{ __('คน') }})
+                                        {{ __('ส่งแล้วเมื่อ') }} {{ \Carbon\Carbon::parse($stats['reminder_24h']->sent_at)->format('d/m/Y H:i') }} ({{ __('ถึง') }}{{ $stats['reminder_24h']->recipients_count }} {{ __('คน') }})
                                     </span>
                                 @else
                                     <span class="text-muted">{{ __('ยังไม่เคยส่ง — รอคิวอัตโนมัติ หรือกดส่งได้ทันที') }}</span>
@@ -257,7 +257,7 @@
                         <form action="{{ route('admin.activities.reminders.trigger', $activity) }}" method="POST" style="margin:0;">
                             @csrf
                             <input type="hidden" name="window" value="24h">
-                            <button type="submit" class="btn btn-outline btn-sm text-xs flex items-center gap-1" onclick="return confirm('ต้องการส่งแจ้งเตือนล่วงหน้า 1 วัน (24h) ไปยังผู้ลงทะเบียน{{ __('กิจกรรม') }}นี้ตอนนี้ใช่หรือไม่?')">
+                            <button type="submit" class="btn btn-outline btn-sm text-xs flex items-center gap-1" onclick="return confirm('ต้องการส่งแจ้งเตือนล่วงหน้า 1 วัน (24h) ไปยังผู้ลงทะเบียน{{ __('กิจกรรม') }}{{ __('นี้ตอนนี้ใช่หรือไม่?') }}')">
                                 <svg style="width:0.85rem;height:0.85rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                                 <span>{{ __('ส่ง 24h ตอนนี้') }}</span>
                             </button>
@@ -277,7 +277,7 @@
                                 @if($stats['reminder_2h'])
                                     <span class="text-success font-medium flex items-center gap-1">
                                         <svg style="width:0.85rem;height:0.85rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                        {{ __('ส่งแล้วเมื่อ') }} {{ \Carbon\Carbon::parse($stats['reminder_2h']->sent_at)->format('d/m/Y H:i') }} (ถึง {{ $stats['reminder_2h']->recipients_count }} {{ __('คน') }})
+                                        {{ __('ส่งแล้วเมื่อ') }} {{ \Carbon\Carbon::parse($stats['reminder_2h']->sent_at)->format('d/m/Y H:i') }} ({{ __('ถึง') }}{{ $stats['reminder_2h']->recipients_count }} {{ __('คน') }})
                                     </span>
                                 @else
                                     <span class="text-muted">{{ __('ยังไม่เคยส่ง — รอคิวอัตโนมัติ หรือกดส่งได้ทันที') }}</span>
@@ -287,7 +287,7 @@
                         <form action="{{ route('admin.activities.reminders.trigger', $activity) }}" method="POST" style="margin:0;">
                             @csrf
                             <input type="hidden" name="window" value="2h">
-                            <button type="submit" class="btn btn-outline btn-sm text-xs flex items-center gap-1" onclick="return confirm('ต้องการส่งแจ้งเตือนล่วงหน้า 2 ชั่วโมง (2h) ไปยังผู้ลงทะเบียน{{ __('กิจกรรม') }}นี้ตอนนี้ใช่หรือไม่?')">
+                            <button type="submit" class="btn btn-outline btn-sm text-xs flex items-center gap-1" onclick="return confirm('ต้องการส่งแจ้งเตือนล่วงหน้า 2 ชั่วโมง (2h) ไปยังผู้ลงทะเบียน{{ __('กิจกรรม') }}{{ __('นี้ตอนนี้ใช่หรือไม่?') }}')">
                                 <svg style="width:0.85rem;height:0.85rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                                 <span>{{ __('ส่ง 2h ตอนนี้') }}</span>
                             </button>
@@ -424,24 +424,24 @@ function setPreset(type) {
 
     const activityLocation = "{{ addslashes($activity->location ?? 'สถานที่เดิม') }}";
     const activityDate = "{{ $activity->activity_date->format('d/m/Y') }}";
-    const activityTime = "{{ \Carbon\Carbon::parse($activity->start_time)->format('H:i') }} น.";
+    const activityTime = "{{ \Carbon\Carbon::parse($activity->start_time)->format('H:i') }} {{ __('น.') }}";
 
     if (type === 'venue') {
         typeSelect.value = 'venue_change';
-        titleInput.value = 'แจ้งเปลี่ยนแปลงสถานที่จัดกิจกรรม';
-        messageInput.value = `เนื่องจากมีความจำเป็น ขอแจ้งย้ายสถานที่จัดกิจกรรมไปยัง [ระบุสถานที่ใหม่] ในวันและเวลาเดิม (${activityDate} เวลา ${activityTime}) กรุณาตรวจสอบและเดินทางมายังสถานที่ใหม่ ขอบคุณครับ/ค่ะ`;
+        titleInput.value = '{{ __('แจ้งเปลี่ยนแปลงสถานที่จัดกิจกรรม') }}';
+        messageInput.value = `{{ __('เนื่องจากมีความจำเป็น ขอแจ้งย้ายสถานที่จัดกิจกรรมไปยัง') }}[{{ __('ระบุสถานที่ใหม่') }}] {{ __('ในวันและเวลาเดิม (') }}${activityDate} {{ __('เวลา') }}${activityTime}) {{ __('กรุณาตรวจสอบและเดินทางมายังสถานที่ใหม่ ขอบคุณครับ/ค่ะ') }}`;
     } else if (type === 'time') {
         typeSelect.value = 'time_change';
-        titleInput.value = 'แจ้งเปลี่ยนแปลงเวลาจัดกิจกรรม';
-        messageInput.value = `ขอแจ้งปรับเปลี่ยนเวลากิจกรรมในวันที่ ${activityDate} เป็นเวลา [ระบุเวลาใหม่] ณ ${activityLocation} ขออภัยในความไม่สะดวกที่เกิดขึ้นครับ/ค่ะ`;
+        titleInput.value = '{{ __('แจ้งเปลี่ยนแปลงเวลาจัดกิจกรรม') }}';
+        messageInput.value = `{{ __('ขอแจ้งปรับเปลี่ยนเวลากิจกรรมในวันที่') }}${activityDate} {{ __('เป็นเวลา') }}[{{ __('ระบุเวลาใหม่') }}] {{ __('ณ') }}${activityLocation} {{ __('ขออภัยในความไม่สะดวกที่เกิดขึ้นครับ/ค่ะ') }}`;
     } else if (type === 'urgent') {
         typeSelect.value = 'urgent';
-        titleInput.value = 'ประกาศด่วนสำคัญจากผู้จัดกิจกรรม';
-        messageInput.value = `ขอความร่วมมือนักศึกษาทุกคนที่ลงทะเบียนในกิจกรรม กรุณา [ระบุสิ่งที่ต้องการให้นักศึกษาทำทันที] ณ ${activityLocation}`;
+        titleInput.value = '{{ __('ประกาศด่วนสำคัญจากผู้จัดกิจกรรม') }}';
+        messageInput.value = `{{ __('ขอความร่วมมือนักศึกษาทุกคนที่ลงทะเบียนในกิจกรรม กรุณา') }}[{{ __('ระบุสิ่งที่ต้องการให้นักศึกษาทำทันที') }}] {{ __('ณ') }}${activityLocation}`;
     } else if (type === 'prep') {
         typeSelect.value = 'reminder';
-        titleInput.value = 'สิ่งที่ต้องเตรียมตัวก่อนเข้าร่วมกิจกรรม';
-        messageInput.value = `เพื่อความพร้อมในการทำกิจกรรม ขอให้นักศึกษาเตรียม: 1. บัตรนักศึกษา 2. สมาร์ทโฟนสำหรับสแกนเข้างาน 3. แต่งกายชุดนักศึกษาถูกระเบียบ เจอกันวันที่ ${activityDate} เวลา ${activityTime}`;
+        titleInput.value = '{{ __('สิ่งที่ต้องเตรียมตัวก่อนเข้าร่วมกิจกรรม') }}';
+        messageInput.value = `{{ __('เพื่อความพร้อมในการทำกิจกรรม ขอให้นักศึกษาเตรียม: 1. บัตรนักศึกษา 2. สมาร์ทโฟนสำหรับสแกนเข้างาน 3. แต่งกายชุดนักศึกษาถูกระเบียบ เจอกันวันที่') }}${activityDate} {{ __('เวลา') }}${activityTime}`;
     }
 
     updatePreview();
@@ -460,8 +460,8 @@ function updatePreview() {
     const previewBadge = document.getElementById('previewTypeBadge');
     const previewBadgeIcon = document.getElementById('previewBadgeIcon');
 
-    previewTitle.innerText = titleVal ? `[ประกาศ] ${titleVal}` : '[ประกาศด่วน] หัวข้อประกาศจะแสดงที่นี่';
-    previewMessage.innerText = msgVal ? msgVal : 'เนื้อหาข้อความประกาศที่คุณพิมพ์จะแสดงตัวอย่างสดในกล่องนี้...';
+    previewTitle.innerText = titleVal ? `[{{ __('ประกาศ') }}] ${titleVal}` : '[{{ __('ประกาศด่วน') }}] {{ __('หัวข้อประกาศจะแสดงที่นี่') }}';
+    previewMessage.innerText = msgVal ? msgVal : '{{ __('เนื้อหาข้อความประกาศที่คุณพิมพ์จะแสดงตัวอย่างสดในกล่องนี้...') }}';
 
     if (typeVal === 'urgent' || typeVal === 'venue_change') {
         previewBadge.innerText = typeVal === 'urgent' ? 'ประกาศด่วนสำคัญ' : 'ย้ายสถานที่';
@@ -470,19 +470,19 @@ function updatePreview() {
         previewBadgeIcon.style.background = '#fee2e2';
         previewBadgeIcon.style.color = '#dc2626';
     } else if (typeVal === 'time_change') {
-        previewBadge.innerText = 'แจ้งเปลี่ยนเวลา';
+        previewBadge.innerText = '{{ __('แจ้งเปลี่ยนเวลา') }}';
         previewBadge.style.background = '#fef3c7';
         previewBadge.style.color = '#b45309';
         previewBadgeIcon.style.background = '#fef3c7';
         previewBadgeIcon.style.color = '#b45309';
     } else if (typeVal === 'reminder') {
-        previewBadge.innerText = 'เตือนเตรียมตัว';
+        previewBadge.innerText = '{{ __('เตือนเตรียมตัว') }}';
         previewBadge.style.background = '#e0f2fe';
         previewBadge.style.color = '#0284c7';
         previewBadgeIcon.style.background = '#e0f2fe';
         previewBadgeIcon.style.color = '#0284c7';
     } else {
-        previewBadge.innerText = 'ประกาศทั่วไป';
+        previewBadge.innerText = '{{ __('ประกาศทั่วไป') }}';
         previewBadge.style.background = '#e0e7ff';
         previewBadge.style.color = '#4338ca';
         previewBadgeIcon.style.background = '#e0e7ff';

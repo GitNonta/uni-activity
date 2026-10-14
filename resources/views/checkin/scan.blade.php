@@ -40,7 +40,7 @@ function submitQrWithLocation(e) {
     e.preventDefault();
     var form = document.getElementById('qrCheckinForm');
     var btn = e.currentTarget || form.querySelector('button[type="submit"]');
-    if (btn) { btn.disabled = true; btn.textContent = 'กำลังตรวจสอบพิกัด...'; }
+    if (btn) { btn.disabled = true; btn.textContent = '{{ __('กำลังตรวจสอบพิกัด...') }}'; }
 
     var submitted = false;
     var doSubmit = function() {

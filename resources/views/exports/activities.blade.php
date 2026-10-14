@@ -33,13 +33,13 @@
                             {{ __('จะมาถึง') }}
                             @break
                         @case('ongoing')
-                            กำลังดำเนินการ
+                            {{ __('กำลังดำเนินการ') }}
                             @break
                         @case('completed')
-                            เสร็จสิ้น
+                            {{ __('เสร็จสิ้น') }}
                             @break
                         @case('cancelled')
-                            ยกเลิก
+                            {{ __('ยกเลิก') }}
                             @break
                         @default
                             {{ $activity->status }}

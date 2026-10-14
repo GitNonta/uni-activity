@@ -12,7 +12,7 @@
         <p style="margin-top:.5rem;">{{ $activity->title }}</p>
         <p class="text-sm" style="margin-top:.25rem;">{{ $activity->activity_date->format('d/m/Y') }}</p>
         @if(isset($distance) && $distance !== null)
-            <p class="text-xs text-muted" style="margin-top:.25rem;">{{ __('ระยะห่าง') }}: {{ number_format($distance, 0) }} เมตร</p>
+            <p class="text-xs text-muted" style="margin-top:.25rem;">{{ __('ระยะห่าง') }}: {{ number_format($distance, 0) }} {{ __('เมตร') }}</p>
         @endif
     </div>
     @elseif(isset($status) && $status === 'approved')
@@ -23,7 +23,7 @@
         <p style="margin-top:.5rem;">{{ $activity->title }}</p>
         <p class="text-sm" style="margin-top:.25rem;">{{ $activity->activity_date->format('d/m/Y') }} &middot; {{ $activity->activity_hours }} {{ __('ชม.') }}</p>
         @if(isset($distance) && $distance !== null)
-            <p class="text-xs text-muted" style="margin-top:.25rem;">{{ __('ระยะห่าง') }}: {{ number_format($distance, 0) }} เมตร</p>
+            <p class="text-xs text-muted" style="margin-top:.25rem;">{{ __('ระยะห่าง') }}: {{ number_format($distance, 0) }} {{ __('เมตร') }}</p>
         @endif
     </div>
     @else
@@ -33,7 +33,7 @@
         <p style="margin-top:.5rem;color:#fff;">{{ $activity->title }}</p>
         <p class="text-sm" style="margin-top:.25rem;color:rgba(255,255,255,.8);">{{ $activity->activity_date->format('d/m/Y') }} &middot; {{ $activity->activity_hours }} {{ __('ชม.') }}</p>
         @if(isset($distance) && $distance !== null)
-            <p class="text-xs" style="margin-top:.25rem;color:rgba(255,255,255,.7);">{{ __('ระยะห่าง') }}: {{ number_format($distance, 0) }} เมตร</p>
+            <p class="text-xs" style="margin-top:.25rem;color:rgba(255,255,255,.7);">{{ __('ระยะห่าง') }}: {{ number_format($distance, 0) }} {{ __('เมตร') }}</p>
         @endif
     </div>
     @endif

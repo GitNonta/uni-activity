@@ -465,7 +465,7 @@
             </div>
             <div id="aiClusterGlobalBadge">
                 <span class="c-badge {{ ($status['ai_cluster']['cluster_state'] ?? '') === 'HEALTHY' ? 'c-badge-success' : 'c-badge-warning' }}">
-                    Cluster: {{ $status['ai_cluster']['cluster_state'] ?? 'HEALTHY' }} ({{ $status['ai_cluster']['healthy_nodes'] ?? 0 }}/{{ $status['ai_cluster']['total_nodes'] ?? 0 }} พร้อมใช้งาน)
+                    Cluster: {{ $status['ai_cluster']['cluster_state'] ?? 'HEALTHY' }} ({{ $status['ai_cluster']['healthy_nodes'] ?? 0 }}/{{ $status['ai_cluster']['total_nodes'] ?? 0 }} {{ __('พร้อมใช้งาน)') }}
                 </span>
             </div>
         </div>
@@ -708,12 +708,12 @@
                 if (globalAiBadge) {
                     const isGlobalHealthy = data.ai_cluster.cluster_state === 'HEALTHY';
                     globalAiBadge.innerHTML = `<span class="c-badge ${isGlobalHealthy ? 'c-badge-success' : 'c-badge-warning'}">
-                        Cluster: ${data.ai_cluster.cluster_state} (${data.ai_cluster.healthy_nodes}/${data.ai_cluster.total_nodes} พร้อมใช้งาน)
+                        Cluster: ${data.ai_cluster.cluster_state} (${data.ai_cluster.healthy_nodes}/${data.ai_cluster.total_nodes} {{ __('พร้อมใช้งาน)') }}
                     </span>`;
                 }
             }
 
-            document.getElementById('lastUpdated').textContent = 'อัปเดต: ' + new Date().toLocaleTimeString('th-TH');
+            document.getElementById('lastUpdated').textContent = '{{ __('อัปเดต:') }}' + new Date().toLocaleTimeString('th-TH');
         } catch (e) {
             console.error('Failed to fetch live cluster metrics', e);
         } finally {

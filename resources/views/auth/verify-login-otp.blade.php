@@ -81,7 +81,7 @@
             btn.disabled = true;
             btn.style.opacity = '0.75';
             btn.style.cursor = 'not-allowed';
-            btn.innerHTML = '<svg style="width:16px;height:16px;animation:spin 1s linear infinite;display:inline-block;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> กำลังตรวจสอบ...';
+            btn.innerHTML = '<svg style="width:16px;height:16px;animation:spin 1s linear infinite;display:inline-block;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> {{ __('กำลังตรวจสอบ...') }}';
         }
         return true;
     };

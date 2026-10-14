@@ -103,7 +103,7 @@ function toggleJobFilters() {
     }
 }
 
-// สลับปุ่ตัวกรอง/ปุ่มค้นหา: โฟกัสหรือพิมพ์ในช่อง → แสดงปุ่มค้นหา, เลิกโฟกัส → กลับเป็นปุ่มตัวกรอง
+// สลับปุ่ตัวกรอง/ปุ่มค้นหา: โฟกัสหรือพิมพ์ในช่อง→ แสดงปุ่มค้นหา, เลิกโฟกัส→ กลับเป็นปุ่มตัวกรอง
 (function(){
     var inp = document.getElementById('jobSearchInput');
     var bSearch = document.getElementById('searchSwapSubmitBtn');
@@ -115,7 +115,7 @@ function toggleJobFilters() {
     inp.addEventListener('blur', function() { setTimeout(showFilter, 160); });
 })();
 
-// Typeahead: ใบ้งานตอนพิมพ์ + ซ่อนแผงตัวกรองระหว่างพิมพ์
+// Typeahead: ใบ้งานตอนพิมพ์+ ซ่อนแผงตัวกรองระหว่างพิมพ์
 (function(){
     var inp = document.getElementById('jobSearchInput');
     var box = document.getElementById('jobSuggestBox');
@@ -156,11 +156,11 @@ function toggleJobFilters() {
         fetch(suggestUrl + '?q=' + encodeURIComponent(q), { signal: ctrl.signal, headers: { 'Accept': 'application/json' } })
             .then(function (r) { return r.ok ? r.json() : { suggestions: [] }; })
             .then(function (data) { render(data.suggestions || []); })
-            .catch(function () { /* request ถูกยกเลิกหรือล้มเหลว — เงียบไว้ */ });
+            .catch(function () { /* request {{ __('ถูกยกเลิกหรือล้มเหลว — เงียบไว้') }}*/ });
     }
     inp.addEventListener('input', function () {
         var q = inp.value.trim();
-        setPanel(!q); // พิมพ์อยู่ → ซ่อนแผงตัวกรอง; ลบหมด → คืนแผง (เฉพาะถ้าเคยค้นหาแล้ว)
+        setPanel(!q); // พิมพ์อยู่→ ซ่อนแผงตัวกรอง; ลบหมด→ คืนแผง (เฉพาะถ้าเคยค้นหาแล้ว)
         if (!q) { hideBox(); if (timer) clearTimeout(timer); return; }
         if (timer) clearTimeout(timer);
         timer = setTimeout(function () { fetchSuggest(q); }, 300);
@@ -175,7 +175,7 @@ function toggleJobFilters() {
     inp.addEventListener('blur', function () {
         setTimeout(function () {
             if (!box.contains(document.activeElement)) hideBox();
-            setPanel(true); // เลิกพิมพ์ → คืนแผงตัวกรอง (เฉพาะถ้าเคยค้นหาแล้ว)
+            setPanel(true); // เลิกพิมพ์→ คืนแผงตัวกรอง (เฉพาะถ้าเคยค้นหาแล้ว)
         }, 160);
     });
 })();

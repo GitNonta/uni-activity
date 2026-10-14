@@ -114,7 +114,7 @@ label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
             {{-- Action Buttons --}}
             <div style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;">
                 @if($user->profile_photo)
-                    <form method="POST" action="{{ route('profile.photo.destroy') }}" style="margin:0;" onsubmit="return confirm('คุณต้องการลบรูปภาพโปรไฟล์ และเปลี่ยนไปใช้รูปอวตาร SVG ตามเพศ ({{ $user->gender_label }}) หรือไม่?');">
+                    <form method="POST" action="{{ route('profile.photo.destroy') }}" style="margin:0;" onsubmit="return confirm('คุณต้องการลบรูปภาพโปรไฟล์ และเปลี่ยนไปใช้รูปอวตาร SVG ตามเพศ ({{ $user->gender_label }}) {{ __('หรือไม่?') }}');">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-sm btn-outline" style="color: #fca5a5; border-color: rgba(239, 68, 68, 0.4); font-weight: 700;">
@@ -449,14 +449,14 @@ label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
                 if (!data.success) return;
                 if (!data.has_photo) return;
                 if (data.decoded) {
-                    render('success', 'ถอดรหัสใบหน้าสำเร็จ (512D) — ระบบพร้อมใช้งานสำหรับเช็คอิน');
+                    render('success', '{{ __('ถอดรหัสใบหน้าสำเร็จ (512D) — ระบบพร้อมใช้งานสำหรับเช็คอิน') }}');
                     stopPolling();
                 } else if (pollsLeft > 0) {
                     pollsLeft--;
-                    render('pending', 'กำลังถอดรหัสใบหน้า (512D) ผ่าน Background Queue...');
+                    render('pending', '{{ __('กำลังถอดรหัสใบหน้า (512D) ผ่าน Background Queue...') }}');
                     timer = setTimeout(poll, 2000);
                 } else {
-                    render('error', 'ยังไม่สามารถถอดรหัสใบหน้าได้ (ใช้เวลานานกว่าปกติ) — ลองอัปโหลดรูปใหม่อีกครั้ง');
+                    render('error', '{{ __('ยังไม่สามารถถอดรหัสใบหน้าได้ (ใช้เวลานานกว่าปกติ) — ลองอัปโหลดรูปใหม่อีกครั้ง') }}');
                     stopPolling();
                 }
             })
@@ -469,16 +469,16 @@ label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
     }
 
     window.startFaceStatusPolling = function () {
-        render('pending', 'กำลังอัปโหลดรูปโปรไฟล์...');
+        render('pending', '{{ __('กำลังอัปโหลดรูปโปรไฟล์...') }}');
         pollsLeft = 45;
         stopPolling();
         timer = setTimeout(poll, 3000);
     };
 
-    // ── Auto-resume: เข้าหน้านี้โดยมีรูปแต่ยังไม่มีเวกเตอร์ → resume polling ──
+    // ── Auto-resume: เข้าหน้านี้โดยมีรูปแต่ยังไม่มีเวกเตอร์→ resume polling ──
     @if(isset($user) && $user->profile_photo && $user->face_descriptor === null)
         pollsLeft = 45;
-        render('pending', 'กำลังถอดรหัสใบหน้า (512D) ผ่าน Background Queue...');
+        render('pending', '{{ __('กำลังถอดรหัสใบหน้า (512D) ผ่าน Background Queue...') }}');
         timer = setTimeout(poll, 1500);
     @endif
 })();

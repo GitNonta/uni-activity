@@ -389,11 +389,11 @@
         const checked = document.getElementById('auto_approve_enabled').checked;
         const badge = document.getElementById('main-status-badge');
         if (checked) {
-            badge.textContent = 'เปิดใช้งาน (Active)';
+            badge.textContent = '{{ __('เปิดใช้งาน (Active)') }}';
             badge.style.background = '#dcfce7';
             badge.style.color = '#15803d';
         } else {
-            badge.textContent = 'ปิดใช้งาน (Disabled)';
+            badge.textContent = '{{ __('ปิดใช้งาน (Disabled)') }}';
             badge.style.background = '#f1f5f9';
             badge.style.color = '#64748b';
         }

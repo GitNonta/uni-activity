@@ -87,10 +87,10 @@ document.addEventListener('DOMContentLoaded', function() {
             right:  'dayGridMonth,timeGridWeek,listMonth'
         },
         buttonText: {
-            today:    'วันนี้',
-            month:    'เดือน',
-            week:     'สัปดาห์',
-            list:     'รายการ',
+            today:    '{{ __('วันนี้') }}',
+            month:    '{{ __('เดือน') }}',
+            week:     '{{ __('สัปดาห์') }}',
+            list:     '{{ __('รายการ') }}',
         },
         height: 'auto',
         events: function(fetchInfo, successCallback, failureCallback) {
@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('eventModalCategory').textContent  = ep.category || '';
             document.getElementById('eventModalDate').textContent      = dateStr;
             document.getElementById('eventModalLocation').textContent  = ep.location || '-';
-            document.getElementById('eventModalHours').textContent     = (ep.hours || 0) + ' ชั่วโมง';
+            document.getElementById('eventModalHours').textContent     = (ep.hours || 0) + ' {{ __('ชั่วโมง') }}';
 
             // Badges
             var badges = '';
@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 info.el.style.boxShadow = '0 0 0 2px ' + info.event.backgroundColor + '88';
             }
         },
-        noEventsContent: 'ไม่มีกิจกรรมในช่วงนี้',
+        noEventsContent: '{{ __('ไม่มีกิจกรรมในช่วงนี้') }}',
         listDaySideFormat: { weekday: 'short' },
     });
 

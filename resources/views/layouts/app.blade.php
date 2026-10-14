@@ -140,7 +140,7 @@
                     </svg>
                 </button>
                 {{-- นำไอคอนประกาศกลับมาที่หัวเหมือนเดิม (map/job ยังอยู่ในเมนู ⋯) --}}
-                <a href="{{ route('announcements.index') }}" class="navbar-icon-btn {{ request()->routeIs('announcements.*') ? 'active' : '' }}" title="ประกาศข่าวสาร">
+                <a href="{{ route('announcements.index') }}" class="navbar-icon-btn {{ request()->routeIs('announcements.*') ? 'active' : '' }}" title="{{ __('ประกาศข่าวสาร') }}">
                     <x-icon name="announcement" size="18" />
                 </a>
                 <button type="button" class="navbar-icon-btn navbar-more-btn" data-more-toggle aria-label="{{ __('เมนูเพิ่มเติม') }}" title="{{ __('เมนูเพิ่มเติม') }}">
@@ -925,7 +925,7 @@
                 var u = new URL(url, window.location.origin);
                 if (u.protocol !== 'http:' && u.protocol !== 'https:') return;
                 window.open(u.href, '_blank', 'noopener');
-            } catch (e) { /* URL ไม่ถูกต้อง — ไม่เปิด */ }
+            } catch (e) { /* URL {{ __('ไม่ถูกต้อง — ไม่เปิด') }}*/ }
         };
         window.cfOpenProfile = function () {
             var btn = document.getElementById('cfProfileBtn');
@@ -977,7 +977,7 @@
             } else if (diffHours < 24) {
                 return '{{ __('ออนไลน์เมื่อ') }} ' + diffHours + ' {{ __('ชม. ที่แล้ว') }}';
             } else {
-                return 'ออนไลน์เมื่อ ' + date.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' }) + ' ' + date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                return '{{ __('ออนไลน์เมื่อ') }}' + date.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' }) + ' ' + date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
             }
         }
 
@@ -1086,7 +1086,7 @@
             } else if (diffHours < 24) {
                 return '{{ __('อ่านเมื่อ') }} ' + diffHours + ' {{ __('ชม. ที่แล้ว') }}';
             } else {
-                return 'อ่านเมื่อ ' + readTime.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                return '{{ __('อ่านเมื่อ') }}' + readTime.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
             }
         }
 

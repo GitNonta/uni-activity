@@ -82,7 +82,7 @@
     function updateFileName(input) {
         if (input.files && input.files[0]) {
             const file = input.files[0];
-            document.getElementById('filePrompt').textContent = 'เลือกไฟล์แล้ว: ' + file.name;
+            document.getElementById('filePrompt').textContent = '{{ __('เลือกไฟล์แล้ว:') }}' + file.name;
             document.getElementById('fileNameDisplay').textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
             document.getElementById('dropZone').style.borderColor = '#4f46e5';
         }

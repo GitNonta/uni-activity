@@ -301,7 +301,7 @@
     <div class="result-box">
         <div class="result-box-title">{{ __('ผลการเข้าร่วมกิจกรรมพัฒนานักศึกษาตามเกณฑ์มหาวิทยาลัย') }}</div>
         <div class="result-box-desc">{{ __('สะสมรวม') }} <strong>{{ number_format($totalHours, 1) }}</strong> {{ __('ชั่วโมง / เกณฑ์ขั้นต่ำ') }} {{ number_format($totalRequired, 1) }} {{ __('ชั่วโมง') }}
-            (ระดับผลการประเมิน: <strong>{{ $levelLabel }}</strong>)
+            ({{ __('ระดับผลการประเมิน:') }}<strong>{{ $levelLabel }}</strong>)
         </div>
     </div>
 
@@ -364,7 +364,7 @@
     <table class="footer-table">
         <tr>
             <td style="text-align: left;">
-                {{ __('ออก ณ วันที่') }} {{ now()->addYears(543)->locale('th')->translatedFormat('d F') }} {{ now()->year + 543 }} | ระบบระเบียนกิจกรรมนักศึกษา
+                {{ __('ออก ณ วันที่') }} {{ now()->addYears(543)->locale('th')->translatedFormat('d F') }} {{ now()->year + 543 }} | {{ __('ระบบระเบียนกิจกรรมนักศึกษา') }}
             </td>
             <td style="text-align: right;">
                 Document Ref: <strong>{{ $docNumber }}</strong>

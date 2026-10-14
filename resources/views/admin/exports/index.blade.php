@@ -56,7 +56,7 @@ html[data-theme="dark"] .export-field-label:hover {
                         <select name="year" class="form-control">
                             <option value="">{{ __('ทั้งหมด') }}</option>
                             @for($i = 1; $i <= 6; $i++)
-                                <option value="{{ $i }}">ปี {{ $i }}</option>
+                                <option value="{{ $i }}">{{ __('ปี') }}{{ $i }}</option>
                             @endfor
                         </select>
                     </div>

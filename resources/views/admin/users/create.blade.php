@@ -29,7 +29,7 @@
                 <label class="form-label">{{ __('อีเมล') }} <span style="color:#dc2626;">*</span></label>
                 @if($type === 'student')
                     <input type="email" name="email" value="{{ old('email') }}" class="form-control" placeholder="{{ __('จะถูกสร้างอัตโนมัติจากรหัสนักศึกษา') }}" readonly style="background:#f8fafc;color:#64748b;">
-                    <div class="text-xs text-muted mt-1">อีเมลจะถูกตั้งค่าเป็น: s[รหัสนักศึกษา]@pkru.ac.th โดยอัตโนมัติ</div>
+                    <div class="text-xs text-muted mt-1">{{ __('อีเมลจะถูกตั้งค่าเป็น: s') }}[{{ __('รหัสนักศึกษา') }}]@pkru.ac.th {{ __('โดยอัตโนมัติ') }}</div>
                 @else
                     <input type="email" name="email" value="{{ old('email') }}" class="form-control" required>
                 @endif
@@ -86,7 +86,7 @@
                         <select name="year" class="form-control">
                             <option value="">{{ __('ไม่ระบุ') }}</option>
                             @for($i = 1; $i <= 6; $i++)
-                                <option value="{{ $i }}" {{ old('year') == $i ? 'selected' : '' }}>ปี {{ $i }}</option>
+                                <option value="{{ $i }}" {{ old('year') == $i ? 'selected' : '' }}>{{ __('ปี') }}{{ $i }}</option>
                             @endfor
                         </select>
                         @error('year') <div class="text-xs" style="color:#dc2626;margin-top:.25rem;">{{ $message }}</div> @enderror

@@ -176,7 +176,7 @@ html.dark .approval-row:hover {
                 <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
         </div>
-        <p class="text-xs text-muted" style="margin-top:4px;">{{ __('สมัคร') }} {{ $stats['pendingRegistrations'] }} · เช็คอิน {{ $stats['pendingAttendances'] }}</p>
+        <p class="text-xs text-muted" style="margin-top:4px;">{{ __('สมัคร') }} {{ $stats['pendingRegistrations'] }} · {{ __('เช็คอิน') }}{{ $stats['pendingAttendances'] }}</p>
     </a>
 </div>
 
@@ -290,7 +290,7 @@ html.dark .approval-row:hover {
             <div style="flex:1; min-width:0;">
                 <div class="font-semi text-sm" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text-main, #0f172a);">
                     {{ $item['name'] }}
-                    <span class="text-xs text-muted" style="font-weight:400;"> · รหัส {{ $item['sid'] }}</span>
+                    <span class="text-xs text-muted" style="font-weight:400;"> · {{ __('รหัส') }}{{ $item['sid'] }}</span>
                     @if($item['faculty']) <span class="text-xs text-muted"> · {{ $item['faculty'] }}</span> @endif
                 </div>
                 <div class="text-xs text-muted" style="margin-top:2px;">

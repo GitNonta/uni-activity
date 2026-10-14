@@ -86,7 +86,7 @@ html.dark .creator-row-badge.is-link:hover .creator-chevron {
 </style>
 
 @if($creatorUrl)
-<a href="{{ $creatorUrl }}" class="creator-row-badge is-link" title="ดูโปรไฟล์ของ {{ $creatorName }}">
+<a href="{{ $creatorUrl }}" class="creator-row-badge is-link" title="{{ __('ดูโปรไฟล์ของ') }}{{ $creatorName }}">
     <div class="creator-avatar-wrap">
         <x-avatar :user="$creator" size="40" style="border: 1.5px solid rgba(148, 163, 184, 0.25); box-shadow: 0 1px 3px rgba(0,0,0,0.06);" />
     </div>

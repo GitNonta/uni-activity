@@ -8,7 +8,7 @@
             <tr>
                 <th colspan="3">
                     {{ __('ช่วงวันที่') }}: {{ $dateFrom ? $dateFrom->format('d/m/Y') : __('เริ่มต้น') }} 
-                    ถึง {{ $dateTo ? $dateTo->format('d/m/Y') : __('ปัจจุบัน') }}
+                    {{ __('ถึง') }}{{ $dateTo ? $dateTo->format('d/m/Y') : __('ปัจจุบัน') }}
                 </th>
             </tr>
         @endif
@@ -91,7 +91,7 @@
     <tbody>
         @foreach($yearStats as $stat)
             <tr>
-                <td>ปี {{ $stat->year }}</td>
+                <td>{{ __('ปี') }}{{ $stat->year }}</td>
                 <td>{{ number_format($stat->count) }} {{ __('คน') }}</td>
                 <td>{{ $activeStudents > 0 ? number_format(($stat->count / $activeStudents) * 100, 1) : 0 }}%</td>
             </tr>

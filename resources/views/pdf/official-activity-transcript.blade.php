@@ -284,14 +284,14 @@
     @if($audit['is_eligible'])
         <div class="audit-badge-box audit-pass">
             <div class="audit-badge-title">{{ __('ผ่านเกณฑ์กิจกรรมพัฒนานักศึกษาเพื่อการสำเร็จการศึกษา (GRADUATION REQUIREMENT MET)') }}</div>
-            <div class="audit-badge-desc">{{ __('นักศึกษามีชั่วโมงกิจกรรมครบถ้วนตามเกณฑ์หลักสูตร (สะสมได้') }} {{ number_format($audit['total_hours'], 1) }} / เกณฑ์ {{ number_format($audit['min_total_hours'], 1) }} {{ __('ชม.') }})</div>
+            <div class="audit-badge-desc">{{ __('นักศึกษามีชั่วโมงกิจกรรมครบถ้วนตามเกณฑ์หลักสูตร (สะสมได้') }} {{ number_format($audit['total_hours'], 1) }} / {{ __('เกณฑ์') }}{{ number_format($audit['min_total_hours'], 1) }} {{ __('ชม.') }})</div>
         </div>
     @else
         <div class="audit-badge-box audit-fail">
             <div class="audit-badge-title">{{ __('อยู่ระหว่างการสะสมชั่วโมงกิจกรรม (IN PROGRESS - REQUIREMENT NOT YET MET)') }}</div>
             <div class="audit-badge-desc">
-                {{ __('ชั่วโมงสะสมรวม') }} {{ number_format($audit['total_hours'], 1) }} / เกณฑ์ {{ number_format($audit['min_total_hours'], 1) }} {{ __('ชม.') }}
-                (ยัง{{ __('ขาด') }}อีก {{ number_format(max(0, $audit['min_total_hours'] - $audit['total_hours']), 1) }} ชม. ให้ครบตามโครงสร้างเกณฑ์หลักสูตร)
+                {{ __('ชั่วโมงสะสมรวม') }} {{ number_format($audit['total_hours'], 1) }} / {{ __('เกณฑ์') }}{{ number_format($audit['min_total_hours'], 1) }} {{ __('ชม.') }}
+                ({{ __('ยัง') }}{{ __('ขาด') }}{{ __('อีก') }}{{ number_format(max(0, $audit['min_total_hours'] - $audit['total_hours']), 1) }} {{ __('ชม. ให้ครบตามโครงสร้างเกณฑ์หลักสูตร)') }}
             </div>
         </div>
     @endif
@@ -415,7 +415,7 @@
     <table class="footer-table">
         <tr>
             <td style="text-align: left;">
-                {{ __('เอกสารทางการออก ณ วันที่') }} {{ $issueDateThai ?? $issueDate->format('d/m/Y') }} | ตรวจสอบความถูกต้องผ่านระบบระเบียนกิจกรรมนักศึกษาดิจิทัล
+                {{ __('เอกสารทางการออก ณ วันที่') }} {{ $issueDateThai ?? $issueDate->format('d/m/Y') }} | {{ __('ตรวจสอบความถูกต้องผ่านระบบระเบียนกิจกรรมนักศึกษาดิจิทัล') }}
             </td>
             <td style="text-align: right;">
                 Document Ref: <strong>{{ $docNumber }}</strong>

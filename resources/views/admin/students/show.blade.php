@@ -118,7 +118,7 @@
                     <select name="activity_id" class="form-control" required>
                         <option value="">{{ __('-- เลือกกิจกรรม --') }}</option>
                         @foreach($activities as $act)
-                            <option value="{{ $act->id }}">{{ $act->title }} ({{ $act->activity_hours }} ชม. · {{ $act->activity_date->format('d/m/Y') }})</option>
+                            <option value="{{ $act->id }}">{{ $act->title }} ({{ $act->activity_hours }} {{ __('ชม.') }}· {{ $act->activity_date->format('d/m/Y') }})</option>
                         @endforeach
                     </select>
                 </div>

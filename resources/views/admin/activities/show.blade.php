@@ -77,7 +77,7 @@
                 <p class="stat-label">{{ __('เช็คอิน (อนุมัติ / รออนุมัติ)') }}</p>
                 <p class="font-bold text-success" style="font-size:1.25rem;">{{ $approvedCount }} {{ __('คน') }}
                     @if($pendingCount > 0)
-                        <span style="font-size:.85rem;color:#d97706;">(รอ {{ $pendingCount }})</span>
+                        <span style="font-size:.85rem;color:#d97706;">({{ __('รอ') }}{{ $pendingCount }})</span>
                     @endif
                 </p>
             </div>
@@ -88,7 +88,7 @@
         <div class="mt-4">
             <div class="flex items-center justify-between mb-2">
                 <p class="font-semi text-sm">{{ __('พิกัดสถานที่จัดกิจกรรม') }}</p>
-                <span class="text-xs text-muted">{{ $activity->latitude }}, {{ $activity->longitude }} | รัศมี {{ $activity->checkin_radius }}m</span>
+                <span class="text-xs text-muted">{{ $activity->latitude }}, {{ $activity->longitude }} | {{ __('รัศมี') }}{{ $activity->checkin_radius }}m</span>
             </div>
             <div id="showMap" style="height:280px;border-radius:8px;border:1px solid #e2e8f0;z-index:0;"></div>
         </div>
@@ -144,7 +144,7 @@
                             <div class="flex items-center gap-2 mb-3" style="flex-wrap:wrap;">
                                 <code id="entry-url" class="text-xs" style="background:var(--surface-hover, #f1f5f9);color:var(--text-main, #0f172a);padding:.375rem;border-radius:4px;flex:1;word-break:break-all;">{{ url('/check-in/' . $activity->qr_token) }}</code>
                                 <button onclick="copyToClipboard('entry-url')" class="btn btn-sm btn-outline" style="white-space:nowrap;" title="{{ __('คัดลอก') }}">{{ __('คัดลอก') }}</button>
-                                <button onclick="showQRModal('{{ url('/check-in/' . $activity->qr_token) }}', 'QR สำหรับเข้างาน')" class="btn btn-sm btn-outline" style="white-space:nowrap;">{{ __('แสดง QR') }}</button>
+                                <button onclick="showQRModal('{{ url('/check-in/' . $activity->qr_token) }}', 'QR {{ __('สำหรับเข้างาน') }}')" class="btn btn-sm btn-outline" style="white-space:nowrap;">{{ __('แสดง QR') }}</button>
                             </div>
                         @else
                             <div class="alert mb-3" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem;border-radius:4px;">{{ __('ยังไม่มี QR Code สำหรับเข้างาน') }}                            </div>
@@ -173,7 +173,7 @@
                             <div class="flex items-center gap-2 mb-3" style="flex-wrap:wrap;">
                                 <code id="exit-url" class="text-xs" style="background:var(--surface-hover, #f1f5f9);color:var(--text-main, #0f172a);padding:.375rem;border-radius:4px;flex:1;word-break:break-all;">{{ url('/check-in/' . $activity->qr_checkout_token) }}</code>
                                 <button onclick="copyToClipboard('exit-url')" class="btn btn-sm btn-outline" style="white-space:nowrap;" title="{{ __('คัดลอก') }}">{{ __('คัดลอก') }}</button>
-                                <button onclick="showQRModal('{{ url('/check-in/' . $activity->qr_checkout_token) }}', 'QR สำหรับออกงาน (รับชั่วโมง)')" class="btn btn-sm btn-outline" style="white-space:nowrap;">{{ __('แสดง QR') }}</button>
+                                <button onclick="showQRModal('{{ url('/check-in/' . $activity->qr_checkout_token) }}', 'QR {{ __('สำหรับออกงาน (รับชั่วโมง)') }}')" class="btn btn-sm btn-outline" style="white-space:nowrap;">{{ __('แสดง QR') }}</button>
                             </div>
                         @else
                             <div class="alert mb-3" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem;border-radius:4px;">{{ __('ยังไม่มี QR Code สำหรับออกงาน') }}                            </div>
@@ -203,7 +203,7 @@
                         <div class="flex items-center gap-2" style="flex-wrap:wrap;">
                             <code id="walkin-url" class="text-xs" style="background:var(--surface-hover, #f1f5f9);color:var(--text-main, #0f172a);padding:.375rem;border-radius:4px;flex:1;word-break:break-all;">{{ url('/walkin/' . $activity->qr_token) }}</code>
                             <button onclick="copyToClipboard('walkin-url')" class="btn btn-sm btn-outline" style="white-space:nowrap;" title="{{ __('คัดลอก') }}">{{ __('คัดลอก') }}</button>
-                            <button onclick="showQRModal('{{ url('/walkin/' . $activity->qr_token) }}', 'QR สำหรับ Walk-in')" class="btn btn-sm btn-outline" style="white-space:nowrap;">{{ __('แสดง QR') }}</button>
+                            <button onclick="showQRModal('{{ url('/walkin/' . $activity->qr_token) }}', 'QR {{ __('สำหรับ Walk-in') }}')" class="btn btn-sm btn-outline" style="white-space:nowrap;">{{ __('แสดง QR') }}</button>
                             <a href="{{ route('checkin.walkin', $activity->qr_token) }}" target="_blank" class="btn btn-sm" style="background:#b45309;color:#fff;white-space:nowrap;line-height:1.5;">{{ __('เปิดหน้า Walk-in') }}</a>
                         </div>
                     @else
@@ -215,7 +215,7 @@
 
             @if($activity->qr_expires_at && !$activity->isCompleted())
             <div class="mt-3 text-sm" style="color:#ef4444;font-weight:600;">
-                * QR Code เข้างานเดิม หมดอายุ: {{ \Carbon\Carbon::parse($activity->qr_expires_at)->format('d/m/Y H:i') }}
+                * QR Code เข้างานเดิม หมดอายุ:{{ \Carbon\Carbon::parse($activity->qr_expires_at)->format('d/m/Y H:i') }}
             </div>
             @endif
         </div>
@@ -254,7 +254,7 @@
                         document.execCommand('copy');
                         showCopyToast();
                     } catch (err) {
-                        alert("ไม่สามารถคัดลอกได้: " + err);
+                        alert("{{ __('ไม่สามารถคัดลอกได้:') }}" + err);
                     }
                     document.body.removeChild(textArea);
                     return;
@@ -263,13 +263,13 @@
                 navigator.clipboard.writeText(url).then(() => {
                     showCopyToast();
                 }).catch(err => {
-                    alert("ไม่สามารถคัดลอกได้: " + err);
+                    alert("{{ __('ไม่สามารถคัดลอกได้:') }}" + err);
                 });
             }
 
             function showCopyToast() {
                 const toast = document.createElement('div');
-                toast.textContent = 'คัดลอกลิงก์สำเร็จแล้ว!';
+                toast.textContent = '{{ __('คัดลอกลิงก์สำเร็จแล้ว!') }}';
                 toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#10b981;color:white;padding:12px 20px;border-radius:8px;z-index:2000;animation:slideIn 0.3s ease;box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);';
                 document.body.appendChild(toast);
                 setTimeout(() => toast.remove(), 3000);
@@ -339,7 +339,7 @@
 <script>
 function openNativeMap(lat, lng, title) {
     if (!lat || !lng) return;
-    const encTitle = encodeURIComponent(title || 'สถานที่กิจกรรม');
+    const encTitle = encodeURIComponent(title || '{{ __('สถานที่กิจกรรม') }}');
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     const isAndroid = /Android/.test(navigator.userAgent);
 

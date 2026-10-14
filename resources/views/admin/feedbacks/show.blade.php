@@ -38,14 +38,14 @@
                 <span class="gform-category-badge">{{ $activity->category->name ?? __('กิจกรรมทั่วไป') }}</span>
                 <span class="gform-status-badge">
                     <span class="gform-status-dot"></span>
-                    รับคำตอบแล้ว {{ number_format($stats['total']) }} ชุด
+                    {{ __('รับคำตอบแล้ว') }}{{ number_format($stats['total']) }} {{ __('ชุด') }}
                 </span>
             </div>
 
             <h1 class="gform-title">{{ $activity->title }}</h1>
             <p class="gform-subtitle">
-                แบบประเมินความพึงพอใจและผลสัมฤทธิ์ของกิจกรรม · จัดขึ้นเมื่อ {{ $activity->activity_date->translatedFormat('d F Y') }}
-                @if($activity->location) · สถานที่: {{ $activity->location }} @endif
+                {{ __('แบบประเมินความพึงพอใจและผลสัมฤทธิ์ของกิจกรรม') }}· {{ __('จัดขึ้นเมื่อ') }}{{ $activity->activity_date->translatedFormat('d F Y') }}
+                @if($activity->location) · {{ __('สถานที่:') }}{{ $activity->location }} @endif
             </p>
 
             <div class="gform-meta-strip">
@@ -117,7 +117,7 @@
                     <div class="gform-q-number">{{ __('ข้อที่ 1') }}</div>
                     <div class="gform-q-title-wrap">
                         <h3 class="gform-q-title">{{ __('ระดับความพึงพอใจภาพรวมต่อการจัดกิจกรรม') }}</h3>
-                        <span class="gform-q-count">{{ number_format($stats['total']) }} การตอบกลับ · เฉลี่ย {{ number_format((float)$stats['average'], 2) }} / 5.0</span>
+                        <span class="gform-q-count">{{ number_format($stats['total']) }} {{ __('การตอบกลับ') }}· {{ __('เฉลี่ย') }}{{ number_format((float)$stats['average'], 2) }} / 5.0</span>
                     </div>
                 </div>
 
@@ -159,10 +159,10 @@
             @foreach($topicStats as $key => $ts)
                 <div class="gform-card">
                     <div class="gform-q-header">
-                        <div class="gform-q-number">ข้อที่ {{ $qIndex++ }}</div>
+                        <div class="gform-q-number">{{ __('ข้อที่') }}{{ $qIndex++ }}</div>
                         <div class="gform-q-title-wrap">
-                            <h3 class="gform-q-title">ระดับความพึงพอใจ: {{ $ts['label'] }}</h3>
-                            <span class="gform-q-count">{{ number_format($ts['count']) }} การตอบกลับ · เฉลี่ย {{ number_format((float)$ts['average'], 2) }} / 5.0</span>
+                            <h3 class="gform-q-title">{{ __('ระดับความพึงพอใจ:') }}{{ $ts['label'] }}</h3>
+                            <span class="gform-q-count">{{ number_format($ts['count']) }} {{ __('การตอบกลับ') }}· {{ __('เฉลี่ย') }}{{ number_format((float)$ts['average'], 2) }} / 5.0</span>
                         </div>
                     </div>
 
@@ -204,7 +204,7 @@
                     <div class="gform-q-number">{{ __('ข้อที่ 6') }}</div>
                     <div class="gform-q-title-wrap">
                         <h3 class="gform-q-title">{{ __('สถานะการเปิดเผยตัวตนในการตอบแบบประเมิน') }}</h3>
-                        <span class="gform-q-count">{{ number_format($stats['total']) }} การตอบกลับ</span>
+                        <span class="gform-q-count">{{ number_format($stats['total']) }} {{ __('การตอบกลับ') }}</span>
                     </div>
                 </div>
 
@@ -250,7 +250,7 @@
                     <div class="gform-q-number">{{ __('ข้อที่ 7') }}</div>
                     <div class="gform-q-title-wrap">
                         <h3 class="gform-q-title">{{ __('ความคิดเห็นและข้อเสนอแนะเพิ่มเติมสำหรับกิจกรรมนี้') }}</h3>
-                        <span class="gform-q-count">{{ number_format($textFeedbacks->count()) }} ข้อความความคิดเห็น</span>
+                        <span class="gform-q-count">{{ number_format($textFeedbacks->count()) }} {{ __('ข้อความความคิดเห็น') }}</span>
                     </div>
                 </div>
 
@@ -276,7 +276,7 @@
                                     @endif
                                     <span class="gform-rating-pill" style="color: {{ $ratingColor }}; border-color: {{ $ratingColor }}40;">
                                         <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                                        {{ $tf->rating }} / 5 คะแนน
+                                        {{ $tf->rating }} / 5 {{ __('คะแนน') }}
                                     </span>
                                 </div>
                                 <span class="gform-text-time">{{ $tf->created_at->translatedFormat('d M Y H:i น.') }}</span>
@@ -353,7 +353,7 @@
                         </svg>
                     </button>
 
-                    <div class="gform-pager-info">{{ __('ผู้ตอบคนที่') }} <span id="currentIndIndex" class="gform-ind-num">1</span> จาก {{ $feedbacks->count() }}
+                    <div class="gform-pager-info">{{ __('ผู้ตอบคนที่') }} <span id="currentIndIndex" class="gform-ind-num">1</span> {{ __('จาก') }}{{ $feedbacks->count() }}
                     </div>
 
                     <button class="gform-pager-btn" id="nextIndBtn" onclick="navigateIndividual(1)" title="{{ __('ถัดไป') }}">
@@ -540,15 +540,15 @@ function renderIndividual(idx) {
     document.getElementById('prevIndBtn').disabled = (idx === 0);
     document.getElementById('nextIndBtn').disabled = (idx === FEEDBACKS_DATA.length - 1);
 
-    document.getElementById('indSubmitTime').textContent = 'ส่งเมื่อ ' + fb.time_thai;
+    document.getElementById('indSubmitTime').textContent = '{{ __('ส่งเมื่อ') }}' + fb.time_thai;
     document.getElementById('indName').textContent = fb.user_name;
-    document.getElementById('indRole').textContent = fb.is_anonymous ? 'นิรนาม (PDPA Safe)' : 'รหัสนักศึกษา/อีเมล: ' + fb.student_code;
+    document.getElementById('indRole').textContent = fb.is_anonymous ? '{{ __('นิรนาม (PDPA Safe)') }}' : '{{ __('รหัสนักศึกษา/อีเมล:') }}' + fb.student_code;
 
     const initial = fb.is_anonymous ? '?' : fb.user_name.charAt(0).toUpperCase();
     document.getElementById('indAvatar').textContent = initial;
 
     const badge = document.getElementById('indRatingBadge');
-    badge.textContent = `${fb.rating}.0 / 5.0 คะแนน`;
+    badge.textContent = `${fb.rating}.0 / 5.0 {{ __('คะแนน') }}`;
 
     document.getElementById('indQ1').innerHTML = getScorePill(fb.rating);
     
@@ -568,7 +568,7 @@ function renderIndividual(idx) {
         ? '<span class="gform-anon-badge"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg> {{ __('ไม่เปิดเผยตัวตน') }}</span>' 
         : '<span class="gform-user-badge"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg> {{ __('เปิดเผยตัวตน') }}</span>';
 
-    document.getElementById('indQ7').textContent = fb.comment || '(ไม่มีข้อความเสนอแนะเพิ่มเติม)';
+    document.getElementById('indQ7').textContent = fb.comment || '({{ __('ไม่มีข้อความเสนอแนะเพิ่มเติม)') }}';
 }
 
 document.addEventListener('DOMContentLoaded', function() {

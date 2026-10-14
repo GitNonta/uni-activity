@@ -53,10 +53,10 @@
                                 {{ __('อนุมัติ') }}
                                 @break
                             @case('pending')
-                                รออนุมัติ
+                                {{ __('รออนุมัติ') }}
                                 @break
                             @case('rejected')
-                                ปฏิเสธ
+                                {{ __('ปฏิเสธ') }}
                                 @break
                             @default
                                 {{ $attendance->status }}

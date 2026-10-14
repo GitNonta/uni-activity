@@ -199,7 +199,7 @@
 
             <div class="content">
                 <p class="eyebrow">{{ __('UniActivity · ศูนย์รวมกิจกรรม') }}</p>
-                <p class="status" aria-label="รหัสข้อผิดพลาด {{ $code }}">{{ $code }}</p>
+                <p class="status" aria-label="{{ __('รหัสข้อผิดพลาด') }}{{ $code }}">{{ $code }}</p>
                 <h1 id="error-title">{{ $title }}</h1>
                 <p class="message">{{ $message }}</p>
                 <div class="actions">

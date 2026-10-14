@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Walk-in เช็คอิน — {{ $activity->title }}</title>
+    <title>Walk-in {{ __('เช็คอิน —') }}{{ $activity->title }}</title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ file_exists(public_path('css/app.css')) ? md5_file(public_path('css/app.css')) : time() }}">
     <script>
         (function() {
@@ -484,7 +484,7 @@
 let selectedRating = 0;
 const stars = document.querySelectorAll('.star');
 const ratingText = document.getElementById('ratingText');
-const ratingTexts = ['', 'ไม่พอใจมาก', 'ไม่พอใจ', 'ปานกลาง', 'พอใจ', 'พอใจมาก'];
+const ratingTexts = ['', '{{ __('ไม่พอใจมาก') }}', '{{ __('ไม่พอใจ') }}', '{{ __('ปานกลาง') }}', '{{ __('พอใจ') }}', '{{ __('พอใจมาก') }}'];
 
 stars.forEach((star, index) => {
     star.addEventListener('click', () => {
@@ -507,7 +507,7 @@ function updateStars() {
     stars.forEach((star, index) => {
         star.style.color = index < selectedRating ? '#fbbf24' : '#d1d5db';
     });
-    ratingText.textContent = selectedRating > 0 ? ratingTexts[selectedRating] : 'กรุณาเลือกคะแนน';
+    ratingText.textContent = selectedRating > 0 ? ratingTexts[selectedRating] : '{{ __('กรุณาเลือกคะแนน') }}';
 }
 
 function closeFeedbackModal() {
@@ -518,11 +518,11 @@ function closeFeedbackModal() {
 
 function submitFeedback() {
     if (selectedRating === 0) {
-        ratingText.textContent = 'กรุณาเลือกคะแนนก่อนส่ง';
+        ratingText.textContent = '{{ __('กรุณาเลือกคะแนนก่อนส่ง') }}';
         ratingText.style.color = '#ef4444';
         setTimeout(() => {
             ratingText.style.color = '#6b7280';
-            ratingText.textContent = ratingTexts[selectedRating] || 'กรุณาเลือกคะแนน';
+            ratingText.textContent = ratingTexts[selectedRating] || '{{ __('กรุณาเลือกคะแนน') }}';
         }, 2000);
         return;
     }
@@ -586,7 +586,7 @@ function refreshAttendees() {
         })
         .then(function(data) {
             var countEl = document.getElementById('attendeeCount');
-            if (countEl) countEl.textContent = data.count + ' คน';
+            if (countEl) countEl.textContent = data.count + ' {{ __('คน') }}';
 
             var list = document.getElementById('attendeeList');
             if(!list) return;

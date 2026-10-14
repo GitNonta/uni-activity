@@ -86,7 +86,7 @@
                 requestAnimationFrame(scanQRCode);
             } catch (err) {
                 console.error("Camera access denied", err);
-                statusText.innerHTML = 'ไม่สามารถเปิดกล้องได้ กรุณาให้สิทธิ์ใช้งานกล้อง';
+                statusText.innerHTML = '{{ __('ไม่สามารถเปิดกล้องได้ กรุณาให้สิทธิ์ใช้งานกล้อง') }}';
                 statusText.style.background = 'rgba(239,68,68,0.9)';
             }
         }
@@ -94,7 +94,7 @@
         function setSuccessUI() {
             document.querySelectorAll('.corner').forEach(el => el.style.borderColor = '#10b981');
             document.getElementById('scanLine').style.display = 'none';
-            statusText.innerHTML = '<span class="spinner"></span> กำลังนำทาง...';
+            statusText.innerHTML = '<span class="spinner"></span> {{ __('กำลังนำทาง...') }}';
             statusText.style.background = 'rgba(16,185,129,0.9)';
             document.getElementById('qrGuide').style.boxShadow = '0 0 0 4000px rgba(0,0,0,0.8)';
         }
@@ -106,7 +106,7 @@
             setTimeout(() => {
                 if (isScanning) {
                     document.querySelectorAll('.corner').forEach(el => el.style.borderColor = '#10b981');
-                    statusText.innerHTML = 'สแกน QR Code กิจกรรมเพื่อเข้างาน';
+                    statusText.innerHTML = '{{ __('สแกน QR Code กิจกรรมเพื่อเข้างาน') }}';
                     statusText.style.background = 'rgba(0,0,0,0.6)';
                 }
             }, 2500);
@@ -137,7 +137,7 @@
                         }, 500);
                         return;
                     } else {
-                        setErrorUI('QR Code นี้ไม่ใช่ลิงก์ระบบกิจกรรม');
+                        setErrorUI('QR Code {{ __('นี้ไม่ใช่ลิงก์ระบบกิจกรรม') }}');
                         // Pause briefly before rescanning
                         setTimeout(() => { requestAnimationFrame(scanQRCode); }, 2500);
                         return;

@@ -882,7 +882,7 @@
             </span>
             {{-- ดูโปรไฟล์ผู้ที่แชทด้วย --}}
             @if($staffUser)
-                <a href="{{ route('users.show', $staffUser) }}" class="chat-profile-link" title="ดูโปรไฟล์ของ {{ $staffUser->full_name }}" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;min-width:30px;border-radius:50%;background:var(--bg-main);border:var(--border);color:var(--text-muted);cursor:pointer;transition:all 0.2s;text-decoration:none;">
+                <a href="{{ route('users.show', $staffUser) }}" class="chat-profile-link" title="{{ __('ดูโปรไฟล์ของ') }}{{ $staffUser->full_name }}" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;min-width:30px;border-radius:50%;background:var(--bg-main);border:var(--border);color:var(--text-muted);cursor:pointer;transition:all 0.2s;text-decoration:none;">
                     <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 </a>
             @endif
@@ -1170,11 +1170,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function formatReadStatus(readAt, isRead) {
-        if (!readAt && !isRead) return 'ส่งแล้ว';
-        if (!readAt) return 'ส่งแล้ว';
+        if (!readAt && !isRead) return '{{ __('ส่งแล้ว') }}';
+        if (!readAt) return '{{ __('ส่งแล้ว') }}';
 
         const readTime = new Date(readAt);
-        if (isNaN(readTime.getTime())) return 'ส่งแล้ว';
+        if (isNaN(readTime.getTime())) return '{{ __('ส่งแล้ว') }}';
 
         const now = new Date();
         const diffSec = Math.max(0, Math.floor((now.getTime() - readTime.getTime()) / 1000));
@@ -1182,13 +1182,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const diffHours = Math.floor(diffMin / 60);
 
         if (diffSec < 60) {
-            return 'เพิ่งอ่าน';
+            return '{{ __('เพิ่งอ่าน') }}';
         } else if (diffMin < 60) {
-            return `อ่านเมื่อ ${diffMin} นาทีที่แล้ว`;
+            return `{{ __('อ่านเมื่อ') }}${diffMin} {{ __('นาทีที่แล้ว') }}`;
         } else if (diffHours < 24) {
-            return `อ่านเมื่อ ${diffHours} ชม. ที่แล้ว`;
+            return `{{ __('อ่านเมื่อ') }}${diffHours} {{ __('ชม. ที่แล้ว') }}`;
         } else {
-            return `อ่านเมื่อ ${readTime.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}`;
+            return `{{ __('อ่านเมื่อ') }}${readTime.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}`;
         }
     }
 
@@ -1273,7 +1273,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const noMsg = document.getElementById('noMsg');
         if (noMsg) noMsg.remove();
 
-        const label = isMine ? 'คุณ' : (msg.user?.name || 'ผู้ดูแล');
+        const label = isMine ? '{{ __('คุณ') }}' : (msg.user?.name || '{{ __('ผู้ดูแล') }}');
         const photo = msg.user?.photo || null;
 
         const wrapper = document.createElement('div');
@@ -1326,7 +1326,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const isTemp = String(msg.id).startsWith('tmp-');
-        const readStatusText = isTemp ? 'กำลังส่ง...' : formatReadStatus(msg.read_at, msg.is_read);
+        const readStatusText = isTemp ? '{{ __('กำลังส่ง...') }}' : formatReadStatus(msg.read_at, msg.is_read);
 
         // Always clear previous read receipt so it disappears when other user replies
         document.querySelectorAll('.msg-read-status').forEach(el => el.remove());
@@ -1400,7 +1400,7 @@ document.addEventListener('DOMContentLoaded', () => {
             user_id: USER_ID,
             attachments: [],
             created_at: new Date().toISOString(),
-            user: { id: USER_ID, name: 'คุณ' }
+            user: { id: USER_ID, name: '{{ __('คุณ') }}' }
         };
 
         if (fileInput.files.length > 0) {
@@ -1436,7 +1436,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (optEl) {
                 optEl.style.opacity = '1';
                 const statusSpan = document.getElementById('status-' + tempId);
-                if (statusSpan) { statusSpan.textContent = 'ส่งไม่สำเร็จ'; statusSpan.style.color = '#ef4444'; }
+                if (statusSpan) { statusSpan.textContent = '{{ __('ส่งไม่สำเร็จ') }}'; statusSpan.style.color = '#ef4444'; }
             }
             alert('{{ __('ไม่สามารถส่งข้อความได้ กรุณาลองใหม่อีกครั้ง') }}');
         }
@@ -1486,7 +1486,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 sendBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>';
                 sendBtn.style.background = '#10b981';
             })
-            .catch(err => alert(err?.response?.data?.message || 'ไม่สามารถโหลดข้อความล่าสุดได้'));
+            .catch(err => alert(err?.response?.data?.message || '{{ __('ไม่สามารถโหลดข้อความล่าสุดได้') }}'));
     };
 
     function cancelEditMode() {
@@ -1566,7 +1566,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Whisper typing emit
             msgInput.addEventListener('input', () => {
                 window.Echo.private('chat.room.' + roomID)
-                    .whisper('typing', { userId: USER_ID, name: 'นักศึกษา' });
+                    .whisper('typing', { userId: USER_ID, name: '{{ __('นักศึกษา') }}' });
             });
 
             const TARGET_STAFF_ID = '{{ $staffUser?->id }}';
@@ -1601,21 +1601,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
             function formatLastSeen(lastSeenAt) {
-                if (!lastSeenAt) return 'ออฟไลน์';
+                if (!lastSeenAt) return '{{ __('ออฟไลน์') }}';
                 const date = new Date(lastSeenAt);
-                if (isNaN(date.getTime())) return 'ออฟไลน์';
+                if (isNaN(date.getTime())) return '{{ __('ออฟไลน์') }}';
                 const now = new Date();
                 const diffSec = Math.max(0, Math.floor((now - date) / 1000));
                 const diffMin = Math.floor(diffSec / 60);
                 const diffHours = Math.floor(diffMin / 60);
                 if (diffSec < 60) {
-                    return 'ออนไลน์เมื่อสักครู่';
+                    return '{{ __('ออนไลน์เมื่อสักครู่') }}';
                 } else if (diffMin < 60) {
-                    return `ออนไลน์เมื่อ ${diffMin} นาทีที่แล้ว`;
+                    return `{{ __('ออนไลน์เมื่อ') }}${diffMin} {{ __('นาทีที่แล้ว') }}`;
                 } else if (diffHours < 24) {
-                    return `ออนไลน์เมื่อ ${diffHours} ชม. ที่แล้ว`;
+                    return `{{ __('ออนไลน์เมื่อ') }}${diffHours} {{ __('ชม. ที่แล้ว') }}`;
                 } else {
-                    return `ออนไลน์เมื่อ ${date.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' })} ${date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}`;
+                    return `{{ __('ออนไลน์เมื่อ') }}${date.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' })} ${date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}`;
                 }
             }
 

@@ -5,7 +5,7 @@
 @section('content')
 <div class="flex items-center justify-between mb-4">
     <h1 class="font-bold" style="font-size:1.4rem;">
-        แก้ไข{{ $user->role === 'staff' ? __('เจ้าหน้าที่') : __('นักศึกษา') }}: {{ $user->full_name }}
+        {{ __('แก้ไข') }}{{ $user->role === 'staff' ? __('เจ้าหน้าที่') : __('นักศึกษา') }}: {{ $user->full_name }}
     </h1>
     <a href="{{ route('admin.users.index') }}" class="btn btn-outline btn-sm" style="display:inline-flex;align-items:center;gap:.35rem;">
         <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
@@ -106,7 +106,7 @@
                         <select name="year" class="form-control">
                             <option value="">{{ __('ไม่ระบุ') }}</option>
                             @for($i = 1; $i <= 6; $i++)
-                                <option value="{{ $i }}" {{ old('year', $user->year) == $i ? 'selected' : '' }}>ปี {{ $i }}</option>
+                                <option value="{{ $i }}" {{ old('year', $user->year) == $i ? 'selected' : '' }}>{{ __('ปี') }}{{ $i }}</option>
                             @endfor
                         </select>
                         @error('year') <div class="text-xs" style="color:#dc2626;margin-top:.25rem;">{{ $message }}</div> @enderror
@@ -155,8 +155,8 @@
     <div class="card-body" style="padding:1rem;">
         <h3 class="font-semi text-sm mb-2">{{ __('ข้อมูลเพิ่มเติม') }}</h3>
         <div class="text-xs text-muted">
-            <p>สร้างเมื่อ: {{ $user->created_at?->format('d/m/Y H:i') ?? '-' }}</p>
-            <p>แก้ไขล่าสุด: {{ $user->updated_at?->format('d/m/Y H:i') ?? '-' }}</p>
+            <p>{{ __('สร้างเมื่อ:') }}{{ $user->created_at?->format('d/m/Y H:i') ?? '-' }}</p>
+            <p>{{ __('แก้ไขล่าสุด:') }}{{ $user->updated_at?->format('d/m/Y H:i') ?? '-' }}</p>
         </div>
     </div>
 </div>

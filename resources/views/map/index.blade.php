@@ -2229,7 +2229,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
             const placeCountEl = document.getElementById('fabPlaceCountBadge');
             if (placeCountEl) placeCountEl.textContent = allLocations.length;
             const drawerCountEl = document.getElementById('drawerCountLabel');
-            if (drawerCountEl) drawerCountEl.textContent = `${allLocations.length} แห่ง`;
+            if (drawerCountEl) drawerCountEl.textContent = `${allLocations.length} {{ __('แห่ง') }}`;
 
             rebuildClusterIndex();
             updateNearbyList();
@@ -2633,12 +2633,12 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
         // Title & Location
         document.getElementById('bs-title').textContent = loc.title;
-        document.getElementById('bs-subtitle').textContent = loc.location_name || 'ไม่ระบุสถานที่';
+        document.getElementById('bs-subtitle').textContent = loc.location_name || '{{ __('ไม่ระบุสถานที่') }}';
 
         // Distance & ETA Calculations
         const startPoint = userCoords || defaultCenter;
         const distKm = calculateDistance(startPoint[0], startPoint[1], loc.lat, loc.lng);
-        const distText = distKm < 1 ? `${Math.round(distKm * 1000)} ม.` : `${distKm.toFixed(1)} กม.`;
+        const distText = distKm < 1 ? `${Math.round(distKm * 1000)} {{ __('ม.') }}` : `${distKm.toFixed(1)} {{ __('กม.') }}`;
         document.getElementById('bs-dist-val').textContent = distText;
 
         const walkMins = Math.max(1, Math.round((distKm / 4.5) * 60));
@@ -2658,7 +2658,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
         // Quota
         const quotaWrap = document.getElementById('bs-quota-wrap');
-        const quotaVal = loc.quota_text || (loc.quota ? `${loc.quota} คน` : null);
+        const quotaVal = loc.quota_text || (loc.quota ? `${loc.quota} {{ __('คน') }}` : null);
         if (quotaVal) {
             quotaWrap.style.display = 'flex';
             document.getElementById('bs-quota-val').textContent = quotaVal;
@@ -2667,7 +2667,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
         }
 
         // Description — show short preview (first meaningful lines, max ~100 chars)
-        const rawDesc = loc.description || loc.subtitle || 'ไม่มีรายละเอียดเพิ่มเติม';
+        const rawDesc = loc.description || loc.subtitle || '{{ __('ไม่มีรายละเอียดเพิ่มเติม') }}';
         const firstLines = rawDesc.split('\n').filter(l => l.trim()).slice(0, 3).join(' ');
         const descPreview = firstLines.length > 100 ? firstLines.substring(0, 100).trimEnd() + '…' : firstLines;
         document.getElementById('bs-desc-val').textContent = descPreview;
@@ -2722,7 +2722,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
         if (navigator.share) {
             navigator.share({
                 title: activeLocation.title,
-                text: `พิกัด ${activeLocation.title} บนแผนที่ UNI Activity`,
+                text: `{{ __('พิกัด') }}${activeLocation.title} {{ __('บนแผนที่ UNI Activity') }}`,
                 url: window.location.href
             }).catch(() => {});
         } else {
@@ -2812,20 +2812,20 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
         const baseDistKm = calculateDistance(startPoint[0], startPoint[1], parseFloat(target.lat), parseFloat(target.lng));
         let speedKmH = 38;
-        let modeName = 'รถยนต์';
+        let modeName = '{{ __('รถยนต์') }}';
         let osrmProfile = 'driving';
 
         if (currentTravelMode === 'moto') {
             speedKmH = 38;
-            modeName = 'มอเตอร์ไซค์';
+            modeName = '{{ __('มอเตอร์ไซค์') }}';
             osrmProfile = 'driving';
         } else if (currentTravelMode === 'walk') {
             speedKmH = 4.5;
-            modeName = 'เดินเท้า';
+            modeName = '{{ __('เดินเท้า') }}';
             osrmProfile = 'walking';
         } else if (currentTravelMode === 'bike') {
             speedKmH = 14;
-            modeName = 'จักรยาน';
+            modeName = '{{ __('จักรยาน') }}';
             osrmProfile = 'cycling';
         }
 
@@ -2835,12 +2835,12 @@ html[data-theme="dark"] .gmap-sheet-handle {
         currentRouteAlternatives = [
             {
                 index: 0,
-                name: 'เส้นทางหลัก (เร็วที่สุด)',
-                tag: 'แนะนำ',
+                name: '{{ __('เส้นทางหลัก (เร็วที่สุด)') }}',
+                tag: '{{ __('แนะนำ') }}',
                 distKm: estDistKm,
                 timeMins: estTimeMin,
                 timeText: formatDurationThai(estTimeMin),
-                via: `${modeName} • กำลังคำนวณเส้นทางบนถนนจริง...`,
+                via: `${modeName} • {{ __('กำลังคำนวณเส้นทางบนถนนจริง...') }}`,
                 points: [[startPoint[1], startPoint[0]], [parseFloat(target.lng), parseFloat(target.lat)]],
                 isEstimated: true,
                 isMain: true
@@ -2887,7 +2887,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
                         durMin = Math.max(1, Math.round(r.duration / 60));
                     }
 
-                    let roadSummary = r.legs && r.legs[0] && r.legs[0].summary ? `ผ่าน ${r.legs[0].summary}` : (idx === 0 ? 'เส้นทางถนนสายหลัก' : 'เส้นทางสายรอง');
+                    let roadSummary = r.legs && r.legs[0] && r.legs[0].summary ? `{{ __('ผ่าน') }}${r.legs[0].summary}` : (idx === 0 ? 'เส้นทางถนนสายหลัก' : 'เส้นทางสายรอง');
                     const steps = (r.legs && r.legs[0] && r.legs[0].steps) ? r.legs[0].steps : [];
 
                     newRoutes.push({
@@ -2916,7 +2916,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
                     activeNavRoute = currentRouteAlternatives[selectedRouteIndex] || currentRouteAlternatives[0];
                     renderRouteGeometryOnMap(activeNavRoute.points, true);
                     const nextDist = document.getElementById('gmapNavNextDist');
-                    if (nextDist) nextDist.textContent = `${activeNavRoute.distKm} กม. (~${activeNavRoute.timeText})`;
+                    if (nextDist) nextDist.textContent = `${activeNavRoute.distKm} {{ __('กม. (') }}~${activeNavRoute.timeText})`;
                 }
 
                 return currentRouteAlternatives[selectedRouteIndex] || currentRouteAlternatives[0];
@@ -2925,7 +2925,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
             if (err.name !== 'AbortError') {
                 console.warn('OSRM route notice:', err.message);
                 currentRouteAlternatives.forEach(route => {
-                    route.via = `${modeName} • ไม่สามารถเชื่อมต่อบริการเส้นทาง แสดงระยะโดยประมาณ`;
+                    route.via = `${modeName} • {{ __('ไม่สามารถเชื่อมต่อบริการเส้นทาง แสดงระยะโดยประมาณ') }}`;
                     route.isEstimated = true;
                 });
                 renderRouteCards();
@@ -2954,7 +2954,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
                         <div class="gmap-route-card-tag">${r.tag} • ${r.name}</div>
                         <div class="flex items-baseline gap-2">
                             <span class="gmap-route-card-time">${r.timeText}</span>
-                            <span class="gmap-route-card-dist">(${r.distKm} กม.)</span>
+                            <span class="gmap-route-card-dist">(${r.distKm} {{ __('กม.)') }}</span>
                         </div>
                         <div class="gmap-route-card-via">${r.via}</div>
                     </div>
@@ -2968,7 +2968,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
         const startBtnText = document.getElementById('btnStartSelectedRouteText');
         if (startBtnText && currentRouteAlternatives[selectedRouteIndex]) {
             const sel = currentRouteAlternatives[selectedRouteIndex];
-            startBtnText.textContent = `เริ่มนำทาง (${sel.name} • ${sel.timeText})`;
+            startBtnText.textContent = `{{ __('เริ่มนำทาง (') }}${sel.name} • ${sel.timeText})`;
         }
     }
 
@@ -3083,7 +3083,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
         updateNavigationPosition(userCoords || defaultCenter);
 
         // Voice announcement on navigation start
-        speakNavigationGuidance(`เริ่มการนำทาง มุ่งหน้าไปยัง ${target.title}`, true);
+        speakNavigationGuidance(`{{ __('เริ่มการนำทาง มุ่งหน้าไปยัง') }}${target.title}`, true);
 
         // Switch camera to 3D driving perspective
         map.flyTo({
@@ -3222,13 +3222,13 @@ html[data-theme="dark"] .gmap-sheet-handle {
     };
 
     function getStepManeuverInfo(step) {
-        if (!step) return { action: 'ตรงไป', name: '', text: 'ตรงไปตามเส้นทาง', icon: 'straight' };
+        if (!step) return { action: '{{ __('ตรงไป') }}', name: '', text: '{{ __('ตรงไปตามเส้นทาง') }}', icon: 'straight' };
         const m = step.maneuver || {};
         const type = m.type || 'turn';
         const mod = m.modifier || '';
         let name = step.name ? step.name.trim() : (step.ref ? step.ref.trim() : '');
 
-        let action = 'ตรงไป';
+        let action = '{{ __('ตรงไป') }}';
         let iconKey = 'straight';
 
         if (type === 'depart') {
@@ -3244,16 +3244,16 @@ html[data-theme="dark"] .gmap-sheet-handle {
             action = 'กลับรถ / ยูเทิร์น';
             iconKey = 'uturn';
         } else if (mod === 'sharp left') {
-            action = 'เลี้ยวหักศอกซ้าย';
+            action = '{{ __('เลี้ยวหักศอกซ้าย') }}';
             iconKey = 'sharp-left';
         } else if (mod === 'sharp right') {
-            action = 'เลี้ยวหักศอกขวา';
+            action = '{{ __('เลี้ยวหักศอกขวา') }}';
             iconKey = 'sharp-right';
         } else if (mod === 'slight left') {
-            action = 'เบี่ยงซ้าย';
+            action = '{{ __('เบี่ยงซ้าย') }}';
             iconKey = 'slight-left';
         } else if (mod === 'slight right') {
-            action = 'เบี่ยงขวา';
+            action = '{{ __('เบี่ยงขวา') }}';
             iconKey = 'slight-right';
         } else if (mod === 'left') {
             action = 'เลี้ยวซ้าย';
@@ -3262,10 +3262,10 @@ html[data-theme="dark"] .gmap-sheet-handle {
             action = 'เลี้ยวขวา';
             iconKey = 'turn-right';
         } else if (type === 'fork') {
-            action = mod && mod.includes('left') ? 'ชิดซ้ายที่ทางแยก' : 'ชิดขวาที่ทางแยก';
+            action = mod && mod.includes('left') ? 'ชิดซ้ายที่ทางแยก' : '{{ __('ชิดขวาที่ทางแยก') }}';
             iconKey = mod && mod.includes('left') ? 'slight-left' : 'slight-right';
         } else if (type === 'end of road') {
-            action = mod && mod.includes('left') ? 'สุดทางเลี้ยวซ้าย' : 'สุดทางเลี้ยวขวา';
+            action = mod && mod.includes('left') ? 'สุดทางเลี้ยวซ้าย' : '{{ __('สุดทางเลี้ยวขวา') }}';
             iconKey = mod && mod.includes('left') ? 'turn-left' : 'turn-right';
         } else if (type === 'continue' || mod === 'straight') {
             action = 'ตรงไป';
@@ -3274,7 +3274,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
         let text = action;
         if (name) {
-            text += ` เข้าสู่ ${name}`;
+            text += ` {{ __('เข้าสู่') }}${name}`;
         } else if (action === 'ตรงไป') {
             text = 'ตรงไปตามเส้นทาง';
         }
@@ -3286,7 +3286,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
         const d = new Date(Date.now() + minutesRemaining * 60000);
         const hh = String(d.getHours()).padStart(2, '0');
         const mm = String(d.getMinutes()).padStart(2, '0');
-        return `ถึงประมาณ ${hh}:${mm} น.`;
+        return `{{ __('ถึงประมาณ') }}${hh}:${mm} {{ __('น.') }}`;
     }
 
     let isVoiceEnabled = true;
@@ -3336,11 +3336,11 @@ html[data-theme="dark"] .gmap-sheet-handle {
                     <line x1="17" y1="9" x2="23" y2="15"></line>
                 </svg>
             `;
-            btn.title = isVoiceEnabled ? 'ปิดเสียงนำทาง' : 'เปิดเสียงนำทาง';
+            btn.title = isVoiceEnabled ? '{{ __('ปิดเสียงนำทาง') }}' : '{{ __('เปิดเสียงนำทาง') }}';
         }
 
         if (isVoiceEnabled) {
-            speakNavigationGuidance('เปิดเสียงนำทาง', true);
+            speakNavigationGuidance('{{ __('เปิดเสียงนำทาง') }}', true);
         } else {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
@@ -3386,10 +3386,10 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
         if (remainingKm <= 0.03) {
             if (turnIcon) turnIcon.innerHTML = MANEUVER_SVGS['arrive'];
-            if (turnDistEl) turnDistEl.textContent = 'ถึงแล้ว';
-            if (instructionEl) instructionEl.textContent = `คุณมาถึง ${activeNavTarget.title} แล้ว`;
-            if (totalTimeEl) totalTimeEl.textContent = 'ถึงปลายทาง';
-            speakNavigationGuidance(`คุณเดินทางถึง ${activeNavTarget.title} แล้ว`, true);
+            if (turnDistEl) turnDistEl.textContent = '{{ __('ถึงแล้ว') }}';
+            if (instructionEl) instructionEl.textContent = `{{ __('คุณมาถึง') }}${activeNavTarget.title} {{ __('แล้ว') }}`;
+            if (totalTimeEl) totalTimeEl.textContent = '{{ __('ถึงปลายทาง') }}';
+            speakNavigationGuidance(`{{ __('คุณเดินทางถึง') }}${activeNavTarget.title} {{ __('แล้ว') }}`, true);
             return;
         }
 
@@ -3397,22 +3397,22 @@ html[data-theme="dark"] .gmap-sheet-handle {
             const info = getStepManeuverInfo(currentStep);
             if (turnIcon) turnIcon.innerHTML = MANEUVER_SVGS[info.icon] || MANEUVER_SVGS['straight'];
             if (turnDistEl) {
-                turnDistEl.textContent = distToStepMeters < 1000 ? `อีก ${distToStepMeters} ม.` : `อีก ${(distToStepMeters / 1000).toFixed(1)} กม.`;
+                turnDistEl.textContent = distToStepMeters < 1000 ? `{{ __('อีก') }}${distToStepMeters} {{ __('ม.') }}` : `{{ __('อีก') }}${(distToStepMeters / 1000).toFixed(1)} {{ __('กม.') }}`;
             }
             if (instructionEl) instructionEl.textContent = info.text;
 
             // Voice announcement when approaching a turn
             if (distToStepMeters <= 80 && distToStepMeters > 20) {
-                speakNavigationGuidance(`อีก ${distToStepMeters} เมตร ${info.text}`);
+                speakNavigationGuidance(`{{ __('อีก') }}${distToStepMeters} {{ __('เมตร') }}${info.text}`);
             }
         } else {
             if (turnIcon) turnIcon.innerHTML = MANEUVER_SVGS['straight'];
-            if (turnDistEl) turnDistEl.textContent = remainingKm < 1 ? `อีก ${Math.round(remainingKm * 1000)} ม.` : `อีก ${remainingKm.toFixed(1)} กม.`;
-            if (instructionEl) instructionEl.textContent = `มุ่งหน้าไปยัง ${activeNavTarget.title}`;
+            if (turnDistEl) turnDistEl.textContent = remainingKm < 1 ? `{{ __('อีก') }}${Math.round(remainingKm * 1000)} {{ __('ม.') }}` : `{{ __('อีก') }}${remainingKm.toFixed(1)} {{ __('กม.') }}`;
+            if (instructionEl) instructionEl.textContent = `{{ __('มุ่งหน้าไปยัง') }}${activeNavTarget.title}`;
         }
 
         if (totalTimeEl) totalTimeEl.textContent = formatDurationThai(remainingMinutes);
-        if (totalDistEl) totalDistEl.textContent = remainingKm < 1 ? `${Math.round(remainingKm * 1000)} ม.` : `${remainingKm.toFixed(1)} กม.`;
+        if (totalDistEl) totalDistEl.textContent = remainingKm < 1 ? `${Math.round(remainingKm * 1000)} {{ __('ม.') }}` : `${remainingKm.toFixed(1)} {{ __('กม.') }}`;
         if (etaClockEl) etaClockEl.textContent = formatEtaClock(remainingMinutes);
         if (destLabelEl) destLabelEl.textContent = activeNavTarget.title;
 
@@ -3460,7 +3460,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
         isRerouting = true;
         lastRerouteTime = Date.now();
-        speakNavigationGuidance('กำลังคำนวณเส้นทางใหม่', true);
+        speakNavigationGuidance('{{ __('กำลังคำนวณเส้นทางใหม่') }}', true);
 
         try {
             let osrmProfile = 'driving';
@@ -3481,7 +3481,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
                     const steps = (r.legs && r.legs[0] && r.legs[0].steps) ? r.legs[0].steps : [];
 
                     activeNavRoute = {
-                        name: 'เส้นทางปัจจุบัน',
+                        name: '{{ __('เส้นทางปัจจุบัน') }}',
                         distKm: distNum.toFixed(1),
                         timeMins: durMin,
                         timeText: formatDurationThai(durMin),
@@ -3560,7 +3560,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 <div class="live-peer-avatar">
                     ${user.avatar ? `<img src="${user.avatar}" alt="">` : (user.name ? user.name.charAt(0) : 'U')}
                 </div>
-                <div class="live-peer-badge">${user.name || 'สมาชิก'}</div>
+                <div class="live-peer-badge">${user.name || '{{ __('สมาชิก') }}'}</div>
             `;
             const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
                 .setLngLat([parseFloat(user.lng), parseFloat(user.lat)])
@@ -3609,7 +3609,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
             let distText = '';
             if (userCoords) {
                 const distKm = calculateDistance(userCoords[0], userCoords[1], loc.lat, loc.lng);
-                distText = distKm < 1 ? Math.round(distKm * 1000) + ' ม.' : distKm.toFixed(1) + ' กม.';
+                distText = distKm < 1 ? Math.round(distKm * 1000) + ' {{ __('ม.') }}' : distKm.toFixed(1) + ' {{ __('กม.') }}';
             }
 
             html += `
@@ -3654,11 +3654,11 @@ html[data-theme="dark"] .gmap-sheet-handle {
     }
 
     function formatDurationThai(mins) {
-        if (mins <= 0) return 'น้อยกว่า 1 นาที';
-        if (mins < 60) return `${mins} นาที`;
+        if (mins <= 0) return '{{ __('น้อยกว่า 1 นาที') }}';
+        if (mins < 60) return `${mins} {{ __('นาที') }}`;
         const h = Math.floor(mins / 60);
         const m = mins % 60;
-        return m > 0 ? `${h} ชม. ${m} นาที` : `${h} ชม.`;
+        return m > 0 ? `${h} {{ __('ชม.') }}${m} {{ __('นาที') }}` : `${h} {{ __('ชม.') }}`;
     }
 })();
 </script>

@@ -205,7 +205,7 @@
             const modal = document.getElementById('jobDetailModal');
             modal.style.display = 'flex';
         } catch (e) {
-            alert('ไม่สามารถโหลดรายละเอียดได้: ' + e.message);
+            alert('{{ __('ไม่สามารถโหลดรายละเอียดได้:') }}' + e.message);
         }
     }
 

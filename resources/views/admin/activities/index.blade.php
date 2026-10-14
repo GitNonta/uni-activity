@@ -238,7 +238,7 @@ function loadPendingRequests(activityId) {
                         <div class="flex justify-between items-start">
                             <div>
                                 <p class="font-semi text-sm" style="margin:0;">${item.name}</p>
-                                <p class="text-xs text-muted" style="margin:2px 0;">รหัส: ${item.student_id} | ${item.faculty || '-'}</p>
+                                <p class="text-xs text-muted" style="margin:2px 0;">{{ __('รหัส:') }}${item.student_id} | ${item.faculty || '-'}</p>
                                 <p class="text-xs font-medium" style="color:${typeColor}; margin:4px 0;">${typeLabel}: ${item.details}</p>
                             </div>
                             <div class="text-right">

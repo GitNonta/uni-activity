@@ -48,7 +48,7 @@
 <div class="grid-4 mb-4" style="gap:1rem;">
     <div class="card stat-card" style="padding:1rem;background:#ffffff;border:1px solid #e2e8f0;border-radius:0.75rem;">
         <div class="flex items-center justify-between">
-            <span class="stat-label text-xs text-muted">นักศึกษาตามตัวกรอง ({{ ($report['filters']['year'] === 'all' || empty($report['filters']['year'])) ? __('ทุกชั้นปี') : 'ปี ' . $report['filters']['year'] }})</span>
+            <span class="stat-label text-xs text-muted">{{ __('นักศึกษาตามตัวกรอง (') }}{{ ($report['filters']['year'] === 'all' || empty($report['filters']['year'])) ? __('ทุกชั้นปี') : 'ปี ' . $report['filters']['year'] }})</span>
             <span style="color:#4f46e5;padding:0.3rem;background:#eef2ff;border-radius:0.375rem;">
                 <svg style="width:1.1rem;height:1.1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
             </span>
@@ -83,7 +83,7 @@
                 <svg style="width:1.1rem;height:1.1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </span>
         </div>
-        <p class="font-bold text-dark mt-2" style="font-size:1.4rem;">{{ $report['average_hours'] }} <span style="font-size:0.8rem;font-weight:normal;color:#64748b;">ชม. / {{ $report['criteria']->min_total_hours ?? 100 }}</span></p>
+        <p class="font-bold text-dark mt-2" style="font-size:1.4rem;">{{ $report['average_hours'] }} <span style="font-size:0.8rem;font-weight:normal;color:#64748b;">{{ __('ชม. /') }}{{ $report['criteria']->min_total_hours ?? 100 }}</span></p>
     </div>
 </div>
 
@@ -161,7 +161,7 @@
             </span>
             <h2 class="font-bold" style="font-size:1.1rem;color:#0f172a;margin:0;">{{ __('รายชื่อนักศึกษาและผลการตรวจสอบชั่วโมงกิจกรรม') }}</h2>
         </div>
-        <span class="text-xs text-muted">พบ {{ $report['audited_students']->count() }} รายการ</span>
+        <span class="text-xs text-muted">{{ __('พบ') }}{{ $report['audited_students']->count() }} {{ __('รายการ') }}</span>
     </div>
 
     @if($report['audited_students']->isEmpty())
@@ -189,7 +189,7 @@
                         <td style="padding:0.75rem;">
                             <div class="font-bold text-dark">{{ $s->student_id }}</div>
                             <div class="text-xs text-muted">{{ $s->full_name }}</div>
-                            <span class="badge" style="background:#f1f5f9;color:#475569;font-size:0.65rem;margin-top:2px;">ปี {{ $s->year ?: '-' }}</span>
+                            <span class="badge" style="background:#f1f5f9;color:#475569;font-size:0.65rem;margin-top:2px;">{{ __('ปี') }}{{ $s->year ?: '-' }}</span>
                         </td>
                         <td style="padding:0.75rem;">
                             <div class="text-xs font-semibold text-dark">{{ $s->faculty ? __($s->faculty) : '-' }}</div>
@@ -199,22 +199,22 @@
                             <span class="font-bold {{ $audit['total_passed'] ? 'text-success' : 'text-danger' }}" style="font-size:1rem;">
                                 {{ number_format($audit['total_hours'], 1) }}
                             </span>
-                            <span class="text-xs text-muted">/ {{ number_format($audit['min_total_hours'], 0) }} ชม.</span>
+                            <span class="text-xs text-muted">/ {{ number_format($audit['min_total_hours'], 0) }} {{ __('ชม.') }}</span>
                         </td>
                         <td style="padding:0.75rem;">
                             <div class="flex gap-2" style="flex-wrap:wrap;">
                                 {{-- มหาวิทยาลัย --}}
                                 @if(isset($audit['scope_audit']['university']))
                                     @php $uni = $audit['scope_audit']['university']; @endphp
-                                    <span class="badge" style="background:{{ $uni['passed'] ? '#ecfdf5' : '#fee2e2' }};color:{{ $uni['passed'] ? '#059669' : '#dc2626' }};font-size:0.7rem;" title="{{ $uni['name'] }}: {{ $uni['earned'] }}/{{ $uni['required'] }} ชม.">
-                                        มหาลัย: {{ number_format($uni['earned'], 0) }}/{{ number_format($uni['required'], 0) }}
+                                    <span class="badge" style="background:{{ $uni['passed'] ? '#ecfdf5' : '#fee2e2' }};color:{{ $uni['passed'] ? '#059669' : '#dc2626' }};font-size:0.7rem;" title="{{ $uni['name'] }}: {{ $uni['earned'] }}/{{ $uni['required'] }} {{ __('ชม.') }}">
+                                        {{ __('มหาลัย:') }}{{ number_format($uni['earned'], 0) }}/{{ number_format($uni['required'], 0) }}
                                     </span>
                                 @endif
 
                                 {{-- คณะ --}}
                                 @if(isset($audit['scope_audit']['faculty']))
                                     @php $fac = $audit['scope_audit']['faculty']; @endphp
-                                    <span class="badge" style="background:{{ $fac['passed'] ? '#ecfdf5' : '#fee2e2' }};color:{{ $fac['passed'] ? '#059669' : '#dc2626' }};font-size:0.7rem;" title="{{ $fac['name'] }}: {{ $fac['earned'] }}/{{ $fac['required'] }} ชม.">
+                                    <span class="badge" style="background:{{ $fac['passed'] ? '#ecfdf5' : '#fee2e2' }};color:{{ $fac['passed'] ? '#059669' : '#dc2626' }};font-size:0.7rem;" title="{{ $fac['name'] }}: {{ $fac['earned'] }}/{{ $fac['required'] }} {{ __('ชม.') }}">
                                         {{ __('คณะ:') }} {{ number_format($fac['earned'], 0) }}/{{ number_format($fac['required'], 0) }}
                                     </span>
                                 @endif
@@ -222,8 +222,8 @@
                                 {{-- จิตอาสา --}}
                                 @foreach($audit['category_audit'] as $cat)
                                     @if(str_contains($cat['name'], 'จิตอาสา'))
-                                        <span class="badge" style="background:{{ $cat['passed'] ? '#ecfdf5' : '#fee2e2' }};color:{{ $cat['passed'] ? '#059669' : '#dc2626' }};font-size:0.7rem;" title="{{ $cat['name'] }}: {{ $cat['earned'] }}/{{ $cat['required'] }} ชม.">
-                                            จิตอาสา: {{ number_format($cat['earned'], 0) }}/{{ number_format($cat['required'], 0) }}
+                                        <span class="badge" style="background:{{ $cat['passed'] ? '#ecfdf5' : '#fee2e2' }};color:{{ $cat['passed'] ? '#059669' : '#dc2626' }};font-size:0.7rem;" title="{{ $cat['name'] }}: {{ $cat['earned'] }}/{{ $cat['required'] }} {{ __('ชม.') }}">
+                                            {{ __('จิตอาสา:') }}{{ number_format($cat['earned'], 0) }}/{{ number_format($cat['required'], 0) }}
                                         </span>
                                     @endif
                                 @endforeach
@@ -265,7 +265,7 @@
                                 @if(!$audit['is_eligible'])
                                 <form action="{{ route('admin.graduation.audit.alert', $s) }}" method="POST" style="margin:0;display:inline;">
                                     @csrf
-                                    <button type="submit" class="btn btn-outline btn-sm text-xs flex items-center gap-1" style="padding:0.25rem 0.5rem;color:#d97706;border-color:#fde68a;" title="{{ __('ส่งแจ้งเตือนเร่งรัดชั่วโมง (In-App + LINE)') }}" onclick="return confirm('ส่งแจ้งเตือนเร่งรัดชั่วโมงกิจกรรมไปยัง {{ $s->full_name }} ({{ $s->student_id }}) ใช่หรือไม่?')">
+                                    <button type="submit" class="btn btn-outline btn-sm text-xs flex items-center gap-1" style="padding:0.25rem 0.5rem;color:#d97706;border-color:#fde68a;" title="{{ __('ส่งแจ้งเตือนเร่งรัดชั่วโมง (In-App + LINE)') }}" onclick="return confirm('ส่งแจ้งเตือนเร่งรัดชั่วโมงกิจกรรมไปยัง {{ $s->full_name }} ({{ $s->student_id }}) {{ __('ใช่หรือไม่?') }}')">
                                         <svg style="width:0.85rem;height:0.85rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
                                         <span>{{ __('เตือน') }}</span>
                                     </button>
@@ -334,10 +334,10 @@ function openAuditModal(userId) {
                 <div style="background:#f8fafc;padding:0.65rem 0.85rem;border-radius:0.5rem;border:1px solid #e2e8f0;margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center;">
                     <div>
                         <div class="font-medium text-xs text-dark">${scope.name}</div>
-                        <div class="text-xs text-muted">สะสมได้: ${Number(scope.earned).toFixed(1)} / เกณฑ์: ${Number(scope.required).toFixed(1)} ชม.</div>
+                        <div class="text-xs text-muted">{{ __('สะสมได้:') }}${Number(scope.earned).toFixed(1)} / {{ __('เกณฑ์:') }}${Number(scope.required).toFixed(1)} {{ __('ชม.') }}</div>
                     </div>
                     <span class="badge" style="background:${scope.passed ? '#ecfdf5' : '#fee2e2'};color:${scope.passed ? '#059669' : '#dc2626'};font-size:0.75rem;">
-                        ${scope.passed ? 'ผ่าน' : 'ขาดอีก ' + Number(scope.deficit).toFixed(1) + ' ชม.'}
+                        ${scope.passed ? '{{ __('ผ่าน') }}' : '{{ __('ขาดอีก') }}' + Number(scope.deficit).toFixed(1) + ' {{ __('ชม.') }}'}
                     </span>
                 </div>
             `;
@@ -349,10 +349,10 @@ function openAuditModal(userId) {
                 <div style="background:#f8fafc;padding:0.65rem 0.85rem;border-radius:0.5rem;border:1px solid #e2e8f0;margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center;">
                     <div>
                         <div class="font-medium text-xs text-dark">${cat.name}</div>
-                        <div class="text-xs text-muted">สะสมได้: ${Number(cat.earned).toFixed(1)} / เกณฑ์: ${Number(cat.required).toFixed(1)} ชม.</div>
+                        <div class="text-xs text-muted">{{ __('สะสมได้:') }}${Number(cat.earned).toFixed(1)} / {{ __('เกณฑ์:') }}${Number(cat.required).toFixed(1)} {{ __('ชม.') }}</div>
                     </div>
                     <span class="badge" style="background:${cat.passed ? '#ecfdf5' : '#fee2e2'};color:${cat.passed ? '#059669' : '#dc2626'};font-size:0.75rem;">
-                        ${cat.passed ? 'ผ่าน' : 'ขาดอีก ' + Number(cat.deficit).toFixed(1) + ' ชม.'}
+                        ${cat.passed ? '{{ __('ผ่าน') }}' : '{{ __('ขาดอีก') }}' + Number(cat.deficit).toFixed(1) + ' {{ __('ชม.') }}'}
                     </span>
                 </div>
             `;
@@ -374,7 +374,7 @@ function openAuditModal(userId) {
             <div style="background:#f1f5f9;padding:0.85rem 1rem;border-radius:0.5rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
                 <div>
                     <div class="font-bold text-dark" style="font-size:0.95rem;">${d.student_id} - ${d.full_name}</div>
-                    <div class="text-xs text-muted">${d.faculty || '-'} / ${d.department || '-'} (ชั้นปีที่ ${d.year || '-'})</div>
+                    <div class="text-xs text-muted">${d.faculty || '-'} / ${d.department || '-'} ({{ __('ชั้นปีที่') }}${d.year || '-'})</div>
                 </div>
                 <div>${statusBadge}</div>
             </div>
@@ -382,7 +382,7 @@ function openAuditModal(userId) {
             <div style="margin-bottom:1rem;">
                 <div class="flex justify-between items-center mb-1 text-xs">
                     <span class="font-medium text-dark">{{ __('ชั่วโมงสะสมรวมทั้งหมด') }}</span>
-                    <span class="font-bold ${d.total_hours >= d.min_total_hours ? 'text-success' : 'text-danger'}">${Number(d.total_hours).toFixed(1)} / ${Number(d.min_total_hours).toFixed(1)} ชม. (${pct}%)</span>
+                    <span class="font-bold ${d.total_hours >= d.min_total_hours ? 'text-success' : 'text-danger'}">${Number(d.total_hours).toFixed(1)} / ${Number(d.min_total_hours).toFixed(1)} {{ __('ชม. (') }}${pct}%)</span>
                 </div>
                 <div style="width:100%;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
                     <div style="width:${pct}%;height:100%;background:${d.total_hours >= d.min_total_hours ? '#10b981' : '#6366f1'};border-radius:4px;transition:width 0.4s ease;"></div>

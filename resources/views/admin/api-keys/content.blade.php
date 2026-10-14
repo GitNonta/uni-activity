@@ -155,7 +155,7 @@ html.dark .api-key-row:hover td {
             const originalText = copyBtn.innerText;
             const originalBg = copyBtn.style.background;
             
-            copyBtn.innerText = 'คัดลอกเรียบร้อย';
+            copyBtn.innerText = '{{ __('คัดลอกเรียบร้อย') }}';
             copyBtn.style.background = '#059669';
             
             setTimeout(() => {
@@ -175,7 +175,7 @@ html.dark .api-key-row:hover td {
                 document.execCommand('copy');
                 performFeedback();
             } catch (err) {
-                alert('ไม่สามารถคัดลอกได้: ' + err);
+                alert('{{ __('ไม่สามารถคัดลอกได้:') }}' + err);
             }
             document.body.removeChild(textArea);
             return;
@@ -185,7 +185,7 @@ html.dark .api-key-row:hover td {
             performFeedback();
         }).catch(err => {
             console.error('Failed to copy: ', err);
-            alert('ไม่สามารถคัดลอกได้: ' + err);
+            alert('{{ __('ไม่สามารถคัดลอกได้:') }}' + err);
         });
     }
 </script>

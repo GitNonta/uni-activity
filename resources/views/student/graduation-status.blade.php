@@ -32,7 +32,7 @@
             <div>
                 <h3 class="font-bold text-dark" style="font-size:1.1rem;color:#065f46;">{{ __('ยินดีด้วย! คุณผ่านเกณฑ์กิจกรรมเพื่อการสำเร็จการศึกษาแล้ว') }}</h3>
                 <p class="text-xs mt-1" style="color:#047857;line-height:1.4;">
-                    {{ __('คุณสะสมชั่วโมงกิจกรรมครบถ้วนตามโครงสร้างหลักสูตรและข้อบังคับมหาวิทยาลัย (รวม') }} {{ number_format($audit['total_hours'], 1) }} / {{ number_format($audit['min_total_hours'], 0) }} {{ __('ชม.') }}) ข้อมูลของคุณพร้อมสำหรับการประมวลผลสำเร็จการศึกษาจากฝ่ายทะเบียน
+                    {{ __('คุณสะสมชั่วโมงกิจกรรมครบถ้วนตามโครงสร้างหลักสูตรและข้อบังคับมหาวิทยาลัย (รวม') }} {{ number_format($audit['total_hours'], 1) }} / {{ number_format($audit['min_total_hours'], 0) }} {{ __('ชม.') }}) {{ __('ข้อมูลของคุณพร้อมสำหรับการประมวลผลสำเร็จการศึกษาจากฝ่ายทะเบียน') }}
                 </p>
             </div>
         </div>
@@ -44,7 +44,7 @@
             <div>
                 <h3 class="font-bold" style="font-size:1.1rem;color:#991b1b;">{{ __('คุณยังไม่ผ่านเกณฑ์ชั่วโมงกิจกรรมเพื่อการสำเร็จการศึกษา') }}</h3>
                 <p class="text-xs mt-1" style="color:var(--tint-red-text);line-height:1.4;">
-                    {{ __('ขณะนี้คุณมีชั่วโมงสะสม') }} {{ number_format($audit['total_hours'], 1) }} ชม. จากเกณฑ์ขั้นต่ำ {{ number_format($audit['min_total_hours'], 0) }} ชม. และยังขาดคุณสมบัติต่อไปนี้:
+                    {{ __('ขณะนี้คุณมีชั่วโมงสะสม') }} {{ number_format($audit['total_hours'], 1) }} {{ __('ชม. จากเกณฑ์ขั้นต่ำ') }}{{ number_format($audit['min_total_hours'], 0) }} {{ __('ชม. และยังขาดคุณสมบัติต่อไปนี้:') }}
                 </p>
                 <ul class="text-xs mt-2" style="color:var(--tint-red-text);padding-left:1.25rem;">
                     @foreach($audit['missing_requirements'] as $missing)

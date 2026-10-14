@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Admin') - ระบบกิจกรรม</title>
+    <title>@yield('title', 'Admin') - {{ __('ระบบกิจกรรม') }}</title>
     <link rel="icon" type="image/svg+xml" href="{{ asset('logo.svg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1268,7 +1268,7 @@ window.AdminChatManager = (function() {
             }
         };
 
-        // สร้าง avatar + ชื่อผู้สนทนาด้วย DOM API — title/photo มาจากข้อมูลผู้ใช้
+        // สร้าง avatar+ ชื่อผู้สนทนาด้วย DOM API — title/photo มาจากข้อมูลผู้ใช้
         // (นักศึกษาแก้ได้) จึงห้ามต่อเข้า innerHTML โดยตรง กัน stored XSS
         const avatarSpan = document.createElement('span');
         avatarSpan.className = 'acw-avatar';
@@ -1277,7 +1277,7 @@ window.AdminChatManager = (function() {
             try {
                 const u = new URL(photoUrl, window.location.origin);
                 if (u.protocol === 'http:' || u.protocol === 'https:') safePhotoSrc = u.href;
-            } catch (e) { /* URL ไม่ถูกต้อง → ใช้ avatar fallback */ }
+            } catch (e) { /* URL {{ __('ไม่ถูกต้อง') }}→ {{ __('ใช้ avatar fallback') }}*/ }
         }
         if (safePhotoSrc) {
             const img = document.createElement('img');
@@ -1309,7 +1309,7 @@ window.AdminChatManager = (function() {
         
         const closeBtn = document.createElement('button');
         closeBtn.innerHTML = '') }}<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
-        closeBtn.title = 'ปิดหน้าต่างแชท';
+        closeBtn.title = '{{ __('ปิดหน้าต่างแชท') }}';
         closeBtn.onclick = function() {
             widget.remove();
             delete openChats[chatId];
@@ -1513,7 +1513,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await res.json();
 
                 if (!data.results || data.results.length === 0) {
-                    resultsContainer.innerHTML = `<div style="padding:2rem 1rem; text-align:center; color:#475569; font-size:0.875rem; line-height:1.5;">ไม่พบข้อมูลที่ตรงกับ "${query}"</div>`;
+                    resultsContainer.innerHTML = `<div style="padding:2rem 1rem; text-align:center; color:#475569; font-size:0.875rem; line-height:1.5;">{{ __('ไม่พบข้อมูลที่ตรงกับ') }}"${query}"</div>`;
                     return;
                 }
 

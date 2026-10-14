@@ -6,7 +6,7 @@
 <div class="flex items-center justify-between mb-4" style="flex-wrap:wrap;gap:.75rem;">
     <div>
         <h1 class="font-bold" style="font-size:1.4rem;">{{ __('จัดการนักศึกษา') }}</h1>
-        <p class="text-sm text-muted">{{ __('นักศึกษาทั้งหมด') }} <strong>{{ $students->total() }}</strong> คน
+        <p class="text-sm text-muted">{{ __('นักศึกษาทั้งหมด') }} <strong>{{ $students->total() }}</strong> {{ __('คน') }}
             @if(request()->anyFilled(['search','faculty','department','year','program','completion']))
                 <span style="color:#f97316;font-weight:600;">{{ __('(กรองแล้ว)') }}</span>
             @endif
@@ -88,7 +88,7 @@
                 <select name="year" class="form-control">
                     <option value="">{{ __('ทุกปี') }}</option>
                     @foreach($years as $y)
-                        <option value="{{ $y }}" {{ request('year') == $y ? 'selected' : '' }}>ปี {{ $y }}</option>
+                        <option value="{{ $y }}" {{ request('year') == $y ? 'selected' : '' }}>{{ __('ปี') }}{{ $y }}</option>
                     @endforeach
                 </select>
             </div>
@@ -147,7 +147,7 @@
                         <div class="text-xs text-muted">{{ $student->department ? __($student->department) : '-' }}</div>
                         <div style="margin-top:2px;">
                             @if($student->year)
-                            <span style="font-size:.7rem;background:#f1f5f9;color:#475569;border-radius:4px;padding:1px 6px;">ปี {{ $student->year }}</span>
+                            <span style="font-size:.7rem;background:#f1f5f9;color:#475569;border-radius:4px;padding:1px 6px;">{{ __('ปี') }}{{ $student->year }}</span>
                             @endif
                             @if($student->program)
                             <span style="font-size:.7rem;border-radius:4px;padding:1px 6px;line-height:1.5;

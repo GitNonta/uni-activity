@@ -6,7 +6,7 @@
 <div class="flex items-center justify-between mb-4">
     <h1 class="font-bold flex items-center gap-2" style="font-size:1.25rem;">
         <svg style="width:24px;height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>{{ __('กล่องข้อความ') }}    </h1>
-    <span class="text-sm text-muted">การสนทนาทั้งหมด {{ $threads->count() }} รายการ</span>
+    <span class="text-sm text-muted">{{ __('การสนทนาทั้งหมด') }}{{ $threads->count() }} {{ __('รายการ') }}</span>
 </div>
 
 <style>
@@ -91,15 +91,15 @@ html[data-theme="dark"] .inbox-read-text { color: #a1a1aa !important; }
                         $msgDays = (int) floor(max(0, $time->diffInDays(now())));
                     @endphp
                     @if($msgSec < 60)
-                        เมื่อสักครู่
+                        {{ __('เมื่อสักครู่') }}
                     @elseif($msgMin < 60)
-                        {{ $msgMin }} นาทีที่แล้ว
+                        {{ $msgMin }} {{ __('นาทีที่แล้ว') }}
                     @elseif($msgHrs < 24)
-                        {{ $msgHrs }} ชม. ที่แล้ว
+                        {{ $msgHrs }} {{ __('ชม. ที่แล้ว') }}
                     @elseif($time->isYesterday())
-                        เมื่อวานนี้ {{ $time->format('H:i') }}
+                        {{ __('เมื่อวานนี้') }}{{ $time->format('H:i') }}
                     @elseif($msgDays < 7)
-                        {{ $msgDays }} วันที่แล้ว
+                        {{ $msgDays }} {{ __('วันที่แล้ว') }}
                     @else
                         {{ $time->format('d/m/Y') }}
                     @endif
@@ -171,13 +171,13 @@ document.addEventListener('DOMContentLoaded', function() {
             var diffMin = Math.floor(diffSec / 60);
             var diffHours = Math.floor(diffMin / 60);
             if (diffSec < 60) {
-                return 'ออนไลน์เมื่อสักครู่';
+                return '{{ __('ออนไลน์เมื่อสักครู่') }}';
             } else if (diffMin < 60) {
-                return 'ออนไลน์เมื่อ ' + diffMin + ' นาทีที่แล้ว';
+                return '{{ __('ออนไลน์เมื่อ') }}' + diffMin + ' {{ __('นาทีที่แล้ว') }}';
             } else if (diffHours < 24) {
-                return 'ออนไลน์เมื่อ ' + diffHours + ' ชม. ที่แล้ว';
+                return '{{ __('ออนไลน์เมื่อ') }}' + diffHours + ' {{ __('ชม. ที่แล้ว') }}';
             } else {
-                return 'ออนไลน์เมื่อ ' + date.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' }) + ' ' + date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                return '{{ __('ออนไลน์เมื่อ') }}' + date.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' }) + ' ' + date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
             }
         }
 

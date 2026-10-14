@@ -151,7 +151,7 @@
 
             <div class="cert-body">{{ __('ได้เข้าร่วมและผ่านการประเมินชั่วโมงกิจกรรมเสริมหลักสูตร') }}<br>
                 <strong>{{ $certificate->title }}</strong><br>{{ __('รวมทั้งสิ้น') }} <strong>{{ number_format($certificate->hours_completed, 1) }}</strong> {{ __('ชั่วโมงกิจกรรม') }} 
-                ประจำปีการศึกษา {{ $certificate->academic_year ?? date('Y') }}
+                {{ __('ประจำปีการศึกษา') }}{{ $certificate->academic_year ?? date('Y') }}
             </div>
 
             <table class="sign-table">

@@ -340,7 +340,7 @@ function goToMyLocation() {
     if (!navigator.geolocation) { alert('{{ __('เบราว์เซอร์ไม่รองรับ GPS') }}'); return; }
     navigator.geolocation.getCurrentPosition(
         function(pos) { placePin(pos.coords.latitude, pos.coords.longitude); map.setView([pos.coords.latitude, pos.coords.longitude], 17); },
-        function(err) { alert('ไม่สามารถดึงพิกัดได้: ' + err.message); },
+        function(err) { alert('{{ __('ไม่สามารถดึงพิกัดได้:') }}' + err.message); },
         { enableHighAccuracy: true }
     );
 }
@@ -442,7 +442,7 @@ function calcDistance(lat1, lng1, lat2, lng2) {
 }
 
 function formatDistance(m) {
-    return m >= 1000 ? (m/1000).toFixed(1) + ' กม.' : Math.round(m) + ' ม.';
+    return m >= 1000 ? (m/1000).toFixed(1) + ' {{ __('กม.') }}' : Math.round(m) + ' {{ __('ม.') }}';
 }
 
 function escapeHtml(text) {
@@ -457,7 +457,7 @@ function searchPlace() {
     searchPlaceAutocomplete(q);
 }
 
-// ── Scope toggle: แสดง/ซ่อนช่องคณะ/สาขาตามระดับ ──
+// ── Scope toggle: แสดง/ซ่อนช่องคณะ/สาขาตามระดับ──
 const facultyData = @json(config('faculties'));
     const depLabels = @json(collect(config('faculties'))->flatMap(fn ($deps) => collect($deps)->mapWithKeys(fn ($d) => [$d => __($d)]))->all());
 const oldDepartment = "{{ old('department') }}";
@@ -597,7 +597,7 @@ function renderMultidaySchedule() {
                             <line x1="16" y1="2" x2="16" y2="6"></line>
                             <line x1="8" y1="2" x2="8" y2="6"></line>
                         </svg>
-                        วันที่ ${dayNum}
+                        {{ __('วันที่') }}${dayNum}
                     </span>
                     <strong class="day-card-date" style="font-size:0.85rem;">${displayDate}</strong>
                 </div>
@@ -853,18 +853,18 @@ function toggleCustomHours(cb) {
         input.removeAttribute('readonly');
         input.style.background = '';
         input.style.color = '';
-        hint.textContent = 'ระบุชั่วโมงกิจกรรมด้วยตัวเอง';
+        hint.textContent = '{{ __('ระบุชั่วโมงกิจกรรมด้วยตัวเอง') }}';
         input.focus();
     } else {
         input.setAttribute('readonly', 'readonly');
         input.style.background = '#f8fafc';
         input.style.color = '#475569';
-        hint.textContent = 'คำนวณอัตโนมัติจากเวลาเริ่ม–สิ้นสุด';
+        hint.textContent = '{{ __('คำนวณอัตโนมัติจากเวลาเริ่ม–สิ้นสุด') }}';
         autoCalcHours();
     }
 }
 
-// ── Auto-fill dates: ตั้งค่าเวลาลงทะเบียน/เช็คอิน/เช็คเอาต์อัตโนมัติจากวันที่จัดกิจกรรม ──
+// ── Auto-fill dates: ตั้งค่าเวลาลงทะเบียน/เช็คอิน/เช็คเอาต์อัตโนมัติจากวันที่จัดกิจกรรม──
 function autoFillDates() {
     var dateVal = document.getElementById('activityDate').value;
     var startVal = document.getElementById('startTime').value;
@@ -890,11 +890,11 @@ function autoFillDates() {
     var now = new Date();
 
     // register_open_at  = ตอนนี้
-    // register_close_at = วันที่จัด − 1 ชม. (ก่อนเริ่มกิจกรรม)
-    // checkin_open_at   = วันที่จัด + เวลาเริ่ม − 30 นาที
-    // checkin_close_at  = วันที่จัด + เวลาสิ้นสุด + 30 นาที
-    // checkout_open_at  = วันที่จัด + เวลาเริ่ม
-    // checkout_close_at = วันที่จัด + เวลาสิ้นสุด
+    // register_close_at = วันที่จัด− 1 ชม. (ก่อนเริ่มกิจกรรม)
+    // checkin_open_at   = วันที่จัด+ เวลาเริ่ม− 30 นาที
+    // checkin_close_at  = วันที่จัด+ เวลาสิ้นสุด+ 30 นาที
+    // checkout_open_at  = วันที่จัด+ เวลาเริ่ม
+    // checkout_close_at = วันที่จัด+ เวลาสิ้นสุด
     var regOpen  = now;
     var regClose = new Date(startDate.getTime() - 3600000);
     var ciOpen   = new Date(startDate.getTime() - 1800000);
@@ -926,7 +926,7 @@ function autoFillDates() {
     // Update hint text
     var hint = document.getElementById('autoFillHint');
     if (hint) {
-        hint.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> ตั้งค่าเวลาอัตโนมัติเรียบร้อยแล้ว (สามารถแก้ไขได้ตามต้องการ)';
+        hint.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> {{ __('ตั้งค่าเวลาอัตโนมัติเรียบร้อยแล้ว (สามารถแก้ไขได้ตามต้องการ)') }}';
         hint.style.color = '#16a34a';
     }
 }
@@ -1101,7 +1101,7 @@ function performConflictCheck() {
                     <div>
                         <div style="font-weight:700; color:#991b1b;">${c.title}</div>
                         <div style="font-size:0.72rem; color:#64748b; margin-top:2px;">
-                            วันที่ ${c.date_display} เวลา ${c.time_display} • ผู้สร้าง: ${c.creator}
+                            {{ __('วันที่') }}${c.date_display} {{ __('เวลา') }}${c.time_display} • {{ __('ผู้สร้าง:') }}${c.creator}
                         </div>
                     </div>
                     <a href="${c.view_url}" target="_blank" class="btn btn-xs btn-outline" style="padding:2px 8px; font-size:0.72rem; color:#991b1b; border-color:#f87171; white-space:nowrap;">{{ __('เปิดดู') }}                    </a>

@@ -581,11 +581,11 @@ document.addEventListener('DOMContentLoaded', function() {
             right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
         },
         buttonText: {
-            today: 'วันนี้',
-            month: 'เดือน',
-            week:  'สัปดาห์',
-            day:   'วัน',
-            list:  'รายการ'
+            today: '{{ __('วันนี้') }}',
+            month: '{{ __('เดือน') }}',
+            week:  '{{ __('สัปดาห์') }}',
+            day:   '{{ __('วัน') }}',
+            list:  '{{ __('รายการ') }}'
         },
         height: 'auto',
         dayMaxEvents: 3,
@@ -634,7 +634,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (isConflict) {
                 var badge = document.createElement('span');
                 badge.className = 'fc-event-conflict-badge';
-                badge.innerHTML = '<svg width="9" height="9" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> ชน!';
+                badge.innerHTML = '<svg width="9" height="9" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> {{ __('ชน!') }}';
                 container.appendChild(badge);
             }
 
@@ -653,7 +653,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             return { domNodes: [container] };
         },
-        noEventsContent: 'ไม่มีกิจกรรมในช่วงเวลาหรือเงื่อนไขที่เลือก'
+        noEventsContent: '{{ __('ไม่มีกิจกรรมในช่วงเวลาหรือเงื่อนไขที่เลือก') }}'
     });
 
     calendarInstance.render();
@@ -686,11 +686,11 @@ function openCalendarDrawer(event) {
     var ep = event.extendedProps;
 
     document.getElementById('drawerTitle').textContent = event.title;
-    document.getElementById('drawerCategoryPill').textContent = ep.category || 'ทั่วไป';
+    document.getElementById('drawerCategoryPill').textContent = ep.category || '{{ __('ทั่วไป') }}';
     document.getElementById('drawerLocation').textContent = ep.location || '-';
-    document.getElementById('drawerHours').textContent = (ep.hours || 0).toFixed(1) + ' ชม.';
+    document.getElementById('drawerHours').textContent = (ep.hours || 0).toFixed(1) + ' {{ __('ชม.') }}';
     document.getElementById('drawerCreator').textContent = ep.creator_name || '-';
-    document.getElementById('drawerParticipants').textContent = (ep.registered_count || 0) + ' / ' + (ep.max_participants || 0) + ' คน';
+    document.getElementById('drawerParticipants').textContent = (ep.registered_count || 0) + ' / ' + (ep.max_participants || 0) + ' {{ __('คน') }}';
 
     // Dates & Times formatting
     var start = event.start;
@@ -699,7 +699,7 @@ function openCalendarDrawer(event) {
     }) : '-';
     document.getElementById('drawerDate').textContent = dateDisplay;
 
-    var timeDisplay = (ep.start_time || '00:00') + ' - ' + (ep.end_time || '23:59') + ' น.';
+    var timeDisplay = (ep.start_time || '00:00') + ' - ' + (ep.end_time || '23:59') + ' {{ __('น.') }}';
     document.getElementById('drawerTime').textContent = timeDisplay;
 
     // Action button links
@@ -715,7 +715,7 @@ function openCalendarDrawer(event) {
     if (ep.is_conflict && ep.conflicts && ep.conflicts.length > 0) {
         conflictBox.style.display = 'block';
         document.getElementById('drawerConflictDesc').textContent =
-            'ตรวจพบการจัดกิจกรรมชนกัน ' + ep.conflicts.length + ' รายการในสถานที่ "' + (ep.location || '') + '" ในช่วงเวลาเดียวกัน:';
+            '{{ __('ตรวจพบการจัดกิจกรรมชนกัน') }}' + ep.conflicts.length + ' {{ __('รายการในสถานที่') }}"' + (ep.location || '') + '" {{ __('ในช่วงเวลาเดียวกัน:') }}';
 
         ep.conflicts.forEach(function(c) {
             var item = document.createElement('div');
@@ -731,7 +731,7 @@ function openCalendarDrawer(event) {
             item.innerHTML = `
                 <div>
                     <div style="font-weight:600; font-size:0.82rem; color:#991b1b;">${c.title}</div>
-                    <div style="font-size:0.72rem; color:#64748b;">เวลา: ${c.time_display}</div>
+                    <div style="font-size:0.72rem; color:#64748b;">{{ __('เวลา:') }}${c.time_display}</div>
                 </div>
                 <div style="display:flex; gap:4px;">
                     <a href="${c.edit_url}" target="_blank" class="btn btn-xs btn-outline" style="padding:2px 8px; font-size:0.72rem; border-color:#f87171; color:#991b1b;" title="{{ __('แก้ไขกิจกรรมที่ชน') }}">{{ __('เปลี่ยนเวลา/ห้อง') }}                    </a>

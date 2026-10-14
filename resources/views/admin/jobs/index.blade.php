@@ -71,7 +71,7 @@
                         <div class="flex gap-2">
                             <a href="{{ route('admin.jobs.show', $job->id) }}" class="btn btn-outline btn-sm">{{ __('ดู') }}</a>
                             <a href="{{ route('admin.jobs.edit', $job->id) }}" class="btn btn-outline btn-sm">{{ __('แก้ไข') }}</a>
-                            <form method="POST" action="{{ route('admin.jobs.destroy', $job->id) }}" onsubmit="return confirm('ลบประกาศ &quot;{{ $job->title }}&quot; จริงหรือ?')">
+                            <form method="POST" action="{{ route('admin.jobs.destroy', $job->id) }}" onsubmit="return confirm('ลบประกาศ &quot;{{ $job->title }}&quot; {{ __('จริงหรือ?') }}')">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn btn-danger btn-sm">{{ __('ลบ') }}</button>
                             </form>
