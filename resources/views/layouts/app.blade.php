@@ -139,10 +139,14 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>
                     </svg>
                 </button>
-<button type="button" class="navbar-icon-btn navbar-more-btn" data-more-toggle aria-label="เมนูเพิ่มเติม" title="เมนูเพิ่มเติม">
+                {{-- นำไอคอนประกาศกลับมาที่หัวเหมือนเดิม (map/job ยังอยู่ในเมนู ⋯) --}}
+                <a href="{{ route('announcements.index') }}" class="navbar-icon-btn {{ request()->routeIs('announcements.*') ? 'active' : '' }}" title="ประกาศข่าวสาร">
+                    <x-icon name="announcement" size="18" />
+                </a>
+                <button type="button" class="navbar-icon-btn navbar-more-btn" data-more-toggle aria-label="เมนูเพิ่มเติม" title="เมนูเพิ่มเติม">
                     <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
                 </button>
-                {{-- icons map/job/announcement ย้ายไปเมนู ⋯ (mobile sheet) --}}
+                {{-- icons map/job ย้ายไปเมนู ⋯ (mobile sheet), ประกาศกลับมาที่บาร์แล้ว --}}
                 <form method="POST" action="{{ route('logout') }}" style="margin:0">
                     @csrf
                     <button type="submit" class="navbar-logout-btn" title="{{ __('ออกจากระบบ') }}">
@@ -1979,10 +1983,6 @@
         </a>
         <a href="{{ route('jobs.index') }}" class="mobile-sheet-item">
             <x-icon name="job" size="20" /> หางาน / ฝึกงาน
-            <span class="mobile-sheet-arrow">&#8250;</span>
-        </a>
-        <a href="{{ route('announcements.index') }}" class="mobile-sheet-item">
-            <x-icon name="announcement" size="20" /> ประกาศข่าวสาร
             <span class="mobile-sheet-arrow">&#8250;</span>
         </a>
         @endauth
