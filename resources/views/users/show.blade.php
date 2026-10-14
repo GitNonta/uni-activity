@@ -617,7 +617,7 @@ html.dark .follower-row:hover {
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="#06c755" aria-label="{{ __('ผู้จัดกิจกรรมทางการ') }}" title="{{ __('ผู้จัดกิจกรรมทางการ') }}">
                                 <path d="M22.5 12.5c0-1.58-.8-2.97-2-3.79.44-1.61.04-3.35-1.11-4.5-1.15-1.15-2.89-1.55-4.5-1.11-.82-1.2-2.21-2-3.79-2s-2.97.8-3.79 2c-1.61-.44-3.35-.04-4.5 1.11-1.15 1.15-1.55 2.89-1.11 4.5-1.2.82-2 2.21-2 3.79s.8 2.97 2 3.79c-.44 1.61-.04 3.35 1.11 4.5 1.15 1.15 2.89 1.55 4.5 1.11.82 1.2 2.21 2 3.79 2s2.97-.8 3.79-2c1.61.44 3.35.04 4.5-1.11 1.15-1.15 1.55-2.89 1.11-4.5 1.2-.82 2-2.21 2-3.79zm-12.21 4.21l-3.5-3.5 1.41-1.41 2.09 2.09 5.68-5.68 1.41 1.41-7.09 7.09z"/>
                             </svg>
-                            {{ $profileUser->isStaff() ? 'เจ้าหน้าที่' : 'ผู้ดูแลระบบ' }}
+                            {{ $profileUser->isStaff() ? __('เจ้าหน้าที่') : __('ผู้ดูแลระบบ') }}
                         </span>
                     @endif
                 </div>
@@ -679,7 +679,7 @@ html.dark .follower-row:hover {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         @endif
                     </svg>
-                    <span id="followBtnText">{{ $isFollowing ? 'ติดตามอยู่' : 'ติดตาม' }}</span>
+                    <span id="followBtnText">{{ $isFollowing ? __('ติดตามอยู่') : __('ติดตาม') }}</span>
                 </button>
                 <button type="button"
                     class="pub-message-btn"

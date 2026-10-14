@@ -68,7 +68,7 @@
                     class="btn btn-sm {{ $isBookmarked ? 'btn-primary' : 'btn-secondary' }}"
                     style="text-decoration:none;"
                     data-bookmarked="{{ $isBookmarked ? 1 : 0 }}">
-                    {{ $isBookmarked ? '★ บุ๊กมาร์กแล้ว' : '☆ เพิ่มบุ๊กมาร์ก' }}
+                    {{ $isBookmarked ? __('★ บุ๊กมาร์กแล้ว') : __('☆ เพิ่มบุ๊กมาร์ก') }}
                 </button>
             </form>
         </div>
@@ -82,7 +82,7 @@
 
         {{-- บล็อกผู้สร้างกิจกรรม สไตล์ YouTube --}}
         <div>
-            <x-creator-badge :creator="$activity->creator" default-role="ผู้จัดกิจกรรม / เจ้าหน้าที่" />
+            <x-creator-badge :creator="$activity->creator" default-role="{{ __('ผู้จัดกิจกรรม / เจ้าหน้าที่') }}" />
         </div>
 
         <hr class="divider">

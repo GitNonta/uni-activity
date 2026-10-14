@@ -65,13 +65,13 @@
         <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>{{ __('รายละเอียดงาน') }}    </div>
     <div class="card-body">
         <div class="grid-2" style="font-size:.875rem;">
-            <div><span class="text-muted">{{ __('ประเภท:') }}</span> <span class="badge {{ $job->job_type === 'parttime' ? 'job-badge-parttime' : 'job-badge-general' }}">{{ $job->job_type === 'parttime' ? 'Part-time' : 'งานทั่วไป' }}</span></div>
+            <div><span class="text-muted">{{ __('ประเภท:') }}</span> <span class="badge {{ $job->job_type === 'parttime' ? 'job-badge-parttime' : 'job-badge-general' }}">{{ $job->job_type === 'parttime' ? 'Part-time' : __('งานทั่วไป') }}</span></div>
             <div><span class="text-muted">{{ __('ตำแหน่ง:') }}</span> <strong>{{ $job->position }}</strong></div>
             <div><span class="text-muted">{{ __('สถานที่:') }}</span> {{ $job->location }}</div>
             <div><span class="text-muted">{{ __('ค่าตอบแทน:') }}</span> {{ $job->compensation ?? '-' }}</div>
             <div><span class="text-muted">{{ __('ช่วงเวลา:') }}</span> {{ $job->work_period ?? '-' }}</div>
             <div><span class="text-muted">{{ __('การแต่งกาย:') }}</span> {{ $job->dresscode ?? '-' }}</div>
-            <div><span class="text-muted">{{ __('เพศ:') }}</span> {{ $job->gender === 'any' ? 'ไม่จำกัด' : ($job->gender === 'male' ? 'ชาย' : 'หญิง') }}</div>
+            <div><span class="text-muted">{{ __('เพศ:') }}</span> {{ $job->gender === 'any' ? __('ไม่จำกัด') : ($job->gender === 'male' ? __('ชาย') : __('หญิง')) }}</div>
             <div><span class="text-muted">{{ __('ผู้สร้าง:') }}</span> {{ $job->creator->full_name ?? '-' }}</div>
             <div><span class="text-muted">{{ __('วันเริ่มงาน:') }}</span> {{ $job->start_date->format('d/m/Y') }}</div>
             <div><span class="text-muted">{{ __('วันสิ้นสุด:') }}</span> {{ $job->end_date?->format('d/m/Y') ?? '-' }}</div>
@@ -173,7 +173,7 @@
         @forelse($job->comments as $comment)
         <div style="padding:.5rem 0;border-bottom:1px solid #f1f5f9;">
             <div class="flex items-center gap-2 mb-1">
-                <span class="font-semi text-sm">{{ $comment->user->full_name ?? 'ผู้ใช้' }}</span>
+                <span class="font-semi text-sm">{{ $comment->user->full_name ?? __('ผู้ใช้') }}</span>
                 <span class="text-xs text-muted">{{ $comment->created_at->diffForHumans() }}</span>
                 <form method="POST" action="{{ route('admin.jobs.admin-comment-delete', $comment->id) }}" style="margin-left:auto;">
                     @csrf @method('DELETE')

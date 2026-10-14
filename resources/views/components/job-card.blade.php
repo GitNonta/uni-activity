@@ -24,7 +24,7 @@
             {{-- Badges --}}
             <div class="flex items-center gap-2 act-card-badges">
                 <span class="badge {{ $job->job_type === 'parttime' ? 'job-badge-parttime' : 'job-badge-general' }}">
-                    {{ $job->job_type === 'parttime' ? 'Part-time' : 'งานทั่วไป' }}
+                    {{ $job->job_type === 'parttime' ? 'Part-time' : __('งานทั่วไป') }}
                 </span>
                 @if($job->status === 'open')
                     <span class="badge badge-green">{{ __('เปิดรับสมัคร') }}</span>

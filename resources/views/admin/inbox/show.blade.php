@@ -767,7 +767,7 @@
                             @else
                                 <a href="{{ $url }}" target="_blank" download="{{ $att['original_name'] ?? 'file' }}" class="attachment-file">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
-                                    {{ $att['original_name'] ?? 'ไฟล์แนบ' }}
+                                    {{ $att['original_name'] ?? __('ไฟล์แนบ') }}
                                 </a>
                             @endif
                         @endforeach
@@ -1162,7 +1162,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
             } catch(err) {
-                alert('ไม่สามารถแก้ไขข้อความได้');
+                alert('{{ __('ไม่สามารถแก้ไขข้อความได้') }}');
             } finally {
                 cancelEditMode();
             }
@@ -1221,13 +1221,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 const statusSpan = document.getElementById('status-' + tempId);
                 if (statusSpan) { statusSpan.textContent = 'ส่งไม่สำเร็จ'; statusSpan.style.color = '#ef4444'; }
             }
-            alert('ไม่สามารถส่งข้อความได้ กรุณาลองใหม่อีกครั้ง');
+            alert('{{ __('ไม่สามารถส่งข้อความได้ กรุณาลองใหม่อีกครั้ง') }}');
         }
     });
 
     // Delete message
     window.deleteAdminMessage = async function(id) {
-        if (!confirm('ต้องการลบข้อความนี้ใช่หรือไม่?')) return;
+        if (!confirm('{{ __('ต้องการลบข้อความนี้ใช่หรือไม่?') }}')) return;
         try {
             const res = await window.axios.delete('/admin/inbox/messages/' + id);
             if (res.data.success) {
@@ -1239,7 +1239,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
         } catch(e) {
-            alert('ไม่สามารถลบข้อความได้');
+            alert('{{ __('ไม่สามารถลบข้อความได้') }}');
         }
     };
 
@@ -1282,7 +1282,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Delete chat room
     window.deleteChat = function() {
-        if (!confirm('ยืนยันลบห้องแชทนี้และข้อความทั้งหมด? (นักศึกษาจะมองไม่เห็นแชทนี้อีก)')) return;
+        if (!confirm('{{ __('ยืนยันลบห้องแชทนี้และข้อความทั้งหมด? (นักศึกษาจะมองไม่เห็นแชทนี้อีก)') }}')) return;
         window.axios.delete('{{ route("admin.inbox.delete", [$job->id, $student->id]) }}')
             .then(res => {
                 if (res.data.success) {

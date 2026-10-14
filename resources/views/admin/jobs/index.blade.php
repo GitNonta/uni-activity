@@ -50,7 +50,7 @@
                     <td title="{{ $job->title }}"><a href="{{ route('admin.jobs.show', $job->id) }}" class="text-primary font-semi">{{ Str::limit($job->title, 40, '...') }}</a></td>
                     <td>
                         <span class="badge {{ $job->job_type === 'parttime' ? 'job-badge-parttime' : 'job-badge-general' }}">
-                            {{ $job->job_type === 'parttime' ? 'Part-time' : 'งานทั่วไป' }}
+                            {{ $job->job_type === 'parttime' ? 'Part-time' : __('งานทั่วไป') }}
                         </span>
                     </td>
                     <td title="{{ $job->position }}">{{ Str::limit($job->position, 30, '...') }}</td>

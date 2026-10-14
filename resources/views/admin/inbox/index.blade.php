@@ -122,7 +122,7 @@ html[data-theme="dark"] .inbox-read-text { color: #a1a1aa !important; }
     <x-empty-state
         icon="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
         title="{{ __('ยังไม่มีข้อความจากนักศึกษา') }}"
-        description="เมื่อนักศึกษาส่งข้อความสอบถามเกี่ยวกับงาน จะปรากฏที่นี่"
+        description="{{ __('เมื่อนักศึกษาส่งข้อความสอบถามเกี่ยวกับงาน จะปรากฏที่นี่') }}"
         size="md"
     />
     @endforelse
@@ -229,7 +229,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Delete thread function
         window.deleteThread = function(jobId, studentId, btn) {
-            if (!confirm('ยืนยันลบห้องแชทนี้และข้อความทั้งหมด?')) return;
+            if (!confirm('{{ __('ยืนยันลบห้องแชทนี้และข้อความทั้งหมด?') }}')) return;
             var row = btn.closest('.inbox-thread-item');
             if (row) row.style.opacity = '0.4';
             window.axios.delete('/admin/inbox/' + jobId + '/' + studentId)
@@ -250,7 +250,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .catch(function() {
                     if (row) row.style.opacity = '1';
-                    alert('ไม่สามารถลบการสนทนาได้');
+                    alert('{{ __('ไม่สามารถลบการสนทนาได้') }}');
                 });
         };
 

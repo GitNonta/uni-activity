@@ -480,7 +480,7 @@ async function markReviewed(id) {
 }
 
 async function markAllReviewed() {
-    if (!confirm('ยืนยันทำเครื่องหมายทั้งหมดว่าตรวจสอบแล้ว?')) return;
+    if (!confirm('{{ __('ยืนยันทำเครื่องหมายทั้งหมดว่าตรวจสอบแล้ว?') }}')) return;
     const res = await fetch('/admin/security-logs/review-all', {
         method: 'POST',
         headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' }

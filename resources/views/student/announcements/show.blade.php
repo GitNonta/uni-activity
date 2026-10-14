@@ -32,12 +32,12 @@
         
         {{-- บล็อกผู้สร้างประกาศ สไตล์ YouTube --}}
         <div>
-            <x-creator-badge :creator="$announcement->creator" default-role="ผู้ลงประกาศข่าวสาร" />
+            <x-creator-badge :creator="$announcement->creator" default-role="{{ __('ผู้ลงประกาศข่าวสาร') }}" />
         </div>
         
         <div class="pt-4 border-t border-gray-100 flex justify-between items-center text-xs text-muted">
             <div>
-                <p>กลุ่มเป้าหมาย: คณะ{{ $announcement->target_faculty ?? 'ทุกคน' }}</p>
+                <p>กลุ่มเป้าหมาย: คณะ{{ $announcement->target_faculty ?? __('ทุกคน') }}</p>
             </div>
             <div>
                 <p>ประกาศโดย: {{ $announcement->creator->full_name }}</p>

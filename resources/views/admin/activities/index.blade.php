@@ -65,14 +65,14 @@
                             <img src="{{ Storage::url($act->image_path) }}" alt="" style="width:40px; height:40px; object-fit:cover; border-radius:8px; background:#f1f5f9;">
                         @endif
                     </td>
-                    <td data-label="ชื่อ">
+                    <td data-label="{{ __('ชื่อ') }}">
                         <a href="{{ route('admin.activities.show', $act->id) }}" class="font-semi" title="{{ $act->title }}">{{ Str::limit($act->title, 40, '...') }}</a>
                         <p class="text-xs text-muted" title="{{ $act->category->name ?? '-' }}">{{ Str::limit($act->category->name ?? '-', 30, '...') }}</p>
                     </td>
-                    <td data-label="วันที่" class="text-center text-muted">{{ $act->activity_date->format('d/m/Y') }}</td>
-                    <td data-label="สถานะ" class="text-center">@include('components.status-badge', ['status' => $act->computed_status])</td>
-                    <td data-label="ผู้สมัคร" class="text-center">{{ $act->getRegisteredCount() }}/{{ $act->max_participants }}</td>
-                    <td data-label="คำขออนุมัติ" class="text-center">
+                    <td data-label="{{ __('วันที่') }}" class="text-center text-muted">{{ $act->activity_date->format('d/m/Y') }}</td>
+                    <td data-label="{{ __('สถานะ') }}" class="text-center">@include('components.status-badge', ['status' => $act->computed_status])</td>
+                    <td data-label="{{ __('ผู้สมัคร') }}" class="text-center">{{ $act->getRegisteredCount() }}/{{ $act->max_participants }}</td>
+                    <td data-label="{{ __('คำขออนุมัติ') }}" class="text-center">
                         @php $totalPending = $act->pending_registrations_count + $act->pending_attendances_count; @endphp
                         @if($totalPending > 0)
                             <button type="button" onclick="loadPendingRequests({{ $act->id }})" class="badge badge-yellow" style="border:none; cursor:pointer; font-size:.7rem; animation: pulse 2s infinite;">
@@ -82,7 +82,7 @@
                             <span class="text-xs text-muted">-</span>
                         @endif
                     </td>
-                    <td data-label="จัดการ" class="text-right">
+                    <td data-label="{{ __('จัดการ') }}" class="text-right">
                         <div class="flex justify-end gap-2" style="justify-content:flex-end; align-items:center;">
                             <form method="POST" action="{{ route('admin.activities.clone', $act->id) }}" style="display:inline;" onsubmit="return confirm('คุณต้องการคัดลอกกิจกรรมนี้เพื่อสร้างรายการใหม่ใช่หรือไม่?');">
                                 @csrf

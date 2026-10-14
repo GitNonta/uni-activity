@@ -853,7 +853,7 @@
                     <span>{{ __('แชทกับผู้ดูแล') }}</span>
                     <span id="staffOnlineDot" style="display:none;width:8px;height:8px;background:#10b981;border-radius:50%;box-shadow:0 0 0 2px #fff;" title="{{ __('ออนไลน์') }}"></span>
                 </h2>
-                <p style="margin:0;font-size:0.8rem;color:var(--chat-text-muted);">{{ $job->title ?? 'สอบถามข้อมูลเจ้าหน้าที่' }}</p>
+                <p style="margin:0;font-size:0.8rem;color:var(--chat-text-muted);">{{ $job->title ?? __('สอบถามข้อมูลเจ้าหน้าที่') }}</p>
             </div>
         </div>
         @php
@@ -985,7 +985,7 @@
                             @else
                                 <a href="{{ $url }}" target="_blank" download="{{ $att['original_name'] ?? 'file' }}" class="attachment-file">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
-                                    {{ $att['original_name'] ?? 'ไฟล์แนบ' }}
+                                    {{ $att['original_name'] ?? __('ไฟล์แนบ') }}
                                 </a>
                             @endif
                         @endforeach
@@ -1381,7 +1381,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             } catch(err) {
-                alert('ไม่สามารถแก้ไขข้อความได้');
+                alert('{{ __('ไม่สามารถแก้ไขข้อความได้') }}');
             } finally {
                 cancelEditMode();
             }
@@ -1438,13 +1438,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const statusSpan = document.getElementById('status-' + tempId);
                 if (statusSpan) { statusSpan.textContent = 'ส่งไม่สำเร็จ'; statusSpan.style.color = '#ef4444'; }
             }
-            alert('ไม่สามารถส่งข้อความได้ กรุณาลองใหม่อีกครั้ง');
+            alert('{{ __('ไม่สามารถส่งข้อความได้ กรุณาลองใหม่อีกครั้ง') }}');
         }
     });
 
     // Delete message
     window.deleteMyMessage = async function(id) {
-        if (!confirm('ยืนยันลบข้อความนี้?')) return;
+        if (!confirm('{{ __('ยืนยันลบข้อความนี้?') }}')) return;
         try {
             const res = await window.axios.delete('/chat/messages/' + id);
             if (res.data.success) {
@@ -1457,7 +1457,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } catch(e) {
-            alert('ไม่สามารถลบข้อความได้');
+            alert('{{ __('ไม่สามารถลบข้อความได้') }}');
         }
     };
 
@@ -1534,7 +1534,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 })
                 .listen('.ChatDeleted', () => {
-                    alert('ห้องแชทนี้ถูกปิดโดยผู้ดูแล');
+                    alert('{{ __('ห้องแชทนี้ถูกปิดโดยผู้ดูแล') }}');
                     window.location.href = '{{ route("jobs.index") }}';
                 })
                 .listenForWhisper('typing', (e) => {

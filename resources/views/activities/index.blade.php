@@ -33,7 +33,7 @@
                 @endif
             </button>
             @if($geoActivities->count())
-            <a href="{{ route('map.index', ['type' => 'activity']) }}" class="page-filter-btn-outline" title="ดูบนแผนที่">
+            <a href="{{ route('map.index', ['type' => 'activity']) }}" class="page-filter-btn-outline" title="{{ __('ดูบนแผนที่') }}">
                 <x-icon name="map" size="14" />
                 <span>{{ __('app.map') }}</span>
             </a>
@@ -141,7 +141,7 @@ function toggleActFilters() {
         <div style="grid-column:1/-1;">
             <x-empty-state
                 icon="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                title="ไม่พบกิจกรรม"
+                title="{{ __('ไม่พบกิจกรรม') }}"
                 description="{{ __('act.not_found_desc') }}"
                 actionLabel="{{ __('act.view_all') }}"
                 actionUrl="{{ route('activities.index') }}"

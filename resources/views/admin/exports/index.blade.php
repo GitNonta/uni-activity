@@ -64,8 +64,8 @@ html[data-theme="dark"] .export-field-label:hover {
                         <label class="form-label">{{ __('ภาคเรียน') }}</label>
                         <select name="program" class="form-control">
                             <option value="">{{ __('ทั้งหมด') }}</option>
-                            <option value="ปกติ">{{ __('ปกติ (จ-ศ)') }}</option>
-                            <option value="กศ.บป.">{{ __('กศ.บป. (ส-อ)') }}</option>
+                            <option value="{{ __('ปกติ') }}">{{ __('ปกติ (จ-ศ)') }}</option>
+                            <option value="{{ __('กศ.บป.') }}">{{ __('กศ.บป. (ส-อ)') }}</option>
                         </select>
                     </div>
                     <div style="min-width:120px;">
@@ -241,7 +241,7 @@ document.getElementById('students-export-form').addEventListener('submit', funct
     const checked = document.querySelectorAll('.field-checkbox:checked').length;
     if (checked === 0) {
         e.preventDefault();
-        alert('กรุณาเลือก field อย่างน้อย 1 field');
+        alert('{{ __('กรุณาเลือก field อย่างน้อย 1 field') }}');
     }
 });
 </script>

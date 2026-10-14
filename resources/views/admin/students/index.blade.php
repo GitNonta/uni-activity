@@ -151,7 +151,7 @@
                             @endif
                             @if($student->program)
                             <span style="font-size:.7rem;border-radius:4px;padding:1px 6px;line-height:1.5;
-                                {{ $student->program === 'กศ.บป.' ? 'background:#fee2e2;color:#991b1b;border:1px solid #fecaca;' : 'background:#ffedd5;color:#9a3412;border:1px solid #fed7aa;' }}">
+                                {{ $student->program === __('กศ.บป.') ? 'background:#fee2e2;color:#991b1b;border:1px solid #fecaca;' : 'background:#ffedd5;color:#9a3412;border:1px solid #fed7aa;' }}">
                                 {{ $student->program }}
                             </span>
                             @endif

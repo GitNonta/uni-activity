@@ -59,8 +59,8 @@
                         <label for="program" class="form-label">{{ __('ภาคเรียน') }}</label>
                         <select id="program" name="program" class="form-control" required>
                             <option value="">{{ __('เลือกภาคเรียน') }}</option>
-                            <option value="ปกติ" {{ old('program') == 'ปกติ' ? 'selected' : '' }}>{{ __('ปกติ (จันทร์-ศุกร์)') }}</option>
-                            <option value="กศ.บป." {{ old('program') == 'กศ.บป.' ? 'selected' : '' }}>{{ __('กศ.บป. (เสาร์-อาทิตย์)') }}</option>
+                            <option value="{{ __('ปกติ') }}" {{ old('program') == __('ปกติ') ? 'selected' : '' }}>{{ __('ปกติ (จันทร์-ศุกร์)') }}</option>
+                            <option value="{{ __('กศ.บป.') }}" {{ old('program') == __('กศ.บป.') ? 'selected' : '' }}>{{ __('กศ.บป. (เสาร์-อาทิตย์)') }}</option>
                         </select>
                         @error('program')<p class="form-error">{{ $message }}</p>@enderror
                     </div>

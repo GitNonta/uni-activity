@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(function() {
                 searchBtn.innerHTML = '<svg class="icon-sm" style="display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg> ค้นหา';
                 searchBtn.disabled = false;
-                alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์ค้นหาแผนที่');
+                alert('{{ __('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์ค้นหาแผนที่') }}');
             });
     }
 

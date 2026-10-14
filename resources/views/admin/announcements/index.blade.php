@@ -38,24 +38,24 @@
             <tbody>
                 @forelse($announcements as $item)
                 <tr>
-                    <td data-label="หัวข้อ">
+                    <td data-label="{{ __('หัวข้อ') }}">
                         <span class="font-semi text-sm" style="display:block;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ $item->title }}">{{ Str::limit($item->title, 40, '...') }}</span>
                         <div class="text-xs text-muted">{{ $item->created_at->format('d/m/Y H:i') }}</div>
                     </td>
-                    <td data-label="กลุ่มเป้าหมาย">
+                    <td data-label="{{ __('กลุ่มเป้าหมาย') }}">
                         @if($item->target_faculty)
                             <span class="badge badge-orange">{{ $item->target_faculty }}</span>
                         @else
                             <span class="badge badge-orange">{{ __('ทุกคน') }}</span>
                         @endif
                     </td>
-                    <td data-label="ประเภท">
+                    <td data-label="{{ __('ประเภท') }}">
                         <span class="badge badge-{{ $item->type === 'danger' ? 'red' : ($item->type === 'warning' ? 'yellow' : ($item->type === 'success' ? 'green' : 'gray')) }}">
                             {{ ucfirst($item->type) }}
                         </span>
                     </td>
-                    <td data-label="ผู้สร้าง" class="text-xs text-muted">{{ $item->creator->full_name ?? '-' }}</td>
-                    <td data-label="สถานะ" class="text-center">
+                    <td data-label="{{ __('ผู้สร้าง') }}" class="text-xs text-muted">{{ $item->creator->full_name ?? '-' }}</td>
+                    <td data-label="{{ __('สถานะ') }}" class="text-center">
                         @if($item->published_at?->isFuture())
                             <div class="text-xs text-muted" style="margin-bottom:.35rem;">ตั้งเวลา {{ $item->published_at->format('d/m/Y H:i') }}</div>
                         @elseif($item->published_at)
@@ -64,11 +64,11 @@
                         <form method="POST" action="{{ route('admin.announcements.toggle-active', $item->id) }}" style="margin:0;">
                             @csrf @method('PATCH')
                             <button type="submit" class="badge {{ $item->is_active ? 'badge-green' : 'badge-gray' }}" style="cursor:pointer;border:none;">
-                                {{ $item->is_active ? 'เปิดใช้งาน' : 'ปิดใช้งาน' }}
+                                {{ $item->is_active ? __('เปิดใช้งาน') : __('ปิดใช้งาน') }}
                             </button>
                         </form>
                     </td>
-                    <td data-label="จัดการ" class="text-right">
+                    <td data-label="{{ __('จัดการ') }}" class="text-right">
                         <div class="flex justify-end gap-2">
                             <a href="{{ route('admin.announcements.edit', $item->id) }}" class="btn btn-outline btn-sm">{{ __('แก้ไข') }}</a>
                             <form method="POST" action="{{ route('admin.announcements.destroy', $item->id) }}" onsubmit="return confirm('ยืนยันลบประกาศนี้?')" style="margin:0;">

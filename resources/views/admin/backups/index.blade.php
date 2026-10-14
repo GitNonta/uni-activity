@@ -79,7 +79,7 @@
         <x-empty-state
             icon="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
             title="{{ __('ยังไม่มีไฟล์สำรองข้อมูล') }}"
-            description="คลิก + สำรองข้อมูลทันที เพื่อสร้างไฟล์สำรองแรก หรือรอระบบสำรองอัตโนมัติตามกำหนดเวลา"
+            description="{{ __('คลิก + สำรองข้อมูลทันที เพื่อสร้างไฟล์สำรองแรก หรือรอระบบสำรองอัตโนมัติตามกำหนดเวลา') }}"
             size="md"
         />
     @else
@@ -106,8 +106,8 @@
                             else { $ageCls = 'badge-gray'; $ageTxt = round($diffH / 168) . 'สัปดาห์'; }
                         @endphp
                         <tr data-type="{{ $b['type'] }}">
-                            <td data-label="ไฟล์" style="font-family:monospace; font-size:0.8rem; font-weight:600;">{{ $b['filename'] }}</td>
-                            <td data-label="ประเภท" class="text-center">
+                            <td data-label="{{ __('ไฟล์') }}" style="font-family:monospace; font-size:0.8rem; font-weight:600;">{{ $b['filename'] }}</td>
+                            <td data-label="{{ __('ประเภท') }}" class="text-center">
                                 @if($b['type'] === 'full')
                                     <span class="badge badge-orange">FULL</span>
                                 @elseif($b['type'] === 'db')
@@ -118,13 +118,13 @@
                                     <span class="badge badge-gray">FILES</span>
                                 @endif
                             </td>
-                            <td data-label="ขนาด" class="text-center">{{ $b['formatted_size'] }}</td>
-                            <td data-label="วันที่" class="text-center text-muted" style="font-size:0.8rem;">{{ $b['created_at'] }}</td>
-                            <td data-label="อายุ" class="text-center"><span class="badge {{ $ageCls }}">{{ $ageTxt }}</span></td>
+                            <td data-label="{{ __('ขนาด') }}" class="text-center">{{ $b['formatted_size'] }}</td>
+                            <td data-label="{{ __('วันที่') }}" class="text-center text-muted" style="font-size:0.8rem;">{{ $b['created_at'] }}</td>
+                            <td data-label="{{ __('อายุ') }}" class="text-center"><span class="badge {{ $ageCls }}">{{ $ageTxt }}</span></td>
                             <td data-label="Checksum">
                                 <button onclick="copyHash('{{ $b['sha256'] }}', this)" class="copy-btn" title="Click to copy">{{ substr((string)$b['sha256'], 0, 12 ) }}…</button>
                             </td>
-                            <td data-label="จัดการ" class="text-right">
+                            <td data-label="{{ __('จัดการ') }}" class="text-right">
                                 <div style="display:flex; justify-content:flex-end; gap:6px; align-items:center;">
                                     <a href="{{ route('admin.backups.download', $b['filename']) }}"
                                        class="btn btn-outline btn-sm backup-download-btn"

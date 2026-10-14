@@ -385,7 +385,7 @@ html[data-theme="dark"] .fc-list-event-time {
                     {{ number_format($stats['conflicts_count']) }}
                 </div>
                 <div style="font-size:0.72rem; color:{{ $stats['conflicts_count'] > 0 ? '#b91c1c' : '#16a34a' }}; margin-top:2px;">
-                    {{ $stats['conflicts_count'] > 0 ? 'คลิกดูรายการที่ทับซ้อน' : 'ไม่มีกิจกรรมชนกัน ปกติดี' }}
+                    {{ $stats['conflicts_count'] > 0 ? __('คลิกดูรายการที่ทับซ้อน') : __('ไม่มีกิจกรรมชนกัน ปกติดี') }}
                 </div>
             </div>
         </div>

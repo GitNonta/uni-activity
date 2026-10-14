@@ -106,7 +106,7 @@ label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
                         <span>•</span>
                         <span>{{ __('เพศ:') }} <strong style="color: #cbd5e1;">{{ $user->gender_label }}</strong></span>
                         <span>•</span>
-                        <span>{{ __('สังกัด:') }} <strong style="color: #cbd5e1;">{{ $user->organization ?: ($user->position ?: 'หน่วยงานส่วนกลาง') }}</strong></span>
+                        <span>{{ __('สังกัด:') }} <strong style="color: #cbd5e1;">{{ $user->organization ?: ($user->position ?: __('หน่วยงานส่วนกลาง')) }}</strong></span>
                     </div>
                 </div>
             </div>
@@ -242,17 +242,17 @@ label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
 
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.8rem; background: #fafbfc; border-radius: 8px; border: 1px solid #f1f5f9;">
                         <span style="font-size: 0.8rem; color: #64748b;">{{ __('เบอร์โทรศัพท์') }}</span>
-                        <strong style="color: #0f172a; font-size: 0.875rem;">{{ $user->phone ?: 'ไม่ได้ระบุ' }}</strong>
+                        <strong style="color: #0f172a; font-size: 0.875rem;">{{ $user->phone ?: __('ไม่ได้ระบุ') }}</strong>
                     </div>
 
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.8rem; background: #fafbfc; border-radius: 8px; border: 1px solid #f1f5f9;">
                         <span style="font-size: 0.8rem; color: #64748b;">{{ __('ตำแหน่งงาน') }}</span>
-                        <strong style="color: #0f172a; font-size: 0.875rem;">{{ $user->position ?: 'ไม่ได้ระบุตำแหน่ง' }}</strong>
+                        <strong style="color: #0f172a; font-size: 0.875rem;">{{ $user->position ?: __('ไม่ได้ระบุตำแหน่ง') }}</strong>
                     </div>
 
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.8rem; background: #fafbfc; border-radius: 8px; border: 1px solid #f1f5f9;">
                         <span style="font-size: 0.8rem; color: #64748b;">{{ __('หน่วยงาน / สังกัด') }}</span>
-                        <strong style="color: #0f172a; font-size: 0.875rem;">{{ $user->organization ?: 'หน่วยงานส่วนกลาง' }}</strong>
+                        <strong style="color: #0f172a; font-size: 0.875rem;">{{ $user->organization ?: __('หน่วยงานส่วนกลาง') }}</strong>
                     </div>
 
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.8rem; background: #fafbfc; border-radius: 8px; border: 1px solid #f1f5f9;">
@@ -345,7 +345,7 @@ label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
                                     <div style="display: flex; align-items: center; gap: 0.65rem; margin-top: 0.2rem; font-size: 0.75rem; color: #64748b;">
                                         <span>{{ $activity->activity_date ? \Carbon\Carbon::parse($activity->activity_date)->translatedFormat('d M Y') : '—' }}</span>
                                         <span>•</span>
-                                        <span>{{ $activity->location ?: 'สถานที่ระบุในกิจกรรม' }}</span>
+                                        <span>{{ $activity->location ?: __('สถานที่ระบุในกิจกรรม') }}</span>
                                     </div>
                                 </div>
                                 <span style="background: #e0e7ff; color: #4338ca; font-size: 0.725rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 9999px;">

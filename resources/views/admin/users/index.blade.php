@@ -78,40 +78,40 @@
             <tbody>
                 @forelse($users as $user)
                 <tr>
-                    <td data-label="ชื่อ">
+                    <td data-label="{{ __('ชื่อ') }}">
                         <div class="font-semi text-sm" title="{{ $user->full_name }}">{{ Str::limit($user->full_name, 35, '...') }}</div>
                     </td>
-                    <td data-label="บทบาท">
+                    <td data-label="{{ __('บทบาท') }}">
                         @if($user->role === 'staff')
                             <span class="badge badge-orange">{{ __('เจ้าหน้าที่') }}</span>
                         @else
                             <span class="badge badge-orange">{{ __('นักศึกษา') }}</span>
                         @endif
                     </td>
-                    <td data-label="อีเมล / รหัส">
+                    <td data-label="{{ __('อีเมล / รหัส') }}">
                         <div class="text-sm">{{ $user->email }}</div>
                         @if($user->student_id)
                             <div class="text-xs text-muted">{{ $user->student_id }}</div>
                         @endif
                     </td>
-                    <td data-label="คณะ / สาขา">
+                    <td data-label="{{ __('คณะ / สาขา') }}">
                         <div class="text-sm">{{ $user->faculty ?? '-' }}</div>
                         <div class="text-xs text-muted line-clamp-1">{{ $user->department ?? '' }} @if($user->program) ({{ $user->program }}) @endif</div>
                     </td>
-                    <td data-label="สถานะ" class="text-center">
+                    <td data-label="{{ __('สถานะ') }}" class="text-center">
                         @if($user->is_active)
                             <span class="badge badge-green">{{ __('เปิด') }}</span>
                         @else
                             <span class="badge badge-red">{{ __('ปิด') }}</span>
                         @endif
                     </td>
-                    <td data-label="จัดการ" class="text-right">
+                    <td data-label="{{ __('จัดการ') }}" class="text-right">
                         <div class="flex justify-end gap-2">
                             <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-outline btn-sm">{{ __('แก้ไข') }}</a>
                             <form method="POST" action="{{ route('admin.users.toggle-active', $user->id) }}" style="margin:0;">
                                 @csrf @method('PATCH')
                                 <button type="submit" class="btn btn-sm {{ $user->is_active ? 'btn-outline' : 'btn-primary' }}" style="font-size:.75rem;">
-                                    {{ $user->is_active ? 'ปิด' : 'เปิด' }}
+                                    {{ $user->is_active ? __('ปิด') : __('เปิด') }}
                                 </button>
                             </form>
                             @if($user->id !== auth()->id())

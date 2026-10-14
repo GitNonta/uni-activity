@@ -284,7 +284,7 @@ html.dark .approval-row:hover {
             {{-- Type Badge --}}
             <span style="flex-shrink:0; font-size:.7rem; font-weight:600; padding:3px 8px; border-radius:999px;
                 {{ $item['type'] === 'registration' ? 'background:#ffedd5;color:#c2410c;' : 'background:#dcfce7;color:#15803d;' }}">
-                {{ $item['type'] === 'registration' ? 'ลงทะเบียน' : 'เช็คอิน' }}
+                {{ $item['type'] === 'registration' ? __('ลงทะเบียน') : __('เช็คอิน') }}
             </span>
             {{-- Info --}}
             <div style="flex:1; min-width:0;">
@@ -354,13 +354,13 @@ html.dark .approval-row:hover {
             <tbody>
                 @forelse($recentActivities as $act)
                 <tr>
-                    <td data-label="ชื่อกิจกรรม" class="font-semi" title="{{ $act->title }}">
+                    <td data-label="{{ __('ชื่อกิจกรรม') }}" class="font-semi" title="{{ $act->title }}">
                         <a href="{{ route('admin.activities.show', $act->id) }}" class="text-primary font-semi">{{ Str::limit($act->title, 42, '...') }}</a>
-                        <p class="text-xs text-muted" style="margin:2px 0 0 0;">{{ $act->category->name ?? 'ทั่วไป' }}</p>
+                        <p class="text-xs text-muted" style="margin:2px 0 0 0;">{{ $act->category->name ?? __('ทั่วไป') }}</p>
                     </td>
-                    <td data-label="วันที่" class="text-center text-muted">{{ $act->activity_date->format('d/m/Y') }}</td>
-                    <td data-label="สถานะ" class="text-center">@include('components.status-badge', ['status' => $act->computed_status])</td>
-                    <td data-label="ผู้เข้าร่วม" class="text-center">
+                    <td data-label="{{ __('วันที่') }}" class="text-center text-muted">{{ $act->activity_date->format('d/m/Y') }}</td>
+                    <td data-label="{{ __('สถานะ') }}" class="text-center">@include('components.status-badge', ['status' => $act->computed_status])</td>
+                    <td data-label="{{ __('ผู้เข้าร่วม') }}" class="text-center">
                         @php
                             $regCount = $act->registrations()->where('status','approved')->count();
                             $attCount = $act->attendances()->where('status','approved')->count();
@@ -372,7 +372,7 @@ html.dark .approval-row:hover {
                             </span>
                         @endif
                     </td>
-                    <td data-label="จัดการ" class="text-right">
+                    <td data-label="{{ __('จัดการ') }}" class="text-right">
                         <div class="flex justify-end gap-2" style="justify-content:flex-end;">
                             <a href="{{ route('admin.activities.show', $act->id) }}" class="btn btn-outline btn-sm">{{ __('ดู') }}</a>
                             <a href="{{ route('admin.activities.edit', $act->id) }}" class="btn btn-outline btn-sm">{{ __('แก้ไข') }}</a>
@@ -422,21 +422,21 @@ html.dark .approval-row:hover {
                     <tbody>
                         @forelse($recentJobs as $job)
                         <tr>
-                            <td data-label="หัวข้องาน">
+                            <td data-label="{{ __('หัวข้องาน') }}">
                                 <a href="{{ route('admin.jobs.show', $job->id) }}" class="text-primary font-semi">{{ Str::limit($job->title, 28) }}</a>
                             </td>
-                            <td data-label="ตำแหน่ง" class="text-xs text-muted">{{ $job->position }}</td>
-                            <td data-label="สถานะ" class="text-center">
+                            <td data-label="{{ __('ตำแหน่ง') }}" class="text-xs text-muted">{{ $job->position }}</td>
+                            <td data-label="{{ __('สถานะ') }}" class="text-center">
                                 @if($job->status === 'open')
                                     <span class="badge badge-green">{{ __('เปิด') }}</span>
                                 @else
                                     <span class="badge badge-gray">{{ __('ปิด') }}</span>
                                 @endif
                             </td>
-                            <td data-label="ผู้สมัคร" class="text-center">
+                            <td data-label="{{ __('ผู้สมัคร') }}" class="text-center">
                                 <span class="badge badge-orange">{{ $job->applications_count }} คน</span>
                             </td>
-                            <td data-label="จัดการ" class="text-right">
+                            <td data-label="{{ __('จัดการ') }}" class="text-right">
                                 <a href="{{ route('admin.jobs.show', $job->id) }}" class="btn btn-outline btn-sm">{{ __('ดู') }}</a>
                             </td>
                         </tr>
@@ -472,15 +472,15 @@ html.dark .approval-row:hover {
                     <tbody>
                         @forelse($recentAnnouncements as $item)
                         <tr>
-                            <td data-label="หัวข้อ">
+                            <td data-label="{{ __('หัวข้อ') }}">
                                 <div class="font-semi text-sm truncate" style="max-width:200px;" title="{{ $item->title }}">{{ Str::limit($item->title, 26, '...') }}</div>
                                 <div class="text-xs text-muted">{{ $item->created_at->format('d/m/Y') }}</div>
                             </td>
-                            <td data-label="กลุ่มเป้าหมาย"><span class="badge badge-orange">{{ $item->target_faculty ?? 'ทุกคน' }}</span></td>
-                            <td data-label="สถานะ" class="text-center">
-                                <span class="badge {{ $item->is_active ? 'badge-green' : 'badge-gray' }}">{{ $item->is_active ? 'เปิด' : 'ปิด' }}</span>
+                            <td data-label="{{ __('กลุ่มเป้าหมาย') }}"><span class="badge badge-orange">{{ $item->target_faculty ?? __('ทุกคน') }}</span></td>
+                            <td data-label="{{ __('สถานะ') }}" class="text-center">
+                                <span class="badge {{ $item->is_active ? 'badge-green' : 'badge-gray' }}">{{ $item->is_active ? __('เปิด') : __('ปิด') }}</span>
                             </td>
-                            <td data-label="จัดการ" class="text-right">
+                            <td data-label="{{ __('จัดการ') }}" class="text-right">
                                 <a href="{{ route('admin.announcements.edit', $item->id) }}" class="btn btn-outline btn-sm">{{ __('แก้ไข') }}</a>
                             </td>
                         </tr>
@@ -687,12 +687,12 @@ async function quickAction(action, type, id, btn) {
                 setTimeout(() => location.reload(), 600);
             }
         } else {
-            showToast('เกิดข้อผิดพลาด', false);
+            showToast('{{ __('เกิดข้อผิดพลาด') }}', false);
             if (row) row.style.opacity = '1';
             btn.disabled = false;
         }
     } catch (e) {
-        showToast('ไม่สามารถเชื่อมต่อได้', false);
+        showToast('{{ __('ไม่สามารถเชื่อมต่อได้') }}', false);
         if (row) row.style.opacity = '1';
         btn.disabled = false;
     }

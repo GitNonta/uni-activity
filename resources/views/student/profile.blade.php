@@ -416,7 +416,7 @@ html.dark .line-unlink-btn:hover {
                     @endif
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px; margin: 0 0 0.35rem 0;">
-                    <p style="color: #64748b; font-size: 0.92rem; font-weight: 600; margin: 0;">{{ $user->english_name ?? '(กำลังประมวลผลชื่อภาษาอังกฤษ...)' }}</p>
+                    <p style="color: #64748b; font-size: 0.92rem; font-weight: 600; margin: 0;">{{ $user->english_name ?? __('(กำลังประมวลผลชื่อภาษาอังกฤษ...)') }}</p>
                     <button onclick="editEnglishName('{{ addslashes($user->english_name) }}')" style="background: none; border: none; color: #ea580c; cursor: pointer; padding: 0; display: flex; align-items: center;" title="{{ __('แก้ไขชื่อภาษาอังกฤษ') }}">
                         <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                     </button>
@@ -424,7 +424,7 @@ html.dark .line-unlink-btn:hover {
                 <p style="color: #64748b; font-size: 0.88rem; margin: 0 0 0.4rem 0; font-weight: 500;">{{ $user->student_id }}</p>
                 <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
                     <span style="background: #ffedd5; color: #c2410c; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600;">
-                        {{ $user->program ?? 'นักศึกษา' }}
+                        {{ $user->program ?? __('นักศึกษา') }}
                     </span>
                     @if($user->profile_photo)
                     <form method="POST" action="{{ route('profile.photo.destroy') }}" style="display:inline;">
@@ -582,8 +582,8 @@ html.dark .line-unlink-btn:hover {
             <x-empty-state
                 icon="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                 title="{{ __('ยังไม่มีประวัติการเข้าร่วมกิจกรรม') }}"
-                description="เริ่มลงทะเบียนและเข้าร่วมกิจกรรมเพื่อสะสมชั่วโมงกิจกรรม"
-                actionLabel="ดูกิจกรรมทั้งหมด"
+                description="{{ __('เริ่มลงทะเบียนและเข้าร่วมกิจกรรมเพื่อสะสมชั่วโมงกิจกรรม') }}"
+                actionLabel="{{ __('ดูกิจกรรมทั้งหมด') }}"
                 actionUrl="{{ route('activities.index') }}"
                 size="sm"
             />

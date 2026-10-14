@@ -70,7 +70,7 @@
                     <div class="flex items-center justify-between mb-1">
                         <span class="font-bold text-sm text-dark">{{ $uni['name'] }}</span>
                         <span class="badge {{ $uni['passed'] ? 'badge-green' : 'badge-red' }}" style="font-size:0.75rem;">
-                            {{ $uni['passed'] ? 'ครบเกณฑ์' : 'ขาด ' . number_format($uni['deficit'], 1) . ' ชม.' }}
+                            {{ $uni['passed'] ? __('ครบเกณฑ์') : 'ขาด ' . number_format($uni['deficit'], 1) . ' ชม.' }}
                         </span>
                     </div>
                     <div style="display:flex;align-items:center;gap:0.75rem;">
@@ -90,7 +90,7 @@
                     <div class="flex items-center justify-between mb-1">
                         <span class="font-bold text-sm text-dark">{{ $fac['name'] }}</span>
                         <span class="badge {{ $fac['passed'] ? 'badge-green' : 'badge-red' }}" style="font-size:0.75rem;">
-                            {{ $fac['passed'] ? 'ครบเกณฑ์' : 'ขาด ' . number_format($fac['deficit'], 1) . ' ชม.' }}
+                            {{ $fac['passed'] ? __('ครบเกณฑ์') : 'ขาด ' . number_format($fac['deficit'], 1) . ' ชม.' }}
                         </span>
                     </div>
                     <div style="display:flex;align-items:center;gap:0.75rem;">
@@ -109,7 +109,7 @@
                     <div class="flex items-center justify-between mb-1">
                         <span class="font-bold text-sm text-dark">{{ $cat['name'] }}</span>
                         <span class="badge {{ $cat['passed'] ? 'badge-green' : 'badge-red' }}" style="font-size:0.75rem;">
-                            {{ $cat['passed'] ? 'ครบเกณฑ์' : 'ขาด ' . number_format($cat['deficit'], 1) . ' ชม.' }}
+                            {{ $cat['passed'] ? __('ครบเกณฑ์') : 'ขาด ' . number_format($cat['deficit'], 1) . ' ชม.' }}
                         </span>
                     </div>
                     <div style="display:flex;align-items:center;gap:0.75rem;">

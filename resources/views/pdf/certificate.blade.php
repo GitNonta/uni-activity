@@ -145,7 +145,7 @@
             <div class="student-name">{{ $user->full_name }}</div>
 
             <div class="student-meta">{{ __('รหัสนักศึกษา:') }} <strong>{{ $user->student_id }}</strong> {{ __('| 
-                คณะ:') }} <strong>{{ $user->faculty ?? 'มหาวิทยาลัยราชภัฏภูเก็ต' }}</strong> {{ __('| 
+                คณะ:') }} <strong>{{ $user->faculty ?? __('มหาวิทยาลัยราชภัฏภูเก็ต') }}</strong> {{ __('| 
                 สาขาวิชา:') }} <strong>{{ $user->department ?? '-' }}</strong>
             </div>
 

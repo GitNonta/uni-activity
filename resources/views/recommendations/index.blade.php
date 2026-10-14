@@ -18,7 +18,7 @@
             <div>
                 <div class="font-semibold">{{ $activity->title }}</div>
                 <div class="text-sm text-gray-600 mt-1">
-                    {{ $activity->category->name ?? 'ไม่ระบุหมวดหมู่' }}
+                    {{ $activity->category->name ?? __('ไม่ระบุหมวดหมู่') }}
                     · {{ $activity->activity_date?->format('d M Y') ?? '' }}
                     · {{ $activity->creator->name ?? '' }}
                 </div>

@@ -406,7 +406,7 @@
                             @endif
                         </td>
                         <td style="padding:0.75rem;" class="text-xs text-muted">
-                            {{ $b->sender->full_name ?? $b->sender->name ?? 'แอดมิน' }}
+                            {{ $b->sender->full_name ?? $b->sender->name ?? __('แอดมิน') }}
                         </td>
                     </tr>
                     @endforeach

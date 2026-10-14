@@ -2727,7 +2727,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
             }).catch(() => {});
         } else {
             navigator.clipboard.writeText(window.location.href);
-            window.alert('คัดลอกลิงก์สถานที่เรียบร้อยแล้ว!');
+            window.alert('{{ __('คัดลอกลิงก์สถานที่เรียบร้อยแล้ว!') }}');
         }
     };
 
@@ -3055,7 +3055,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
             try {
                 await requestCurrentLocation();
             } catch (error) {
-                window.alert('กรุณาอนุญาตการเข้าถึงตำแหน่ง เพื่อเริ่มนำทางจากตำแหน่งปัจจุบัน');
+                window.alert('{{ __('กรุณาอนุญาตการเข้าถึงตำแหน่ง เพื่อเริ่มนำทางจากตำแหน่งปัจจุบัน') }}');
                 return;
             }
         }
@@ -3183,7 +3183,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 });
             }
         } catch (e) {
-            window.alert('ไม่สามารถระบุตำแหน่งของคุณได้ กรุณาอนุญาตการเข้าถึง GPS บนอุปกรณ์');
+            window.alert('{{ __('ไม่สามารถระบุตำแหน่งของคุณได้ กรุณาอนุญาตการเข้าถึง GPS บนอุปกรณ์') }}');
         }
     };
 

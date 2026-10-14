@@ -7,8 +7,8 @@
         @if($dateFrom || $dateTo)
             <tr>
                 <th colspan="3">
-                    ช่วงวันที่: {{ $dateFrom ? $dateFrom->format('d/m/Y') : 'เริ่มต้น' }} 
-                    ถึง {{ $dateTo ? $dateTo->format('d/m/Y') : 'ปัจจุบัน' }}
+                    ช่วงวันที่: {{ $dateFrom ? $dateFrom->format('d/m/Y') : __('เริ่มต้น') }} 
+                    ถึง {{ $dateTo ? $dateTo->format('d/m/Y') : __('ปัจจุบัน') }}
                 </th>
             </tr>
         @endif

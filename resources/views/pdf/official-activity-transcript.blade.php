@@ -268,7 +268,7 @@
                     </tr>
                     <tr>
                         <td class="info-label">{{ __('เกณฑ์หลักสูตร:') }}</td>
-                        <td class="info-val" colspan="3">{{ $audit['criteria']->name ?? 'เกณฑ์มาตรฐานมหาวิทยาลัย' }}</td>
+                        <td class="info-val" colspan="3">{{ $audit['criteria']->name ?? __('เกณฑ์มาตรฐานมหาวิทยาลัย') }}</td>
                     </tr>
                 </table>
             </td>
@@ -372,8 +372,8 @@
                 <td style="text-align: center;">{{ $att->checked_in_at ? $att->checked_in_at->format('d/m/Y') : ($att->activity?->activity_date ? $att->activity->activity_date->format('d/m/Y') : '-') }}</td>
                 <td>{{ $att->activity?->title ?? '-' }}</td>
                 <td style="font-size: 8pt;">
-                    {{ $att->activity?->category?->name ?? 'ทั่วไป' }}
-                    <span style="color: #64748b;">({{ $att->activity?->scope === 'university' ? 'ระดับมหาวิทยาลัย' : 'ระดับคณะ' }})</span>
+                    {{ $att->activity?->category?->name ?? __('ทั่วไป') }}
+                    <span style="color: #64748b;">({{ $att->activity?->scope === 'university' ? __('ระดับมหาวิทยาลัย') : __('ระดับคณะ') }})</span>
                 </td>
                 <td style="text-align: center; font-weight: bold;">{{ number_format((float) ($att->activity?->activity_hours ?? 0), 1) }} ชม.</td>
             </tr>

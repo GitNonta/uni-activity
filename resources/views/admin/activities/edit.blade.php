@@ -360,7 +360,7 @@
                     <input type="checkbox" name="require_attendance_approval" value="1" {{ $activity->require_attendance_approval ? 'checked' : '' }} style="margin-top:0.25rem;">
                     <div>
                         <div class="rule-boxless-label">{{ __('ต้องตรวจสอบการเช็คอิน (Manual Staff Approval)') }}</div>
-                        <p class="text-xs text-muted" style="margin:0.15rem 0 0 0;">{{ __('เมื่อสแกนแล้ว นักศึกษาจะมีสถานะ "รอตรวจสอบ" จนกว่าเจ้าหน้าที่จะกดอนุมัติ') }}</p>
+                        <p class="text-xs text-muted" style="margin:0.15rem 0 0 0;">{{ __('เมื่อสแกนแล้ว นักศึกษาจะมีสถานะ __('รอตรวจสอบ') จนกว่าเจ้าหน้าที่จะกดอนุมัติ') }}</p>
                     </div>
                 </label>
             </div>
@@ -638,7 +638,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function goToMyLocation() {
-    if (!navigator.geolocation) { alert('เบราว์เซอร์ไม่รองรับ GPS'); return; }
+    if (!navigator.geolocation) { alert('{{ __('เบราว์เซอร์ไม่รองรับ GPS') }}'); return; }
     navigator.geolocation.getCurrentPosition(
         function(pos) { placePin(pos.coords.latitude, pos.coords.longitude); map.setView([pos.coords.latitude, pos.coords.longitude], 17); },
         function(err) { alert('ไม่สามารถดึงพิกัดได้: ' + err.message); },

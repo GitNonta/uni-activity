@@ -115,7 +115,7 @@
                             <span class="toggle-slider"></span>
                         </label>
                         <span class="text-sm font-semi {{ $activity->allow_early_checkin ? 'text-success' : 'text-muted' }}">
-                            {{ $activity->allow_early_checkin ? 'เปิดอยู่' : 'ปิดอยู่' }}
+                            {{ $activity->allow_early_checkin ? __('เปิดอยู่') : __('ปิดอยู่') }}
                         </span>
                     </label>
                 </form>

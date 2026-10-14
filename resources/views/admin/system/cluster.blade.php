@@ -290,7 +290,7 @@
                 </div>
                 <div>
                     <h3 id="clusterBannerTitle" style="margin:0; font-size:0.95rem; font-weight:700; color:{{ $allHealthy ? '#065f46' : '#92400e' }};">
-                        {{ $allHealthy ? 'ระบบทั้งหมดในคลัสเตอร์ทำงานสมบูรณ์ (All Systems Operational)' : 'พบระบบบางส่วนอยู่ในสถานะเฝ้าระวัง (Subsystem Warning)' }}
+                        {{ $allHealthy ? __('ระบบทั้งหมดในคลัสเตอร์ทำงานสมบูรณ์ (All Systems Operational)') : __('พบระบบบางส่วนอยู่ในสถานะเฝ้าระวัง (Subsystem Warning)') }}
                     </h3>
                     <p id="clusterBannerDesc" style="margin:0.15rem 0 0 0; font-size:0.8rem; color:{{ $allHealthy ? '#047857' : '#b45309' }};">{{ __('ทุกโหนดและไมโครเซอร์วิสส่งสัญญาณ Heartbeat ต่อเนื่อง · อัตราความพร้อมใช้งาน SLA 99.98%') }}                    </p>
                 </div>
@@ -323,7 +323,7 @@
             </div>
             <div style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.4rem; display:flex; justify-content:space-between; line-height:1.5;">
                 <span>{{ __('สภาพแวดล้อม (Env):') }} <strong style="color:var(--text-primary);">{{ strtoupper($status['app']['env']) }}</strong></span>
-                <span>Debug: <strong style="color:{{ $status['app']['debug'] ? '#b91c1c' : '#166534' }}">{{ $status['app']['debug'] ? 'เปิด (เตือน)' : 'ปิด (ปลอดภัย)' }}</strong></span>
+                <span>Debug: <strong style="color:{{ $status['app']['debug'] ? '#b91c1c' : '#166534' }}">{{ $status['app']['debug'] ? __('เปิด (เตือน)') : __('ปิด (ปลอดภัย)') }}</strong></span>
             </div>
             <div class="latency-bar-track">
                 <div class="latency-bar-fill" style="width: 100%; background: #6366f1;"></div>
@@ -370,7 +370,7 @@
             </div>
             <div style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.4rem; display:flex; justify-content:space-between;">
                 <span>Engine: <strong style="color:var(--text-primary);">Redis {{ $status['redis']['port'] ?? 6379 }}</strong></span>
-                <span>Auth: <strong style="color:{{ !empty($status['redis']['auth_enabled']) ? '#10b981' : '#f59e0b' }}">{{ !empty($status['redis']['auth_enabled']) ? 'เปิดใช้งาน' : 'ไม่มี' }}</strong></span>
+                <span>Auth: <strong style="color:{{ !empty($status['redis']['auth_enabled']) ? '#10b981' : '#f59e0b' }}">{{ !empty($status['redis']['auth_enabled']) ? __('เปิดใช้งาน') : __('ไม่มี') }}</strong></span>
             </div>
             <div class="latency-bar-track">
                 @php
@@ -500,7 +500,7 @@
                     <div>
                         <div style="color:var(--text-muted); font-size:0.7rem;">Circuit Breaker</div>
                         <strong style="color:{{ $node['circuit_breaker'] === 'CLOSED' ? '#10b981' : '#ef4444' }};">
-                            {{ $node['circuit_breaker'] === 'CLOSED' ? 'CLOSED (ปกติ)' : 'OPEN (ตัดวงจร)' }}
+                            {{ $node['circuit_breaker'] === 'CLOSED' ? __('CLOSED (ปกติ)') : __('OPEN (ตัดวงจร)') }}
                         </strong>
                     </div>
                     <div>

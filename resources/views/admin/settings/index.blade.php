@@ -213,7 +213,7 @@
                         <h3 class="font-semi" style="font-size:1rem; margin:0;">{{ __('สถานะการทำงานของระบบกฎอนุมัติอัตโนมัติ') }}</h3>
                     </div>
                     <span id="main-status-badge" style="font-size:0.8rem; font-weight:700; padding:3px 10px; border-radius:999px; {{ $settings['auto_approve_enabled'] ? 'background:#dcfce7; color:#15803d;' : 'background:#f1f5f9; color:#64748b;' }}">
-                        {{ $settings['auto_approve_enabled'] ? 'เปิดใช้งาน (Active)' : 'ปิดใช้งาน (Disabled)' }}
+                        {{ $settings['auto_approve_enabled'] ? __('เปิดใช้งาน (Active)') : __('ปิดใช้งาน (Disabled)') }}
                     </span>
                 </div>
                 <div class="card-body" style="padding:1.5rem;">
@@ -515,7 +515,7 @@
                 </div>
                 <div class="flex justify-between items-center text-sm" style="border-bottom: 1px solid #f8fafc; padding-bottom: 6px;">
                     <span class="text-muted text-xs">Debug Status</span>
-                    <span class="font-semi text-xs" style="color:{{ config('app.debug') ? '#d97706' : '#475569' }}; background:{{ config('app.debug') ? '#fffbeb' : '#f8fafc' }}; padding:2px 6px; border-radius:4px; line-height:1.5;">{{ config('app.debug') ? 'เปิด (True)' : 'ปิด (False)' }}</span>
+                    <span class="font-semi text-xs" style="color:{{ config('app.debug') ? '#d97706' : '#475569' }}; background:{{ config('app.debug') ? '#fffbeb' : '#f8fafc' }}; padding:2px 6px; border-radius:4px; line-height:1.5;">{{ config('app.debug') ? __('เปิด (True)') : __('ปิด (False)') }}</span>
                 </div>
                 <div class="flex justify-between items-center text-sm" style="border-bottom: 1px solid #f8fafc; padding-bottom: 6px;">
                     <span class="text-muted text-xs">Database Connection</span>

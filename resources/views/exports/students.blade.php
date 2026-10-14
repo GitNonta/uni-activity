@@ -25,7 +25,7 @@
                 <td>{{ $student->year }}</td>
                 <td>{{ $student->program }}</td>
                 <td>{{ $student->email }}</td>
-                <td>{{ $student->is_active ? 'ใช้งาน' : 'ระงับ' }}</td>
+                <td>{{ $student->is_active ? __('ใช้งาน') : __('ระงับ') }}</td>
                 <td>{{ number_format($student->totalHours(), 1) }}</td>
                 <td>{{ $student->attendances->count() }}</td>
                 <td>{{ $student->created_at->format('d/m/Y H:i') }}</td>

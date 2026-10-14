@@ -179,7 +179,7 @@
                     </td>
                     <td style="text-align:center;">
                         <span class="badge {{ $att->status === 'approved' ? 'badge-green' : ($att->status === 'pending' ? 'badge-yellow' : 'badge-red') }}" style="font-size:.75rem;">
-                            {{ $att->status === 'approved' ? 'สำเร็จ' : ($att->status === 'pending' ? 'รออนุมัติ' : 'ปฏิเสธ') }}
+                            {{ $att->status === 'approved' ? __('สำเร็จ') : ($att->status === 'pending' ? __('รออนุมัติ') : __('ปฏิเสธ')) }}
                         </span>
                     </td>
                     <td style="text-align:right;">

@@ -928,9 +928,9 @@ html.dark .sec-type-badge.badge-orange {
                         <div class="related-name">{{ $ru->full_name }}</div>
                         <div class="related-meta">
                             @if($ru->role === 'student' && $ru->student_id)
-                                {{ $ru->student_id }} · {{ $ru->faculty ?? 'นักศึกษา' }}
+                                {{ $ru->student_id }} · {{ $ru->faculty ?? __('นักศึกษา') }}
                             @else
-                                {{ $ru->email }} · {{ $ru->role === 'admin' ? 'ผู้ดูแลระบบ' : 'เจ้าหน้าที่' }}
+                                {{ $ru->email }} · {{ $ru->role === 'admin' ? __('ผู้ดูแลระบบ') : __('เจ้าหน้าที่') }}
                             @endif
                         </div>
                     </div>
@@ -1024,12 +1024,12 @@ async function markReviewed(id) {
         if (res.ok) {
             location.reload();
         } else {
-            alert('เกิดข้อผิดพลาด ไม่สามารถบันทึกสถานะได้');
+            alert('{{ __('เกิดข้อผิดพลาด ไม่สามารถบันทึกสถานะได้') }}');
             if (btnTop) { btnTop.disabled = false; btnTop.style.opacity = '1'; }
             if (btnBottom) { btnBottom.disabled = false; btnBottom.style.opacity = '1'; }
         }
     } catch (e) {
-        alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+        alert('{{ __('เกิดข้อผิดพลาดในการเชื่อมต่อ') }}');
         if (btnTop) { btnTop.disabled = false; btnTop.style.opacity = '1'; }
         if (btnBottom) { btnBottom.disabled = false; btnBottom.style.opacity = '1'; }
     }

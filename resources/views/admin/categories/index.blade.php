@@ -75,19 +75,19 @@
             <tbody>
                 @forelse($categories as $cat)
                 <tr>
-                    <td data-label="หมวดหมู่">
+                    <td data-label="{{ __('หมวดหมู่') }}">
                         <div class="flex items-center gap-2">
                             <div style="width:12px;height:12px;border-radius:50%;background:{{ $cat->color ?? '#3B82F6' }};flex-shrink:0;"></div>
                             <span class="font-semi" title="{{ $cat->name }}">{{ Str::limit($cat->name, 40, '...') }}</span>
                         </div>
                     </td>
-                    <td data-label="คำอธิบาย" class="text-sm text-muted line-clamp-1">{{ $cat->description ?? '-' }}</td>
-                    <td data-label="เกณฑ์ชั่วโมง" class="text-center">
+                    <td data-label="{{ __('คำอธิบาย') }}" class="text-sm text-muted line-clamp-1">{{ $cat->description ?? '-' }}</td>
+                    <td data-label="{{ __('เกณฑ์ชั่วโมง') }}" class="text-center">
                         <span class="font-bold" style="color:#1e40af;font-size:1.1rem;">{{ number_format((float)$cat->required_hours, 1) }}</span>
                         <span class="text-xs text-muted"> {{ __('ชม.') }}</span>
                     </td>
-                    <td data-label="จำนวนกิจกรรม" class="text-center text-sm">{{ $cat->activities_count }}</td>
-                    <td data-label="จัดการ" class="text-right">
+                    <td data-label="{{ __('จำนวนกิจกรรม') }}" class="text-center text-sm">{{ $cat->activities_count }}</td>
+                    <td data-label="{{ __('จัดการ') }}" class="text-right">
                         <div class="flex justify-end gap-2">
                             <button type="button" class="btn btn-outline btn-sm"
                                 onclick="openEditModal({{ $cat->id }}, '{{ addslashes($cat->name) }}', '{{ addslashes($cat->description ?? '') }}', {{ (float)$cat->required_hours }}, '{{ $cat->color ?? '#3B82F6' }}', {{ json_encode($cat->options ?? []) }})"

@@ -73,7 +73,7 @@
         {{-- Badges --}}
         <div class="flex items-center gap-2 mb-2" style="flex-wrap:wrap;">
             <span class="badge {{ $job->job_type === 'parttime' ? 'job-badge-parttime' : 'job-badge-general' }}" style="font-size:.8rem;">
-                {{ $job->job_type === 'parttime' ? 'Part-time' : 'งานทั่วไป' }}
+                {{ $job->job_type === 'parttime' ? 'Part-time' : __('งานทั่วไป') }}
             </span>
             @if($job->status === 'open')
                 <span class="badge badge-green flex items-center gap-1"><svg style="width:10px;height:10px;" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg> {{ __('เปิดรับสมัคร') }}</span>
@@ -94,7 +94,7 @@
 
         {{-- บล็อกผู้สร้างงาน สไตล์ YouTube --}}
         <div>
-            <x-creator-badge :creator="$job->creator" default-role="หน่วยงานผู้ลงประกาศงาน" />
+            <x-creator-badge :creator="$job->creator" default-role="{{ __('หน่วยงานผู้ลงประกาศงาน') }}" />
         </div>
 
         <hr class="divider">
@@ -176,7 +176,7 @@
                 </div>
                 <div style="min-width:0;flex:1;">
                     <span class="text-muted block" style="font-size:.75rem;">{{ __('เพศที่รับ') }}</span>
-                    <p class="font-semi" style="margin:0;word-break:break-word;">{{ $job->gender === 'male' ? 'ชาย' : ($job->gender === 'female' ? 'หญิง' : 'ไม่จำกัด') }}</p>
+                    <p class="font-semi" style="margin:0;word-break:break-word;">{{ $job->gender === 'male' ? __('ชาย') : ($job->gender === 'female' ? __('หญิง') : __('ไม่จำกัด')) }}</p>
                 </div>
             </div>
         </div>
@@ -302,7 +302,7 @@
         @forelse($comments as $comment)
         <div class="job-comment" style="border-bottom:1px solid #f1f5f9;padding:.75rem 0;">
             <div class="flex items-center gap-2 mb-1">
-                <span class="font-semi text-sm">{{ $comment->user->full_name ?? 'ผู้ใช้' }}</span>
+                <span class="font-semi text-sm">{{ $comment->user->full_name ?? __('ผู้ใช้') }}</span>
                 @if($comment->user->isStaffOrAdmin())
                     <span class="badge badge-orange" style="font-size:.6rem;">{{ __('ผู้ดูแล') }}</span>
                 @endif
@@ -320,7 +320,7 @@
             @foreach($comment->replies as $reply)
             <div style="margin-left:1.5rem;padding:.5rem 0;border-left:2px solid #e2e8f0;padding-left:.75rem;margin-top:.5rem;">
                 <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semi text-sm">{{ $reply->user->full_name ?? 'ผู้ใช้' }}</span>
+                    <span class="font-semi text-sm">{{ $reply->user->full_name ?? __('ผู้ใช้') }}</span>
                     @if($reply->user->isStaffOrAdmin())
                         <span class="badge badge-orange" style="font-size:.6rem;">{{ __('ผู้ดูแล') }}</span>
                     @endif

@@ -998,7 +998,7 @@ async function scanFrame() {
         if(Date.now()-frameStartedAt<15000)return;/* in-flight — heartbeat re-checks */
         isVerifying=false;/* hard-unlock a wedged request */
         beacon('pacemaker_rescue',{note:'request-wedged'});
-        showToast('ระบบกู้คืนการสแกนอัตโนมัติ','warning');
+        showToast('{{ __('ระบบกู้คืนการสแกนอัตโนมัติ') }}','warning');
     }
     if(stopScanning){beacon('loop_stopped',{note:'stopScanning'});return;}
     var video=document.getElementById('cameraPreview');
@@ -1116,7 +1116,7 @@ async function performPythonVerification(base64Image) {
         /* 503 — AI Server / tunnel unavailable: back off 60s to stop the
            retry storm. Without this the scan loop hammers the dead endpoint
            every 1s, flooding the console and wasting bandwidth. */
-        if(res.status===503){beacon('http_503',{});var bo=60;pythonThrottledUntil=Date.now()+bo*1000;console.warn('AI Server unavailable (503) — backing off '+bo+'s');setScore('—','#f87171');setStatusChip('error','AI Server ออฟไลน์ — รอ '+bo+' วินาทีแล้วลองใหม่');updateAccuracy(null);if(pythonFailCount===0)showToast('AI Server ไม่พร้อมให้บริการชั่วคราว — ระบบจะลองใหม่อัตโนมัติ','error');pythonFailCount++;return;}
+        if(res.status===503){beacon('http_503',{});var bo=60;pythonThrottledUntil=Date.now()+bo*1000;console.warn('AI Server unavailable (503) — backing off '+bo+'s');setScore('—','#f87171');setStatusChip('error','AI Server ออฟไลน์ — รอ '+bo+' วินาทีแล้วลองใหม่');updateAccuracy(null);if(pythonFailCount===0)showToast('{{ __('AI Server ไม่พร้อมให้บริการชั่วคราว — ระบบจะลองใหม่อัตโนมัติ') }}','error');pythonFailCount++;return;}
         if(!res.ok){beacon('http_error',{msg:'HTTP '+res.status});throw new Error('HTTP '+res.status);}
         beacon('response',{score:result.score_percentage||0,note:(result.success===false)?(result.status||'fail'):'ok'});
         if(result.success===false){
@@ -1175,7 +1175,7 @@ async function performPythonVerification(base64Image) {
         beacon('fetch_exception',{msg:String(e && e.message ? e.message : e).slice(0,200)});
         /* Visible failure — this path used to be silent and looked like a freeze */
         setStatusChip('error','เชื่อมต่อ AI Server ไม่สำเร็จ — กำลังลองใหม่...');
-        if(pythonFailCount===2)showToast('การเชื่อมต่อ AI Server ขัดข้อง — ระบบกำลังลองใหม่อัตโนมัติ','error');
+        if(pythonFailCount===2)showToast('{{ __('การเชื่อมต่อ AI Server ขัดข้อง — ระบบกำลังลองใหม่อัตโนมัติ') }}','error');
         /* No runtime switch to local JS mode: a silent switch made every scan
            "work once on the server, then vanish". The pacemaker loop retries
            python on the next frame instead. */

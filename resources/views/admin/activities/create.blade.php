@@ -252,7 +252,7 @@
             <div class="form-group">
                 <label class="checkbox-label">
                     <input type="checkbox" name="require_attendance_approval" value="1" {{ old('require_attendance_approval') ? 'checked' : '' }}> {{ __('ต้องตรวจสอบการเช็คอิน (Manual Approval)') }}                </label>
-                <p class="text-xs text-muted" style="margin-left: 1.5rem; margin-top: 0.15rem;">{{ __('หากติ๊กเลือก นักศึกษาที่สแกน QR จะมีสถานะ "รอตรวจสอบ" จนกว่าผู้จัดจะกดอนุมัติ') }}</p>
+                <p class="text-xs text-muted" style="margin-left: 1.5rem; margin-top: 0.15rem;">{{ __('หากติ๊กเลือก นักศึกษาที่สแกน QR จะมีสถานะ __('รอตรวจสอบ') จนกว่าผู้จัดจะกดอนุมัติ') }}</p>
                 </div>
             <div class="form-group" style="padding: 1rem; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc;">
                 <label class="checkbox-label" style="font-weight: bold; margin-bottom: 0.5rem;">
@@ -337,7 +337,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function goToMyLocation() {
-    if (!navigator.geolocation) { alert('เบราว์เซอร์ไม่รองรับ GPS'); return; }
+    if (!navigator.geolocation) { alert('{{ __('เบราว์เซอร์ไม่รองรับ GPS') }}'); return; }
     navigator.geolocation.getCurrentPosition(
         function(pos) { placePin(pos.coords.latitude, pos.coords.longitude); map.setView([pos.coords.latitude, pos.coords.longitude], 17); },
         function(err) { alert('ไม่สามารถดึงพิกัดได้: ' + err.message); },
