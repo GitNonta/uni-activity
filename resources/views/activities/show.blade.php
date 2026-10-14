@@ -66,7 +66,7 @@
                 <button type="submit"
                     id="bookmark-btn"
                     class="act-map-btn {{ $isBookmarked ? 'act-bookmark-active' : '' }}"
-                    style="text-decoration:none; width:42px; height:42px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; {{ $isBookmarked ? 'color:#2563eb; background:#eff6ff; border-color:#bfdbfe;' : '' }}"
+                    style="text-decoration:none; width:42px; height:42px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; {{ $isBookmarked ? 'color:#ea580c; background:#fff7ed; border-color:#fed7aa;' : '' }}"
                     title="{{ $isBookmarked ? __('บุ๊กมาร์กแล้ว') : __('เพิ่มบุ๊กมาร์ก') }}"
                     aria-label="{{ $isBookmarked ? __('บุ๊กมาร์กแล้ว') : __('เพิ่มบุ๊กมาร์ก') }}"
                     data-bookmarked="{{ $isBookmarked ? 1 : 0 }}">
