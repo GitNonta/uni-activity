@@ -1,6 +1,6 @@
 {{-- หน้าสรุปชั่วโมงกิจกรรม: ชั่วโมงรวม + แยกตามหมวดหมู่แบบไร้ Box/Card สะอาดตา --}}
 @extends('layouts.app')
-@section('title', 'สรุปกิจกรรม')
+@section('title', __('สรุปกิจกรรม'))
 
 @section('content')
 <style>
@@ -149,13 +149,13 @@ html.dark .cat-summary-hours {
 <div class="hero-card">
     <div class="flex justify-between items-center" style="margin-bottom:.5rem;">
         <div>
-            <p class="hero-label">ชั่วโมงกิจกรรมรวม</p>
+            <p class="hero-label">{{ __('ชั่วโมงกิจกรรมรวม') }}</p>
             <p class="hero-value">{{ number_format($totalHours, 1) }}</p>
-            <p class="hero-sub">จากทั้งหมด {{ $totalRequired }} ชั่วโมงที่กำหนด</p>
+            <p class="hero-sub">{{ __('จากทั้งหมด') }} {{ $totalRequired }} {{ __('ชั่วโมงที่กำหนด') }}</p>
         </div>
         <a href="{{ route('student.summary.pdf') }}" class="btn" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);gap:.375rem;">
             <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            ดาวน์โหลด PDF
+            {{ __('ดาวน์โหลด PDF') }}
         </a>
     </div>
 </div>
@@ -164,7 +164,7 @@ html.dark .cat-summary-hours {
 <div class="cat-summary-header">
     <h2 class="cat-summary-title">
         <svg width="20" height="20" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-        <span>ชั่วโมงแยกตามหมวดหมู่</span>
+        <span>{{ __('ชั่วโมงแยกตามหมวดหมู่') }}</span>
     </h2>
 </div>
 
@@ -188,25 +188,25 @@ html.dark .cat-summary-hours {
             @if($isComplete)
                 <span class="cat-summary-status is-pass">
                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                    ผ่านเกณฑ์ขั้นต่ำ
+                    {{ __('ผ่านเกณฑ์ขั้นต่ำ') }}
                 </span>
             @else
                 <span class="cat-summary-status">
-                    ต้องการอีก <strong style="color: #ef4444; font-weight: 600;">{{ number_format($cat['required'] - $cat['hours'], 1) }}</strong> ชม.
+                    {{ __('ต้องการอีก') }} <strong style="color: #ef4444; font-weight: 600;">{{ number_format($cat['required'] - $cat['hours'], 1) }}</strong> ชม.
                 </span>
             @endif
             <span class="cat-summary-hours">
                 <span class="cat-summary-hours-val" style="color: {{ $isComplete ? '#16a34a' : '#ea580c' }};">{{ number_format($cat['hours'], 1) }}</span>
-                <span>/ {{ number_format($cat['required'], 0) }} ชม.</span>
+                <span>/ {{ number_format($cat['required'], 0) }} {{ __('ชม.') }}</span>
             </span>
         </div>
     </div>
 @empty
     <x-empty-state
         icon="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-        title="ยังไม่มีข้อมูลหมวดหมู่"
-        description="เริ่มเข้าร่วมกิจกรรมเพื่อสะสมชั่วโมงในแต่ละหมวดหมู่"
-        actionLabel="ดูกิจกรรมทั้งหมด"
+        title="{{ __('ยังไม่มีข้อมูลหมวดหมู่') }}"
+        description="{{ __('เริ่มเข้าร่วมกิจกรรมเพื่อสะสมชั่วโมงในแต่ละหมวดหมู่') }}"
+        actionLabel="{{ __('ดูกิจกรรมทั้งหมด') }}"
         actionUrl="{{ route('activities.index') }}"
         size="md"
     />
