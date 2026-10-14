@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'app_name'    => 'UNI Activity',
+    'switch'      => 'สลับภาษา',
+    'activities'  => 'กิจกรรม',
+    'search'      => 'ค้นหา',
+    'filter'      => 'กรอง',
+    'calendar'    => 'ปฏิทิน',
+    'detail'      => 'รายละเอียดกิจกรรม',
+    'register'    => 'ลงทะเบียน',
+    'cancel'      => 'ยกเลิก',
+    'waitlist'    => 'รายชื่อสำรอง',
+    'payment'     => 'ชำระเงิน',
+    'fee'         => 'ค่าสมัคร',
+    'bookmark'    => 'บุ๊กมาร์ก',
+    'review'      => 'รีวิว',
+    'notification'=> 'แจ้งเตือน',
+    'profile'     => 'โปรไฟล์',
+    'login'       => 'เข้าสู่ระบบ',
+    'logout'      => 'ออกจากระบบ',
+    'home'        => 'หน้าแรก',
+    'all'         => 'ทั้งหมด',
+    'closed'      => 'ปิดรับ',
+    'open'        => 'เปิดรับ',
+];

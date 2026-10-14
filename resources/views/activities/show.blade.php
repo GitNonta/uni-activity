@@ -22,6 +22,59 @@
             @if($activity->category)<span class="badge badge-orange">{{ $activity->category->name }}</span>@endif
         </div>
         <h1 class="font-bold" style="font-size:1.25rem;">{{ $activity->title }}</h1>
+@php
+    $myWaitlisted = auth()->check()
+        ? \App\Models\Registration::where("user_id", auth()->id())
+            ->where("activity_id", $activity->id)
+            ->where("status", "waitlisted")
+            ->orderBy("id")
+            ->first()
+        : null;
+    $waitlistRank = 0;
+    $waitlistTotal = \App\Models\Registration::where("activity_id", $activity->id)
+        ->where("status", "waitlisted")->count();
+    if ($myWaitlisted) {
+        $before = \App\Models\Registration::where("activity_id", $activity->id)
+            ->where("status", "waitlisted")
+            ->where("id", "<", $myWaitlisted->id)->count();
+        $waitlistRank = $before + 1;
+    }
+    $hasWaitlist = $waitlistTotal > 0;
+@endphp
+
+        @if($myWaitlisted && $waitlistRank > 0)
+            <div class="mt-2 waitlist-position" style="background:#fef9c3; border:1px solid #fcd34d; border-radius:10px; padding:.55rem .7rem; font-size:.82rem;">
+                 <b>⏳ รายชื่อสำรอง — คิวที่ {{ $waitlistRank }}/{{ $waitlistTotal }}</b> — ระบบจะเลื่อนคิวอัตโนมัติเมื่อมีที่ว่าง
+              </div>}
+        @elseif($hasWaitlist)
+            <div class="mt-2 waitlist-position" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:.5rem .7rem; font-size:.78rem;">
+                 ⏳ กิจกรรมนี้มีผู้อยู่ในรายชื่อสำรอง <b>{{ $waitlistTotal }} คน</b>
+              </div>}
+        @endif
+
+@php $isBookmarked = auth()->check() && \App\Models\ActivityBookmark::query()->where('user_id', auth()->id())->where('activity_id', $activity->id)->exists(); @endphp
+@if($activity->payment_required && $activity->fee_amount > 0)
+        <div class="mt-2" style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:.6rem .8rem; font-size:.85rem; display:flex; justify-content:space-between; align-items:center; gap:.5rem;">
+            <span>💰 ค่าสมัคร <b>฿{{ number_format($activity->fee_amount, 2) }}</b> (PromptPay)</span>
+            <a href="{{ route('activities.pay.show', $activity) }}" class="btn btn-primary btn-sm" style="text-decoration:none;">ชำระเงิน</a>
+        </div>
+        @endif
+
+        {{-- (4) ปุ่มบุ๊กมาร์กกิจกรรม --}}
+        @auth
+        <div class="mt-2" style="display:flex; justify-content:flex-end;">
+            <form method="POST" action="{{ route('activity.bookmark', $activity) }}">
+                @csrf
+                <button type="submit"
+                    id="bookmark-btn"
+                    class="btn btn-sm {{ $isBookmarked ? 'btn-primary' : 'btn-secondary' }}"
+                    style="text-decoration:none;"
+                    data-bookmarked="{{ $isBookmarked ? 1 : 0 }}">
+                    {{ $isBookmarked ? '★ บุ๊กมาร์กแล้ว' : '☆ เพิ่มบุ๊กมาร์ก' }}
+                </button>
+            </form>
+        </div>
+        @endauth
 
         @if($activity->description)
             <div class="mt-3 mb-3">

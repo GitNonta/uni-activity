@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'app_name'    => 'UNI Activity',
+    'switch'      => 'Switch language',
+    'activities'  => 'Activities',
+    'search'      => 'Search',
+    'filter'      => 'Filter',
+    'calendar'    => 'Calendar',
+    'detail'      => 'Activity detail',
+    'register'    => 'Register',
+    'cancel'      => 'Cancel',
+    'waitlist'    => 'Waitlist',
+    'payment'     => 'Payment',
+    'fee'         => 'Registration fee',
+    'bookmark'    => 'Bookmark',
+    'review'      => 'Review',
+    'notification'=> 'Notifications',
+    'profile'     => 'Profile',
+    'login'       => 'Log in',
+    'logout'      => 'Log out',
+    'home'        => 'Home',
+    'all'         => 'All',
+    'closed'      => 'Closed',
+    'open'        => 'Open',
+];

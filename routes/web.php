@@ -23,6 +23,8 @@ use App\Http\Controllers\Admin\CategoryAdminController;
 use App\Http\Controllers\Admin\GraduationAuditAdminController;
 use App\Http\Controllers\Admin\GraduationCriteriaAdminController;
 use App\Http\Controllers\Student\StudentGraduationController;
+use App\Http\Controllers\Student\BookmarkController;
+use App\Http\Controllers\Student\PaymentController;
 use App\Http\Controllers\Public\TranscriptVerificationController;
 use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\Admin\AuditLogController;
@@ -175,6 +177,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/activities/{id}/self-checkin', [CheckInController::class, 'selfCheckIn'])->name('activities.self-checkin'); // ปิด self check-in: ให้สแกน QR หน้างานเท่านั้น
     Route::get('/my-activities', [StudentController::class, 'myActivities'])->name('student.my');                    // กิจกรรมของฉัน
     Route::get('/recommendations', [RecommendationController::class, 'index'])->name('recommendations.index');      // (7) กิจกรรมที่ระบบแนะนำ
+    // ── (4) บุ๊กมาร์กกิจกรรม: toggle ติด/เอาออก ──
+    Route::post('/activities/{activity}/bookmark', [BookmarkController::class, 'toggle'])->name('activity.bookmark');
+    // ── (3) ชำระค่าสมัครผ่าน PromptPay ──
+    Route::get('/activities/{activity}/pay', [PaymentController::class, 'show'])->name('activities.pay.show');
+    Route::post('/activities/{activity}/pay/mark', [PaymentController::class, 'markPaid'])->name('activities.pay.mark');
     Route::get('/history', [StudentController::class, 'history'])->name('student.history');                          // ประวัติการเข้าร่วม
     Route::get('/summary', [StudentController::class, 'summary'])->name('student.summary');                          // สรุปชั่วโมง
     Route::get('/summary/pdf', [StudentController::class, 'downloadPdf'])->name('student.summary.pdf');              // ดาวน์โหลด PDF ใบแสดงผลกิจกรรม
@@ -194,6 +201,17 @@ Route::middleware('auth')->group(function () {
     // ── ประเมินกิจกรรม ──
     Route::get('activities/{activity}/feedback', [FeedbackController::class, 'create'])->name('feedback.create');
     Route::post('activities/{activity}/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
+
+    // ── i18n: สลับภาษา (th|en) ──
+    Route::get('/lang/{locale}', function ($locale) {
+        abort_unless(in_array($locale, ['th', 'en'], true), 404);
+        session(['locale' => $locale]);
+        return back();
+    })->name('lang.switcher');
+
+    // ── ชำระค่าสมัคร (PromptPay soft-launch) ──
+    Route::get('/activities/{activity}/payment', [\App\Http\Controllers\Student\PaymentController::class, 'show'])->name('activities.pay.show');
+    Route::post('/activities/{activity}/payment/mark-paid', [\App\Http\Controllers\Student\PaymentController::class, 'markPaid'])->name('activities.pay.paid');
     
     Route::delete('/profile/photo', [ProfilePhotoController::class, 'destroy'])->name('profile.photo.destroy');        // ลบรูปโปรไฟล์
 

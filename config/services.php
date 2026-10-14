@@ -66,4 +66,8 @@ return [
         'scopes'        => env('SSO_SCOPES', 'openid email profile'),
     ],
 
+    // ── (3) PromptPay: หมายเลขสำรองเมื่อกิจกรรมไม่ได้ระบุเบอร์รับเงิน ──
+    'promptpay' => [
+        'fallback_id' => env('PROMPTPAY_FALLBACK_ID', ''),
+    ],
 ];
