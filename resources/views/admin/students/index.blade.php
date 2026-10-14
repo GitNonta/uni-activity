@@ -38,8 +38,8 @@
 @php
     $activeFilters = [];
     if(request('search'))     $activeFilters['search']     = ['label' => 'ค้นหา: '.request('search'), 'key' => 'search'];
-    if(request('faculty'))    $activeFilters['faculty']    = ['label' => 'คณะ: '.request('faculty'),   'key' => 'faculty'];
-    if(request('department')) $activeFilters['department'] = ['label' => 'สาขา: '.request('department'),'key' => 'department'];
+    if(request('faculty'))    $activeFilters['faculty']    = ['label' => __('คณะ: ').request('faculty'),   'key' => 'faculty'];
+    if(request('department')) $activeFilters['department'] = ['label' => __('สาขา: ').request('department'),'key' => 'department'];
     if(request('year'))       $activeFilters['year']       = ['label' => 'ปี '.request('year'),         'key' => 'year'];
     if(request('program'))    $activeFilters['program']    = ['label' => request('program'),            'key' => 'program'];
     if(request('completion')) $activeFilters['completion'] = ['label' => request('completion') === 'complete' ? 'ครบเกณฑ์' : 'ยังไม่ครบ', 'key' => 'completion'];

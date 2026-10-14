@@ -89,15 +89,15 @@ html[data-theme="dark"] .export-field-label:hover {
                     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.5rem;">
                         @php
                             $availableFields = [
-                                'student_id'    => 'รหัสนักศึกษา',
-                                'full_name'     => 'ชื่อ-นามสกุล',
-                                'faculty'       => 'คณะ',
-                                'department'    => 'สาขาวิชา',
-                                'year'          => 'ชั้นปี',
-                                'program'       => 'ภาคเรียน',
-                                'email'         => 'อีเมล',
-                                'is_active'     => 'สถานะบัญชี',
-                                'total_hours'   => 'ชั่วโมงทั้งหมด',
+                                'student_id'    => __('รหัสนักศึกษา'),
+                                'full_name'     => __('ชื่อ-นามสกุล'),
+                                'faculty'       => __('คณะ'),
+                                'department'    => __('สาขาวิชา'),
+                                'year'          => __('ชั้นปี'),
+                                'program'       => __('ภาคเรียน'),
+                                'email'         => __('อีเมล'),
+                                'is_active'     => __('สถานะบัญชี'),
+                                'total_hours'   => __('ชั่วโมงทั้งหมด'),
                                 'approved_count'=> 'จำนวนกิจกรรม',
                                 'created_at'    => 'วันที่สมัคร',
                             ];

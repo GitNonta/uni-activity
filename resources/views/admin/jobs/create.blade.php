@@ -3,7 +3,7 @@
 @section('title', __('สร้างประกาศงาน'))
 
 @section('content')
-<a href="{{ route('admin.jobs.index') }}" class="text-sm text-primary mb-2" style="display:inline-block;">&larr; กลับรายการ</a>
+<a href="{{ route('admin.jobs.index') }}" class="text-sm text-primary mb-2" style="display:inline-block;">&larr; {{ __('กลับรายการ') }}</a>
 <h1 class="font-bold mb-4 flex items-center gap-2" style="font-size:1.25rem;">
     <svg style="width:24px;height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>{{ __('สร้างประกาศงานใหม่') }}</h1>
 

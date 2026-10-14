@@ -215,7 +215,7 @@
                                 @if(isset($audit['scope_audit']['faculty']))
                                     @php $fac = $audit['scope_audit']['faculty']; @endphp
                                     <span class="badge" style="background:{{ $fac['passed'] ? '#ecfdf5' : '#fee2e2' }};color:{{ $fac['passed'] ? '#059669' : '#dc2626' }};font-size:0.7rem;" title="{{ $fac['name'] }}: {{ $fac['earned'] }}/{{ $fac['required'] }} ชม.">
-                                        คณะ: {{ number_format($fac['earned'], 0) }}/{{ number_format($fac['required'], 0) }}
+                                        {{ __('คณะ:') }} {{ number_format($fac['earned'], 0) }}/{{ number_format($fac['required'], 0) }}
                                     </span>
                                 @endif
 

@@ -1920,5 +1920,9 @@
   "ประกาศงานนี้ถูกลบแล้ว — ดูได้เฉพาะประวัติการแชท": "This job post has been deleted — chat history is view-only",
   "ชั่วโมงที่กำหนด": "assigned hours",
   "เมนูเพิ่มเติม": "More options",
-  "ปิดเมนู": "Close menu"
+  "ปิดเมนู": "Close menu",
+  "กลับรายการ": "Back to list",
+  "กลับรายละเอียด": "Back to details",
+  "กลับรายการงาน": "Back to job listings",
+  "กลับกิจกรรม": "Back to activity"
 }
