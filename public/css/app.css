@@ -3856,3 +3856,15 @@ html.dark .act-filter-clear-btn:hover {
 }
 
 
+
+
+/* ── ปุ่มบุ๊กมาร์กกิจกรรม (icon-only) ── */
+.act-bookmark-btn { display:inline-flex; align-items:center; justify-content:center; width:42px; height:42px; border-radius:10px; border:1px solid #e2e8f0; background:#fff; color:#64748b; cursor:pointer; text-decoration:none; transition:all .2s; margin-left:auto; flex-shrink:0; }
+.act-bookmark-btn:hover { transform:scale(1.08); border-color:#cbd5e1; }
+.act-bookmark-btn.act-bookmark-active { color:#ea580c; background:#fff7ed; border-color:#fed7aa; }
+html[data-theme="dark"] .act-bookmark-btn { background:#36383a; border-color:#4a4d50; color:#cbd5e1; }
+html[data-theme="dark"] .act-bookmark-btn:hover { border-color:#6b6f73; }
+html[data-theme="dark"] .act-bookmark-btn.act-bookmark-active { color:#fb923c; background:rgba(234,88,12,.16); border-color:#7c2d12; }
+html:not([data-theme="light"]) .act-bookmark-btn { background:#36383a; border-color:#4a4d50; color:#cbd5e1; }
+html:not([data-theme="light"]) .act-bookmark-btn:hover { border-color:#6b6f73; }
+html:not([data-theme="light"]) .act-bookmark-btn.act-bookmark-active { color:#fb923c; background:rgba(234,88,12,.16); border-color:#7c2d12; }
