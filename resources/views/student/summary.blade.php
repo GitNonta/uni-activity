@@ -1,6 +1,6 @@
 {{-- หน้าสรุปชั่วโมงกิจกรรม: ชั่วโมงรวม + แยกตามหมวดหมู่แบบไร้ Box/Card สะอาดตา --}}
 @extends('layouts.app')
-@section('title', __('สรุปกิจกรรม'))
+@section('title', __('สรุปกิจกรรม')))
 
 @section('content')
 <style>
@@ -151,7 +151,7 @@ html.dark .cat-summary-hours {
         <div>
             <p class="hero-label">{{ __('ชั่วโมงกิจกรรมรวม') }}</p>
             <p class="hero-value">{{ number_format($totalHours, 1) }}</p>
-            <p class="hero-sub">{{ __('จากทั้งหมด') }} {{ $totalRequired }} ชั่วโมงที่กำหนด</p>
+            <p class="hero-sub">{{ __('จากทั้งหมด') }} {{ $totalRequired }} {{ __('ชั่วโมงที่กำหนด') }}</p>
         </div>
         <a href="{{ route('student.summary.pdf') }}" class="btn" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);gap:.375rem;">
             <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>{{ __('ดาวน์โหลด PDF') }}        </a>
