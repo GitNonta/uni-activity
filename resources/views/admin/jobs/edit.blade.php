@@ -23,7 +23,7 @@
         <div class="card-body">
             <div class="form-group">
                 <label class="form-label">{{ __('หัวข้อพาดหัวงาน *') }}</label>
-                <input type="text" name="title" value="{{ old('title', $job->title) }}" class="form-control" required>
+                <input type="text" name="title" value="{{ old('title', $job->getRawOriginal('title')) }}" class="form-control" required>
             </div>
 
             <div class="form-row">
@@ -90,12 +90,12 @@
 
             <div class="form-group">
                 <label class="form-label">{{ __('รายละเอียดงาน') }}</label>
-                <textarea name="description" rows="4" class="form-control">{{ old('description', $job->description) }}</textarea>
+                <textarea name="description" rows="4" class="form-control">{{ old('description', $job->getRawOriginal('description')) }}</textarea>
             </div>
 
             <div class="form-group">
                 <label class="form-label">{{ __('หมายเหตุ') }}</label>
-                <textarea name="note" rows="2" class="form-control">{{ old('note', $job->note) }}</textarea>
+                <textarea name="note" rows="2" class="form-control">{{ old('note', $job->getRawOriginal('note')) }}</textarea>
             </div>
 
             <div class="form-group">

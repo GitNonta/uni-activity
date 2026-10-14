@@ -17,13 +17,13 @@
             
             <div class="mb-4">
                 <label class="form-label">{{ __('หัวข้อประกาศ') }} <span class="text-danger">*</span></label>
-                <input type="text" name="title" value="{{ old('title', $announcement->title) }}" class="form-control" placeholder="{{ __('ระบุหัวข้อที่ต้องการประกาศ') }}" required>
+                <input type="text" name="title" value="{{ old('title', $announcement->getRawOriginal('title')) }}" class="form-control" placeholder="{{ __('ระบุหัวข้อที่ต้องการประกาศ') }}" required>
                 @error('title') <div class="text-xs text-danger mt-1">{{ $message }}</div> @enderror
             </div>
 
             <div class="mb-4">
                 <label class="form-label">{{ __('เนื้อหา') }} <span class="text-danger">*</span></label>
-                <textarea name="content" rows="6" class="form-control" placeholder="{{ __('ระบุเนื้อหาประกาศ...') }}" required>{{ old('content', $announcement->content) }}</textarea>
+                <textarea name="content" rows="6" class="form-control" placeholder="{{ __('ระบุเนื้อหาประกาศ...') }}" required>{{ old('content', $announcement->getRawOriginal('content')) }}</textarea>
                 @error('content') <div class="text-xs text-danger mt-1">{{ $message }}</div> @enderror
             </div>
 
