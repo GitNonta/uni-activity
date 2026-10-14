@@ -32,12 +32,24 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
+     * [tag:2026-10-14-translation] ลงทะเบียน Observer แปลโพสต์อัตโนมัติ
+     * ทำให้เนื้อหาโพสต์ (ประกาศ + งาน) มีค่า EN ทันทีที่บันทึก
+     */
+    protected function registerTranslatableObservers(): void
+    {
+        \App\Models\Announcement::observe(\App\Observers\TranslatableObserver::class);
+        \App\Models\JobListing::observe(\App\Observers\TranslatableObserver::class);
+    }
+
+    /**
      * Bootstrap any application services.
      */
     public function boot(): void
     {
         $this->applyRedisFallback();
 
+        // ── [tag:2026-10-14-translation] แปลโพสต์อัตโนมัติ ──
+        $this->registerTranslatableObservers();
         \Carbon\Carbon::setLocale('th');
 
         if (file_exists(app_path('Helpers/TextHelper.php'))) {

@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'ตรวจสอบความถูกต้อง Official Activity Transcript')
+@section('title', __('ตรวจสอบความถูกต้อง Official Activity Transcript')
 
 @section('content')
 <div style="max-width:680px;margin:2rem auto;padding:0 1rem;">
@@ -28,11 +28,11 @@
                     </div>
                     <div>
                         <span class="text-muted text-xs block">คณะ:</span>
-                        <span>{{ $student->faculty ?: '-' }}</span>
+                        <span>{{ $student->faculty ? __($student->faculty) : '-' }}</span>
                     </div>
                     <div>
                         <span class="text-muted text-xs block">สาขาวิชา:</span>
-                        <span>{{ $student->department ?: '-' }}</span>
+                        <span>{{ $student->department ? __($student->department) : '-' }}</span>
                     </div>
                 </div>
             </div>

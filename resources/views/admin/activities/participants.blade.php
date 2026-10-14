@@ -27,7 +27,7 @@
                 <tr>
                     <td style="font-family:monospace;">{{ $reg->user->student_id }}</td>
                     <td title="{{ $reg->user->full_name }}">{{ Str::limit($reg->user->full_name, 35, '...') }}</td>
-                    <td class="text-muted">{{ $reg->user->faculty }}</td>
+                    <td class="text-muted">{{ __($reg->user->faculty) }}</td>
                     <td class="text-sm">
                         @if($reg->user->program)
                             <span class="text-xs {{ $reg->user->program === 'กศ.บป.' ? 'text-purple-600' : 'text-orange-600' }}" style="font-weight:600;">{{ $reg->user->program }}</span>
@@ -93,7 +93,7 @@
                         {{ Str::limit($att->user->full_name, 35, '...') }}
                         <span style="background:#f59e0b;color:white;padding:2px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;margin-left:0.5rem;">Walk-in</span>
                     </td>
-                    <td class="text-muted">{{ $att->user->faculty }}</td>
+                    <td class="text-muted">{{ __($att->user->faculty) }}</td>
                     <td class="text-sm">
                         @if($att->user->program)
                             <span class="text-xs {{ $att->user->program === 'กศ.บป.' ? 'text-purple-600' : 'text-orange-600' }}" style="font-weight:600;">{{ $att->user->program }}</span>

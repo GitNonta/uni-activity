@@ -146,8 +146,8 @@
 
             <div class="student-meta">
                 รหัสนักศึกษา: <strong>{{ $user->student_id }}</strong> | 
-                คณะ: <strong>{{ $user->faculty ?? 'มหาวิทยาลัยราชภัฏภูเก็ต' }}</strong> | 
-                สาขาวิชา: <strong>{{ $user->department ?? '-' }}</strong>
+                คณะ: <strong>{{ $user->faculty ? __($user->faculty) : __('มหาวิทยาลัยราชภัฏภูเก็ต') }}</strong> | 
+                สาขาวิชา: <strong>{{ $user->department ? __($user->department) : '-' }}</strong>
             </div>
 
             <div class="cert-body">

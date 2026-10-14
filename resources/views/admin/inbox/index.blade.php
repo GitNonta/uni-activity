@@ -1,6 +1,6 @@
 {{-- Admin: กล่องข้อความรวม --}}
 @extends('layouts.admin')
-@section('title', 'กล่องข้อความ')
+@section('title', __('กล่องข้อความ')
 
 @section('content')
 <div class="flex items-center justify-between mb-4">

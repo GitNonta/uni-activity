@@ -651,10 +651,10 @@ html.dark .follower-row:hover {
                     @endif
 
                     @if($profileUser->faculty)
-                        <span class="pub-meta-pill">{{ $profileUser->faculty }}</span>
+                        <span class="pub-meta-pill">{{ __($profileUser->faculty) }}</span>
                     @endif
                     @if($profileUser->department)
-                        <span class="pub-meta-pill">{{ $profileUser->department }}</span>
+                        <span class="pub-meta-pill">{{ __($profileUser->department) }}</span>
                     @endif
                 </div>
             </div>

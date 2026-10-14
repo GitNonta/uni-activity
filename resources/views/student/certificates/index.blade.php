@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'ใบรับรองชั่วโมงกิจกรรม (Certificates)')
+@section('title', __('ใบรับรองชั่วโมงกิจกรรม (Certificates)')
 
 @section('content')
 <div class="container py-4" style="max-width:960px; margin:0 auto;">

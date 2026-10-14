@@ -1,6 +1,6 @@
 {{-- หน้าตรวจสอบสถานะความพร้อมจบการศึกษาและ Official Transcript ฝั่งนักศึกษา --}}
 @extends('layouts.app')
-@section('title', 'ตรวจสอบสถานะการสำเร็จการศึกษา (Graduation Status)')
+@section('title', __('ตรวจสอบสถานะการสำเร็จการศึกษา (Graduation Status)')
 
 @section('content')
 <div style="max-width:850px;margin:2rem auto;padding:0 1rem;">

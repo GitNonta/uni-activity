@@ -1,6 +1,6 @@
 {{-- หน้าเข้าสู่ระบบนักศึกษา: ใช้รหัสนักศึกษาเข้าสู่ระบบ --}}
 @extends('layouts.app')
-@section('title', 'เข้าสู่ระบบ')
+@section('title', __('login.title'))
 
 @section('content')
 <div class="container-sm" style="padding-top:4rem;">

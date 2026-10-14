@@ -1,6 +1,6 @@
 {{-- หน้า Audit Log: แสดงประวัติการกระทำของ Admin ทั้งหมด (Premium UI) --}}
 @extends('layouts.admin')
-@section('title', 'Audit Logs — ประวัติการดำเนินงาน')
+@section('title', __('Audit Logs — ประวัติการดำเนินงาน')
 
 @section('styles')
 <style>

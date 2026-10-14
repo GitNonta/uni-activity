@@ -41,7 +41,7 @@
             <tr>
                 <td>{{ $registration->user->student_id }}</td>
                 <td>{{ $registration->user->full_name }}</td>
-                <td>{{ $registration->user->faculty }}</td>
+                <td>{{ __($registration->user->faculty) }}</td>
                 <td>{{ $registration->user->year }}</td>
                 <td>{{ $registration->created_at->format('d/m/Y H:i') }}</td>
                 <td>{{ $attendance ? $attendance->created_at->format('d/m/Y') : '-' }}</td>

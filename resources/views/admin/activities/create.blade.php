@@ -49,7 +49,7 @@
                     <select name="faculty" id="facultyInput" class="form-control" onchange="updateDepartmentsScope()">
                         <option value="">เลือกคณะ</option>
                         @foreach(config('faculties') as $faculty => $deps)
-                            <option value="{{ $faculty }}" {{ old('faculty') == $faculty ? 'selected' : '' }}>{{ $faculty }}</option>
+                            <option value="{{ $faculty }}" {{ old('faculty') == $faculty ? 'selected' : '' }}>{{ __($faculty) }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -483,6 +483,7 @@ function searchPlace() {
 
 // ── Scope toggle: แสดง/ซ่อนช่องคณะ/สาขาตามระดับ ──
 const facultyData = @json(config('faculties'));
+    const depLabels = @json(collect(config('faculties'))->flatMap(fn ($deps) => collect($deps)->mapWithKeys(fn ($d) => [$d => __($d)]))->all());
 const oldDepartment = "{{ old('department') }}";
 
 function toggleScopeFields() {
@@ -520,7 +521,7 @@ function updateDepartmentsScope() {
         facultyData[selectedFaculty].forEach(function(dep) {
             var opt = document.createElement('option');
             opt.value = dep;
-            opt.textContent = dep;
+            opt.textContent = depLabels[dep] || dep;
             if (dep === oldDepartment) opt.selected = true;
             deptInput.appendChild(opt);
         });

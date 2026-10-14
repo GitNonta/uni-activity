@@ -1,7 +1,7 @@
 {{-- (7) หน้ากิจกรรมที่ระบบแนะนำ: จากผู้ที่ติดตาม + หมวดจากประวัติลงทะเบียน --}}
 @extends('layouts.app')
 
-@section('title', 'กิจกรรมที่แนะนำ')
+@section('title', __('กิจกรรมที่แนะนำ')
 
 @section('content')
 <div class="act-header-row">

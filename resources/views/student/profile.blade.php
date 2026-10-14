@@ -1,6 +1,6 @@
 {{-- หน้าโปรไฟล์นักศึกษา: ข้อมูลส่วนตัว + สรุปชั่วโมงกิจกรรม + ประวัติล่าสุด --}}
 @extends('layouts.app')
-@section('title', 'โปรไฟล์ของฉัน')
+@section('title', __('โปรไฟล์ของฉัน')
 
 @section('content')
 
@@ -475,7 +475,7 @@ html.dark .line-unlink-btn:hover {
                 </div>
                 <div class="student-detail-text">
                     <p class="student-detail-label">คณะ</p>
-                    <p class="student-detail-value">{{ $user->faculty ?? '-' }}</p>
+                    <p class="student-detail-value">{{ $user->faculty ? __($user->faculty) : '-' }}</p>
                 </div>
             </div>
             <div class="student-detail-item">
@@ -484,7 +484,7 @@ html.dark .line-unlink-btn:hover {
                 </div>
                 <div class="student-detail-text">
                     <p class="student-detail-label">สาขา</p>
-                    <p class="student-detail-value">{{ $user->department ?? '-' }}</p>
+                    <p class="student-detail-value">{{ $user->department ? __($user->department) : '-' }}</p>
                 </div>
             </div>
             <div class="student-detail-item">
@@ -749,7 +749,7 @@ html.dark .line-unlink-btn:hover {
                         <!-- Thin divider -->
                         <div style="width: 100%; height: 1px; background: #e2e8f0; margin: 8px 0;"></div>
                         
-                        <div style="font-size: 14px; font-weight: 700; color: #1e293b !important;">สาขา{{ $user->department ?? 'วิทยาการคอมพิวเตอร์' }}</div>
+                        <div style="font-size: 14px; font-weight: 700; color: #1e293b !important;">{{ __('สาขา') }}{{ $user->department ? __($user->department) : __('วิทยาการคอมพิวเตอร์') }}</div>
                     </div>
 
                     <div style="flex: 1;"></div>

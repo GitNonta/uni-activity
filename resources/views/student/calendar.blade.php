@@ -1,6 +1,6 @@
 {{-- หน้าปฏิทินกิจกรรม — FullCalendar.js --}}
 @extends('layouts.app')
-@section('title', 'ปฏิทินกิจกรรม')
+@section('title', __('ปฏิทินกิจกรรม')
 
 @section('content')
 <div class="flex items-center justify-between mb-4">

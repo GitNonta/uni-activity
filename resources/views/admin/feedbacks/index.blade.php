@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'การประเมินกิจกรรม')
+@section('title', __('การประเมินกิจกรรม')
 
 @section('styles')
 <style>

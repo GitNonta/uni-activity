@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Security Logs — ระบบรักษาความปลอดภัย')
+@section('title', __('Security Logs — ระบบรักษาความปลอดภัย')
 
 @section('styles')
 <style>

@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'ประกาศ/ข่าวสาร')
+@section('title', __('ประกาศ/ข่าวสาร')
 
 @section('content')
 <div class="hero-card mb-4" style="background:linear-gradient(135deg,#ef4444,#ea580c);padding:1.5rem;">

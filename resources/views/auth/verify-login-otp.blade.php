@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'ยืนยันการเข้าสู่ระบบ')
+@section('title', __('ยืนยันการเข้าสู่ระบบ')
 
 @section('styles')
 <style>

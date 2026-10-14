@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'แผนที่กิจกรรมและงาน (WebGL 3D) - UNI Activity')
+@section('title', __('แผนที่กิจกรรมและงาน (WebGL 3D) - UNI Activity')
 
 @section('content')
 <div class="map-explorer-wrapper">

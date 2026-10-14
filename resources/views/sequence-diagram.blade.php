@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'ลำดับการใช้งานระบบกิจกรรมนักศึกษา')
+@section('title', __('ลำดับการใช้งานระบบกิจกรรมนักศึกษา')
 
 @section('content')
 <style>

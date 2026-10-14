@@ -65,11 +65,11 @@
                 </div>
                 <div class="flex justify-between">
                     <span class="text-xs text-muted">คณะ</span>
-                    <span class="text-sm">{{ $student->faculty ?? '-' }}</span>
+                    <span class="text-sm">{{ $student->faculty ? __($student->faculty) : '-' }}</span>
                 </div>
                 <div class="flex justify-between">
                     <span class="text-xs text-muted">สาขา</span>
-                    <span class="text-sm">{{ $student->department ?? '-' }}</span>
+                    <span class="text-sm">{{ $student->department ? __($student->department) : '-' }}</span>
                 </div>
                 <div class="flex justify-between">
                     <span class="text-xs text-muted">ชั้นปี</span>

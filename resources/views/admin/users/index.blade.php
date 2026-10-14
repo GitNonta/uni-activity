@@ -1,6 +1,6 @@
 {{-- หน้าจัดการผู้ใช้งานทั้งหมด (Admin): นักศึกษา + เจ้าหน้าที่ --}}
 @extends('layouts.admin')
-@section('title', 'จัดการผู้ใช้งาน')
+@section('title', __('จัดการผู้ใช้งาน')
 
 @section('content')
 <div class="flex items-center justify-between mb-4" style="flex-wrap:wrap;gap:.75rem;">
@@ -99,8 +99,8 @@
                         @endif
                     </td>
                     <td data-label="คณะ / สาขา">
-                        <div class="text-sm">{{ $user->faculty ?? '-' }}</div>
-                        <div class="text-xs text-muted line-clamp-1">{{ $user->department ?? '' }} @if($user->program) ({{ $user->program }}) @endif</div>
+                        <div class="text-sm">{{ $user->faculty ? __($user->faculty) : '-' }}</div>
+                        <div class="text-xs text-muted line-clamp-1">{{ $user->department ? __($user->department) : '' }} @if($user->program) ({{ $user->program }}) @endif</div>
                     </td>
                     <td data-label="สถานะ" class="text-center">
                         @if($user->is_active)

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'ศูนย์ควบคุมเซิร์ฟเวอร์ (Cluster Control Center)')
+@section('title', __('ศูนย์ควบคุมเซิร์ฟเวอร์ (Cluster Control Center)')
 
 @section('styles')
 <style>

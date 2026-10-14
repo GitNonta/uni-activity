@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Failed Queue Jobs Management')
+@section('title', __('Failed Queue Jobs Management')
 
 @section('content')
 <div class="container-fluid" style="max-width:1200px; margin:0 auto; padding-bottom:3rem;">

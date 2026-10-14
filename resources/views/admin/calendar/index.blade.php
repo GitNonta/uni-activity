@@ -1,6 +1,6 @@
 {{-- ปฏิทินกิจกรรมอัจฉริยะ (Interactive Master Calendar) — Admin & Staff --}}
 @extends('layouts.admin')
-@section('title', 'ปฏิทินกิจกรรมอัจฉริยะ')
+@section('title', __('ปฏิทินกิจกรรมอัจฉริยะ')
 
 @section('styles')
 {{-- FullCalendar v6 CDN --}}

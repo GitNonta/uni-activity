@@ -18,9 +18,9 @@
                     @if($activity->allow_walkin)<span class="badge" style="background:#dcfce7;color:#166534;">เปิดรับ Walk-in</span>@else<span class="badge" style="background:#fee2e2;color:#991b1b;">เฉพาะผู้ลงทะเบียน</span>@endif
                     @if($activity->category)<span class="badge badge-orange">{{ $activity->category->name }}</span>@endif
                     @if($activity->scope === 'faculty')
-                        <span class="badge" style="background:#fef3c7;color:#92400e;">คณะ: {{ $activity->faculty }}</span>
+                        <span class="badge" style="background:#fef3c7;color:#92400e;">{{ __('คณะ') }}: {{ __($activity->faculty) }}</span>
                     @elseif($activity->scope === 'department')
-                        <span class="badge" style="background:#ffedd5;color:#5b21b6;">สาขา: {{ $activity->department }} ({{ $activity->faculty }})</span>
+                        <span class="badge" style="background:#ffedd5;color:#5b21b6;">{{ __('สาขา') }}: {{ __($activity->department) }} ({{ __($activity->faculty) }})</span>
                     @else
                         <span class="badge" style="background:#e0f2fe;color:#0369a1;">ระดับมหาวิทยาลัย</span>
                     @endif

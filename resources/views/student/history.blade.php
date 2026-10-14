@@ -1,6 +1,6 @@
 {{-- หน้าประวัติการเข้าร่วมกิจกรรม: แสดงชื่อ, วันที่, หมวด, ชั่วโมง, เวลาเช็คอิน --}}
 @extends('layouts.app')
-@section('title', 'ประวัติเข้าร่วม')
+@section('title', __('ประวัติเข้าร่วม')
 
 @section('content')
 <h1 class="font-bold mb-4" style="font-size:1.5rem;">ประวัติเข้าร่วมกิจกรรม</h1>

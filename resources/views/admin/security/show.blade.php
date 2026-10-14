@@ -766,11 +766,11 @@ html.dark .sec-type-badge.badge-orange {
                         </div>
                         <div class="sec-info-row">
                             <span class="sec-info-label">คณะ</span>
-                            <span class="sec-info-value">{{ $securityLog->user->faculty ?? '—' }}</span>
+                            <span class="sec-info-value">{{ $securityLog->user->faculty ? __($securityLog->user->faculty) : '—' }}</span>
                         </div>
                         <div class="sec-info-row">
                             <span class="sec-info-label">สาขาวิชา</span>
-                            <span class="sec-info-value">{{ $securityLog->user->department ?? '—' }}</span>
+                            <span class="sec-info-value">{{ $securityLog->user->department ? __($securityLog->user->department) : '—' }}</span>
                         </div>
                         <div style="margin-top: 1rem; display: flex; justify-content: flex-end;">
                             <a href="{{ route('admin.students.show', $securityLog->user->id) }}" class="btn-user-action">
@@ -785,7 +785,7 @@ html.dark .sec-type-badge.badge-orange {
                         </div>
                         <div class="sec-info-row">
                             <span class="sec-info-label">สังกัด / หน่วยงาน</span>
-                            <span class="sec-info-value">{{ $securityLog->user->organization ?? ($securityLog->user->faculty ?? '—') }}</span>
+                            <span class="sec-info-value">{{ $securityLog->user->organization ? __($securityLog->user->organization) : ($securityLog->user->faculty ? __($securityLog->user->faculty) : '—') }}</span>
                         </div>
                         <div class="sec-info-row">
                             <span class="sec-info-label">สถานะบัญชี</span>
@@ -929,7 +929,7 @@ html.dark .sec-type-badge.badge-orange {
                         <div class="related-name">{{ $ru->full_name }}</div>
                         <div class="related-meta">
                             @if($ru->role === 'student' && $ru->student_id)
-                                {{ $ru->student_id }} · {{ $ru->faculty ?? 'นักศึกษา' }}
+                                {{ $ru->student_id }} · {{ $ru->faculty ? __($ru->faculty) : __('นักศึกษา') }}
                             @else
                                 {{ $ru->email }} · {{ $ru->role === 'admin' ? 'ผู้ดูแลระบบ' : 'เจ้าหน้าที่' }}
                             @endif

@@ -1,6 +1,6 @@
 {{-- หน้ากิจกรรมของฉัน: ภารกิจที่ต้องทำ + รายการลงทะเบียน + QR Pass modal --}}
 @extends('layouts.app')
-@section('title', 'กิจกรรมของฉัน')
+@section('title', __('กิจกรรมของฉัน')
 
 @section('content')
 <div class="flex items-center justify-between mb-4">

@@ -83,7 +83,7 @@
                 <select name="department" class="form-control">
                     <option value="">ทุกสาขา</option>
                     @foreach($departments as $d)
-                        <option value="{{ $d }}" {{ request('department') == $d ? 'selected' : '' }}>{{ $d }}</option>
+                        <option value="{{ $d }}" {{ request('department') == $d ? 'selected' : '' }}>{{ __($d) }}</option>
                     @endforeach
                 </select>
             </div>
@@ -147,8 +147,8 @@
                         <div class="text-xs text-muted">{{ $student->student_id }}</div>
                     </td>
                     <td>
-                        <div class="text-sm">{{ $student->faculty ?? '-' }}</div>
-                        <div class="text-xs text-muted">{{ $student->department ?? '-' }}</div>
+                        <div class="text-sm">{{ $student->faculty ? __($student->faculty) : '-' }}</div>
+                        <div class="text-xs text-muted">{{ $student->department ? __($student->department) : '-' }}</div>
                         <div style="margin-top:2px;">
                             @if($student->year)
                             <span style="font-size:.7rem;background:#f1f5f9;color:#475569;border-radius:4px;padding:1px 6px;">ปี {{ $student->year }}</span>
