@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\Auth\StudentAuthController;
+use App\Http\Controllers\Auth\SsoLoginController;
 use App\Http\Controllers\Auth\StaffAuthController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\CheckInController;
 use App\Http\Controllers\StudentController;
@@ -77,6 +79,10 @@ Route::get('/', function () {
 Route::middleware('guest')->group(function () {
     Route::get('/login', [StudentAuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [StudentAuthController::class, 'login'])->middleware('throttle:student-login');
+
+    // ── (8) SSO OAuth2/OIDC: เข้าถึงได้เฉพาะเมื่อ SSO_ENABLED=true (disabled => 404) ──
+    Route::get('/auth/sso/redirect', [SsoLoginController::class, 'redirect'])->name('sso.redirect');
+    Route::get('/auth/sso/callback', [SsoLoginController::class, 'callback'])->name('sso.callback');
     // Password reset routes for all users
     Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
     Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->middleware('throttle:password-reset')->name('password.email');
@@ -168,6 +174,7 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/activities/{id}/self-checkin', [CheckInController::class, 'selfCheckIn'])->name('activities.self-checkin'); // ปิด self check-in: ให้สแกน QR หน้างานเท่านั้น
     Route::get('/my-activities', [StudentController::class, 'myActivities'])->name('student.my');                    // กิจกรรมของฉัน
+    Route::get('/recommendations', [RecommendationController::class, 'index'])->name('recommendations.index');      // (7) กิจกรรมที่ระบบแนะนำ
     Route::get('/history', [StudentController::class, 'history'])->name('student.history');                          // ประวัติการเข้าร่วม
     Route::get('/summary', [StudentController::class, 'summary'])->name('student.summary');                          // สรุปชั่วโมง
     Route::get('/summary/pdf', [StudentController::class, 'downloadPdf'])->name('student.summary.pdf');              // ดาวน์โหลด PDF ใบแสดงผลกิจกรรม

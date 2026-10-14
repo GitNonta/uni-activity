@@ -62,7 +62,25 @@
 
 ---
 
-## เทคโนโลยีและส่วนประกอบ (Tech Stack)
+### 6. ระบบแนะนำกิจกรรมอัตโนมัติ (Recommendation Engine)
+- **ผู้ใช้ที่ติดตาม:** จัดกิจกรรมที่ผู้สร้างเป็นผู้ที่นักศึกษาติดตามจากตาราง `follows`
+- **ประวัติลงทะเบียน:** เรียงจากหมวดหมู่จาก 10 รายการลงทะเบียนล่าสุด และ fallback เป็นกิจกรรมยอดนิยมเท่านั้น
+- **เข้าใช้งาน:** `GET /recommendations` (ต้อง Login) — เห็นกิจกรรมที่ระบบแนะนำตรงพร้อมบันทึก
+
+### 7. ล็อกอินด้วย SSO (OAuth2 / OIDC)
+- Generic discovery-based provider — รองรับ IdP ที่ model หลักตาม [OpenID Connect](https://openid.net)
+- **``.env``:** `SSO_ENABLED=true`, `SSO_ISSUER`, `SSO_CLIENT_ID/SECRET`, `SSO_REDIRECT_URI`, `SSO_DISCOVERY_URL` (พร้อม route auto-calculated)
+- Route: `/auth/sso/redirect` (ไป IdP), `/auth/sso/callback` (สร้าง user ครั้งคราวถ้า login สำเร็จ)
+- **ผ่านเอา: สูงกว่า SSO disabled default — ถ้าใช้จริงต้อง config IdP + SSO_ENABLED=true
+
+### 8. ปฏิทิน ค้นหา/กรอง และ บุ๊กมาร์กกิจกรรม
+- หน้า `GET /calendar` แสดงกิจกรรมตาม JSON endpoint เดินระบบ, การกรองและค้นหาแข็งแรง
+- ปุ่ม "บันทึกเอาไว้" defaults ไป Route `POST /activities/{id}/bookmark` สะสม Bookmark จับเข้าระบบ
+
+### 9. ระบบสากล (i18n) + PromptPay + ลำดับการลงทะเบียนแบบ Real-time
+- i18n: สลับภาษาไทย + อังกฤษผ่าน `GET /lang/{locale}`
+- การรับเงินผ่าน PromptPay เพื่อทำ `pending` บนเครื่องระบบบุคคล: ระบุตรง ๆ มี QR PromptPay, ความสัมพันธ์อัตโนมัติ
+- จัดการคิวรอเข้าจอง: น้องที่สมัคร `waitlisted` — เมื่อสั่งตัดคำสั่งระบบจะจัดระเบียบอัตโนมัติ
 
 | ส่วนประกอบ (Component) | เทคโนโลยีที่ใช้ (Technology) | หน้าที่การทำงาน (Description) |
 |:---|:---|:---|

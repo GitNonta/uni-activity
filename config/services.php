@@ -55,4 +55,15 @@ return [
         'circuit_breaker_cooldown'  => (int) env('AI_CIRCUIT_BREAKER_COOLDOWN', 30),
     ],
 
+    // ── (8) SSO OAuth2/OIDC — เปิดใช้ด้วย .env: SSO_ENABLED=true + SSO_ISSUER + SSO_CLIENT_ID/SECRET/REDIRECT_URI ──
+    'sso' => [
+        'enabled'       => env('SSO_ENABLED', false),
+        'client_id'     => env('SSO_CLIENT_ID'),
+        'client_secret' => env('SSO_CLIENT_SECRET'),
+        'redirect_uri'  => env('SSO_REDIRECT_URI'),
+        'issuer'        => env('SSO_ISSUER'),
+        'discovery_url' => env('SSO_DISCOVERY_URL'),
+        'scopes'        => env('SSO_SCOPES', 'openid email profile'),
+    ],
+
 ];
