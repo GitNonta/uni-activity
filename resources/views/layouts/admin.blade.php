@@ -1298,7 +1298,7 @@ window.AdminChatManager = (function() {
         nameSpan.textContent = title;
         const subSpan = document.createElement('span');
         subSpan.className = 'acw-title-sub';
-        subSpan.innerHTML = '<span class="acw-live-dot"></span>{{ __('แชทสด';
+        subSpan.innerHTML = '<span class="acw-live-dot"></span>{{ __('แชทสด') }}';
         titleText.appendChild(nameSpan);
         titleText.appendChild(subSpan);
         titleSpan.appendChild(avatarSpan);

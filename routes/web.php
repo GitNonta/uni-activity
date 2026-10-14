@@ -186,9 +186,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/recommendations', [RecommendationController::class, 'index'])->name('recommendations.index');      // (7) กิจกรรมที่ระบบแนะนำ
     // ── (4) บุ๊กมาร์กกิจกรรม: toggle ติด/เอาออก ──
     Route::post('/activities/{activity}/bookmark', [BookmarkController::class, 'toggle'])->name('activity.bookmark');
-    // ── (3) ชำระค่าสมัครผ่าน PromptPay ──
-    Route::get('/activities/{activity}/pay', [PaymentController::class, 'show'])->name('activities.pay.show');
-    Route::post('/activities/{activity}/pay/mark', [PaymentController::class, 'markPaid'])->name('activities.pay.mark');
     Route::get('/history', [StudentController::class, 'history'])->name('student.history');                          // ประวัติการเข้าร่วม
     Route::get('/summary', [StudentController::class, 'summary'])->name('student.summary');                          // สรุปชั่วโมง
     Route::get('/summary/pdf', [StudentController::class, 'downloadPdf'])->name('student.summary.pdf');              // ดาวน์โหลด PDF ใบแสดงผลกิจกรรม

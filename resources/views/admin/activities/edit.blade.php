@@ -360,7 +360,7 @@
                     <input type="checkbox" name="require_attendance_approval" value="1" {{ $activity->require_attendance_approval ? 'checked' : '' }} style="margin-top:0.25rem;">
                     <div>
                         <div class="rule-boxless-label">{{ __('ต้องตรวจสอบการเช็คอิน (Manual Staff Approval)') }}</div>
-                        <p class="text-xs text-muted" style="margin:0.15rem 0 0 0;">{{ __('เมื่อสแกนแล้ว นักศึกษาจะมีสถานะ __('รอตรวจสอบ') จนกว่าเจ้าหน้าที่จะกดอนุมัติ') }}</p>
+                        <p class="text-xs text-muted" style="margin:0.15rem 0 0 0;">{{ __('เมื่อสแกนแล้ว นักศึกษาจะมีสถานะ รอตรวจสอบ จนกว่าเจ้าหน้าที่จะกดอนุมัติ') }}</p>
                     </div>
                 </label>
             </div>
@@ -812,7 +812,21 @@ document.addEventListener('DOMContentLoaded', function() {
     toggleNoCheckout();
 });
 
- P1 
+@php
+    $initialDays = old('days', $activity->days->map(function($d) {
+        return [
+            'day_number' => $d->day_number,
+            'date' => $d->date->format('Y-m-d'),
+            'start_time' => $d->start_time ? \Carbon\Carbon::parse($d->start_time)->format('H:i') : null,
+            'end_time' => $d->end_time ? \Carbon\Carbon::parse($d->end_time)->format('H:i') : null,
+            'activity_hours' => (float)$d->activity_hours,
+            'checkin_open_at' => $d->checkin_open_at ? $d->checkin_open_at->format('Y-m-d\TH:i') : null,
+            'checkin_close_at' => $d->checkin_close_at ? $d->checkin_close_at->format('Y-m-d\TH:i') : null,
+            'checkout_open_at' => $d->checkout_open_at ? $d->checkout_open_at->format('Y-m-d\TH:i') : null,
+            'checkout_close_at' => $d->checkout_close_at ? $d->checkout_close_at->format('Y-m-d\TH:i') : null,
+        ];
+    }));
+@endphp
 const INITIAL_DAYS = @json($initialDays);
 
 function getDatesBetween(startDateStr, endDateStr) {

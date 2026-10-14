@@ -38,13 +38,13 @@
                 <span class="gform-category-badge">{{ $activity->category->name ?? __('กิจกรรมทั่วไป') }}</span>
                 <span class="gform-status-badge">
                     <span class="gform-status-dot"></span>
-                    {{ __('รับคำตอบแล้ว') }} {{ number_format($stats['total']) }} ชุด
+                    รับคำตอบแล้ว {{ number_format($stats['total']) }} ชุด
                 </span>
             </div>
 
             <h1 class="gform-title">{{ $activity->title }}</h1>
             <p class="gform-subtitle">
-                {{ __('แบบประเมินความพึงพอใจและผลสัมฤทธิ์ของกิจกรรม · จัดขึ้นเมื่อ') }} {{ $activity->activity_date->translatedFormat('d F Y') }}
+                แบบประเมินความพึงพอใจและผลสัมฤทธิ์ของกิจกรรม · จัดขึ้นเมื่อ {{ $activity->activity_date->translatedFormat('d F Y') }}
                 @if($activity->location) · สถานที่: {{ $activity->location }} @endif
             </p>
 
@@ -159,9 +159,9 @@
             @foreach($topicStats as $key => $ts)
                 <div class="gform-card">
                     <div class="gform-q-header">
-                        <div class="gform-q-number">{{ __('ข้อที่') }} {{ $qIndex++ }}</div>
+                        <div class="gform-q-number">ข้อที่ {{ $qIndex++ }}</div>
                         <div class="gform-q-title-wrap">
-                            <h3 class="gform-q-title">{{ __('ระดับความพึงพอใจ') }}: {{ $ts['label'] }}</h3>
+                            <h3 class="gform-q-title">ระดับความพึงพอใจ: {{ $ts['label'] }}</h3>
                             <span class="gform-q-count">{{ number_format($ts['count']) }} การตอบกลับ · เฉลี่ย {{ number_format((float)$ts['average'], 2) }} / 5.0</span>
                         </div>
                     </div>
@@ -204,7 +204,7 @@
                     <div class="gform-q-number">{{ __('ข้อที่ 6') }}</div>
                     <div class="gform-q-title-wrap">
                         <h3 class="gform-q-title">{{ __('สถานะการเปิดเผยตัวตนในการตอบแบบประเมิน') }}</h3>
-                        <span class="gform-q-count">{{ number_format($stats['total']) }} {{ __('การตอบกลับ') }}</span>
+                        <span class="gform-q-count">{{ number_format($stats['total']) }} การตอบกลับ</span>
                     </div>
                 </div>
 
@@ -353,7 +353,7 @@
                         </svg>
                     </button>
 
-                    <div class="gform-pager-info">{{ __('ผู้ตอบคนที่') }} <span id="currentIndIndex" class="gform-ind-num">1</span> {{ __('{{ __('จาก') }}') }} {{ $feedbacks->count() }}
+                    <div class="gform-pager-info">{{ __('ผู้ตอบคนที่') }} <span id="currentIndIndex" class="gform-ind-num">1</span> จาก {{ $feedbacks->count() }}
                     </div>
 
                     <button class="gform-pager-btn" id="nextIndBtn" onclick="navigateIndividual(1)" title="{{ __('ถัดไป') }}">
