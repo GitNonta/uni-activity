@@ -48,7 +48,7 @@
             <div class="navbar-left">
                 <a href="{{ route('activities.index') }}" class="navbar-brand" style="display:flex; align-items:center; gap:8px;">
                     <img src="{{ asset('logo.svg') }}" alt="Logo" style="height: 32px; width: 32px;">
-                    UNI Activity
+                    <span class="navbar-brand-text">UNI Activity</span>
                 </a>
             </div>
             {{-- i18n switcher (TH / EN) --}}
@@ -139,23 +139,17 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>
                     </svg>
                 </button>
-                <a href="{{ route('map.index') }}" class="navbar-icon-btn {{ request()->routeIs('map.*') ? 'active' : '' }}" title="{{ __('แผนที่') }}">
-                    <x-icon name="map" size="18" />
-                </a>
-                <a href="{{ route('jobs.index') }}" class="navbar-icon-btn {{ request()->routeIs('jobs.*') ? 'active' : '' }}" title="{{ __('หางาน / ฝึกงาน') }}">
-                    <x-icon name="job" size="18" />
-                </a>
-                <a href="{{ route('announcements.index') }}" class="navbar-icon-btn {{ request()->routeIs('announcements.*') ? 'active' : '' }}" title="{{ __('ประกาศข่าวสาร') }}">
-                    <x-icon name="announcement" size="18" />
-                </a>
+<button type="button" class="navbar-icon-btn navbar-more-btn" data-more-toggle aria-label="เมนูเพิ่มเติม" title="เมนูเพิ่มเติม">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+                </button>
+                {{-- icons map/job/announcement ย้ายไปเมนู ⋯ (mobile sheet) --}}
                 <form method="POST" action="{{ route('logout') }}" style="margin:0">
                     @csrf
                     <button type="submit" class="navbar-logout-btn" title="{{ __('ออกจากระบบ') }}">
                         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                         </svg>
-                        <span>{{ __('app.logout_short') }}</span>
-                    </button>
+                                            </button>
                 </form>
             </div>
             @elseif(!request()->routeIs('login*', 'admin.login*', 'register*', 'password.*', 'admin.password.*'))
@@ -208,10 +202,11 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>
                     </svg>
                 </button>
-                <a href="{{ route('map.index') }}" class="navbar-icon-btn {{ request()->routeIs('map.*') ? 'active' : '' }}" title="{{ __('แผนที่') }}">
-                    <x-icon name="map" size="18" />
-                </a>
-                <a href="{{ route('login') }}" class="btn btn-sm btn-primary" style="padding:.35rem .75rem; font-size:.8rem; display:inline-flex; align-items:center; gap:5px; border-radius:9px;">
+                {{-- ปุ่ม map (guest) มีใน bottom-nav แล้ว --}}
+                <button type="button" class="navbar-icon-btn navbar-more-btn" data-more-toggle aria-label="เมนูเพิ่มเติม" title="เมนูเพิ่มเติม">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+                </button>
+<a href="{{ route('login') }}" class="btn btn-sm btn-primary" style="padding:.35rem .75rem; font-size:.8rem; display:inline-flex; align-items:center; gap:5px; border-radius:9px;">
                     <svg class="icon-sm" style="width:14px; height:14px; margin:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
                     {{ __('login.title') }}
                 </a>
@@ -1950,6 +1945,69 @@
         });
     });
     </script>
+
+
+    {{-- ── เมนู "เพิ่มเติม" (ปุ่ม ⋯ บนบาร์) — จอ ≤1366px ── --}}
+    @php $__hide_more_sheet = request()->routeIs('login*', 'admin.login*', 'register*', 'password.*', 'admin.password.*'); @endphp
+    @if(!($__hide_more_sheet ?? false))
+    <div id="mobile-sheet-backdrop" class="mobile-sheet-backdrop" data-sheet-close></div>
+    <div id="mobile-more-sheet" class="mobile-sheet" role="dialog" aria-modal="true" aria-label="เมนูเพิ่มเติม">
+        <div class="mobile-sheet-grip"></div>
+        <div class="mobile-sheet-head">
+            @auth
+            <span class="mobile-sheet-user">{{ auth()->user()->full_name }}</span>
+            @else
+            <span class="mobile-sheet-user">UNI Activity</span>
+            @endauth
+            <button type="button" class="mobile-sheet-close" data-sheet-close aria-label="ปิดเมนู" title="ปิด">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div class="mobile-sheet-lang" style="display: flex; align-items: center; gap: .4rem; font-size: .9rem;">
+            <a href="{{ route('lang.switcher', 'th') }}"
+               class="{{ app()->getLocale() === 'th' ? 'active' : '' }}"
+               style="text-decoration:none; {{ app()->getLocale() === 'th' ? 'font-weight:700; color:var(--primary, #2563eb);' : 'color:inherit;' }}">TH</a>
+            <span>/</span>
+            <a href="{{ route('lang.switcher', 'en') }}"
+               class="{{ app()->getLocale() === 'en' ? 'active' : '' }}"
+               style="text-decoration:none; {{ app()->getLocale() === 'en' ? 'font-weight:700; color:var(--primary, #2563eb);' : 'color:inherit;' }}">EN</a>
+        </div>
+        @auth
+        <a href="{{ route('map.index') }}" class="mobile-sheet-item">
+            <x-icon name="map" size="20" /> แผนที่
+            <span class="mobile-sheet-arrow">&#8250;</span>
+        </a>
+        <a href="{{ route('jobs.index') }}" class="mobile-sheet-item">
+            <x-icon name="job" size="20" /> หางาน / ฝึกงาน
+            <span class="mobile-sheet-arrow">&#8250;</span>
+        </a>
+        <a href="{{ route('announcements.index') }}" class="mobile-sheet-item">
+            <x-icon name="announcement" size="20" /> ประกาศข่าวสาร
+            <span class="mobile-sheet-arrow">&#8250;</span>
+        </a>
+        @endauth
+    </div>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}">
+    (function() {
+        var sheet = document.getElementById('mobile-more-sheet');
+        var backdrop = document.getElementById('mobile-sheet-backdrop');
+        if (!sheet) return;
+        function openSheet() { sheet.classList.add('open'); backdrop.classList.add('open'); }
+        function closeSheet() { sheet.classList.remove('open'); backdrop.classList.remove('open'); }
+        document.querySelectorAll('[data-more-toggle]').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                sheet.classList.contains('open') ? closeSheet() : openSheet();
+            });
+        });
+        document.querySelectorAll('[data-sheet-close]').forEach(function(el) {
+            el.addEventListener('click', closeSheet);
+        });
+        sheet.querySelectorAll('a').forEach(function(a) { a.addEventListener('click', closeSheet); });
+        document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeSheet(); });
+    })();
+    </script>
+    @endif
 
     @yield('scripts')
     @stack('styles')
