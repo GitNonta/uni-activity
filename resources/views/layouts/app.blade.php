@@ -66,40 +66,40 @@
             <nav class="navbar-center navbar-desktop">
                 <a href="{{ route('activities.index') }}" class="{{ request()->routeIs('activities.*') ? 'active' : '' }}">
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                    กิจกรรม
+                    {{ __('app.activities') }}
                 </a>
                 <a href="{{ route('map.index') }}" class="{{ request()->routeIs('map.*') ? 'active' : '' }}" title="แผนที่กิจกรรมและงาน">
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-                    แผนที่
+                    {{ __('app.map') }}
                 </a>
                 <a href="{{ route('student.calendar') }}" class="{{ request()->routeIs('student.calendar') ? 'active' : '' }}" title="ปฏิทิน">
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/><rect x="3" y="9" width="18" height="12" rx="2" stroke-width="0" fill="currentColor" opacity=".12"/></svg>
-                    ปฏิทิน
+                    {{ __('app.calendar') }}
                 </a>
                 <a href="{{ route('announcements.index') }}" class="{{ request()->routeIs('announcements.*') ? 'active' : '' }}">
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
-                    ประกาศ
+                    {{ __('app.announcements') }}
                 </a>
                 <a href="{{ route('student.my') }}" class="{{ request()->routeIs('student.my') ? 'active' : '' }}" style="position:relative;">
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                    ของฉัน
+                    {{ __('app.mine') }}
                     <span id="nav-todo-badge" style="display:none;position:absolute;top:-4px;right:-6px;min-width:16px;height:16px;border-radius:8px;background:#b91c1c;color:#fff;font-size:.6rem;font-weight:700;line-height:16px;text-align:center;padding:0 3px;"></span>
                 </a>
                 <a href="{{ route('student.history') }}" class="{{ request()->routeIs('student.history') ? 'active' : '' }}">
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    ประวัติ
+                    {{ __('app.history') }}
                 </a>
                 <a href="{{ route('student.summary') }}" class="{{ request()->routeIs('student.summary') ? 'active' : '' }}">
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    สรุป
+                    {{ __('app.summary') }}
                 </a>
                 <a href="{{ route('student.graduation.status') }}" class="{{ request()->routeIs('student.graduation.*') ? 'active' : '' }}" title="สถานะการสำเร็จการศึกษา & Official Transcript">
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
-                    สำเร็จการศึกษา
+                    {{ __('app.graduation') }}
                 </a>
                 <a href="{{ route('student.profile') }}" class="{{ request()->routeIs('student.profile') ? 'active' : '' }}">
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                    โปรไฟล์
+                    {{ __('app.profile') }}
                 </a>
             </nav>
             <div class="navbar-right navbar-desktop">
@@ -124,7 +124,7 @@
                         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                         </svg>
-                        <span>ออก</span>
+                        <span>{{ __('app.logout_short') }}</span>
                     </button>
                 </form>
             </div>
@@ -154,7 +154,7 @@
                         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                         </svg>
-                        <span>ออก</span>
+                        <span>{{ __('app.logout_short') }}</span>
                     </button>
                 </form>
             </div>
@@ -163,19 +163,19 @@
             <nav class="navbar-center navbar-desktop">
                 <a href="{{ route('activities.index') }}" class="{{ request()->routeIs('activities.*') ? 'active' : '' }}">
                     <x-icon name="activity" size="18" />
-                    กิจกรรม
+                    {{ __('app.activities') }}
                 </a>
                 <a href="{{ route('jobs.index') }}" class="{{ request()->routeIs('jobs.*') ? 'active' : '' }}">
                     <x-icon name="job" size="18" />
-                    หางาน / ฝึกงาน
+                    {{ __('app.jobs') }}
                 </a>
                 <a href="{{ route('map.index') }}" class="{{ request()->routeIs('map.*') ? 'active' : '' }}">
                     <x-icon name="map" size="18" />
-                    แผนที่
+                    {{ __('app.map') }}
                 </a>
                 <a href="{{ route('announcements.index') }}" class="{{ request()->routeIs('announcements.*') ? 'active' : '' }}">
                     <x-icon name="announcement" size="18" />
-                    ข่าวประกาศ
+                    {{ __('app.announcements') }}
                 </a>
             </nav>
             <div class="navbar-right navbar-desktop">
@@ -191,10 +191,10 @@
 
                 <a href="{{ route('login') }}" class="btn btn-primary btn-sm" style="display:inline-flex; align-items:center; gap:4px;">
                     <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-                    เข้าสู่ระบบ
+                    {{ __('app.login') }}
                 </a>
                 <a href="{{ route('register') }}" class="btn btn-outline btn-sm" style="display:inline-flex; align-items:center; gap:4px;">
-                    สมัครสมาชิก
+                    {{ __('app.register') }}
                 </a>
             </div>
             {{-- Guest Mobile Header Right --}}
@@ -213,7 +213,7 @@
                 </a>
                 <a href="{{ route('login') }}" class="btn btn-sm btn-primary" style="padding:.35rem .75rem; font-size:.8rem; display:inline-flex; align-items:center; gap:5px; border-radius:9px;">
                     <svg class="icon-sm" style="width:14px; height:14px; margin:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-                    เข้าสู่ระบบ
+                    {{ __('app.login') }}
                 </a>
             </div>
             @endauth
@@ -265,49 +265,49 @@
     <nav class="bottom-nav">
         <a href="{{ route('activities.index') }}" class="bottom-nav-item {{ request()->routeIs('activities.*') ? 'active' : '' }}">
             <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-            <span>หน้าหลัก</span>
+            <span>{{ __('app.home_page') }}</span>
         </a>
         <a href="{{ route('student.my') }}" class="bottom-nav-item {{ request()->routeIs('student.my') ? 'active' : '' }}" style="position:relative;">
             <x-icon name="activity" class="bottom-nav-icon" />
-            <span>กิจกรรม</span>
+            <span>{{ __('app.activities') }}</span>
             <span id="bottom-todo-badge" style="display:none;position:absolute;top:4px;right:calc(50% - 20px);min-width:16px;height:16px;border-radius:8px;background:#b91c1c;color:#fff;font-size:.6rem;font-weight:700;line-height:16px;text-align:center;padding:0 3px;"></span>
         </a>
         <a href="{{ route('student.scanner') }}" class="bottom-nav-item scanner-nav-item {{ request()->routeIs('student.scanner') ? 'active' : '' }}">
             <div class="scanner-icon-wrap">
                 <x-icon name="scan" class="bottom-nav-icon scanner-icon" />
             </div>
-            <span>สแกน</span>
+            <span>{{ __('app.scan') }}</span>
         </a>
         <a href="{{ route('student.summary') }}" class="bottom-nav-item {{ request()->routeIs('student.summary') ? 'active' : '' }}">
             <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <span>สรุป</span>
+            <span>{{ __('app.summary') }}</span>
         </a>
         <a href="{{ route('student.profile') }}" class="bottom-nav-item {{ request()->routeIs('student.profile') ? 'active' : '' }}">
             <x-icon name="user" class="bottom-nav-icon" />
-            <span>โปรไฟล์</span>
+            <span>{{ __('app.profile') }}</span>
         </a>
     </nav>
     @elseif(!request()->routeIs('login*', 'admin.login*', 'register*', 'password.*', 'admin.password.*'))
     <nav class="bottom-nav">
         <a href="{{ route('activities.index') }}" class="bottom-nav-item {{ request()->routeIs('activities.*') ? 'active' : '' }}">
             <x-icon name="activity" class="bottom-nav-icon" />
-            <span>กิจกรรม</span>
+            <span>{{ __('app.activities') }}</span>
         </a>
         <a href="{{ route('jobs.index') }}" class="bottom-nav-item {{ request()->routeIs('jobs.*') ? 'active' : '' }}">
             <x-icon name="job" class="bottom-nav-icon" />
-            <span>หางาน</span>
+            <span>{{ __('app.jobs_short') }}</span>
         </a>
         <a href="{{ route('map.index') }}" class="bottom-nav-item {{ request()->routeIs('map.*') ? 'active' : '' }}">
             <x-icon name="map" class="bottom-nav-icon" />
-            <span>แผนที่</span>
+            <span>{{ __('app.map') }}</span>
         </a>
         <a href="{{ route('announcements.index') }}" class="bottom-nav-item {{ request()->routeIs('announcements.*') ? 'active' : '' }}">
             <x-icon name="announcement" class="bottom-nav-icon" />
-            <span>ข่าวประกาศ</span>
+            <span>{{ __('app.announcements' ) }}</span>
         </a>
         <a href="{{ route('login') }}" class="bottom-nav-item {{ request()->routeIs('login') ? 'active' : '' }}">
             <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-            <span>เข้าสู่ระบบ</span>
+            <span>{{ __('app.login') }}</span>
         </a>
     </nav>
     @endauth
