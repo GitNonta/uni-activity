@@ -143,6 +143,7 @@ Route::get('/activities/{activity}', [ActivityController::class, 'show'])->name(
 Route::get('/announcements', [StudentAnnouncementController::class, 'index'])->name('announcements.index');
 Route::get('/announcements/{announcement}', [StudentAnnouncementController::class, 'show'])->name('announcements.show');
 Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
+Route::get('/jobs/suggest', [JobController::class, 'suggest'])->middleware('throttle:api-general')->name('jobs.suggest'); // Typeahead กัน scraping — ต้องมาก่อน {job}
 Route::get('/jobs/{job}', [JobController::class, 'show'])->name('jobs.show');
 Route::get('/map', [MapController::class, 'index'])->name('map.index');
 

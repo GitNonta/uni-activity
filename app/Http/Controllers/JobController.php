@@ -9,6 +9,7 @@ use App\Models\Message;
 use App\Models\Room;
 use App\Repositories\ChatRepository;
 use App\Services\ListCache;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
@@ -168,6 +169,35 @@ class JobController extends Controller
     }
 
     /** แสดงรายละเอียดงาน */
+    /**
+     * Typeahead: แนะนำงานตอนพิมพ์ค้นหา (สาธารณะ + throttle กัน scraping)
+     */
+    public function suggest(Request $request): JsonResponse
+    {
+        $q = ltrim(trim((string) $request->query('q', '')), '#');
+        if ($q === '') {
+            return response()->json(['suggestions' => []]);
+        }
+
+        $jobs = JobListing::query()
+            ->where(function ($sq) use ($q) {
+                $sq->where('title', 'like', "%{$q}%")
+                   ->orWhere('position', 'like', "%{$q}%")
+                   ->orWhere('location', 'like', "%{$q}%");
+            })
+            ->orderByDesc('created_at')
+            ->limit(7)
+            ->get(['id', 'title', 'start_date']);
+
+        return response()->json([
+            'suggestions' => $jobs->map(fn ($j) => [
+                'id' => $j->id,
+                'title' => $j->title,
+                'date' => $j->start_date?->format('d/m/Y') ?? '',
+            ]),
+        ]);
+    }
+
     public function show(JobListing $job): \Illuminate\View\View
     {
         $job->loadMissing(['creator:id,full_name,profile_photo']);
