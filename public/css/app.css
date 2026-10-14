@@ -3682,6 +3682,49 @@ html.dark .page-filter-btn-outline:hover {
     transform: translateY(-50%) scale(0.95);
 }
 
+/* ปุ่มไอคอนในกล่องค้นหาโหมดตัวกรอง (แสดงแทนปุ่มค้นหาหลังค้นหาแล้ว) */
+.act-search-submit-icon-btn.as-filter {
+    background: #ffffff;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+}
+.act-search-submit-icon-btn.as-filter:hover {
+    background: #f1f5f9;
+}
+.act-search-submit-icon-btn.as-filter.active {
+    border-color: #ea580c;
+    color: #ea580c;
+    background: rgba(234, 88, 12, 0.08);
+}
+.act-search-submit-icon-btn.as-filter .act-filter-count-dot {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    border: 2px solid #ffffff;
+}
+html[data-theme="dark"] .act-search-submit-icon-btn.as-filter,
+html.dark .act-search-submit-icon-btn.as-filter {
+    background: #1e293b;
+    color: #cbd5e1;
+    border-color: #475569;
+}
+html[data-theme="dark"] .act-search-submit-icon-btn.as-filter:hover,
+html.dark .act-search-submit-icon-btn.as-filter:hover {
+    background: #334155;
+}
+html[data-theme="dark"] .act-search-submit-icon-btn.as-filter.active,
+html.dark .act-search-submit-icon-btn.as-filter.active {
+    border-color: #fb923c;
+    color: #fb923c;
+    background: rgba(234, 88, 12, 0.15);
+}
+html[data-theme="dark"] .act-search-submit-icon-btn.as-filter .act-filter-count-dot,
+html.dark .act-search-submit-icon-btn.as-filter .act-filter-count-dot {
+    border-color: #0f172a;
+}
+
 .act-search-btn-group {
     display: flex;
     align-items: center;

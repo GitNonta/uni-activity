@@ -20,18 +20,27 @@
     <div class="act-search-main-row">
         <div class="act-search-input-wrap">
             <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('act.search_placeholder') }}" class="act-search-input">
-            <button type="submit" class="act-search-submit-icon-btn" title="{{ __('act.search') }}" aria-label="{{ __('act.search') }}">
-                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            </button>
+            @if($hasSearched)
+                {{-- หลังค้นหา: ปุ่มไอคอนกลายเป็นตัวกรอง (กด Enter ยังค้นหาซ้ำได้) --}}
+                <button type="button" id="toggleFilterBtn" class="act-search-submit-icon-btn as-filter active" onclick="toggleActFilters()" title="{{ __('act.filter') }}" aria-label="{{ __('act.filter') }}">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                    @if(request()->filled('category') || request()->filled('scope'))
+                        <span class="act-filter-count-dot"></span>
+                    @endif
+                </button>
+            @else
+                <button type="submit" class="act-search-submit-icon-btn" title="{{ __('act.search') }}" aria-label="{{ __('act.search') }}">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </button>
+            @endif
         </div>
         <div class="act-search-btn-group">
-            <button type="button" id="toggleFilterBtn" class="act-filter-toggle-btn {{ $hasSearched ? 'active' : '' }}" onclick="toggleActFilters()" title="{{ __('act.filter_toggle') }}">
+            @if(!$hasSearched)
+            <button type="button" id="toggleFilterBtn" class="act-filter-toggle-btn" onclick="toggleActFilters()" title="{{ __('act.filter_toggle') }}">
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
                 <span>{{ __('act.filter') }}</span>
-                @if($hasSearched)
-                    <span class="act-filter-count-dot"></span>
-                @endif
             </button>
+            @endif
             @if($geoActivities->count())
             <a href="{{ route('map.index', ['type' => 'activity']) }}" class="page-filter-btn-outline" title="{{ __('ดูบนแผนที่') }}">
                 <x-icon name="map" size="14" />
