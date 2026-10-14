@@ -1,6 +1,6 @@
 {{-- หน้ารีเซ็ตรหัสผ่านสำหรับ Staff --}}
 @extends('layouts.app')
-@section('title', 'รีเซ็ตรหัสผ่าน')
+@section('title', __('รีเซ็ตรหัสผ่าน')
 
 @section('content')
 <div class="container" style="max-width:400px;margin:2rem auto;">
@@ -62,7 +62,7 @@
 
                 <div style="text-align:center;">
                     <a href="{{ route('admin.login') }}" style="color:#64748b;font-size:.9rem;">
-                        &larr; กลับไปหน้าเข้าสู่ระบบ
+                        &larr; {{ __('กลับไปหน้าเข้าสู่ระบบ') }}
                     </a>
                 </div>
             </form>
