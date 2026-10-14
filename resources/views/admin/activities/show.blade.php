@@ -14,26 +14,26 @@
                 <h1 class="font-bold" style="font-size:1.25rem;">{{ $activity->title }}</h1>
                 <div class="flex gap-2 mt-1" style="flex-wrap:wrap;">
                     @include('components.status-badge', ['status' => $activity->computed_status])
-                    @if($activity->is_mandatory)<span class="badge badge-red">บังคับ</span>@endif
-                    @if($activity->allow_walkin)<span class="badge" style="background:#dcfce7;color:#166534;">เปิดรับ Walk-in</span>@else<span class="badge" style="background:#fee2e2;color:#991b1b;">เฉพาะผู้ลงทะเบียน</span>@endif
+                    @if($activity->is_mandatory)<span class="badge badge-red">{{ __('บังคับ') }}</span>@endif
+                    @if($activity->allow_walkin)<span class="badge" style="background:#dcfce7;color:#166534;">{{ __('เปิดรับ Walk-in') }}</span>@else<span class="badge" style="background:#fee2e2;color:#991b1b;">{{ __('เฉพาะผู้ลงทะเบียน') }}</span>@endif
                     @if($activity->category)<span class="badge badge-orange">{{ $activity->category->name }}</span>@endif
                     @if($activity->scope === 'faculty')
                         <span class="badge" style="background:#fef3c7;color:#92400e;">{{ __('คณะ') }}: {{ __($activity->faculty) }}</span>
                     @elseif($activity->scope === 'department')
                         <span class="badge" style="background:#ffedd5;color:#5b21b6;">{{ __('สาขา') }}: {{ __($activity->department) }} ({{ __($activity->faculty) }})</span>
                     @else
-                        <span class="badge" style="background:#e0f2fe;color:#0369a1;">ระดับมหาวิทยาลัย</span>
+                        <span class="badge" style="background:#e0f2fe;color:#0369a1;">{{ __('ระดับมหาวิทยาลัย') }}</span>
                     @endif
                 </div>
             </div>
             <div class="flex gap-2">
-                <a href="{{ route('admin.activities.broadcast', $activity->id) }}" class="btn btn-primary btn-sm flex items-center gap-1" title="ส่งประกาศด่วนและตั้งเตือนอัตโนมัติ">
+                <a href="{{ route('admin.activities.broadcast', $activity->id) }}" class="btn btn-primary btn-sm flex items-center gap-1" title="{{ __('ส่งประกาศด่วนและตั้งเตือนอัตโนมัติ') }}">
                     <svg style="width:1rem;height:1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>
-                    <span>บรอดแคสต์ & แจ้งเตือน</span>
+                    <span>{{ __('บรอดแคสต์') }}& {{ __('แจ้งเตือน') }}</span>
                 </a>
-                <a href="{{ route('admin.activities.edit', $activity->id) }}" class="btn btn-outline btn-sm">แก้ไข</a>
-                <a href="{{ route('admin.activities.participants', $activity->id) }}" class="btn btn-outline btn-sm">ผู้เข้าร่วม</a>
-                <a href="{{ route('admin.activities.checkin', $activity->id) }}" class="btn btn-success btn-sm">มอนิเตอร์</a>
+                <a href="{{ route('admin.activities.edit', $activity->id) }}" class="btn btn-outline btn-sm">{{ __('แก้ไข') }}</a>
+                <a href="{{ route('admin.activities.participants', $activity->id) }}" class="btn btn-outline btn-sm">{{ __('ผู้เข้าร่วม') }}</a>
+                <a href="{{ route('admin.activities.checkin', $activity->id) }}" class="btn btn-success btn-sm">{{ __('มอนิเตอร์') }}</a>
             </div>
         </div>
 
@@ -46,20 +46,20 @@
         {{-- การ์ดข้อมูล: วันที่, เวลา, สถานที่, ชั่วโมง --}}
         <div class="grid-4 mt-4" style="font-size:.875rem;">
             <div class="card stat-card">
-                <p class="stat-label">วันที่</p>
+                <p class="stat-label">{{ __('วันที่') }}</p>
                 <p class="font-semi">{{ $activity->activity_date->format('d/m/Y') }}</p>
             </div>
             <div class="card stat-card">
-                <p class="stat-label">เวลา</p>
+                <p class="stat-label">{{ __('เวลา') }}</p>
                 <p class="font-semi">{{ \Carbon\Carbon::parse($activity->start_time)->format('H:i') }}-{{ \Carbon\Carbon::parse($activity->end_time)->format('H:i') }}</p>
             </div>
             <div class="card stat-card">
-                <p class="stat-label">สถานที่</p>
+                <p class="stat-label">{{ __('สถานที่') }}</p>
                 <p class="font-semi">{{ $activity->location ?? '-' }}</p>
             </div>
             <div class="card stat-card">
-                <p class="stat-label">ชั่วโมง</p>
-                <p class="font-semi">{{ $activity->activity_hours }} ชม.</p>
+                <p class="stat-label">{{ __('ชั่วโมง') }}</p>
+                <p class="font-semi">{{ $activity->activity_hours }} {{ __('ชม.') }}</p>
             </div>
         </div>
 
@@ -70,14 +70,14 @@
         @endphp
         <div class="grid-2 mt-4" style="font-size:.875rem;">
             <div class="card stat-card">
-                <p class="stat-label">ผู้ลงทะเบียน</p>
+                <p class="stat-label">{{ __('ผู้ลงทะเบียน') }}</p>
                 <p class="font-bold" style="font-size:1.25rem;">{{ $activity->getRegisteredCount() }}/{{ $activity->max_participants }}</p>
             </div>
             <div class="card stat-card">
-                <p class="stat-label">เช็คอิน (อนุมัติ / รออนุมัติ)</p>
-                <p class="font-bold text-success" style="font-size:1.25rem;">{{ $approvedCount }} คน
+                <p class="stat-label">{{ __('เช็คอิน (อนุมัติ / รออนุมัติ)') }}</p>
+                <p class="font-bold text-success" style="font-size:1.25rem;">{{ $approvedCount }} {{ __('คน') }}
                     @if($pendingCount > 0)
-                        <span style="font-size:.85rem;color:#d97706;">(รอ {{ $pendingCount }})</span>
+                        <span style="font-size:.85rem;color:#d97706;">({{ __('รอ') }}{{ $pendingCount }})</span>
                     @endif
                 </p>
             </div>
@@ -87,15 +87,15 @@
         @if($activity->hasGeolocation())
         <div class="mt-4">
             <div class="flex items-center justify-between mb-2">
-                <p class="font-semi text-sm">พิกัดสถานที่จัดกิจกรรม</p>
-                <span class="text-xs text-muted">{{ $activity->latitude }}, {{ $activity->longitude }} | รัศมี {{ $activity->checkin_radius }}m</span>
+                <p class="font-semi text-sm">{{ __('พิกัดสถานที่จัดกิจกรรม') }}</p>
+                <span class="text-xs text-muted">{{ $activity->latitude }}, {{ $activity->longitude }} | {{ __('รัศมี') }}{{ $activity->checkin_radius }}m</span>
             </div>
             <div id="showMap" style="height:280px;border-radius:8px;border:1px solid #e2e8f0;z-index:0;"></div>
         </div>
         @else
         <div class="mt-2" style="font-size:.875rem;">
             <div class="card stat-card" style="background:#fef3c7;">
-                <p class="text-sm" style="color:#92400e;">ยังไม่ได้ตั้งค่าพิกัดสถานที่ — นักศึกษาบันทึกกิจกรรมจะต้องรอผู้จัดอนุมัติทุกครั้ง</p>
+                <p class="text-sm" style="color:#92400e;">{{ __('ยังไม่ได้ตั้งค่าพิกัดสถานที่ — นักศึกษาบันทึกกิจกรรมจะต้องรอผู้จัดอนุมัติทุกครั้ง') }}</p>
             </div>
         </div>
         @endif
@@ -104,8 +104,8 @@
         <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #e2e8f0;">
             <div class="flex items-center justify-between" style="flex-wrap:wrap;gap:.75rem;">
                 <div>
-                    <p class="font-semi text-sm">อนุญาตบันทึกกิจกรรมก่อนเวลา</p>
-                    <p class="text-xs text-muted">เปิดให้นักศึกษาบันทึกกิจกรรมได้ทันที ไม่ต้องรอถึงเวลาเช็คอิน</p>
+                    <p class="font-semi text-sm">{{ __('อนุญาตบันทึกกิจกรรมก่อนเวลา') }}</p>
+                    <p class="text-xs text-muted">{{ __('เปิดให้นักศึกษาบันทึกกิจกรรมได้ทันที ไม่ต้องรอถึงเวลาเช็คอิน') }}</p>
                 </div>
                 <form method="POST" action="{{ route('admin.activities.toggle-early-checkin', $activity->id) }}">
                     @csrf
@@ -124,7 +124,7 @@
 
         {{-- QR Code Section --}}
         <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border, #e2e8f0);">
-            <h3 class="font-bold mb-3" style="font-size:1.1rem;color:var(--text-main, #1e293b);">ระบบคิวอาร์โค้ด (QR Codes)</h3>
+            <h3 class="font-bold mb-3" style="font-size:1.1rem;color:var(--text-main, #1e293b);">{{ __('ระบบคิวอาร์โค้ด (QR Codes)') }}</h3>
 
             @if($activity->isCompleted())
                 <div class="alert mb-3" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.75rem 1rem;border-radius:6px;display:flex;align-items:center;gap:0.5rem;">
@@ -132,23 +132,23 @@
                         <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
                         <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                     </svg>
-                    <span><strong>กิจกรรมสิ้นสุดแล้ว</strong> — ระบบ QR Code ทั้งหมด (เข้างาน / ออกงาน / Walk-in) ถูกปิดใช้งาน</span>
+                    <span><strong>{{ __('กิจกรรมสิ้นสุดแล้ว') }}</strong> — {{ __('ระบบ QR Code ทั้งหมด (เข้างาน / ออกงาน / Walk-in) ถูกปิดใช้งาน') }}</span>
                 </div>
             @else
             <div class="grid-2" style="gap:1rem;">
                 {{-- QR 1: Check-in --}}
                 <div class="card" style="border:1px solid #dcfce7;box-shadow:none;">
-                    <div class="card-header" style="background:#dcfce7;color:#166534;padding:0.75rem 1rem;">QR ที่ 1: เข้างาน (Check-in)</div>
+                    <div class="card-header" style="background:#dcfce7;color:#166534;padding:0.75rem 1rem;">QR {{ __('ที่ 1: เข้างาน (Check-in)') }}</div>
                     <div class="card-body" style="padding:1rem;">
                         @if($activity->qr_token)
                             <div class="flex items-center gap-2 mb-3" style="flex-wrap:wrap;">
                                 <code id="entry-url" class="text-xs" style="background:var(--surface-hover, #f1f5f9);color:var(--text-main, #0f172a);padding:.375rem;border-radius:4px;flex:1;word-break:break-all;">{{ url('/check-in/' . $activity->qr_token) }}</code>
-                                <button onclick="copyToClipboard('entry-url')" class="btn btn-sm btn-outline" style="white-space:nowrap;" title="คัดลอก">คัดลอก</button>
-                                <button onclick="showQRModal('{{ url('/check-in/' . $activity->qr_token) }}', 'QR สำหรับเข้างาน')" class="btn btn-sm btn-outline" style="white-space:nowrap;">แสดง QR</button>
+                                <button onclick="copyToClipboard('entry-url')" class="btn btn-sm btn-outline" style="white-space:nowrap;" title="{{ __('คัดลอก') }}">{{ __('คัดลอก') }}</button>
+                                <button onclick="showQRModal('{{ url('/check-in/' . $activity->qr_token) }}', 'QR {{ __('สำหรับเข้างาน') }}')" class="btn btn-sm btn-outline" style="white-space:nowrap;">{{ __('แสดง QR') }}</button>
                             </div>
                         @else
                             <div class="alert mb-3" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem;border-radius:4px;">
-                                ยังไม่มี QR Code สำหรับเข้างาน
+                                {{ __('ยังไม่มี QR Code สำหรับเข้างาน') }}
                             </div>
                         @endif
                         
@@ -156,12 +156,12 @@
                             @csrf
                             <div class="flex items-center gap-2" style="flex-wrap:wrap;">
                                 <select name="expires_in_hours" class="form-control form-control-sm" style="width:auto;font-size:0.75rem;padding:0.25rem;">
-                                    <option value="">-- ไม่จำกัดเวลา --</option>
-                                    <option value="1">1 ชั่วโมง</option>
-                                    <option value="6">6 ชั่วโมง</option>
-                                    <option value="24">24 ชั่วโมง</option>
+                                    <option value="">-- {{ __('ไม่จำกัดเวลา --') }}</option>
+                                    <option value="1">1 {{ __('ชั่วโมง') }}</option>
+                                    <option value="6">6 {{ __('ชั่วโมง') }}</option>
+                                    <option value="24">24 {{ __('ชั่วโมง') }}</option>
                                 </select>
-                                <button type="submit" class="btn btn-sm" style="background:#166534;color:#fff;">สร้าง QR ใหม่</button>
+                                <button type="submit" class="btn btn-sm" style="background:#166534;color:#fff;">{{ __('สร้าง QR ใหม่') }}</button>
                             </div>
                         </form>
                     </div>
@@ -169,17 +169,17 @@
 
                 {{-- QR 2: Check-out --}}
                 <div class="card" style="border:1px solid #ffedd5;box-shadow:none;">
-                    <div class="card-header" style="background:#ffedd5;color:#9a3412;padding:0.75rem 1rem;">QR ที่ 2: ออกงาน (Check-out)</div>
+                    <div class="card-header" style="background:#ffedd5;color:#9a3412;padding:0.75rem 1rem;">QR {{ __('ที่ 2: ออกงาน (Check-out)') }}</div>
                     <div class="card-body" style="padding:1rem;">
                         @if($activity->qr_checkout_token)
                             <div class="flex items-center gap-2 mb-3" style="flex-wrap:wrap;">
                                 <code id="exit-url" class="text-xs" style="background:var(--surface-hover, #f1f5f9);color:var(--text-main, #0f172a);padding:.375rem;border-radius:4px;flex:1;word-break:break-all;">{{ url('/check-in/' . $activity->qr_checkout_token) }}</code>
-                                <button onclick="copyToClipboard('exit-url')" class="btn btn-sm btn-outline" style="white-space:nowrap;" title="คัดลอก">คัดลอก</button>
-                                <button onclick="showQRModal('{{ url('/check-in/' . $activity->qr_checkout_token) }}', 'QR สำหรับออกงาน (รับชั่วโมง)')" class="btn btn-sm btn-outline" style="white-space:nowrap;">แสดง QR</button>
+                                <button onclick="copyToClipboard('exit-url')" class="btn btn-sm btn-outline" style="white-space:nowrap;" title="{{ __('คัดลอก') }}">{{ __('คัดลอก') }}</button>
+                                <button onclick="showQRModal('{{ url('/check-in/' . $activity->qr_checkout_token) }}', 'QR {{ __('สำหรับออกงาน (รับชั่วโมง)') }}')" class="btn btn-sm btn-outline" style="white-space:nowrap;">{{ __('แสดง QR') }}</button>
                             </div>
                         @else
                             <div class="alert mb-3" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem;border-radius:4px;">
-                                ยังไม่มี QR Code สำหรับออกงาน
+                                {{ __('ยังไม่มี QR Code สำหรับออกงาน') }}
                             </div>
                         @endif
                         
@@ -187,12 +187,12 @@
                             @csrf
                             <div class="flex items-center gap-2" style="flex-wrap:wrap;">
                                 <select name="expires_in_hours" class="form-control form-control-sm" style="width:auto;font-size:0.75rem;padding:0.25rem;">
-                                    <option value="">-- ไม่จำกัดเวลา --</option>
-                                    <option value="1">1 ชั่วโมง</option>
-                                    <option value="6">6 ชั่วโมง</option>
-                                    <option value="24">24 ชั่วโมง</option>
+                                    <option value="">-- {{ __('ไม่จำกัดเวลา --') }}</option>
+                                    <option value="1">1 {{ __('ชั่วโมง') }}</option>
+                                    <option value="6">6 {{ __('ชั่วโมง') }}</option>
+                                    <option value="24">24 {{ __('ชั่วโมง') }}</option>
                                 </select>
-                                <button type="submit" class="btn btn-sm" style="background:#9a3412;color:#fff;">สร้าง QR ใหม่</button>
+                                <button type="submit" class="btn btn-sm" style="background:#9a3412;color:#fff;">{{ __('สร้าง QR ใหม่') }}</button>
                             </div>
                         </form>
                     </div>
@@ -201,18 +201,18 @@
 
             {{-- Walk-in Check-in URL (Staff only) --}}
             <div class="mt-3 card" style="border:1px solid #fef3c7;box-shadow:none;">
-                <div class="card-header" style="background:#fef3c7;color:#92400e;padding:0.75rem 1rem;">สแกนสำหรับ Walk-in (แอดมินเท่านั้น)</div>
+                <div class="card-header" style="background:#fef3c7;color:#92400e;padding:0.75rem 1rem;">{{ __('สแกนสำหรับ Walk-in (แอดมินเท่านั้น)') }}</div>
                 <div class="card-body" style="padding:1rem;">
                     @if($activity->qr_token)
                         <div class="flex items-center gap-2" style="flex-wrap:wrap;">
                             <code id="walkin-url" class="text-xs" style="background:var(--surface-hover, #f1f5f9);color:var(--text-main, #0f172a);padding:.375rem;border-radius:4px;flex:1;word-break:break-all;">{{ url('/walkin/' . $activity->qr_token) }}</code>
-                            <button onclick="copyToClipboard('walkin-url')" class="btn btn-sm btn-outline" style="white-space:nowrap;" title="คัดลอก">คัดลอก</button>
-                            <button onclick="showQRModal('{{ url('/walkin/' . $activity->qr_token) }}', 'QR สำหรับ Walk-in')" class="btn btn-sm btn-outline" style="white-space:nowrap;">แสดง QR</button>
-                            <a href="{{ route('checkin.walkin', $activity->qr_token) }}" target="_blank" class="btn btn-sm" style="background:#b45309;color:#fff;white-space:nowrap;line-height:1.5;">เปิดหน้า Walk-in</a>
+                            <button onclick="copyToClipboard('walkin-url')" class="btn btn-sm btn-outline" style="white-space:nowrap;" title="{{ __('คัดลอก') }}">{{ __('คัดลอก') }}</button>
+                            <button onclick="showQRModal('{{ url('/walkin/' . $activity->qr_token) }}', 'QR {{ __('สำหรับ Walk-in') }}')" class="btn btn-sm btn-outline" style="white-space:nowrap;">{{ __('แสดง QR') }}</button>
+                            <a href="{{ route('checkin.walkin', $activity->qr_token) }}" target="_blank" class="btn btn-sm" style="background:#b45309;color:#fff;white-space:nowrap;line-height:1.5;">{{ __('เปิดหน้า Walk-in') }}</a>
                         </div>
                     @else
                         <div class="alert" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem;border-radius:4px;">
-                            กรุณาสร้าง QR Code เข้างานก่อน
+                            {{ __('กรุณาสร้าง QR Code เข้างานก่อน') }}
                         </div>
                     @endif
                 </div>
@@ -221,7 +221,7 @@
 
             @if($activity->qr_expires_at && !$activity->isCompleted())
             <div class="mt-3 text-sm" style="color:#ef4444;font-weight:600;">
-                * QR Code เข้างานเดิม หมดอายุ: {{ \Carbon\Carbon::parse($activity->qr_expires_at)->format('d/m/Y H:i') }}
+                * QR Code เข้างานเดิม หมดอายุ:{{ \Carbon\Carbon::parse($activity->qr_expires_at)->format('d/m/Y H:i') }}
             </div>
             @endif
         </div>
@@ -236,9 +236,9 @@
                     <div id="qr-code" style="display:flex;justify-content:center;"></div>
                 </div>
                 
-                <p style="font-size:0.95rem;color:var(--text-muted, #64748b);margin-bottom:2rem;line-height:1.5;">ให้นักศึกษาสแกน QR Code นี้<br>เพื่อดำเนินการผ่านระบบ</p>
+                <p style="font-size:0.95rem;color:var(--text-muted, #64748b);margin-bottom:2rem;line-height:1.5;">{{ __('ให้นักศึกษาสแกน QR Code นี้') }}<br>{{ __('เพื่อดำเนินการผ่านระบบ') }}</p>
                 
-                <button onclick="closeQRModal()" class="btn btn-outline" style="width:100%;padding:0.6rem;font-size:1rem;border-radius:8px;font-weight:600;">ปิดหน้าต่าง</button>
+                <button onclick="closeQRModal()" class="btn btn-outline" style="width:100%;padding:0.6rem;font-size:1rem;border-radius:8px;font-weight:600;">{{ __('ปิดหน้าต่าง') }}</button>
             </div>
         </div>
 
@@ -260,7 +260,7 @@
                         document.execCommand('copy');
                         showCopyToast();
                     } catch (err) {
-                        alert("ไม่สามารถคัดลอกได้: " + err);
+                        alert("{{ __('ไม่สามารถคัดลอกได้:') }}" + err);
                     }
                     document.body.removeChild(textArea);
                     return;
@@ -269,13 +269,13 @@
                 navigator.clipboard.writeText(url).then(() => {
                     showCopyToast();
                 }).catch(err => {
-                    alert("ไม่สามารถคัดลอกได้: " + err);
+                    alert("{{ __('ไม่สามารถคัดลอกได้:') }}" + err);
                 });
             }
 
             function showCopyToast() {
                 const toast = document.createElement('div');
-                toast.textContent = 'คัดลอกลิงก์สำเร็จแล้ว!';
+                toast.textContent = '{{ __('คัดลอกลิงก์สำเร็จแล้ว!') }}';
                 toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#10b981;color:white;padding:12px 20px;border-radius:8px;z-index:2000;animation:slideIn 0.3s ease;box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);';
                 document.body.appendChild(toast);
                 setTimeout(() => toast.remove(), 3000);
@@ -345,7 +345,7 @@
 <script>
 function openNativeMap(lat, lng, title) {
     if (!lat || !lng) return;
-    const encTitle = encodeURIComponent(title || 'สถานที่กิจกรรม');
+    const encTitle = encodeURIComponent(title || '{{ __('สถานที่กิจกรรม') }}');
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     const isAndroid = /Android/.test(navigator.userAgent);
 
@@ -380,7 +380,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <b style="display:block;margin-bottom:6px;">{{ addslashes($activity->location ?? $activity->title) }}</b>
             <button type="button" onclick="openNativeMap(${lat}, ${lng}, '{{ addslashes($activity->title) }}')" class="btn btn-primary btn-sm" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;font-size:12px;cursor:pointer;">
                 <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                <span>เปิดแอปแผนที่นำทาง</span>
+                <span>{{ __('เปิดแอปแผนที่นำทาง') }}</span>
             </button>
         </div>
     `);

@@ -64,7 +64,7 @@ label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
             <div style="display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;">
                 {{-- Avatar Container with Floating Badges on Edge --}}
                 <div style="position: relative; width: 88px; height: 88px; flex-shrink: 0;">
-                    <label for="profilePhotoInput" style="cursor: pointer; display: block; width: 100%; height: 100%; border-radius: 50%; position: relative; overflow: hidden; border: 3px solid rgba(255,255,255,0.25); box-shadow: 0 4px 14px rgba(0,0,0,0.35);" title="คลิกเพื่ออัปโหลดรูปโปรไฟล์ใหม่">
+                    <label for="profilePhotoInput" style="cursor: pointer; display: block; width: 100%; height: 100%; border-radius: 50%; position: relative; overflow: hidden; border: 3px solid rgba(255,255,255,0.25); box-shadow: 0 4px 14px rgba(0,0,0,0.35);" title="{{ __('คลิกเพื่ออัปโหลดรูปโปรไฟล์ใหม่') }}">
                         @if($user->profile_photo)
                             <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="{{ $user->full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
                         @else
@@ -76,7 +76,7 @@ label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
                     </label>
 
                     {{-- Camera Badge on Bottom-Right Edge --}}
-                    <label for="profilePhotoInput" class="avatar-camera-btn" title="เปลี่ยนรูปโปรไฟล์">
+                    <label for="profilePhotoInput" class="avatar-camera-btn" title="{{ __('เปลี่ยนรูปโปรไฟล์') }}">
                         <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>
                     </label>
 
@@ -94,12 +94,12 @@ label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
                         @if($user->isAdmin())
                             <span style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35); font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.65rem; border-radius: 9999px; display: inline-flex; align-items: center; gap: 0.35rem;">
                                 <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                                ผู้ดูแลระบบสูงสุด (Super Admin)
+                                {{ __('ผู้ดูแลระบบสูงสุด (Super Admin)') }}
                             </span>
                         @else
                             <span style="background: rgba(234, 88, 12, 0.2); color: #fdba74; border: 1px solid rgba(234, 88, 12, 0.35); font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.65rem; border-radius: 9999px; display: inline-flex; align-items: center; gap: 0.35rem;">
                                 <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                                เจ้าหน้าที่ระบบ (Staff)
+                                {{ __('เจ้าหน้าที่ระบบ (Staff)') }}
                             </span>
                         @endif
                     </div>
@@ -108,9 +108,9 @@ label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
                         <span>•</span>
                         <span>{{ $user->email }}</span>
                         <span>•</span>
-                        <span>เพศ: <strong style="color: #cbd5e1;">{{ $user->gender_label }}</strong></span>
+                        <span>{{ __('เพศ:') }}<strong style="color: #cbd5e1;">{{ $user->gender_label }}</strong></span>
                         <span>•</span>
-                        <span>สังกัด: <strong style="color: #cbd5e1;">{{ $user->organization ?: ($user->position ?: 'หน่วยงานส่วนกลาง') }}</strong></span>
+                        <span>{{ __('สังกัด:') }}<strong style="color: #cbd5e1;">{{ $user->organization ?: ($user->position ?: 'หน่วยงานส่วนกลาง') }}</strong></span>
                     </div>
                 </div>
             </div>
@@ -118,18 +118,18 @@ label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
             {{-- Action Buttons --}}
             <div style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;">
                 @if($user->profile_photo)
-                    <form method="POST" action="{{ route('profile.photo.destroy') }}" style="margin:0;" onsubmit="return confirm('คุณต้องการลบรูปภาพโปรไฟล์ และเปลี่ยนไปใช้รูปอวตาร SVG ตามเพศ ({{ $user->gender_label }}) หรือไม่?');">
+                    <form method="POST" action="{{ route('profile.photo.destroy') }}" style="margin:0;" onsubmit="return confirm('คุณต้องการลบรูปภาพโปรไฟล์ และเปลี่ยนไปใช้รูปอวตาร SVG ตามเพศ ({{ $user->gender_label }}) {{ __('หรือไม่?') }}');">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-sm btn-outline" style="color: #fca5a5; border-color: rgba(239, 68, 68, 0.4); font-weight: 700;">
                             <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                            <span>ใช้อวตารตามเพศ (ลบรูปถ่าย)</span>
+                            <span>{{ __('ใช้อวตารตามเพศ (ลบรูปถ่าย)') }}</span>
                         </button>
                     </form>
                 @endif
                 <a href="{{ route('admin.settings.index', ['tab' => 'privacy']) }}" class="btn btn-primary btn-sm" style="font-weight: 700; line-height: 1.5;">
                     <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                    <span>แก้ไขข้อมูลส่วนตัว & เพศ & รหัสผ่าน</span>
+                    <span>{{ __('แก้ไขข้อมูลส่วนตัว') }}& {{ __('เพศ') }}& {{ __('รหัสผ่าน') }}</span>
                 </a>
             </div>
         </div>
@@ -154,60 +154,60 @@ label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
         {{-- Card 1: Activities --}}
         <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">กิจกรรมที่สร้าง</span>
+                <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">{{ __('กิจกรรมที่สร้าง') }}</span>
                 <div style="width: 32px; height: 32px; border-radius: 8px; background: #ffedd5; color: #9a3412; display: flex; align-items: center; justify-content: center;">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                 </div>
             </div>
             <div style="display: flex; align-items: baseline; gap: 0.4rem;">
                 <div style="font-size: 1.75rem; font-weight: 800; color: #0f172a;">{{ $stats['activities_count'] }}</div>
-                <span style="font-size: 0.85rem; color: #475569; font-weight: 600;">รายการ</span>
+                <span style="font-size: 0.85rem; color: #475569; font-weight: 600;">{{ __('รายการ') }}</span>
             </div>
-            <div style="font-size: 0.75rem; color: #475569; margin-top: 0.25rem; line-height: 1.5;">กิจกรรมในระบบทั้งหมดที่คุณสร้าง</div>
+            <div style="font-size: 0.75rem; color: #475569; margin-top: 0.25rem; line-height: 1.5;">{{ __('กิจกรรมในระบบทั้งหมดที่คุณสร้าง') }}</div>
         </div>
 
         {{-- Card 2: Announcements --}}
         <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <span style="font-size: 0.75rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1.5;">ข่าวประกาศ</span>
+                <span style="font-size: 0.75rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1.5;">{{ __('ข่าวประกาศ') }}</span>
                 <div style="width: 32px; height: 32px; border-radius: 8px; background: #e0e7ff; color: #4338ca; display: flex; align-items: center; justify-content: center;">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
                 </div>
             </div>
             <div style="display: flex; align-items: baseline; gap: 0.4rem;">
                 <div style="font-size: 1.75rem; font-weight: 800; color: #0f172a;">{{ $stats['announcements_count'] }}</div>
-                <span style="font-size: 0.85rem; color: #475569; font-weight: 600;">ข่าวสาร</span>
+                <span style="font-size: 0.85rem; color: #475569; font-weight: 600;">{{ __('ข่าวสาร') }}</span>
             </div>
-            <div style="font-size: 0.75rem; color: #475569; margin-top: 0.25rem; line-height: 1.5;">ประกาศแจ้งเตือนนักศึกษา</div>
+            <div style="font-size: 0.75rem; color: #475569; margin-top: 0.25rem; line-height: 1.5;">{{ __('ประกาศแจ้งเตือนนักศึกษา') }}</div>
         </div>
 
         {{-- Card 3: Audit Logs --}}
         <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <span style="font-size: 0.75rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1.5;">ประวัติการทำงาน</span>
+                <span style="font-size: 0.75rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1.5;">{{ __('ประวัติการทำงาน') }}</span>
                 <div style="width: 32px; height: 32px; border-radius: 8px; background: #dcfce7; color: #166534; display: flex; align-items: center; justify-content: center;">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
                 </div>
             </div>
             <div style="display: flex; align-items: baseline; gap: 0.4rem;">
                 <div style="font-size: 1.75rem; font-weight: 800; color: #0f172a;">{{ $stats['audit_logs_count'] }}</div>
-                <span style="font-size: 0.85rem; color: #64748b; font-weight: 600;">บันทึก</span>
+                <span style="font-size: 0.85rem; color: #64748b; font-weight: 600;">{{ __('บันทึก') }}</span>
             </div>
-            <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem;">รายการ Audit Log ในระบบ</div>
+            <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem;">{{ __('รายการ Audit Log ในระบบ') }}</div>
         </div>
 
         {{-- Card 4: Security Posture --}}
         <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">สถานะความปลอดภัย</span>
+                <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">{{ __('สถานะความปลอดภัย') }}</span>
                 <div style="width: 32px; height: 32px; border-radius: 8px; background: #f0fdf4; color: #15803d; display: flex; align-items: center; justify-content: center;">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                 </div>
             </div>
             <div style="display: flex; align-items: baseline; gap: 0.4rem;">
-                <div style="font-size: 1.35rem; font-weight: 800; color: #15803d;">ปกป้อง 100%</div>
+                <div style="font-size: 1.35rem; font-weight: 800; color: #15803d;">{{ __('ปกป้อง 100%') }}</div>
             </div>
-            <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem;">เข้ารหัส PDPA & Zero-Trust</div>
+            <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem;">{{ __('เข้ารหัส PDPA') }}& Zero-Trust</div>
         </div>
     </div>
 
@@ -222,17 +222,17 @@ label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid #f1f5f9;">
                     <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
                         <svg width="18" height="18" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                        ข้อมูลสังกัดและข้อมูลติดต่อ
+                        {{ __('ข้อมูลสังกัดและข้อมูลติดต่อ') }}
                     </h3>
                     <a href="{{ route('admin.settings.index', ['tab' => 'privacy']) }}" style="font-size: 0.75rem; font-weight: 600; color: #ea580c; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem;">
-                        <span>แก้ไข</span>
+                        <span>{{ __('แก้ไข') }}</span>
                         <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </a>
                 </div>
 
                 <div style="display: flex; flex-direction: column; gap: 0.85rem;">
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.8rem; background: #fafbfc; border-radius: 8px; border: 1px solid #f1f5f9;">
-                        <span style="font-size: 0.8rem; color: #64748b;">ชื่อ-นามสกุล (ไทย)</span>
+                        <span style="font-size: 0.8rem; color: #64748b;">{{ __('ชื่อ-นามสกุล (ไทย)') }}</span>
                         <strong style="color: #0f172a; font-size: 0.875rem;">{{ $user->full_name }}</strong>
                     </div>
 
@@ -242,27 +242,27 @@ label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
                     </div>
 
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.8rem; background: #fafbfc; border-radius: 8px; border: 1px solid #f1f5f9;">
-                        <span style="font-size: 0.8rem; color: #64748b;">อีเมลสำหรับล็อกอิน</span>
+                        <span style="font-size: 0.8rem; color: #64748b;">{{ __('อีเมลสำหรับล็อกอิน') }}</span>
                         <strong style="color: #0f172a; font-size: 0.875rem;">{{ $user->email }}</strong>
                     </div>
 
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.8rem; background: #fafbfc; border-radius: 8px; border: 1px solid #f1f5f9;">
-                        <span style="font-size: 0.8rem; color: #64748b;">เบอร์โทรศัพท์</span>
+                        <span style="font-size: 0.8rem; color: #64748b;">{{ __('เบอร์โทรศัพท์') }}</span>
                         <strong style="color: #0f172a; font-size: 0.875rem;">{{ $user->phone ?: 'ไม่ได้ระบุ' }}</strong>
                     </div>
 
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.8rem; background: #fafbfc; border-radius: 8px; border: 1px solid #f1f5f9;">
-                        <span style="font-size: 0.8rem; color: #64748b;">ตำแหน่งงาน</span>
+                        <span style="font-size: 0.8rem; color: #64748b;">{{ __('ตำแหน่งงาน') }}</span>
                         <strong style="color: #0f172a; font-size: 0.875rem;">{{ $user->position ?: 'ไม่ได้ระบุตำแหน่ง' }}</strong>
                     </div>
 
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.8rem; background: #fafbfc; border-radius: 8px; border: 1px solid #f1f5f9;">
-                        <span style="font-size: 0.8rem; color: #64748b;">หน่วยงาน / สังกัด</span>
+                        <span style="font-size: 0.8rem; color: #64748b;">{{ __('หน่วยงาน / สังกัด') }}</span>
                         <strong style="color: #0f172a; font-size: 0.875rem;">{{ $user->organization ?: 'หน่วยงานส่วนกลาง' }}</strong>
                     </div>
 
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.8rem; background: #fafbfc; border-radius: 8px; border: 1px solid #f1f5f9;">
-                        <span style="font-size: 0.8rem; color: #64748b;">เพศ</span>
+                        <span style="font-size: 0.8rem; color: #64748b;">{{ __('เพศ') }}</span>
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
                             <x-avatar :user="$user" size="22" />
                             <strong style="color: #0f172a; font-size: 0.875rem;">{{ $user->gender_label }}</strong>
@@ -276,7 +276,7 @@ label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid #f1f5f9;">
                     <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
                         <svg width="18" height="18" fill="none" stroke="#10b981" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                        สิทธิ์การเข้าถึงระบบ (Role Privileges)
+                        {{ __('สิทธิ์การเข้าถึงระบบ (Role Privileges)') }}
                     </h3>
                     <span style="background: #dcfce7; color: #15803d; font-size: 0.7rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 4px;">
                         {{ strtoupper($user->role) }}
@@ -287,38 +287,38 @@ label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
                     @if($user->isAdmin())
                         <div style="display: flex; align-items: center; gap: 0.55rem; font-size: 0.85rem; color: #334155;">
                             <svg width="16" height="16" fill="none" stroke="#10b981" viewBox="0 0 24 24" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                            <span>จัดการกิจกรรม ข่าวสาร และประกาศได้ทั้งหมด</span>
+                            <span>{{ __('จัดการกิจกรรม ข่าวสาร และประกาศได้ทั้งหมด') }}</span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 0.55rem; font-size: 0.85rem; color: #334155;">
                             <svg width="16" height="16" fill="none" stroke="#10b981" viewBox="0 0 24 24" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                            <span>จัดการหมวดหมู่ สิทธิ์ และบัญชีผู้ใช้ระบบ</span>
+                            <span>{{ __('จัดการหมวดหมู่ สิทธิ์ และบัญชีผู้ใช้ระบบ') }}</span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 0.55rem; font-size: 0.85rem; color: #334155;">
                             <svg width="16" height="16" fill="none" stroke="#10b981" viewBox="0 0 24 24" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                            <span>ตรวจสอบบันทึกความปลอดภัย (Audit Log) ทั้งระบบ</span>
+                            <span>{{ __('ตรวจสอบบันทึกความปลอดภัย (Audit Log) ทั้งระบบ') }}</span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 0.55rem; font-size: 0.85rem; color: #334155;">
                             <svg width="16" height="16" fill="none" stroke="#10b981" viewBox="0 0 24 24" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                            <span>ส่งออกรายงานและสถิติกิจกรรมนักศึกษา</span>
+                            <span>{{ __('ส่งออกรายงานและสถิติกิจกรรมนักศึกษา') }}</span>
                         </div>
                     @else
                         <div style="display: flex; align-items: center; gap: 0.55rem; font-size: 0.85rem; color: #334155;">
                             <svg width="16" height="16" fill="none" stroke="#10b981" viewBox="0 0 24 24" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                            <span>สร้างและจัดการกิจกรรม/ข่าวสารของตนเอง</span>
+                            <span>{{ __('สร้างและจัดการกิจกรรม/ข่าวสารของตนเอง') }}</span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 0.55rem; font-size: 0.85rem; color: #334155;">
                             <svg width="16" height="16" fill="none" stroke="#10b981" viewBox="0 0 24 24" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                            <span>เช็คชื่อและสแกนใบหน้านักศึกษาในกิจกรรม</span>
+                            <span>{{ __('เช็คชื่อและสแกนใบหน้านักศึกษาในกิจกรรม') }}</span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 0.55rem; font-size: 0.85rem; color: #334155;">
                             <svg width="16" height="16" fill="none" stroke="#10b981" viewBox="0 0 24 24" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                            <span>ส่งออกรายชื่อผู้เข้าร่วมเป็น Excel/PDF</span>
+                            <span>{{ __('ส่งออกรายชื่อผู้เข้าร่วมเป็น Excel/PDF') }}</span>
                         </div>
                     @endif
                 </div>
 
                 <div style="margin-top: 1.15rem; padding-top: 0.85rem; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; font-size: 0.775rem; color: #64748b;">
-                    <span>ลงทะเบียนเข้าใช้งานระบบเมื่อ:</span>
+                    <span>{{ __('ลงทะเบียนเข้าใช้งานระบบเมื่อ:') }}</span>
                     <strong style="color: #0f172a;">{{ $user->created_at ? $user->created_at->translatedFormat('d F Y') : '—' }}</strong>
                 </div>
             </div>
@@ -334,15 +334,15 @@ label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
                     <div>
                         <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
                             <svg width="18" height="18" fill="none" stroke="#c2410c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                            กิจกรรมที่คุณสร้างล่าสุด
+                            {{ __('กิจกรรมที่คุณสร้างล่าสุด') }}
                         </h3>
                         <p style="margin: 0.2rem 0 0 0; font-size: 0.8rem; color: #475569; line-height: 1.5;">
-                            รายการกิจกรรมมหาวิทยาลัยที่คุณเป็นผู้จัดและดูแล
+                            {{ __('รายการกิจกรรมมหาวิทยาลัยที่คุณเป็นผู้จัดและดูแล') }}
                         </p>
                     </div>
                     <a href="{{ route('admin.activities.create') }}" style="display: inline-flex; align-items: center; gap: 0.35rem; background: #c2410c; color: #fff; padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.775rem; font-weight: 700; text-decoration: none; line-height: 1.5;">
                         <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                        <span>สร้างกิจกรรมใหม่</span>
+                        <span>{{ __('สร้างกิจกรรมใหม่') }}</span>
                     </a>
                 </div>
 
@@ -361,14 +361,14 @@ label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
                                     </div>
                                 </div>
                                 <span style="background: #e0e7ff; color: #4338ca; font-size: 0.725rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 9999px;">
-                                    {{ $activity->hour_count ?? 1 }} ชม.
+                                    {{ $activity->hour_count ?? 1 }} {{ __('ชม.') }}
                                 </span>
                             </div>
                         @endforeach
                     </div>
                 @else
                     <div style="padding: 1.5rem; text-align: center; color: #94a3b8; font-size: 0.85rem;">
-                        ยังไม่มีกิจกรรมที่คุณสร้างในระบบ
+                        {{ __('ยังไม่มีกิจกรรมที่คุณสร้างในระบบ') }}
                     </div>
                 @endif
             </div>
@@ -379,14 +379,14 @@ label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
                     <div>
                         <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
                             <svg width="18" height="18" fill="none" stroke="#6366f1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            ไทม์ไลน์บันทึกการปฏิบัติงานล่าสุด (Audit Trail)
+                            {{ __('ไทม์ไลน์บันทึกการปฏิบัติงานล่าสุด (Audit Trail)') }}
                         </h3>
                         <p style="margin: 0.2rem 0 0 0; font-size: 0.8rem; color: #64748b;">
-                            บันทึกกิจกรรมความปลอดภัยและการดำเนินการต่างๆ ในระบบของคุณ
+                            {{ __('บันทึกกิจกรรมความปลอดภัยและการดำเนินการต่างๆ ในระบบของคุณ') }}
                         </p>
                     </div>
                     <a href="{{ route('admin.audit-logs.index', ['user_id' => $user->id]) }}" style="font-size: 0.75rem; font-weight: 600; color: #6366f1; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem;">
-                        <span>ดูทั้งหมด</span>
+                        <span>{{ __('ดูทั้งหมด') }}</span>
                         <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </a>
                 </div>
@@ -412,7 +412,7 @@ label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
                     </div>
                 @else
                     <div style="padding: 1.5rem; text-align: center; color: #94a3b8; font-size: 0.85rem;">
-                        ไม่มีประวัติการบันทึกการทำงาน
+                        {{ __('ไม่มีประวัติการบันทึกการทำงาน') }}
                     </div>
                 @endif
             </div>
@@ -469,14 +469,14 @@ label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
                 if (!data.success) return;
                 if (!data.has_photo) return;
                 if (data.decoded) {
-                    render('success', 'ถอดรหัสใบหน้าสำเร็จ (512D) — ระบบพร้อมใช้งานสำหรับเช็คอิน');
+                    render('success', '{{ __('ถอดรหัสใบหน้าสำเร็จ (512D) — ระบบพร้อมใช้งานสำหรับเช็คอิน') }}');
                     stopPolling();
                 } else if (pollsLeft > 0) {
                     pollsLeft--;
-                    render('pending', 'กำลังถอดรหัสใบหน้า (512D) ผ่าน Background Queue...');
+                    render('pending', '{{ __('กำลังถอดรหัสใบหน้า (512D) ผ่าน Background Queue...') }}');
                     timer = setTimeout(poll, 2000);
                 } else {
-                    render('error', 'ยังไม่สามารถถอดรหัสใบหน้าได้ (ใช้เวลานานกว่าปกติ) — ลองอัปโหลดรูปใหม่อีกครั้ง');
+                    render('error', '{{ __('ยังไม่สามารถถอดรหัสใบหน้าได้ (ใช้เวลานานกว่าปกติ) — ลองอัปโหลดรูปใหม่อีกครั้ง') }}');
                     stopPolling();
                 }
             })
@@ -489,16 +489,16 @@ label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
     }
 
     window.startFaceStatusPolling = function () {
-        render('pending', 'กำลังอัปโหลดรูปโปรไฟล์...');
+        render('pending', '{{ __('กำลังอัปโหลดรูปโปรไฟล์...') }}');
         pollsLeft = 45;
         stopPolling();
         timer = setTimeout(poll, 3000);
     };
 
-    // ── Auto-resume: เข้าหน้านี้โดยมีรูปแต่ยังไม่มีเวกเตอร์ → resume polling ──
+    // ── Auto-resume: เข้าหน้านี้โดยมีรูปแต่ยังไม่มีเวกเตอร์→ resume polling ──
     @if(isset($user) && $user->profile_photo && $user->face_descriptor === null)
         pollsLeft = 45;
-        render('pending', 'กำลังถอดรหัสใบหน้า (512D) ผ่าน Background Queue...');
+        render('pending', '{{ __('กำลังถอดรหัสใบหน้า (512D) ผ่าน Background Queue...') }}');
         timer = setTimeout(poll, 1500);
     @endif
 })();

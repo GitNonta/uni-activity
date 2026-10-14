@@ -8,10 +8,10 @@
     <div class="d-flex justify-content-between align-items-center mb-4" style="flex-wrap:wrap; gap:1rem;">
         <div>
             <h1 class="h3 font-weight-bold mb-1" style="font-size:1.5rem; font-weight:800; color:var(--text-main, #0f172a);">
-                ใบรับรองชั่วโมงกิจกรรม (Certificates)
+                {{ __('ใบรับรองชั่วโมงกิจกรรม (Certificates)') }}
             </h1>
             <p class="text-muted" style="color:var(--text-muted, #64748b); font-size:0.9rem; margin:0;">
-                ขอรับและดาวน์โหลดใบเกียรติบัตรอิเล็กทรอนิกส์เมื่อสะสมชั่วโมงครบตามเกณฑ์หมวดหมู่
+                {{ __('ขอรับและดาวน์โหลดใบเกียรติบัตรอิเล็กทรอนิกส์เมื่อสะสมชั่วโมงครบตามเกณฑ์หมวดหมู่') }}
             </p>
         </div>
 
@@ -19,7 +19,7 @@
             @csrf
             <button type="submit" class="btn btn-primary" style="background:#4f46e5; border-color:#4f46e5; font-weight:600; border-radius:8px; display:inline-flex; align-items:center; gap:6px;">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                ขอรับใบรับรองกิจกรรมรวม
+                {{ __('ขอรับใบรับรองกิจกรรมรวม') }}
             </button>
         </form>
     </div>
@@ -41,13 +41,13 @@
     <!-- Issued Certificates List -->
     <div class="card" style="border-radius:16px; overflow:hidden; margin-bottom:2rem;">
         <div style="padding:1.25rem 1.5rem; border-bottom:1px solid var(--border, #f1f5f9); font-weight:700; color:var(--text-main, #0f172a); font-size:1.05rem;">
-            ใบรับรองที่ได้รับแล้ว
+            {{ __('ใบรับรองที่ได้รับแล้ว') }}
         </div>
 
         @if($certificates->isEmpty())
             <x-empty-state
                 icon="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                title="ยังไม่มีใบรับรองที่ออก"
+                title="{{ __('ยังไม่มีใบรับรองที่ออก') }}"
                 description="เมื่อสะสมชั่วโมงกิจกรรมครบตามเกณฑ์ในหมวดหมู่ที่กำหนด กดปุ่มขอรับใบรับรองได้เลย"
                 size="md"
             />
@@ -68,16 +68,16 @@
                                 {{ $cert->title }}
                             </h3>
                             <div style="font-size:0.85rem; color:#10b981; font-weight:600; margin-bottom:1rem;">
-                                ชั่วโมงที่ผ่านการรับรอง: {{ number_format($cert->hours_completed, 1) }} ชม.
+                                {{ __('ชั่วโมงที่ผ่านการรับรอง:') }}{{ number_format($cert->hours_completed, 1) }} {{ __('ชม.') }}
                             </div>
                         </div>
 
                         <div style="display:flex; gap:0.5rem;">
                             <a href="{{ route('student.certificates.download', $cert->id) }}" class="btn btn-primary btn-sm" style="flex:1; background:#4f46e5; border-color:#4f46e5; border-radius:6px; font-size:0.8rem; text-align:center; padding:0.4rem;">
-                                ดาวน์โหลด PDF
+                                {{ __('ดาวน์โหลด PDF') }}
                             </a>
                             <a href="{{ route('certificates.verify', $cert->certificate_code) }}" target="_blank" class="btn btn-outline btn-sm" style="border-radius:6px; font-size:0.8rem; padding:0.4rem 0.75rem;">
-                                ตรวจสอบ
+                                {{ __('ตรวจสอบ') }}
                             </a>
                         </div>
                     </div>
@@ -89,20 +89,20 @@
     <!-- Categories Completion List -->
     <div class="card" style="border-radius:16px; padding:1.5rem;">
         <h2 style="font-size:1.05rem; font-weight:700; color:var(--text-main, #0f172a); margin-bottom:1rem;">
-            เกณฑ์การขอรับใบรับรองรายหมวดหมู่
+            {{ __('เกณฑ์การขอรับใบรับรองรายหมวดหมู่') }}
         </h2>
         <div style="display:grid; gap:0.75rem;">
             @foreach($categories as $cat)
                 <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1rem; background:var(--surface-hover, #f8fafc); border-radius:10px; border:1px solid var(--border, #f1f5f9);">
                     <div>
                         <div style="font-weight:600; color:var(--text-main, #0f172a); font-size:0.9rem;">{{ $cat->name }}</div>
-                        <div style="font-size:0.8rem; color:var(--text-muted, #64748b);">เกณฑ์ขั้นต่ำ: {{ $cat->required_hours ?? 0 }} ชั่วโมง</div>
+                        <div style="font-size:0.8rem; color:var(--text-muted, #64748b);">{{ __('เกณฑ์ขั้นต่ำ:') }}{{ $cat->required_hours ?? 0 }} {{ __('ชั่วโมง') }}</div>
                     </div>
                     <form action="{{ route('student.certificates.claim') }}" method="POST">
                         @csrf
                         <input type="hidden" name="category_id" value="{{ $cat->id }}">
                         <button type="submit" class="btn btn-outline btn-sm" style="border-radius:6px; font-size:0.8rem;">
-                            ขอรับใบรับรองหมวดนี้
+                            {{ __('ขอรับใบรับรองหมวดนี้') }}
                         </button>
                     </form>
                 </div>

@@ -6,9 +6,9 @@
 <div class="flex items-center justify-between mb-4">
     <h1 class="font-bold flex items-center gap-2" style="font-size:1.25rem;">
         <svg style="width:24px;height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
-        กล่องข้อความ
+        {{ __('กล่องข้อความ') }}
     </h1>
-    <span class="text-sm text-muted">การสนทนาทั้งหมด {{ $threads->count() }} รายการ</span>
+    <span class="text-sm text-muted">{{ __('การสนทนาทั้งหมด') }}{{ $threads->count() }} {{ __('รายการ') }}</span>
 </div>
 
 <style>
@@ -61,7 +61,7 @@ html[data-theme="dark"] .inbox-read-text { color: #a1a1aa !important; }
                     {{ strtoupper(mb_substr($thread['student_name'], 0, 1)) }}
                 </div>
             @endif
-            <span class="student-online-dot student-online-dot-{{ $thread['student_id'] }}" style="display:none;position:absolute;bottom:0;right:0;width:11px;height:11px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="กำลังใช้งาน"></span>
+            <span class="student-online-dot student-online-dot-{{ $thread['student_id'] }}" style="display:none;position:absolute;bottom:0;right:0;width:11px;height:11px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="{{ __('กำลังใช้งาน') }}"></span>
         </div>
 
         {{-- Info --}}
@@ -72,7 +72,7 @@ html[data-theme="dark"] .inbox-read-text { color: #a1a1aa !important; }
                         {{ $thread['student_name'] }}
                     </span>
                     <span class="inbox-job-title" style="font-size:.8rem;color:{{ ($thread['job_deleted'] ?? false) ? '#b45309' : '#c2410c' }};font-weight:500;flex-shrink:0;">
-                        [{{ $thread['job_title'] }}]@if($thread['job_deleted'] ?? false) <span style="font-size:.62rem;color:#b45309;background:#fef3c7;border:1px solid #fcd34d;border-radius:999px;padding:1px 6px;margin-left:2px;">ลบแล้ว</span>@endif
+                        [{{ $thread['job_title'] }}]@if($thread['job_deleted'] ?? false) <span style="font-size:.62rem;color:#b45309;background:#fef3c7;border:1px solid #fcd34d;border-radius:999px;padding:1px 6px;margin-left:2px;">{{ __('ลบแล้ว') }}</span>@endif
                     </span>
                 </div>
                 <span class="student-status-text student-status-text-{{ $thread['student_id'] }}" data-student-id="{{ $thread['student_id'] }}" style="font-size:0.72rem;color:#047857;font-weight:600;flex-shrink:0;"></span>
@@ -93,15 +93,15 @@ html[data-theme="dark"] .inbox-read-text { color: #a1a1aa !important; }
                         $msgDays = (int) floor(max(0, $time->diffInDays(now())));
                     @endphp
                     @if($msgSec < 60)
-                        เมื่อสักครู่
+                        {{ __('เมื่อสักครู่') }}
                     @elseif($msgMin < 60)
-                        {{ $msgMin }} นาทีที่แล้ว
+                        {{ $msgMin }} {{ __('นาทีที่แล้ว') }}
                     @elseif($msgHrs < 24)
-                        {{ $msgHrs }} ชม. ที่แล้ว
+                        {{ $msgHrs }} {{ __('ชม. ที่แล้ว') }}
                     @elseif($time->isYesterday())
-                        เมื่อวานนี้ {{ $time->format('H:i') }}
+                        {{ __('เมื่อวานนี้') }}{{ $time->format('H:i') }}
                     @elseif($msgDays < 7)
-                        {{ $msgDays }} วันที่แล้ว
+                        {{ $msgDays }} {{ __('วันที่แล้ว') }}
                     @else
                         {{ $time->format('d/m/Y') }}
                     @endif
@@ -113,7 +113,7 @@ html[data-theme="dark"] .inbox-read-text { color: #a1a1aa !important; }
             </span>
             @endif
             <button onclick="event.preventDefault();event.stopPropagation();deleteThread('{{ $thread['job_id'] }}','{{ $thread['student_id'] }}',this)"
-                class="inbox-delete-btn" title="ลบการสนทนา"
+                class="inbox-delete-btn" title="{{ __('ลบการสนทนา') }}"
                 style="background:none;border:none;color:#94a3b8;cursor:pointer;padding:.2rem;border-radius:6px;display:none;align-items:center;justify-content:center;transition:color .15s;"
                 onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#94a3b8'">
                 <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -123,7 +123,7 @@ html[data-theme="dark"] .inbox-read-text { color: #a1a1aa !important; }
     @empty
     <x-empty-state
         icon="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-        title="ยังไม่มีข้อความจากนักศึกษา"
+        title="{{ __('ยังไม่มีข้อความจากนักศึกษา') }}"
         description="เมื่อนักศึกษาส่งข้อความสอบถามเกี่ยวกับงาน จะปรากฏที่นี่"
         size="md"
     />
@@ -173,13 +173,13 @@ document.addEventListener('DOMContentLoaded', function() {
             var diffMin = Math.floor(diffSec / 60);
             var diffHours = Math.floor(diffMin / 60);
             if (diffSec < 60) {
-                return 'ออนไลน์เมื่อสักครู่';
+                return '{{ __('ออนไลน์เมื่อสักครู่') }}';
             } else if (diffMin < 60) {
-                return 'ออนไลน์เมื่อ ' + diffMin + ' นาทีที่แล้ว';
+                return '{{ __('ออนไลน์เมื่อ') }}' + diffMin + ' {{ __('นาทีที่แล้ว') }}';
             } else if (diffHours < 24) {
-                return 'ออนไลน์เมื่อ ' + diffHours + ' ชม. ที่แล้ว';
+                return '{{ __('ออนไลน์เมื่อ') }}' + diffHours + ' {{ __('ชม. ที่แล้ว') }}';
             } else {
-                return 'ออนไลน์เมื่อ ' + date.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' }) + ' ' + date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                return '{{ __('ออนไลน์เมื่อ') }}' + date.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' }) + ' ' + date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
             }
         }
 
@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.student-status-text').forEach(function(el) {
                 var match = el.className.match(/student-status-text-(\d+)/);
                 if (match && window.onlineStudentIds.has(String(match[1]))) {
-                    el.innerHTML = '<span style="color:#047857;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#059669;display:inline-block;"></span> ใช้งานอยู่</span>';
+                    el.innerHTML = '<span style="color:#047857;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#059669;display:inline-block;"></span> {{ __('ใช้งานอยู่') }}</span>';
                 } else {
                     el.innerHTML = '';
                 }
@@ -231,7 +231,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Delete thread function
         window.deleteThread = function(jobId, studentId, btn) {
-            if (!confirm('ยืนยันลบห้องแชทนี้และข้อความทั้งหมด?')) return;
+            if (!confirm('{{ __('ยืนยันลบห้องแชทนี้และข้อความทั้งหมด?') }}')) return;
             var row = btn.closest('.inbox-thread-item');
             if (row) row.style.opacity = '0.4';
             window.axios.delete('/admin/inbox/' + jobId + '/' + studentId)
@@ -252,7 +252,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .catch(function() {
                     if (row) row.style.opacity = '1';
-                    alert('ไม่สามารถลบการสนทนาได้');
+                    alert('{{ __('ไม่สามารถลบการสนทนาได้') }}');
                 });
         };
 

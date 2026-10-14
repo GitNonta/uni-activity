@@ -16,18 +16,18 @@
             <svg style="width:26px; height:26px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
             </svg>
-            รายงานการประเมินความพึงพอใจกิจกรรม
+            {{ __('รายงานการประเมินความพึงพอใจกิจกรรม') }}
         </h1>
-        <p class="text-sm text-muted mt-1" style="line-height:1.5;">รายงานสรุปผลการประเมินความพึงพอใจและข้อเสนอแนะของผู้เข้าร่วมกิจกรรม</p>
+        <p class="text-sm text-muted mt-1" style="line-height:1.5;">{{ __('รายงานสรุปผลการประเมินความพึงพอใจและข้อเสนอแนะของผู้เข้าร่วมกิจกรรม') }}</p>
     </div>
     
     <div style="display:flex; gap:8px;">
         <span style="background:#141416; color:#f4f4f5; padding:6px 14px; border-radius:999px; font-size:0.75rem; font-weight:700; border:1px solid #27272a;">
-            ทั้งหมด {{ number_format($stats['total']) }} รายการ
+            {{ __('ทั้งหมด') }}{{ number_format($stats['total']) }} {{ __('รายการ') }}
         </span>
         <span style="background:rgba(234, 88, 12, 0.15); color:#f97316; padding:6px 14px; border-radius:999px; font-size:0.75rem; font-weight:700; border:1px solid rgba(234, 88, 12, 0.3); display:inline-flex; align-items:center; gap:6px;">
             <svg width="14" height="14" fill="#fbbf24" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-            คะแนนเฉลี่ย {{ number_format((float)($stats['average'] ?? 0), 2) }} / 5.0 คะแนน
+            {{ __('คะแนนเฉลี่ย') }}{{ number_format((float)($stats['average'] ?? 0), 2) }} / 5.0 {{ __('คะแนน') }}
         </span>
     </div>
 </div>
@@ -55,14 +55,14 @@
     <div class="card-body" style="padding: 1.25rem 1.5rem;">
         <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
             <div style="flex:2; min-width:240px;">
-                <label class="form-label" style="font-weight:600; color:#a1a1aa; margin-bottom:0.4rem; font-size:0.8rem;">ค้นหาจากข้อคิดเห็น / ข้อเสนอแนะ</label>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="คำสำคัญหรือข้อความข้อเสนอแนะ..." class="form-control" style="font-size:.85rem; padding: 0.5rem 0.75rem; border-radius: 8px;">
+                <label class="form-label" style="font-weight:600; color:#a1a1aa; margin-bottom:0.4rem; font-size:0.8rem;">{{ __('ค้นหาจากข้อคิดเห็น / ข้อเสนอแนะ') }}</label>
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('คำสำคัญหรือข้อความข้อเสนอแนะ...') }}" class="form-control" style="font-size:.85rem; padding: 0.5rem 0.75rem; border-radius: 8px;">
             </div>
             
             <div style="flex:1.5; min-width:200px;">
-                <label class="form-label" style="font-weight:600; color:#a1a1aa; margin-bottom:0.4rem; font-size:0.8rem;">คัดกรองตามกิจกรรม</label>
+                <label class="form-label" style="font-weight:600; color:#a1a1aa; margin-bottom:0.4rem; font-size:0.8rem;">{{ __('คัดกรองตามกิจกรรม') }}</label>
                 <select name="activity_id" class="form-control" style="font-size:.85rem; padding: 0.5rem 0.75rem; border-radius: 8px;">
-                    <option value="">-- ทุกกิจกรรม --</option>
+                    <option value="">-- {{ __('ทุกกิจกรรม --') }}</option>
                     @foreach($activities as $act)
                         <option value="{{ $act->id }}" {{ request('activity_id') == $act->id ? 'selected' : '' }}>
                             {{ Str::limit($act->title, 45) }} ({{ $act->activity_date->format('d/m/y') }})
@@ -72,21 +72,21 @@
             </div>
             
             <div style="width:140px;">
-                <label class="form-label" style="font-weight:600; color:#a1a1aa; margin-bottom:0.4rem; font-size:0.8rem;">ระดับคะแนน</label>
+                <label class="form-label" style="font-weight:600; color:#a1a1aa; margin-bottom:0.4rem; font-size:0.8rem;">{{ __('ระดับคะแนน') }}</label>
                 <select name="rating" class="form-control" style="font-size:.85rem; padding: 0.5rem 0.75rem; border-radius: 8px;">
-                    <option value="">-- ทุกระดับ --</option>
+                    <option value="">-- {{ __('ทุกระดับ --') }}</option>
                     @for($i = 5; $i >= 1; $i--)
-                        <option value="{{ $i }}" {{ request('rating') == $i ? 'selected' : '' }}>{{ $i }} คะแนน</option>
+                        <option value="{{ $i }}" {{ request('rating') == $i ? 'selected' : '' }}>{{ $i }} {{ __('คะแนน') }}</option>
                     @endfor
                 </select>
             </div>
             
             <div style="display:flex; gap:6px;">
                 <button type="submit" class="btn btn-primary" style="font-size:.85rem; padding:0.5rem 1.25rem; border-radius:8px; background:#ea580c; border:none; font-weight:600;">
-                    กรองข้อมูล
+                    {{ __('กรองข้อมูล') }}
                 </button>
                 <a href="{{ route('admin.feedbacks.index') }}" class="btn btn-outline" style="font-size:.85rem; padding:0.5rem 1rem; border-radius:8px; font-weight:600;">
-                    ล้างตัวกรอง
+                    {{ __('ล้างตัวกรอง') }}
                 </a>
             </div>
         </div>
@@ -99,12 +99,12 @@
         <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
             <thead>
                 <tr style="background:#141416; border-bottom:1px solid #27272a; color:#a1a1aa; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em;">
-                    <th style="padding:1rem 1.5rem; text-align:left; font-weight:700; width:240px;">กิจกรรม</th>
-                    <th style="padding:1rem 1.5rem; text-align:left; font-weight:700; width:170px;">ผู้ประเมิน</th>
-                    <th style="padding:1rem 1.5rem; text-align:left; font-weight:700; width:160px;">ระดับคะแนน</th>
-                    <th style="padding:1rem 1.5rem; text-align:left; font-weight:700;">ความคิดเห็น / ข้อเสนอแนะ</th>
-                    <th style="padding:1rem 1.5rem; text-align:left; font-weight:700; width:140px;">วันที่ส่ง</th>
-                    <th style="padding:1rem 1.5rem; text-align:right; font-weight:700; width:150px;">รายงานสรุป</th>
+                    <th style="padding:1rem 1.5rem; text-align:left; font-weight:700; width:240px;">{{ __('กิจกรรม') }}</th>
+                    <th style="padding:1rem 1.5rem; text-align:left; font-weight:700; width:170px;">{{ __('ผู้ประเมิน') }}</th>
+                    <th style="padding:1rem 1.5rem; text-align:left; font-weight:700; width:160px;">{{ __('ระดับคะแนน') }}</th>
+                    <th style="padding:1rem 1.5rem; text-align:left; font-weight:700;">{{ __('ความคิดเห็น / ข้อเสนอแนะ') }}</th>
+                    <th style="padding:1rem 1.5rem; text-align:left; font-weight:700; width:140px;">{{ __('วันที่ส่ง') }}</th>
+                    <th style="padding:1rem 1.5rem; text-align:right; font-weight:700; width:150px;">{{ __('รายงานสรุป') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -119,7 +119,7 @@
                             @if($fb->is_anonymous)
                                 <span class="text-muted" style="background:#141416; padding:3px 8px; border-radius:4px; font-size:0.75rem; border:1px solid #27272a; display:inline-flex; align-items:center; gap:4px;">
                                     <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                                    ไม่เปิดเผยตัวตน
+                                    {{ __('ไม่เปิดเผยตัวตน') }}
                                 </span>
                             @else
                                 <span class="font-semi" style="color:#f4f4f5;" title="{{ $fb->user->full_name ?? '-' }}">{{ Str::limit($fb->user->full_name ?? '-', 35, '...') }}</span>
@@ -144,7 +144,7 @@
                         <td style="padding:1.1rem 1.5rem; text-align:right;">
                             <a href="{{ route('admin.feedbacks.show', $fb->activity_id) }}" class="btn btn-sm" style="font-size:0.75rem; padding:0.4rem 0.85rem; border-radius:6px; background:#141416; border:1px solid #27272a; color:#f4f4f5; text-decoration:none; display:inline-flex; align-items:center; gap:6px; font-weight:600;">
                                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                                ดูสรุปผลการประเมิน
+                                {{ __('ดูสรุปผลการประเมิน') }}
                             </a>
                         </td>
                     </tr>
@@ -155,8 +155,8 @@
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: #a1a1aa;">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                 </svg>
-                                <div class="empty-state-row-title" style="color: #f4f4f5;">ไม่พบข้อมูลการประเมิน</div>
-                                <div class="empty-state-row-desc" style="color: #cbd5e1;">เมื่อนักศึกษาส่งแบบประเมินกิจกรรม จะปรากฏที่นี่</div>
+                                <div class="empty-state-row-title" style="color: #f4f4f5;">{{ __('ไม่พบข้อมูลการประเมิน') }}</div>
+                                <div class="empty-state-row-desc" style="color: #cbd5e1;">{{ __('เมื่อนักศึกษาส่งแบบประเมินกิจกรรม จะปรากฏที่นี่') }}</div>
                             </div>
                         </td>
                     </tr>

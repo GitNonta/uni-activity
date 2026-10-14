@@ -7,19 +7,19 @@
     <div class="gmap-floating-top" id="gmapFloatingTop">
         {{-- Search Pill Bar with Back Button --}}
         <div class="gmap-search-pill">
-            <button type="button" class="gmap-back-btn" data-map-action="goBackOrHome" title="ย้อนกลับ">
+            <button type="button" class="gmap-back-btn" data-map-action="goBackOrHome" title="{{ __('ย้อนกลับ') }}">
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
             </button>
-            <input type="text" id="mapSearchInput" class="gmap-search-input" placeholder="ค้นหากิจกรรม, หางาน, อาคารสถานที่..." autocomplete="off">
-            <button type="button" id="mapSearchClearBtn" class="gmap-search-clear" data-map-action="clearMapSearch" style="display:none;" title="ล้างการค้นหา">
+            <input type="text" id="mapSearchInput" class="gmap-search-input" placeholder="{{ __('ค้นหากิจกรรม, หางาน, อาคารสถานที่...') }}" autocomplete="off">
+            <button type="button" id="mapSearchClearBtn" class="gmap-search-clear" data-map-action="clearMapSearch" style="display:none;" title="{{ __('ล้างการค้นหา') }}">
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
             </button>
             <div class="gmap-search-divider"></div>
-            <button type="button" class="gmap-list-toggle-btn" data-map-action="toggleNearbyDrawer" title="เปิดรายการสถานที่">
+            <button type="button" class="gmap-list-toggle-btn" data-map-action="toggleNearbyDrawer" title="{{ __('เปิดรายการสถานที่') }}">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
                 </svg>
@@ -32,32 +32,32 @@
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
                 </svg>
-                <span>ทั้งหมด</span>
+                <span>{{ __('ทั้งหมด') }}</span>
             </button>
             <button type="button" class="gmap-chip" data-map-action="filterType" data-type="activity">
                 <span class="gmap-chip-dot dot-orange"></span>
-                <span>กิจกรรม</span>
+                <span>{{ __('กิจกรรม') }}</span>
             </button>
             <button type="button" class="gmap-chip" data-map-action="filterType" data-type="job">
                 <span class="gmap-chip-dot dot-blue"></span>
-                <span>หางาน / Part-time</span>
+                <span>{{ __('หางาน / Part-time') }}</span>
             </button>
             <button type="button" class="gmap-chip" data-map-action="filterType" data-type="landmark">
                 <span class="gmap-chip-dot dot-green"></span>
-                <span>อาคาร / จุดสำคัญ</span>
+                <span>{{ __('อาคาร / จุดสำคัญ') }}</span>
             </button>
             <button type="button" class="gmap-chip" data-map-action="toggleQuickRadius" data-radius="2">
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
-                <span>ใกล้ฉัน &lt; 2 กม.</span>
+                <span>{{ __('ใกล้ฉัน') }}&lt; 2 {{ __('กม.') }}</span>
             </button>
             <button type="button" class="gmap-chip" id="chip-heat" data-map-action="toggleHeatmapChip">
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/>
                 </svg>
-                <span>ความหนาแน่น</span>
+                <span>{{ __('ความหนาแน่น') }}</span>
             </button>
         </div>
     </div>
@@ -71,18 +71,18 @@
                 </svg>
             </div>
             <div class="gmap-nav-banner-info">
-                <div class="gmap-nav-turn-dist" id="gmapNavTurnDist">กำลังคำนวณ...</div>
-                <div class="gmap-nav-instruction" id="gmapNavInstruction">ตรงไปตามเส้นทาง</div>
+                <div class="gmap-nav-turn-dist" id="gmapNavTurnDist">{{ __('กำลังคำนวณ...') }}</div>
+                <div class="gmap-nav-instruction" id="gmapNavInstruction">{{ __('ตรงไปตามเส้นทาง') }}</div>
             </div>
             <div class="gmap-nav-actions">
-                <button type="button" class="gmap-nav-voice-btn" id="gmapNavVoiceBtn" data-map-action="toggleVoiceGuidance" title="เปิด/ปิดเสียงนำทาง">
+                <button type="button" class="gmap-nav-voice-btn" id="gmapNavVoiceBtn" data-map-action="toggleVoiceGuidance" title="{{ __('เปิด/ปิดเสียงนำทาง') }}">
                     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
                         <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                         <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
                     </svg>
                 </button>
-                <button type="button" class="gmap-nav-exit-btn" data-map-action="clearNavigationRoute" title="สิ้นสุดการนำทาง">
-                    <span>สิ้นสุด</span>
+                <button type="button" class="gmap-nav-exit-btn" data-map-action="clearNavigationRoute" title="{{ __('สิ้นสุดการนำทาง') }}">
+                    <span>{{ __('สิ้นสุด') }}</span>
                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
@@ -91,13 +91,13 @@
         </div>
         <div class="gmap-nav-banner-bottom">
             <div class="gmap-nav-total-stat">
-                <span class="stat-highlight" id="gmapNavTotalTime">5 นาที</span>
+                <span class="stat-highlight" id="gmapNavTotalTime">5 {{ __('นาที') }}</span>
                 <span class="stat-bullet">•</span>
-                <span id="gmapNavTotalDist">3.3 กม.</span>
+                <span id="gmapNavTotalDist">3.3 {{ __('กม.') }}</span>
                 <span class="stat-bullet">•</span>
-                <span id="gmapNavEtaClock">ถึงประมาณ --:-- น.</span>
+                <span id="gmapNavEtaClock">{{ __('ถึงประมาณ --:-- น.') }}</span>
             </div>
-            <div class="gmap-nav-dest-label" id="gmapNavDestLabel">มุ่งหน้าไปยัง...</div>
+            <div class="gmap-nav-dest-label" id="gmapNavDestLabel">{{ __('มุ่งหน้าไปยัง...') }}</div>
         </div>
     </div>
 
@@ -108,19 +108,19 @@
         {{-- Floating Action Buttons (Right Side) --}}
         <div class="gmap-fab-column">
             {{-- 3D Mode Toggle FAB --}}
-            <button type="button" class="gmap-fab" id="btnToggle3D" data-map-action="toggle3DView" title="สลับมุมมอง 3 มิติ / 2 มิติ">
+            <button type="button" class="gmap-fab" id="btnToggle3D" data-map-action="toggle3DView" title="{{ __('สลับมุมมอง 3 มิติ / 2 มิติ') }}">
                 <span style="font-weight:900;font-size:0.8rem;letter-spacing:-0.5px;">3D</span>
             </button>
 
             {{-- Layer Switcher FAB --}}
-            <button type="button" class="gmap-fab" data-map-action="toggleLayerSheet" title="เปลี่ยนรูปแบบแผนที่">
+            <button type="button" class="gmap-fab" data-map-action="toggleLayerSheet" title="{{ __('เปลี่ยนรูปแบบแผนที่') }}">
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                 </svg>
             </button>
 
             {{-- GPS Current Location FAB --}}
-            <button type="button" class="gmap-fab gmap-fab-gps" id="btnGpsLocate" data-map-action="locateUserAndCenter" title="ระบุตำแหน่งของฉัน">
+            <button type="button" class="gmap-fab gmap-fab-gps" id="btnGpsLocate" data-map-action="locateUserAndCenter" title="{{ __('ระบุตำแหน่งของฉัน') }}">
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -128,7 +128,7 @@
             </button>
 
             {{-- Floating Nearby Places Counter FAB --}}
-            <button type="button" class="gmap-fab gmap-fab-badge" data-map-action="toggleNearbyDrawer" title="รายการสถานที่ใกล้ฉัน">
+            <button type="button" class="gmap-fab gmap-fab-badge" data-map-action="toggleNearbyDrawer" title="{{ __('รายการสถานที่ใกล้ฉัน') }}">
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
                 </svg>
@@ -139,8 +139,8 @@
         {{-- Layer Switcher Modal Sheet --}}
         <div id="gmapLayerSheet" class="gmap-layer-sheet" style="display:none;">
             <div class="gmap-layer-header">
-                <span>รูปแบบแผนที่ WebGL 3D</span>
-                <button type="button" data-map-action="toggleLayerSheet" class="gmap-icon-btn" title="ปิด">
+                <span>{{ __('รูปแบบแผนที่ WebGL 3D') }}</span>
+                <button type="button" data-map-action="toggleLayerSheet" class="gmap-icon-btn" title="{{ __('ปิด') }}">
                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
@@ -149,15 +149,15 @@
             <div class="gmap-layer-grid">
                 <div class="gmap-layer-card active" id="layerCard-streets" data-map-action="switchMapLayer" data-layer="streets">
                     <div class="gmap-layer-preview preview-streets"></div>
-                    <span>ค่าเริ่มต้น</span>
+                    <span>{{ __('ค่าเริ่มต้น') }}</span>
                 </div>
                 <div class="gmap-layer-card" id="layerCard-satellite" data-map-action="switchMapLayer" data-layer="satellite">
                     <div class="gmap-layer-preview preview-satellite"></div>
-                    <span>ดาวเทียม</span>
+                    <span>{{ __('ดาวเทียม') }}</span>
                 </div>
                 <div class="gmap-layer-card" id="layerCard-terrain" data-map-action="switchMapLayer" data-layer="terrain">
                     <div class="gmap-layer-preview preview-terrain"></div>
-                    <span>ภูมิประเทศ</span>
+                    <span>{{ __('ภูมิประเทศ') }}</span>
                 </div>
             </div>
         </div>
@@ -204,7 +204,7 @@
                         </div>
                     </div>
 
-                    <button type="button" class="gmap-sheet-close" data-map-action="closeBottomSheet" title="ปิด">
+                    <button type="button" class="gmap-sheet-close" data-map-action="closeBottomSheet" title="{{ __('ปิด') }}">
                         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
@@ -217,29 +217,29 @@
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
                         </svg>
-                        <span>เริ่มนำทาง</span>
+                        <span>{{ __('เริ่มนำทาง') }}</span>
                     </button>
 
-                    <button type="button" id="bs-route-options-btn" data-map-action="openRouteSelectorForActive" class="gmap-btn-route-select" title="เลือกเส้นทาง / โหมดเดินทาง">
+                    <button type="button" id="bs-route-options-btn" data-map-action="openRouteSelectorForActive" class="gmap-btn-route-select" title="{{ __('เลือกเส้นทาง / โหมดเดินทาง') }}">
                         <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
                         </svg>
-                        <span>เส้นทาง</span>
+                        <span>{{ __('เส้นทาง') }}</span>
                     </button>
 
                     {{-- Native Map Apps Trigger (Google Maps / Apple Maps on iOS) --}}
-                    <a id="bs-native-nav-btn" href="#" target="_blank" class="gmap-btn-native-detect" title="เปิดใน Google Maps">
+                    <a id="bs-native-nav-btn" href="#" target="_blank" class="gmap-btn-native-detect" title="{{ __('เปิดใน Google Maps') }}">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                         </svg>
                         <span id="bs-native-app-label">Google Maps</span>
                     </a>
 
-                    <button type="button" class="gmap-btn-icon" data-map-action="shareActiveLocation" title="แชร์สถานที่">
+                    <button type="button" class="gmap-btn-icon" data-map-action="shareActiveLocation" title="{{ __('แชร์สถานที่') }}">
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
                         </svg>
-                        <span class="gmap-btn-icon-label">แชร์</span>
+                        <span class="gmap-btn-icon-label">{{ __('แชร์') }}</span>
                     </button>
                 </div>
 
@@ -248,14 +248,14 @@
                     <div class="gmap-eta-card card-walk" data-map-action="selectModeFromCard" data-mode="walk">
                         <div class="flex items-center gap-1.5 text-xs font-bold text-orange-600 dark:text-orange-400">
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                            <span>เดินเท้า</span>
+                            <span>{{ __('เดินเท้า') }}</span>
                         </div>
                         <div class="gmap-eta-value" id="bs-walk-time">-</div>
                     </div>
                     <div class="gmap-eta-card card-drive" data-map-action="selectModeFromCard" data-mode="drive">
                         <div class="flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400">
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9L2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
-                            <span>รถยนต์ / มอไซค์</span>
+                            <span>{{ __('รถยนต์ / มอไซค์') }}</span>
                         </div>
                         <div class="gmap-eta-value" id="bs-drive-time">-</div>
                     </div>
@@ -270,7 +270,7 @@
                             </svg>
                         </div>
                         <div class="gmap-info-text">
-                            <div class="font-bold text-xs text-muted">วันและเวลาจัดกิจกรรม</div>
+                            <div class="font-bold text-xs text-muted">{{ __('วันและเวลาจัดกิจกรรม') }}</div>
                             <div id="bs-time-val" class="font-semibold">-</div>
                         </div>
                     </div>
@@ -282,13 +282,13 @@
                             </svg>
                         </div>
                         <div class="gmap-info-text">
-                            <div class="font-bold text-xs text-muted">จำนวนผู้เข้าร่วม / รับสมัคร</div>
+                            <div class="font-bold text-xs text-muted">{{ __('จำนวนผู้เข้าร่วม / รับสมัคร') }}</div>
                             <div id="bs-quota-val" class="font-semibold">-</div>
                         </div>
                     </div>
 
                     <div id="bs-desc-wrap" class="gmap-info-desc">
-                        <div class="font-bold text-xs text-muted mb-1">รายละเอียด</div>
+                        <div class="font-bold text-xs text-muted mb-1">{{ __('รายละเอียด') }}</div>
                         <div id="bs-desc-val" class="text-sm leading-relaxed text-secondary">-</div>
                     </div>
                 </div>
@@ -296,7 +296,7 @@
                 {{-- Footer Button: View Details Link --}}
                 <div class="gmap-sheet-footer">
                     <a id="bs-detail-link" href="#" class="gmap-btn-detail">
-                        <span>ดูรายละเอียดกิจกรรมเต็ม</span>
+                        <span>{{ __('ดูรายละเอียดกิจกรรมเต็ม') }}</span>
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                         </svg>
@@ -309,10 +309,10 @@
         <div id="gmapRouteSelectorSheet" class="gmap-route-sheet" style="display:none;">
             <div class="gmap-route-sheet-header">
                 <div>
-                    <div class="gmap-route-subtitle">คำนวณเส้นทางถนนจริง (OSRM)</div>
-                    <div class="gmap-route-title" id="gmapRouteDestTitle">เลือกเส้นทาง</div>
+                    <div class="gmap-route-subtitle">{{ __('คำนวณเส้นทางถนนจริง (OSRM)') }}</div>
+                    <div class="gmap-route-title" id="gmapRouteDestTitle">{{ __('เลือกเส้นทาง') }}</div>
                 </div>
-                <button type="button" class="gmap-icon-btn" data-map-action="closeRouteSelector" title="ปิด">
+                <button type="button" class="gmap-icon-btn" data-map-action="closeRouteSelector" title="{{ __('ปิด') }}">
                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
@@ -323,19 +323,19 @@
             <div class="gmap-travel-modes-row">
                 <button type="button" class="gmap-mode-chip active" data-map-action="selectTravelMode" data-mode="drive">
                     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9L2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
-                    <span>รถยนต์</span>
+                    <span>{{ __('รถยนต์') }}</span>
                 </button>
                 <button type="button" class="gmap-mode-chip" data-map-action="selectTravelMode" data-mode="moto">
                     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 17h6m-3-6l2 6m-5-8h4l2 3"/></svg>
-                    <span>มอไซค์</span>
+                    <span>{{ __('มอไซค์') }}</span>
                 </button>
                 <button type="button" class="gmap-mode-chip" data-map-action="selectTravelMode" data-mode="walk">
                     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                    <span>เดิน</span>
+                    <span>{{ __('เดิน') }}</span>
                 </button>
                 <button type="button" class="gmap-mode-chip" data-map-action="selectTravelMode" data-mode="bike">
                     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 6h-3l-3 7h6l2-4h2"/></svg>
-                    <span>จักรยาน</span>
+                    <span>{{ __('จักรยาน') }}</span>
                 </button>
             </div>
 
@@ -348,7 +348,7 @@
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
                 </svg>
-                <span id="btnStartSelectedRouteText">เริ่มนำทางตามเส้นทางนี้</span>
+                <span id="btnStartSelectedRouteText">{{ __('เริ่มนำทางตามเส้นทางนี้') }}</span>
             </button>
         </div>
 
@@ -362,18 +362,18 @@
                         </svg>
                     </div>
                     <div>
-                        <div class="font-bold" style="font-size:0.95rem;">สถานที่ทั้งหมดในแผนที่</div>
-                        <div class="text-xs text-muted" id="drawerCountLabel">0 แห่ง</div>
+                        <div class="font-bold" style="font-size:0.95rem;">{{ __('สถานที่ทั้งหมดในแผนที่') }}</div>
+                        <div class="text-xs text-muted" id="drawerCountLabel">0 {{ __('แห่ง') }}</div>
                     </div>
                 </div>
-                <button type="button" class="gmap-icon-btn" data-map-action="toggleNearbyDrawer" title="ปิด">
+                <button type="button" class="gmap-icon-btn" data-map-action="toggleNearbyDrawer" title="{{ __('ปิด') }}">
                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
             </div>
             <div id="gmapNearbyList" class="gmap-drawer-body">
-                <div style="padding:2rem;text-align:center;color:#475569;line-height:1.5;">กำลังโหลดรายการสถานที่...</div>
+                <div style="padding:2rem;text-align:center;color:#475569;line-height:1.5;">{{ __('กำลังโหลดรายการสถานที่...') }}</div>
             </div>
         </div>
     </div>
@@ -2229,7 +2229,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
             const placeCountEl = document.getElementById('fabPlaceCountBadge');
             if (placeCountEl) placeCountEl.textContent = allLocations.length;
             const drawerCountEl = document.getElementById('drawerCountLabel');
-            if (drawerCountEl) drawerCountEl.textContent = `${allLocations.length} แห่ง`;
+            if (drawerCountEl) drawerCountEl.textContent = `${allLocations.length} {{ __('แห่ง') }}`;
 
             rebuildClusterIndex();
             updateNearbyList();
@@ -2610,7 +2610,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
-                <span>กิจกรรม</span>
+                <span>{{ __('กิจกรรม') }}</span>
             `;
         } else if (loc.type === 'job') {
             badgeEl.classList.add('badge-blue');
@@ -2619,7 +2619,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
                     <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>
                 </svg>
-                <span>งานพาร์ทไทม์</span>
+                <span>{{ __('งานพาร์ทไทม์') }}</span>
             `;
         } else {
             badgeEl.classList.add('badge-green');
@@ -2627,18 +2627,18 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                 </svg>
-                <span>อาคาร/สถานที่</span>
+                <span>{{ __('อาคาร/สถานที่') }}</span>
             `;
         }
 
         // Title & Location
         document.getElementById('bs-title').textContent = loc.title;
-        document.getElementById('bs-subtitle').textContent = loc.location_name || 'ไม่ระบุสถานที่';
+        document.getElementById('bs-subtitle').textContent = loc.location_name || '{{ __('ไม่ระบุสถานที่') }}';
 
         // Distance & ETA Calculations
         const startPoint = userCoords || defaultCenter;
         const distKm = calculateDistance(startPoint[0], startPoint[1], loc.lat, loc.lng);
-        const distText = distKm < 1 ? `${Math.round(distKm * 1000)} ม.` : `${distKm.toFixed(1)} กม.`;
+        const distText = distKm < 1 ? `${Math.round(distKm * 1000)} {{ __('ม.') }}` : `${distKm.toFixed(1)} {{ __('กม.') }}`;
         document.getElementById('bs-dist-val').textContent = distText;
 
         const walkMins = Math.max(1, Math.round((distKm / 4.5) * 60));
@@ -2658,7 +2658,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
         // Quota
         const quotaWrap = document.getElementById('bs-quota-wrap');
-        const quotaVal = loc.quota_text || (loc.quota ? `${loc.quota} คน` : null);
+        const quotaVal = loc.quota_text || (loc.quota ? `${loc.quota} {{ __('คน') }}` : null);
         if (quotaVal) {
             quotaWrap.style.display = 'flex';
             document.getElementById('bs-quota-val').textContent = quotaVal;
@@ -2667,7 +2667,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
         }
 
         // Description — show short preview (first meaningful lines, max ~100 chars)
-        const rawDesc = loc.description || loc.subtitle || 'ไม่มีรายละเอียดเพิ่มเติม';
+        const rawDesc = loc.description || loc.subtitle || '{{ __('ไม่มีรายละเอียดเพิ่มเติม') }}';
         const firstLines = rawDesc.split('\n').filter(l => l.trim()).slice(0, 3).join(' ');
         const descPreview = firstLines.length > 100 ? firstLines.substring(0, 100).trimEnd() + '…' : firstLines;
         document.getElementById('bs-desc-val').textContent = descPreview;
@@ -2722,12 +2722,12 @@ html[data-theme="dark"] .gmap-sheet-handle {
         if (navigator.share) {
             navigator.share({
                 title: activeLocation.title,
-                text: `พิกัด ${activeLocation.title} บนแผนที่ UNI Activity`,
+                text: `{{ __('พิกัด') }}${activeLocation.title} {{ __('บนแผนที่ UNI Activity') }}`,
                 url: window.location.href
             }).catch(() => {});
         } else {
             navigator.clipboard.writeText(window.location.href);
-            window.alert('คัดลอกลิงก์สถานที่เรียบร้อยแล้ว!');
+            window.alert('{{ __('คัดลอกลิงก์สถานที่เรียบร้อยแล้ว!') }}');
         }
     };
 
@@ -2812,20 +2812,20 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
         const baseDistKm = calculateDistance(startPoint[0], startPoint[1], parseFloat(target.lat), parseFloat(target.lng));
         let speedKmH = 38;
-        let modeName = 'รถยนต์';
+        let modeName = '{{ __('รถยนต์') }}';
         let osrmProfile = 'driving';
 
         if (currentTravelMode === 'moto') {
             speedKmH = 38;
-            modeName = 'มอเตอร์ไซค์';
+            modeName = '{{ __('มอเตอร์ไซค์') }}';
             osrmProfile = 'driving';
         } else if (currentTravelMode === 'walk') {
             speedKmH = 4.5;
-            modeName = 'เดินเท้า';
+            modeName = '{{ __('เดินเท้า') }}';
             osrmProfile = 'walking';
         } else if (currentTravelMode === 'bike') {
             speedKmH = 14;
-            modeName = 'จักรยาน';
+            modeName = '{{ __('จักรยาน') }}';
             osrmProfile = 'cycling';
         }
 
@@ -2835,12 +2835,12 @@ html[data-theme="dark"] .gmap-sheet-handle {
         currentRouteAlternatives = [
             {
                 index: 0,
-                name: 'เส้นทางหลัก (เร็วที่สุด)',
-                tag: 'แนะนำ',
+                name: '{{ __('เส้นทางหลัก (เร็วที่สุด)') }}',
+                tag: '{{ __('แนะนำ') }}',
                 distKm: estDistKm,
                 timeMins: estTimeMin,
                 timeText: formatDurationThai(estTimeMin),
-                via: `${modeName} • กำลังคำนวณเส้นทางบนถนนจริง...`,
+                via: `${modeName} • {{ __('กำลังคำนวณเส้นทางบนถนนจริง...') }}`,
                 points: [[startPoint[1], startPoint[0]], [parseFloat(target.lng), parseFloat(target.lat)]],
                 isEstimated: true,
                 isMain: true
@@ -2887,7 +2887,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
                         durMin = Math.max(1, Math.round(r.duration / 60));
                     }
 
-                    let roadSummary = r.legs && r.legs[0] && r.legs[0].summary ? `ผ่าน ${r.legs[0].summary}` : (idx === 0 ? 'เส้นทางถนนสายหลัก' : 'เส้นทางสายรอง');
+                    let roadSummary = r.legs && r.legs[0] && r.legs[0].summary ? `{{ __('ผ่าน') }}${r.legs[0].summary}` : (idx === 0 ? 'เส้นทางถนนสายหลัก' : 'เส้นทางสายรอง');
                     const steps = (r.legs && r.legs[0] && r.legs[0].steps) ? r.legs[0].steps : [];
 
                     newRoutes.push({
@@ -2916,7 +2916,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
                     activeNavRoute = currentRouteAlternatives[selectedRouteIndex] || currentRouteAlternatives[0];
                     renderRouteGeometryOnMap(activeNavRoute.points, true);
                     const nextDist = document.getElementById('gmapNavNextDist');
-                    if (nextDist) nextDist.textContent = `${activeNavRoute.distKm} กม. (~${activeNavRoute.timeText})`;
+                    if (nextDist) nextDist.textContent = `${activeNavRoute.distKm} {{ __('กม. (') }}~${activeNavRoute.timeText})`;
                 }
 
                 return currentRouteAlternatives[selectedRouteIndex] || currentRouteAlternatives[0];
@@ -2925,7 +2925,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
             if (err.name !== 'AbortError') {
                 console.warn('OSRM route notice:', err.message);
                 currentRouteAlternatives.forEach(route => {
-                    route.via = `${modeName} • ไม่สามารถเชื่อมต่อบริการเส้นทาง แสดงระยะโดยประมาณ`;
+                    route.via = `${modeName} • {{ __('ไม่สามารถเชื่อมต่อบริการเส้นทาง แสดงระยะโดยประมาณ') }}`;
                     route.isEstimated = true;
                 });
                 renderRouteCards();
@@ -2954,7 +2954,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
                         <div class="gmap-route-card-tag">${r.tag} • ${r.name}</div>
                         <div class="flex items-baseline gap-2">
                             <span class="gmap-route-card-time">${r.timeText}</span>
-                            <span class="gmap-route-card-dist">(${r.distKm} กม.)</span>
+                            <span class="gmap-route-card-dist">(${r.distKm} {{ __('กม.)') }}</span>
                         </div>
                         <div class="gmap-route-card-via">${r.via}</div>
                     </div>
@@ -2968,7 +2968,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
         const startBtnText = document.getElementById('btnStartSelectedRouteText');
         if (startBtnText && currentRouteAlternatives[selectedRouteIndex]) {
             const sel = currentRouteAlternatives[selectedRouteIndex];
-            startBtnText.textContent = `เริ่มนำทาง (${sel.name} • ${sel.timeText})`;
+            startBtnText.textContent = `{{ __('เริ่มนำทาง (') }}${sel.name} • ${sel.timeText})`;
         }
     }
 
@@ -3055,7 +3055,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
             try {
                 await requestCurrentLocation();
             } catch (error) {
-                window.alert('กรุณาอนุญาตการเข้าถึงตำแหน่ง เพื่อเริ่มนำทางจากตำแหน่งปัจจุบัน');
+                window.alert('{{ __('กรุณาอนุญาตการเข้าถึงตำแหน่ง เพื่อเริ่มนำทางจากตำแหน่งปัจจุบัน') }}');
                 return;
             }
         }
@@ -3083,7 +3083,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
         updateNavigationPosition(userCoords || defaultCenter);
 
         // Voice announcement on navigation start
-        speakNavigationGuidance(`เริ่มการนำทาง มุ่งหน้าไปยัง ${target.title}`, true);
+        speakNavigationGuidance(`{{ __('เริ่มการนำทาง มุ่งหน้าไปยัง') }}${target.title}`, true);
 
         // Switch camera to 3D driving perspective
         map.flyTo({
@@ -3183,7 +3183,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 });
             }
         } catch (e) {
-            window.alert('ไม่สามารถระบุตำแหน่งของคุณได้ กรุณาอนุญาตการเข้าถึง GPS บนอุปกรณ์');
+            window.alert('{{ __('ไม่สามารถระบุตำแหน่งของคุณได้ กรุณาอนุญาตการเข้าถึง GPS บนอุปกรณ์') }}');
         }
     };
 
@@ -3222,13 +3222,13 @@ html[data-theme="dark"] .gmap-sheet-handle {
     };
 
     function getStepManeuverInfo(step) {
-        if (!step) return { action: 'ตรงไป', name: '', text: 'ตรงไปตามเส้นทาง', icon: 'straight' };
+        if (!step) return { action: '{{ __('ตรงไป') }}', name: '', text: '{{ __('ตรงไปตามเส้นทาง') }}', icon: 'straight' };
         const m = step.maneuver || {};
         const type = m.type || 'turn';
         const mod = m.modifier || '';
         let name = step.name ? step.name.trim() : (step.ref ? step.ref.trim() : '');
 
-        let action = 'ตรงไป';
+        let action = '{{ __('ตรงไป') }}';
         let iconKey = 'straight';
 
         if (type === 'depart') {
@@ -3244,16 +3244,16 @@ html[data-theme="dark"] .gmap-sheet-handle {
             action = 'กลับรถ / ยูเทิร์น';
             iconKey = 'uturn';
         } else if (mod === 'sharp left') {
-            action = 'เลี้ยวหักศอกซ้าย';
+            action = '{{ __('เลี้ยวหักศอกซ้าย') }}';
             iconKey = 'sharp-left';
         } else if (mod === 'sharp right') {
-            action = 'เลี้ยวหักศอกขวา';
+            action = '{{ __('เลี้ยวหักศอกขวา') }}';
             iconKey = 'sharp-right';
         } else if (mod === 'slight left') {
-            action = 'เบี่ยงซ้าย';
+            action = '{{ __('เบี่ยงซ้าย') }}';
             iconKey = 'slight-left';
         } else if (mod === 'slight right') {
-            action = 'เบี่ยงขวา';
+            action = '{{ __('เบี่ยงขวา') }}';
             iconKey = 'slight-right';
         } else if (mod === 'left') {
             action = 'เลี้ยวซ้าย';
@@ -3262,10 +3262,10 @@ html[data-theme="dark"] .gmap-sheet-handle {
             action = 'เลี้ยวขวา';
             iconKey = 'turn-right';
         } else if (type === 'fork') {
-            action = mod && mod.includes('left') ? 'ชิดซ้ายที่ทางแยก' : 'ชิดขวาที่ทางแยก';
+            action = mod && mod.includes('left') ? 'ชิดซ้ายที่ทางแยก' : '{{ __('ชิดขวาที่ทางแยก') }}';
             iconKey = mod && mod.includes('left') ? 'slight-left' : 'slight-right';
         } else if (type === 'end of road') {
-            action = mod && mod.includes('left') ? 'สุดทางเลี้ยวซ้าย' : 'สุดทางเลี้ยวขวา';
+            action = mod && mod.includes('left') ? 'สุดทางเลี้ยวซ้าย' : '{{ __('สุดทางเลี้ยวขวา') }}';
             iconKey = mod && mod.includes('left') ? 'turn-left' : 'turn-right';
         } else if (type === 'continue' || mod === 'straight') {
             action = 'ตรงไป';
@@ -3274,7 +3274,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
         let text = action;
         if (name) {
-            text += ` เข้าสู่ ${name}`;
+            text += ` {{ __('เข้าสู่') }}${name}`;
         } else if (action === 'ตรงไป') {
             text = 'ตรงไปตามเส้นทาง';
         }
@@ -3286,7 +3286,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
         const d = new Date(Date.now() + minutesRemaining * 60000);
         const hh = String(d.getHours()).padStart(2, '0');
         const mm = String(d.getMinutes()).padStart(2, '0');
-        return `ถึงประมาณ ${hh}:${mm} น.`;
+        return `{{ __('ถึงประมาณ') }}${hh}:${mm} {{ __('น.') }}`;
     }
 
     let isVoiceEnabled = true;
@@ -3336,11 +3336,11 @@ html[data-theme="dark"] .gmap-sheet-handle {
                     <line x1="17" y1="9" x2="23" y2="15"></line>
                 </svg>
             `;
-            btn.title = isVoiceEnabled ? 'ปิดเสียงนำทาง' : 'เปิดเสียงนำทาง';
+            btn.title = isVoiceEnabled ? '{{ __('ปิดเสียงนำทาง') }}' : '{{ __('เปิดเสียงนำทาง') }}';
         }
 
         if (isVoiceEnabled) {
-            speakNavigationGuidance('เปิดเสียงนำทาง', true);
+            speakNavigationGuidance('{{ __('เปิดเสียงนำทาง') }}', true);
         } else {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
@@ -3386,10 +3386,10 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
         if (remainingKm <= 0.03) {
             if (turnIcon) turnIcon.innerHTML = MANEUVER_SVGS['arrive'];
-            if (turnDistEl) turnDistEl.textContent = 'ถึงแล้ว';
-            if (instructionEl) instructionEl.textContent = `คุณมาถึง ${activeNavTarget.title} แล้ว`;
-            if (totalTimeEl) totalTimeEl.textContent = 'ถึงปลายทาง';
-            speakNavigationGuidance(`คุณเดินทางถึง ${activeNavTarget.title} แล้ว`, true);
+            if (turnDistEl) turnDistEl.textContent = '{{ __('ถึงแล้ว') }}';
+            if (instructionEl) instructionEl.textContent = `{{ __('คุณมาถึง') }}${activeNavTarget.title} {{ __('แล้ว') }}`;
+            if (totalTimeEl) totalTimeEl.textContent = '{{ __('ถึงปลายทาง') }}';
+            speakNavigationGuidance(`{{ __('คุณเดินทางถึง') }}${activeNavTarget.title} {{ __('แล้ว') }}`, true);
             return;
         }
 
@@ -3397,22 +3397,22 @@ html[data-theme="dark"] .gmap-sheet-handle {
             const info = getStepManeuverInfo(currentStep);
             if (turnIcon) turnIcon.innerHTML = MANEUVER_SVGS[info.icon] || MANEUVER_SVGS['straight'];
             if (turnDistEl) {
-                turnDistEl.textContent = distToStepMeters < 1000 ? `อีก ${distToStepMeters} ม.` : `อีก ${(distToStepMeters / 1000).toFixed(1)} กม.`;
+                turnDistEl.textContent = distToStepMeters < 1000 ? `{{ __('อีก') }}${distToStepMeters} {{ __('ม.') }}` : `{{ __('อีก') }}${(distToStepMeters / 1000).toFixed(1)} {{ __('กม.') }}`;
             }
             if (instructionEl) instructionEl.textContent = info.text;
 
             // Voice announcement when approaching a turn
             if (distToStepMeters <= 80 && distToStepMeters > 20) {
-                speakNavigationGuidance(`อีก ${distToStepMeters} เมตร ${info.text}`);
+                speakNavigationGuidance(`{{ __('อีก') }}${distToStepMeters} {{ __('เมตร') }}${info.text}`);
             }
         } else {
             if (turnIcon) turnIcon.innerHTML = MANEUVER_SVGS['straight'];
-            if (turnDistEl) turnDistEl.textContent = remainingKm < 1 ? `อีก ${Math.round(remainingKm * 1000)} ม.` : `อีก ${remainingKm.toFixed(1)} กม.`;
-            if (instructionEl) instructionEl.textContent = `มุ่งหน้าไปยัง ${activeNavTarget.title}`;
+            if (turnDistEl) turnDistEl.textContent = remainingKm < 1 ? `{{ __('อีก') }}${Math.round(remainingKm * 1000)} {{ __('ม.') }}` : `{{ __('อีก') }}${remainingKm.toFixed(1)} {{ __('กม.') }}`;
+            if (instructionEl) instructionEl.textContent = `{{ __('มุ่งหน้าไปยัง') }}${activeNavTarget.title}`;
         }
 
         if (totalTimeEl) totalTimeEl.textContent = formatDurationThai(remainingMinutes);
-        if (totalDistEl) totalDistEl.textContent = remainingKm < 1 ? `${Math.round(remainingKm * 1000)} ม.` : `${remainingKm.toFixed(1)} กม.`;
+        if (totalDistEl) totalDistEl.textContent = remainingKm < 1 ? `${Math.round(remainingKm * 1000)} {{ __('ม.') }}` : `${remainingKm.toFixed(1)} {{ __('กม.') }}`;
         if (etaClockEl) etaClockEl.textContent = formatEtaClock(remainingMinutes);
         if (destLabelEl) destLabelEl.textContent = activeNavTarget.title;
 
@@ -3460,7 +3460,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
 
         isRerouting = true;
         lastRerouteTime = Date.now();
-        speakNavigationGuidance('กำลังคำนวณเส้นทางใหม่', true);
+        speakNavigationGuidance('{{ __('กำลังคำนวณเส้นทางใหม่') }}', true);
 
         try {
             let osrmProfile = 'driving';
@@ -3481,7 +3481,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
                     const steps = (r.legs && r.legs[0] && r.legs[0].steps) ? r.legs[0].steps : [];
 
                     activeNavRoute = {
-                        name: 'เส้นทางปัจจุบัน',
+                        name: '{{ __('เส้นทางปัจจุบัน') }}',
                         distKm: distNum.toFixed(1),
                         timeMins: durMin,
                         timeText: formatDurationThai(durMin),
@@ -3560,7 +3560,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
                 <div class="live-peer-avatar">
                     ${user.avatar ? `<img src="${user.avatar}" alt="">` : (user.name ? user.name.charAt(0) : 'U')}
                 </div>
-                <div class="live-peer-badge">${user.name || 'สมาชิก'}</div>
+                <div class="live-peer-badge">${user.name || '{{ __('สมาชิก') }}'}</div>
             `;
             const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
                 .setLngLat([parseFloat(user.lng), parseFloat(user.lat)])
@@ -3600,7 +3600,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
         }
 
         if (filtered.length === 0) {
-            listEl.innerHTML = '<div style="padding:2rem;text-align:center;color:#475569;font-size:0.88rem;line-height:1.5;">ไม่พบสถานที่ตามเงื่อนไข</div>';
+            listEl.innerHTML = '<div style="padding:2rem;text-align:center;color:#475569;font-size:0.88rem;line-height:1.5;">{{ __('ไม่พบสถานที่ตามเงื่อนไข') }}</div>';
             return;
         }
 
@@ -3609,7 +3609,7 @@ html[data-theme="dark"] .gmap-sheet-handle {
             let distText = '';
             if (userCoords) {
                 const distKm = calculateDistance(userCoords[0], userCoords[1], loc.lat, loc.lng);
-                distText = distKm < 1 ? Math.round(distKm * 1000) + ' ม.' : distKm.toFixed(1) + ' กม.';
+                distText = distKm < 1 ? Math.round(distKm * 1000) + ' {{ __('ม.') }}' : distKm.toFixed(1) + ' {{ __('กม.') }}';
             }
 
             html += `
@@ -3654,11 +3654,11 @@ html[data-theme="dark"] .gmap-sheet-handle {
     }
 
     function formatDurationThai(mins) {
-        if (mins <= 0) return 'น้อยกว่า 1 นาที';
-        if (mins < 60) return `${mins} นาที`;
+        if (mins <= 0) return '{{ __('น้อยกว่า 1 นาที') }}';
+        if (mins < 60) return `${mins} {{ __('นาที') }}`;
         const h = Math.floor(mins / 60);
         const m = mins % 60;
-        return m > 0 ? `${h} ชม. ${m} นาที` : `${h} ชม.`;
+        return m > 0 ? `${h} {{ __('ชม.') }}${m} {{ __('นาที') }}` : `${h} {{ __('ชม.') }}`;
     }
 })();
 </script>

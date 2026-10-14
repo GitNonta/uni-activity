@@ -610,7 +610,7 @@ html.dark .sec-type-badge.badge-orange {
     <div style="margin-bottom: 1rem;">
         <a href="{{ route('admin.security-logs.index') }}" class="detail-back-link">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-            <span>กลับไปหน้ารายการ Security Logs</span>
+            <span>{{ __('กลับไปหน้ารายการ Security Logs') }}</span>
         </a>
     </div>
 
@@ -642,7 +642,7 @@ html.dark .sec-type-badge.badge-orange {
                     </span>
                 </div>
                 <p class="sec-show-subtitle">
-                    บันทึกเมื่อ {{ $securityLog->created_at->format('d/m/Y H:i:s') }}
+                    {{ __('บันทึกเมื่อ') }}{{ $securityLog->created_at->format('d/m/Y H:i:s') }}
                     <span style="opacity:0.75;">({{ $securityLog->created_at->diffForHumans() }})</span>
                 </p>
             </div>
@@ -652,12 +652,12 @@ html.dark .sec-type-badge.badge-orange {
             @if($securityLog->is_reviewed)
                 <div class="sec-reviewed-badge">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                    <span>ตรวจสอบแล้ว</span>
+                    <span>{{ __('ตรวจสอบแล้ว') }}</span>
                 </div>
             @else
                 <button type="button" class="btn-quick-review" id="btnTopReview" onclick="markReviewed({{ $securityLog->id }})">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                    <span>ทำเครื่องหมายว่าตรวจสอบแล้ว</span>
+                    <span>{{ __('ทำเครื่องหมายว่าตรวจสอบแล้ว') }}</span>
                 </button>
             @endif
         </div>
@@ -673,17 +673,17 @@ html.dark .sec-type-badge.badge-orange {
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    <span>ข้อมูลเหตุการณ์</span>
+                    <span>{{ __('ข้อมูลเหตุการณ์') }}</span>
                 </div>
                 <span style="font-size:.75rem;font-weight:600;color:var(--text-muted, #64748b);">ID: #{{ $securityLog->id }}</span>
             </div>
             <div class="sec-card-body">
                 <div class="sec-info-row">
-                    <span class="sec-info-label">ประเภทเหตุการณ์</span>
+                    <span class="sec-info-label">{{ __('ประเภทเหตุการณ์') }}</span>
                     <span class="sec-info-value">{{ $securityLog->event_type_label }}</span>
                 </div>
                 <div class="sec-info-row">
-                    <span class="sec-info-label">เวลาที่เกิดเหตุ</span>
+                    <span class="sec-info-label">{{ __('เวลาที่เกิดเหตุ') }}</span>
                     <span class="sec-info-value">{{ $securityLog->created_at->format('d/m/Y H:i:s') }}</span>
                 </div>
                 <div class="sec-info-row">
@@ -691,7 +691,7 @@ html.dark .sec-type-badge.badge-orange {
                     <span class="sec-info-value mono">
                         {{ $securityLog->ip_address ?? '—' }}
                         @if($securityLog->ip_address)
-                            <button type="button" class="btn-copy-chip" onclick="copyText('{{ $securityLog->ip_address }}', this)" title="คัดลอก IP">
+                            <button type="button" class="btn-copy-chip" onclick="copyText('{{ $securityLog->ip_address }}', this)" title="{{ __('คัดลอก IP') }}">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                             </button>
                         @endif
@@ -702,19 +702,19 @@ html.dark .sec-type-badge.badge-orange {
                     <span class="sec-info-value mono" style="font-size:.76rem;">
                         {{ $securityLog->device_fingerprint ?? '—' }}
                         @if($securityLog->device_fingerprint)
-                            <button type="button" class="btn-copy-chip" onclick="copyText('{{ $securityLog->device_fingerprint }}', this)" title="คัดลอก Fingerprint">
+                            <button type="button" class="btn-copy-chip" onclick="copyText('{{ $securityLog->device_fingerprint }}', this)" title="{{ __('คัดลอก Fingerprint') }}">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                             </button>
                         @endif
                     </span>
                 </div>
                 <div class="sec-info-row">
-                    <span class="sec-info-label">สถานะการตรวจสอบ</span>
+                    <span class="sec-info-label">{{ __('สถานะการตรวจสอบ') }}</span>
                     <span class="sec-info-value">
                         @if($securityLog->is_reviewed)
-                            <span style="color:#16a34a;font-weight:700;">ตรวจสอบแล้ว</span>
+                            <span style="color:#16a34a;font-weight:700;">{{ __('ตรวจสอบแล้ว') }}</span>
                         @else
-                            <span style="color:#d97706;font-weight:700;">รอการตรวจสอบ</span>
+                            <span style="color:#d97706;font-weight:700;">{{ __('รอการตรวจสอบ') }}</span>
                         @endif
                     </span>
                 </div>
@@ -728,7 +728,7 @@ html.dark .sec-type-badge.badge-orange {
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                     </svg>
-                    <span>ผู้ใช้ที่เกี่ยวข้อง</span>
+                    <span>{{ __('ผู้ใช้ที่เกี่ยวข้อง') }}</span>
                 </div>
                 @if($securityLog->user)
                     @php
@@ -761,46 +761,46 @@ html.dark .sec-type-badge.badge-orange {
 
                     @if($securityLog->user->role === 'student')
                         <div class="sec-info-row">
-                            <span class="sec-info-label">รหัสนักศึกษา</span>
+                            <span class="sec-info-label">{{ __('รหัสนักศึกษา') }}</span>
                             <span class="sec-info-value mono">{{ $securityLog->user->student_id ?? '—' }}</span>
                         </div>
                         <div class="sec-info-row">
-                            <span class="sec-info-label">คณะ</span>
+                            <span class="sec-info-label">{{ __('คณะ') }}</span>
                             <span class="sec-info-value">{{ $securityLog->user->faculty ? __($securityLog->user->faculty) : '—' }}</span>
                         </div>
                         <div class="sec-info-row">
-                            <span class="sec-info-label">สาขาวิชา</span>
+                            <span class="sec-info-label">{{ __('สาขาวิชา') }}</span>
                             <span class="sec-info-value">{{ $securityLog->user->department ? __($securityLog->user->department) : '—' }}</span>
                         </div>
                         <div style="margin-top: 1rem; display: flex; justify-content: flex-end;">
                             <a href="{{ route('admin.students.show', $securityLog->user->id) }}" class="btn-user-action">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                                <span>ดูประวัตินักศึกษา</span>
+                                <span>{{ __('ดูประวัตินักศึกษา') }}</span>
                             </a>
                         </div>
                     @else
                         <div class="sec-info-row">
-                            <span class="sec-info-label">ตำแหน่ง</span>
+                            <span class="sec-info-label">{{ __('ตำแหน่ง') }}</span>
                             <span class="sec-info-value">{{ $securityLog->user->position ?? '—' }}</span>
                         </div>
                         <div class="sec-info-row">
-                            <span class="sec-info-label">สังกัด / หน่วยงาน</span>
+                            <span class="sec-info-label">{{ __('สังกัด / หน่วยงาน') }}</span>
                             <span class="sec-info-value">{{ $securityLog->user->organization ? __($securityLog->user->organization) : ($securityLog->user->faculty ? __($securityLog->user->faculty) : '—') }}</span>
                         </div>
                         <div class="sec-info-row">
-                            <span class="sec-info-label">สถานะบัญชี</span>
+                            <span class="sec-info-label">{{ __('สถานะบัญชี') }}</span>
                             <span class="sec-info-value">
                                 @if($securityLog->user->is_active)
-                                    <span style="color:#16a34a;font-weight:700;">เปิดใช้งานปกติ</span>
+                                    <span style="color:#16a34a;font-weight:700;">{{ __('เปิดใช้งานปกติ') }}</span>
                                 @else
-                                    <span style="color:#dc2626;font-weight:700;">ระงับการใช้งาน</span>
+                                    <span style="color:#dc2626;font-weight:700;">{{ __('ระงับการใช้งาน') }}</span>
                                 @endif
                             </span>
                         </div>
                         <div style="margin-top: 1rem; display: flex; justify-content: flex-end;">
                             <a href="{{ route('admin.users.edit', $securityLog->user->id) }}" class="btn-user-action">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                <span>จัดการบัญชีผู้ใช้</span>
+                                <span>{{ __('จัดการบัญชีผู้ใช้') }}</span>
                             </a>
                         </div>
                     @endif
@@ -809,11 +809,11 @@ html.dark .sec-type-badge.badge-orange {
                         <div style="width:48px;height:48px;border-radius:50%;background:var(--surface-hover, #f1f5f9);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:var(--text-muted, #64748b);">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:24px;height:24px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                         </div>
-                        <p style="font-weight: 700; color: var(--text-main, #1e293b); margin: 0 0 4px;">ไม่พบข้อมูลบัญชีผู้ใช้</p>
-                        <p style="font-size: .8rem; color: var(--text-muted, #64748b); margin: 0;">อาจเป็นการพยายามเข้าสู่ระบบด้วยอีเมลที่ไม่มีในระบบ หรือเป็น Guest Request</p>
+                        <p style="font-weight: 700; color: var(--text-main, #1e293b); margin: 0 0 4px;">{{ __('ไม่พบข้อมูลบัญชีผู้ใช้') }}</p>
+                        <p style="font-size: .8rem; color: var(--text-muted, #64748b); margin: 0;">{{ __('อาจเป็นการพยายามเข้าสู่ระบบด้วยอีเมลที่ไม่มีในระบบ หรือเป็น Guest Request') }}</p>
                         @if(!empty($securityLog->details['email']))
                             <div style="margin-top: 10px; font-size: .82rem; color: var(--text-main, #334155); font-weight: 600;">
-                                อีเมลที่พยายามใช้งาน: <code class="mono" style="color:#ea580c;">{{ $securityLog->details['email'] }}</code>
+                                {{ __('อีเมลที่พยายามใช้งาน:') }}<code class="mono" style="color:#ea580c;">{{ $securityLog->details['email'] }}</code>
                             </div>
                         @endif
                     </div>
@@ -831,11 +831,11 @@ html.dark .sec-type-badge.badge-orange {
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>
-                <span>รายละเอียดทางเทคนิค (Technical Details)</span>
+                <span>{{ __('รายละเอียดทางเทคนิค (Technical Details)') }}</span>
             </div>
             <button type="button" class="btn-copy-chip" onclick="copyJsonPayload()" id="btnCopyJson">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                <span>คัดลอก JSON</span>
+                <span>{{ __('คัดลอก JSON') }}</span>
             </button>
         </div>
         <div class="sec-card-body">
@@ -859,7 +859,7 @@ html.dark .sec-type-badge.badge-orange {
                 @endif
                 @if(!empty($details['reason']))
                     <div class="tech-box">
-                        <div class="tech-box-label">Reason / สาเหตุ</div>
+                        <div class="tech-box-label">Reason / {{ __('สาเหตุ') }}</div>
                         <div class="tech-box-value">
                             <span style="color:#dc2626;">{{ $reasonMap[$details['reason']] ?? $details['reason'] }}</span>
                         </div>
@@ -916,9 +916,9 @@ html.dark .sec-type-badge.badge-orange {
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                 </svg>
-                <span>บัญชีอื่นที่เกี่ยวข้อง (จากอุปกรณ์หรือ IP เดียวกัน)</span>
+                <span>{{ __('บัญชีอื่นที่เกี่ยวข้อง (จากอุปกรณ์หรือ IP เดียวกัน)') }}</span>
             </div>
-            <span style="font-size:.8rem;font-weight:700;color:var(--text-muted, #64748b);">{{ $relatedUsers->count() }} บัญชี</span>
+            <span style="font-size:.8rem;font-weight:700;color:var(--text-muted, #64748b);">{{ $relatedUsers->count() }} {{ __('บัญชี') }}</span>
         </div>
         <div class="sec-card-body">
             <div class="related-list">
@@ -937,12 +937,12 @@ html.dark .sec-type-badge.badge-orange {
                     </div>
                     @if($ru->role === 'student')
                         <a href="{{ route('admin.students.show', $ru->id) }}" class="btn-user-action" style="padding:4px 10px;font-size:.78rem;">
-                            <span>ดูโปรไฟล์</span>
+                            <span>{{ __('ดูโปรไฟล์') }}</span>
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         </a>
                     @else
                         <a href="{{ route('admin.users.edit', $ru->id) }}" class="btn-user-action" style="padding:4px 10px;font-size:.78rem;">
-                            <span>จัดการ</span>
+                            <span>{{ __('จัดการ') }}</span>
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         </a>
                     @endif
@@ -960,7 +960,7 @@ html.dark .sec-type-badge.badge-orange {
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                 </svg>
-                <span>สถานะการตรวจสอบความปลอดภัย</span>
+                <span>{{ __('สถานะการตรวจสอบความปลอดภัย') }}</span>
             </div>
         </div>
         <div class="sec-card-body">
@@ -971,11 +971,11 @@ html.dark .sec-type-badge.badge-orange {
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                         </div>
                         <div>
-                            <div style="font-weight:700;font-size:.95rem;">เหตุการณ์นี้ได้รับการตรวจสอบความปลอดภัยแล้ว</div>
+                            <div style="font-weight:700;font-size:.95rem;">{{ __('เหตุการณ์นี้ได้รับการตรวจสอบความปลอดภัยแล้ว') }}</div>
                             <div style="font-size:.82rem;opacity:.9;margin-top:2px;">
-                                ตรวจสอบเมื่อ {{ $securityLog->reviewed_at?->format('d/m/Y H:i:s') }}
+                                {{ __('ตรวจสอบเมื่อ') }}{{ $securityLog->reviewed_at?->format('d/m/Y H:i:s') }}
                                 @if($securityLog->reviewer)
-                                    โดย <strong style="font-weight:700;">{{ $securityLog->reviewer->full_name }}</strong>
+                                    {{ __('โดย') }}<strong style="font-weight:700;">{{ $securityLog->reviewer->full_name }}</strong>
                                 @endif
                             </div>
                         </div>
@@ -989,15 +989,15 @@ html.dark .sec-type-badge.badge-orange {
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                         </div>
                         <div>
-                            <div style="font-weight:700;font-size:.95rem;">เหตุการณ์นี้ยังไม่ได้รับการตรวจสอบความปลอดภัย</div>
+                            <div style="font-weight:700;font-size:.95rem;">{{ __('เหตุการณ์นี้ยังไม่ได้รับการตรวจสอบความปลอดภัย') }}</div>
                             <div style="font-size:.82rem;opacity:.9;margin-top:2px;">
-                                หากตรวจสอบพฤติกรรมแล้วพบว่าเป็นปกติหรือได้รับการแก้ไขแล้ว ให้กดปุ่มด้านล่างเพื่อยืนยัน
+                                {{ __('หากตรวจสอบพฤติกรรมแล้วพบว่าเป็นปกติหรือได้รับการแก้ไขแล้ว ให้กดปุ่มด้านล่างเพื่อยืนยัน') }}
                             </div>
                         </div>
                     </div>
                     <button type="button" class="btn-quick-review" id="btnBottomReview" onclick="markReviewed({{ $securityLog->id }})" style="padding:10px 20px;">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        <span>ทำเครื่องหมายว่าตรวจสอบแล้ว</span>
+                        <span>{{ __('ทำเครื่องหมายว่าตรวจสอบแล้ว') }}</span>
                     </button>
                 </div>
             @endif
@@ -1027,12 +1027,12 @@ async function markReviewed(id) {
         if (res.ok) {
             location.reload();
         } else {
-            alert('เกิดข้อผิดพลาด ไม่สามารถบันทึกสถานะได้');
+            alert('{{ __('เกิดข้อผิดพลาด ไม่สามารถบันทึกสถานะได้') }}');
             if (btnTop) { btnTop.disabled = false; btnTop.style.opacity = '1'; }
             if (btnBottom) { btnBottom.disabled = false; btnBottom.style.opacity = '1'; }
         }
     } catch (e) {
-        alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+        alert('{{ __('เกิดข้อผิดพลาดในการเชื่อมต่อ') }}');
         if (btnTop) { btnTop.disabled = false; btnTop.style.opacity = '1'; }
         if (btnBottom) { btnBottom.disabled = false; btnBottom.style.opacity = '1'; }
     }
@@ -1056,7 +1056,7 @@ function copyJsonPayload() {
         const btn = document.getElementById('btnCopyJson');
         if (btn) {
             const original = btn.innerHTML;
-            btn.innerHTML = `<svg fill="none" stroke="#16a34a" viewBox="0 0 24 24" style="width:14px;height:14px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg><span>คัดลอกแล้ว</span>`;
+            btn.innerHTML = `<svg fill="none" stroke="#16a34a" viewBox="0 0 24 24" style="width:14px;height:14px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg><span>{{ __('คัดลอกแล้ว') }}</span>`;
             setTimeout(() => {
                 btn.innerHTML = original;
             }, 1800);

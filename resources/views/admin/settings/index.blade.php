@@ -9,9 +9,9 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
             </svg>
-            ตั้งค่าระบบ
+            {{ __('ตั้งค่าระบบ') }}
         </h1>
-        <p class="text-sm text-muted mt-1">จัดการพารามิเตอร์ของระบบ การเชื่อมต่อ LINE OA และข้อมูลความสมบูรณ์ของเซิร์ฟเวอร์</p>
+        <p class="text-sm text-muted mt-1">{{ __('จัดการพารามิเตอร์ของระบบ การเชื่อมต่อ LINE OA และข้อมูลความสมบูรณ์ของเซิร์ฟเวอร์') }}</p>
     </div>
 </div>
 
@@ -19,15 +19,15 @@
 <div style="display:flex; gap:0.5rem; border-bottom:1px solid #e2e8f0; margin-bottom:1.5rem;">
     <a href="{{ route('admin.settings.index', ['tab' => 'general']) }}" style="padding:0.75rem 1.25rem; font-weight:600; font-size:0.9rem; text-decoration:none; border-bottom: 2px solid {{ $activeTab === 'general' ? '#c2410c' : 'transparent' }}; color: {{ $activeTab === 'general' ? '#c2410c' : '#475569' }}; display:flex; align-items:center; gap:0.5rem; line-height:1.5;">
         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-        ตั้งค่าทั่วไป & SSO
+        {{ __('ตั้งค่าทั่วไป') }}& SSO
     </a>
     <a href="{{ route('admin.settings.index', ['tab' => 'privacy']) }}" style="padding:0.75rem 1.25rem; font-weight:600; font-size:0.9rem; text-decoration:none; border-bottom: 2px solid {{ in_array($activeTab, ['privacy', 'profile']) ? '#c2410c' : 'transparent' }}; color: {{ in_array($activeTab, ['privacy', 'profile']) ? '#c2410c' : '#475569' }}; display:flex; align-items:center; gap:0.5rem; line-height:1.5;">
         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-        ข้อมูลส่วนตัวผู้ดูแล & รหัสผ่าน
+        {{ __('ข้อมูลส่วนตัวผู้ดูแล') }}& {{ __('รหัสผ่าน') }}
     </a>
     <a href="{{ route('admin.settings.index', ['tab' => 'auto-approval']) }}" style="padding:0.75rem 1.25rem; font-weight:600; font-size:0.9rem; text-decoration:none; border-bottom: 2px solid {{ $activeTab === 'auto-approval' ? '#c2410c' : 'transparent' }}; color: {{ $activeTab === 'auto-approval' ? '#c2410c' : '#475569' }}; display:flex; align-items:center; gap:0.5rem; line-height:1.5;">
         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-        กฎอนุมัติอัตโนมัติ (Auto-Approve)
+        {{ __('กฎอนุมัติอัตโนมัติ (Auto-Approve)') }}
     </a>
 </div>
 
@@ -41,18 +41,18 @@
             {{-- 1. ข้อมูลส่วนตัว --}}
             <div class="card mb-6" style="border-radius:12px;">
                 <div class="card-header" style="padding:1rem 1.5rem;">
-                    <h3 class="font-semi" style="font-size:1rem;">ข้อมูลส่วนตัว</h3>
+                    <h3 class="font-semi" style="font-size:1rem;">{{ __('ข้อมูลส่วนตัว') }}</h3>
                 </div>
                 <div class="card-body" style="padding:1.5rem;">
                     <div class="grid-2 mb-4">
                         <div>
-                            <label class="form-label">ชื่อ-นามสกุล (ภาษาไทย) <span class="text-danger">*</span></label>
+                            <label class="form-label">{{ __('ชื่อ-นามสกุล (ภาษาไทย)') }}<span class="text-danger">*</span></label>
                             <input type="text" name="full_name" value="{{ old('full_name', $user->full_name) }}" class="form-control" required>
                             @error('full_name') <div class="form-error">{{ $message }}</div> @enderror
                         </div>
                         <div>
-                            <label class="form-label">ชื่อ-นามสกุล (ภาษาอังกฤษ) <span class="text-danger">*</span></label>
-                            <input type="text" name="english_name" value="{{ old('english_name', $user->english_name) }}" class="form-control" placeholder="เช่น John Doe" required>
+                            <label class="form-label">{{ __('ชื่อ-นามสกุล (ภาษาอังกฤษ)') }}<span class="text-danger">*</span></label>
+                            <input type="text" name="english_name" value="{{ old('english_name', $user->english_name) }}" class="form-control" placeholder="{{ __('เช่น John Doe') }}" required>
                             @error('english_name') <div class="form-error">{{ $message }}</div> @enderror
                         </div>
                     </div>
@@ -60,7 +60,7 @@
                     {{-- ตัวเลือกเพศ (Gender & Avatar Preview) --}}
                     <div class="mb-4">
                         <label class="form-label" style="font-weight:600; font-size:0.875rem; display:block; margin-bottom:0.5rem;">
-                            เพศสภาพ
+                            {{ __('เพศสภาพ') }}
                         </label>
                         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem;">
                             {{-- เพศชาย --}}
@@ -68,7 +68,7 @@
                                 <input type="radio" name="gender" value="male" {{ old('gender', $user->gender) === 'male' ? 'checked' : '' }} style="margin:0;" onchange="updateGenderStyles()">
                                 <x-avatar gender="male" size="36" />
                                 <div>
-                                    <div style="font-weight:700; font-size:0.875rem; color:#1e293b;">เพศชาย</div>
+                                    <div style="font-weight:700; font-size:0.875rem; color:#1e293b;">{{ __('เพศชาย') }}</div>
                                     <div style="font-size:0.75rem; color:#64748b;">Male Avatar</div>
                                 </div>
                             </label>
@@ -78,7 +78,7 @@
                                 <input type="radio" name="gender" value="female" {{ old('gender', $user->gender) === 'female' ? 'checked' : '' }} style="margin:0;" onchange="updateGenderStyles()">
                                 <x-avatar gender="female" size="36" />
                                 <div>
-                                    <div style="font-weight:700; font-size:0.875rem; color:#1e293b;">เพศหญิง</div>
+                                    <div style="font-weight:700; font-size:0.875rem; color:#1e293b;">{{ __('เพศหญิง') }}</div>
                                     <div style="font-size:0.75rem; color:#64748b;">Female Avatar</div>
                                 </div>
                             </label>
@@ -88,7 +88,7 @@
                                 <input type="radio" name="gender" value="other" {{ in_array(old('gender', $user->gender), ['other', null, '']) ? 'checked' : '' }} style="margin:0;" onchange="updateGenderStyles()">
                                 <x-avatar gender="neutral" size="36" />
                                 <div>
-                                    <div style="font-weight:700; font-size:0.875rem; color:#1e293b;">อื่นๆ / ทั่วไป</div>
+                                    <div style="font-weight:700; font-size:0.875rem; color:#1e293b;">{{ __('อื่นๆ / ทั่วไป') }}</div>
                                     <div style="font-size:0.75rem; color:#64748b;">Neutral Avatar</div>
                                 </div>
                             </label>
@@ -98,26 +98,26 @@
 
                     <div class="grid-2 mb-4">
                         <div>
-                            <label class="form-label">อีเมลติดต่อ <span class="text-danger">*</span></label>
+                            <label class="form-label">{{ __('อีเมลติดต่อ') }}<span class="text-danger">*</span></label>
                             <input type="email" name="email" value="{{ old('email', $user->email) }}" class="form-control" required>
                             @error('email') <div class="form-error">{{ $message }}</div> @enderror
                         </div>
                         <div>
-                            <label class="form-label">เบอร์โทรศัพท์</label>
-                            <input type="text" name="phone" value="{{ old('phone', $user->phone) }}" class="form-control" placeholder="เช่น 081-xxx-xxxx">
+                            <label class="form-label">{{ __('เบอร์โทรศัพท์') }}</label>
+                            <input type="text" name="phone" value="{{ old('phone', $user->phone) }}" class="form-control" placeholder="{{ __('เช่น 081-xxx-xxxx') }}">
                             @error('phone') <div class="form-error">{{ $message }}</div> @enderror
                         </div>
                     </div>
 
                     <div class="grid-2 mb-4">
                         <div>
-                            <label class="form-label">ตำแหน่ง</label>
-                            <input type="text" name="position" value="{{ old('position', $user->position) }}" class="form-control" placeholder="เช่น นักวิชาการศึกษา">
+                            <label class="form-label">{{ __('ตำแหน่ง') }}</label>
+                            <input type="text" name="position" value="{{ old('position', $user->position) }}" class="form-control" placeholder="{{ __('เช่น นักวิชาการศึกษา') }}">
                             @error('position') <div class="form-error">{{ $message }}</div> @enderror
                         </div>
                         <div>
-                            <label class="form-label">สังกัด / หน่วยงาน</label>
-                            <input type="text" name="organization" value="{{ old('organization', $user->organization) }}" class="form-control" placeholder="เช่น สำนักวิทยบริการและเทคโนโลยีสารสนเทศ">
+                            <label class="form-label">{{ __('สังกัด / หน่วยงาน') }}</label>
+                            <input type="text" name="organization" value="{{ old('organization', $user->organization) }}" class="form-control" placeholder="{{ __('เช่น สำนักวิทยบริการและเทคโนโลยีสารสนเทศ') }}">
                             @error('organization') <div class="form-error">{{ $message }}</div> @enderror
                         </div>
                     </div>
@@ -129,26 +129,26 @@
                 <div class="card-header" style="padding:1rem 1.5rem;">
                     <div class="flex items-center gap-2">
                         <svg style="width:20px; height:20px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                        <h3 class="font-semi" style="font-size:1rem;">ความปลอดภัยและรหัสผ่าน</h3>
+                        <h3 class="font-semi" style="font-size:1rem;">{{ __('ความปลอดภัยและรหัสผ่าน') }}</h3>
                     </div>
-                    <p class="text-xs text-muted mt-1" style="font-weight:normal;">ปล่อยช่องรหัสผ่านใหม่ว่างไว้ หากไม่ต้องการเปลี่ยนแปลง</p>
+                    <p class="text-xs text-muted mt-1" style="font-weight:normal;">{{ __('ปล่อยช่องรหัสผ่านใหม่ว่างไว้ หากไม่ต้องการเปลี่ยนแปลง') }}</p>
                 </div>
                 <div class="card-body" style="padding:1.5rem;">
                     <div class="mb-4">
-                        <label class="form-label">รหัสผ่านปัจจุบัน</label>
-                        <input type="password" name="password_old" class="form-control" style="max-width:400px;" placeholder="กรุณากรอกรหัสผ่านเดิม หากต้องการแก้ไขรหัสผ่าน">
+                        <label class="form-label">{{ __('รหัสผ่านปัจจุบัน') }}</label>
+                        <input type="password" name="password_old" class="form-control" style="max-width:400px;" placeholder="{{ __('กรุณากรอกรหัสผ่านเดิม หากต้องการแก้ไขรหัสผ่าน') }}">
                         @error('password_old') <div class="form-error">{{ $message }}</div> @enderror
                     </div>
 
                     <div class="grid-2">
                         <div>
-                            <label class="form-label">รหัสผ่านใหม่</label>
-                            <input type="password" name="password" class="form-control" placeholder="ความยาวไม่น้อยกว่า 6 ตัวอักษร">
+                            <label class="form-label">{{ __('รหัสผ่านใหม่') }}</label>
+                            <input type="password" name="password" class="form-control" placeholder="{{ __('ความยาวไม่น้อยกว่า 6 ตัวอักษร') }}">
                             @error('password') <div class="form-error">{{ $message }}</div> @enderror
                         </div>
                         <div>
-                            <label class="form-label">ยืนยันรหัสผ่านใหม่</label>
-                            <input type="password" name="password_confirmation" class="form-control" placeholder="กรอกรหัสผ่านใหม่อีกครั้ง">
+                            <label class="form-label">{{ __('ยืนยันรหัสผ่านใหม่') }}</label>
+                            <input type="password" name="password_confirmation" class="form-control" placeholder="{{ __('กรอกรหัสผ่านใหม่อีกครั้ง') }}">
                         </div>
                     </div>
                 </div>
@@ -164,12 +164,12 @@
                             </svg>
                         </div>
                         <div>
-                            <h4 style="font-weight:700; font-size:0.925rem; color:#1e293b; margin:0;">จัดการ Personal Access Tokens & คีย์ API</h4>
-                            <p style="font-size:0.8rem; color:#64748b; margin:0.2rem 0 0 0;">สร้างและเพิกถอน Token สำหรับเชื่อมต่อภายนอกหรือ Web API ได้ที่เมนูคีย์ API โดยเฉพาะ</p>
+                            <h4 style="font-weight:700; font-size:0.925rem; color:#1e293b; margin:0;">{{ __('จัดการ Personal Access Tokens') }}& {{ __('คีย์ API') }}</h4>
+                            <p style="font-size:0.8rem; color:#64748b; margin:0.2rem 0 0 0;">{{ __('สร้างและเพิกถอน Token สำหรับเชื่อมต่อภายนอกหรือ Web API ได้ที่เมนูคีย์ API โดยเฉพาะ') }}</p>
                         </div>
                     </div>
                     <a href="{{ route('admin.api-keys.index') }}" class="btn btn-outline" style="display:inline-flex; align-items:center; gap:0.4rem; font-size:0.85rem; font-weight:600; padding:0.5rem 1rem; border-radius:8px; text-decoration:none;">
-                        <span>ไปยังหน้าจัดการคีย์ API</span>
+                        <span>{{ __('ไปยังหน้าจัดการคีย์ API') }}</span>
                         <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                         </svg>
@@ -179,10 +179,10 @@
 
             {{-- Action Buttons --}}
             <div class="flex justify-end gap-2 mt-4">
-                <a href="{{ route('admin.dashboard') }}" class="btn btn-outline">ยกเลิก</a>
+                <a href="{{ route('admin.dashboard') }}" class="btn btn-outline">{{ __('ยกเลิก') }}</a>
                 <button type="submit" class="btn btn-primary" style="background:#ea580c; color:white; border-radius:8px; font-weight:600; border:none; padding:0.6rem 1.5rem; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
                     <svg style="width:16px; height:16px; margin-right:6px; display:inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                    บันทึกข้อมูล
+                    {{ __('บันทึกข้อมูล') }}
                 </button>
             </div>
         </form>
@@ -201,11 +201,11 @@
                 </div>
                 <div style="flex:1;">
                     <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
-                        <h2 style="font-size:1.15rem; font-weight:700; color:#9a3412; margin:0;">ระบบกฎอนุมัติอัตโนมัติ (Smart Auto-Approval Rules)</h2>
+                        <h2 style="font-size:1.15rem; font-weight:700; color:#9a3412; margin:0;">{{ __('ระบบกฎอนุมัติอัตโนมัติ (Smart Auto-Approval Rules)') }}</h2>
                         <span style="font-size:0.75rem; font-weight:700; background:#ea580c; color:#fff; padding:2px 8px; border-radius:999px;">AI Powered</span>
                     </div>
                     <p style="font-size:0.875rem; color:#475569; margin:0.35rem 0 0 0; line-height:1.6;">
-                        ช่วยลดภาระงานแอดมินในกิจกรรมที่มีคนเข้าร่วมหลักร้อยหลักพันคน โดยระบบจะตรวจสอบผลสแกนใบหน้า AI Confidence และระยะทาง GPS อัตโนมัติ หากข้อมูลผ่านเกณฑ์ความปลอดภัยครบถ้วน ระบบจะ<strong>อนุมัติและมอบชั่วโมงกิจกรรมทันที</strong> เฉพาะรายการที่มีความเสี่ยง (ใบหน้าไม่ชัดเจน หรือ GPS ไกลเกินเกณฑ์) ค่อยส่งเข้าคิว <strong>Approval Queue</strong> ให้แอดมินตรวจแบบ Manual
+                        {{ __('ช่วยลดภาระงานแอดมินในกิจกรรมที่มีคนเข้าร่วมหลักร้อยหลักพันคน โดยระบบจะตรวจสอบผลสแกนใบหน้า AI Confidence และระยะทาง GPS อัตโนมัติ หากข้อมูลผ่านเกณฑ์ความปลอดภัยครบถ้วน ระบบจะ') }}<strong>{{ __('อนุมัติและมอบชั่วโมงกิจกรรมทันที') }}</strong> {{ __('เฉพาะรายการที่มีความเสี่ยง (ใบหน้าไม่ชัดเจน หรือ GPS ไกลเกินเกณฑ์) ค่อยส่งเข้าคิว') }}<strong>Approval Queue</strong> {{ __('ให้แอดมินตรวจแบบ Manual') }}
                     </p>
                 </div>
             </div>
@@ -224,7 +224,7 @@
                         <svg style="width:20px; height:20px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                         </svg>
-                        <h3 class="font-semi" style="font-size:1rem; margin:0;">สถานะการทำงานของระบบกฎอนุมัติอัตโนมัติ</h3>
+                        <h3 class="font-semi" style="font-size:1rem; margin:0;">{{ __('สถานะการทำงานของระบบกฎอนุมัติอัตโนมัติ') }}</h3>
                     </div>
                     <span id="main-status-badge" style="font-size:0.8rem; font-weight:700; padding:3px 10px; border-radius:999px; {{ $settings['auto_approve_enabled'] ? 'background:#dcfce7; color:#15803d;' : 'background:#f1f5f9; color:#64748b;' }}">
                         {{ $settings['auto_approve_enabled'] ? 'เปิดใช้งาน (Active)' : 'ปิดใช้งาน (Disabled)' }}
@@ -234,8 +234,8 @@
                     <label style="display:flex; align-items:center; gap:0.875rem; cursor:pointer; user-select:none;">
                         <input type="checkbox" name="auto_approve_enabled" id="auto_approve_enabled" value="1" {{ $settings['auto_approve_enabled'] ? 'checked' : '' }} style="width:20px; height:20px; accent-color:#ea580c; cursor:pointer;" onchange="updateAutoApproveToggleState()">
                         <div>
-                            <span style="font-weight:700; font-size:0.95rem; color:var(--text-main, #0f172a);">เปิดใช้งานระบบกฎอนุมัติอัตโนมัติ (Smart Auto-Approval) ทั่วทั้งมหาวิทยาลัย</span>
-                            <p style="font-size:0.8rem; color:#64748b; margin:2px 0 0 0;">หากปิดใช้งาน รายการเช็คอินที่กิจกรรมเปิดการขออนุมัติไว้ จะต้องรอแอดมินกดอนุมัติด้วยตนเองทั้งหมด 100%</p>
+                            <span style="font-weight:700; font-size:0.95rem; color:var(--text-main, #0f172a);">{{ __('เปิดใช้งานระบบกฎอนุมัติอัตโนมัติ (Smart Auto-Approval) ทั่วทั้งมหาวิทยาลัย') }}</span>
+                            <p style="font-size:0.8rem; color:#64748b; margin:2px 0 0 0;">{{ __('หากปิดใช้งาน รายการเช็คอินที่กิจกรรมเปิดการขออนุมัติไว้ จะต้องรอแอดมินกดอนุมัติด้วยตนเองทั้งหมด 100%') }}</p>
                         </div>
                     </label>
                 </div>
@@ -248,9 +248,9 @@
                         <svg style="width:20px; height:20px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
                         </svg>
-                        <h3 class="font-semi" style="font-size:1rem; margin:0;">เกณฑ์การประเมินอนุมัติอัตโนมัติ (Decision Thresholds)</h3>
+                        <h3 class="font-semi" style="font-size:1rem; margin:0;">{{ __('เกณฑ์การประเมินอนุมัติอัตโนมัติ (Decision Thresholds)') }}</h3>
                     </div>
-                    <p class="text-xs text-muted mt-1" style="font-weight:normal;">กำหนดค่าเกณฑ์ความเข้มงวดของระบบ หากนักศึกษาเช็คอินผ่านเกณฑ์เหล่านี้ ระบบจะอนุมัติทันที</p>
+                    <p class="text-xs text-muted mt-1" style="font-weight:normal;">{{ __('กำหนดค่าเกณฑ์ความเข้มงวดของระบบ หากนักศึกษาเช็คอินผ่านเกณฑ์เหล่านี้ ระบบจะอนุมัติทันที') }}</p>
                 </div>
                 <div class="card-body" style="padding:1.5rem; display:flex; flex-direction:column; gap:1.75rem;">
 
@@ -261,14 +261,14 @@
                                 <svg style="width:18px; height:18px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
-                                เกณฑ์ความเหมือนใบหน้า AI Face Match ขั้นต่ำ
+                                {{ __('เกณฑ์ความเหมือนใบหน้า AI Face Match ขั้นต่ำ') }}
                             </label>
                             <span style="font-size:0.85rem; font-weight:700; color:#c2410c; background:#ffedd5; padding:3px 10px; border-radius:6px;">
-                                ต้องได้คะแนน &ge; <span id="face-score-display">{{ number_format($settings['auto_approve_min_face_score'], 0) }}</span>%
+                                {{ __('ต้องได้คะแนน') }}&ge; <span id="face-score-display">{{ number_format($settings['auto_approve_min_face_score'], 0) }}</span>%
                             </span>
                         </div>
                         <p style="font-size:0.8rem; color:#64748b; margin-bottom:0.75rem;">
-                            เมื่อนักศึกษาถ่ายภาพเซลฟี่ AI บนเซิร์ฟเวอร์จะเปรียบเทียบกับภาพโปรไฟล์ หากคะแนนความเหมือนถึงเกณฑ์นี้จะถือว่าผ่านการยืนยันตัวตน
+                            {{ __('เมื่อนักศึกษาถ่ายภาพเซลฟี่ AI บนเซิร์ฟเวอร์จะเปรียบเทียบกับภาพโปรไฟล์ หากคะแนนความเหมือนถึงเกณฑ์นี้จะถือว่าผ่านการยืนยันตัวตน') }}
                         </p>
                         <div style="display:flex; align-items:center; gap:1rem;">
                             <input type="range" id="face-score-slider" min="50" max="100" step="1" value="{{ $settings['auto_approve_min_face_score'] }}" style="flex:1; accent-color:#ea580c; cursor:pointer;" oninput="syncFaceScore(this.value)">
@@ -278,9 +278,9 @@
                             </div>
                         </div>
                         <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#94a3b8; margin-top:4px;">
-                            <span>50% (ผ่อนปรน)</span>
-                            <span style="font-weight:700; color:#ea580c;">80% (ค่าแนะนำมาตรฐาน)</span>
-                            <span>100% (เข้มงวดสูงสุด)</span>
+                            <span>50% ({{ __('ผ่อนปรน)') }}</span>
+                            <span style="font-weight:700; color:#ea580c;">80% ({{ __('ค่าแนะนำมาตรฐาน)') }}</span>
+                            <span>100% ({{ __('เข้มงวดสูงสุด)') }}</span>
                         </div>
                     </div>
 
@@ -293,26 +293,26 @@
                                 <svg style="width:18px; height:18px; color:#0284c7;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                                 </svg>
-                                เกณฑ์ระยะห่าง GPS จากจุดจัดกิจกรรมสูงสุด
+                                {{ __('เกณฑ์ระยะห่าง GPS จากจุดจัดกิจกรรมสูงสุด') }}
                             </label>
                             <span style="font-size:0.85rem; font-weight:700; color:#0369a1; background:#e0f2fe; padding:3px 10px; border-radius:6px;">
-                                ระยะห่างต้อง &le; <span id="distance-display">{{ number_format($settings['auto_approve_max_distance'], 0) }}</span> เมตร
+                                {{ __('ระยะห่างต้อง') }}&le; <span id="distance-display">{{ number_format($settings['auto_approve_max_distance'], 0) }}</span> {{ __('เมตร') }}
                             </span>
                         </div>
                         <p style="font-size:0.8rem; color:#64748b; margin-bottom:0.75rem;">
-                            ระยะห่างคำนวณจากพิกัด GPS อุปกรณ์ของนักศึกษาถึงจุดศูนย์กลางกิจกรรม หากระยะเกินเกณฑ์นี้จะถูกส่งเข้า Approval Queue ให้แอดมินพิจารณา
+                            {{ __('ระยะห่างคำนวณจากพิกัด GPS อุปกรณ์ของนักศึกษาถึงจุดศูนย์กลางกิจกรรม หากระยะเกินเกณฑ์นี้จะถูกส่งเข้า Approval Queue ให้แอดมินพิจารณา') }}
                         </p>
                         <div style="display:flex; align-items:center; gap:1rem;">
                             <input type="range" id="distance-slider" min="5" max="300" step="5" value="{{ $settings['auto_approve_max_distance'] }}" style="flex:1; accent-color:#0284c7; cursor:pointer;" oninput="syncDistance(this.value)">
                             <div style="display:flex; align-items:center; gap:4px; width:95px;">
                                 <input type="number" name="auto_approve_max_distance" id="distance-input" min="5" max="1000" step="1" value="{{ $settings['auto_approve_max_distance'] }}" class="form-control" style="text-align:center; font-weight:700; padding:0.4rem;" oninput="syncDistance(this.value)" required>
-                                <span style="font-weight:600; font-size:0.85rem; color:#475569;">ม.</span>
+                                <span style="font-weight:600; font-size:0.85rem; color:#475569;">{{ __('ม.') }}</span>
                             </div>
                         </div>
                         <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#94a3b8; margin-top:4px;">
-                            <span>5 ม. (ระยะใกล้มาก)</span>
-                            <span style="font-weight:700; color:#0284c7;">50 ม. (ค่าแนะนำครอบคลุมอาคาร)</span>
-                            <span>300 ม. (ลานกว้าง/กลางแจ้ง)</span>
+                            <span>5 {{ __('ม. (ระยะใกล้มาก)') }}</span>
+                            <span style="font-weight:700; color:#0284c7;">50 {{ __('ม. (ค่าแนะนำครอบคลุมอาคาร)') }}</span>
+                            <span>300 {{ __('ม. (ลานกว้าง/กลางแจ้ง)') }}</span>
                         </div>
                     </div>
 
@@ -321,16 +321,16 @@
                     {{-- เกณฑ์ 3: ความปลอดภัยขั้นสูง (Liveness & Device Anti-Fraud) --}}
                     <div>
                         <label style="font-weight:700; font-size:0.9rem; color:var(--text-main, #0f172a); display:block; margin-bottom:0.75rem;">
-                            เงื่อนไขความปลอดภัยและป้องกันการทุจริตเพิ่มเติม
+                            {{ __('เงื่อนไขความปลอดภัยและป้องกันการทุจริตเพิ่มเติม') }}
                         </label>
                         <div style="display:flex; flex-direction:column; gap:0.875rem;">
                             {{-- Liveness Detection --}}
                             <label style="display:flex; align-items:flex-start; gap:0.75rem; cursor:pointer; padding:0.75rem 1rem; border-radius:8px; border:1px solid var(--border, #e2e8f0); background:var(--surface, #f8fafc);">
                                 <input type="checkbox" name="auto_approve_require_liveness" value="1" {{ $settings['auto_approve_require_liveness'] ? 'checked' : '' }} style="margin-top:3px; width:18px; height:18px; accent-color:#ea580c; cursor:pointer;">
                                 <div>
-                                    <div style="font-weight:700; font-size:0.875rem; color:var(--text-main, #0f172a);">บังคับผ่านการตรวจจับบุคคลจริง (AI Passive Liveness Anti-Spoofing)</div>
+                                    <div style="font-weight:700; font-size:0.875rem; color:var(--text-main, #0f172a);">{{ __('บังคับผ่านการตรวจจับบุคคลจริง (AI Passive Liveness Anti-Spoofing)') }}</div>
                                     <div style="font-size:0.775rem; color:#64748b; margin-top:2px;">
-                                        ป้องกันการใช้รูปถ่าย, หน้าจอมือถือ, หรือภาพพิมพ์สแกนแทน หากระบบสงสัยว่าไม่ใช่บุคคลจริง จะไม่ได้รับการอนุมัติอัตโนมัติ
+                                        {{ __('ป้องกันการใช้รูปถ่าย, หน้าจอมือถือ, หรือภาพพิมพ์สแกนแทน หากระบบสงสัยว่าไม่ใช่บุคคลจริง จะไม่ได้รับการอนุมัติอัตโนมัติ') }}
                                     </div>
                                 </div>
                             </label>
@@ -339,9 +339,9 @@
                             <label style="display:flex; align-items:flex-start; gap:0.75rem; cursor:pointer; padding:0.75rem 1rem; border-radius:8px; border:1px solid var(--border, #e2e8f0); background:var(--surface, #f8fafc);">
                                 <input type="checkbox" name="auto_approve_prevent_shared_device" value="1" {{ $settings['auto_approve_prevent_shared_device'] ? 'checked' : '' }} style="margin-top:3px; width:18px; height:18px; accent-color:#ea580c; cursor:pointer;">
                                 <div>
-                                    <div style="font-weight:700; font-size:0.875rem; color:var(--text-main, #0f172a);">ระงับการอนุมัติอัตโนมัติเมื่อตรวจพบการใช้อุปกรณ์ซ้ำหลายบัญชี (Device Fingerprint)</div>
+                                    <div style="font-weight:700; font-size:0.875rem; color:var(--text-main, #0f172a);">{{ __('ระงับการอนุมัติอัตโนมัติเมื่อตรวจพบการใช้อุปกรณ์ซ้ำหลายบัญชี (Device Fingerprint)') }}</div>
                                     <div style="font-size:0.775rem; color:#64748b; margin-top:2px;">
-                                        หากตรวจพบว่าเครื่องเดียวกันมีการล็อกอินเช็คอินให้นักศึกษาหลายคนพร้อมกัน จะส่งเข้าคิวให้แอดมินตรวจสอบเพื่อป้องกันการเช็คอินแทนกัน
+                                        {{ __('หากตรวจพบว่าเครื่องเดียวกันมีการล็อกอินเช็คอินให้นักศึกษาหลายคนพร้อมกัน จะส่งเข้าคิวให้แอดมินตรวจสอบเพื่อป้องกันการเช็คอินแทนกัน') }}
                                     </div>
                                 </div>
                             </label>
@@ -358,7 +358,7 @@
                         <svg style="width:18px; height:18px; color:#64748b;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
-                        <h4 style="font-size:0.9rem; font-weight:700; color:#334155; margin:0;">ตัวอย่างการตัดสินใจของระบบตามเกณฑ์ปัจจุบัน</h4>
+                        <h4 style="font-size:0.9rem; font-weight:700; color:#334155; margin:0;">{{ __('ตัวอย่างการตัดสินใจของระบบตามเกณฑ์ปัจจุบัน') }}</h4>
                     </div>
                 </div>
                 <div class="card-body" style="padding:0 1.5rem 1.5rem 1.5rem;">
@@ -366,34 +366,34 @@
                         {{-- ตัวอย่างที่ 1: ผ่านเกณฑ์ (Auto-Approved) --}}
                         <div style="border-radius:10px; border:1px solid #bbf7d0; background:#f0fdf4; padding:1rem;">
                             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
-                                <span style="font-size:0.75rem; font-weight:700; color:#15803d; text-transform:uppercase;">กรณีผ่านเกณฑ์ครบถ้วน</span>
-                                <span style="font-size:0.7rem; font-weight:700; background:#22c55e; color:#fff; padding:2px 8px; border-radius:999px;">อนุมัติทันที</span>
+                                <span style="font-size:0.75rem; font-weight:700; color:#15803d; text-transform:uppercase;">{{ __('กรณีผ่านเกณฑ์ครบถ้วน') }}</span>
+                                <span style="font-size:0.7rem; font-weight:700; background:#22c55e; color:#fff; padding:2px 8px; border-radius:999px;">{{ __('อนุมัติทันที') }}</span>
                             </div>
                             <div style="font-size:0.85rem; color:#166534; font-weight:600; line-height:1.5;">
-                                AI ใบหน้า 88% (&ge; <span class="sim-face-val">{{ number_format($settings['auto_approve_min_face_score'], 0) }}</span>%)<br>
-                                ระยะ GPS 18 ม. (&le; <span class="sim-dist-val">{{ number_format($settings['auto_approve_max_distance'], 0) }}</span> ม.)
+                                AI {{ __('ใบหน้า 88% (') }}&ge; <span class="sim-face-val">{{ number_format($settings['auto_approve_min_face_score'], 0) }}</span>%)<br>
+                                {{ __('ระยะ GPS 18 ม. (') }}&le; <span class="sim-dist-val">{{ number_format($settings['auto_approve_max_distance'], 0) }}</span> {{ __('ม.)') }}
                             </div>
                             <div style="font-size:0.75rem; color:#15803d; margin-top:6px; line-height:1.4;">
-                                &bull; สถานะปรับเป็น "อนุมัติแล้ว" อัตโนมัติ<br>
-                                &bull; มอบชั่วโมงกิจกรรมให้นักศึกษาทันที<br>
-                                &bull; ไม่ต้องรอแอดมินกดอนุมัติในคิว
+                                &bull; {{ __('สถานะปรับเป็น') }}"{{ __('อนุมัติแล้ว') }}" {{ __('อัตโนมัติ') }}<br>
+                                &bull; {{ __('มอบชั่วโมงกิจกรรมให้นักศึกษาทันที') }}<br>
+                                &bull; {{ __('ไม่ต้องรอแอดมินกดอนุมัติในคิว') }}
                             </div>
                         </div>
 
                         {{-- ตัวอย่างที่ 2: ติดความเสี่ยง (Held for Manual Review) --}}
                         <div style="border-radius:10px; border:1px solid #fde68a; background:#fffbeb; padding:1rem;">
                             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
-                                <span style="font-size:0.75rem; font-weight:700; color:#92400e; text-transform:uppercase;">กรณีพบความเสี่ยง</span>
-                                <span style="font-size:0.7rem; font-weight:700; background:#d97706; color:#fff; padding:2px 8px; border-radius:999px;">ส่งเข้า Approval Queue</span>
+                                <span style="font-size:0.75rem; font-weight:700; color:#92400e; text-transform:uppercase;">{{ __('กรณีพบความเสี่ยง') }}</span>
+                                <span style="font-size:0.7rem; font-weight:700; background:#d97706; color:#fff; padding:2px 8px; border-radius:999px;">{{ __('ส่งเข้า Approval Queue') }}</span>
                             </div>
                             <div style="font-size:0.85rem; color:#92400e; font-weight:600; line-height:1.5;">
-                                AI ใบหน้า 62% หรือ ระยะ GPS 85 ม.<br>
-                                หรือตรวจพบลักษณะอุปกรณ์ซ้ำ
+                                AI {{ __('ใบหน้า 62% หรือ ระยะ GPS 85 ม.') }}<br>
+                                {{ __('หรือตรวจพบลักษณะอุปกรณ์ซ้ำ') }}
                             </div>
                             <div style="font-size:0.75rem; color:#b45309; margin-top:6px; line-height:1.4;">
-                                &bull; สถานะเป็น "รออนุมัติ (pending)"<br>
-                                &bull; ส่งเข้า Approval Queue บนแดชบอร์ด<br>
-                                &bull; แสดง Risk Badge ให้แอดมินตรวจสอบเฉพาะเคสนี้
+                                &bull; {{ __('สถานะเป็น') }}"{{ __('รออนุมัติ (pending)') }}"<br>
+                                &bull; {{ __('ส่งเข้า Approval Queue บนแดชบอร์ด') }}<br>
+                                &bull; {{ __('แสดง Risk Badge ให้แอดมินตรวจสอบเฉพาะเคสนี้') }}
                             </div>
                         </div>
                     </div>
@@ -402,12 +402,12 @@
 
             {{-- ปุ่มบันทึกการตั้งค่า --}}
             <div class="flex justify-end gap-2">
-                <a href="{{ route('admin.dashboard') }}" class="btn btn-outline" style="border-radius:8px;">ยกเลิก</a>
+                <a href="{{ route('admin.dashboard') }}" class="btn btn-outline" style="border-radius:8px;">{{ __('ยกเลิก') }}</a>
                 <button type="submit" class="btn btn-primary" style="background:#ea580c; color:white; border-radius:8px; font-weight:600; border:none; padding:0.65rem 1.75rem; box-shadow:0 2px 4px rgba(234,88,12,0.2); display:inline-flex; align-items:center; gap:0.5rem;">
                     <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                     </svg>
-                    <span>บันทึกกฎอนุมัติอัตโนมัติ</span>
+                    <span>{{ __('บันทึกกฎอนุมัติอัตโนมัติ') }}</span>
                 </button>
             </div>
         </form>
@@ -434,11 +434,11 @@
         const checked = document.getElementById('auto_approve_enabled').checked;
         const badge = document.getElementById('main-status-badge');
         if (checked) {
-            badge.textContent = 'เปิดใช้งาน (Active)';
+            badge.textContent = '{{ __('เปิดใช้งาน (Active)') }}';
             badge.style.background = '#dcfce7';
             badge.style.color = '#15803d';
         } else {
-            badge.textContent = 'ปิดใช้งาน (Disabled)';
+            badge.textContent = '{{ __('ปิดใช้งาน (Disabled)') }}';
             badge.style.background = '#f1f5f9';
             badge.style.color = '#64748b';
         }
@@ -456,12 +456,12 @@
                     <svg style="width:20px; height:20px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                     </svg>
-                    รูปแบบอีเมลนักศึกษาอัตโนมัติ (SSO Sync)
+                    {{ __('รูปแบบอีเมลนักศึกษาอัตโนมัติ (SSO Sync)') }}
                 </h3>
             </div>
             <div class="card-body" style="padding:1.5rem;">
                 <p class="text-sm text-muted mb-6" style="line-height:1.5;">
-                    เมื่อนักศึกษาเข้าสู่ระบบครั้งแรกผ่านระบบล็อกอินส่วนกลาง (SSO) ระบบจะดึงรหัสนักศึกษาและสร้างอีเมลขึ้นมาโดยอัตโนมัติตามรูปแบบที่ระบุด้านล่าง เพื่ออำนวยความสะดวกในการจัดส่งเอกสารและข้อมูลกิจกรรม
+                    {{ __('เมื่อนักศึกษาเข้าสู่ระบบครั้งแรกผ่านระบบล็อกอินส่วนกลาง (SSO) ระบบจะดึงรหัสนักศึกษาและสร้างอีเมลขึ้นมาโดยอัตโนมัติตามรูปแบบที่ระบุด้านล่าง เพื่ออำนวยความสะดวกในการจัดส่งเอกสารและข้อมูลกิจกรรม') }}
                 </p>
 
                 <form action="{{ route('admin.settings.update') }}" method="POST">
@@ -470,37 +470,37 @@
 
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.25rem; margin-bottom:1.5rem;">
                         <div>
-                            <label class="form-label" style="font-weight:600; color:#334155; margin-bottom:0.5rem; display:block;">คำนำหน้าอีเมล (Prefix)</label>
-                            <input type="text" name="student_email_prefix" value="{{ old('student_email_prefix', $settings['student_email_prefix']) }}" class="form-control" style="width: 100%; padding: 0.625rem; border: 1px solid #cbd5e1; border-radius: 8px; transition: border-color 0.2s;" placeholder="เช่น s (ปล่อยว่างได้)">
+                            <label class="form-label" style="font-weight:600; color:#334155; margin-bottom:0.5rem; display:block;">{{ __('คำนำหน้าอีเมล (Prefix)') }}</label>
+                            <input type="text" name="student_email_prefix" value="{{ old('student_email_prefix', $settings['student_email_prefix']) }}" class="form-control" style="width: 100%; padding: 0.625rem; border: 1px solid #cbd5e1; border-radius: 8px; transition: border-color 0.2s;" placeholder="{{ __('เช่น s (ปล่อยว่างได้)') }}">
                             @error('student_email_prefix')
                                 <p class="text-xs mt-1" style="color: #ef4444; font-weight:500;">{{ $message }}</p>
                             @enderror
-                            <p class="text-xs text-muted mt-1.5" style="line-height:1.5; color:#475569;">ตัวอักษรที่จะนำหน้ารหัสนักศึกษา (เช่น ใส่ <code style="background:#f1f5f9; padding:2px 4px; border-radius:4px; font-weight:600;">s</code> จะได้ s6710886217...)</p>
+                            <p class="text-xs text-muted mt-1.5" style="line-height:1.5; color:#475569;">{{ __('ตัวอักษรที่จะนำหน้ารหัสนักศึกษา (เช่น ใส่') }}<code style="background:#f1f5f9; padding:2px 4px; border-radius:4px; font-weight:600;">s</code> {{ __('จะได้ s6710886217...)') }}</p>
                         </div>
 
                         <div>
-                            <label class="form-label" style="font-weight:600; color:#334155; margin-bottom:0.5rem; display:block;">โดเมนอีเมลสถาบัน (Domain) <span class="text-danger">*</span></label>
-                            <input type="text" name="student_email_domain" value="{{ old('student_email_domain', $settings['student_email_domain']) }}" class="form-control" style="width: 100%; padding: 0.625rem; border: 1px solid #cbd5e1; border-radius: 8px; transition: border-color 0.2s;" placeholder="เช่น @pkru.ac.th" required>
+                            <label class="form-label" style="font-weight:600; color:#334155; margin-bottom:0.5rem; display:block;">{{ __('โดเมนอีเมลสถาบัน (Domain)') }}<span class="text-danger">*</span></label>
+                            <input type="text" name="student_email_domain" value="{{ old('student_email_domain', $settings['student_email_domain']) }}" class="form-control" style="width: 100%; padding: 0.625rem; border: 1px solid #cbd5e1; border-radius: 8px; transition: border-color 0.2s;" placeholder="{{ __('เช่น') }}@pkru.ac.th" required>
                             @error('student_email_domain')
                                 <p class="text-xs mt-1" style="color: #ef4444; font-weight:500;">{{ $message }}</p>
                             @enderror
-                            <p class="text-xs text-muted mt-1.5" style="line-height:1.5; color:#475569;">โดเมนอีเมลของมหาวิทยาลัย ต้องขึ้นต้นด้วยเครื่องหมาย <code style="background:#f1f5f9; padding:2px 4px; border-radius:4px; font-weight:600;">@</code> เสมอ</p>
+                            <p class="text-xs text-muted mt-1.5" style="line-height:1.5; color:#475569;">{{ __('โดเมนอีเมลของมหาวิทยาลัย ต้องขึ้นต้นด้วยเครื่องหมาย') }}<code style="background:#f1f5f9; padding:2px 4px; border-radius:4px; font-weight:600;">@</code> {{ __('เสมอ') }}</p>
                         </div>
                     </div>
 
                     {{-- Live Preview Box --}}
                     <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 1.25rem; margin-bottom: 1.5rem; display:flex; flex-direction:column; gap:6px;">
-                        <span class="text-xs font-semi text-muted" style="text-transform:uppercase; letter-spacing:0.05em; color:#475569;">ตัวอย่างอีเมลที่ได้จริง:</span>
+                        <span class="text-xs font-semi text-muted" style="text-transform:uppercase; letter-spacing:0.05em; color:#475569;">{{ __('ตัวอย่างอีเมลที่ได้จริง:') }}</span>
                         <div style="display:flex; align-items:center; gap:8px;">
                             <code class="font-mono text-sm" id="email-preview" style="color: #c2410c; background: #fff; padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0; display:inline-block; font-weight:700; box-shadow: 0 1px 2px rgba(0,0,0,0.02); letter-spacing:-0.01em;"></code>
-                            <span style="font-size:0.75rem; color:#475569; line-height:1.5;">(สมมติรหัส นศ. 6710886217)</span>
+                            <span style="font-size:0.75rem; color:#475569; line-height:1.5;">({{ __('สมมติรหัส นศ. 6710886217)') }}</span>
                         </div>
                     </div>
 
                     <div class="flex justify-end gap-2">
-                        <a href="{{ route('admin.dashboard') }}" class="btn btn-outline" style="border-radius:8px;">ยกเลิก</a>
+                        <a href="{{ route('admin.dashboard') }}" class="btn btn-outline" style="border-radius:8px;">{{ __('ยกเลิก') }}</a>
                         <button type="submit" class="btn btn-primary" style="background:#ea580c; color:white; border-radius:8px; font-weight:600; border:none; padding:0.6rem 1.5rem; box-shadow:0 2px 4px rgba(234,88,12,0.2);">
-                            บันทึกการตั้งค่า
+                            {{ __('บันทึกการตั้งค่า') }}
                         </button>
                     </div>
                 </form>
@@ -524,22 +524,22 @@
                 <div class="flex justify-between items-center" style="background:#f0fdf4; border:1px solid #bbf7d0; padding:8px 12px; border-radius:8px;">
                     <div style="display:flex; align-items:center; gap:8px;">
                         <span style="display:block; width:8px; height:8px; border-radius:50%; background:#22c55e; box-shadow:0 0 8px #22c55e; animation: pulse 2s infinite;"></span>
-                        <span class="text-xs font-semi" style="color:#14532d;">บอท LINE OA ออนไลน์</span>
+                        <span class="text-xs font-semi" style="color:#14532d;">{{ __('บอท LINE OA ออนไลน์') }}</span>
                     </div>
                     <span class="text-xs font-bold" style="color:#15803d; background:#dcfce7; padding:2px 6px; border-radius:4px;">Online</span>
                 </div>
 
                 <div style="display:flex; flex-direction:column; gap:8px; border-top:1px solid #f1f5f9; padding-top:0.75rem;">
                     <div>
-                        <span class="text-xs text-muted" style="display:block; margin-bottom:2px;">ไอดีบอท:</span>
+                        <span class="text-xs text-muted" style="display:block; margin-bottom:2px;">{{ __('ไอดีบอท:') }}</span>
                         <span class="text-sm font-semi" style="color:#334155;">@436quwjw (ระบบกิจกรรม มหาลัย)</span>
                     </div>
                     <div>
                         <span class="text-xs text-muted" style="display:block; margin-bottom:2px;">Webhook Auto-Update:</span>
-                        <span class="text-xs font-semi" style="color:#0369a1; background:#e0f2fe; padding:2px 6px; border-radius:4px; display:inline-block; max-width:100%; word-break:break-all; line-height:1.5;">เปิดใช้งานระบบซิงก์ออโต้แล้ว</span>
+                        <span class="text-xs font-semi" style="color:#0369a1; background:#e0f2fe; padding:2px 6px; border-radius:4px; display:inline-block; max-width:100%; word-break:break-all; line-height:1.5;">{{ __('เปิดใช้งานระบบซิงก์ออโต้แล้ว') }}</span>
                     </div>
                     <p class="text-xs text-muted" style="line-height:1.5; margin:0; padding-top:4px; color:#475569;">
-                        Webhook URL และไฟล์ดีดทางหน้าเพจ (Redirect Json Proxy) จะถูกปรับแต่งและอัปเดตแบบเรียลไทม์เมื่อเซิร์ฟเวอร์เปิดใช้งานอุโมงค์ Cloudflare Tunnel โดยอัตโนมัติ
+                        Webhook URL {{ __('และไฟล์ดีดทางหน้าเพจ (Redirect Json Proxy) จะถูกปรับแต่งและอัปเดตแบบเรียลไทม์เมื่อเซิร์ฟเวอร์เปิดใช้งานอุโมงค์ Cloudflare Tunnel โดยอัตโนมัติ') }}
                     </p>
                 </div>
             </div>
@@ -551,7 +551,7 @@
                 <svg style="width:20px; height:20px; color:#475569;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                 </svg>
-                <span class="font-semi text-sm" style="color:#334155;">ข้อมูลสถานะเซิร์ฟเวอร์</span>
+                <span class="font-semi text-sm" style="color:#334155;">{{ __('ข้อมูลสถานะเซิร์ฟเวอร์') }}</span>
             </div>
             <div class="card-body" style="padding:1.25rem; display:flex; flex-direction:column; gap:0.75rem;">
                 <div class="flex justify-between items-center text-sm" style="border-bottom: 1px solid #f8fafc; padding-bottom: 6px;">

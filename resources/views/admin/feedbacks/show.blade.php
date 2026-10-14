@@ -6,26 +6,26 @@
 
     {{-- ── 1. Top Navigation Bar ────────────────────────────────────────── --}}
     <div class="gform-nav-bar">
-        <a href="{{ route('admin.feedbacks.index') }}" class="gform-back-btn" title="กลับหน้ารายการการประเมิน">
+        <a href="{{ route('admin.feedbacks.index') }}" class="gform-back-btn" title="{{ __('กลับหน้ารายการการประเมิน') }}">
             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
             </svg>
-            <span>รายการประเมิน</span>
+            <span>{{ __('รายการประเมิน') }}</span>
         </a>
 
         <div class="gform-actions">
-            <button onclick="window.print()" class="gform-btn gform-btn-secondary" title="พิมพ์สรุปรายงานหรือบันทึกเป็น PDF">
+            <button onclick="window.print()" class="gform-btn gform-btn-secondary" title="{{ __('พิมพ์สรุปรายงานหรือบันทึกเป็น PDF') }}">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                 </svg>
-                <span>พิมพ์รายงาน</span>
+                <span>{{ __('พิมพ์รายงาน') }}</span>
             </button>
 
-            <a href="{{ route('admin.activities.show', $activity->id) }}" class="gform-btn gform-btn-secondary" title="ดูหน้ารายละเอียดกิจกรรม">
+            <a href="{{ route('admin.activities.show', $activity->id) }}" class="gform-btn gform-btn-secondary" title="{{ __('ดูหน้ารายละเอียดกิจกรรม') }}">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                 </svg>
-                <span>ดูกิจกรรม</span>
+                <span>{{ __('ดูกิจกรรม') }}</span>
             </a>
         </div>
     </div>
@@ -38,34 +38,34 @@
                 <span class="gform-category-badge">{{ $activity->category->name ?? 'กิจกรรมทั่วไป' }}</span>
                 <span class="gform-status-badge">
                     <span class="gform-status-dot"></span>
-                    รับคำตอบแล้ว {{ number_format($stats['total']) }} ชุด
+                    {{ __('รับคำตอบแล้ว') }}{{ number_format($stats['total']) }} {{ __('ชุด') }}
                 </span>
             </div>
 
             <h1 class="gform-title">{{ $activity->title }}</h1>
             <p class="gform-subtitle">
-                แบบประเมินความพึงพอใจและผลสัมฤทธิ์ของกิจกรรม · จัดขึ้นเมื่อ {{ $activity->activity_date->translatedFormat('d F Y') }}
-                @if($activity->location) · สถานที่: {{ $activity->location }} @endif
+                {{ __('แบบประเมินความพึงพอใจและผลสัมฤทธิ์ของกิจกรรม') }}· {{ __('จัดขึ้นเมื่อ') }}{{ $activity->activity_date->translatedFormat('d F Y') }}
+                @if($activity->location) · {{ __('สถานที่:') }}{{ $activity->location }} @endif
             </p>
 
             <div class="gform-meta-strip">
                 <div class="gform-meta-item">
-                    <span class="gform-meta-label">การตอบกลับทั้งหมด</span>
-                    <span class="gform-meta-val primary">{{ number_format($stats['total']) }} <small>คน</small></span>
+                    <span class="gform-meta-label">{{ __('การตอบกลับทั้งหมด') }}</span>
+                    <span class="gform-meta-val primary">{{ number_format($stats['total']) }} <small>{{ __('คน') }}</small></span>
                 </div>
                 <div class="gform-meta-item">
-                    <span class="gform-meta-label">คะแนนเฉลี่ยรวม</span>
+                    <span class="gform-meta-label">{{ __('คะแนนเฉลี่ยรวม') }}</span>
                     <span class="gform-meta-val accent">
                         {{ number_format((float)$stats['average'], 2) }}
                         <small>/ 5.0</small>
                     </span>
                 </div>
                 <div class="gform-meta-item">
-                    <span class="gform-meta-label">ค่ามัธยฐาน (Median)</span>
+                    <span class="gform-meta-label">{{ __('ค่ามัธยฐาน (Median)') }}</span>
                     <span class="gform-meta-val">{{ number_format((float)$stats['median'], 1) }}</span>
                 </div>
                 <div class="gform-meta-item">
-                    <span class="gform-meta-label">อัตราการตอบประเมิน</span>
+                    <span class="gform-meta-label">{{ __('อัตราการตอบประเมิน') }}</span>
                     <span class="gform-meta-val">{{ $stats['responseRate'] }}%</span>
                 </div>
             </div>
@@ -77,21 +77,21 @@
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                 </svg>
-                <span>ข้อมูลสรุป (Summary)</span>
+                <span>{{ __('ข้อมูลสรุป (Summary)') }}</span>
             </button>
 
             <button class="gform-tab" onclick="switchGformTab('questions', this)">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                <span>คำถาม (Questions)</span>
+                <span>{{ __('คำถาม (Questions)') }}</span>
             </button>
 
             <button class="gform-tab" onclick="switchGformTab('individual', this)">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                 </svg>
-                <span>แยกตามบุคคล (Individual)</span>
+                <span>{{ __('แยกตามบุคคล (Individual)') }}</span>
             </button>
         </div>
     </div>
@@ -106,18 +106,18 @@
                 <svg width="64" height="64" fill="none" stroke="#71717a" viewBox="0 0 24 24" style="margin: 0 auto 1rem;">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>
-                <h3 style="font-size: 1.2rem; font-weight: 700; color: #f4f4f5; margin-bottom: 0.5rem;">ยังไม่มีการตอบกลับการประเมิน</h3>
-                <p style="color: #a1a1aa; font-size: 0.9rem; margin: 0;">เมื่อนักศึกษาที่เข้าร่วมกิจกรรมส่งแบบประเมิน ข้อมูลและกราฟวิเคราะห์ผลจะปรากฏที่นี่โดยอัตโนมัติ</p>
+                <h3 style="font-size: 1.2rem; font-weight: 700; color: #f4f4f5; margin-bottom: 0.5rem;">{{ __('ยังไม่มีการตอบกลับการประเมิน') }}</h3>
+                <p style="color: #a1a1aa; font-size: 0.9rem; margin: 0;">{{ __('เมื่อนักศึกษาที่เข้าร่วมกิจกรรมส่งแบบประเมิน ข้อมูลและกราฟวิเคราะห์ผลจะปรากฏที่นี่โดยอัตโนมัติ') }}</p>
             </div>
         @else
 
             {{-- 1. Question 1: คะแนนความพึงพอใจภาพรวม --}}
             <div class="gform-card">
                 <div class="gform-q-header">
-                    <div class="gform-q-number">ข้อที่ 1</div>
+                    <div class="gform-q-number">{{ __('ข้อที่ 1') }}</div>
                     <div class="gform-q-title-wrap">
-                        <h3 class="gform-q-title">ระดับความพึงพอใจภาพรวมต่อการจัดกิจกรรม</h3>
-                        <span class="gform-q-count">{{ number_format($stats['total']) }} การตอบกลับ · เฉลี่ย {{ number_format((float)$stats['average'], 2) }} / 5.0</span>
+                        <h3 class="gform-q-title">{{ __('ระดับความพึงพอใจภาพรวมต่อการจัดกิจกรรม') }}</h3>
+                        <span class="gform-q-count">{{ number_format($stats['total']) }} {{ __('การตอบกลับ') }}· {{ __('เฉลี่ย') }}{{ number_format((float)$stats['average'], 2) }} / 5.0</span>
                     </div>
                 </div>
 
@@ -159,10 +159,10 @@
             @foreach($topicStats as $key => $ts)
                 <div class="gform-card">
                     <div class="gform-q-header">
-                        <div class="gform-q-number">ข้อที่ {{ $qIndex++ }}</div>
+                        <div class="gform-q-number">{{ __('ข้อที่') }}{{ $qIndex++ }}</div>
                         <div class="gform-q-title-wrap">
-                            <h3 class="gform-q-title">ระดับความพึงพอใจ: {{ $ts['label'] }}</h3>
-                            <span class="gform-q-count">{{ number_format($ts['count']) }} การตอบกลับ · เฉลี่ย {{ number_format((float)$ts['average'], 2) }} / 5.0</span>
+                            <h3 class="gform-q-title">{{ __('ระดับความพึงพอใจ:') }}{{ $ts['label'] }}</h3>
+                            <span class="gform-q-count">{{ number_format($ts['count']) }} {{ __('การตอบกลับ') }}· {{ __('เฉลี่ย') }}{{ number_format((float)$ts['average'], 2) }} / 5.0</span>
                         </div>
                     </div>
 
@@ -201,10 +201,10 @@
             {{-- 3. Question 6: สถานะการระบุตัวตน (Privacy Status) --}}
             <div class="gform-card">
                 <div class="gform-q-header">
-                    <div class="gform-q-number">ข้อที่ 6</div>
+                    <div class="gform-q-number">{{ __('ข้อที่ 6') }}</div>
                     <div class="gform-q-title-wrap">
-                        <h3 class="gform-q-title">สถานะการเปิดเผยตัวตนในการตอบแบบประเมิน</h3>
-                        <span class="gform-q-count">{{ number_format($stats['total']) }} การตอบกลับ</span>
+                        <h3 class="gform-q-title">{{ __('สถานะการเปิดเผยตัวตนในการตอบแบบประเมิน') }}</h3>
+                        <span class="gform-q-count">{{ number_format($stats['total']) }} {{ __('การตอบกลับ') }}</span>
                     </div>
                 </div>
 
@@ -217,7 +217,7 @@
                         <div class="gform-bar-row">
                             <div class="gform-bar-label" style="display: flex; align-items: center; gap: 6px;">
                                 <span style="width: 10px; height: 10px; border-radius: 50%; background: #3b82f6; display: inline-block;"></span>
-                                ระบุตัวตน (เปิดเผยชื่อ-สกุล)
+                                {{ __('ระบุตัวตน (เปิดเผยชื่อ-สกุล)') }}
                             </div>
                             <div class="gform-bar-track">
                                 <div class="gform-bar-fill" style="width: {{ $idPct }}%; background: #3b82f6;"></div>
@@ -231,7 +231,7 @@
                         <div class="gform-bar-row">
                             <div class="gform-bar-label" style="display: flex; align-items: center; gap: 6px;">
                                 <span style="width: 10px; height: 10px; border-radius: 50%; background: #a855f7; display: inline-block;"></span>
-                                ไม่ระบุตัวตน (Anonymous)
+                                {{ __('ไม่ระบุตัวตน (Anonymous)') }}
                             </div>
                             <div class="gform-bar-track">
                                 <div class="gform-bar-fill" style="width: {{ $anonPct }}%; background: #a855f7;"></div>
@@ -251,10 +251,10 @@
             @endphp
             <div class="gform-card">
                 <div class="gform-q-header">
-                    <div class="gform-q-number">ข้อที่ 7</div>
+                    <div class="gform-q-number">{{ __('ข้อที่ 7') }}</div>
                     <div class="gform-q-title-wrap">
-                        <h3 class="gform-q-title">ความคิดเห็นและข้อเสนอแนะเพิ่มเติมสำหรับกิจกรรมนี้</h3>
-                        <span class="gform-q-count">{{ number_format($textFeedbacks->count()) }} ข้อความความคิดเห็น</span>
+                        <h3 class="gform-q-title">{{ __('ความคิดเห็นและข้อเสนอแนะเพิ่มเติมสำหรับกิจกรรมนี้') }}</h3>
+                        <span class="gform-q-count">{{ number_format($textFeedbacks->count()) }} {{ __('ข้อความความคิดเห็น') }}</span>
                     </div>
                 </div>
 
@@ -275,14 +275,14 @@
                                     @if($tf->is_anonymous)
                                         <span class="gform-anon-badge">
                                             <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                                            ไม่เปิดเผยตัวตน
+                                            {{ __('ไม่เปิดเผยตัวตน') }}
                                         </span>
                                     @else
                                         <span class="gform-user-name">{{ $tf->user->full_name ?? 'ผู้เข้าร่วม' }}</span>
                                     @endif
                                     <span class="gform-rating-pill" style="color: {{ $ratingColor }}; border-color: {{ $ratingColor }}40;">
                                         <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                                        {{ $tf->rating }} / 5 คะแนน
+                                        {{ $tf->rating }} / 5 {{ __('คะแนน') }}
                                     </span>
                                 </div>
                                 <span class="gform-text-time">{{ $tf->created_at->translatedFormat('d M Y H:i น.') }}</span>
@@ -296,8 +296,8 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                                 </svg>
                             </div>
-                            <div style="font-weight:600;font-size:.95rem;color:#71717a;">ไม่มีผู้ตอบที่กรอกความคิดเห็นเพิ่มเติม</div>
-                            <div style="font-size:.825rem;color:#a1a1aa;margin-top:.25rem;">ผู้ตอบแบบประเมินตอบเฉพาะระดับคะแนนตัวเลข</div>
+                            <div style="font-weight:600;font-size:.95rem;color:#71717a;">{{ __('ไม่มีผู้ตอบที่กรอกความคิดเห็นเพิ่มเติม') }}</div>
+                            <div style="font-size:.825rem;color:#a1a1aa;margin-top:.25rem;">{{ __('ผู้ตอบแบบประเมินตอบเฉพาะระดับคะแนนตัวเลข') }}</div>
                         </div>
                     @endforelse
                 </div>
@@ -314,16 +314,16 @@
         <div class="gform-card">
             <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; padding: 16px 20px 0;">
                 <label for="gformQuestionSelect" style="font-weight: 700; color: #f4f4f5; font-size: 0.95rem;">
-                    เลือกคำถามที่ต้องการดูคำตอบ:
+                    {{ __('เลือกคำถามที่ต้องการดูคำตอบ:') }}
                 </label>
                 <select id="gformQuestionSelect" class="form-control" onchange="showQuestionView(this.value)" style="max-width: 420px; font-weight: 600;">
-                    <option value="q1">ข้อที่ 1: ระดับความพึงพอใจภาพรวม</option>
-                    <option value="q2">ข้อที่ 2: เนื้อหากิจกรรมและประโยชน์</option>
-                    <option value="q3">ข้อที่ 3: วิทยากร / ผู้บรรยาย</option>
-                    <option value="q4">ข้อที่ 4: สถานที่และโสตทัศนูปกรณ์</option>
-                    <option value="q5">ข้อที่ 5: การบริหารจัดการและประสานงาน</option>
-                    <option value="q6">ข้อที่ 6: สถานะการเปิดเผยตัวตน</option>
-                    <option value="q7">ข้อที่ 7: ความคิดเห็นและข้อเสนอแนะเพิ่มเติม</option>
+                    <option value="q1">{{ __('ข้อที่ 1: ระดับความพึงพอใจภาพรวม') }}</option>
+                    <option value="q2">{{ __('ข้อที่ 2: เนื้อหากิจกรรมและประโยชน์') }}</option>
+                    <option value="q3">{{ __('ข้อที่ 3: วิทยากร / ผู้บรรยาย') }}</option>
+                    <option value="q4">{{ __('ข้อที่ 4: สถานที่และโสตทัศนูปกรณ์') }}</option>
+                    <option value="q5">{{ __('ข้อที่ 5: การบริหารจัดการและประสานงาน') }}</option>
+                    <option value="q6">{{ __('ข้อที่ 6: สถานะการเปิดเผยตัวตน') }}</option>
+                    <option value="q7">{{ __('ข้อที่ 7: ความคิดเห็นและข้อเสนอแนะเพิ่มเติม') }}</option>
                 </select>
             </div>
 
@@ -333,9 +333,9 @@
                         <thead>
                             <tr>
                                 <th style="width: 60px;">#</th>
-                                <th style="width: 220px;">ผู้ตอบ</th>
-                                <th>คำตอบ / ผลการประเมิน</th>
-                                <th style="width: 160px;">เวลาที่ส่ง</th>
+                                <th style="width: 220px;">{{ __('ผู้ตอบ') }}</th>
+                                <th>{{ __('คำตอบ / ผลการประเมิน') }}</th>
+                                <th style="width: 160px;">{{ __('เวลาที่ส่ง') }}</th>
                             </tr>
                         </thead>
                         <tbody id="questionTbody">
@@ -355,17 +355,17 @@
             {{-- Individual Navigator Bar --}}
             <div class="gform-card gform-individual-nav">
                 <div class="gform-ind-pager">
-                    <button class="gform-pager-btn" id="prevIndBtn" onclick="navigateIndividual(-1)" title="ก่อนหน้า">
+                    <button class="gform-pager-btn" id="prevIndBtn" onclick="navigateIndividual(-1)" title="{{ __('ก่อนหน้า') }}">
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                         </svg>
                     </button>
 
                     <div class="gform-pager-info">
-                        ผู้ตอบคนที่ <span id="currentIndIndex" class="gform-ind-num">1</span> จาก {{ $feedbacks->count() }}
+                        {{ __('ผู้ตอบคนที่') }}<span id="currentIndIndex" class="gform-ind-num">1</span> {{ __('จาก') }}{{ $feedbacks->count() }}
                     </div>
 
-                    <button class="gform-pager-btn" id="nextIndBtn" onclick="navigateIndividual(1)" title="ถัดไป">
+                    <button class="gform-pager-btn" id="nextIndBtn" onclick="navigateIndividual(1)" title="{{ __('ถัดไป') }}">
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                         </svg>
@@ -383,60 +383,60 @@
                     <div style="display: flex; align-items: center; gap: 14px;">
                         <div id="indAvatar" class="gform-ind-avatar">A</div>
                         <div>
-                            <h3 id="indName" class="gform-ind-name">ชื่อผู้ตอบ</h3>
-                            <span id="indRole" class="gform-ind-meta">นักศึกษา</span>
+                            <h3 id="indName" class="gform-ind-name">{{ __('ชื่อผู้ตอบ') }}</h3>
+                            <span id="indRole" class="gform-ind-meta">{{ __('นักศึกษา') }}</span>
                         </div>
                     </div>
-                    <div id="indRatingBadge" class="gform-ind-score-badge">5.0 / 5.0 คะแนน</div>
+                    <div id="indRatingBadge" class="gform-ind-score-badge">5.0 / 5.0 {{ __('คะแนน') }}</div>
                 </div>
 
                 <div class="gform-ind-body">
                     {{-- Q1 --}}
                     <div class="gform-ind-item">
-                        <div class="gform-ind-label">1. ความพึงพอใจภาพรวมต่อกิจกรรม</div>
-                        <div class="gform-ind-value" id="indQ1">5 คะแนน</div>
+                        <div class="gform-ind-label">1. {{ __('ความพึงพอใจภาพรวมต่อกิจกรรม') }}</div>
+                        <div class="gform-ind-value" id="indQ1">5 {{ __('คะแนน') }}</div>
                     </div>
 
                     {{-- Q2 --}}
                     <div class="gform-ind-item">
-                        <div class="gform-ind-label">2. ด้านเนื้อหากิจกรรมและประโยชน์ที่ได้รับ</div>
+                        <div class="gform-ind-label">2. {{ __('ด้านเนื้อหากิจกรรมและประโยชน์ที่ได้รับ') }}</div>
                         <div class="gform-ind-value" id="indQ2">-</div>
                     </div>
 
                     {{-- Q3 --}}
                     <div class="gform-ind-item">
-                        <div class="gform-ind-label">3. ด้านวิทยากร / ผู้บรรยาย / ผู้ดำเนินกิจกรรม</div>
+                        <div class="gform-ind-label">3. {{ __('ด้านวิทยากร / ผู้บรรยาย / ผู้ดำเนินกิจกรรม') }}</div>
                         <div class="gform-ind-value" id="indQ3">-</div>
                     </div>
 
                     {{-- Q4 --}}
                     <div class="gform-ind-item">
-                        <div class="gform-ind-label">4. ด้านสถานที่ / โสตทัศนูปกรณ์ / ระบบดิจิทัล</div>
+                        <div class="gform-ind-label">4. {{ __('ด้านสถานที่ / โสตทัศนูปกรณ์ / ระบบดิจิทัล') }}</div>
                         <div class="gform-ind-value" id="indQ4">-</div>
                     </div>
 
                     {{-- Q5 --}}
                     <div class="gform-ind-item">
-                        <div class="gform-ind-label">5. ด้านการบริหารจัดการและการประสานงาน</div>
+                        <div class="gform-ind-label">5. {{ __('ด้านการบริหารจัดการและการประสานงาน') }}</div>
                         <div class="gform-ind-value" id="indQ5">-</div>
                     </div>
 
                     {{-- Q6 --}}
                     <div class="gform-ind-item">
-                        <div class="gform-ind-label">6. สถานะการเปิดเผยตัวตน</div>
-                        <div class="gform-ind-value" id="indQ6">เปิดเผยตัวตน</div>
+                        <div class="gform-ind-label">6. {{ __('สถานะการเปิดเผยตัวตน') }}</div>
+                        <div class="gform-ind-value" id="indQ6">{{ __('เปิดเผยตัวตน') }}</div>
                     </div>
 
                     {{-- Q7 --}}
                     <div class="gform-ind-item">
-                        <div class="gform-ind-label">7. ความคิดเห็นและข้อเสนอแนะเพิ่มเติม</div>
+                        <div class="gform-ind-label">7. {{ __('ความคิดเห็นและข้อเสนอแนะเพิ่มเติม') }}</div>
                         <div class="gform-ind-value" id="indQ7" style="white-space: pre-wrap; font-style: normal; color: #f4f4f5;">-</div>
                     </div>
                 </div>
             </div>
         @else
             <div class="gform-card" style="text-align: center; padding: 3rem;">
-                <p style="color: #a1a1aa; margin: 0;">ไม่มีข้อมูลสำหรับแสดงรายบุคคล</p>
+                <p style="color: #a1a1aa; margin: 0;">{{ __('ไม่มีข้อมูลสำหรับแสดงรายบุคคล') }}</p>
             </div>
         @endif
     </div>
@@ -471,7 +471,7 @@ function showQuestionView(qKey) {
     tbody.innerHTML = '';
 
     if (FEEDBACKS_DATA.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#a1a1aa;padding:2rem;">ไม่มีข้อมูล</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#a1a1aa;padding:2rem;">{{ __('ไม่มีข้อมูล') }}</td></tr>';
         return;
     }
 
@@ -481,24 +481,24 @@ function showQuestionView(qKey) {
             answerText = getScorePill(fb.rating);
         } else if (qKey === 'q2') {
             const v = fb.ratings?.content || '-';
-            answerText = v !== '-' ? getScorePill(v) : '<span class="text-muted">ไม่ได้ระบุ</span>';
+            answerText = v !== '-' ? getScorePill(v) : '<span class="text-muted">{{ __('ไม่ได้ระบุ') }}</span>';
         } else if (qKey === 'q3') {
             const v = fb.ratings?.speaker || '-';
-            answerText = v !== '-' ? getScorePill(v) : '<span class="text-muted">ไม่ได้ระบุ</span>';
+            answerText = v !== '-' ? getScorePill(v) : '<span class="text-muted">{{ __('ไม่ได้ระบุ') }}</span>';
         } else if (qKey === 'q4') {
             const v = fb.ratings?.location || '-';
-            answerText = v !== '-' ? getScorePill(v) : '<span class="text-muted">ไม่ได้ระบุ</span>';
+            answerText = v !== '-' ? getScorePill(v) : '<span class="text-muted">{{ __('ไม่ได้ระบุ') }}</span>';
         } else if (qKey === 'q5') {
             const v = fb.ratings?.organization || '-';
-            answerText = v !== '-' ? getScorePill(v) : '<span class="text-muted">ไม่ได้ระบุ</span>';
+            answerText = v !== '-' ? getScorePill(v) : '<span class="text-muted">{{ __('ไม่ได้ระบุ') }}</span>';
         } else if (qKey === 'q6') {
             answerText = fb.is_anonymous 
-                ? '<span class="gform-anon-badge"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg> ไม่เปิดเผยตัวตน</span>' 
-                : '<span class="gform-user-badge"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg> เปิดเผยตัวตน</span>';
+                ? '<span class="gform-anon-badge"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg> {{ __('ไม่เปิดเผยตัวตน') }}</span>' 
+                : '<span class="gform-user-badge"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg> {{ __('เปิดเผยตัวตน') }}</span>';
         } else if (qKey === 'q7') {
             answerText = fb.comment 
                 ? `<div style="background:#141416;padding:8px 12px;border-radius:6px;border:1px solid #27272a;color:#f4f4f5;">${escapeHtml(fb.comment)}</div>` 
-                : '<span class="text-muted" style="font-style:italic;">(ไม่มีข้อความเสนอแนะ)</span>';
+                : '<span class="text-muted" style="font-style:italic;">({{ __('ไม่มีข้อความเสนอแนะ)') }}</span>';
         }
 
         const tr = document.createElement('tr');
@@ -549,35 +549,35 @@ function renderIndividual(idx) {
     document.getElementById('prevIndBtn').disabled = (idx === 0);
     document.getElementById('nextIndBtn').disabled = (idx === FEEDBACKS_DATA.length - 1);
 
-    document.getElementById('indSubmitTime').textContent = 'ส่งเมื่อ ' + fb.time_thai;
+    document.getElementById('indSubmitTime').textContent = '{{ __('ส่งเมื่อ') }}' + fb.time_thai;
     document.getElementById('indName').textContent = fb.user_name;
-    document.getElementById('indRole').textContent = fb.is_anonymous ? 'นิรนาม (PDPA Safe)' : 'รหัสนักศึกษา/อีเมล: ' + fb.student_code;
+    document.getElementById('indRole').textContent = fb.is_anonymous ? '{{ __('นิรนาม (PDPA Safe)') }}' : '{{ __('รหัสนักศึกษา/อีเมล:') }}' + fb.student_code;
 
     const initial = fb.is_anonymous ? '?' : fb.user_name.charAt(0).toUpperCase();
     document.getElementById('indAvatar').textContent = initial;
 
     const badge = document.getElementById('indRatingBadge');
-    badge.textContent = `${fb.rating}.0 / 5.0 คะแนน`;
+    badge.textContent = `${fb.rating}.0 / 5.0 {{ __('คะแนน') }}`;
 
     document.getElementById('indQ1').innerHTML = getScorePill(fb.rating);
     
     const q2Val = fb.ratings?.content;
-    document.getElementById('indQ2').innerHTML = q2Val ? getScorePill(q2Val) : '<span class="text-muted">ไม่ได้ระบุ</span>';
+    document.getElementById('indQ2').innerHTML = q2Val ? getScorePill(q2Val) : '<span class="text-muted">{{ __('ไม่ได้ระบุ') }}</span>';
     
     const q3Val = fb.ratings?.speaker;
-    document.getElementById('indQ3').innerHTML = q3Val ? getScorePill(q3Val) : '<span class="text-muted">ไม่ได้ระบุ</span>';
+    document.getElementById('indQ3').innerHTML = q3Val ? getScorePill(q3Val) : '<span class="text-muted">{{ __('ไม่ได้ระบุ') }}</span>';
     
     const q4Val = fb.ratings?.location;
-    document.getElementById('indQ4').innerHTML = q4Val ? getScorePill(q4Val) : '<span class="text-muted">ไม่ได้ระบุ</span>';
+    document.getElementById('indQ4').innerHTML = q4Val ? getScorePill(q4Val) : '<span class="text-muted">{{ __('ไม่ได้ระบุ') }}</span>';
     
     const q5Val = fb.ratings?.organization;
-    document.getElementById('indQ5').innerHTML = q5Val ? getScorePill(q5Val) : '<span class="text-muted">ไม่ได้ระบุ</span>';
+    document.getElementById('indQ5').innerHTML = q5Val ? getScorePill(q5Val) : '<span class="text-muted">{{ __('ไม่ได้ระบุ') }}</span>';
 
     document.getElementById('indQ6').innerHTML = fb.is_anonymous 
-        ? '<span class="gform-anon-badge"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg> ไม่เปิดเผยตัวตน</span>' 
-        : '<span class="gform-user-badge"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg> เปิดเผยตัวตน</span>';
+        ? '<span class="gform-anon-badge"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg> {{ __('ไม่เปิดเผยตัวตน') }}</span>' 
+        : '<span class="gform-user-badge"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg> {{ __('เปิดเผยตัวตน') }}</span>';
 
-    document.getElementById('indQ7').textContent = fb.comment || '(ไม่มีข้อความเสนอแนะเพิ่มเติม)';
+    document.getElementById('indQ7').textContent = fb.comment || '({{ __('ไม่มีข้อความเสนอแนะเพิ่มเติม)') }}';
 }
 
 document.addEventListener('DOMContentLoaded', function() {

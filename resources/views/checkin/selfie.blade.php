@@ -8,7 +8,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>ยืนยันตัวตน — สแกนใบหน้า</title>
+    <title>{{ __('ยืนยันตัวตน — สแกนใบหน้า') }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ file_exists(public_path('css/app.css')) ? md5_file(public_path('css/app.css')) : time() }}">
     <link rel="stylesheet" href="{{ asset('css/face-scan-animation.css') }}?v=1">
@@ -321,19 +321,19 @@
                 <svg width="22" height="22" fill="none" stroke="white" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
             <div>
-                <span class="panel-logo-name">ยืนยันตัวตน</span>
-                <span class="panel-logo-text">ระบบสแกนใบหน้าอัตโนมัติ</span>
+                <span class="panel-logo-name">{{ __('ยืนยันตัวตน') }}</span>
+                <span class="panel-logo-text">{{ __('ระบบสแกนใบหน้าอัตโนมัติ') }}</span>
             </div>
         </div>
         <div class="panel-divider"></div>
         <div class="panel-section">
             <a href="{{ route('activities.index') }}" class="back-link">
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-                กลับหน้ากิจกรรม
+                {{ __('กลับหน้ากิจกรรม') }}
             </a>
         </div>
         <div class="panel-section">
-            <span class="panel-section-label">กิจกรรม</span>
+            <span class="panel-section-label">{{ __('กิจกรรม') }}</span>
             <div class="activity-card">
                 <p class="activity-title">{{ $activity->title }}</p>
                 <div class="activity-meta">
@@ -349,12 +349,12 @@
             </div>
         </div>        <div class="panel-divider"></div>
         <div class="panel-section">
-            <span class="panel-section-label">คำแนะนำ</span>
+            <span class="panel-section-label">{{ __('คำแนะนำ') }}</span>
             <ul class="instructions-list">
-                <li><span class="num">1</span>วางใบหน้าให้อยู่ในกรอบรูปรี</li>
-                <li><span class="num">2</span>มองตรงมายังกล้อง อย่าก้มหรือเงยหน้า</li>
-                <li><span class="num">3</span>ให้แสงสว่างเพียงพอ หลีกเลี่ยงแสงจ้าด้านหลัง</li>
-                <li><span class="num">4</span>ถืออุปกรณ์ให้นิ่ง ห่างจากกล้องประมาณ 40–60 ซม.</li>
+                <li><span class="num">1</span>{{ __('วางใบหน้าให้อยู่ในกรอบรูปรี') }}</li>
+                <li><span class="num">2</span>{{ __('มองตรงมายังกล้อง อย่าก้มหรือเงยหน้า') }}</li>
+                <li><span class="num">3</span>{{ __('ให้แสงสว่างเพียงพอ หลีกเลี่ยงแสงจ้าด้านหลัง') }}</li>
+                <li><span class="num">4</span>{{ __('ถืออุปกรณ์ให้นิ่ง ห่างจากกล้องประมาณ 40–60 ซม.') }}</li>
             </ul>
         </div>
     </aside>
@@ -373,8 +373,8 @@
         <div id="comparisonResult">
             <div class="comparison-faces">
                 <div class="comparison-face">
-                    <img id="profileThumb" src="{{ $profilePhotoUrl }}" alt="รูปโปรไฟล์">
-                    <span class="comparison-face-label">รูปในระบบ</span>
+                    <img id="profileThumb" src="{{ $profilePhotoUrl }}" alt="{{ __('รูปโปรไฟล์') }}">
+                    <span class="comparison-face-label">{{ __('รูปในระบบ') }}</span>
                 </div>
                 <div class="comparison-arrow">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -386,15 +386,15 @@
             </div>
             <p id="matchScoreText" class="comparison-score-text"></p>
             <p id="matchStatusText" class="comparison-status-text"></p>
-            <button type="button" id="submitBtn" class="btn-submit" disabled>กำลังบันทึกข้อมูล...</button>
+            <button type="button" id="submitBtn" class="btn-submit" disabled>{{ __('กำลังบันทึกข้อมูล...') }}</button>
         </div>
         @if(!$profilePhotoUrl)
         <div class="no-profile-warning">
             <div class="no-profile-warning-title">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                ยังไม่มีภาพถ่ายโปรไฟล์ในระบบ
+                {{ __('ยังไม่มีภาพถ่ายโปรไฟล์ในระบบ') }}
             </div>
-            <p class="no-profile-warning-text">ระบบจะบันทึก Selfie ไว้แต่ไม่สามารถเปรียบเทียบใบหน้าได้ กรุณาอัปโหลดรูปโปรไฟล์ภายหลัง</p>
+            <p class="no-profile-warning-text">{{ __('ระบบจะบันทึก Selfie ไว้แต่ไม่สามารถเปรียบเทียบใบหน้าได้ กรุณาอัปโหลดรูปโปรไฟล์ภายหลัง') }}</p>
         </div>
         @endif
     </div>
@@ -405,7 +405,7 @@
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
         </a>
         <div class="mobile-header-info">
-            <div class="mobile-header-label">ยืนยันตัวตน</div>
+            <div class="mobile-header-label">{{ __('ยืนยันตัวตน') }}</div>
             <div class="mobile-header-title">{{ $activity->title }}</div>
         </div>
     </div>
@@ -423,7 +423,7 @@
                     <circle cx="12" cy="12" r="3"/>
                 </svg>
             </span>
-            <span id="livenessText">วางใบหน้าให้อยู่ในกรอบ...</span>
+            <span id="livenessText">{{ __('วางใบหน้าให้อยู่ในกรอบ...') }}</span>
         </div>
         <!-- Technical elements and status kept hidden for script safety -->
         <div style="display:none;" aria-hidden="true">
@@ -447,9 +447,9 @@
         <div class="error-modal-icon">
             <svg width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </div>
-        <p class="error-modal-title">ไม่สามารถทำรายการได้</p>
+        <p class="error-modal-title">{{ __('ไม่สามารถทำรายการได้') }}</p>
         <p class="error-modal-body">{{ session('error') }}</p>
-        <button type="button" class="btn-error-close" onclick="window.location.href='{{ route('activities.show', $activity) }}'">กลับไปหน้ากิจกรรม</button>
+        <button type="button" class="btn-error-close" onclick="window.location.href='{{ route('activities.show', $activity) }}'">{{ __('กลับไปหน้ากิจกรรม') }}</button>
     </div>
 </div>
 <script>setTimeout(function() { window.location.href = "{{ route('activities.show', $activity) }}"; }, 5500);</script>
@@ -463,8 +463,8 @@
             <path d="M12 2a10 10 0 0 1 10 10"/>
         </svg>
     </div>
-    <p id="selfieLoadingTitle" style="font-size:1.15rem;font-weight:700;color:#ffffff;margin-bottom:0.5rem;">กำลังประมวลผลการเช็คอิน...</p>
-    <p id="selfieLoadingText" style="font-size:0.875rem;color:rgba(255,255,255,0.7);max-width:300px;line-height:1.5;">กำลังตรวจสอบพิกัด GPS และส่งข้อมูลไปยังระบบ</p>
+    <p id="selfieLoadingTitle" style="font-size:1.15rem;font-weight:700;color:#ffffff;margin-bottom:0.5rem;">{{ __('กำลังประมวลผลการเช็คอิน...') }}</p>
+    <p id="selfieLoadingText" style="font-size:0.875rem;color:rgba(255,255,255,0.7);max-width:300px;line-height:1.5;">{{ __('กำลังตรวจสอบพิกัด GPS และส่งข้อมูลไปยังระบบ') }}</p>
 </div>
 
 <form id="selfieForm" method="POST" action="{{ route('checkin.store', $token) }}" style="display:none;">
@@ -479,7 +479,7 @@
 <div id="realtimeScore" style="display:none;"></div>
 <div id="livenessBadge" style="display:none;"></div>
 <div id="statusMsg" style="display:none;"></div>
-<div id="scanInstructions" style="display:none;">กำลังเชื่อมต่อกล้อง...</div>
+<div id="scanInstructions" style="display:none;">{{ __('กำลังเชื่อมต่อกล้อง...') }}</div>
 <button id="manualCaptureBtn" style="display:none;" onclick="capturePhoto(true)"></button>
 
 <script src="{{ asset('js/geo-security.js') }}?v=1"></script>
@@ -766,7 +766,7 @@ function updateActiveLiveness(landmarks) {
         if (minEar < 0.21 && dipRatio < 0.72 && latestEar > Math.max(0.23, openBaseline * 0.78)) {
             blinkVerified = true;
             isLivenessConfirmed = true;
-            setLivenessState('success', 'ยืนยันตัวตนเรียบร้อย');
+            setLivenessState('success', '{{ __('ยืนยันตัวตนเรียบร้อย') }}');
             playSuccessSound();
             
             // If match was already confirmed by server, finish checkin!
@@ -784,7 +784,7 @@ function updateActiveLiveness(landmarks) {
         var earSpan = ears[ears.length - 1] - ears[0];
         if (earSpan > 0.08) {
             isLivenessConfirmed = true;
-            setLivenessState('success', 'ยืนยันตัวตนเรียบร้อย');
+            setLivenessState('success', '{{ __('ยืนยันตัวตนเรียบร้อย') }}');
             if (pendingVerification) {
                 var pv = pendingVerification;
                 pendingVerification = null;
@@ -793,13 +793,13 @@ function updateActiveLiveness(landmarks) {
             return;
         } else if (staticFrameCount > 18 && earSpan < 0.02) {
             // Static photo attack detected!
-            setLivenessState('warning', 'ตรวจพบลักษณะภาพนิ่ง — กรุณากะพริบตาเพื่อยืนยัน');
+            setLivenessState('warning', '{{ __('ตรวจพบลักษณะภาพนิ่ง — กรุณากะพริบตาเพื่อยืนยัน') }}');
             return;
         }
     }
 
     if (!isLivenessConfirmed) {
-        setLivenessState('prompt', 'กรุณากะพริบตา 1 ครั้งเพื่อยืนยันตัวตน');
+        setLivenessState('prompt', '{{ __('กรุณากะพริบตา 1 ครั้งเพื่อยืนยันตัวตน') }}');
     }
 }
 
@@ -818,7 +818,7 @@ async function detectAndDrawFace() {
             facePresenceTime = 0;
             staticFrameCount = 0;
             if (!isLivenessConfirmed) {
-                setLivenessState('waiting', 'มองตรงที่กล้องให้อยู่ในกรอบ...');
+                setLivenessState('waiting', '{{ __('มองตรงที่กล้องให้อยู่ในกรอบ...') }}');
             }
         }
     } catch(e) {}
@@ -876,8 +876,8 @@ async function checkFacePresence(canvas) {
 async function initFaceApi() {
     if(isFaceApiLoaded)return;
     var scanEl=document.getElementById('scanInstructions');
-    if(scanEl)scanEl.innerHTML='<span class="spinner"></span> กำลังโหลดโมเดล AI...';
-    setStatusChip('connecting','กำลังโหลดโมเดล AI...');
+    if(scanEl)scanEl.innerHTML='<span class="spinner"></span> {{ __('กำลังโหลดโมเดล AI...') }}';
+    setStatusChip('connecting','{{ __('กำลังโหลดโมเดล AI...') }}');
     try {
         var MODEL_URL='/models';
         await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
@@ -893,11 +893,11 @@ async function initFaceApi() {
         }
         isFaceApiLoaded=true;
         setTimeout(function(){initFaceLandmarksCanvas();startRealtimeDetection();},500);
-        if(scanEl)scanEl.textContent='กำลังสแกนใบหน้าแบบเรียลไทม์... กรุณามองกล้อง';
+        if(scanEl)scanEl.textContent='{{ __('กำลังสแกนใบหน้าแบบเรียลไทม์... กรุณามองกล้อง') }}';
     } catch(e){
         console.error('FaceAPI Load Error',e);
-        if(scanEl)scanEl.textContent='ไม่สามารถโหลดระบบสำรองได้';
-        setStatusChip('error','ไม่สามารถโหลดระบบ AI ได้');
+        if(scanEl)scanEl.textContent='{{ __('ไม่สามารถโหลดระบบสำรองได้') }}';
+        setStatusChip('error','{{ __('ไม่สามารถโหลดระบบ AI ได้') }}');
     }
 }
 document.addEventListener('DOMContentLoaded',function(){initFaceApi();});
@@ -932,10 +932,10 @@ document.addEventListener('DOMContentLoaded', async function(){
     if(preComputed){profileDescriptor={embedding_128d:new Float32Array(Object.values(preComputed)),embedding_512d:null};}
     await startCamera();
     var guide=document.getElementById('faceGuide');if(guide)guide.classList.add('scanning-ring');
-    var scanEl=document.getElementById('scanInstructions');if(scanEl)scanEl.textContent='กำลังสแกนใบหน้าแบบเรียลไทม์... กรุณามองกล้อง';
+    var scanEl=document.getElementById('scanInstructions');if(scanEl)scanEl.textContent='{{ __('กำลังสแกนใบหน้าแบบเรียลไทม์... กรุณามองกล้อง') }}';
     console.log('[scan-ui] build '+SCAN_UI_BUILD+' loaded');
     var stEl=document.getElementById('scanStatus');if(stEl)stEl.innerHTML='<span style="color:#34d399;">AI Server</span>';
-    setStatusChip('scanning','กำลังสแกนใบหน้า...');
+    setStatusChip('scanning','{{ __('กำลังสแกนใบหน้า...') }}');
     showLargeScreenTips();
     scanTimeout=setTimeout(scanFrame,1000);
 });
@@ -965,7 +965,7 @@ async function startCamera() {
         var video=document.getElementById('cameraPreview');
         video.srcObject=stream;
         video.onloadedmetadata=function(){adjustUIForScreenSize(isLargeScreen,isMobile);};
-    } catch(e){showStatus('ไม่สามารถเปิดกล้องได้ กรุณาอนุญาตให้ใช้กล้องในเบราว์เซอร์','error');setStatusChip('error','ไม่สามารถเปิดกล้องได้');}
+    } catch(e){showStatus('{{ __('ไม่สามารถเปิดกล้องได้ กรุณาอนุญาตให้ใช้กล้องในเบราว์เซอร์') }}','error');setStatusChip('error','{{ __('ไม่สามารถเปิดกล้องได้') }}');}
 }
 function adjustUIForScreenSize(isLargeScreen,isMobile) {
     var faceGuide=document.getElementById('faceGuide'),video=document.getElementById('cameraPreview');
@@ -976,8 +976,8 @@ function adjustUIForScreenSize(isLargeScreen,isMobile) {
 function showLargeScreenTips() {
     var isLargeScreen=window.innerWidth>=1024,isMobile=/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     var el=document.getElementById('scanInstructions');
-    var hint=isLargeScreen&&!isMobile?'คำแนะนำ: นั่งห่างจากกล้องประมาณ 60–80 ซม.':'คำแนะนำ: ถืออุปกรณ์ให้มั่นคง มองตรงมายังกล้อง';
-    setTimeout(function(){if(el&&scanAttempts<=2){el.textContent=hint;setStatusChip('scanning',hint);setTimeout(function(){if(el&&!stopScanning){el.textContent='กำลังสแกนใบหน้าแบบเรียลไทม์... กรุณามองกล้อง';setStatusChip('scanning','กำลังสแกนใบหน้า...');}},3500);}},2000);
+    var hint=isLargeScreen&&!isMobile?'{{ __('คำแนะนำ: นั่งห่างจากกล้องประมาณ 60–80 ซม.') }}':'{{ __('คำแนะนำ: ถืออุปกรณ์ให้มั่นคง มองตรงมายังกล้อง') }}';
+    setTimeout(function(){if(el&&scanAttempts<=2){el.textContent=hint;setStatusChip('scanning',hint);setTimeout(function(){if(el&&!stopScanning){el.textContent='{{ __('กำลังสแกนใบหน้าแบบเรียลไทม์... กรุณามองกล้อง') }}';setStatusChip('scanning','{{ __('กำลังสแกนใบหน้า...') }}');}},3500);}},2000);
 }
 
 /* Pacemaker: rescues any wedged scan state within seconds and keeps
@@ -1002,7 +1002,7 @@ async function scanFrame() {
         if(Date.now()-frameStartedAt<15000)return;/* in-flight — heartbeat re-checks */
         isVerifying=false;/* hard-unlock a wedged request */
         beacon('pacemaker_rescue',{note:'request-wedged'});
-        showToast('ระบบกู้คืนการสแกนอัตโนมัติ','warning');
+        showToast('{{ __('ระบบกู้คืนการสแกนอัตโนมัติ') }}','warning');
     }
     if(stopScanning){beacon('loop_stopped',{note:'stopScanning'});return;}
     var video=document.getElementById('cameraPreview');
@@ -1014,7 +1014,7 @@ async function scanFrame() {
     if(tracksDead||cameraNoSignal>10){
         cameraNoSignal=0;
         beacon('camera_restart',{note:'tracksDead='+tracksDead+',noSignal='+cameraNoSignal});
-        setStatusChip('warning','กล้องไม่พร้อม — กำลังเชื่อมต่อใหม่...');
+        setStatusChip('warning','{{ __('กล้องไม่พร้อม — กำลังเชื่อมต่อใหม่...') }}');
         restartCamera();
         scanTimeout=setTimeout(scanFrame,2500);
         return;
@@ -1039,8 +1039,8 @@ async function processScanResult(result) {
     if(scanTimeout){clearTimeout(scanTimeout);scanTimeout=null;}
     var guide=document.getElementById('faceGuide');
     if(guide)guide.classList.replace('scanning-ring','success-ring');
-    setStatusChip('success','ยืนยันตัวตนสำเร็จ!');
-    setLivenessState('success', 'ยืนยันตัวตนสำเร็จ (คนจริง)');
+    setStatusChip('success','{{ __('ยืนยันตัวตนสำเร็จ!') }}');
+    setLivenessState('success', '{{ __('ยืนยันตัวตนสำเร็จ (คนจริง)') }}');
     playSuccessSound();
     capturePhoto(true);
 }
@@ -1073,11 +1073,11 @@ function handleLowLightDetection(ctx,canvas) {
             if(video)video.style.filter='brightness('+boost.toFixed(2)+') contrast(1.05)';
             if(ctx&&video){ctx.filter='brightness('+boost.toFixed(2)+') contrast(1.05)';ctx.translate(canvas.width,0);ctx.scale(-1,1);ctx.drawImage(video,0,0,canvas.width,canvas.height);ctx.setTransform(1,0,0,1,0,0);ctx.filter='none';}
             if(guide)guide.style.boxShadow='0 0 0 4000px rgba(10,22,40,0.5)';
-            if(infoEl&&!stopScanning){infoEl.textContent='สภาวะแสงน้อย — กำลังปรับความสว่างอัตโนมัติ...';setStatusChip('warning','แสงน้อยเกินไป — ปรับความสว่างอัตโนมัติ');}
+            if(infoEl&&!stopScanning){infoEl.textContent='{{ __('สภาวะแสงน้อย — กำลังปรับความสว่างอัตโนมัติ...') }}';setStatusChip('warning','{{ __('แสงน้อยเกินไป — ปรับความสว่างอัตโนมัติ') }}');}
         } else {
             if(video)video.style.filter='';
             if(guide)guide.style.boxShadow='';
-            if(infoEl&&infoEl.textContent.indexOf('แสง')!==-1){infoEl.textContent='กำลังสแกนใบหน้าแบบเรียลไทม์... กรุณามองกล้อง';setStatusChip('scanning','กำลังสแกนใบหน้า...');}
+            if(infoEl&&infoEl.textContent.indexOf('แสง')!==-1){infoEl.textContent='กำลังสแกนใบหน้าแบบเรียลไทม์... กรุณามองกล้อง';setStatusChip('scanning','{{ __('กำลังสแกนใบหน้า...') }}');}
         }
     } catch(e){console.warn('Brightness check error',e);}
 }
@@ -1116,20 +1116,20 @@ async function performPythonVerification(base64Image) {
         /* 429 — Rate limited: back off using retry_after from the already-parsed
            JSON body (result). Do NOT call res.json() a second time — the body
            stream is already consumed and a second call throws/hangs. */
-        if(res.status===429){beacon('http_429',{});var ra=(result&&result.retry_after)||30;pythonThrottledUntil=Date.now()+ra*1000;console.warn('Rate limited — backing off '+ra+'s');setScore('—','#fbbf24');setStatusChip('scanning','สแกนถี่เกิน — พักสั้นแล้วสแกนต่อ...');updateAccuracy(null);return;}
+        if(res.status===429){beacon('http_429',{});var ra=(result&&result.retry_after)||30;pythonThrottledUntil=Date.now()+ra*1000;console.warn('Rate limited — backing off '+ra+'s');setScore('—','#fbbf24');setStatusChip('scanning','{{ __('สแกนถี่เกิน — พักสั้นแล้วสแกนต่อ...') }}');updateAccuracy(null);return;}
         /* 503 — AI Server / tunnel unavailable: back off 60s to stop the
            retry storm. Without this the scan loop hammers the dead endpoint
            every 1s, flooding the console and wasting bandwidth. */
-        if(res.status===503){beacon('http_503',{});var bo=60;pythonThrottledUntil=Date.now()+bo*1000;console.warn('AI Server unavailable (503) — backing off '+bo+'s');setScore('—','#f87171');setStatusChip('error','AI Server ออฟไลน์ — รอ '+bo+' วินาทีแล้วลองใหม่');updateAccuracy(null);if(pythonFailCount===0)showToast('AI Server ไม่พร้อมให้บริการชั่วคราว — ระบบจะลองใหม่อัตโนมัติ','error');pythonFailCount++;return;}
+        if(res.status===503){beacon('http_503',{});var bo=60;pythonThrottledUntil=Date.now()+bo*1000;console.warn('AI Server unavailable (503) — backing off '+bo+'s');setScore('—','#f87171');setStatusChip('error','AI Server {{ __('ออฟไลน์ — รอ') }}'+bo+' {{ __('วินาทีแล้วลองใหม่') }}');updateAccuracy(null);if(pythonFailCount===0)showToast('AI Server ไม่พร้อมให้บริการชั่วคราว — ระบบจะลองใหม่อัตโนมัติ','error');pythonFailCount++;return;}
         if(!res.ok){beacon('http_error',{msg:'HTTP '+res.status});throw new Error('HTTP '+res.status);}
         beacon('response',{score:result.score_percentage||0,note:(result.success===false)?(result.status||'fail'):'ok'});
         if(result.success===false){
             if(result.status==='no_face'){
                 setScore('—','#fca5a5');
-                setStatusChip('warning','วางใบหน้าให้อยู่ในกรอบ...');
+                setStatusChip('warning','{{ __('วางใบหน้าให้อยู่ในกรอบ...') }}');
             } else {
                 setScore('—','#fca5a5');
-                setStatusChip('warning',result.message||'กำลังลองอีกครั้ง...');
+                setStatusChip('warning',result.message||'{{ __('กำลังลองอีกครั้ง...') }}');
             }
             var fg=document.getElementById('faceGuide');
             if(fg){fg.classList.remove('scanning-ring');if(!fg.classList.contains('warning-ring'))fg.classList.add('warning-ring');}
@@ -1149,13 +1149,13 @@ async function performPythonVerification(base64Image) {
 
         if (!livenessPassed) {
             var rejReason = (result.liveness_checks && result.liveness_checks.rejection_reason) || 'photo_detected';
-            var rejText = 'ตรวจพบการใช้ภาพถ่าย — กรุณาใช้ใบหน้าจริง';
+            var rejText = '{{ __('ตรวจพบการใช้ภาพถ่าย — กรุณาใช้ใบหน้าจริง') }}';
             if (rejReason === 'screen_moire_detected') {
-                rejText = 'ตรวจพบหน้าจอดิจิทัล (Screen Replay) — กรุณาใช้คนจริง';
+                rejText = '{{ __('ตรวจพบหน้าจอดิจิทัล (Screen Replay) — กรุณาใช้คนจริง') }}';
             } else if (rejReason === 'glass_glare_detected') {
-                rejText = 'ตรวจพบแสงสะท้อนจอกระจก — กรุณาใช้คนจริง';
+                rejText = '{{ __('ตรวจพบแสงสะท้อนจอกระจก — กรุณาใช้คนจริง') }}';
             } else if (rejReason === 'color_gamut_rejected') {
-                rejText = 'ตรวจพบภาพถ่าย/ภาพพิมพ์ — กรุณาใช้คนจริง';
+                rejText = '{{ __('ตรวจพบภาพถ่าย/ภาพพิมพ์ — กรุณาใช้คนจริง') }}';
             }
             setScore('—', '#f87171');
             setStatusChip('error', rejText);
@@ -1169,8 +1169,8 @@ async function performPythonVerification(base64Image) {
                 await processScanResult({confidence:score/100,passed:true,score:score,source:'python_primary',processingTime:procTime});
             } else {
                 pendingVerification = {confidence:score/100,passed:true,score:score,source:'python_primary',processingTime:procTime};
-                setLivenessState('prompt', 'ใบหน้าตรงกัน — กรุณากะพริบตาเพื่อยืนยัน');
-                setStatusChip('scanning', 'ใบหน้าตรงกัน — กรุณากะพริบตา 1 ครั้ง');
+                setLivenessState('prompt', '{{ __('ใบหน้าตรงกัน — กรุณากะพริบตาเพื่อยืนยัน') }}');
+                setStatusChip('scanning', '{{ __('ใบหน้าตรงกัน — กรุณากะพริบตา 1 ครั้ง') }}');
             }
         }
     } catch(e){
@@ -1178,7 +1178,7 @@ async function performPythonVerification(base64Image) {
         console.warn('Python verification failed:',e);pythonFailCount++;
         beacon('fetch_exception',{msg:String(e && e.message ? e.message : e).slice(0,200)});
         /* Visible failure — this path used to be silent and looked like a freeze */
-        setStatusChip('error','เชื่อมต่อ AI Server ไม่สำเร็จ — กำลังลองใหม่...');
+        setStatusChip('error','{{ __('เชื่อมต่อ AI Server ไม่สำเร็จ — กำลังลองใหม่...') }}');
         if(pythonFailCount===2)showToast('การเชื่อมต่อ AI Server ขัดข้อง — ระบบกำลังลองใหม่อัตโนมัติ','error');
         /* No runtime switch to local JS mode: a silent switch made every scan
            "work once on the server, then vanish". The pacemaker loop retries
@@ -1208,14 +1208,14 @@ function capturePhoto(autoSubmit) {
     if(autoSubmit){submitSelfie();}
     else{
         showComparisonResult(0,false);
-        var btn=document.getElementById('submitBtn');btn.disabled=false;btn.textContent='บันทึกรูปนี้';btn.onclick=submitSelfie;
+        var btn=document.getElementById('submitBtn');btn.disabled=false;btn.textContent='{{ __('บันทึกรูปนี้') }}';btn.onclick=submitSelfie;
     }
 }
 function showComparisonResult(score,passed) {
     var mb=document.querySelector('.mobile-bottom');if(mb)mb.style.display='none';
     var resDiv=document.getElementById('comparisonResult');resDiv.style.display='flex';
-    if(passed){document.getElementById('matchScoreText').textContent=score.toFixed(1)+'%';document.getElementById('matchScoreText').style.color='#34d399';document.getElementById('matchStatusText').textContent='ใบหน้าตรงกับรูปโปรไฟล์ (AI ยืนยันแล้ว)';}
-    else{document.getElementById('matchScoreText').textContent='รอการตรวจสอบ';document.getElementById('matchScoreText').style.color='#fcd34d';document.getElementById('matchStatusText').textContent='ส่งรูปเพื่อให้เจ้าหน้าที่ตรวจสอบภายหลัง';}
+    if(passed){document.getElementById('matchScoreText').textContent=score.toFixed(1)+'%';document.getElementById('matchScoreText').style.color='#34d399';document.getElementById('matchStatusText').textContent='{{ __('ใบหน้าตรงกับรูปโปรไฟล์ (AI ยืนยันแล้ว)') }}';}
+    else{document.getElementById('matchScoreText').textContent='{{ __('รอการตรวจสอบ') }}';document.getElementById('matchScoreText').style.color='#fcd34d';document.getElementById('matchStatusText').textContent='{{ __('ส่งรูปเพื่อให้เจ้าหน้าที่ตรวจสอบภายหลัง') }}';}
 }
 function showStatus(msg,type) {
     type = type || 'info';
@@ -1227,7 +1227,7 @@ function submitSelfie() {
     var overlay = document.getElementById('selfieLoadingOverlay');
     if (overlay) overlay.style.display = 'flex';
     var btn = document.getElementById('submitBtn');
-    if (btn) { btn.disabled = true; btn.textContent = 'กำลังบันทึก...'; }
+    if (btn) { btn.disabled = true; btn.textContent = '{{ __('กำลังบันทึก...') }}'; }
 
     var submitted = false;
     var doSubmit = function() {
@@ -1239,7 +1239,7 @@ function submitSelfie() {
     if (window.GeoSecurity && navigator.geolocation) {
         var geoTimer = setTimeout(function() {
             var lt = document.getElementById('selfieLoadingText');
-            if (lt) lt.textContent = 'กำลังบันทึกข้อมูลเข้าสู่ระบบ...';
+            if (lt) lt.textContent = '{{ __('กำลังบันทึกข้อมูลเข้าสู่ระบบ...') }}';
             doSubmit();
         }, 3500);
 
@@ -1263,7 +1263,7 @@ function submitSelfie() {
     } else if (navigator.geolocation) {
         var geoTimer = setTimeout(function() {
             var lt = document.getElementById('selfieLoadingText');
-            if (lt) lt.textContent = 'กำลังบันทึกข้อมูลเข้าสู่ระบบ...';
+            if (lt) lt.textContent = '{{ __('กำลังบันทึกข้อมูลเข้าสู่ระบบ...') }}';
             doSubmit();
         }, 3500);
 

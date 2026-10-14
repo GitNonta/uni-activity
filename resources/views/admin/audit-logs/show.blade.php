@@ -230,7 +230,7 @@ html.dark .diff-new { background: rgba(34, 197, 94, 0.2); color: #86efac; }
 <div style="margin-bottom: .75rem;">
     <a href="{{ route('admin.audit-logs.index') }}" class="detail-back-link">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-        กลับไปหน้ารายการ
+        {{ __('กลับไปหน้ารายการ') }}
     </a>
 </div>
 
@@ -255,7 +255,7 @@ html.dark .diff-new { background: rgba(34, 197, 94, 0.2); color: #86efac; }
         </svg>
     </div>
     <div>
-        <h1 class="detail-title">รายละเอียดบันทึกการดำเนินงาน</h1>
+        <h1 class="detail-title">{{ __('รายละเอียดบันทึกการดำเนินงาน') }}</h1>
         <p class="detail-id">Log ID: #{{ $log->id }} · {{ $log->created_at->format('d/m/Y H:i:s') }}</p>
     </div>
 </div>
@@ -264,16 +264,16 @@ html.dark .diff-new { background: rgba(34, 197, 94, 0.2); color: #86efac; }
 <div class="detail-card">
     <div class="detail-card-header">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        ข้อมูลทั่วไป
+        {{ __('ข้อมูลทั่วไป') }}
     </div>
     <div class="detail-card-body">
         <div class="info-grid">
             <div class="info-item">
-                <div class="info-label">ผู้ดำเนินการ</div>
+                <div class="info-label">{{ __('ผู้ดำเนินการ') }}</div>
                 <div class="info-value">{{ $log->user->full_name ?? '-' }}</div>
             </div>
             <div class="info-item">
-                <div class="info-label">การกระทำ</div>
+                <div class="info-label">{{ __('การกระทำ') }}</div>
                 <div>
                     <span class="detail-action-badge {{ $actionBadgeClass }}">
                         {{ $log->action_label }}
@@ -281,11 +281,11 @@ html.dark .diff-new { background: rgba(34, 197, 94, 0.2); color: #86efac; }
                 </div>
             </div>
             <div class="info-item">
-                <div class="info-label">ประเภท</div>
+                <div class="info-label">{{ __('ประเภท') }}</div>
                 <div class="info-value">{{ $log->model_label }} @if($log->model_id) <span style="color:#475569;font-size:.78rem;line-height:1.5;">#{{ $log->model_id }}</span> @endif</div>
             </div>
             <div class="info-item">
-                <div class="info-label">เวลา</div>
+                <div class="info-label">{{ __('เวลา') }}</div>
                 <div class="info-value">{{ $log->created_at->format('d/m/Y H:i:s') }}</div>
             </div>
             <div class="info-item">
@@ -299,7 +299,7 @@ html.dark .diff-new { background: rgba(34, 197, 94, 0.2); color: #86efac; }
         </div>
 
         <div class="desc-block">
-            <div class="info-label" style="margin-bottom:6px;">คำอธิบาย</div>
+            <div class="info-label" style="margin-bottom:6px;">{{ __('คำอธิบาย') }}</div>
             <p class="desc-text">{{ $log->description }}</p>
         </div>
     </div>
@@ -310,14 +310,14 @@ html.dark .diff-new { background: rgba(34, 197, 94, 0.2); color: #86efac; }
 <div class="data-table-card">
     <div class="data-table-header data-table-header-red">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        ค่าเดิม (Before)
+        {{ __('ค่าเดิม (Before)') }}
     </div>
     <div style="overflow-x:auto;">
         <table class="data-table">
             <thead>
                 <tr>
-                    <th style="width:200px;">ฟิลด์</th>
-                    <th>ค่า</th>
+                    <th style="width:200px;">{{ __('ฟิลด์') }}</th>
+                    <th>{{ __('ค่า') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -342,14 +342,14 @@ html.dark .diff-new { background: rgba(34, 197, 94, 0.2); color: #86efac; }
 <div class="data-table-card">
     <div class="data-table-header data-table-header-green">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        ค่าใหม่ (After)
+        {{ __('ค่าใหม่ (After)') }}
     </div>
     <div style="overflow-x:auto;">
         <table class="data-table">
             <thead>
                 <tr>
-                    <th style="width:200px;">ฟิลด์</th>
-                    <th>ค่า</th>
+                    <th style="width:200px;">{{ __('ฟิลด์') }}</th>
+                    <th>{{ __('ค่า') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -374,15 +374,15 @@ html.dark .diff-new { background: rgba(34, 197, 94, 0.2); color: #86efac; }
 <div class="data-table-card">
     <div class="data-table-header data-table-header-blue">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
-        ความเปลี่ยนแปลง (Diff)
+        {{ __('ความเปลี่ยนแปลง (Diff)') }}
     </div>
     <div style="overflow-x:auto;">
         <table class="data-table">
             <thead>
                 <tr>
-                    <th style="width:180px;">ฟิลด์</th>
-                    <th style="background:#fef2f2;">ค่าเดิม</th>
-                    <th style="background:#f0fdf4;">ค่าใหม่</th>
+                    <th style="width:180px;">{{ __('ฟิลด์') }}</th>
+                    <th style="background:#fef2f2;">{{ __('ค่าเดิม') }}</th>
+                    <th style="background:#f0fdf4;">{{ __('ค่าใหม่') }}</th>
                 </tr>
             </thead>
             <tbody>

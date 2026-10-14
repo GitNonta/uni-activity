@@ -105,19 +105,19 @@ html.dark .approval-row:hover {
 {{-- ═══ 1. หัวข้อหน้า & ปุ่มการทำงาน ═══ --}}
 <div class="flex items-center justify-between mb-6" style="flex-wrap:wrap; gap:1rem;">
     <div>
-        <h1 class="font-bold" style="font-size:1.5rem; margin:0; color:var(--text-main, #0f172a);">ภาพรวมระบบ</h1>
+        <h1 class="font-bold" style="font-size:1.5rem; margin:0; color:var(--text-main, #0f172a);">{{ __('ภาพรวมระบบ') }}</h1>
         <p class="text-xs text-muted" style="margin-top:3px;">
-            ยินดีต้อนรับ, {{ auth()->user()->full_name ?? auth()->user()->name }} &nbsp;·&nbsp; {{ now()->locale('th')->isoFormat('D MMMM GGGG') }}
+            {{ __('ยินดีต้อนรับ,') }}{{ auth()->user()->full_name ?? auth()->user()->name }} &nbsp;·&nbsp; {{ now()->locale('th')->isoFormat('D MMMM GGGG') }}
         </p>
     </div>
     <div class="flex items-center gap-2">
         <button type="button" onclick="document.getElementById('quickModal').classList.add('open')" class="btn btn-success btn-sm">
             <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-            <span>บันทึกกิจกรรมด่วน</span>
+            <span>{{ __('บันทึกกิจกรรมด่วน') }}</span>
         </button>
         <a href="{{ route('admin.activities.create') }}" class="btn btn-primary btn-sm">
             <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            <span>สร้างกิจกรรม</span>
+            <span>{{ __('สร้างกิจกรรม') }}</span>
         </a>
     </div>
 </div>
@@ -130,53 +130,53 @@ html.dark .approval-row:hover {
     <a href="{{ route('admin.activities.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #ea580c; text-decoration:none;">
         <div class="flex items-start justify-between">
             <div>
-                <p class="stat-label">กิจกรรมทั้งหมด</p>
+                <p class="stat-label">{{ __('กิจกรรมทั้งหมด') }}</p>
                 <p class="stat-value">{{ number_format($stats['totalActivities']) }}</p>
             </div>
             <div class="dashboard-stat-icon" style="background:rgba(234,88,12,0.1); color:#ea580c;">
                 <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
             </div>
         </div>
-        <p class="text-xs text-muted" style="margin-top:4px;">จัดในสัปดาห์นี้ <span class="font-semi text-primary">{{ $stats['upcomingThisWeek'] }}</span> กิจกรรม</p>
+        <p class="text-xs text-muted" style="margin-top:4px;">{{ __('จัดในสัปดาห์นี้') }}<span class="font-semi text-primary">{{ $stats['upcomingThisWeek'] }}</span> {{ __('กิจกรรม') }}</p>
     </a>
 
     <a href="{{ route('admin.activities.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #f97316; text-decoration:none;">
         <div class="flex items-start justify-between">
             <div>
-                <p class="stat-label">เปิดรับสมัคร</p>
+                <p class="stat-label">{{ __('เปิดรับสมัคร') }}</p>
                 <p class="stat-value primary">{{ number_format($stats['upcomingActivities']) }}</p>
             </div>
             <div class="dashboard-stat-icon" style="background:rgba(249,115,22,0.1); color:#f97316;">
                 <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
             </div>
         </div>
-        <p class="text-xs text-muted" style="margin-top:4px;">พร้อมให้นักศึกษาลงทะเบียน</p>
+        <p class="text-xs text-muted" style="margin-top:4px;">{{ __('พร้อมให้นักศึกษาลงทะเบียน') }}</p>
     </a>
 
     <a href="{{ route('admin.students.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #0284c7; text-decoration:none;">
         <div class="flex items-start justify-between">
             <div>
-                <p class="stat-label">นักศึกษาในระบบ</p>
+                <p class="stat-label">{{ __('นักศึกษาในระบบ') }}</p>
                 <p class="stat-value" style="color:#0284c7;">{{ number_format($stats['totalStudents']) }}</p>
             </div>
             <div class="dashboard-stat-icon" style="background:rgba(2,132,199,0.1); color:#0284c7;">
                 <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
             </div>
         </div>
-        <p class="text-xs text-muted" style="margin-top:4px;">สมาชิกผู้ใช้งานทั้งหมด</p>
+        <p class="text-xs text-muted" style="margin-top:4px;">{{ __('สมาชิกผู้ใช้งานทั้งหมด') }}</p>
     </a>
 
     <a href="{{ $totalPending > 0 ? '#approval-queue-section' : route('admin.activities.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #d97706; text-decoration:none; position:relative;">
         <div class="flex items-start justify-between">
             <div>
-                <p class="stat-label">รออนุมัติทั้งหมด</p>
+                <p class="stat-label">{{ __('รออนุมัติทั้งหมด') }}</p>
                 <p class="stat-value" style="color:{{ $totalPending > 0 ? '#d97706' : 'inherit' }};" id="pending-badge-count">{{ $totalPending }}</p>
             </div>
             <div class="dashboard-stat-icon" style="background:rgba(217,119,6,0.1); color:#d97706;">
                 <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
         </div>
-        <p class="text-xs text-muted" style="margin-top:4px;">สมัคร {{ $stats['pendingRegistrations'] }} · เช็คอิน {{ $stats['pendingAttendances'] }}</p>
+        <p class="text-xs text-muted" style="margin-top:4px;">{{ __('สมัคร') }}{{ $stats['pendingRegistrations'] }} · {{ __('เช็คอิน') }}{{ $stats['pendingAttendances'] }}</p>
     </a>
 </div>
 
@@ -185,53 +185,53 @@ html.dark .approval-row:hover {
     <a href="{{ route('admin.jobs.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #10b981; text-decoration:none;">
         <div class="flex items-start justify-between">
             <div>
-                <p class="stat-label">งานทั้งหมด</p>
+                <p class="stat-label">{{ __('งานทั้งหมด') }}</p>
                 <p class="stat-value" style="color:#059669;">{{ number_format($stats['totalJobs']) }}</p>
             </div>
             <div class="dashboard-stat-icon" style="background:rgba(16,185,129,0.1); color:#10b981;">
                 <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-8.995-1.745M16 6l4-4m0 0l-4-4m4 4H9a2 2 0 00-2 2v12a2 2 0 002 2h9a2 2 0 002-2V8a2 2 0 00-2-2z"/></svg>
             </div>
         </div>
-        <p class="text-xs text-muted" style="margin-top:4px;">พาร์ทไทม์ &amp; งานทั่วไป</p>
+        <p class="text-xs text-muted" style="margin-top:4px;">{{ __('พาร์ทไทม์') }}&amp; {{ __('งานทั่วไป') }}</p>
     </a>
 
     <a href="{{ route('admin.inbox.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #f43f5e; text-decoration:none;">
         <div class="flex items-start justify-between">
             <div>
-                <p class="stat-label">ข้อความใหม่</p>
+                <p class="stat-label">{{ __('ข้อความใหม่') }}</p>
                 <p class="stat-value" style="color:#e11d48;">{{ number_format($stats['unreadMessages']) }}</p>
             </div>
             <div class="dashboard-stat-icon" style="background:rgba(244,63,94,0.1); color:#f43f5e;">
                 <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
             </div>
         </div>
-        <p class="text-xs text-muted" style="margin-top:4px;">กล่องข้อความติดต่อ</p>
+        <p class="text-xs text-muted" style="margin-top:4px;">{{ __('กล่องข้อความติดต่อ') }}</p>
     </a>
 
     <a href="{{ route('admin.feedbacks.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #0ea5e9; text-decoration:none;">
         <div class="flex items-start justify-between">
             <div>
-                <p class="stat-label">ผลการประเมิน</p>
+                <p class="stat-label">{{ __('ผลการประเมิน') }}</p>
                 <p class="stat-value" style="color:#0284c7;">{{ number_format($stats['totalFeedbacks']) }}</p>
             </div>
             <div class="dashboard-stat-icon" style="background:rgba(14,165,233,0.1); color:#0ea5e9;">
                 <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
             </div>
         </div>
-        <p class="text-xs text-muted" style="margin-top:4px;">แบบประเมินกิจกรรม</p>
+        <p class="text-xs text-muted" style="margin-top:4px;">{{ __('แบบประเมินกิจกรรม') }}</p>
     </a>
 
     <a href="{{ route('admin.activities.index') }}" class="card stat-card hover-lift" style="border-bottom:3px solid #64748b; text-decoration:none;">
         <div class="flex items-start justify-between">
             <div>
-                <p class="stat-label">กิจกรรมสัปดาห์นี้</p>
+                <p class="stat-label">{{ __('กิจกรรมสัปดาห์นี้') }}</p>
                 <p class="stat-value" style="color:#475569;">{{ number_format($stats['upcomingThisWeek']) }}</p>
             </div>
             <div class="dashboard-stat-icon" style="background:rgba(100,116,139,0.1); color:#64748b;">
                 <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
             </div>
         </div>
-        <p class="text-xs text-muted" style="margin-top:4px;">กำหนดจัดในสัปดาห์นี้</p>
+        <p class="text-xs text-muted" style="margin-top:4px;">{{ __('กำหนดจัดในสัปดาห์นี้') }}</p>
     </a>
 </div>
 
@@ -274,11 +274,11 @@ html.dark .approval-row:hover {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
             <h3 class="card-title" style="color:#92400e; line-height:1.5; margin:0;">
-                รออนุมัติทั้งหมด (คัดกรองเฉพาะรายการที่มีความเสี่ยง)
+                {{ __('รออนุมัติทั้งหมด (คัดกรองเฉพาะรายการที่มีความเสี่ยง)') }}
                 <span id="queue-count" style="background:#b45309;color:#fff;border-radius:999px;padding:2px 10px;font-size:.8rem;margin-left:6px;line-height:1.5;">{{ $totalPending }}</span>
             </h3>
         </div>
-        <a href="{{ route('admin.activities.index') }}" class="btn btn-outline btn-sm">ดูทั้งหมดในกิจกรรม</a>
+        <a href="{{ route('admin.activities.index') }}" class="btn btn-outline btn-sm">{{ __('ดูทั้งหมดในกิจกรรม') }}</a>
     </div>
     <div id="approval-queue" style="max-height:450px; overflow-y:auto;">
         @foreach($allPending as $item)
@@ -292,7 +292,7 @@ html.dark .approval-row:hover {
             <div style="flex:1; min-width:0;">
                 <div class="font-semi text-sm" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text-main, #0f172a);">
                     {{ $item['name'] }}
-                    <span class="text-xs text-muted" style="font-weight:400;"> · รหัส {{ $item['sid'] }}</span>
+                    <span class="text-xs text-muted" style="font-weight:400;"> · {{ __('รหัส') }}{{ $item['sid'] }}</span>
                     @if($item['faculty']) <span class="text-xs text-muted"> · {{ $item['faculty'] }}</span> @endif
                 </div>
                 <div class="text-xs text-muted" style="margin-top:2px;">
@@ -313,15 +313,15 @@ html.dark .approval-row:hover {
             <div class="flex gap-1" style="flex-shrink:0;">
                 <button type="button" class="btn btn-success btn-sm"
                     onclick="quickAction('approve','{{ $item['type'] }}',{{ $item['id'] }},this)"
-                    title="อนุมัติ">
+                    title="{{ __('อนุมัติ') }}">
                     <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                    <span>อนุมัติ</span>
+                    <span>{{ __('อนุมัติ') }}</span>
                 </button>
                 <button type="button" class="btn btn-outline btn-sm" style="color:#dc2626; border-color:#fca5a5;"
                     onclick="quickAction('reject','{{ $item['type'] }}',{{ $item['id'] }},this)"
-                    title="ปฏิเสธ">
+                    title="{{ __('ปฏิเสธ') }}">
                     <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
-                    <span>ปฏิเสธ</span>
+                    <span>{{ __('ปฏิเสธ') }}</span>
                 </button>
             </div>
         </div>
@@ -329,7 +329,7 @@ html.dark .approval-row:hover {
     </div>
     @if($totalPending > 8)
     <div style="padding:.75rem 1.1rem; text-align:center; background:rgba(254, 243, 199, 0.4); border-top:1px solid rgba(245, 158, 11, 0.2);">
-        <span class="text-xs text-muted">แสดง 8 รายการล่าสุด — <a href="{{ route('admin.activities.index') }}" style="color:#d97706; font-weight:600;">ดูทั้งหมด {{ $totalPending }} รายการ</a></span>
+        <span class="text-xs text-muted">{{ __('แสดง 8 รายการล่าสุด —') }}<a href="{{ route('admin.activities.index') }}" style="color:#d97706; font-weight:600;">{{ __('ดูทั้งหมด') }}{{ $totalPending }} {{ __('รายการ') }}</a></span>
     </div>
     @endif
 </div>
@@ -339,20 +339,20 @@ html.dark .approval-row:hover {
 <div class="flex items-center justify-between mb-2">
     <h2 class="font-bold flex items-center gap-2" style="font-size:1.15rem; color:var(--text-main, #0f172a);">
         <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-        กิจกรรมล่าสุด
+        {{ __('กิจกรรมล่าสุด') }}
     </h2>
-    <a href="{{ route('admin.activities.index') }}" class="btn btn-outline btn-sm">ดูกิจกรรมทั้งหมด</a>
+    <a href="{{ route('admin.activities.index') }}" class="btn btn-outline btn-sm">{{ __('ดูกิจกรรมทั้งหมด') }}</a>
 </div>
 <div class="card mb-6">
     <div class="table-wrap">
         <table class="responsive-table">
             <thead>
                 <tr>
-                    <th>ชื่อกิจกรรม</th>
-                    <th class="text-center">วันที่</th>
-                    <th class="text-center">สถานะ</th>
-                    <th class="text-center">ผู้เข้าร่วม</th>
-                    <th class="text-right">จัดการ</th>
+                    <th>{{ __('ชื่อกิจกรรม') }}</th>
+                    <th class="text-center">{{ __('วันที่') }}</th>
+                    <th class="text-center">{{ __('สถานะ') }}</th>
+                    <th class="text-center">{{ __('ผู้เข้าร่วม') }}</th>
+                    <th class="text-right">{{ __('จัดการ') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -378,8 +378,8 @@ html.dark .approval-row:hover {
                     </td>
                     <td data-label="จัดการ" class="text-right">
                         <div class="flex justify-end gap-2" style="justify-content:flex-end;">
-                            <a href="{{ route('admin.activities.show', $act->id) }}" class="btn btn-outline btn-sm">ดู</a>
-                            <a href="{{ route('admin.activities.edit', $act->id) }}" class="btn btn-outline btn-sm">แก้ไข</a>
+                            <a href="{{ route('admin.activities.show', $act->id) }}" class="btn btn-outline btn-sm">{{ __('ดู') }}</a>
+                            <a href="{{ route('admin.activities.edit', $act->id) }}" class="btn btn-outline btn-sm">{{ __('แก้ไข') }}</a>
                         </div>
                     </td>
                 </tr>
@@ -390,8 +390,8 @@ html.dark .approval-row:hover {
                             <svg class="icon-sm text-muted" style="width:36px;height:36px;margin:0 auto;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
-                            <div class="font-semi text-sm mt-2">ยังไม่มีกิจกรรม</div>
-                            <div class="text-xs text-muted">กดปุ่มสร้างกิจกรรมใหม่ด้านบนเพื่อเริ่มต้น</div>
+                            <div class="font-semi text-sm mt-2">{{ __('ยังไม่มีกิจกรรม') }}</div>
+                            <div class="text-xs text-muted">{{ __('กดปุ่มสร้างกิจกรรมใหม่ด้านบนเพื่อเริ่มต้น') }}</div>
                         </div>
                     </td>
                 </tr>
@@ -409,20 +409,20 @@ html.dark .approval-row:hover {
         <div class="flex items-center justify-between mb-2">
             <h2 class="font-bold flex items-center gap-2" style="font-size:1.15rem; color:var(--text-main, #0f172a);">
                 <svg class="icon-sm" style="color:#10b981;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-8.995-1.745M16 6l4-4m0 0l-4-4m4 4H9a2 2 0 00-2 2v12a2 2 0 002 2h9a2 2 0 002-2V8a2 2 0 00-2-2z"/></svg>
-                ประกาศงานล่าสุด
+                {{ __('ประกาศงานล่าสุด') }}
             </h2>
-            <a href="{{ route('admin.jobs.index') }}" class="btn btn-outline btn-sm">ดูทั้งหมด</a>
+            <a href="{{ route('admin.jobs.index') }}" class="btn btn-outline btn-sm">{{ __('ดูทั้งหมด') }}</a>
         </div>
         <div class="card">
             <div class="table-wrap">
                 <table class="responsive-table">
                     <thead>
                         <tr>
-                            <th>หัวข้องาน</th>
-                            <th>ตำแหน่ง</th>
-                            <th class="text-center">สถานะ</th>
-                            <th class="text-center">ผู้สมัคร</th>
-                            <th class="text-right">จัดการ</th>
+                            <th>{{ __('หัวข้องาน') }}</th>
+                            <th>{{ __('ตำแหน่ง') }}</th>
+                            <th class="text-center">{{ __('สถานะ') }}</th>
+                            <th class="text-center">{{ __('ผู้สมัคร') }}</th>
+                            <th class="text-right">{{ __('จัดการ') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -434,21 +434,21 @@ html.dark .approval-row:hover {
                             <td data-label="ตำแหน่ง" class="text-xs text-muted">{{ $job->position }}</td>
                             <td data-label="สถานะ" class="text-center">
                                 @if($job->status === 'open')
-                                    <span class="badge badge-green">เปิด</span>
+                                    <span class="badge badge-green">{{ __('เปิด') }}</span>
                                 @else
-                                    <span class="badge badge-gray">ปิด</span>
+                                    <span class="badge badge-gray">{{ __('ปิด') }}</span>
                                 @endif
                             </td>
                             <td data-label="ผู้สมัคร" class="text-center">
-                                <span class="badge badge-orange">{{ $job->applications_count }} คน</span>
+                                <span class="badge badge-orange">{{ $job->applications_count }} {{ __('คน') }}</span>
                             </td>
                             <td data-label="จัดการ" class="text-right">
-                                <a href="{{ route('admin.jobs.show', $job->id) }}" class="btn btn-outline btn-sm">ดู</a>
+                                <a href="{{ route('admin.jobs.show', $job->id) }}" class="btn btn-outline btn-sm">{{ __('ดู') }}</a>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" class="py-6 text-center text-xs text-muted">ยังไม่มีประกาศงาน</td>
+                            <td colspan="5" class="py-6 text-center text-xs text-muted">{{ __('ยังไม่มีประกาศงาน') }}</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -462,19 +462,19 @@ html.dark .approval-row:hover {
         <div class="flex items-center justify-between mb-2">
             <h2 class="font-bold flex items-center gap-2" style="font-size:1.15rem; color:var(--text-main, #0f172a);">
                 <svg class="icon-sm" style="color:#f59e0b;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3-.204.904-.402 1.92-.402 3 0 1.08.198 2.096.402 3M2 9s1.5 2 2.5 2S7 9 7 9M2 9s1.5-2 2.5-2S7 9 7 9"/></svg>
-                ประกาศล่าสุด
+                {{ __('ประกาศล่าสุด') }}
             </h2>
-            <a href="{{ route('admin.announcements.index') }}" class="btn btn-outline btn-sm">ดูทั้งหมด</a>
+            <a href="{{ route('admin.announcements.index') }}" class="btn btn-outline btn-sm">{{ __('ดูทั้งหมด') }}</a>
         </div>
         <div class="card">
             <div class="table-wrap">
                 <table class="responsive-table">
                     <thead>
                         <tr>
-                            <th>หัวข้อ</th>
-                            <th>กลุ่มเป้าหมาย</th>
-                            <th class="text-center">สถานะ</th>
-                            <th class="text-right">จัดการ</th>
+                            <th>{{ __('หัวข้อ') }}</th>
+                            <th>{{ __('กลุ่มเป้าหมาย') }}</th>
+                            <th class="text-center">{{ __('สถานะ') }}</th>
+                            <th class="text-right">{{ __('จัดการ') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -489,12 +489,12 @@ html.dark .approval-row:hover {
                                 <span class="badge {{ $item->is_active ? 'badge-green' : 'badge-gray' }}">{{ $item->is_active ? 'เปิด' : 'ปิด' }}</span>
                             </td>
                             <td data-label="จัดการ" class="text-right">
-                                <a href="{{ route('admin.announcements.edit', $item->id) }}" class="btn btn-outline btn-sm">แก้ไข</a>
+                                <a href="{{ route('admin.announcements.edit', $item->id) }}" class="btn btn-outline btn-sm">{{ __('แก้ไข') }}</a>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="4" class="py-6 text-center text-xs text-muted">ยังไม่มีประกาศ</td>
+                            <td colspan="4" class="py-6 text-center text-xs text-muted">{{ __('ยังไม่มีประกาศ') }}</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -514,12 +514,12 @@ html.dark .approval-row:hover {
                 <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01"/></svg>
             </div>
             <div>
-                <h2 class="font-bold" style="font-size:1.15rem; margin:0; color:var(--text-main, #0f172a);">ประวัติการดำเนินงานล่าสุด</h2>
-                <p class="text-xs text-muted" style="margin:0;">Audit Logs บันทึกการเปลี่ยนแปลงในระบบ</p>
+                <h2 class="font-bold" style="font-size:1.15rem; margin:0; color:var(--text-main, #0f172a);">{{ __('ประวัติการดำเนินงานล่าสุด') }}</h2>
+                <p class="text-xs text-muted" style="margin:0;">Audit Logs {{ __('บันทึกการเปลี่ยนแปลงในระบบ') }}</p>
             </div>
         </div>
         <a href="{{ route('admin.audit-logs.index') }}" class="dashboard-view-all-logs-btn">
-            ดูประวัติทั้งหมด
+            {{ __('ดูประวัติทั้งหมด') }}
             <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
         </a>
     </div>
@@ -571,7 +571,7 @@ html.dark .approval-row:hover {
         </a>
         @empty
         <div class="empty-state-row py-6 text-center text-xs text-muted">
-            ไม่มีประวัติการดำเนินงานล่าสุด
+            {{ __('ไม่มีประวัติการดำเนินงานล่าสุด') }}
         </div>
         @endforelse
     </div>
@@ -584,9 +584,9 @@ html.dark .approval-row:hover {
         <div class="modal-header" style="background:var(--surface, #ffffff); border-bottom:1px solid var(--border, #e2e8f0);">
             <h2 style="display:flex; align-items:center; gap:0.5rem; color:var(--text-main, #0f172a); font-size:1.15rem; margin:0;">
                 <svg class="icon-sm" style="display:inline;color:#16a34a;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                บันทึกกิจกรรมด่วน
+                {{ __('บันทึกกิจกรรมด่วน') }}
             </h2>
-            <button class="modal-close" style="color:var(--text-muted, #64748b);" onclick="document.getElementById('quickModal').classList.remove('open')" aria-label="ปิด">
+            <button class="modal-close" style="color:var(--text-muted, #64748b);" onclick="document.getElementById('quickModal').classList.remove('open')" aria-label="{{ __('ปิด') }}">
                 <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
@@ -594,16 +594,16 @@ html.dark .approval-row:hover {
             <form method="POST" action="{{ route('admin.activities.quick-store') }}">
                 @csrf
                 <div class="form-group">
-                    <label class="form-label" style="color:var(--text-main, #0f172a);">ชื่อกิจกรรม <span class="text-danger">*</span></label>
-                    <input type="text" name="title" class="form-control" placeholder="เช่น ประชุมชมรม, อบรม Excel" required autofocus>
+                    <label class="form-label" style="color:var(--text-main, #0f172a);">{{ __('ชื่อกิจกรรม') }}<span class="text-danger">*</span></label>
+                    <input type="text" name="title" class="form-control" placeholder="{{ __('เช่น ประชุมชมรม, อบรม Excel') }}" required autofocus>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label" style="color:var(--text-main, #0f172a);">สถานที่ <span class="text-danger">*</span></label>
-                        <input type="text" name="location" class="form-control" placeholder="เช่น ห้อง 101" required>
+                        <label class="form-label" style="color:var(--text-main, #0f172a);">{{ __('สถานที่') }}<span class="text-danger">*</span></label>
+                        <input type="text" name="location" class="form-control" placeholder="{{ __('เช่น ห้อง 101') }}" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" style="color:var(--text-main, #0f172a);">หมวดหมู่ <span class="text-danger">*</span></label>
+                        <label class="form-label" style="color:var(--text-main, #0f172a);">{{ __('หมวดหมู่') }}<span class="text-danger">*</span></label>
                         <select name="category_id" class="form-control" required>
                             @foreach($categories as $cat)
                                 <option value="{{ $cat->id }}">{{ $cat->name }}</option>
@@ -613,30 +613,30 @@ html.dark .approval-row:hover {
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label" style="color:var(--text-main, #0f172a);">วันที่จัดกิจกรรม <span class="text-danger">*</span></label>
+                        <label class="form-label" style="color:var(--text-main, #0f172a);">{{ __('วันที่จัดกิจกรรม') }}<span class="text-danger">*</span></label>
                         <input type="date" name="activity_date" class="form-control" value="{{ now()->addDays(3)->format('Y-m-d') }}" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" style="color:var(--text-main, #0f172a);">ชั่วโมงกิจกรรม <span class="text-danger">*</span></label>
+                        <label class="form-label" style="color:var(--text-main, #0f172a);">{{ __('ชั่วโมงกิจกรรม') }}<span class="text-danger">*</span></label>
                         <input type="number" name="activity_hours" class="form-control" value="2" step="0.5" min="0.5" required>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label" style="color:var(--text-main, #0f172a);">เวลาเริ่ม <span class="text-danger">*</span></label>
+                        <label class="form-label" style="color:var(--text-main, #0f172a);">{{ __('เวลาเริ่ม') }}<span class="text-danger">*</span></label>
                         <input type="time" name="start_time" class="form-control" value="09:00" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" style="color:var(--text-main, #0f172a);">เวลาสิ้นสุด <span class="text-danger">*</span></label>
+                        <label class="form-label" style="color:var(--text-main, #0f172a);">{{ __('เวลาสิ้นสุด') }}<span class="text-danger">*</span></label>
                         <input type="time" name="end_time" class="form-control" value="12:00" required>
                     </div>
                 </div>
-                <p class="text-xs text-muted mb-4" style="color:var(--text-muted, #64748b);">* ค่าเริ่มต้น: รับสมัคร 50 คน, เปิดรับสมัครทันที</p>
+                <p class="text-xs text-muted mb-4" style="color:var(--text-muted, #64748b);">* {{ __('ค่าเริ่มต้น: รับสมัคร 50 คน, เปิดรับสมัครทันที') }}</p>
                 <div class="flex gap-2" style="justify-content:flex-end;">
-                    <button type="button" class="btn btn-outline" onclick="document.getElementById('quickModal').classList.remove('open')">ยกเลิก</button>
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('quickModal').classList.remove('open')">{{ __('ยกเลิก') }}</button>
                     <button type="submit" class="btn btn-success">
                         <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        บันทึกกิจกรรม
+                        {{ __('บันทึกกิจกรรม') }}
                     </button>
                 </div>
             </form>
@@ -703,12 +703,12 @@ async function quickAction(action, type, id, btn) {
                 setTimeout(() => location.reload(), 600);
             }
         } else {
-            showToast('เกิดข้อผิดพลาด', false);
+            showToast('{{ __('เกิดข้อผิดพลาด') }}', false);
             if (row) row.style.opacity = '1';
             btn.disabled = false;
         }
     } catch (e) {
-        showToast('ไม่สามารถเชื่อมต่อได้', false);
+        showToast('{{ __('ไม่สามารถเชื่อมต่อได้') }}', false);
         if (row) row.style.opacity = '1';
         btn.disabled = false;
     }

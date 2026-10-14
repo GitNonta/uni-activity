@@ -16,9 +16,9 @@
         <div style="width: 64px; height: 64px; background: #fff7ed; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
             <svg style="width: 32px; height: 32px; color: #ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
         </div>
-        <h1 style="font-size: 1.5rem; font-weight: 700;">ยืนยันรหัส OTP</h1>
+        <h1 style="font-size: 1.5rem; font-weight: 700;">{{ __('ยืนยันรหัส OTP') }}</h1>
         <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.5rem; line-height: 1.5;">
-            ป้อนรหัส 6 หลักที่ส่งไปยัง <br>
+            {{ __('ป้อนรหัส 6 หลักที่ส่งไปยัง') }}<br>
             <strong>{{ $email }}</strong>
         </p>
     </div>
@@ -48,25 +48,25 @@
         </div>
 
         <button type="submit" id="verifySubmitBtn" class="btn btn-primary btn-block btn-lg" style="display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;">
-            <span>เข้าสู่ระบบ</span>
+            <span>{{ __('เข้าสู่ระบบ') }}</span>
         </button>
     </form>
 
     <form id="resend-form" method="POST" action="{{ route('login.otp.resend') }}" style="text-align: center; margin-top: 2rem;" onsubmit="handleResendSubmit(this)">
         @csrf
         <p style="font-size: 0.8125rem; color: #64748b;">
-            หากไม่ได้รับรหัส? 
+            {{ __('หากไม่ได้รับรหัส?') }}
             <button type="submit" id="resendBtn" style="background: none; border: none; color: #ea580c; text-decoration: none; font-weight: 600; cursor: pointer; padding: 0; font-family: inherit;">
-                ส่งใหม่อีกครั้ง
+                {{ __('ส่งใหม่อีกครั้ง') }}
             </button>
-            <span id="countdownText" style="display:none; color:#94a3b8; margin-left:4px;">(ใน <span id="secondsLeft">60</span>s)</span>
+            <span id="countdownText" style="display:none; color:#94a3b8; margin-left:4px;">({{ __('ใน') }}<span id="secondsLeft">60</span>s)</span>
         </p>
     </form>
 
     <div style="text-align: center; margin-top: 1.5rem;">
         <a href="{{ route('login') }}" style="display:inline-flex;align-items:center;gap:.35rem;font-size: 0.8125rem; color: #94a3b8; text-decoration: none;">
             <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-            <span>กลับไปหน้าเข้าสู่ระบบ</span>
+            <span>{{ __('กลับไปหน้าเข้าสู่ระบบ') }}</span>
         </a>
     </div>
 </div>
@@ -86,7 +86,7 @@
             btn.disabled = true;
             btn.style.opacity = '0.75';
             btn.style.cursor = 'not-allowed';
-            btn.innerHTML = '<svg style="width:16px;height:16px;animation:spin 1s linear infinite;display:inline-block;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> กำลังตรวจสอบ...';
+            btn.innerHTML = '<svg style="width:16px;height:16px;animation:spin 1s linear infinite;display:inline-block;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> {{ __('กำลังตรวจสอบ...') }}';
         }
         return true;
     };

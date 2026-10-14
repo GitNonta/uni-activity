@@ -7,7 +7,7 @@
     <div class="card">
         <div class="card-body" style="padding:1.5rem;">
             <div style="text-align:center;margin-bottom:1.5rem;">
-                <h1 style="font-size:1.5rem;font-weight:700;color:var(--text-main, #1e293b);margin-bottom:.5rem;line-height:1.5;">ประเมินกิจกรรม</h1>
+                <h1 style="font-size:1.5rem;font-weight:700;color:var(--text-main, #1e293b);margin-bottom:.5rem;line-height:1.5;">{{ __('ประเมินกิจกรรม') }}</h1>
                 <p style="color:var(--text-muted, #475569);font-size:.9rem;line-height:1.5;">{{ $activity->title }}</p>
                 <p style="color:var(--text-muted, #475569);font-size:.8rem;line-height:1.5;">{{ $activity->category->name ?? '-' }} | {{ $activity->activity_date->format('d/m/Y') }}</p>
             </div>
@@ -17,7 +17,7 @@
 
                 {{-- คะแนนรวม --}}
                 <div style="margin-bottom:1.5rem;">
-                    <label class="form-label" style="font-weight:600;margin-bottom:.5rem;">คะแนนโดยรวม <span style="color:#dc2626;">*</span></label>
+                    <label class="form-label" style="font-weight:600;margin-bottom:.5rem;">{{ __('คะแนนโดยรวม') }}<span style="color:#dc2626;">*</span></label>
                     <div style="display:flex;gap:.5rem;justify-content:center;margin-top:.75rem;">
                         @for($i = 1; $i <= 5; $i++)
                         <label style="cursor:pointer;">
@@ -37,10 +37,10 @@
 
                 {{-- คะแนนแยกตามหัวข้อ --}}
                 <div style="background:var(--surface-hover, #f8fafc);border:1px solid var(--border, #e2e8f0);padding:1rem;border-radius:8px;margin-bottom:1.5rem;">
-                    <p style="font-weight:600;margin-bottom:1rem;font-size:.9rem;color:var(--text-main, #1e293b);">ประเมินรายละเอียด (ไม่บังคับ)</p>
+                    <p style="font-weight:600;margin-bottom:1rem;font-size:.9rem;color:var(--text-main, #1e293b);">{{ __('ประเมินรายละเอียด (ไม่บังคับ)') }}</p>
                     
                     <div style="margin-bottom:.75rem;">
-                        <label class="form-label" style="font-size:.85rem;">เนื้อหากิจกรรม</label>
+                        <label class="form-label" style="font-size:.85rem;">{{ __('เนื้อหากิจกรรม') }}</label>
                         <div style="display:flex;gap:.3rem;">
                             @for($i = 1; $i <= 5; $i++)
                             <label style="cursor:pointer;">
@@ -56,7 +56,7 @@
                     </div>
 
                     <div style="margin-bottom:.75rem;">
-                        <label class="form-label" style="font-size:.85rem;">วิทยากร/ผู้ดำเนินการ</label>
+                        <label class="form-label" style="font-size:.85rem;">{{ __('วิทยากร/ผู้ดำเนินการ') }}</label>
                         <div style="display:flex;gap:.3rem;">
                             @for($i = 1; $i <= 5; $i++)
                             <label style="cursor:pointer;">
@@ -72,7 +72,7 @@
                     </div>
 
                     <div style="margin-bottom:.75rem;">
-                        <label class="form-label" style="font-size:.85rem;">สถานที่/สิ่งอำนวยความสะดวก</label>
+                        <label class="form-label" style="font-size:.85rem;">{{ __('สถานที่/สิ่งอำนวยความสะดวก') }}</label>
                         <div style="display:flex;gap:.3rem;">
                             @for($i = 1; $i <= 5; $i++)
                             <label style="cursor:pointer;">
@@ -88,7 +88,7 @@
                     </div>
 
                     <div style="margin-bottom:0;">
-                        <label class="form-label" style="font-size:.85rem;">การจัดการ/ประสานงาน</label>
+                        <label class="form-label" style="font-size:.85rem;">{{ __('การจัดการ/ประสานงาน') }}</label>
                         <div style="display:flex;gap:.3rem;">
                             @for($i = 1; $i <= 5; $i++)
                             <label style="cursor:pointer;">
@@ -106,9 +106,9 @@
 
                 {{-- ความคิดเห็นเพิ่มเติม --}}
                 <div style="margin-bottom:1.5rem;">
-                    <label for="comment" class="form-label" style="font-weight:600;">ความคิดเห็นเพิ่มเติม</label>
+                    <label for="comment" class="form-label" style="font-weight:600;">{{ __('ความคิดเห็นเพิ่มเติม') }}</label>
                     <textarea name="comment" id="comment" rows="4" class="form-control" 
-                        placeholder="แบ่งปันความคิดเห็น ข้อเสนอแนะ หรือสิ่งที่ต้องการให้ปรับปรุง..." 
+                        placeholder="{{ __('แบ่งปันความคิดเห็น ข้อเสนอแนะ หรือสิ่งที่ต้องการให้ปรับปรุง...') }}" 
                         style="resize:vertical;">{{ old('comment') }}</textarea>
                     @error('comment')
                         <p style="color:#dc2626;font-size:.8rem;margin-top:.25rem;">{{ $message }}</p>
@@ -119,14 +119,14 @@
                 <div style="margin-bottom:1.5rem;">
                     <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;">
                         <input type="checkbox" name="is_anonymous" value="1" {{ old('is_anonymous') ? 'checked' : '' }}>
-                        <span style="font-size:.9rem;color:#64748b;">ประเมินแบบไม่ระบุตัวตน</span>
+                        <span style="font-size:.9rem;color:#64748b;">{{ __('ประเมินแบบไม่ระบุตัวตน') }}</span>
                     </label>
                 </div>
 
                 {{-- ปุ่ม --}}
                 <div style="display:flex;gap:.75rem;justify-content:center;">
-                    <a href="{{ route('activities.index') }}" class="btn btn-outline" style="padding:8px 24px;">ยกเลิก</a>
-                    <button type="submit" class="btn btn-primary" style="padding:8px 32px;">ส่งการประเมิน</button>
+                    <a href="{{ route('activities.index') }}" class="btn btn-outline" style="padding:8px 24px;">{{ __('ยกเลิก') }}</a>
+                    <button type="submit" class="btn btn-primary" style="padding:8px 32px;">{{ __('ส่งการประเมิน') }}</button>
                 </div>
             </form>
         </div>

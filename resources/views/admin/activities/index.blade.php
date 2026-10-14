@@ -3,23 +3,23 @@
 
 @section('content')
 <div class="flex items-center justify-between mb-4">
-    <h1 class="font-bold" style="font-size:1.5rem;">จัดการกิจกรรม</h1>
+    <h1 class="font-bold" style="font-size:1.5rem;">{{ __('จัดการกิจกรรม') }}</h1>
     <a href="{{ route('admin.activities.create') }}" class="btn btn-primary btn-sm">
         <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-        สร้างใหม่
+        {{ __('สร้างใหม่') }}
     </a>
 </div>
 
 {{-- ฟอร์มค้นหาและกรองตามสถานะ --}}
 <form method="GET" action="{{ route('admin.activities.index') }}" class="flex gap-2 mb-6 items-end" style="flex-wrap:wrap; align-items:flex-end;">
     <div style="flex:1; min-width:200px;">
-        <label class="form-label">ค้นหา</label>
-        <input type="text" name="search" value="{{ request('search') }}" placeholder="ชื่อกิจกรรม..." class="form-control" style="height:42px;">
+        <label class="form-label">{{ __('ค้นหา') }}</label>
+        <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('ชื่อกิจกรรม...') }}" class="form-control" style="height:42px;">
     </div>
     <div style="width:180px;max-width:100%;">
-        <label class="form-label">สถานะ</label>
+        <label class="form-label">{{ __('สถานะ') }}</label>
         <select name="status" class="form-control" style="height:42px;">
-            <option value="">ทุกสถานะ</option>
+            <option value="">{{ __('ทุกสถานะ') }}</option>
             @php
                 $statusMap = [
                     'upcoming' => 'เร็วๆ นี้',
@@ -37,10 +37,10 @@
     </div>
     <button type="submit" class="btn btn-primary self-end" style="height:42px; border-radius:8px; display:inline-flex; align-items:center; gap:0.4rem; padding:0 1.25rem; white-space:nowrap;">
         <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        <span>กรอง</span>
+        <span>{{ __('กรอง') }}</span>
     </button>
     @if(request('search') || request('status'))
-        <a href="{{ route('admin.activities.index') }}" class="btn btn-outline self-end" style="height:42px; border-radius:8px; display:inline-flex; align-items:center; padding:0 1rem; white-space:nowrap;">ล้าง</a>
+        <a href="{{ route('admin.activities.index') }}" class="btn btn-outline self-end" style="height:42px; border-radius:8px; display:inline-flex; align-items:center; padding:0 1rem; white-space:nowrap;">{{ __('ล้าง') }}</a>
     @endif
 </form>
 
@@ -51,12 +51,12 @@
             <thead>
                 <tr>
                     <th style="width:50px;"></th>
-                    <th>ชื่อ</th>
-                    <th class="text-center">วันที่</th>
-                    <th class="text-center">สถานะ</th>
-                    <th class="text-center">ผู้สมัคร</th>
-                    <th class="text-center">คำขออนุมัติ</th>
-                    <th class="text-right">จัดการ</th>
+                    <th>{{ __('ชื่อ') }}</th>
+                    <th class="text-center">{{ __('วันที่') }}</th>
+                    <th class="text-center">{{ __('สถานะ') }}</th>
+                    <th class="text-center">{{ __('ผู้สมัคร') }}</th>
+                    <th class="text-center">{{ __('คำขออนุมัติ') }}</th>
+                    <th class="text-right">{{ __('จัดการ') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -78,7 +78,7 @@
                         @php $totalPending = $act->pending_registrations_count + $act->pending_attendances_count; @endphp
                         @if($totalPending > 0)
                             <button type="button" onclick="loadPendingRequests({{ $act->id }})" class="badge badge-yellow" style="border:none; cursor:pointer; font-size:.7rem; animation: pulse 2s infinite;">
-                                {{ $totalPending }} คำขอ
+                                {{ $totalPending }} {{ __('คำขอ') }}
                             </button>
                         @else
                             <span class="text-xs text-muted">-</span>
@@ -88,13 +88,13 @@
                         <div class="flex justify-end gap-2" style="justify-content:flex-end; align-items:center;">
                             <form method="POST" action="{{ route('admin.activities.clone', $act->id) }}" style="display:inline;" onsubmit="return confirm('คุณต้องการคัดลอกกิจกรรมนี้เพื่อสร้างรายการใหม่ใช่หรือไม่?');">
                                 @csrf
-                                <button type="submit" class="btn btn-outline btn-sm" style="color:#4f46e5; border-color:#c7d2fe;" title="คัดลอกกิจกรรมนี้">คัดลอก</button>
+                                <button type="submit" class="btn btn-outline btn-sm" style="color:#4f46e5; border-color:#c7d2fe;" title="{{ __('คัดลอกกิจกรรมนี้') }}">{{ __('คัดลอก') }}</button>
                             </form>
-                            <a href="{{ route('admin.activities.participants', $act->id) }}" class="btn btn-outline btn-sm">ผู้เข้าร่วม</a>
-                            <a href="{{ route('admin.activities.edit', $act->id) }}" class="btn btn-outline btn-sm">แก้ไข</a>
+                            <a href="{{ route('admin.activities.participants', $act->id) }}" class="btn btn-outline btn-sm">{{ __('ผู้เข้าร่วม') }}</a>
+                            <a href="{{ route('admin.activities.edit', $act->id) }}" class="btn btn-outline btn-sm">{{ __('แก้ไข') }}</a>
                             <form method="POST" action="{{ route('admin.activities.destroy', $act->id) }}" style="display:inline;">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('ยืนยันลบ?')">ลบ</button>
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('ยืนยันลบ?')">{{ __('ลบ') }}</button>
                             </form>
                         </div>
                     </td>
@@ -106,8 +106,8 @@
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
-                            <div class="empty-state-row-title">ไม่พบกิจกรรม</div>
-                            <div class="empty-state-row-desc">ลองเปลี่ยนเงื่อนไขการค้นหา หรือสร้างกิจกรรมใหม่</div>
+                            <div class="empty-state-row-title">{{ __('ไม่พบกิจกรรม') }}</div>
+                            <div class="empty-state-row-desc">{{ __('ลองเปลี่ยนเงื่อนไขการค้นหา หรือสร้างกิจกรรมใหม่') }}</div>
                         </div>
                     </td>
                 </tr>
@@ -125,7 +125,7 @@
 <div style="margin-top:2rem; padding-top:1.5rem; border-top:1px solid #e2e8f0;">
     <h2 style="font-weight:600; color:#64748b; padding:0.5rem 0; display:flex; align-items:center; gap:8px;">
         <svg style="width:20px; height:20px; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        กิจกรรมที่เสร็จสิ้นแล้ว <span style="font-weight:400; font-size:0.85rem;">({{ $completedActivities->total() }} รายการ)</span>
+        {{ __('กิจกรรมที่เสร็จสิ้นแล้ว') }}<span style="font-weight:400; font-size:0.85rem;">({{ $completedActivities->total() }} {{ __('รายการ)') }}</span>
     </h2>
     <div class="mt-3">
         <div class="table-wrap">
@@ -133,9 +133,9 @@
                 <thead>
                     <tr>
                         <th style="width:50px;"></th>
-                        <th>ชื่อ</th>
-                        <th class="text-center">วันที่</th>
-                        <th class="text-center">ผู้สมัคร</th>
+                        <th>{{ __('ชื่อ') }}</th>
+                        <th class="text-center">{{ __('วันที่') }}</th>
+                        <th class="text-center">{{ __('ผู้สมัคร') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -160,8 +160,8 @@
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
-                                <div class="empty-state-row-title">ไม่มีกิจกรรมที่สิ้นสุดแล้ว</div>
-                                <div class="empty-state-row-desc">กิจกรรมที่ผ่านพ้นไปแล้วจะแสดงที่นี่</div>
+                                <div class="empty-state-row-title">{{ __('ไม่มีกิจกรรมที่สิ้นสุดแล้ว') }}</div>
+                                <div class="empty-state-row-desc">{{ __('กิจกรรมที่ผ่านพ้นไปแล้วจะแสดงที่นี่') }}</div>
                             </div>
                         </td>
                     </tr>
@@ -179,7 +179,7 @@
     <div class="card" style="width:100%; max-width:600px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1);">
         <div class="card-body" style="padding:1.25rem; border-bottom:1px solid #f1f5f9; flex-shrink:0;">
             <div class="flex items-center justify-between">
-                <h3 class="font-bold" style="font-size:1.1rem;">คำขออนุมัติ: <span id="modalActivityTitle" style="color:#1e40af;"></span></h3>
+                <h3 class="font-bold" style="font-size:1.1rem;">{{ __('คำขออนุมัติ:') }}<span id="modalActivityTitle" style="color:#1e40af;"></span></h3>
                 <button type="button" onclick="closePendingModal()" class="text-muted" style="background:none; border:none; cursor:pointer;">
                     <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
@@ -189,11 +189,11 @@
             {{-- รายการจะถูกโหลดมาใส่ตรงนี้ด้วย JS --}}
             <div class="text-center py-8">
                 <div class="spinner"></div>
-                <p class="text-sm text-muted mt-2">กำลังโหลดข้อมูล...</p>
+                <p class="text-sm text-muted mt-2">{{ __('กำลังโหลดข้อมูล...') }}</p>
             </div>
         </div>
         <div class="card-body" style="padding:1rem; border-top:1px solid #f1f5f9; text-align:right; flex-shrink:0;">
-            <button type="button" onclick="closePendingModal()" class="btn btn-outline btn-sm">ปิด</button>
+            <button type="button" onclick="closePendingModal()" class="btn btn-outline btn-sm">{{ __('ปิด') }}</button>
         </div>
     </div>
 </div>
@@ -220,14 +220,14 @@ function loadPendingRequests(activityId) {
     const title = document.getElementById('modalActivityTitle');
     
     modal.style.display = 'flex';
-    content.innerHTML = '<div class="text-center py-8"><div class="spinner"></div><p class="text-sm text-muted mt-2">กำลังโหลดข้อมูล...</p></div>';
+    content.innerHTML = '<div class="text-center py-8"><div class="spinner"></div><p class="text-sm text-muted mt-2">{{ __('กำลังโหลดข้อมูล...') }}</p></div>';
     
     fetch(`/admin/activities/${activityId}/pending-requests`)
         .then(res => res.json())
         .then(data => {
             title.innerText = data.activity_title;
             if (data.items.length === 0) {
-                content.innerHTML = '<div class="text-center py-8 text-muted">ไม่พบคำขอที่ค้างอยู่</div>';
+                content.innerHTML = '<div class="text-center py-8 text-muted">{{ __('ไม่พบคำขอที่ค้างอยู่') }}</div>';
                 return;
             }
             
@@ -241,7 +241,7 @@ function loadPendingRequests(activityId) {
                         <div class="flex justify-between items-start">
                             <div>
                                 <p class="font-semi text-sm" style="margin:0;">${item.name}</p>
-                                <p class="text-xs text-muted" style="margin:2px 0;">รหัส: ${item.student_id} | ${item.faculty || '-'}</p>
+                                <p class="text-xs text-muted" style="margin:2px 0;">{{ __('รหัส:') }}${item.student_id} | ${item.faculty || '-'}</p>
                                 <p class="text-xs font-medium" style="color:${typeColor}; margin:4px 0;">${typeLabel}: ${item.details}</p>
                             </div>
                             <div class="text-right">
@@ -249,11 +249,11 @@ function loadPendingRequests(activityId) {
                                 <div class="flex gap-1 mt-2">
                                     <form method="POST" action="/admin/${item.type}s/${item.id}/approve">
                                         <input type="hidden" name="_token" value="${document.querySelector('meta[name=\"csrf-token\"]').content}">
-                                        <button type="submit" class="btn btn-success" style="padding:2px 10px; font-size:.7rem;">อนุมัติ</button>
+                                        <button type="submit" class="btn btn-success" style="padding:2px 10px; font-size:.7rem;">{{ __('อนุมัติ') }}</button>
                                     </form>
                                     <form method="POST" action="/admin/${item.type}s/${item.id}/reject">
                                         <input type="hidden" name="_token" value="${document.querySelector('meta[name=\"csrf-token\"]').content}">
-                                        <button type="submit" class="btn btn-danger" style="padding:2px 10px; font-size:.7rem; background:#fee2e2; color:#b91c1c; border-color:#fca5a5; line-height:1.5;">ปฏิเสธ</button>
+                                        <button type="submit" class="btn btn-danger" style="padding:2px 10px; font-size:.7rem; background:#fee2e2; color:#b91c1c; border-color:#fca5a5; line-height:1.5;">{{ __('ปฏิเสธ') }}</button>
                                     </form>
                                 </div>
                             </div>
@@ -265,7 +265,7 @@ function loadPendingRequests(activityId) {
             content.innerHTML = html;
         })
         .catch(err => {
-            content.innerHTML = '<div class="text-center py-8 text-danger">เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
+            content.innerHTML = '<div class="text-center py-8 text-danger">{{ __('เกิดข้อผิดพลาดในการโหลดข้อมูล') }}</div>';
         });
 }
 

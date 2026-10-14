@@ -237,7 +237,7 @@
             <div style="display:flex; align-items:center; gap:0.65rem; flex-wrap:wrap;">
                 <h1 style="font-size:1.6rem; font-weight:800; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:0.6rem; letter-spacing:-0.02em;">
                     <span class="pulse-dot online" id="globalPulseDot"></span>
-                    ศูนย์ควบคุมเซิร์ฟเวอร์
+                    {{ __('ศูนย์ควบคุมเซิร์ฟเวอร์') }}
                     <span style="font-size:1.1rem; font-weight:500; color:var(--text-muted);">Cluster Control Center</span>
                 </h1>
                 <span class="c-badge c-badge-indigo">
@@ -249,7 +249,7 @@
                 </span>
             </div>
             <p style="color:var(--text-secondary); font-size:0.875rem; margin:0.35rem 0 0 0;">
-                ตรวจวัดและควบคุมสถานะการทำงานระดับคลัสเตอร์: Real-time Topology, AI Dual-Node Load Balancer, Redis Priority Queues, และ Laravel Reverb Gateway
+                {{ __('ตรวจวัดและควบคุมสถานะการทำงานระดับคลัสเตอร์: Real-time Topology, AI Dual-Node Load Balancer, Redis Priority Queues, และ Laravel Reverb Gateway') }}
             </p>
         </div>
 
@@ -258,17 +258,17 @@
             {{-- Auto-refresh switch --}}
             <div style="display:flex; align-items:center; gap:0.4rem; background:var(--card-bg); border:1px solid var(--card-border); padding:0.35rem 0.75rem; border-radius:8px; font-size:0.8rem; color:var(--text-secondary);">
                 <input type="checkbox" id="autoRefreshToggle" checked onchange="toggleAutoRefresh(this.checked)" style="cursor:pointer; accent-color:var(--accent-primary);">
-                <label for="autoRefreshToggle" style="cursor:pointer; user-select:none; font-weight:600;">ออโต้รีเฟรช (6s)</label>
+                <label for="autoRefreshToggle" style="cursor:pointer; user-select:none; font-weight:600;">{{ __('ออโต้รีเฟรช (6s)') }}</label>
             </div>
 
             {{-- Instant Refresh Button --}}
             <button id="refreshBtn" onclick="fetchLiveMetrics(true)" class="btn-cluster-action">
                 <svg id="refreshIcon" style="width:14px; height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                <span>รีเฟรชข้อมูล</span>
+                <span>{{ __('รีเฟรชข้อมูล') }}</span>
             </button>
 
             <span id="lastUpdated" style="font-size:0.775rem; color:var(--text-muted); min-width:110px; text-align:right;">
-                อัปเดต: {{ now()->format('H:i:s') }}
+                {{ __('อัปเดต:') }}{{ now()->format('H:i:s') }}
             </span>
         </div>
     </div>
@@ -297,7 +297,7 @@
                         {{ $allHealthy ? 'ระบบทั้งหมดในคลัสเตอร์ทำงานสมบูรณ์ (All Systems Operational)' : 'พบระบบบางส่วนอยู่ในสถานะเฝ้าระวัง (Subsystem Warning)' }}
                     </h3>
                     <p id="clusterBannerDesc" style="margin:0.15rem 0 0 0; font-size:0.8rem; color:{{ $allHealthy ? '#047857' : '#b45309' }};">
-                        ทุกโหนดและไมโครเซอร์วิสส่งสัญญาณ Heartbeat ต่อเนื่อง · อัตราความพร้อมใช้งาน SLA 99.98%
+                        {{ __('ทุกโหนดและไมโครเซอร์วิสส่งสัญญาณ Heartbeat ต่อเนื่อง') }}· {{ __('อัตราความพร้อมใช้งาน SLA 99.98%') }}
                     </p>
                 </div>
             </div>
@@ -328,7 +328,7 @@
                 </span>
             </div>
             <div style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.4rem; display:flex; justify-content:space-between; line-height:1.5;">
-                <span>สภาพแวดล้อม (Env): <strong style="color:var(--text-primary);">{{ strtoupper($status['app']['env']) }}</strong></span>
+                <span>{{ __('สภาพแวดล้อม (Env):') }}<strong style="color:var(--text-primary);">{{ strtoupper($status['app']['env']) }}</strong></span>
                 <span>Debug: <strong style="color:{{ $status['app']['debug'] ? '#b91c1c' : '#166534' }}">{{ $status['app']['debug'] ? 'เปิด (เตือน)' : 'ปิด (ปลอดภัย)' }}</strong></span>
             </div>
             <div class="latency-bar-track">
@@ -349,7 +349,7 @@
                 <span style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">ms latency</span>
             </div>
             <div style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.4rem; display:flex; justify-content:space-between;">
-                <span>ฐานข้อมูล: <strong style="color:var(--text-primary);" id="dbName">{{ $status['database']['database'] ?? 'uni_activity' }}</strong></span>
+                <span>{{ __('ฐานข้อมูล:') }}<strong style="color:var(--text-primary);" id="dbName">{{ $status['database']['database'] ?? 'uni_activity' }}</strong></span>
                 <span>Driver: <strong style="color:var(--text-primary);">{{ strtoupper(config('database.default', 'pgsql')) }}</strong></span>
             </div>
             <div class="latency-bar-track">
@@ -392,15 +392,15 @@
         <div class="cluster-card" style="padding:1.25rem;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
                 <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em;">Security & Biometrics</span>
-                <span class="c-badge c-badge-success">เกรด {{ $status['security']['grade'] ?? 'A+' }}</span>
+                <span class="c-badge c-badge-success">{{ __('เกรด') }}{{ $status['security']['grade'] ?? 'A+' }}</span>
             </div>
             <div style="display:flex; align-items:baseline; gap:0.4rem;">
                 <div style="font-size:1.35rem; font-weight:800; color:var(--text-primary);">{{ $status['security']['score'] ?? 100 }}</div>
-                <span style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">/ 100 คะแนน</span>
+                <span style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">/ 100 {{ __('คะแนน') }}</span>
             </div>
             <div style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.4rem; display:flex; justify-content:space-between;">
-                <span>PDPA Biometric: <strong style="color:#10b981;">เข้ารหัสลับ 100%</strong></span>
-                <span>Zero-Trust: <strong style="color:var(--text-primary);">เข้มงวด</strong></span>
+                <span>PDPA Biometric: <strong style="color:#10b981;">{{ __('เข้ารหัสลับ 100%') }}</strong></span>
+                <span>Zero-Trust: <strong style="color:var(--text-primary);">{{ __('เข้มงวด') }}</strong></span>
             </div>
             <div class="latency-bar-track">
                 <div class="latency-bar-fill" style="width: {{ $status['security']['score'] ?? 100 }}%; background: #10b981;"></div>
@@ -417,10 +417,10 @@
             <div>
                 <h3 style="font-size:1.05rem; font-weight:700; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:0.5rem;">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--accent-primary);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-                    แผนผังโทโพโลยีระบบ (Live Cluster Topology Architecture)
+                    {{ __('แผนผังโทโพโลยีระบบ (Live Cluster Topology Architecture)') }}
                 </h3>
                 <p style="color:var(--text-secondary); font-size:0.8rem; margin:0.2rem 0 0 0;">
-                    เส้นทางการรับส่งข้อมูลจาก Client สู่ Edge Proxy, Octane Swoole Workers, AI Load Balancer, และ Storage Engines
+                    {{ __('เส้นทางการรับส่งข้อมูลจาก Client สู่ Edge Proxy, Octane Swoole Workers, AI Load Balancer, และ Storage Engines') }}
                 </p>
             </div>
             <span class="c-badge c-badge-neutral" style="font-size:0.7rem;">High-Availability Matrix</span>
@@ -471,15 +471,15 @@
             <div>
                 <h3 style="font-size:1.05rem; font-weight:700; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:0.5rem;">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--accent-indigo);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                    คลัสเตอร์ AI สแกนใบหน้ากระจายโหลด (Distributed AI Face Recognition Cluster)
+                    {{ __('คลัสเตอร์ AI สแกนใบหน้ากระจายโหลด (Distributed AI Face Recognition Cluster)') }}
                 </h3>
                 <p style="color:var(--text-secondary); font-size:0.8rem; margin:0.2rem 0 0 0;">
-                    ระบบกระจายภาระงานสแกนใบหน้า (Round-Robin) พร้อม Circuit Breaker ป้องกันระบบล่ม และกลไก Failover อัตโนมัติ
+                    {{ __('ระบบกระจายภาระงานสแกนใบหน้า (Round-Robin) พร้อม Circuit Breaker ป้องกันระบบล่ม และกลไก Failover อัตโนมัติ') }}
                 </p>
             </div>
             <div id="aiClusterGlobalBadge">
                 <span class="c-badge {{ ($status['ai_cluster']['cluster_state'] ?? '') === 'HEALTHY' ? 'c-badge-success' : 'c-badge-warning' }}">
-                    Cluster: {{ $status['ai_cluster']['cluster_state'] ?? 'HEALTHY' }} ({{ $status['ai_cluster']['healthy_nodes'] ?? 0 }}/{{ $status['ai_cluster']['total_nodes'] ?? 0 }} พร้อมใช้งาน)
+                    Cluster: {{ $status['ai_cluster']['cluster_state'] ?? 'HEALTHY' }} ({{ $status['ai_cluster']['healthy_nodes'] ?? 0 }}/{{ $status['ai_cluster']['total_nodes'] ?? 0 }} {{ __('พร้อมใช้งาน)') }}
                 </span>
             </div>
         </div>
@@ -499,7 +499,7 @@
                             <span style="font-weight:800; font-size:1rem; color:var(--text-primary);">{{ strtoupper($node['id']) }}</span>
                         </div>
                         <div style="margin-top:0.25rem;">
-                            <span class="endpoint-code" onclick="navigator.clipboard.writeText('{{ $node['url'] }}')" title="คลิกเพื่อคัดลอก Endpoint">
+                            <span class="endpoint-code" onclick="navigator.clipboard.writeText('{{ $node['url'] }}')" title="{{ __('คลิกเพื่อคัดลอก Endpoint') }}">
                                 {{ $node['url'] }}
                                 <svg width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                             </span>
@@ -518,13 +518,13 @@
                         </strong>
                     </div>
                     <div>
-                        <div style="color:var(--text-muted); font-size:0.7rem;">เวลาตอบสนอง (Latency)</div>
+                        <div style="color:var(--text-muted); font-size:0.7rem;">{{ __('เวลาตอบสนอง (Latency)') }}</div>
                         <strong style="color:var(--text-primary);">{{ $node['latency_ms'] ?? '—' }} ms</strong>
                     </div>
                 </div>
 
                 <div style="font-size:0.75rem; color:var(--text-secondary); display:flex; align-items:center; gap:0.4rem;">
-                    <span style="font-weight:600; color:var(--text-muted);">โมเดลที่โหลด:</span>
+                    <span style="font-weight:600; color:var(--text-muted);">{{ __('โมเดลที่โหลด:') }}</span>
                     <span style="color:var(--text-primary); font-weight:500;">
                         {{ isset($node['models']) ? implode(', ', $node['models']) : ($node['error'] ?? 'N/A') }}
                     </span>
@@ -544,19 +544,19 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
                 <h3 style="font-size:1.05rem; font-weight:700; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:0.5rem;">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--accent-amber);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                    คิวงาน Redis แยกตามความสำคัญ (Priority Queues)
+                    {{ __('คิวงาน Redis แยกตามความสำคัญ (Priority Queues)') }}
                 </h3>
                 @php $failedCount = $status['queues']['failed_jobs'] ?? 0; @endphp
                 @if($failedCount > 0)
                     <a href="{{ route('admin.system.failed-jobs.index') }}" class="c-badge c-badge-danger" style="text-decoration:none;">
-                        {{ $failedCount }} งานล้มเหลว
+                        {{ $failedCount }} {{ __('งานล้มเหลว') }}
                     </a>
                 @else
-                    <span class="c-badge c-badge-success">0 ล้มเหลว</span>
+                    <span class="c-badge c-badge-success">0 {{ __('ล้มเหลว') }}</span>
                 @endif
             </div>
             <p style="color:var(--text-secondary); font-size:0.8rem; margin-bottom:1rem;">
-                การกระจายภาระงานเบื้องหลัง (Background Worker Pipeline) แยกตามช่องทางเฉพาะ
+                {{ __('การกระจายภาระงานเบื้องหลัง (Background Worker Pipeline) แยกตามช่องทางเฉพาะ') }}
             </p>
 
             <div style="display:flex; flex-direction:column; gap:0.65rem;" id="queueChannelsList">
@@ -577,7 +577,7 @@
                     </div>
                     <div>
                         <span class="c-badge {{ $count > 0 ? 'c-badge-warning' : 'c-badge-neutral' }}">
-                            {{ $count }} ค้างในคิว
+                            {{ $count }} {{ __('ค้างในคิว') }}
                         </span>
                     </div>
                 </div>
@@ -590,12 +590,12 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
                 <h3 style="font-size:1.05rem; font-weight:700; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:0.5rem;">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--accent-emerald);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                    เกตเวย์ WebSocket เรียลไทม์ (Laravel Reverb)
+                    {{ __('เกตเวย์ WebSocket เรียลไทม์ (Laravel Reverb)') }}
                 </h3>
-                <span class="c-badge c-badge-success">● พร้อมเชื่อมต่อ</span>
+                <span class="c-badge c-badge-success">● {{ __('พร้อมเชื่อมต่อ') }}</span>
             </div>
             <p style="color:var(--text-secondary); font-size:0.8rem; margin-bottom:1rem;">
-                กระจายข้อมูลแชทเรียลไทม์ และระบบสแกนใบหน้าแจ้งเตือนทันที (Sub-50ms Latency)
+                {{ __('กระจายข้อมูลแชทเรียลไทม์ และระบบสแกนใบหน้าแจ้งเตือนทันที (Sub-50ms Latency)') }}
             </p>
 
             <div style="display:flex; flex-direction:column; gap:0.65rem;">
@@ -608,8 +608,8 @@
                     <span class="endpoint-code">{{ $status['broadcasting']['scheme'] }}://{{ $status['broadcasting']['host'] }}:{{ $status['broadcasting']['port'] }}</span>
                 </div>
                 <div style="padding:0.75rem 0.85rem; background:#fafbfc; border-radius:10px; border:1px solid var(--card-border); display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:0.8rem; color:var(--text-secondary);">ความปลอดภัยของช่องสัญญาณ</span>
-                    <strong style="color:#10b981; font-size:0.8rem;">แยกสิทธิ์ห้องแชทนักศึกษาเข้มงวด</strong>
+                    <span style="font-size:0.8rem; color:var(--text-secondary);">{{ __('ความปลอดภัยของช่องสัญญาณ') }}</span>
+                    <strong style="color:#10b981; font-size:0.8rem;">{{ __('แยกสิทธิ์ห้องแชทนักศึกษาเข้มงวด') }}</strong>
                 </div>
             </div>
         </div>
@@ -696,7 +696,7 @@
                                     <span style="font-weight:800; font-size:1rem; color:var(--text-primary);">${node.id.toUpperCase()}</span>
                                 </div>
                                 <div style="margin-top:0.25rem;">
-                                    <span class="endpoint-code" onclick="navigator.clipboard.writeText('${node.url}')" title="คลิกเพื่อคัดลอก Endpoint">
+                                    <span class="endpoint-code" onclick="navigator.clipboard.writeText('${node.url}')" title="{{ __('คลิกเพื่อคัดลอก Endpoint') }}">
                                         ${node.url}
                                         <svg width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                                     </span>
@@ -713,13 +713,13 @@
                                 </strong>
                             </div>
                             <div>
-                                <div style="color:var(--text-muted); font-size:0.7rem;">เวลาตอบสนอง (Latency)</div>
+                                <div style="color:var(--text-muted); font-size:0.7rem;">{{ __('เวลาตอบสนอง (Latency)') }}</div>
                                 <strong style="color:var(--text-primary);">${node.latency_ms || '—'} ms</strong>
                             </div>
                         </div>
 
                         <div style="font-size:0.75rem; color:var(--text-secondary); display:flex; align-items:center; gap:0.4rem;">
-                            <span style="font-weight:600; color:var(--text-muted);">โมเดลที่โหลด:</span>
+                            <span style="font-weight:600; color:var(--text-muted);">{{ __('โมเดลที่โหลด:') }}</span>
                             <span style="color:var(--text-primary); font-weight:500;">${modelsText}</span>
                         </div>
                     </div>
@@ -730,12 +730,12 @@
                 if (globalAiBadge) {
                     const isGlobalHealthy = data.ai_cluster.cluster_state === 'HEALTHY';
                     globalAiBadge.innerHTML = `<span class="c-badge ${isGlobalHealthy ? 'c-badge-success' : 'c-badge-warning'}">
-                        Cluster: ${data.ai_cluster.cluster_state} (${data.ai_cluster.healthy_nodes}/${data.ai_cluster.total_nodes} พร้อมใช้งาน)
+                        Cluster: ${data.ai_cluster.cluster_state} (${data.ai_cluster.healthy_nodes}/${data.ai_cluster.total_nodes} {{ __('พร้อมใช้งาน)') }}
                     </span>`;
                 }
             }
 
-            document.getElementById('lastUpdated').textContent = 'อัปเดต: ' + new Date().toLocaleTimeString('th-TH');
+            document.getElementById('lastUpdated').textContent = '{{ __('อัปเดต:') }}' + new Date().toLocaleTimeString('th-TH');
         } catch (e) {
             console.error('Failed to fetch live cluster metrics', e);
         } finally {

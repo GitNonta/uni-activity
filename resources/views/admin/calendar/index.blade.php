@@ -325,19 +325,19 @@ html[data-theme="dark"] .fc-list-event-time {
                 <span style="font-size:0.8rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:#ea580c; background:rgba(234,88,12,0.1); padding:2px 8px; border-radius:6px;">
                     Smart Conflict Detection
                 </span>
-                <span style="color:var(--text-muted, #94a3b8); font-size:0.8rem;">• ป้องกันสถานที่ชนกัน</span>
+                <span style="color:var(--text-muted, #94a3b8); font-size:0.8rem;">• {{ __('ป้องกันสถานที่ชนกัน') }}</span>
             </div>
             <h1 class="font-bold" style="font-size:1.65rem; color:var(--text-main, #0f172a); margin:0; line-height:1.3;">
-                ปฏิทินกิจกรรมอัจฉริยะ (Master Calendar)
+                {{ __('ปฏิทินกิจกรรมอัจฉริยะ (Master Calendar)') }}
             </h1>
             <p style="font-size:0.875rem; color:var(--text-muted, #64748b); margin-top:0.25rem;">
-                ตรวจสอบภาพรวมตารางกิจกรรม ป้องกันการแย่งห้องประชุม/หอประชุม และแจ้งเตือนกิจกรรมที่ทับซ้อนกันแบบอัตโนมัติ
+                {{ __('ตรวจสอบภาพรวมตารางกิจกรรม ป้องกันการแย่งห้องประชุม/หอประชุม และแจ้งเตือนกิจกรรมที่ทับซ้อนกันแบบอัตโนมัติ') }}
             </p>
         </div>
         <div style="display:flex; align-items:center; gap:0.75rem;">
             <a href="{{ route('admin.activities.create') }}" class="btn btn-primary" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.55rem 1.1rem; border-radius:10px; font-weight:600;">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                สร้างกิจกรรมใหม่
+                {{ __('สร้างกิจกรรมใหม่') }}
             </a>
         </div>
     </div>
@@ -350,9 +350,9 @@ html[data-theme="dark"] .fc-list-event-time {
                 <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
             </div>
             <div>
-                <div style="font-size:0.78rem; font-weight:600; color:var(--text-muted, #64748b);">กิจกรรมเดือนนี้</div>
+                <div style="font-size:0.78rem; font-weight:600; color:var(--text-muted, #64748b);">{{ __('กิจกรรมเดือนนี้') }}</div>
                 <div style="font-size:1.45rem; font-weight:700; color:var(--text-main, #0f172a); line-height:1.2;">{{ number_format($stats['total_month']) }}</div>
-                <div style="font-size:0.72rem; color:#2563eb; margin-top:2px;">รอบเดือนปัจจุบัน</div>
+                <div style="font-size:0.72rem; color:#2563eb; margin-top:2px;">{{ __('รอบเดือนปัจจุบัน') }}</div>
             </div>
         </div>
 
@@ -362,9 +362,9 @@ html[data-theme="dark"] .fc-list-event-time {
                 <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
             <div>
-                <div style="font-size:0.78rem; font-weight:600; color:var(--text-muted, #64748b);">รอจัด / เปิดรับสมัคร</div>
+                <div style="font-size:0.78rem; font-weight:600; color:var(--text-muted, #64748b);">{{ __('รอจัด / เปิดรับสมัคร') }}</div>
                 <div style="font-size:1.45rem; font-weight:700; color:var(--text-main, #0f172a); line-height:1.2;">{{ number_format($stats['upcoming']) }}</div>
-                <div style="font-size:0.72rem; color:#d97706; margin-top:2px;">กิจกรรมที่กำลังจะมาถึง</div>
+                <div style="font-size:0.72rem; color:#d97706; margin-top:2px;">{{ __('กิจกรรมที่กำลังจะมาถึง') }}</div>
             </div>
         </div>
 
@@ -374,20 +374,20 @@ html[data-theme="dark"] .fc-list-event-time {
                 <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
             <div>
-                <div style="font-size:0.78rem; font-weight:600; color:var(--text-muted, #64748b);">กำลังจัดกิจกรรม</div>
+                <div style="font-size:0.78rem; font-weight:600; color:var(--text-muted, #64748b);">{{ __('กำลังจัดกิจกรรม') }}</div>
                 <div style="font-size:1.45rem; font-weight:700; color:var(--text-main, #0f172a); line-height:1.2;">{{ number_format($stats['ongoing']) }}</div>
-                <div style="font-size:0.72rem; color:#059669; margin-top:2px;">Active ตอนนี้</div>
+                <div style="font-size:0.72rem; color:#059669; margin-top:2px;">Active {{ __('ตอนนี้') }}</div>
             </div>
         </div>
 
         {{-- Card 4: Conflicts Alert --}}
-        <div class="cal-stat-card {{ $stats['conflicts_count'] > 0 ? 'alert-conflict' : '' }}" onclick="toggleConflictFilter(true)" title="คลิกเพื่อกรองเฉพาะกิจกรรมที่ชนกัน">
+        <div class="cal-stat-card {{ $stats['conflicts_count'] > 0 ? 'alert-conflict' : '' }}" onclick="toggleConflictFilter(true)" title="{{ __('คลิกเพื่อกรองเฉพาะกิจกรรมที่ชนกัน') }}">
             <div class="cal-stat-icon" style="background:{{ $stats['conflicts_count'] > 0 ? '#ef4444' : 'rgba(100,116,139,0.12)' }}; color:{{ $stats['conflicts_count'] > 0 ? '#ffffff' : '#64748b' }};">
                 <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
             </div>
             <div style="flex:1;">
                 <div style="font-size:0.78rem; font-weight:600; color:{{ $stats['conflicts_count'] > 0 ? '#b91c1c' : 'var(--text-muted, #64748b)' }};">
-                    ตรวจพบสถานที่ชนกัน
+                    {{ __('ตรวจพบสถานที่ชนกัน') }}
                 </div>
                 <div style="font-size:1.45rem; font-weight:700; color:{{ $stats['conflicts_count'] > 0 ? '#dc2626' : 'var(--text-main, #0f172a)' }}; line-height:1.2;">
                     {{ number_format($stats['conflicts_count']) }}
@@ -404,7 +404,7 @@ html[data-theme="dark"] .fc-list-event-time {
         <div class="cal-filter-group">
             {{-- Category Filter --}}
             <select id="filterCategory" class="cal-select" onchange="refetchCalendarEvents()">
-                <option value="">ทุกหมวดหมู่กิจกรรม</option>
+                <option value="">{{ __('ทุกหมวดหมู่กิจกรรม') }}</option>
                 @foreach($categories as $cat)
                     <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                 @endforeach
@@ -412,7 +412,7 @@ html[data-theme="dark"] .fc-list-event-time {
 
             {{-- Venue / Location Filter --}}
             <select id="filterLocation" class="cal-select" onchange="refetchCalendarEvents()">
-                <option value="">ทุกสถานที่จัดงาน</option>
+                <option value="">{{ __('ทุกสถานที่จัดงาน') }}</option>
                 @foreach($uniqueLocations as $loc)
                     <option value="{{ $loc }}">{{ $loc }}</option>
                 @endforeach
@@ -420,18 +420,18 @@ html[data-theme="dark"] .fc-list-event-time {
 
             {{-- Status Filter --}}
             <select id="filterStatus" class="cal-select" onchange="refetchCalendarEvents()">
-                <option value="all">ทุกสถานะกิจกรรม</option>
-                <option value="upcoming">กำลังจะเปิด</option>
-                <option value="open">เปิดรับสมัคร</option>
-                <option value="ongoing">กำลังจัดกิจกรรม</option>
-                <option value="done">เสร็จสิ้น</option>
-                <option value="cancelled">ยกเลิก</option>
+                <option value="all">{{ __('ทุกสถานะกิจกรรม') }}</option>
+                <option value="upcoming">{{ __('กำลังจะเปิด') }}</option>
+                <option value="open">{{ __('เปิดรับสมัคร') }}</option>
+                <option value="ongoing">{{ __('กำลังจัดกิจกรรม') }}</option>
+                <option value="done">{{ __('เสร็จสิ้น') }}</option>
+                <option value="cancelled">{{ __('ยกเลิก') }}</option>
             </select>
 
             {{-- Only Conflicts Toggle Button --}}
             <button type="button" id="btnOnlyConflicts" class="btn-conflict-toggle" onclick="toggleConflictFilter()">
                 <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                <span id="conflictToggleText">แสดงเฉพาะรายการที่ชนกัน ({{ $stats['conflicts_count'] }})</span>
+                <span id="conflictToggleText">{{ __('แสดงเฉพาะรายการที่ชนกัน (') }}{{ $stats['conflicts_count'] }})</span>
             </button>
         </div>
 
@@ -439,21 +439,21 @@ html[data-theme="dark"] .fc-list-event-time {
             {{-- View Legend Button / Indicators --}}
             <div style="display:flex; align-items:center; gap:0.6rem; font-size:0.75rem; color:var(--text-muted, #64748b);">
                 <span style="display:inline-flex; align-items:center; gap:3px;">
-                    <span style="width:10px; height:10px; border-radius:50%; background:#dc2626; display:inline-block;"></span> ชนกัน/ซ้ำซ้อน
+                    <span style="width:10px; height:10px; border-radius:50%; background:#dc2626; display:inline-block;"></span> {{ __('ชนกัน/ซ้ำซ้อน') }}
                 </span>
                 <span style="display:inline-flex; align-items:center; gap:3px;">
-                    <span style="width:10px; height:10px; border-radius:50%; background:#059669; display:inline-block;"></span> กำลังจัด
+                    <span style="width:10px; height:10px; border-radius:50%; background:#059669; display:inline-block;"></span> {{ __('กำลังจัด') }}
                 </span>
                 <span style="display:inline-flex; align-items:center; gap:3px;">
-                    <span style="width:10px; height:10px; border-radius:50%; background:#2563eb; display:inline-block;"></span> เปิดรับ
+                    <span style="width:10px; height:10px; border-radius:50%; background:#2563eb; display:inline-block;"></span> {{ __('เปิดรับ') }}
                 </span>
                 <span style="display:inline-flex; align-items:center; gap:3px;">
-                    <span style="width:10px; height:10px; border-radius:50%; background:#d97706; display:inline-block;"></span> กำลังจะเปิด
+                    <span style="width:10px; height:10px; border-radius:50%; background:#d97706; display:inline-block;"></span> {{ __('กำลังจะเปิด') }}
                 </span>
             </div>
 
             {{-- Refresh Button --}}
-            <button type="button" class="btn btn-outline btn-sm" onclick="refetchCalendarEvents()" title="รีเฟรชข้อมูล" style="padding:0.4rem 0.65rem; border-radius:8px;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="refetchCalendarEvents()" title="{{ __('รีเฟรชข้อมูล') }}" style="padding:0.4rem 0.65rem; border-radius:8px;">
                 <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
             </button>
         </div>
@@ -472,13 +472,13 @@ html[data-theme="dark"] .fc-list-event-time {
         <div class="drawer-header">
             <div>
                 <div id="drawerCategoryPill" style="display:inline-block; font-size:0.72rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:#ea580c; background:rgba(234,88,12,0.1); padding:2px 8px; border-radius:6px; margin-bottom:0.4rem;">
-                    หมวดหมู่
+                    {{ __('หมวดหมู่') }}
                 </div>
                 <h3 id="drawerTitle" style="font-size:1.2rem; font-weight:700; color:var(--text-main, #0f172a); margin:0; line-height:1.4;">
-                    ชื่อกิจกรรม
+                    {{ __('ชื่อกิจกรรม') }}
                 </h3>
             </div>
-            <button type="button" onclick="closeCalendarDrawer()" style="background:none; border:none; cursor:pointer; color:var(--text-muted, #64748b); width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; transition:background .15s;" title="ปิด">
+            <button type="button" onclick="closeCalendarDrawer()" style="background:none; border:none; cursor:pointer; color:var(--text-muted, #64748b); width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; transition:background .15s;" title="{{ __('ปิด') }}">
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
@@ -493,10 +493,10 @@ html[data-theme="dark"] .fc-list-event-time {
                     </div>
                     <div style="flex:1;">
                         <div style="font-size:0.95rem; font-weight:700; color:#991b1b; margin-bottom:0.2rem;">
-                            ตรวจพบกิจกรรมที่ชนกันในสถานที่นี้!
+                            {{ __('ตรวจพบกิจกรรมที่ชนกันในสถานที่นี้!') }}
                         </div>
                         <p id="drawerConflictDesc" style="font-size:0.8rem; color:#7f1d1d; margin:0 0 0.6rem 0;">
-                            มีกิจกรรมอื่นที่ใช้สถานที่เดียวกันและช่วงเวลาทับซ้อนกัน โปรดตรวจสอบหรือจัดตารางเวลาใหม่
+                            {{ __('มีกิจกรรมอื่นที่ใช้สถานที่เดียวกันและช่วงเวลาทับซ้อนกัน โปรดตรวจสอบหรือจัดตารางเวลาใหม่') }}
                         </p>
                         <div id="drawerConflictList" style="display:grid; gap:0.5rem;">
                             {{-- Conflicting activity items rendered via JS --}}
@@ -513,7 +513,7 @@ html[data-theme="dark"] .fc-list-event-time {
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                     </div>
                     <div>
-                        <div style="font-size:0.72rem; color:var(--text-muted, #64748b);">วันที่จัดกิจกรรม</div>
+                        <div style="font-size:0.72rem; color:var(--text-muted, #64748b);">{{ __('วันที่จัดกิจกรรม') }}</div>
                         <div id="drawerDate" style="font-weight:600;">-</div>
                     </div>
                 </div>
@@ -524,7 +524,7 @@ html[data-theme="dark"] .fc-list-event-time {
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </div>
                     <div>
-                        <div style="font-size:0.72rem; color:var(--text-muted, #64748b);">ช่วงเวลา</div>
+                        <div style="font-size:0.72rem; color:var(--text-muted, #64748b);">{{ __('ช่วงเวลา') }}</div>
                         <div id="drawerTime" style="font-weight:600;">-</div>
                     </div>
                 </div>
@@ -535,7 +535,7 @@ html[data-theme="dark"] .fc-list-event-time {
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     </div>
                     <div>
-                        <div style="font-size:0.72rem; color:var(--text-muted, #64748b);">สถานที่จัดกิจกรรม</div>
+                        <div style="font-size:0.72rem; color:var(--text-muted, #64748b);">{{ __('สถานที่จัดกิจกรรม') }}</div>
                         <div id="drawerLocation" style="font-weight:600;">-</div>
                     </div>
                 </div>
@@ -546,19 +546,19 @@ html[data-theme="dark"] .fc-list-event-time {
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                     </div>
                     <div style="flex:1;">
-                        <div style="font-size:0.72rem; color:var(--text-muted, #64748b);">จำนวนผู้ลงทะเบียน</div>
-                        <div id="drawerParticipants" style="font-weight:600;">0 / 0 คน</div>
+                        <div style="font-size:0.72rem; color:var(--text-muted, #64748b);">{{ __('จำนวนผู้ลงทะเบียน') }}</div>
+                        <div id="drawerParticipants" style="font-weight:600;">0 / 0 {{ __('คน') }}</div>
                     </div>
                 </div>
 
                 {{-- Hours & Creator --}}
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; padding-top:0.5rem; border-top:1px solid var(--border-color, #e2e8f0);">
                     <div>
-                        <div style="font-size:0.72rem; color:var(--text-muted, #64748b);">ชั่วโมงกิจกรรม</div>
-                        <div id="drawerHours" style="font-weight:700; color:#ea580c; font-size:1.05rem;">0.0 ชม.</div>
+                        <div style="font-size:0.72rem; color:var(--text-muted, #64748b);">{{ __('ชั่วโมงกิจกรรม') }}</div>
+                        <div id="drawerHours" style="font-weight:700; color:#ea580c; font-size:1.05rem;">0.0 {{ __('ชม.') }}</div>
                     </div>
                     <div>
-                        <div style="font-size:0.72rem; color:var(--text-muted, #64748b);">ผู้สร้างกิจกรรม</div>
+                        <div style="font-size:0.72rem; color:var(--text-muted, #64748b);">{{ __('ผู้สร้างกิจกรรม') }}</div>
                         <div id="drawerCreator" style="font-weight:600; font-size:0.875rem;">-</div>
                     </div>
                 </div>
@@ -569,14 +569,14 @@ html[data-theme="dark"] .fc-list-event-time {
         <div class="drawer-footer">
             <a id="drawerBtnEdit" href="#" class="btn btn-outline btn-sm" style="display:inline-flex; align-items:center; gap:4px;">
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                แก้ไขกิจกรรม
+                {{ __('แก้ไขกิจกรรม') }}
             </a>
             <a id="drawerBtnParticipants" href="#" class="btn btn-outline btn-sm" style="display:inline-flex; align-items:center; gap:4px;">
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                รายชื่อผู้เข้าร่วม
+                {{ __('รายชื่อผู้เข้าร่วม') }}
             </a>
             <a id="drawerBtnView" href="#" class="btn btn-primary btn-sm" style="display:inline-flex; align-items:center; gap:4px;">
-                ดูรายละเอียด
+                {{ __('ดูรายละเอียด') }}
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </a>
         </div>
@@ -607,11 +607,11 @@ document.addEventListener('DOMContentLoaded', function() {
             right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
         },
         buttonText: {
-            today: 'วันนี้',
-            month: 'เดือน',
-            week:  'สัปดาห์',
-            day:   'วัน',
-            list:  'รายการ'
+            today: '{{ __('วันนี้') }}',
+            month: '{{ __('เดือน') }}',
+            week:  '{{ __('สัปดาห์') }}',
+            day:   '{{ __('วัน') }}',
+            list:  '{{ __('รายการ') }}'
         },
         height: 'auto',
         dayMaxEvents: 3,
@@ -660,7 +660,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (isConflict) {
                 var badge = document.createElement('span');
                 badge.className = 'fc-event-conflict-badge';
-                badge.innerHTML = '<svg width="9" height="9" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> ชน!';
+                badge.innerHTML = '<svg width="9" height="9" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> {{ __('ชน!') }}';
                 container.appendChild(badge);
             }
 
@@ -679,7 +679,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             return { domNodes: [container] };
         },
-        noEventsContent: 'ไม่มีกิจกรรมในช่วงเวลาหรือเงื่อนไขที่เลือก'
+        noEventsContent: '{{ __('ไม่มีกิจกรรมในช่วงเวลาหรือเงื่อนไขที่เลือก') }}'
     });
 
     calendarInstance.render();
@@ -712,11 +712,11 @@ function openCalendarDrawer(event) {
     var ep = event.extendedProps;
 
     document.getElementById('drawerTitle').textContent = event.title;
-    document.getElementById('drawerCategoryPill').textContent = ep.category || 'ทั่วไป';
+    document.getElementById('drawerCategoryPill').textContent = ep.category || '{{ __('ทั่วไป') }}';
     document.getElementById('drawerLocation').textContent = ep.location || '-';
-    document.getElementById('drawerHours').textContent = (ep.hours || 0).toFixed(1) + ' ชม.';
+    document.getElementById('drawerHours').textContent = (ep.hours || 0).toFixed(1) + ' {{ __('ชม.') }}';
     document.getElementById('drawerCreator').textContent = ep.creator_name || '-';
-    document.getElementById('drawerParticipants').textContent = (ep.registered_count || 0) + ' / ' + (ep.max_participants || 0) + ' คน';
+    document.getElementById('drawerParticipants').textContent = (ep.registered_count || 0) + ' / ' + (ep.max_participants || 0) + ' {{ __('คน') }}';
 
     // Dates & Times formatting
     var start = event.start;
@@ -725,7 +725,7 @@ function openCalendarDrawer(event) {
     }) : '-';
     document.getElementById('drawerDate').textContent = dateDisplay;
 
-    var timeDisplay = (ep.start_time || '00:00') + ' - ' + (ep.end_time || '23:59') + ' น.';
+    var timeDisplay = (ep.start_time || '00:00') + ' - ' + (ep.end_time || '23:59') + ' {{ __('น.') }}';
     document.getElementById('drawerTime').textContent = timeDisplay;
 
     // Action button links
@@ -741,7 +741,7 @@ function openCalendarDrawer(event) {
     if (ep.is_conflict && ep.conflicts && ep.conflicts.length > 0) {
         conflictBox.style.display = 'block';
         document.getElementById('drawerConflictDesc').textContent =
-            'ตรวจพบการจัดกิจกรรมชนกัน ' + ep.conflicts.length + ' รายการในสถานที่ "' + (ep.location || '') + '" ในช่วงเวลาเดียวกัน:';
+            '{{ __('ตรวจพบการจัดกิจกรรมชนกัน') }}' + ep.conflicts.length + ' {{ __('รายการในสถานที่') }}"' + (ep.location || '') + '" {{ __('ในช่วงเวลาเดียวกัน:') }}';
 
         ep.conflicts.forEach(function(c) {
             var item = document.createElement('div');
@@ -757,11 +757,11 @@ function openCalendarDrawer(event) {
             item.innerHTML = `
                 <div>
                     <div style="font-weight:600; font-size:0.82rem; color:#991b1b;">${c.title}</div>
-                    <div style="font-size:0.72rem; color:#64748b;">เวลา: ${c.time_display}</div>
+                    <div style="font-size:0.72rem; color:#64748b;">{{ __('เวลา:') }}${c.time_display}</div>
                 </div>
                 <div style="display:flex; gap:4px;">
-                    <a href="${c.edit_url}" target="_blank" class="btn btn-xs btn-outline" style="padding:2px 8px; font-size:0.72rem; border-color:#f87171; color:#991b1b;" title="แก้ไขกิจกรรมที่ชน">
-                        เปลี่ยนเวลา/ห้อง
+                    <a href="${c.edit_url}" target="_blank" class="btn btn-xs btn-outline" style="padding:2px 8px; font-size:0.72rem; border-color:#f87171; color:#991b1b;" title="{{ __('แก้ไขกิจกรรมที่ชน') }}">
+                        {{ __('เปลี่ยนเวลา/ห้อง') }}
                     </a>
                 </div>
             `;

@@ -3,8 +3,8 @@
 
 @section('content')
 <div class="hero-card mb-4" style="background:linear-gradient(135deg,#ef4444,#ea580c);padding:1.5rem;">
-    <h1 class="font-bold text-white mb-1" style="font-size:1.4rem;">ประกาศ/ข่าวสาร</h1>
-    <p class="text-white opacity-75 text-sm">อัปเดตข้อมูลข่าวสารล่าสุดจากแอดมิน</p>
+    <h1 class="font-bold text-white mb-1" style="font-size:1.4rem;">{{ __('ประกาศ/ข่าวสาร') }}</h1>
+    <p class="text-white opacity-75 text-sm">{{ __('อัปเดตข้อมูลข่าวสารล่าสุดจากแอดมิน') }}</p>
 </div>
 
 <div class="space-y-3">
@@ -30,9 +30,9 @@
                     </div>
                     <div class="flex items-center gap-2 mt-2">
                         @if($item->target_faculty)
-                            <span class="text-xs font-medium" style="color:#b91c1c;background:#fee2e2;padding:2px 6px;border-radius:4px;border:1px solid #fecaca;line-height:1.5;">คณะ{{ $item->target_faculty }}</span>
+                            <span class="text-xs font-medium" style="color:#b91c1c;background:#fee2e2;padding:2px 6px;border-radius:4px;border:1px solid #fecaca;line-height:1.5;">{{ __('คณะ') }}{{ $item->target_faculty }}</span>
                         @endif
-                        <span class="text-xs text-muted">โดย {{ $item->creator->full_name }}</span>
+                        <span class="text-xs text-muted">{{ __('โดย') }}{{ $item->creator->full_name }}</span>
                     </div>
                 </div>
             </div>
@@ -41,7 +41,7 @@
     @empty
     <x-empty-state
         icon="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
-        title="ยังไม่มีประกาศในขณะนี้"
+        title="{{ __('ยังไม่มีประกาศในขณะนี้') }}"
         description="เมื่อมีประกาศหรือข่าวสารใหม่จากทีมงาน จะปรากฏที่นี่"
         size="lg"
     />

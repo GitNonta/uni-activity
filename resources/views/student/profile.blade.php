@@ -380,12 +380,12 @@ html.dark .line-unlink-btn:hover {
                     @endif
                     <div style="position: absolute; bottom: 0; right: 0; width: 28px; height: 28px; background: #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; overflow: hidden;">
                         @if($user->line_user_id)
-                            <div class="swap-badge-1" title="ผูกบัญชี LINE สำเร็จแล้ว">
+                            <div class="swap-badge-1" title="{{ __('ผูกบัญชี LINE สำเร็จแล้ว') }}">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="#06c755">
                                     <path d="M22.5 12.5c0-1.58-.8-2.97-2-3.79.44-1.61.04-3.35-1.11-4.5-1.15-1.15-2.89-1.55-4.5-1.11-.82-1.2-2.21-2-3.79s-2.97.8-3.79 2c-1.61-.44-3.35-.04-4.5 1.11-1.15 1.15-1.55 2.89-1.11 4.5-1.2.82-2 2.21-2 3.79s.8 2.97 2 3.79c-.44 1.61-.04 3.35 1.11 4.5 1.15 1.15 2.89 1.55 4.5 1.11.82 1.2 2.21 2 3.79 2s2.97-.8 3.79-2c1.61.44 3.35.04 4.5-1.11 1.15-1.15 1.55-2.89 1.11-4.5 1.2-.82 2-2.21 2-3.79zm-12.21 4.21l-3.5-3.5 1.41-1.41 2.09 2.09 5.68-5.68 1.41 1.41-7.09 7.09z"/>
                                 </svg>
                             </div>
-                            <div class="swap-badge-2" title="อัปโหลดรูปโปรไฟล์">
+                            <div class="swap-badge-2" title="{{ __('อัปโหลดรูปโปรไฟล์') }}">
                                 <svg width="15" height="15" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>
                             </div>
                         @else
@@ -408,7 +408,7 @@ html.dark .line-unlink-btn:hover {
                 <div style="display: flex; align-items: center; gap: 8px; margin: 0 0 0.25rem 0;">
                     <h1 style="font-size: 1.25rem; font-weight: 700; color: var(--text-main, #1e293b); margin: 0; line-height: 1.4;">{{ $user->full_name }}</h1>
                     @if($user->line_user_id)
-                        <span title="ผูกบัญชี LINE เรียบร้อยแล้ว" style="display: inline-flex; align-items: center; justify-content: center;">
+                        <span title="{{ __('ผูกบัญชี LINE เรียบร้อยแล้ว') }}" style="display: inline-flex; align-items: center; justify-content: center;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="#06c755">
                                 <path d="M22.5 12.5c0-1.58-.8-2.97-2-3.79.44-1.61.04-3.35-1.11-4.5-1.15-1.15-2.89-1.55-4.5-1.11-.82-1.2-2.21-2-3.79s-2.97.8-3.79 2c-1.61-.44-3.35-.04-4.5 1.11-1.15 1.15-1.55 2.89-1.11 4.5-1.2.82-2 2.21-2 3.79s.8 2.97 2 3.79c-.44 1.61-.04 3.35 1.11 4.5 1.15 1.15 2.89 1.55 4.5 1.11.82 1.2 2.21 2 3.79 2s2.97-.8 3.79-2c1.61.44 3.35.04 4.5-1.11 1.15-1.15 1.55-2.89 1.11-4.5 1.2-.82 2-2.21 2-3.79zm-12.21 4.21l-3.5-3.5 1.41-1.41 2.09 2.09 5.68-5.68 1.41 1.41-7.09 7.09z"/>
                             </svg>
@@ -417,7 +417,7 @@ html.dark .line-unlink-btn:hover {
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px; margin: 0 0 0.35rem 0;">
                     <p style="color: #64748b; font-size: 0.92rem; font-weight: 600; margin: 0;">{{ $user->english_name ?? '(กำลังประมวลผลชื่อภาษาอังกฤษ...)' }}</p>
-                    <button onclick="editEnglishName('{{ addslashes($user->english_name) }}')" style="background: none; border: none; color: #ea580c; cursor: pointer; padding: 0; display: flex; align-items: center;" title="แก้ไขชื่อภาษาอังกฤษ">
+                    <button onclick="editEnglishName('{{ addslashes($user->english_name) }}')" style="background: none; border: none; color: #ea580c; cursor: pointer; padding: 0; display: flex; align-items: center;" title="{{ __('แก้ไขชื่อภาษาอังกฤษ') }}">
                         <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                     </button>
                 </div>
@@ -430,7 +430,7 @@ html.dark .line-unlink-btn:hover {
                     <form method="POST" action="{{ route('profile.photo.destroy') }}" style="display:inline;">
                         @csrf @method('DELETE')
                         <button type="submit" style="background: none; border: none; color: #ef4444; font-size: 0.75rem; cursor: pointer; text-decoration: underline; padding: 0;"
-                            onclick="return confirm('ต้องการลบรูปโปรไฟล์?')">ลบรูป</button>
+                            onclick="return confirm('ต้องการลบรูปโปรไฟล์?')">{{ __('ลบรูป') }}</button>
                     </form>
                     @endif
                 </div>
@@ -439,9 +439,9 @@ html.dark .line-unlink-btn:hover {
 
         {{-- ID Card Button (Integrated in Header) --}}
         <div class="student-profile-action">
-            <button type="button" onclick="openCardModal()" class="student-idcard-action-btn" title="เปิดดูบัตรประจำตัวนักศึกษา">
+            <button type="button" onclick="openCardModal()" class="student-idcard-action-btn" title="{{ __('เปิดดูบัตรประจำตัวนักศึกษา') }}">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
-                <span>บัตรประจำตัวนักศึกษา</span>
+                <span>{{ __('บัตรประจำตัวนักศึกษา') }}</span>
             </button>
         </div>
     </div>
@@ -450,15 +450,15 @@ html.dark .line-unlink-btn:hover {
     <div class="student-stats-bar">
         <div class="student-stat-unit">
             <span class="student-stat-num highlight">{{ number_format($totalHours, 1) }}</span>
-            <span class="student-stat-label">ชั่วโมงรวม</span>
+            <span class="student-stat-label">{{ __('ชั่วโมงรวม') }}</span>
         </div>
         <div class="student-stat-unit">
             <span class="student-stat-num">{{ $totalActivities }}</span>
-            <span class="student-stat-label">กิจกรรม</span>
+            <span class="student-stat-label">{{ __('กิจกรรม') }}</span>
         </div>
         <div class="student-stat-unit">
             <span class="student-stat-num">{{ number_format($totalRequired, 0) }}</span>
-            <span class="student-stat-label">เป้าหมาย (ชม.)</span>
+            <span class="student-stat-label">{{ __('เป้าหมาย (ชม.)') }}</span>
         </div>
     </div>
 
@@ -466,7 +466,7 @@ html.dark .line-unlink-btn:hover {
     <div class="student-details-section">
         <h2 class="font-bold mb-3" style="font-size: 0.95rem; display: flex; align-items: center; gap: 0.45rem; color: var(--text-main, #334155);">
             <svg width="18" height="18" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
-            <span>ข้อมูลประวัตินักศึกษา</span>
+            <span>{{ __('ข้อมูลประวัตินักศึกษา') }}</span>
         </h2>
         <div class="student-details-grid">
             <div class="student-detail-item">
@@ -474,7 +474,7 @@ html.dark .line-unlink-btn:hover {
                     <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                 </div>
                 <div class="student-detail-text">
-                    <p class="student-detail-label">คณะ</p>
+                    <p class="student-detail-label">{{ __('คณะ') }}</p>
                     <p class="student-detail-value">{{ $user->faculty ? __($user->faculty) : '-' }}</p>
                 </div>
             </div>
@@ -483,7 +483,7 @@ html.dark .line-unlink-btn:hover {
                     <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                 </div>
                 <div class="student-detail-text">
-                    <p class="student-detail-label">สาขา</p>
+                    <p class="student-detail-label">{{ __('สาขา') }}</p>
                     <p class="student-detail-value">{{ $user->department ? __($user->department) : '-' }}</p>
                 </div>
             </div>
@@ -492,7 +492,7 @@ html.dark .line-unlink-btn:hover {
                     <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
                 </div>
                 <div class="student-detail-text">
-                    <p class="student-detail-label">ชั้นปี</p>
+                    <p class="student-detail-label">{{ __('ชั้นปี') }}</p>
                     <p class="student-detail-value">{{ $user->year ? 'ปี ' . $user->year : '-' }}</p>
                 </div>
             </div>
@@ -501,7 +501,7 @@ html.dark .line-unlink-btn:hover {
                     <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                 </div>
                 <div class="student-detail-text">
-                    <p class="student-detail-label">อีเมล</p>
+                    <p class="student-detail-label">{{ __('อีเมล') }}</p>
                     <p class="student-detail-value">{{ $user->email ?? '-' }}</p>
                 </div>
             </div>
@@ -514,7 +514,7 @@ html.dark .line-unlink-btn:hover {
     <div class="card-body" style="padding: 1.5rem;">
         <h2 class="font-bold mb-4" style="font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
             <svg width="20" height="20" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-            ความคืบหน้าตามหมวดหมู่
+            {{ __('ความคืบหน้าตามหมวดหมู่') }}
         </h2>
         
         <div style="display: flex; flex-direction: column; gap: 1rem;">
@@ -527,14 +527,14 @@ html.dark .line-unlink-btn:hover {
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-sm" style="font-weight: 600; color: var(--text-main, #334155);">{{ $cat['name'] }}</span>
                     <span class="text-sm" style="font-weight: 500; color: {{ $isCompleted ? '#16a34a' : '#64748b' }};">
-                        {{ number_format($cat['hours'], 1) }} / {{ number_format($cat['required'], 0) }} ชม.
+                        {{ number_format($cat['hours'], 1) }} / {{ number_format($cat['required'], 0) }} {{ __('ชม.') }}
                     </span>
                 </div>
                 <div style="height: 8px; background: #f1f5f9; border-radius: 999px; overflow: hidden; position: relative;">
                     <div style="position: absolute; top: 0; left: 0; height: 100%; width: {{ $p }}%; background: {{ $isCompleted ? '#10b981' : '#ea580c' }}; border-radius: 999px; transition: width 0.5s ease;"></div>
                 </div>
                 @if(!$isCompleted && $cat['required'] > 0)
-                <p class="text-xs" style="color: #475569; margin-top: 0.3rem; text-align: right; line-height: 1.5;">ขาดอีก {{ number_format($cat['required'] - $cat['hours'], 1) }} ชม.</p>
+                <p class="text-xs" style="color: #475569; margin-top: 0.3rem; text-align: right; line-height: 1.5;">{{ __('ขาดอีก') }}{{ number_format($cat['required'] - $cat['hours'], 1) }} {{ __('ชม.') }}</p>
                 @endif
             </div>
             @endforeach
@@ -548,10 +548,10 @@ html.dark .line-unlink-btn:hover {
         <div class="flex items-center justify-between mb-4">
             <h2 class="font-bold" style="font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
                 <svg width="20" height="20" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                ประวัติกิจกรรมล่าสุด
+                {{ __('ประวัติกิจกรรมล่าสุด') }}
             </h2>
             <a href="{{ route('student.history') }}" class="text-sm" style="color: #ea580c; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
-                <span>ดูทั้งหมด</span>
+                <span>{{ __('ดูทั้งหมด') }}</span>
                 <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </a>
         </div>
@@ -573,15 +573,15 @@ html.dark .line-unlink-btn:hover {
                 <div style="text-align: right; flex-shrink: 0;">
                     @if($att->status === 'approved')
                         <span style="display: inline-flex; align-items: center; justify-content: center; background: #ecfdf5; color: #047857; font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 999px; border: 1px solid #a7f3d0; line-height: 1.5;">
-                            +{{ $att->activity->activity_hours }} ชม.
+                            +{{ $att->activity->activity_hours }} {{ __('ชม.') }}
                         </span>
                     @elseif($att->status === 'pending')
                         <span style="display: inline-flex; align-items: center; justify-content: center; background: #fffbeb; color: #92400e; font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 999px; border: 1px solid #fde68a; line-height: 1.5;">
-                            รออนุมัติ
+                            {{ __('รออนุมัติ') }}
                         </span>
                     @else
                         <span style="display: inline-flex; align-items: center; justify-content: center; background: #fef2f2; color: #b91c1c; font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 999px; border: 1px solid #fecaca; line-height: 1.5;">
-                            ปฏิเสธ
+                            {{ __('ปฏิเสธ') }}
                         </span>
                     @endif
                 </div>
@@ -589,7 +589,7 @@ html.dark .line-unlink-btn:hover {
             @empty
             <x-empty-state
                 icon="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                title="ยังไม่มีประวัติการเข้าร่วมกิจกรรม"
+                title="{{ __('ยังไม่มีประวัติการเข้าร่วมกิจกรรม') }}"
                 description="เริ่มลงทะเบียนและเข้าร่วมกิจกรรมเพื่อสะสมชั่วโมงกิจกรรม"
                 actionLabel="ดูกิจกรรมทั้งหมด"
                 actionUrl="{{ route('activities.index') }}"
@@ -605,7 +605,7 @@ html.dark .line-unlink-btn:hover {
     <div class="card-body" style="padding: 1.5rem;">
         <h2 class="font-bold mb-4" style="font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
             <img src="{{ asset('images/line-logo.png') }}" alt="LINE" style="width: 22px; height: 22px; object-fit: contain; flex-shrink: 0;">
-            การแจ้งเตือนผ่าน LINE
+            {{ __('การแจ้งเตือนผ่าน LINE') }}
         </h2>
 
         @if(auth()->user()->line_user_id)
@@ -615,7 +615,7 @@ html.dark .line-unlink-btn:hover {
                     <img src="{{ asset('images/line-logo.png') }}" alt="LINE" style="width: 32px; height: 32px; object-fit: contain; flex-shrink: 0;">
                 </div>
                 <div style="flex: 1; min-width: 0;">
-                    <p style="font-weight: 600; font-size: 0.9rem; color: #15803d; margin: 0;">เชื่อมต่อ LINE สำเร็จ</p>
+                    <p style="font-weight: 600; font-size: 0.9rem; color: #15803d; margin: 0;">{{ __('เชื่อมต่อ LINE สำเร็จ') }}</p>
                     <p style="font-size: 0.75rem; color: #16a34a; margin: 0.1rem 0 0 0;">{{ auth()->user()->line_display_name ?? 'LINE Account' }}</p>
                 </div>
                 <svg width="18" height="18" fill="none" stroke="#16a34a" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
@@ -625,7 +625,7 @@ html.dark .line-unlink-btn:hover {
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
                     <svg width="16" height="16" fill="none" stroke="#64748b" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                     </svg>
-                    <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-main, #334155);">รับการแจ้งเตือน</span>
+                    <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-main, #334155);">{{ __('รับการแจ้งเตือน') }}</span>
                 </div>
                 <form method="POST" action="{{ route('line.toggle-notify') }}" style="margin: 0;">
                     @csrf
@@ -640,7 +640,7 @@ html.dark .line-unlink-btn:hover {
             @if(!auth()->user()->line_notify_enabled)
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; padding: 0.5rem 0.75rem; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px;">
                 <svg width="14" height="14" fill="none" stroke="#d97706" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                <p style="font-size: 0.75rem; color: #b45309; margin: 0;">การแจ้งเตือนปิดอยู่ — คุณจะไม่ได้รับข่าวสารทาง LINE</p>
+                <p style="font-size: 0.75rem; color: #b45309; margin: 0;">{{ __('การแจ้งเตือนปิดอยู่ — คุณจะไม่ได้รับข่าวสารทาง LINE') }}</p>
             </div>
             @endif
 
@@ -648,7 +648,7 @@ html.dark .line-unlink-btn:hover {
                 @csrf
                 <button type="submit" class="line-unlink-btn">
                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-                    ยกเลิกการเชื่อมต่อ LINE
+                    {{ __('ยกเลิกการเชื่อมต่อ LINE') }}
                 </button>
             </form>
 
@@ -670,9 +670,9 @@ html.dark .line-unlink-btn:hover {
 
             <a href="{{ route('line.redirect') }}" style="display: flex; align-items: center; justify-content: center; gap: 0.55rem; width: 100%; padding: 0.8rem; background: #047857; color: #ffffff; border-radius: 10px; font-weight: 600; font-size: 0.95rem; text-decoration: none; box-shadow: 0 4px 6px rgba(4, 120, 87, 0.25); transition: transform 0.2s, box-shadow 0.2s; line-height: 1.5;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 8px rgba(4, 120, 87, 0.35)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(4, 120, 87, 0.25)';">
                 <img src="{{ asset('images/line-logo.png') }}" alt="LINE" style="width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; border-radius: 4px;">
-                เชื่อมต่อบัญชี LINE
+                {{ __('เชื่อมต่อบัญชี LINE') }}
             </a>
-            <p style="text-align: center; font-size: 0.75rem; color: #475569; margin: 0.75rem 0 0 0; line-height: 1.5;">รับข้อมูลข่าวสารรวดเร็วผ่าน LINE Official Account</p>
+            <p style="text-align: center; font-size: 0.75rem; color: #475569; margin: 0.75rem 0 0 0; line-height: 1.5;">{{ __('รับข้อมูลข่าวสารรวดเร็วผ่าน LINE Official Account') }}</p>
         @endif
     </div>
 </div>
@@ -681,7 +681,7 @@ html.dark .line-unlink-btn:hover {
 <div style="margin: 2rem 0; text-align: center;">
     <a href="{{ route('student.summary.pdf') }}" class="pdf-download-btn">
         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-        ดาวน์โหลดใบแสดงผลกิจกรรม (PDF)
+        {{ __('ดาวน์โหลดใบแสดงผลกิจกรรม (PDF)') }}
     </a>
 </div>
 
@@ -716,7 +716,7 @@ html.dark .line-unlink-btn:hover {
                             <img src="{{ asset('images/pkru-logo.png') }}" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;" alt="PKRU Logo">
                         </div>
                         <div style="line-height: 1.5; margin-top: -5px; z-index: 2;">
-                            <div style="font-size: 16px; font-weight: 700; color: #1e293b !important; letter-spacing: -0.2px; line-height: 1.5;">มหาวิทยาลัยราชภัฏภูเก็ต</div>
+                            <div style="font-size: 16px; font-weight: 700; color: #1e293b !important; letter-spacing: -0.2px; line-height: 1.5;">{{ __('มหาวิทยาลัยราชภัฏภูเก็ต') }}</div>
                             <div style="font-size: 8.5px; font-weight: 600; color: #334155 !important; letter-spacing: 0.3px; line-height: 1.5;">PHUKET RAJABHAT UNIVERSITY</div>
                         </div>
                     </div>
@@ -736,7 +736,7 @@ html.dark .line-unlink-btn:hover {
 
                     <!-- Details -->
                     <div style="padding: 15px 25px; z-index: 2; position: relative;">
-                        <div style="font-size: 11px; color: #1e293b !important; font-weight: 700; margin-bottom: 0px; line-height: 1.5;">รหัสนักศึกษา :</div>
+                        <div style="font-size: 11px; color: #1e293b !important; font-weight: 700; margin-bottom: 0px; line-height: 1.5;">{{ __('รหัสนักศึกษา :') }}</div>
                         <div style="font-size: 24px; font-weight: 700; letter-spacing: 1px; color: #0f172a !important; margin-bottom: 8px; line-height: 1.5;">{{ $user->student_id }}</div>
                         
                         <div style="font-size: 20px; font-weight: 700; color: #0f172a !important; line-height: 1.5; letter-spacing: -0.3px;">{{ $user->full_name }}</div>
@@ -763,7 +763,7 @@ html.dark .line-unlink-btn:hover {
                     <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 15px 20px; display: flex; justify-content: space-between; align-items: flex-end; z-index: 3;">
                         
                         <!-- Left: text -->
-                        <div style="font-size: 11px; color: #a1a1aa !important; font-weight: 500; margin-bottom: 2px;">บัตรประจำตัวนักศึกษา</div>
+                        <div style="font-size: 11px; color: #a1a1aa !important; font-weight: 500; margin-bottom: 2px;">{{ __('บัตรประจำตัวนักศึกษา') }}</div>
                         
                         <!-- Center: Chip (Enhanced Realistic Gold EMV Smart Chip) -->
                         <div style="position: absolute; left: 50%; bottom: 60px; transform: translateX(-50%) rotate(0deg); z-index: 10;">
@@ -948,16 +948,16 @@ html.dark .line-unlink-btn:hover {
     function editEnglishName(currentName) {
         if (typeof Swal !== 'undefined') {
             Swal.fire({
-                title: 'แก้ไขชื่อภาษาอังกฤษ',
-                text: 'หากระบบแปลชื่อภาษาอังกฤษของคุณไม่ถูกต้อง สามารถแก้ไขได้ที่นี่',
+                title: '{{ __('แก้ไขชื่อภาษาอังกฤษ') }}',
+                text: '{{ __('หากระบบแปลชื่อภาษาอังกฤษของคุณไม่ถูกต้อง สามารถแก้ไขได้ที่นี่') }}',
                 input: 'text',
                 inputValue: currentName || "",
                 showCancelButton: true,
-                confirmButtonText: 'บันทึก',
-                cancelButtonText: 'ยกเลิก',
+                confirmButtonText: '{{ __('บันทึก') }}',
+                cancelButtonText: '{{ __('ยกเลิก') }}',
                 inputValidator: (value) => {
                     if (!value) {
-                        return 'กรุณาระบุชื่อภาษาอังกฤษ!'
+                        return '{{ __('กรุณาระบุชื่อภาษาอังกฤษ!') }}'
                     }
                 }
             }).then((result) => {
@@ -967,7 +967,7 @@ html.dark .line-unlink-btn:hover {
                 }
             });
         } else {
-            let newName = prompt("กรุณาระบุชื่อ-นามสกุลภาษาอังกฤษของคุณ:\n(หากระบบแปลผิด สามารถแก้ไขได้)", currentName || "");
+            let newName = prompt("{{ __('กรุณาระบุชื่อ-นามสกุลภาษาอังกฤษของคุณ:') }}\n({{ __('หากระบบแปลผิด สามารถแก้ไขได้)') }}", currentName || "");
             if (newName !== null && newName.trim() !== "") {
                 document.getElementById('englishNameInput').value = newName.trim();
                 document.getElementById('editEnglishNameForm').submit();
@@ -1047,14 +1047,14 @@ html.dark .line-unlink-btn:hover {
                     if (!data.success) return;
                     if (!data.has_photo) return;
                     if (data.decoded) {
-                        render('success', 'ถอดรหัสใบหน้าสำเร็จ (512D) — ระบบพร้อมใช้งานสำหรับเช็คอิน');
+                        render('success', '{{ __('ถอดรหัสใบหน้าสำเร็จ (512D) — ระบบพร้อมใช้งานสำหรับเช็คอิน') }}');
                         stopPolling();
                     } else if (pollsLeft > 0) {
                         pollsLeft--;
-                        render('pending', 'กำลังถอดรหัสใบหน้า (512D) ผ่าน Background Queue...');
+                        render('pending', '{{ __('กำลังถอดรหัสใบหน้า (512D) ผ่าน Background Queue...') }}');
                         timer = setTimeout(poll, 2000);
                     } else {
-                        render('error', 'ยังไม่สามารถถอดรหัสใบหน้าได้ (ใช้เวลานานกว่าปกติ) — ลองอัปโหลดรูปใหม่อีกครั้ง');
+                        render('error', '{{ __('ยังไม่สามารถถอดรหัสใบหน้าได้ (ใช้เวลานานกว่าปกติ) — ลองอัปโหลดรูปใหม่อีกครั้ง') }}');
                         stopPolling();
                     }
                 })
@@ -1067,16 +1067,16 @@ html.dark .line-unlink-btn:hover {
         }
 
         window.startFaceStatusPolling = function () {
-            render('pending', 'กำลังอัปโหลดรูปโปรไฟล์...');
+            render('pending', '{{ __('กำลังอัปโหลดรูปโปรไฟล์...') }}');
             pollsLeft = 45;
             stopPolling();
             timer = setTimeout(poll, 3000);
         };
 
-        // ── Auto-resume: เข้าหน้านี้โดยมีรูปแต่ยังไม่มีเวกเตอร์ → resume polling ──
+        // ── Auto-resume: เข้าหน้านี้โดยมีรูปแต่ยังไม่มีเวกเตอร์→ resume polling ──
         @if(isset($user) && $user->profile_photo && $user->face_descriptor === null)
             pollsLeft = 45;
-            render('pending', 'กำลังถอดรหัสใบหน้า (512D) ผ่าน Background Queue...');
+            render('pending', '{{ __('กำลังถอดรหัสใบหน้า (512D) ผ่าน Background Queue...') }}');
             timer = setTimeout(poll, 1500);
         @endif
     })();

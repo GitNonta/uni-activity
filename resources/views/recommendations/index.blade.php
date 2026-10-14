@@ -6,8 +6,8 @@
 @section('content')
 <div class="act-header-row">
     <div>
-        <h1 class="text-2xl font-bold mb-1">กิจกรรมที่แนะนำ</h1>
-        <p class="text-sm text-gray-500">จากผู้ที่คุณติดตาม และหมวดกิจกรรมที่คุณเคยลงทะเบียน</p>
+        <h1 class="text-2xl font-bold mb-1">{{ __('กิจกรรมที่แนะนำ') }}</h1>
+        <p class="text-sm text-gray-500">{{ __('จากผู้ที่คุณติดตาม และหมวดกิจกรรมที่คุณเคยลงทะเบียน') }}</p>
     </div>
 </div>
 
@@ -23,12 +23,12 @@
                     · {{ $activity->creator->name ?? '' }}
                 </div>
             </div>
-            <span class="text-xs bg-green-100 text-green-700 rounded px-2 py-1 whitespace-nowrap">เปิดรับสมัคร</span>
+            <span class="text-xs bg-green-100 text-green-700 rounded px-2 py-1 whitespace-nowrap">{{ __('เปิดรับสมัคร') }}</span>
         </div>
     </a>
 @empty
     <div class="text-gray-500 py-8 text-center">
-        ยังไม่มีกิจกรรมที่แนะนำได้ — ลองติดตามมหาวิทยาลัย/มิติหรือลงทะเบียนกิจกรรมแรก แล้วระบบจะเริ่มแนะนำให้
+        {{ __('ยังไม่มีกิจกรรมที่แนะนำได้ — ลองติดตามมหาวิทยาลัย/มิติหรือลงทะเบียนกิจกรรมแรก แล้วระบบจะเริ่มแนะนำให้') }}
     </div>
 @endforelse
 @endsection

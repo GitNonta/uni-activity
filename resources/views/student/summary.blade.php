@@ -192,7 +192,7 @@ html.dark .cat-summary-hours {
                 </span>
             @else
                 <span class="cat-summary-status">
-                    {{ __('ต้องการอีก') }} <strong style="color: #ef4444; font-weight: 600;">{{ number_format($cat['required'] - $cat['hours'], 1) }}</strong> ชม.
+                    {{ __('ต้องการอีก') }} <strong style="color: #ef4444; font-weight: 600;">{{ number_format($cat['required'] - $cat['hours'], 1) }}</strong> {{ __('ชม.') }}
                 </span>
             @endif
             <span class="cat-summary-hours">

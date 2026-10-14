@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-    <title>สแกน QR Code</title>
+    <title>{{ __('สแกน QR Code') }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'Sarabun', sans-serif; }
@@ -63,7 +63,7 @@
 
     <!-- Status Messages -->
     <div class="status-container overlay-ui">
-        <div class="status-text" id="statusText">สแกน QR Code กิจกรรมเพื่อเข้างาน</div>
+        <div class="status-text" id="statusText">{{ __('สแกน QR Code กิจกรรมเพื่อเข้างาน') }}</div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
@@ -86,7 +86,7 @@
                 requestAnimationFrame(scanQRCode);
             } catch (err) {
                 console.error("Camera access denied", err);
-                statusText.innerHTML = 'ไม่สามารถเปิดกล้องได้ กรุณาให้สิทธิ์ใช้งานกล้อง';
+                statusText.innerHTML = '{{ __('ไม่สามารถเปิดกล้องได้ กรุณาให้สิทธิ์ใช้งานกล้อง') }}';
                 statusText.style.background = 'rgba(239,68,68,0.9)';
             }
         }
@@ -94,7 +94,7 @@
         function setSuccessUI() {
             document.querySelectorAll('.corner').forEach(el => el.style.borderColor = '#10b981');
             document.getElementById('scanLine').style.display = 'none';
-            statusText.innerHTML = '<span class="spinner"></span> กำลังนำทาง...';
+            statusText.innerHTML = '<span class="spinner"></span> {{ __('กำลังนำทาง...') }}';
             statusText.style.background = 'rgba(16,185,129,0.9)';
             document.getElementById('qrGuide').style.boxShadow = '0 0 0 4000px rgba(0,0,0,0.8)';
         }
@@ -106,7 +106,7 @@
             setTimeout(() => {
                 if (isScanning) {
                     document.querySelectorAll('.corner').forEach(el => el.style.borderColor = '#10b981');
-                    statusText.innerHTML = 'สแกน QR Code กิจกรรมเพื่อเข้างาน';
+                    statusText.innerHTML = '{{ __('สแกน QR Code กิจกรรมเพื่อเข้างาน') }}';
                     statusText.style.background = 'rgba(0,0,0,0.6)';
                 }
             }, 2500);
@@ -137,7 +137,7 @@
                         }, 500);
                         return;
                     } else {
-                        setErrorUI('QR Code นี้ไม่ใช่ลิงก์ระบบกิจกรรม');
+                        setErrorUI('QR Code {{ __('นี้ไม่ใช่ลิงก์ระบบกิจกรรม') }}');
                         // Pause briefly before rescanning
                         setTimeout(() => { requestAnimationFrame(scanQRCode); }, 2500);
                         return;

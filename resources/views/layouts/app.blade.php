@@ -68,11 +68,11 @@
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                     {{ __('app.activities') }}
                 </a>
-                <a href="{{ route('map.index') }}" class="{{ request()->routeIs('map.*') ? 'active' : '' }}" title="แผนที่กิจกรรมและงาน">
+                <a href="{{ route('map.index') }}" class="{{ request()->routeIs('map.*') ? 'active' : '' }}" title="{{ __('แผนที่กิจกรรมและงาน') }}">
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
                     {{ __('app.map') }}
                 </a>
-                <a href="{{ route('student.calendar') }}" class="{{ request()->routeIs('student.calendar') ? 'active' : '' }}" title="ปฏิทิน">
+                <a href="{{ route('student.calendar') }}" class="{{ request()->routeIs('student.calendar') ? 'active' : '' }}" title="{{ __('ปฏิทิน') }}">
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/><rect x="3" y="9" width="18" height="12" rx="2" stroke-width="0" fill="currentColor" opacity=".12"/></svg>
                     {{ __('app.calendar') }}
                 </a>
@@ -93,7 +93,7 @@
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     {{ __('app.summary') }}
                 </a>
-                <a href="{{ route('student.graduation.status') }}" class="{{ request()->routeIs('student.graduation.*') ? 'active' : '' }}" title="สถานะการสำเร็จการศึกษา & Official Transcript">
+                <a href="{{ route('student.graduation.status') }}" class="{{ request()->routeIs('student.graduation.*') ? 'active' : '' }}" title="{{ __('สถานะการสำเร็จการศึกษา') }}& Official Transcript">
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
                     {{ __('app.graduation') }}
                 </a>
@@ -109,7 +109,7 @@
                 </span>
 
                 <!-- SVG Theme Toggle Button (Desktop Auth) -->
-                <button type="button" data-theme-toggle class="navbar-icon-btn navbar-theme-toggle-btn" title="สลับโหมดมืด / สว่าง (Dark / Light Mode)">
+                <button type="button" data-theme-toggle class="navbar-icon-btn navbar-theme-toggle-btn" title="{{ __('สลับโหมดมืด / สว่าง (Dark / Light Mode)') }}">
                     <svg class="theme-icon-sun" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <circle cx="12" cy="12" r="4"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
                     </svg>
@@ -120,7 +120,7 @@
 
                 <form method="POST" action="{{ route('logout') }}" style="margin:0">
                     @csrf
-                    <button type="submit" class="navbar-logout-btn" title="ออกจากระบบ">
+                    <button type="submit" class="navbar-logout-btn" title="{{ __('ออกจากระบบ') }}">
                         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                         </svg>
@@ -131,7 +131,7 @@
             {{-- Mobile: แสดงชื่อ + ปุ่มไอคอน + ปุ่มออก --}}
             <div class="navbar-mobile-right">
                 <!-- SVG Theme Toggle Button (Mobile Auth) -->
-                <button type="button" data-theme-toggle class="navbar-icon-btn navbar-theme-toggle-btn" title="สลับโหมดมืด / สว่าง">
+                <button type="button" data-theme-toggle class="navbar-icon-btn navbar-theme-toggle-btn" title="{{ __('สลับโหมดมืด / สว่าง') }}">
                     <svg class="theme-icon-sun" width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <circle cx="12" cy="12" r="4"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
                     </svg>
@@ -139,18 +139,18 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>
                     </svg>
                 </button>
-                <a href="{{ route('map.index') }}" class="navbar-icon-btn {{ request()->routeIs('map.*') ? 'active' : '' }}" title="แผนที่">
+                <a href="{{ route('map.index') }}" class="navbar-icon-btn {{ request()->routeIs('map.*') ? 'active' : '' }}" title="{{ __('แผนที่') }}">
                     <x-icon name="map" size="18" />
                 </a>
-                <a href="{{ route('jobs.index') }}" class="navbar-icon-btn {{ request()->routeIs('jobs.*') ? 'active' : '' }}" title="หางาน / ฝึกงาน">
+                <a href="{{ route('jobs.index') }}" class="navbar-icon-btn {{ request()->routeIs('jobs.*') ? 'active' : '' }}" title="{{ __('หางาน / ฝึกงาน') }}">
                     <x-icon name="job" size="18" />
                 </a>
-                <a href="{{ route('announcements.index') }}" class="navbar-icon-btn {{ request()->routeIs('announcements.*') ? 'active' : '' }}" title="ประกาศข่าวสาร">
+                <a href="{{ route('announcements.index') }}" class="navbar-icon-btn {{ request()->routeIs('announcements.*') ? 'active' : '' }}" title="{{ __('ประกาศข่าวสาร') }}">
                     <x-icon name="announcement" size="18" />
                 </a>
                 <form method="POST" action="{{ route('logout') }}" style="margin:0">
                     @csrf
-                    <button type="submit" class="navbar-logout-btn" title="ออกจากระบบ">
+                    <button type="submit" class="navbar-logout-btn" title="{{ __('ออกจากระบบ') }}">
                         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                         </svg>
@@ -180,7 +180,7 @@
             </nav>
             <div class="navbar-right navbar-desktop">
                 <!-- SVG Theme Toggle Button (Desktop Guest) -->
-                <button type="button" data-theme-toggle class="navbar-theme-toggle-btn" title="สลับโหมดมืด / สว่าง (Dark / Light Mode)">
+                <button type="button" data-theme-toggle class="navbar-theme-toggle-btn" title="{{ __('สลับโหมดมืด / สว่าง (Dark / Light Mode)') }}">
                     <svg class="theme-icon-sun" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
                     </svg>
@@ -200,7 +200,7 @@
             {{-- Guest Mobile Header Right --}}
             <div class="navbar-mobile-right">
                 <!-- SVG Theme Toggle Button (Mobile Guest) -->
-                <button type="button" data-theme-toggle class="navbar-icon-btn navbar-theme-toggle-btn" title="สลับโหมดมืด / สว่าง">
+                <button type="button" data-theme-toggle class="navbar-icon-btn navbar-theme-toggle-btn" title="{{ __('สลับโหมดมืด / สว่าง') }}">
                     <svg class="theme-icon-sun" width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <circle cx="12" cy="12" r="4"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
                     </svg>
@@ -208,7 +208,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>
                     </svg>
                 </button>
-                <a href="{{ route('map.index') }}" class="navbar-icon-btn {{ request()->routeIs('map.*') ? 'active' : '' }}" title="แผนที่">
+                <a href="{{ route('map.index') }}" class="navbar-icon-btn {{ request()->routeIs('map.*') ? 'active' : '' }}" title="{{ __('แผนที่') }}">
                     <x-icon name="map" size="18" />
                 </a>
                 <a href="{{ route('login') }}" class="btn btn-sm btn-primary" style="padding:.35rem .75rem; font-size:.8rem; display:inline-flex; align-items:center; gap:5px; border-radius:9px;">
@@ -233,7 +233,7 @@
                     </div>
                     <div class="notif-banner-content">
                         <div class="notif-banner-title-row">
-                            <span class="notif-banner-badge" id="notif-banner-badge">กิจกรรมด่วน</span>
+                            <span class="notif-banner-badge" id="notif-banner-badge">{{ __('กิจกรรมด่วน') }}</span>
                             <span id="notif-banner-title" class="notif-banner-title"></span>
                         </div>
                         <span id="notif-banner-text" class="notif-banner-text"></span>
@@ -241,10 +241,10 @@
                 </div>
                 <div class="notif-banner-actions">
                     <a id="notif-banner-link" href="#" class="notif-banner-btn">
-                        <span id="notif-banner-btn-text">ไปที่กิจกรรม</span>
+                        <span id="notif-banner-btn-text">{{ __('ไปที่กิจกรรม') }}</span>
                         <svg class="notif-banner-btn-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                     </a>
-                    <button type="button" onclick="document.getElementById('notif-banner').style.display='none'" class="notif-banner-close" aria-label="ปิดการแจ้งเตือน" title="ปิด">
+                    <button type="button" onclick="document.getElementById('notif-banner').style.display='none'" class="notif-banner-close" aria-label="{{ __('ปิดการแจ้งเตือน') }}" title="{{ __('ปิด') }}">
                         <svg class="notif-banner-close-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
@@ -813,30 +813,30 @@
     <div id="chatFloatWidget" style="position:fixed;bottom:5.5rem;right:1.1rem;z-index:8500;display:flex;flex-direction:column;align-items:flex-end;gap:.5rem;">
         <div id="chatFloatPanel" style="display:none;width:360px;height:520px;background:#fff;border-radius:20px;box-shadow:0 12px 40px rgba(0,0,0,.18),0 4px 12px rgba(0,0,0,.08);overflow:hidden;flex-direction:column;">
             <div id="cfHeader" style="background:linear-gradient(135deg,#f97316 0%,#ea580c 55%,#c2410c 100%);padding:.6rem .85rem;display:flex;align-items:center;gap:.5rem;flex-shrink:0;box-shadow:0 2px 8px rgba(194,65,12,.35);">
-                <button id="cfBackBtn" onclick="cfBackToList()" style="display:none;width:30px;height:30px;min-width:30px;align-items:center;justify-content:center;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);color:#fff;cursor:pointer;padding:0;border-radius:50%;" aria-label="ย้อนกลับ"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg></button>
-                <span id="cfHeaderTitle" style="color:#fff;font-weight:700;font-size:.88rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:.5rem;"><span style="width:30px;height:30px;min-width:30px;border-radius:50%;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;"><x-icon name="chat" size="15" /></span> <span style="overflow:hidden;text-overflow:ellipsis;">ข้อความของฉัน</span></span>
-                <button id="cfProfileBtn" onclick="cfOpenProfile()" style="display:none;width:30px;height:30px;min-width:30px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);color:#fff;cursor:pointer;padding:0;border-radius:50%;align-items:center;justify-content:center;transition:background .15s;" aria-label="ดูโปรไฟล์" title="ดูโปรไฟล์"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></button>
-                <button onclick="closeChatWidget()" style="width:30px;height:30px;min-width:30px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);color:#fff;cursor:pointer;padding:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;transition:background .15s;" aria-label="ปิด"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
+                <button id="cfBackBtn" onclick="cfBackToList()" style="display:none;width:30px;height:30px;min-width:30px;align-items:center;justify-content:center;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);color:#fff;cursor:pointer;padding:0;border-radius:50%;" aria-label="{{ __('ย้อนกลับ') }}"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg></button>
+                <span id="cfHeaderTitle" style="color:#fff;font-weight:700;font-size:.88rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:.5rem;"><span style="width:30px;height:30px;min-width:30px;border-radius:50%;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;"><x-icon name="chat" size="15" /></span> <span style="overflow:hidden;text-overflow:ellipsis;">{{ __('ข้อความของฉัน') }}</span></span>
+                <button id="cfProfileBtn" onclick="cfOpenProfile()" style="display:none;width:30px;height:30px;min-width:30px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);color:#fff;cursor:pointer;padding:0;border-radius:50%;align-items:center;justify-content:center;transition:background .15s;" aria-label="{{ __('ดูโปรไฟล์') }}" title="{{ __('ดูโปรไฟล์') }}"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></button>
+                <button onclick="closeChatWidget()" style="width:30px;height:30px;min-width:30px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);color:#fff;cursor:pointer;padding:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;transition:background .15s;" aria-label="{{ __('ปิด') }}"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
             </div>
             <div id="cfViewList" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;">
                 <div id="cfListContent" style="flex:1;">
-                    <div style="padding:1.5rem;text-align:center;font-size:.85rem;color:#475569;line-height:1.5;">กำลังโหลด...</div>
+                    <div style="padding:1.5rem;text-align:center;font-size:.85rem;color:#475569;line-height:1.5;">{{ __('กำลังโหลด...') }}</div>
                 </div>
             </div>
             <div id="cfViewChat" style="display:none;flex-direction:column;flex:1;min-height:0;">
                 <div id="cfChatWindow" style="flex:1;overflow-y:auto;padding:.75rem;display:flex;flex-direction:column;gap:.45rem;background:#f8fafc;"></div>
                 <div id="cfTypingBar" style="display:none;align-items:center;padding:.4rem .75rem;background:#f8fafc;font-size:.72rem;color:#c2410c;line-height:1.5;">
                     <svg style="width:12px;height:12px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                    ผู้ดูแลกำลังพิมพ์...
+                    {{ __('ผู้ดูแลกำลังพิมพ์...') }}
                 </div>
                 <div class="cf-chat-input-area">
                     <div id="cfAttachPreview" style="display:none;gap:.3rem;flex-wrap:wrap;margin-bottom:.3rem;"></div>
                     <form id="cfChatForm" enctype="multipart/form-data" style="display:flex;gap:.35rem;align-items:flex-end;">
                         @csrf
-                        <label class="cf-attach-label" title="แนบไฟล์">
+                        <label class="cf-attach-label" title="{{ __('แนบไฟล์') }}">
                             <svg style="width:16px;height:16px;display:inline;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg><input type="file" id="cfFileInput" name="attachments[]" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.zip,.txt" style="display:none;">
                         </label>
-                        <textarea id="cfMsgInput" class="cf-input-field" name="message" rows="1" placeholder="พิมพ์ข้อความ..."></textarea>
+                        <textarea id="cfMsgInput" class="cf-input-field" name="message" rows="1" placeholder="{{ __('พิมพ์ข้อความ...') }}"></textarea>
                         <button type="submit" id="cfSendBtn" style="width:38px;height:38px;min-width:38px;padding:0;background:linear-gradient(135deg,#f97316 0%,#ea580c 100%);color:#fff;border:none;border-radius:50%;font-size:.82rem;cursor:pointer;font-weight:500;flex-shrink:0;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(234,88,12,.35);transition:transform .15s ease,box-shadow .15s ease;">
                             <svg style="width:16px;height:16px;transform:rotate(45deg);margin-left:-2px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                         </button>
@@ -928,7 +928,7 @@
                 var u = new URL(url, window.location.origin);
                 if (u.protocol !== 'http:' && u.protocol !== 'https:') return;
                 window.open(u.href, '_blank', 'noopener');
-            } catch (e) { /* URL ไม่ถูกต้อง — ไม่เปิด */ }
+            } catch (e) { /* URL {{ __('ไม่ถูกต้อง — ไม่เปิด') }}*/ }
         };
         window.cfOpenProfile = function () {
             var btn = document.getElementById('cfProfileBtn');
@@ -980,7 +980,7 @@
             } else if (diffHours < 24) {
                 return '{{ __('ออนไลน์เมื่อ') }} ' + diffHours + ' {{ __('ชม. ที่แล้ว') }}';
             } else {
-                return 'ออนไลน์เมื่อ ' + date.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' }) + ' ' + date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                return '{{ __('ออนไลน์เมื่อ') }}' + date.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' }) + ' ' + date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
             }
         }
 
@@ -1008,7 +1008,7 @@
             var supportLastSeen = (supportThread && supportThread.staff_last_seen) ? supportThread.staff_last_seen : (threads.length > 0 && threads[0].staff_last_seen ? threads[0].staff_last_seen : null);
             var isSupOnline = isStaffMemberOnline(0);
             var supportStatusHtml = isSupOnline 
-                ? '<span style="color:#047857;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#059669;display:inline-block;"></span> กำลังใช้งาน</span>' 
+                ? '<span style="color:#047857;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#059669;display:inline-block;"></span> {{ __('กำลังใช้งาน') }}</span>' 
                 : '<span style="color:#475569;">' + formatLastSeen(supportLastSeen) + '</span>';
             
             var supportChatHtml = '<div data-fdx-item="1" data-job-id="0" data-job-title="{{ __('ติดต่อสอบถามเจ้าหน้าที่') }}" data-staff-profile-url="" data-staff-name="" style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;cursor:pointer;" class="chat-list-item ' + (isSupportUnread ? 'unread' : '') + '">'
@@ -1016,7 +1016,7 @@
                 + '<div style="width:34px;height:34px;border-radius:50%;background:#ffedd5;color:#c2410c;display:flex;align-items:center;justify-content:center;">'
                 + '<svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.05 2a9 9 0 0 1 8 7.94"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.05 6A5 5 0 0 1 18 10"/></svg>'
                 + '</div>'
-                + '<span class="cf-staff-online-dot cf-staff-online-dot-0" data-job-id="0" data-staff-id="0" style="display:' + (isSupOnline ? 'block' : 'none') + ';position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#059669;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #059669;" title="กำลังใช้งาน"></span>'
+                + '<span class="cf-staff-online-dot cf-staff-online-dot-0" data-job-id="0" data-staff-id="0" style="display:' + (isSupOnline ? 'block' : 'none') + ';position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#059669;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #059669;" title="{{ __('กำลังใช้งาน') }}"></span>'
                 + '</div>'
                 + '<div style="flex:1;min-width:0;">'
                 + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;">'
@@ -1035,13 +1035,13 @@
             el.innerHTML = supportChatHtml + activeThreads.map(function(t) {
                 var isUnread = (t.unread || 0) > 0;
                 var isArchived = !!t.job_deleted;
-                var titlePrefix = isArchived ? '<span style="font-size:.6rem;color:#b45309;background:#fef3c7;border:1px solid #fcd34d;border-radius:999px;padding:1px 6px;margin-right:4px;vertical-align:1px;">ลบแล้ว</span>' : '';
+                var titlePrefix = isArchived ? '<span style="font-size:.6rem;color:#b45309;background:#fef3c7;border:1px solid #fcd34d;border-radius:999px;padding:1px 6px;margin-right:4px;vertical-align:1px;">{{ __('ลบแล้ว') }}</span>' : '';
                 var preview = t.last_message ? (t.last_message.length > 32 ? t.last_message.slice(0,32)+'…' : t.last_message) : '<svg style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> {{ __('ไฟล์แนบ') }}';
                 var safeTitle = String(t.job_title || '{{ __('งานกิจกรรม') }}').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 var threadLastSeen = t.staff_last_seen || null;
                 var isJobOnline = isStaffMemberOnline(t.staff_id);
                 var threadStatusHtml = isJobOnline 
-                    ? '<span style="color:#047857;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#059669;display:inline-block;"></span> กำลังใช้งาน</span>' 
+                    ? '<span style="color:#047857;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#059669;display:inline-block;"></span> {{ __('กำลังใช้งาน') }}</span>' 
                     : '<span style="color:#475569;">' + formatLastSeen(threadLastSeen) + '</span>';
                 
                 var avatarHtml = '';
@@ -1055,7 +1055,7 @@
                     + 'style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;cursor:pointer;" class="chat-list-item ' + (isUnread ? 'unread' : '') + '">'
                     + '<div style="position:relative;flex-shrink:0;">'
                     + avatarHtml
-                    + '<span class="cf-staff-online-dot cf-staff-online-dot-' + t.job_id + '" data-job-id="' + t.job_id + '" data-staff-id="' + (t.staff_id || '') + '" style="display:' + (isJobOnline ? 'block' : 'none') + ';position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="กำลังใช้งาน"></span>'
+                    + '<span class="cf-staff-online-dot cf-staff-online-dot-' + t.job_id + '" data-job-id="' + t.job_id + '" data-staff-id="' + (t.staff_id || '') + '" style="display:' + (isJobOnline ? 'block' : 'none') + ';position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px #10b981;" title="{{ __('กำลังใช้งาน') }}"></span>'
                     + '</div>'
                     + '<div style="flex:1;min-width:0;">'
                     + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;">'
@@ -1089,7 +1089,7 @@
             } else if (diffHours < 24) {
                 return '{{ __('อ่านเมื่อ') }} ' + diffHours + ' {{ __('ชม. ที่แล้ว') }}';
             } else {
-                return 'อ่านเมื่อ ' + readTime.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                return '{{ __('อ่านเมื่อ') }}' + readTime.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
             }
         }
 
@@ -1234,7 +1234,7 @@
 
         function loadMessages(jobId) {
             var win = document.getElementById('cfChatWindow');
-            win.innerHTML = '<div style="padding:1.5rem;text-align:center;font-size:.82rem;color:#475569;line-height:1.5;">กำลังโหลด...</div>';
+            win.innerHTML = '<div style="padding:1.5rem;text-align:center;font-size:.82rem;color:#475569;line-height:1.5;">{{ __('กำลังโหลด...') }}</div>';
             fetch('/jobs/' + jobId + '/chat/messages', { headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' } })
                 .then(function(r){ return r.json(); })
                 .then(function(data) {
@@ -1722,7 +1722,7 @@
                     var jobId = st.getAttribute('data-job-id');
                     var online = isStaffMemberOnline(jobId === '0' ? 0 : staffId);
                     if (online) {
-                        st.innerHTML = '<span style="color:#047857;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#059669;display:inline-block;"></span> กำลังใช้งาน</span>';
+                        st.innerHTML = '<span style="color:#047857;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#059669;display:inline-block;"></span> {{ __('กำลังใช้งาน') }}</span>';
                     } else {
                         var lastSeen = st.getAttribute('data-last-seen');
                         st.innerHTML = '<span style="color:#475569;line-height:1.5;">' + formatLastSeen(lastSeen) + '</span>';
@@ -1760,7 +1760,7 @@
         })();
 
         window.deleteStudentMessage = function(id) {
-            if (!confirm('ต้องการลบข้อความนี้ใช่หรือไม่?')) return;
+            if (!confirm('{{ __('ต้องการลบข้อความนี้ใช่หรือไม่?') }}')) return;
             fetch('/chat/messages/' + id, {
                 method: 'DELETE',
                 headers: { 'X-CSRF-TOKEN': CSRF }
@@ -1815,7 +1815,7 @@
                         btn.parentNode.insertBefore(cancelBtn, btn);
                     }
                 })
-                .catch(function() { alert('ไม่สามารถโหลดข้อความล่าสุดได้'); });
+                .catch(function() { alert('{{ __('ไม่สามารถโหลดข้อความล่าสุดได้') }}'); });
         };
 
         // โหลดข้อมูลล่าสุดตอนโหลดหน้าเว็บ เพื่ออัปเดตตัวเลขแจ้งเตือนที่ปุ่มแชท

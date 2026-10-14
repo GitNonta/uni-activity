@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Admin') - ระบบกิจกรรม</title>
+    <title>@yield('title', 'Admin') - {{ __('ระบบกิจกรรม') }}</title>
     <link rel="icon" type="image/svg+xml" href="{{ asset('logo.svg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -721,7 +721,7 @@ html.dark .admin-search-result-row:hover {
                  layout script below (id: adminMenuToggleBtn). Do NOT also add an
                  inline onclick here - two handlers would toggle twice per tap,
                  opening and instantly re-closing the drawer. --}}
-            <button type="button" id="adminMenuToggleBtn" class="sb-toggle-btn" title="เปิด/ปิด เมนูด้านข้าง" aria-label="เปิด/ปิด เมนูด้านข้าง" aria-expanded="false" aria-controls="mainSidebar">
+            <button type="button" id="adminMenuToggleBtn" class="sb-toggle-btn" title="{{ __('เปิด/ปิด เมนูด้านข้าง') }}" aria-label="{{ __('เปิด/ปิด เมนูด้านข้าง') }}" aria-expanded="false" aria-controls="mainSidebar">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
 
@@ -731,16 +731,16 @@ html.dark .admin-search-result-row:hover {
 
     <div class="admin-topbar-right" style="display:flex; align-items:center; gap:10px;">
         <!-- Global Search Trigger (Ctrl+K) -->
-        <button onclick="openGlobalSearch()" class="sb-search-btn" title="ค้นหาด่วน (Ctrl + K)">
+        <button onclick="openGlobalSearch()" class="sb-search-btn" title="{{ __('ค้นหาด่วน (Ctrl') }}+ K)">
             <span style="display:flex; align-items:center; gap:6px;">
                 <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                <span>ค้นหาข้อมูลระบบ...</span>
+                <span>{{ __('ค้นหาข้อมูลระบบ...') }}</span>
             </span>
             <kbd>Ctrl K</kbd>
         </button>
 
         <!-- Theme Mode Toggle Button (SVG Sun / Moon) -->
-        <button id="adminThemeToggleBtn" onclick="toggleThemeMode()" class="sb-theme-toggle-btn" title="สลับโหมดมืด / สว่าง (Dark / Light Mode)">
+        <button id="adminThemeToggleBtn" onclick="toggleThemeMode()" class="sb-theme-toggle-btn" title="{{ __('สลับโหมดมืด / สว่าง (Dark / Light Mode)') }}">
             <!-- Sun SVG Icon (shown in Dark Mode) -->
             <svg class="theme-icon-sun" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
@@ -758,31 +758,31 @@ html.dark .admin-search-result-row:hover {
 <div class="sb-shell">
     <aside class="sb-sidebar" id="mainSidebar">
         <nav class="sb-nav">
-            <div class="sb-section-label">เมนูหลัก</div>
+            <div class="sb-section-label">{{ __('เมนูหลัก') }}</div>
             <a href="{{ route('admin.dashboard') }}" class="sb-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                <span class="sb-link-text">ภาพรวมระบบ</span>
+                <span class="sb-link-text">{{ __('ภาพรวมระบบ') }}</span>
             </a>
             <a href="{{ route('admin.activities.index') }}" class="sb-link {{ request()->routeIs('admin.activities.*') ? 'active' : '' }}">
                 <x-icon name="activity" size="20" />
-                <span class="sb-link-text">กิจกรรม</span>
+                <span class="sb-link-text">{{ __('กิจกรรม') }}</span>
             </a>
             <a href="{{ route('admin.calendar.index') }}" class="sb-link {{ request()->routeIs('admin.calendar.*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                <span class="sb-link-text">ปฏิทินกิจกรรม</span>
+                <span class="sb-link-text">{{ __('ปฏิทินกิจกรรม') }}</span>
             </a>
             <a href="{{ route('admin.graduation.audit.index') }}" class="sb-link {{ request()->routeIs('admin.graduation.*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
-                <span class="sb-link-text">ตรวจสอบการสำเร็จการศึกษา</span>
+                <span class="sb-link-text">{{ __('ตรวจสอบการสำเร็จการศึกษา') }}</span>
             </a>
-            <div class="sb-section-label">ประกาศ & ประชาสัมพันธ์</div>
+            <div class="sb-section-label">{{ __('ประกาศ') }}& {{ __('ประชาสัมพันธ์') }}</div>
             <a href="{{ route('admin.announcements.index') }}" class="sb-link {{ request()->routeIs('admin.announcements.*') ? 'active' : '' }}">
                 <x-icon name="announcement" size="20" />
-                <span class="sb-link-text">ประกาศข่าวสาร</span>
+                <span class="sb-link-text">{{ __('ประกาศข่าวสาร') }}</span>
             </a>
             <a href="{{ route('admin.jobs.index') }}" class="sb-link {{ request()->routeIs('admin.jobs.*') ? 'active' : '' }}">
                 <x-icon name="job" size="20" />
-                <span class="sb-link-text">งาน & พาร์ทไทม์</span>
+                <span class="sb-link-text">{{ __('งาน') }}& {{ __('พาร์ทไทม์') }}</span>
             </a>
             @php
                 $adminUnreadCount = 0;
@@ -793,22 +793,22 @@ html.dark .admin-search-result-row:hover {
             <a href="{{ route('admin.inbox.index') }}" class="sb-link {{ request()->routeIs('admin.inbox.*') ? 'active' : '' }}">
                 <x-icon name="chat" size="20" />
                 <span class="sb-link-text">
-                    กล่องข้อความแชท
+                    {{ __('กล่องข้อความแชท') }}
                     <span id="adminSidebarBadge" style="background:#b91c1c;color:#fff;font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:999px;margin-left:4px;display:{{ $adminUnreadCount > 0 ? 'inline-block' : 'none' }};line-height:1.5;">{{ $adminUnreadCount }}</span>
                 </span>
             </a>
 
             @if(auth()->check() && (auth()->user()->isAdmin() || auth()->user()->role === 'super-admin'))
-            <div class="sb-section-label">จัดการระบบ</div>
+            <div class="sb-section-label">{{ __('จัดการระบบ') }}</div>
             <a href="{{ route('admin.audit-logs.index') }}" class="sb-link {{ request()->routeIs('admin.audit-logs.*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2-2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01"/></svg>
-                <span class="sb-link-text">ประวัติกิจกรรมระบบ</span>
+                <span class="sb-link-text">{{ __('ประวัติกิจกรรมระบบ') }}</span>
             </a>
             @php $unreviewedSec = \App\Models\SecurityLog::where('is_reviewed', false)->count(); @endphp
             <a href="{{ route('admin.security-logs.index') }}" class="sb-link {{ request()->routeIs('admin.security-logs.*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                 <span class="sb-link-text">
-                    บันทึกความปลอดภัย
+                    {{ __('บันทึกความปลอดภัย') }}
                     @if($unreviewedSec > 0)
                         <span style="background:#b91c1c;color:#fff;font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:999px;margin-left:4px;line-height:1.5;">{{ $unreviewedSec }}</span>
                     @endif
@@ -816,23 +816,23 @@ html.dark .admin-search-result-row:hover {
             </a>
             <a href="{{ route('admin.users.index') }}" class="sb-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                <span class="sb-link-text">จัดการผู้ใช้ระบบ</span>
+                <span class="sb-link-text">{{ __('จัดการผู้ใช้ระบบ') }}</span>
             </a>
             <a href="{{ route('admin.categories.index') }}" class="sb-link {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                <span class="sb-link-text">จัดการหมวดหมู่</span>
+                <span class="sb-link-text">{{ __('จัดการหมวดหมู่') }}</span>
             </a>
             <a href="{{ route('admin.settings.index') }}" class="sb-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                <span class="sb-link-text">ตั้งค่าระบบ</span>
+                <span class="sb-link-text">{{ __('ตั้งค่าระบบ') }}</span>
             </a>
             <a href="{{ route('admin.api-keys.index') }}" class="sb-link {{ request()->routeIs('admin.api-keys.*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
-                <span class="sb-link-text">คีย์ API</span>
+                <span class="sb-link-text">{{ __('คีย์ API') }}</span>
             </a>
             <a href="{{ route('admin.backups.index') }}" class="sb-link {{ request()->routeIs('admin.backups.*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
-                <span class="sb-link-text">สำรองข้อมูลระบบ</span>
+                <span class="sb-link-text">{{ __('สำรองข้อมูลระบบ') }}</span>
             </a>
             @php
                 $monitorHost = request()->getHost();
@@ -840,10 +840,10 @@ html.dark .admin-search-result-row:hover {
                     ? 'http://' . $monitorHost . ':9999/#cluster'
                     : 'http://192.168.1.222:9999/#cluster';
             @endphp
-            <a href="{{ $monitorUrl }}" target="_blank" rel="noopener noreferrer" class="sb-link" title="เปิดแผงควบคุมมอนิเตอร์ (พอร์ต 9999)">
+            <a href="{{ $monitorUrl }}" target="_blank" rel="noopener noreferrer" class="sb-link" title="{{ __('เปิดแผงควบคุมมอนิเตอร์ (พอร์ต 9999)') }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                 <span class="sb-link-text" style="display:flex;align-items:center;justify-content:space-between;width:100%;">
-                    <span>แผงควบคุมเซิร์ฟเวอร์</span>
+                    <span>{{ __('แผงควบคุมเซิร์ฟเวอร์') }}</span>
                     <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="opacity:0.6;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                 </span>
             </a>
@@ -853,10 +853,10 @@ html.dark .admin-search-result-row:hover {
                     ? 'http://' . $monitorHost . ':9999/#failed-jobs'
                     : 'http://192.168.1.222:9999/#failed-jobs';
             @endphp
-            <a href="{{ $failedJobsMonitorUrl }}" target="_blank" rel="noopener noreferrer" class="sb-link" title="เปิดจัดการคิวงานที่ล้มเหลว (พอร์ต 9999)">
+            <a href="{{ $failedJobsMonitorUrl }}" target="_blank" rel="noopener noreferrer" class="sb-link" title="{{ __('เปิดจัดการคิวงานที่ล้มเหลว (พอร์ต 9999)') }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <span class="sb-link-text" style="display:flex;align-items:center;justify-content:space-between;width:100%;">
-                    <span>คิวงานที่ล้มเหลว</span>
+                    <span>{{ __('คิวงานที่ล้มเหลว') }}</span>
                     <span style="display:flex;align-items:center;gap:4px;">
                         @if($failedJobsCount > 0)
                             <span style="background:#b91c1c;color:#fff;font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:999px;line-height:1.5;">{{ $failedJobsCount }}</span>
@@ -867,18 +867,18 @@ html.dark .admin-search-result-row:hover {
             </a>
             @endif
 
-            <div class="sb-section-label">รายงาน & ผลการเรียน</div>
+            <div class="sb-section-label">{{ __('รายงาน') }}& {{ __('ผลการเรียน') }}</div>
             <a href="{{ route('admin.feedbacks.index') }}" class="sb-link {{ request()->routeIs('admin.feedbacks.*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
-                <span class="sb-link-text">ผลการประเมิน</span>
+                <span class="sb-link-text">{{ __('ผลการประเมิน') }}</span>
             </a>
             <a href="{{ route('admin.students.index') }}" class="sb-link {{ request()->routeIs('admin.students.*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                <span class="sb-link-text">ทะเบียนนักศึกษา</span>
+                <span class="sb-link-text">{{ __('ทะเบียนนักศึกษา') }}</span>
             </a>
             <a href="{{ route('admin.exports.index') }}" class="sb-link {{ request()->routeIs('admin.exports.*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                <span class="sb-link-text">ส่งออกข้อมูล</span>
+                <span class="sb-link-text">{{ __('ส่งออกข้อมูล') }}</span>
             </a>
         </nav>
 
@@ -1270,7 +1270,7 @@ window.AdminChatManager = (function() {
             }
         };
 
-        // สร้าง avatar + ชื่อผู้สนทนาด้วย DOM API — title/photo มาจากข้อมูลผู้ใช้
+        // สร้าง avatar+ ชื่อผู้สนทนาด้วย DOM API — title/photo มาจากข้อมูลผู้ใช้
         // (นักศึกษาแก้ได้) จึงห้ามต่อเข้า innerHTML โดยตรง กัน stored XSS
         const avatarSpan = document.createElement('span');
         avatarSpan.className = 'acw-avatar';
@@ -1279,7 +1279,7 @@ window.AdminChatManager = (function() {
             try {
                 const u = new URL(photoUrl, window.location.origin);
                 if (u.protocol === 'http:' || u.protocol === 'https:') safePhotoSrc = u.href;
-            } catch (e) { /* URL ไม่ถูกต้อง → ใช้ avatar fallback */ }
+            } catch (e) { /* URL {{ __('ไม่ถูกต้อง') }}→ {{ __('ใช้ avatar fallback') }}*/ }
         }
         if (safePhotoSrc) {
             const img = document.createElement('img');
@@ -1300,7 +1300,7 @@ window.AdminChatManager = (function() {
         nameSpan.textContent = title;
         const subSpan = document.createElement('span');
         subSpan.className = 'acw-title-sub';
-        subSpan.innerHTML = '<span class="acw-live-dot"></span>แชทสด';
+        subSpan.innerHTML = '<span class="acw-live-dot"></span>{{ __('แชทสด') }}';
         titleText.appendChild(nameSpan);
         titleText.appendChild(subSpan);
         titleSpan.appendChild(avatarSpan);
@@ -1311,7 +1311,7 @@ window.AdminChatManager = (function() {
         
         const closeBtn = document.createElement('button');
         closeBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
-        closeBtn.title = 'ปิดหน้าต่างแชท';
+        closeBtn.title = '{{ __('ปิดหน้าต่างแชท') }}';
         closeBtn.onclick = function() {
             widget.remove();
             delete openChats[chatId];
@@ -1442,16 +1442,16 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="adm-search-modal-box">
         <div class="adm-search-modal-header">
             <svg width="20" height="20" fill="none" stroke="currentColor" style="color:var(--adm-link-icon);" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            <input type="text" id="globalSearchInput" class="adm-search-modal-input" placeholder="พิมพ์ค้นหานักศึกษา, กิจกรรม, ตำแหน่งงาน, หรือประกาศ..." autocomplete="off">
+            <input type="text" id="globalSearchInput" class="adm-search-modal-input" placeholder="{{ __('พิมพ์ค้นหานักศึกษา, กิจกรรม, ตำแหน่งงาน, หรือประกาศ...') }}" autocomplete="off">
             <kbd onclick="closeGlobalSearch()" class="adm-search-modal-kbd">ESC</kbd>
         </div>
         <div id="globalSearchResults" style="max-height:420px; overflow-y:auto; padding:0.5rem;">
             <div style="padding:2rem 1rem; text-align:center; color:var(--adm-section-label); font-size:0.875rem;">
-                พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหาข้อมูลข้ามระบบ
+                {{ __('พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหาข้อมูลข้ามระบบ') }}
             </div>
         </div>
         <div class="adm-search-modal-footer">
-            <span>กด <strong>&uarr;</strong> <strong>&darr;</strong> เพื่อเลื่อน, <strong>Enter</strong> เพื่อเปิด</span>
+            <span>{{ __('กด') }}<strong>&uarr;</strong> <strong>&darr;</strong> {{ __('เพื่อเลื่อน,') }}<strong>Enter</strong> {{ __('เพื่อเปิด') }}</span>
             <span>Uni-Activity Omnisearch</span>
         </div>
     </div>
@@ -1472,7 +1472,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const input = document.getElementById('globalSearchInput');
         input.value = '';
         input.focus();
-        document.getElementById('globalSearchResults').innerHTML = '<div style="padding:2rem 1rem; text-align:center; color:#475569; font-size:0.875rem; line-height:1.5;">พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหาข้อมูลข้ามระบบ</div>';
+        document.getElementById('globalSearchResults').innerHTML = '<div style="padding:2rem 1rem; text-align:center; color:#475569; font-size:0.875rem; line-height:1.5;">{{ __('พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหาข้อมูลข้ามระบบ') }}</div>';
     }
 
     function closeGlobalSearch() {
@@ -1505,11 +1505,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const resultsContainer = document.getElementById('globalSearchResults');
 
         if (query.length < 2) {
-            resultsContainer.innerHTML = '<div style="padding:2rem 1rem; text-align:center; color:#475569; font-size:0.875rem; line-height:1.5;">พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหาข้อมูลข้ามระบบ</div>';
+            resultsContainer.innerHTML = '<div style="padding:2rem 1rem; text-align:center; color:#475569; font-size:0.875rem; line-height:1.5;">{{ __('พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหาข้อมูลข้ามระบบ') }}</div>';
             return;
         }
 
-        resultsContainer.innerHTML = '<div style="padding:2rem 1rem; text-align:center; color:#475569; font-size:0.875rem; line-height:1.5;">กำลังค้นหา...</div>';
+        resultsContainer.innerHTML = '<div style="padding:2rem 1rem; text-align:center; color:#475569; font-size:0.875rem; line-height:1.5;">{{ __('กำลังค้นหา...') }}</div>';
 
         searchDebounceTimer = setTimeout(async () => {
             try {
@@ -1517,7 +1517,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await res.json();
 
                 if (!data.results || data.results.length === 0) {
-                    resultsContainer.innerHTML = `<div style="padding:2rem 1rem; text-align:center; color:#475569; font-size:0.875rem; line-height:1.5;">ไม่พบข้อมูลที่ตรงกับ "${query}"</div>`;
+                    resultsContainer.innerHTML = `<div style="padding:2rem 1rem; text-align:center; color:#475569; font-size:0.875rem; line-height:1.5;">{{ __('ไม่พบข้อมูลที่ตรงกับ') }}"${query}"</div>`;
                     return;
                 }
 
@@ -1538,7 +1538,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 resultsContainer.innerHTML = html;
             } catch (err) {
-                resultsContainer.innerHTML = `<div style="padding:2rem 1rem; text-align:center; color:#ef4444; font-size:0.875rem;">เกิดข้อผิดพลาดในการค้นหา</div>`;
+                resultsContainer.innerHTML = `<div style="padding:2rem 1rem; text-align:center; color:#ef4444; font-size:0.875rem;">{{ __('เกิดข้อผิดพลาดในการค้นหา') }}</div>`;
             }
         }, 200);
 

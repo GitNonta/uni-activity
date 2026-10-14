@@ -21,7 +21,7 @@
          style="width: {{ $sizePx }}; height: {{ $sizePx }}; border-radius: 50%; object-fit: cover; flex-shrink: 0; display: inline-block; {{ $style }}">
 @elseif($targetGender === 'male')
     {{-- Male SVG Avatar --}}
-    <svg width="{{ $sizePx }}" height="{{ $sizePx }}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="{{ $class }}" style="display:inline-block; border-radius:50%; flex-shrink:0; vertical-align:middle; {{ $style }}" role="img" aria-label="อวตารเพศชาย">
+    <svg width="{{ $sizePx }}" height="{{ $sizePx }}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="{{ $class }}" style="display:inline-block; border-radius:50%; flex-shrink:0; vertical-align:middle; {{ $style }}" role="img" aria-label="{{ __('อวตารเพศชาย') }}">
         <defs>
             <linearGradient id="mBg_{{ $uid }}" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stop-color="#2563eb"/>
@@ -81,7 +81,7 @@
     </svg>
 @elseif($targetGender === 'female')
     {{-- Female SVG Avatar --}}
-    <svg width="{{ $sizePx }}" height="{{ $sizePx }}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="{{ $class }}" style="display:inline-block; border-radius:50%; flex-shrink:0; vertical-align:middle; {{ $style }}" role="img" aria-label="อวตารเพศหญิง">
+    <svg width="{{ $sizePx }}" height="{{ $sizePx }}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="{{ $class }}" style="display:inline-block; border-radius:50%; flex-shrink:0; vertical-align:middle; {{ $style }}" role="img" aria-label="{{ __('อวตารเพศหญิง') }}">
         <defs>
             <linearGradient id="fBg_{{ $uid }}" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stop-color="#ec4899"/>
@@ -149,7 +149,7 @@
     </svg>
 @else
     {{-- Neutral / Other SVG Avatar --}}
-    <svg width="{{ $sizePx }}" height="{{ $sizePx }}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="{{ $class }}" style="display:inline-block; border-radius:50%; flex-shrink:0; vertical-align:middle; {{ $style }}" role="img" aria-label="อวตารทั่วไป">
+    <svg width="{{ $sizePx }}" height="{{ $sizePx }}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="{{ $class }}" style="display:inline-block; border-radius:50%; flex-shrink:0; vertical-align:middle; {{ $style }}" role="img" aria-label="{{ __('อวตารทั่วไป') }}">
         <defs>
             <linearGradient id="nBg_{{ $uid }}" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stop-color="#ea580c"/>

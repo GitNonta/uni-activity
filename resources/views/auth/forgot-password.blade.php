@@ -7,8 +7,8 @@
     <div class="card">
         <div class="card-body" style="padding:2rem;">
             <div style="text-align:center;margin-bottom:1.5rem;">
-                <h1 style="font-size:1.5rem;font-weight:700;margin-bottom:.5rem;line-height:1.5;">ลืมรหัสผ่าน</h1>
-                <p class="text-muted" style="font-size:.9rem;line-height:1.5;">กรอกอีเมลเพื่อรับลิงก์รีเซ็ตรหัสผ่าน</p>
+                <h1 style="font-size:1.5rem;font-weight:700;margin-bottom:.5rem;line-height:1.5;">{{ __('ลืมรหัสผ่าน') }}</h1>
+                <p class="text-muted" style="font-size:.9rem;line-height:1.5;">{{ __('กรอกอีเมลเพื่อรับลิงก์รีเซ็ตรหัสผ่าน') }}</p>
             </div>
 
             @if(session('status'))
@@ -21,7 +21,7 @@
                 @csrf
 
                 <div style="margin-bottom:1.5rem;">
-                    <label for="email" class="form-label">อีเมล</label>
+                    <label for="email" class="form-label">{{ __('อีเมล') }}</label>
                     <input type="email" id="email" name="email" class="form-control" 
                         value="{{ old('email') }}" 
                         placeholder="staff@example.com" 
@@ -33,7 +33,7 @@
 
                 <div style="margin-bottom:1rem;">
                     <button type="submit" class="btn btn-primary btn-block" style="padding:.75rem;">
-                        ส่งลิงก์รีเซ็ตรหัสผ่าน
+                        {{ __('ส่งลิงก์รีเซ็ตรหัสผ่าน') }}
                     </button>
                 </div>
 

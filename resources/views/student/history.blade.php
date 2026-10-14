@@ -3,7 +3,7 @@
 @section('title', __('ประวัติเข้าร่วม')
 
 @section('content')
-<h1 class="font-bold mb-4" style="font-size:1.5rem;">ประวัติเข้าร่วมกิจกรรม</h1>
+<h1 class="font-bold mb-4" style="font-size:1.5rem;">{{ __('ประวัติเข้าร่วมกิจกรรม') }}</h1>
 
 @forelse($attendances as $att)
     <div class="card mb-2">
@@ -19,13 +19,13 @@
                 </div>
                 <div class="text-right">
                     @if($att->status === 'approved')
-                        <span class="badge badge-green" style="font-size:.7rem;">สำเร็จ</span>
+                        <span class="badge badge-green" style="font-size:.7rem;">{{ __('สำเร็จ') }}</span>
                     @elseif($att->status === 'pending')
-                        <span class="badge badge-yellow" style="font-size:.7rem;">รออนุมัติ</span>
+                        <span class="badge badge-yellow" style="font-size:.7rem;">{{ __('รออนุมัติ') }}</span>
                     @elseif($att->status === 'rejected')
-                        <span class="badge badge-red" style="font-size:.7rem;">ปฏิเสธ</span>
+                        <span class="badge badge-red" style="font-size:.7rem;">{{ __('ปฏิเสธ') }}</span>
                     @endif
-                    <span class="font-bold text-primary">{{ $att->activity->activity_hours }} ชม.</span>
+                    <span class="font-bold text-primary">{{ $att->activity->activity_hours }} {{ __('ชม.') }}</span>
                     <p class="text-xs text-muted">{{ $att->checked_in_at ? $att->checked_in_at->format('H:i') : '-' }}</p>
                     
                     @if($att->status === 'approved')
@@ -35,10 +35,10 @@
                         @if($hasFeedback)
                             <span class="badge" style="background:#dcfce7;color:#166534;font-size:.7rem;margin-top:.25rem;display:inline-flex;align-items:center;gap:3px;">
                                 <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                ประเมินแล้ว
+                                {{ __('ประเมินแล้ว') }}
                             </span>
                         @else
-                            <a href="{{ route('feedback.create', $att->activity_id) }}" class="btn btn-sm btn-primary" style="font-size:.7rem;padding:4px 10px;margin-top:.25rem;">ประเมิน</a>
+                            <a href="{{ route('feedback.create', $att->activity_id) }}" class="btn btn-sm btn-primary" style="font-size:.7rem;padding:4px 10px;margin-top:.25rem;">{{ __('ประเมิน') }}</a>
                         @endif
                     @endif
                 </div>
@@ -48,7 +48,7 @@
 @empty
     <x-empty-state
         icon="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-        title="ยังไม่มีประวัติการเข้าร่วม"
+        title="{{ __('ยังไม่มีประวัติการเข้าร่วม') }}"
         description="เมื่อคุณเข้าร่วมกิจกรรมและได้รับการอนุมัติ ประวัติจะปรากฏที่นี่"
         actionLabel="ดูกิจกรรมทั้งหมด"
         actionUrl="{{ route('activities.index') }}"

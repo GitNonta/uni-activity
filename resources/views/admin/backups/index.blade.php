@@ -3,18 +3,18 @@
 
 @section('content')
 <div class="flex items-center justify-between mb-4">
-    <h1 class="font-bold" style="font-size:1.5rem;">สำรองและกู้คืนข้อมูลระบบ</h1>
+    <h1 class="font-bold" style="font-size:1.5rem;">{{ __('สำรองและกู้คืนข้อมูลระบบ') }}</h1>
     <div style="display:flex; gap:8px;">
-        <form action="{{ route('admin.backups.clean') }}" method="POST" onsubmit="return confirm('ล้างไฟล์สำรองที่เก่าเกิน {{ $scheduleInfo['retention_days'] }} วัน?');">
+        <form action="{{ route('admin.backups.clean') }}" method="POST" onsubmit="return confirm('ล้างไฟล์สำรองที่เก่าเกิน {{ $scheduleInfo['retention_days'] }} {{ __('วัน?') }}');">
             @csrf
             <button type="submit" class="btn btn-outline btn-sm" style="display:inline-flex;align-items:center;gap:.35rem;">
                 <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                <span>ล้างไฟล์เก่า</span>
+                <span>{{ __('ล้างไฟล์เก่า') }}</span>
             </button>
         </form>
         <button onclick="openModal()" class="btn btn-primary btn-sm" style="display:inline-flex;align-items:center;gap:.35rem;">
             <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            <span>สำรองข้อมูลทันที</span>
+            <span>{{ __('สำรองข้อมูลทันที') }}</span>
         </button>
     </div>
 </div>
@@ -22,12 +22,12 @@
 {{-- ═══ Summary Row ═══ --}}
 <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:1.25rem;">
     <div class="card" style="padding:1rem;">
-        <p class="text-muted" style="font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin:0;">ขนาดรวม</p>
+        <p class="text-muted" style="font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin:0;">{{ __('ขนาดรวม') }}</p>
         <p style="font-size:1.1rem; font-weight:700; color:#0f172a; margin:4px 0 0;">{{ $formattedTotalSize }}</p>
-        <p class="text-muted" style="font-size:0.7rem; margin:2px 0 0;">{{ count($backups) }} ไฟล์</p>
+        <p class="text-muted" style="font-size:0.7rem; margin:2px 0 0;">{{ count($backups) }} {{ __('ไฟล์') }}</p>
     </div>
     <div class="card" style="padding:1rem;">
-        <p class="text-muted" style="font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin:0;">ล่าสุด</p>
+        <p class="text-muted" style="font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin:0;">{{ __('ล่าสุด') }}</p>
         @if($latestBackup)
             <p style="font-size:0.85rem; font-weight:700; color:#0f172a; margin:4px 0 0;">{{ $latestBackup['created_at'] }}</p>
             <p class="text-muted" style="font-size:0.7rem; margin:2px 0 0;">{{ strtoupper($latestBackup['type']) }} · {{ $latestBackup['formatted_size'] }}</p>
@@ -36,17 +36,17 @@
         @endif
     </div>
     <div class="card" style="padding:1rem;">
-        <p class="text-muted" style="font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin:0;">ตารางอัตโนมัติ</p>
+        <p class="text-muted" style="font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin:0;">{{ __('ตารางอัตโนมัติ') }}</p>
         <p style="font-size:0.8rem; font-weight:700; color:#0f172a; margin:4px 0 0;">DB: {{ $scheduleInfo['daily_db'] }}</p>
         <p class="text-muted" style="font-size:0.7rem; margin:2px 0 0;">Full: {{ $scheduleInfo['weekly_full'] }}</p>
     </div>
     <div class="card" style="padding:1rem;">
-        <p class="text-muted" style="font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin:0;">พื้นที่ดิสก์</p>
+        <p class="text-muted" style="font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin:0;">{{ __('พื้นที่ดิสก์') }}</p>
         <p style="font-size:0.85rem; font-weight:700; color:#0f172a; margin:4px 0 0;">{{ $formattedDiskUsed }} / {{ $formattedDiskTotal }}</p>
         <div style="height:6px; border-radius:99px; background:#e2e8f0; overflow:hidden; margin:6px 0 0;">
             <div style="height:100%; border-radius:99px; width:{{ $diskPercent }}%; background:{{ $diskPercent > 90 ? '#ef4444' : ($diskPercent > 70 ? '#eab308' : '#22c55e') }};"></div>
         </div>
-        <p class="text-muted" style="font-size:0.65rem; margin:4px 0 0;">ว่าง {{ $formattedDiskFree }}</p>
+        <p class="text-muted" style="font-size:0.65rem; margin:4px 0 0;">{{ __('ว่าง') }}{{ $formattedDiskFree }}</p>
     </div>
 </div>
 
@@ -59,9 +59,9 @@
 {{-- ═══ Table ═══ --}}
 <div class="card">
     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-        <span>รายการไฟล์สำรอง ({{ count($backups) }})</span>
+        <span>{{ __('รายการไฟล์สำรอง (') }}{{ count($backups) }})</span>
         <div style="display:flex; gap:4px;" id="filterTabs">
-            <button onclick="filterBackups('all')" class="filter-tab active" data-filter="all">ทั้งหมด</button>
+            <button onclick="filterBackups('all')" class="filter-tab active" data-filter="all">{{ __('ทั้งหมด') }}</button>
             @php
                 $fullCount = count(array_filter($backups, fn($b) => $b['type'] === 'full'));
                 $dbCount = count(array_filter($backups, fn($b) => $b['type'] === 'db'));
@@ -78,7 +78,7 @@
     @if(empty($backups))
         <x-empty-state
             icon="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
-            title="ยังไม่มีไฟล์สำรองข้อมูล"
+            title="{{ __('ยังไม่มีไฟล์สำรองข้อมูล') }}"
             description="คลิก + สำรองข้อมูลทันที เพื่อสร้างไฟล์สำรองแรก หรือรอระบบสำรองอัตโนมัติตามกำหนดเวลา"
             size="md"
         />
@@ -87,13 +87,13 @@
             <table class="responsive-table">
                 <thead>
                     <tr>
-                        <th>ไฟล์</th>
-                        <th class="text-center">ประเภท</th>
-                        <th class="text-center">ขนาด</th>
-                        <th class="text-center">วันที่</th>
-                        <th class="text-center">อายุ</th>
+                        <th>{{ __('ไฟล์') }}</th>
+                        <th class="text-center">{{ __('ประเภท') }}</th>
+                        <th class="text-center">{{ __('ขนาด') }}</th>
+                        <th class="text-center">{{ __('วันที่') }}</th>
+                        <th class="text-center">{{ __('อายุ') }}</th>
                         <th>Checksum</th>
-                        <th class="text-right">จัดการ</th>
+                        <th class="text-right">{{ __('จัดการ') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -128,7 +128,7 @@
                                 <div style="display:flex; justify-content:flex-end; gap:6px; align-items:center;">
                                     <a href="{{ route('admin.backups.download', $b['filename']) }}"
                                        class="btn btn-outline btn-sm backup-download-btn"
-                                       title="ดาวน์โหลดไฟล์สำรอง"
+                                       title="{{ __('ดาวน์โหลดไฟล์สำรอง') }}"
                                        style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border-radius:6px;">
                                         <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                                     </a>
@@ -137,10 +137,10 @@
                                         @method('DELETE')
                                         <button type="submit"
                                                 class="btn btn-danger btn-sm backup-delete-btn"
-                                                title="ลบไฟล์สำรอง"
+                                                title="{{ __('ลบไฟล์สำรอง') }}"
                                                 style="display:inline-flex;align-items:center;justify-content:center;gap:.35rem;padding:.4rem .75rem;border-radius:6px;">
                                             <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                            <span>ลบ</span>
+                                            <span>{{ __('ลบ') }}</span>
                                         </button>
                                     </form>
                                 </div>
@@ -157,8 +157,8 @@
 <div id="backupModal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.4); align-items:center; justify-content:center; padding:1rem;">
     <div class="card" style="width:100%; max-width:420px;">
         <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-            <span>สร้างการสำรองข้อมูล</span>
-            <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;color:#94a3b8;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;transition:background .15s;" aria-label="ปิด">
+            <span>{{ __('สร้างการสำรองข้อมูล') }}</span>
+            <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;color:#94a3b8;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;transition:background .15s;" aria-label="{{ __('ปิด') }}">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
@@ -166,17 +166,17 @@
             <form action="{{ route('admin.backups.store') }}" method="POST">
                 @csrf
                 <div class="form-group">
-                    <label class="form-label">เลือกประเภท</label>
+                    <label class="form-label">{{ __('เลือกประเภท') }}</label>
                     <div style="display:flex; flex-direction:column; gap:8px;">
-                        <label class="checkbox-label"><input type="radio" name="type" value="full" checked> Full Backup — ฐานข้อมูล + ไฟล์สื่อ + เวกเตอร์ชีวมิติ</label>
-                        <label class="checkbox-label"><input type="radio" name="type" value="db"> Database Only — SQL Dump ทุกตาราง</label>
-                        <label class="checkbox-label"><input type="radio" name="type" value="biometrics"> Biometrics — เวกเตอร์ใบหน้า + ประวัติเช็คชื่อ</label>
-                        <label class="checkbox-label"><input type="radio" name="type" value="files"> Files — รูปภาพและเอกสารอัปโหลด</label>
+                        <label class="checkbox-label"><input type="radio" name="type" value="full" checked> Full Backup — {{ __('ฐานข้อมูล') }}+ {{ __('ไฟล์สื่อ') }}+ {{ __('เวกเตอร์ชีวมิติ') }}</label>
+                        <label class="checkbox-label"><input type="radio" name="type" value="db"> Database Only — SQL Dump {{ __('ทุกตาราง') }}</label>
+                        <label class="checkbox-label"><input type="radio" name="type" value="biometrics"> Biometrics — {{ __('เวกเตอร์ใบหน้า') }}+ {{ __('ประวัติเช็คชื่อ') }}</label>
+                        <label class="checkbox-label"><input type="radio" name="type" value="files"> Files — {{ __('รูปภาพและเอกสารอัปโหลด') }}</label>
                     </div>
                 </div>
                 <div style="display:flex; justify-content:flex-end; gap:8px; padding-top:0.5rem; border-top:1px solid #f1f5f9;">
-                    <button type="button" onclick="closeModal()" class="btn btn-outline btn-sm">ยกเลิก</button>
-                    <button type="submit" class="btn btn-primary btn-sm">เริ่มสำรองข้อมูล</button>
+                    <button type="button" onclick="closeModal()" class="btn btn-outline btn-sm">{{ __('ยกเลิก') }}</button>
+                    <button type="submit" class="btn btn-primary btn-sm">{{ __('เริ่มสำรองข้อมูล') }}</button>
                 </div>
             </form>
         </div>

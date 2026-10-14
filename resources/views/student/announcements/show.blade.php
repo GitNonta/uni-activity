@@ -5,7 +5,7 @@
 <div class="mb-4">
     <a href="{{ route('announcements.index') }}" class="text-sm text-primary flex items-center gap-1">
         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-        กลับไปรายการประกาศ
+        {{ __('กลับไปรายการประกาศ') }}
     </a>
 </div>
 
@@ -39,10 +39,10 @@
         
         <div class="pt-4 border-t border-gray-100 flex justify-between items-center text-xs text-muted">
             <div>
-                <p>กลุ่มเป้าหมาย: คณะ{{ $announcement->target_faculty ?? 'ทุกคน' }}</p>
+                <p>{{ __('กลุ่มเป้าหมาย: คณะ') }}{{ $announcement->target_faculty ?? 'ทุกคน' }}</p>
             </div>
             <div>
-                <p>ประกาศโดย: {{ $announcement->creator->full_name }}</p>
+                <p>{{ __('ประกาศโดย:') }}{{ $announcement->creator->full_name }}</p>
             </div>
         </div>
 
@@ -50,10 +50,10 @@
         <div style="margin-top:16px; text-align:center;">
             <a href="{{ route('login') }}" class="btn btn-primary btn-block btn-lg" style="text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-weight:700; border-radius:10px; width: 100%; box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);">
                 <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-                เข้าสู่ระบบ
+                {{ __('เข้าสู่ระบบ') }}
             </a>
             <p class="text-xs mt-3 mb-0" style="color:#64748b;">
-                ยังไม่มีบัญชีนักศึกษา? <a href="{{ route('register') }}" style="color:#ea580c; text-decoration:underline; font-weight:600;">สมัครสมาชิกที่นี่</a>
+                {{ __('ยังไม่มีบัญชีนักศึกษา?') }}<a href="{{ route('register') }}" style="color:#ea580c; text-decoration:underline; font-weight:600;">{{ __('สมัครสมาชิกที่นี่') }}</a>
             </p>
         </div>
         @endguest

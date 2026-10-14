@@ -614,7 +614,7 @@ html.dark .follower-row:hover {
                     <h1 class="pub-name">{{ $profileUser->full_name }}</h1>
                     @if($profileUser->isStaffOrAdmin())
                         <span class="pub-role-tag">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="#06c755" aria-label="ผู้จัดกิจกรรมทางการ" title="ผู้จัดกิจกรรมทางการ">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="#06c755" aria-label="{{ __('ผู้จัดกิจกรรมทางการ') }}" title="{{ __('ผู้จัดกิจกรรมทางการ') }}">
                                 <path d="M22.5 12.5c0-1.58-.8-2.97-2-3.79.44-1.61.04-3.35-1.11-4.5-1.15-1.15-2.89-1.55-4.5-1.11-.82-1.2-2.21-2-3.79-2s-2.97.8-3.79 2c-1.61-.44-3.35-.04-4.5 1.11-1.15 1.15-1.55 2.89-1.11 4.5-1.2.82-2 2.21-2 3.79s.8 2.97 2 3.79c-.44 1.61-.04 3.35 1.11 4.5 1.15 1.15 2.89 1.55 4.5 1.11.82 1.2 2.21 2 3.79 2s2.97-.8 3.79-2c1.61.44 3.35.04 4.5-1.11 1.15-1.15 1.55-2.89 1.11-4.5 1.2-.82 2-2.21 2-3.79zm-12.21 4.21l-3.5-3.5 1.41-1.41 2.09 2.09 5.68-5.68 1.41 1.41-7.09 7.09z"/>
                             </svg>
                             {{ $profileUser->isStaff() ? 'เจ้าหน้าที่' : 'ผู้ดูแลระบบ' }}
@@ -639,7 +639,7 @@ html.dark .follower-row:hover {
                         @if($profileUser->year)
                             <span class="pub-meta-pill">
                                 <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-                                ปี {{ $profileUser->year }}
+                                {{ __('ปี') }}{{ $profileUser->year }}
                             </span>
                         @endif
                         @if($profileUser->program)
@@ -665,7 +665,7 @@ html.dark .follower-row:hover {
             @if($viewerIsSelf)
                 <a href="{{ route('student.profile') }}" class="pub-manage-btn">
                     <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                    จัดการโปรไฟล์ของฉัน
+                    {{ __('จัดการโปรไฟล์ของฉัน') }}
                 </a>
             @elseif($viewer !== null)
                 <button id="followBtn"
@@ -689,22 +689,22 @@ html.dark .follower-row:hover {
                     data-target-id="{{ $profileUser->id }}"
                     data-target-name="{{ $profileUser->full_name }}"
                     data-target-url="{{ route('users.show', $profileUser) }}"
-                    title="ส่งข้อความถึง {{ $profileUser->full_name }}">
+                    title="{{ __('ส่งข้อความถึง') }}{{ $profileUser->full_name }}">
                     <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                     </svg>
-                    <span>ส่งข้อความ</span>
+                    <span>{{ __('ส่งข้อความ') }}</span>
                 </button>
             @else
                 <a href="{{ route('login') }}" class="follow-btn not-following" style="text-decoration: none;">
                     <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    ติดตาม
+                    {{ __('ติดตาม') }}
                 </a>
-                <a href="{{ route('login') }}" class="pub-message-btn" style="text-decoration: none;" title="เข้าสู่ระบบเพื่อส่งข้อความ">
+                <a href="{{ route('login') }}" class="pub-message-btn" style="text-decoration: none;" title="{{ __('เข้าสู่ระบบเพื่อส่งข้อความ') }}">
                     <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                     </svg>
-                    <span>ส่งข้อความ</span>
+                    <span>{{ __('ส่งข้อความ') }}</span>
                 </a>
             @endif
         </div>
@@ -712,17 +712,17 @@ html.dark .follower-row:hover {
 
     {{-- ── แถบสถิติ (Social Style Minimalist Counters) ── --}}
     <div class="pub-stats-bar">
-        <div class="pub-stat-unit clickable" onclick="openFollowerModal('followers')" title="ดูรายชื่อผู้ติดตาม">
+        <div class="pub-stat-unit clickable" onclick="openFollowerModal('followers')" title="{{ __('ดูรายชื่อผู้ติดตาม') }}">
             <span class="pub-stat-num" id="followersCount">{{ number_format($followersCount) }}</span>
-            <span class="pub-stat-label">ผู้ติดตาม</span>
+            <span class="pub-stat-label">{{ __('ผู้ติดตาม') }}</span>
         </div>
-        <div class="pub-stat-unit clickable" onclick="openFollowerModal('following')" title="ดูรายชื่อที่กำลังติดตาม">
+        <div class="pub-stat-unit clickable" onclick="openFollowerModal('following')" title="{{ __('ดูรายชื่อที่กำลังติดตาม') }}">
             <span class="pub-stat-num">{{ number_format($followingCount) }}</span>
-            <span class="pub-stat-label">กำลังติดตาม</span>
+            <span class="pub-stat-label">{{ __('กำลังติดตาม') }}</span>
         </div>
         <div class="pub-stat-unit">
             <span class="pub-stat-num">{{ number_format($stats['total']) }}</span>
-            <span class="pub-stat-label">ผลงานที่โพสต์</span>
+            <span class="pub-stat-label">{{ __('ผลงานที่โพสต์') }}</span>
         </div>
     </div>
 
@@ -731,7 +731,7 @@ html.dark .follower-row:hover {
         <div class="pub-section-header">
             <h2 class="pub-section-title">
                 <svg width="19" height="19" fill="none" stroke="#ea580c" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                ผลงานและกิจกรรมที่เผยแพร่
+                {{ __('ผลงานและกิจกรรมที่เผยแพร่') }}
             </h2>
         </div>
         <div class="pub-posts-feed">
@@ -773,7 +773,7 @@ html.dark .follower-row:hover {
                 @php $groupPosts = $postsByType->get($type, collect()); @endphp
                 <div class="pub-feed-panel {{ $type === $defaultFeedType ? 'is-active' : '' }}" data-feed-panel="{{ $type }}" role="tabpanel">
                     @if ($groupPosts->isEmpty())
-                        <div class="pub-feed-panel-empty">ยังไม่มี{{ $group['label'] }}</div>
+                        <div class="pub-feed-panel-empty">{{ __('ยังไม่มี') }}{{ $group['label'] }}</div>
                     @else
                         @foreach ($groupPosts as $post)
                             <a href="{{ $post['url'] }}" class="pub-post-row">
@@ -794,7 +794,7 @@ html.dark .follower-row:hover {
             @if ($posts->isEmpty())
                 <x-empty-state
                     icon="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                    title="ยังไม่มีผลงานที่เผยแพร่"
+                    title="{{ __('ยังไม่มีผลงานที่เผยแพร่') }}"
                     description="{{ $profileUser->isStaffOrAdmin() ? 'ผู้ใช้นี้ยังไม่เคยเผยแพร่กิจกรรมหรือประกาศงาน' : 'กดติดตามเพื่อรับข่าวสารจากผู้ใช้นี้ในอนาคต' }}"
                     size="sm" />
             @endif
@@ -807,13 +807,13 @@ html.dark .follower-row:hover {
 <div id="followerModal" class="follower-modal-backdrop" onclick="if(event.target === this) closeFollowerModal()">
     <div class="follower-modal">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:0.9rem 1.15rem;border-bottom:1px solid rgba(226, 232, 240, 0.8);flex-shrink:0;">
-            <h3 id="followerModalTitle" style="margin:0;font-size:1rem;font-weight:700;color:var(--text-main,#1e293b);line-height:1.5;">รายชื่อ</h3>
-            <button onclick="closeFollowerModal()" style="background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;color:#64748b;" aria-label="ปิด">
+            <h3 id="followerModalTitle" style="margin:0;font-size:1rem;font-weight:700;color:var(--text-main,#1e293b);line-height:1.5;">{{ __('รายชื่อ') }}</h3>
+            <button onclick="closeFollowerModal()" style="background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;color:#64748b;" aria-label="{{ __('ปิด') }}">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
         <div id="followerModalBody" style="overflow-y:auto;flex:1;">
-            <div style="padding:1.5rem;text-align:center;font-size:0.83rem;color:#64748b;line-height:1.5;">กำลังโหลด...</div>
+            <div style="padding:1.5rem;text-align:center;font-size:0.83rem;color:#64748b;line-height:1.5;">{{ __('กำลังโหลด...') }}</div>
         </div>
     </div>
 </div>
@@ -826,7 +826,7 @@ html.dark .follower-row:hover {
     var CSRF = document.querySelector('meta[name="csrf-token"]').content;
     var followBtn = document.getElementById('followBtn');
 
-    // ── แท็บโพสต์สไตล์ Instagram: สลับแผงตามประเภท (กิจกรรม/ข่าวประกาศ/ประกาศงาน) ──
+    // ── แท็บโพสต์สไตล์ Instagram: สลับแผงตามประเภท (กิจกรรม/ข่าวประกาศ/ประกาศงาน)──
     document.querySelectorAll('.pub-feed-tab').forEach(function (tab) {
         tab.addEventListener('click', function () {
             var type = tab.getAttribute('data-feed-tab');
@@ -841,14 +841,14 @@ html.dark .follower-row:hover {
         });
     });
 
-    // ── Escape ข้อความก่อนใส่ลง innerHTML ทุกครั้ง (ป้องกัน XSS จากชื่อผู้ใช้) ──
+    // ── Escape ข้อความก่อนใส่ลง innerHTML ทุกครั้ง (ป้องกัน XSS จากชื่อผู้ใช้)──
     function escHtml(s) {
         return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
             return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
         });
     }
 
-    // ── ปุ่มติดตาม / เลิกติดตาม (fetch + optimistic UI) ──
+    // ── ปุ่มติดตาม / เลิกติดตาม (fetch+ optimistic UI) ──
     if (followBtn) {
         followBtn.addEventListener('click', function () {
             var isFollowing = followBtn.dataset.isFollowing === '1';
@@ -864,11 +864,11 @@ html.dark .follower-row:hover {
             })
             .then(function (r) { return r.json(); })
             .then(function (data) {
-                if (!data.success) throw new Error(data.message || 'เกิดข้อผิดพลาด');
+                if (!data.success) throw new Error(data.message || '{{ __('เกิดข้อผิดพลาด') }}');
                 followBtn.dataset.isFollowing = data.is_following ? '1' : '0';
                 followBtn.classList.toggle('is-following', !!data.is_following);
                 followBtn.classList.toggle('not-following', !data.is_following);
-                if (text) text.textContent = data.is_following ? 'ติดตามอยู่' : 'ติดตาม';
+                if (text) text.textContent = data.is_following ? '{{ __('ติดตามอยู่') }}' : '{{ __('ติดตาม') }}';
                 if (icon) {
                     icon.innerHTML = data.is_following
                         ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>'
@@ -880,7 +880,7 @@ html.dark .follower-row:hover {
                 }
             })
             .catch(function (err) {
-                alert(err.message || 'ไม่สามารถติดตามได้ในขณะนี้');
+                alert(err.message || '{{ __('ไม่สามารถติดตามได้ในขณะนี้') }}');
             })
             .finally(function () {
                 followBtn.disabled = false;
@@ -888,12 +888,12 @@ html.dark .follower-row:hover {
         });
     }
 
-    // ── ปุ่มส่งข้อความ (Direct Chat Widget / Page) ──
+    // ── ปุ่มส่งข้อความ (Direct Chat Widget / Page)──
     var msgBtn = document.getElementById('pubMessageBtn');
     if (msgBtn) {
         msgBtn.addEventListener('click', function () {
             var targetId = parseInt(this.getAttribute('data-target-id'), 10);
-            var targetName = this.getAttribute('data-target-name') || 'ผู้ใช้';
+            var targetName = this.getAttribute('data-target-name') || '{{ __('ผู้ใช้') }}';
             var targetUrl = this.getAttribute('data-target-url') || '';
 
             if (typeof window.openChatWidget === 'function' && typeof window.showChatView === 'function') {
@@ -905,7 +905,7 @@ html.dark .follower-row:hover {
         });
     }
 
-    // ── Modal รายชื่อผู้ติดตาม / กำลังติดตาม ──
+    // ── Modal รายชื่อผู้ติดตาม / กำลังติดตาม──
     window.openFollowerModal = function (kind) {
         var modal = document.getElementById('followerModal');
         var title = document.getElementById('followerModalTitle');
@@ -915,7 +915,7 @@ html.dark .follower-row:hover {
             : '{{ route('users.followers', $profileUser) }}';
 
         if (title) title.textContent = kind === 'following' ? 'กำลังติดตาม' : 'ผู้ติดตาม';
-        body.innerHTML = '<div style="padding:1.5rem;text-align:center;font-size:0.83rem;color:#64748b;line-height:1.5;">กำลังโหลด...</div>';
+        body.innerHTML = '<div style="padding:1.5rem;text-align:center;font-size:0.83rem;color:#64748b;line-height:1.5;">{{ __('กำลังโหลด...') }}</div>';
         modal.classList.add('open');
 
         fetch(url, { headers: { 'Accept': 'application/json' }, cache: 'no-store' })
@@ -923,7 +923,7 @@ html.dark .follower-row:hover {
             .then(function (data) {
                 var list = (kind === 'following' ? data.following : data.followers) || [];
                 if (!list.length) {
-                    body.innerHTML = '<div style="padding:2rem 1rem;text-align:center;font-size:0.83rem;color:#64748b;line-height:1.5;">ยังไม่มีรายชื่อ</div>';
+                    body.innerHTML = '<div style="padding:2rem 1rem;text-align:center;font-size:0.83rem;color:#64748b;line-height:1.5;">{{ __('ยังไม่มีรายชื่อ') }}</div>';
                     return;
                 }
                 body.innerHTML = list.map(function (u) {
@@ -941,7 +941,7 @@ html.dark .follower-row:hover {
                 }).join('');
             })
             .catch(function () {
-                body.innerHTML = '<div style="padding:2rem 1rem;text-align:center;font-size:0.83rem;color:#b91c1c;line-height:1.5;">ไม่สามารถโหลดรายชื่อได้</div>';
+                body.innerHTML = '<div style="padding:2rem 1rem;text-align:center;font-size:0.83rem;color:#b91c1c;line-height:1.5;">{{ __('ไม่สามารถโหลดรายชื่อได้') }}</div>';
             });
     };
 

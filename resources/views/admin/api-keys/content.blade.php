@@ -10,13 +10,13 @@
             <div style="display:flex; align-items:start; gap:12px;">
                 <div style="background:#b45309; color:#fff; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:14px; font-weight:700;">!</div>
                 <div style="flex:1;">
-                    <h3 class="font-bold mb-1" style="color:#92400e; font-size:1.05rem;">สร้าง API Key สำเร็จ!</h3>
-                    <p class="text-sm mb-4" style="color:#b45309; line-height:1.5;">กรุณาคัดลอกและเก็บ API Key ด้านล่างนี้ไว้ในที่ปลอดภัยทันที <strong>ระบบจะไม่แสดงรหัสเต็มนี้ให้เห็นอีกครั้ง:</strong></p>
+                    <h3 class="font-bold mb-1" style="color:#92400e; font-size:1.05rem;">{{ __('สร้าง API Key สำเร็จ!') }}</h3>
+                    <p class="text-sm mb-4" style="color:#b45309; line-height:1.5;">{{ __('กรุณาคัดลอกและเก็บ API Key ด้านล่างนี้ไว้ในที่ปลอดภัยทันที') }}<strong>{{ __('ระบบจะไม่แสดงรหัสเต็มนี้ให้เห็นอีกครั้ง:') }}</strong></p>
                     
                     <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:stretch; max-width:650px;">
                         <code class="font-mono text-xs break-all" id="newTokenText" style="flex:1; background:#fff; padding:10px 14px; border-radius:8px; border:1px solid #fcd34d; display:inline-block; font-weight:700; color:#1e293b; box-shadow:inset 0 1px 2px rgba(0,0,0,0.02);">{{ session('new_token') }}</code>
                         <button onclick="copyToken()" id="copyBtn" class="btn btn-primary" style="background:#d97706; color:white; border:none; padding:0 1.25rem; border-radius:8px; font-weight:600; cursor:pointer; transition:all 0.2s;">
-                            คัดลอกคีย์
+                            {{ __('คัดลอกคีย์') }}
                         </button>
                     </div>
                 </div>
@@ -35,22 +35,22 @@
                     <svg style="width:20px; height:20px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    สร้าง API Key ใหม่
+                    {{ __('สร้าง API Key ใหม่') }}
                 </h3>
             </div>
             <div class="card-body" style="padding:1.5rem;">
                 <form action="{{ route('admin.api-keys.store') }}" method="POST">
                     @csrf
                     <div class="mb-5">
-                        <label class="form-label" style="font-weight:600; color:#334155; margin-bottom:0.5rem; display:block;">ชื่อ / วัตถุประสงค์ของ Key</label>
-                        <input type="text" name="name" class="form-control" style="width: 100%; padding: 0.625rem; border: 1px solid #cbd5e1; border-radius: 8px; transition: border-color 0.2s;" placeholder="เช่น For Mobile App, Cron Job" required>
+                        <label class="form-label" style="font-weight:600; color:#334155; margin-bottom:0.5rem; display:block;">{{ __('ชื่อ / วัตถุประสงค์ของ Key') }}</label>
+                        <input type="text" name="name" class="form-control" style="width: 100%; padding: 0.625rem; border: 1px solid #cbd5e1; border-radius: 8px; transition: border-color 0.2s;" placeholder="{{ __('เช่น For Mobile App, Cron Job') }}" required>
                         @error('name')
                             <p class="text-xs mt-1" style="color:#ef4444; font-weight:500;">{{ $message }}</p>
                         @enderror
                     </div>
                     
                     <button type="submit" class="btn btn-primary" style="background:#ea580c; color:white; border-radius:8px; font-weight:600; border:none; padding:0.65rem 1rem; width:100%; box-shadow:0 2px 4px rgba(234,88,12,0.15);">
-                        สร้างกุญแจ API Key
+                        {{ __('สร้างกุญแจ API Key') }}
                     </button>
                 </form>
             </div>
@@ -65,7 +65,7 @@
                     <svg style="width:20px; height:20px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
                     </svg>
-                    API Keys ที่ใช้งานอยู่
+                    API Keys {{ __('ที่ใช้งานอยู่') }}
                 </h3>
             </div>
             <div class="card-body" style="padding:0;">
@@ -78,8 +78,8 @@
                             </svg>
                         </div>
                         <div>
-                            <p style="font-size:0.95rem; font-weight:600; color:#475569; margin:0;">ยังไม่มี API Key ในระบบ</p>
-                            <p class="text-xs text-muted mt-1">โปรดสร้างคีย์แรกในเมนูด้านซ้ายเพื่อเริ่มเชื่อมต่อบริการ</p>
+                            <p style="font-size:0.95rem; font-weight:600; color:#475569; margin:0;">{{ __('ยังไม่มี API Key ในระบบ') }}</p>
+                            <p class="text-xs text-muted mt-1">{{ __('โปรดสร้างคีย์แรกในเมนูด้านซ้ายเพื่อเริ่มเชื่อมต่อบริการ') }}</p>
                         </div>
                     </div>
                 @else
@@ -87,10 +87,10 @@
                         <table style="width:100%; border-collapse:collapse; margin:0;">
                             <thead>
                                 <tr style="background:var(--surface-hover, #f8fafc); border-bottom:1px solid var(--border, #e2e8f0); color:var(--text-muted, #475569); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em;">
-                                    <th style="padding:1rem 1.5rem; text-align:left; font-weight:700;">ชื่อ / วัตถุประสงค์</th>
-                                    <th style="padding:1rem 1.5rem; text-align:left; font-weight:700;">ใช้งานล่าสุด</th>
-                                    <th style="padding:1rem 1.5rem; text-align:left; font-weight:700;">วันที่สร้าง</th>
-                                    <th style="padding:1rem 1.5rem; text-align:right; font-weight:700;">การจัดการ</th>
+                                    <th style="padding:1rem 1.5rem; text-align:left; font-weight:700;">{{ __('ชื่อ / วัตถุประสงค์') }}</th>
+                                    <th style="padding:1rem 1.5rem; text-align:left; font-weight:700;">{{ __('ใช้งานล่าสุด') }}</th>
+                                    <th style="padding:1rem 1.5rem; text-align:left; font-weight:700;">{{ __('วันที่สร้าง') }}</th>
+                                    <th style="padding:1rem 1.5rem; text-align:right; font-weight:700;">{{ __('การจัดการ') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -108,7 +108,7 @@
                                                     {{ $token->last_used_at->translatedFormat('d M Y H:i') }}
                                                 </span>
                                             @else
-                                                <span style="color:#475569; font-style:italic; line-height:1.5;">ยังไม่เคยใช้งาน</span>
+                                                <span style="color:#475569; font-style:italic; line-height:1.5;">{{ __('ยังไม่เคยใช้งาน') }}</span>
                                             @endif
                                         </td>
                                         <td style="padding:1.1rem 1.5rem; color:#475569; font-size:0.825rem; line-height:1.5;">
@@ -119,7 +119,7 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-danger btn-sm" style="padding:0.4rem 0.85rem; border-radius:8px; font-size:0.775rem; font-weight:600; cursor:pointer; line-height:1.5;">
-                                                    ยกเลิกสิทธิ์ (Revoke)
+                                                    {{ __('ยกเลิกสิทธิ์ (Revoke)') }}
                                                 </button>
                                             </form>
                                         </td>
@@ -165,7 +165,7 @@ html.dark .api-key-row:hover td {
             const originalText = copyBtn.innerText;
             const originalBg = copyBtn.style.background;
             
-            copyBtn.innerText = 'คัดลอกเรียบร้อย';
+            copyBtn.innerText = '{{ __('คัดลอกเรียบร้อย') }}';
             copyBtn.style.background = '#059669';
             
             setTimeout(() => {
@@ -185,7 +185,7 @@ html.dark .api-key-row:hover td {
                 document.execCommand('copy');
                 performFeedback();
             } catch (err) {
-                alert('ไม่สามารถคัดลอกได้: ' + err);
+                alert('{{ __('ไม่สามารถคัดลอกได้:') }}' + err);
             }
             document.body.removeChild(textArea);
             return;
@@ -195,7 +195,7 @@ html.dark .api-key-row:hover td {
             performFeedback();
         }).catch(err => {
             console.error('Failed to copy: ', err);
-            alert('ไม่สามารถคัดลอกได้: ' + err);
+            alert('{{ __('ไม่สามารถคัดลอกได้:') }}' + err);
         });
     }
 </script>

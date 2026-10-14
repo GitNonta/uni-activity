@@ -133,46 +133,46 @@
         <div class="cert-inner-border">
             
             <div class="cert-header">
-                <div class="cert-org">มหาวิทยาลัยราชภัฏภูเก็ต (PKRU)</div>
-                <div class="cert-suborg">กองพัฒนานักศึกษา · กิจกรรมเสริมหลักสูตรและการพัฒนานักศึกษา</div>
+                <div class="cert-org">{{ __('มหาวิทยาลัยราชภัฏภูเก็ต (PKRU)') }}</div>
+                <div class="cert-suborg">{{ __('กองพัฒนานักศึกษา') }}· {{ __('กิจกรรมเสริมหลักสูตรและการพัฒนานักศึกษา') }}</div>
             </div>
 
-            <div class="cert-title">ใบรับรองการเข้าร่วมกิจกรรมพัฒนานักศึกษา</div>
+            <div class="cert-title">{{ __('ใบรับรองการเข้าร่วมกิจกรรมพัฒนานักศึกษา') }}</div>
             <div class="cert-subtitle">CERTIFICATE OF PARTICIPATION AND ACTIVITY COMPLETION</div>
 
-            <div style="font-size:13px; color:#64748b; margin-top:5px;">ขอมอบใบรับรองฉบับนี้เพื่อแสดงว่า</div>
+            <div style="font-size:13px; color:#64748b; margin-top:5px;">{{ __('ขอมอบใบรับรองฉบับนี้เพื่อแสดงว่า') }}</div>
 
             <div class="student-name">{{ $user->full_name }}</div>
 
             <div class="student-meta">
-                รหัสนักศึกษา: <strong>{{ $user->student_id }}</strong> | 
-                คณะ: <strong>{{ $user->faculty ? __($user->faculty) : __('มหาวิทยาลัยราชภัฏภูเก็ต') }}</strong> | 
-                สาขาวิชา: <strong>{{ $user->department ? __($user->department) : '-' }}</strong>
+                {{ __('รหัสนักศึกษา:') }}<strong>{{ $user->student_id }}</strong> | 
+                {{ __('คณะ:') }}<strong>{{ $user->faculty ? __($user->faculty) : __('มหาวิทยาลัยราชภัฏภูเก็ต') }}</strong> | 
+                {{ __('สาขาวิชา:') }}<strong>{{ $user->department ? __($user->department) : '-' }}</strong>
             </div>
 
             <div class="cert-body">
-                ได้เข้าร่วมและผ่านการประเมินชั่วโมงกิจกรรมเสริมหลักสูตร<br>
+                {{ __('ได้เข้าร่วมและผ่านการประเมินชั่วโมงกิจกรรมเสริมหลักสูตร') }}<br>
                 <strong>{{ $certificate->title }}</strong><br>
-                รวมทั้งสิ้น <strong>{{ number_format($certificate->hours_completed, 1) }}</strong> ชั่วโมงกิจกรรม 
-                ประจำปีการศึกษา {{ $certificate->academic_year ?? date('Y') }}
+                {{ __('รวมทั้งสิ้น') }}<strong>{{ number_format($certificate->hours_completed, 1) }}</strong> {{ __('ชั่วโมงกิจกรรม') }}
+                {{ __('ประจำปีการศึกษา') }}{{ $certificate->academic_year ?? date('Y') }}
             </div>
 
             <table class="sign-table">
                 <tr>
                     <td style="width:33%; text-align:left; font-size:10px; color:#64748b;">
-                        <div class="code-box">รหัสใบรับรอง: {{ $certificate->certificate_code }}</div>
-                        <div>ออกให้ ณ วันที่: {{ $certificate->issued_at ? $certificate->issued_at->format('d/m/Y') : date('d/m/Y') }}</div>
-                        <div style="margin-top:2px;">ตรวจสอบออนไลน์: {{ route('certificates.verify', $certificate->certificate_code) }}</div>
+                        <div class="code-box">{{ __('รหัสใบรับรอง:') }}{{ $certificate->certificate_code }}</div>
+                        <div>{{ __('ออกให้ ณ วันที่:') }}{{ $certificate->issued_at ? $certificate->issued_at->format('d/m/Y') : date('d/m/Y') }}</div>
+                        <div style="margin-top:2px;">{{ __('ตรวจสอบออนไลน์:') }}{{ route('certificates.verify', $certificate->certificate_code) }}</div>
                         <div style="margin-top:6px;">{!! $qrCodeSvg !!}</div>
                     </td>
                     <td style="width:33%;">
                         <div class="sign-line"></div>
-                        <div class="sign-name">ผู้อำนวยการกองพัฒนานักศึกษา</div>
-                        <div class="sign-title">มหาวิทยาลัยราชภัฏภูเก็ต</div>
+                        <div class="sign-name">{{ __('ผู้อำนวยการกองพัฒนานักศึกษา') }}</div>
+                        <div class="sign-title">{{ __('มหาวิทยาลัยราชภัฏภูเก็ต') }}</div>
                     </td>
                     <td style="width:33%;">
                         <div class="sign-line"></div>
-                        <div class="sign-name">อธิการบดีมหาวิทยาลัยราชภัฏภูเก็ต</div>
+                        <div class="sign-name">{{ __('อธิการบดีมหาวิทยาลัยราชภัฏภูเก็ต') }}</div>
                         <div class="sign-title">Phuket Rajabhat University</div>
                     </td>
                 </tr>

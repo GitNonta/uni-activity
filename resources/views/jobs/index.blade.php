@@ -6,7 +6,7 @@
 <div class="act-header-row">
     <h1 class="act-header-title">
         <x-icon name="job" size="20" style="display:inline;vertical-align:-3px;margin-right:.25rem;" />
-        ประกาศรับสมัครงาน
+        {{ __('ประกาศรับสมัครงาน') }}
     </h1>
 </div>
 
@@ -45,9 +45,9 @@
             </button>
             @endif
             @if($geoJobs->count())
-            <a href="{{ route('map.index', ['type' => 'job']) }}" class="page-filter-btn-outline" title="ดูบนแผนที่">
+            <a href="{{ route('map.index', ['type' => 'job']) }}" class="page-filter-btn-outline" title="{{ __('ดูบนแผนที่') }}">
                 <x-icon name="map" size="14" />
-                <span>แผนที่</span>
+                <span>{{ __('แผนที่') }}</span>
             </a>
             @endif
         </div>
@@ -57,32 +57,32 @@
     <div id="jobFilterPanel" class="act-filter-panel" style="{{ $hasSearched ? '' : 'display:none;' }}">
         <div class="act-filter-grid">
             <div class="act-filter-select-wrap">
-                <select name="job_type" class="page-filter-select" aria-label="เลือกประเภทงาน" style="width:100%;" onchange="document.getElementById('jobSearchForm').submit()">
-                    <option value="">ทุกประเภท</option>
-                    <option value="general" {{ request('job_type') == 'general' ? 'selected' : '' }}>งานทั่วไป</option>
+                <select name="job_type" class="page-filter-select" aria-label="{{ __('เลือกประเภทงาน') }}" style="width:100%;" onchange="document.getElementById('jobSearchForm').submit()">
+                    <option value="">{{ __('ทุกประเภท') }}</option>
+                    <option value="general" {{ request('job_type') == 'general' ? 'selected' : '' }}>{{ __('งานทั่วไป') }}</option>
                     <option value="parttime" {{ request('job_type') == 'parttime' ? 'selected' : '' }}>Part-time</option>
                 </select>
             </div>
             <div class="act-filter-select-wrap">
-                <select name="status" class="page-filter-select" aria-label="เลือกสถานะ" style="width:100%;" onchange="document.getElementById('jobSearchForm').submit()">
-                    <option value="">ทุกสถานะ</option>
-                    <option value="open" {{ request('status') == 'open' ? 'selected' : '' }}>เปิดรับสมัคร</option>
-                    <option value="closed" {{ request('status') == 'closed' ? 'selected' : '' }}>ปิดรับสมัคร</option>
-                    <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>เสร็จสิ้น</option>
+                <select name="status" class="page-filter-select" aria-label="{{ __('เลือกสถานะ') }}" style="width:100%;" onchange="document.getElementById('jobSearchForm').submit()">
+                    <option value="">{{ __('ทุกสถานะ') }}</option>
+                    <option value="open" {{ request('status') == 'open' ? 'selected' : '' }}>{{ __('เปิดรับสมัคร') }}</option>
+                    <option value="closed" {{ request('status') == 'closed' ? 'selected' : '' }}>{{ __('ปิดรับสมัคร') }}</option>
+                    <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>{{ __('เสร็จสิ้น') }}</option>
                 </select>
             </div>
             <div class="act-filter-select-wrap">
-                <select name="gender" class="page-filter-select" aria-label="เลือกเพศ" style="width:100%;" onchange="document.getElementById('jobSearchForm').submit()">
-                    <option value="">ทุกเพศ</option>
-                    <option value="male" {{ request('gender') == 'male' ? 'selected' : '' }}>ชาย</option>
-                    <option value="female" {{ request('gender') == 'female' ? 'selected' : '' }}>หญิง</option>
+                <select name="gender" class="page-filter-select" aria-label="{{ __('เลือกเพศ') }}" style="width:100%;" onchange="document.getElementById('jobSearchForm').submit()">
+                    <option value="">{{ __('ทุกเพศ') }}</option>
+                    <option value="male" {{ request('gender') == 'male' ? 'selected' : '' }}>{{ __('ชาย') }}</option>
+                    <option value="female" {{ request('gender') == 'female' ? 'selected' : '' }}>{{ __('หญิง') }}</option>
                 </select>
             </div>
             @if($hasSearched)
             <div style="display:flex; align-items:center; gap:0.5rem;">
-                <a href="{{ route('jobs.index') }}" class="act-filter-clear-btn" title="ล้างการค้นหาและตัวกรองทั้งหมด">
+                <a href="{{ route('jobs.index') }}" class="act-filter-clear-btn" title="{{ __('ล้างการค้นหาและตัวกรองทั้งหมด') }}">
                     <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                    <span>ล้างค่า</span>
+                    <span>{{ __('ล้างค่า') }}</span>
                 </a>
             </div>
             @endif
@@ -105,7 +105,7 @@ function toggleJobFilters() {
     }
 }
 
-// สลับปุ่มตัวกรอง/ปุ่มค้นหา: โฟกัสหรือพิมพ์ในช่อง → แสดงปุ่มค้นหา, เลิกโฟกัส → กลับเป็นปุ่มตัวกรอง
+// สลับปุ่มตัวกรอง/ปุ่มค้นหา: โฟกัสหรือพิมพ์ในช่อง→ แสดงปุ่มค้นหา, เลิกโฟกัส→ กลับเป็นปุ่มตัวกรอง
 (function(){
     var inp = document.getElementById('jobSearchInput');
     var bSearch = document.getElementById('searchSwapSubmitBtn');
@@ -117,7 +117,7 @@ function toggleJobFilters() {
     inp.addEventListener('blur', function() { setTimeout(showFilter, 160); });
 })();
 
-// Typeahead: ใบ้งานตอนพิมพ์ + ซ่อนแผงตัวกรองระหว่างพิมพ์
+// Typeahead: ใบ้งานตอนพิมพ์+ ซ่อนแผงตัวกรองระหว่างพิมพ์
 (function(){
     var inp = document.getElementById('jobSearchInput');
     var box = document.getElementById('jobSuggestBox');
@@ -158,11 +158,11 @@ function toggleJobFilters() {
         fetch(suggestUrl + '?q=' + encodeURIComponent(q), { signal: ctrl.signal, headers: { 'Accept': 'application/json' } })
             .then(function (r) { return r.ok ? r.json() : { suggestions: [] }; })
             .then(function (data) { render(data.suggestions || []); })
-            .catch(function () { /* request ถูกยกเลิกหรือล้มเหลว — เงียบไว้ */ });
+            .catch(function () { /* request {{ __('ถูกยกเลิกหรือล้มเหลว — เงียบไว้') }}*/ });
     }
     inp.addEventListener('input', function () {
         var q = inp.value.trim();
-        setPanel(!q); // พิมพ์อยู่ → ซ่อนแผงตัวกรอง; ลบหมด → คืนแผง (เฉพาะถ้าเคยค้นหาแล้ว)
+        setPanel(!q); // พิมพ์อยู่→ ซ่อนแผงตัวกรอง; ลบหมด→ คืนแผง (เฉพาะถ้าเคยค้นหาแล้ว)
         if (!q) { hideBox(); if (timer) clearTimeout(timer); return; }
         if (timer) clearTimeout(timer);
         timer = setTimeout(function () { fetchSuggest(q); }, 300);
@@ -177,7 +177,7 @@ function toggleJobFilters() {
     inp.addEventListener('blur', function () {
         setTimeout(function () {
             if (!box.contains(document.activeElement)) hideBox();
-            setPanel(true); // เลิกพิมพ์ → คืนแผงตัวกรอง (เฉพาะถ้าเคยค้นหาแล้ว)
+            setPanel(true); // เลิกพิมพ์→ คืนแผงตัวกรอง (เฉพาะถ้าเคยค้นหาแล้ว)
         }, 160);
     });
 })();
@@ -190,32 +190,32 @@ function toggleJobFilters() {
 <div class="sort-scroll-container mb-4">
     <span class="text-xs text-muted font-bold" style="white-space:nowrap;margin-right:2px;display:inline-flex;align-items:center;gap:4px;line-height:1.5;">
         <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/></svg>
-        เรียงตาม:
+        {{ __('เรียงตาม:') }}
     </span>
     <a href="{{ request()->fullUrlWithQuery(['sort' => 'recommended']) }}" 
        class="sort-pill {{ $currentSort === 'recommended' ? 'active' : '' }}">
         <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-        <span>แนะนำสำหรับคุณ</span>
+        <span>{{ __('แนะนำสำหรับคุณ') }}</span>
     </a>
     <a href="{{ request()->fullUrlWithQuery(['sort' => 'compensation']) }}" 
        class="sort-pill {{ $currentSort === 'compensation' ? 'active' : '' }}">
         <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        <span>ค่าตอบแทนสูงสุด</span>
+        <span>{{ __('ค่าตอบแทนสูงสุด') }}</span>
     </a>
     <a href="{{ request()->fullUrlWithQuery(['sort' => 'starting_soon']) }}" 
        class="sort-pill {{ $currentSort === 'starting_soon' ? 'active' : '' }}">
         <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-        <span>ใกล้เริ่มงาน</span>
+        <span>{{ __('ใกล้เริ่มงาน') }}</span>
     </a>
     <a href="{{ request()->fullUrlWithQuery(['sort' => 'popular']) }}" 
        class="sort-pill {{ $currentSort === 'popular' ? 'active' : '' }}">
         <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-        <span>คนสมัครเยอะ</span>
+        <span>{{ __('คนสมัครเยอะ') }}</span>
     </a>
     <a href="{{ request()->fullUrlWithQuery(['sort' => 'latest']) }}" 
        class="sort-pill {{ $currentSort === 'latest' ? 'active' : '' }}">
         <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        <span>ประกาศล่าสุด</span>
+        <span>{{ __('ประกาศล่าสุด') }}</span>
     </a>
 </div>
 
@@ -230,7 +230,7 @@ function toggleJobFilters() {
         <div style="grid-column:1/-1;">
             <x-empty-state
                 icon="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                title="ไม่พบประกาศงาน"
+                title="{{ __('ไม่พบประกาศงาน') }}"
                 description="ลองเปลี่ยนเงื่อนไขการค้นหา หรือเลือกสถานะงาน และประเภทงานอื่น"
                 actionLabel="ดูทุกประกาศงาน"
                 actionUrl="{{ route('jobs.index') }}"
