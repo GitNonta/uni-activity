@@ -3999,9 +3999,9 @@ html:not([data-theme="light"]) .act-bookmark-btn.act-bookmark-active { color:#fb
 @media (max-width: 768px) {
     .navbar-brand-text { display: none; }
 }
-.mobile-sheet-backdrop { display: none; position: fixed; inset: 0; background: rgba(2,6,23,.5); z-index: 1390; opacity: 0; transition: opacity .2s ease; }
+.mobile-sheet-backdrop { display: none; position: fixed; inset: 0; background: rgba(2,6,23,.5); z-index: 8600; opacity: 0; transition: opacity .2s ease; }
 .mobile-sheet-backdrop.open { display: block; opacity: 1; }
-.mobile-sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1391; background: var(--surface); border-radius: 20px 20px 0 0; border-top: 1px solid var(--border); box-shadow: 0 -10px 40px rgba(0,0,0,.3); transform: translateY(105%); transition: transform .25s ease; padding: 6px 16px 26px; max-width: 100%; }
+.mobile-sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 8601; /* สูงกว่า chatFloatWidget (8500/8501) เพื่อไม่ให้กล่องแชทบัง sheet */ background: var(--surface); border-radius: 20px 20px 0 0; border-top: 1px solid var(--border); box-shadow: 0 -10px 40px rgba(0,0,0,.3); transform: translateY(105%); transition: transform .25s ease; padding: 6px 16px 26px; max-width: 100%; }
 .mobile-sheet.open { transform: translateY(0); }
 .mobile-sheet-grip { width: 44px; height: 5px; border-radius: 999px; background: var(--border); margin: 6px auto 10px; }
 .mobile-sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 2px 4px 10px; border-bottom: 1px solid var(--border); margin-bottom: 6px; }
