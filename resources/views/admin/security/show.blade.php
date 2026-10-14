@@ -766,11 +766,11 @@ html.dark .sec-type-badge.badge-orange {
                         </div>
                         <div class="sec-info-row">
                             <span class="sec-info-label">{{ __('คณะ') }}</span>
-                            <span class="sec-info-value">{{ $securityLog->user->faculty ?? '—' }}</span>
+                            <span class="sec-info-value">{{ $securityLog->user->faculty ? __($securityLog->user->faculty) : '—' }}</span>
                         </div>
                         <div class="sec-info-row">
                             <span class="sec-info-label">{{ __('สาขาวิชา') }}</span>
-                            <span class="sec-info-value">{{ $securityLog->user->department ?? '—' }}</span>
+                            <span class="sec-info-value">{{ $securityLog->user->department ? __($securityLog->user->department) : '—' }}</span>
                         </div>
                         <div style="margin-top: 1rem; display: flex; justify-content: flex-end;">
                             <a href="{{ route('admin.students.show', $securityLog->user->id) }}" class="btn-user-action">
@@ -785,7 +785,7 @@ html.dark .sec-type-badge.badge-orange {
                         </div>
                         <div class="sec-info-row">
                             <span class="sec-info-label">{{ __('สังกัด / หน่วยงาน') }}</span>
-                            <span class="sec-info-value">{{ $securityLog->user->organization ?? ($securityLog->user->faculty ?? '—') }}</span>
+                            <span class="sec-info-value">{{ $securityLog->user->organization ? __($securityLog->user->organization) : ($securityLog->user->faculty ? __($securityLog->user->faculty) : '—') }}</span>
                         </div>
                         <div class="sec-info-row">
                             <span class="sec-info-label">{{ __('สถานะบัญชี') }}</span>

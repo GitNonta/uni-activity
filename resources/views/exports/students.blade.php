@@ -20,8 +20,8 @@
             <tr>
                 <td>{{ $student->student_id }}</td>
                 <td>{{ $student->full_name }}</td>
-                <td>{{ $student->faculty }}</td>
-                <td>{{ $student->department }}</td>
+                <td>{{ __($student->faculty) }}</td>
+                <td>{{ __($student->department) }}</td>
                 <td>{{ $student->year }}</td>
                 <td>{{ $student->program }}</td>
                 <td>{{ $student->email }}</td>

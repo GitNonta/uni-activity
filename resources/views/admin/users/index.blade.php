@@ -95,8 +95,8 @@
                         @endif
                     </td>
                     <td data-label="{{ __('คณะ / สาขา') }}">
-                        <div class="text-sm">{{ $user->faculty ?? '-' }}</div>
-                        <div class="text-xs text-muted line-clamp-1">{{ $user->department ?? '' }} @if($user->program) ({{ $user->program }}) @endif</div>
+                        <div class="text-sm">{{ $user->faculty ? __($user->faculty) : '-' }}</div>
+                        <div class="text-xs text-muted line-clamp-1">{{ $user->department ? __($user->department) : '' }} @if($user->program) ({{ $user->program }}) @endif</div>
                     </td>
                     <td data-label="{{ __('สถานะ') }}" class="text-center">
                         @if($user->is_active)

@@ -63,7 +63,7 @@
                         <select id="faculty" name="faculty" class="form-control" onchange="updateDepartments()">
                             <option value="">{{ __('เลือกคณะ') }}</option>
                             @foreach(config('faculties') as $faculty => $deps)
-                                <option value="{{ $faculty }}" {{ old('faculty') == $faculty ? 'selected' : '' }}>{{ $faculty }}</option>
+                                <option value="{{ $faculty }}" {{ old('faculty') == $faculty ? 'selected' : '' }}>{{ __($faculty) }}</option>
                             @endforeach
                         </select>
                         @error('faculty') <div class="text-xs" style="color:#dc2626;margin-top:.25rem;">{{ $message }}</div> @enderror
@@ -150,6 +150,7 @@
 @section('scripts')
 <script>
     const facultyData = @json(config('faculties'));
+    const depLabels = @json(collect(config('faculties'))->flatMap(fn ($deps) => collect($deps)->mapWithKeys(fn ($d) => [$d => __($d)]))->all());
     const facultySelect = document.getElementById('faculty');
     const departmentSelect = document.getElementById('department');
     const oldDepartment = "{{ old('department') }}";
@@ -165,7 +166,7 @@
             facultyData[selectedFaculty].forEach(dep => {
                 const option = document.createElement('option');
                 option.value = dep;
-                option.textContent = dep;
+                option.textContent = depLabels[dep] || dep;
                 if (dep === oldDepartment) {
                     option.selected = true;
                 }

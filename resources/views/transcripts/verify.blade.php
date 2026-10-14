@@ -28,11 +28,11 @@
                     </div>
                     <div>
                         <span class="text-muted text-xs block">{{ __('คณะ:') }}</span>
-                        <span>{{ $student->faculty ?: '-' }}</span>
+                        <span>{{ $student->faculty ? __($student->faculty) : '-' }}</span>
                     </div>
                     <div>
                         <span class="text-muted text-xs block">{{ __('สาขาวิชา:') }}</span>
-                        <span>{{ $student->department ?: '-' }}</span>
+                        <span>{{ $student->department ? __($student->department) : '-' }}</span>
                     </div>
                 </div>
             </div>

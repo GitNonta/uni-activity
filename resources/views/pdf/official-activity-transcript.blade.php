@@ -262,9 +262,9 @@
                     </tr>
                     <tr>
                         <td class="info-label">{{ __('คณะ (Faculty):') }}</td>
-                        <td class="info-val">{{ $student->faculty ?: '-' }}</td>
+                        <td class="info-val">{{ $student->faculty ? __($student->faculty) : '-' }}</td>
                         <td class="info-label">{{ __('สาขาวิชา:') }}</td>
-                        <td class="info-val">{{ $student->department ?: '-' }}</td>
+                        <td class="info-val">{{ $student->department ? __($student->department) : '-' }}</td>
                     </tr>
                     <tr>
                         <td class="info-label">{{ __('เกณฑ์หลักสูตร:') }}</td>

@@ -146,7 +146,7 @@
 
             <div class="student-meta">{{ __('รหัสนักศึกษา:') }} <strong>{{ $user->student_id }}</strong> {{ __('| 
                 คณะ:') }} <strong>{{ $user->faculty ?? __('มหาวิทยาลัยราชภัฏภูเก็ต') }}</strong> {{ __('| 
-                สาขาวิชา:') }} <strong>{{ $user->department ?? '-' }}</strong>
+                สาขาวิชา:') }} <strong>{{ $user->department ? __($user->department) : '-' }}</strong>
             </div>
 
             <div class="cert-body">{{ __('ได้เข้าร่วมและผ่านการประเมินชั่วโมงกิจกรรมเสริมหลักสูตร') }}<br>

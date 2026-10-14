@@ -404,7 +404,7 @@
                     <span class="order">{{ $i + 1 }}</span>
                     <div class="info">
                         <div class="name">{{ $att->user->full_name }}</div>
-                        <div class="sid">{{ $att->user->student_id }} &middot; <span class="faculty">{{ $att->user->faculty ?? '-' }}</span></div>
+                        <div class="sid">{{ $att->user->student_id }} &middot; <span class="faculty">{{ $att->user->faculty ? __($att->user->faculty) : '-' }}</span></div>
                     </div>
                     <div class="time">{{ $att->checked_in_at?->format('H:i:s') ?? $att->created_at->format('H:i:s') }}</div>
                 </li>

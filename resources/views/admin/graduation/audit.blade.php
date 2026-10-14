@@ -192,8 +192,8 @@
                             <span class="badge" style="background:#f1f5f9;color:#475569;font-size:0.65rem;margin-top:2px;">ปี {{ $s->year ?: '-' }}</span>
                         </td>
                         <td style="padding:0.75rem;">
-                            <div class="text-xs font-semibold text-dark">{{ $s->faculty ?: '-' }}</div>
-                            <div class="text-xs text-muted">{{ $s->department ?: '-' }}</div>
+                            <div class="text-xs font-semibold text-dark">{{ $s->faculty ? __($s->faculty) : '-' }}</div>
+                            <div class="text-xs text-muted">{{ $s->department ? __($s->department) : '-' }}</div>
                         </td>
                         <td style="padding:0.75rem;" class="text-center">
                             <span class="font-bold {{ $audit['total_passed'] ? 'text-success' : 'text-danger' }}" style="font-size:1rem;">

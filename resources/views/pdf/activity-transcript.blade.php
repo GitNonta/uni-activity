@@ -284,9 +284,9 @@
                     </tr>
                     <tr>
                         <td class="info-label">{{ __('คณะ (Faculty):') }}</td>
-                        <td class="info-val">{{ $user->faculty ?? '-' }}</td>
+                        <td class="info-val">{{ $user->faculty ? __($user->faculty) : '-' }}</td>
                         <td class="info-label">{{ __('สาขาวิชา:') }}</td>
-                        <td class="info-val">{{ $user->department ?? '-' }}</td>
+                        <td class="info-val">{{ $user->department ? __($user->department) : '-' }}</td>
                     </tr>
                     <tr>
                         <td class="info-label">{{ __('ระดับการศึกษา:') }}</td>

@@ -91,7 +91,7 @@
             facultyData[selectedFaculty].forEach(dep => {
                 const option = document.createElement('option');
                 option.value = dep;
-                option.textContent = dep;
+                option.textContent = depLabels[dep] || dep;
                 if (dep === oldDepartment) {
                     option.selected = true;
                 }

@@ -2,7 +2,7 @@
 
 @php
     $creatorName = $creator ? ($creator->full_name ?? $creator->name ?? 'ผู้จัดกิจกรรม') : 'ผู้จัดกิจกรรม';
-    $creatorRole = $creator ? ($creator->faculty ?? $creator->department ?? $defaultRole) : $defaultRole;
+    $creatorRole = __($creator ? ($creator->faculty ?? $creator->department ?? $defaultRole) : $defaultRole);
     $creatorPhoto = $creator && $creator->profile_photo ? asset('storage/' . $creator->profile_photo) : null;
     // ลิงก์ไปหน้าโปรไฟล์สาธารณะของผู้โพสต์ (คลิกดูโปรไฟล์ + กดติดตามได้)
     $creatorUrl = $creator ? route('users.show', $creator) : null;

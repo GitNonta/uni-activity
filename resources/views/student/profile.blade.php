@@ -475,7 +475,7 @@ html.dark .line-unlink-btn:hover {
                 </div>
                 <div class="student-detail-text">
                     <p class="student-detail-label">{{ __('คณะ') }}</p>
-                    <p class="student-detail-value">{{ $user->faculty ?? '-' }}</p>
+                    <p class="student-detail-value">{{ $user->faculty ? __($user->faculty) : '-' }}</p>
                 </div>
             </div>
             <div class="student-detail-item">
@@ -484,7 +484,7 @@ html.dark .line-unlink-btn:hover {
                 </div>
                 <div class="student-detail-text">
                     <p class="student-detail-label">{{ __('สาขา') }}</p>
-                    <p class="student-detail-value">{{ $user->department ?? '-' }}</p>
+                    <p class="student-detail-value">{{ $user->department ? __($user->department) : '-' }}</p>
                 </div>
             </div>
             <div class="student-detail-item">

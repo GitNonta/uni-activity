@@ -72,7 +72,7 @@
     <tbody>
         @foreach($facultyStats as $stat)
             <tr>
-                <td>{{ $stat->faculty }}</td>
+                <td>{{ __($stat->faculty) }}</td>
                 <td>{{ number_format($stat->count) }} {{ __('คน') }}</td>
                 <td>{{ $activeStudents > 0 ? number_format(($stat->count / $activeStudents) * 100, 1) : 0 }}%</td>
             </tr>

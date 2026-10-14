@@ -48,7 +48,7 @@
                 </div>
                 <div class="row-item">
                     <span class="row-label">{{ __('คณะ / สาขาวิชา') }}</span>
-                    <span class="row-value">{{ $certificate->user->faculty ?? '-' }} / {{ $certificate->user->department ?? '-' }}</span>
+                    <span class="row-value">{{ $certificate->user->faculty ? __($certificate->user->faculty) : '-' }} / {{ $certificate->user->department ? __($certificate->user->department) : '-' }}</span>
                 </div>
                 <div class="row-item">
                     <span class="row-label">{{ __('หัวข้อใบรับรอง') }}</span>

@@ -113,7 +113,7 @@
                     <td>{{ $i + 1 }}</td>
                     <td class="font-semi">{{ $app->user->full_name ?? '-' }}</td>
                     <td>{{ $app->user->student_id ?? '-' }}</td>
-                    <td>{{ $app->user->faculty ?? '-' }}</td>
+                    <td>{{ $app->user->faculty ? __($app->user->faculty) : '-' }}</td>
                     <td>
                         @if($app->status === 'pending')
                             <span class="badge badge-yellow">{{ __('รอพิจารณา') }}</span>
