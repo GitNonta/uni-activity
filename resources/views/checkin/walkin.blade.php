@@ -358,7 +358,7 @@
             <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 14px; height: 14px; margin-left: 8px; margin-right: 4px; vertical-align: middle;">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            {{ $activity->activity_hours }} ชม.
+            {{ $activity->activity_hours }} {{ __('ชม.') }}
         </div>
         <a href="{{ route('activities.show', $activity) }}" class="walkin-hero-btn">
             <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 14px; height: 14px;">
@@ -396,7 +396,7 @@
     <div class="attendees-section">
         <div class="attendees-header">
             <h2><span class="live-dot"></span> {{ __('ผู้เข้าร่วมกิจกรรม') }}</h2>
-            <span class="attendees-count" id="attendeeCount">{{ $attendances->count() }} คน</span>
+            <span class="attendees-count" id="attendeeCount">{{ $attendances->count() }} {{ __('คน') }}</span>
         </div>
         <ul class="attendee-list" id="attendeeList">
             @forelse($attendances as $i => $att)

@@ -57,7 +57,7 @@
                     <td data-label="{{ __('ผู้สร้าง') }}" class="text-xs text-muted">{{ $item->creator->full_name ?? '-' }}</td>
                     <td data-label="{{ __('สถานะ') }}" class="text-center">
                         @if($item->published_at?->isFuture())
-                            <div class="text-xs text-muted" style="margin-bottom:.35rem;">ตั้งเวลา {{ $item->published_at->format('d/m/Y H:i') }}</div>
+                            <div class="text-xs text-muted" style="margin-bottom:.35rem;">{{ __('ตั้งเวลา') }} {{ $item->published_at->format('d/m/Y H:i') }}</div>
                         @elseif($item->published_at)
                             <div class="text-xs text-muted" style="margin-bottom:.35rem;">{{ __('เผยแพร่แล้ว') }}</div>
                         @endif

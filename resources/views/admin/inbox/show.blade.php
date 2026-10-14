@@ -643,7 +643,7 @@
                     <span style="font-size:.85rem;color:#c2410c;font-weight:500;">[{{ $job->title }}]</span>
                 </h2>
                 <div style="font-size:0.75rem;color:#64748b;">
-                    รหัสนักศึกษา: {{ $student->student_id ?? '-' }} | คณะ: {{ $student->faculty ?? '-' }}
+                    {{ __('รหัสนักศึกษา') }}: {{ $student->student_id ?? '-' }} | คณะ: {{ $student->faculty ?? '-' }}
                 </div>
             </div>
         </div>

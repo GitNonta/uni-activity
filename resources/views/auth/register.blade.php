@@ -31,7 +31,7 @@
                         <select id="faculty" name="faculty" class="form-control" required onchange="updateDepartments()">
                             <option value="">{{ __('เลือกคณะ') }}</option>
                             @foreach(config('faculties') as $faculty => $deps)
-                                <option value="{{ $faculty }}" {{ old('faculty') == $faculty ? 'selected' : '' }}>{{ $faculty }}</option>
+                                <option value="{{ $faculty }}" {{ old('faculty') == $faculty ? 'selected' : '' }}>{{ __($faculty) }}</option>
                             @endforeach
                         </select>
                         @error('faculty')<p class="form-error">{{ $message }}</p>@enderror
@@ -50,7 +50,7 @@
                         <select id="year" name="year" class="form-control" required>
                             <option value="">{{ __('เลือกชั้นปี') }}</option>
                             @for($i = 1; $i <= 6; $i++)
-                                <option value="{{ $i }}" {{ old('year') == $i ? 'selected' : '' }}>ปี {{ $i }}</option>
+                                <option value="{{ $i }}" {{ old('year') == $i ? 'selected' : '' }}>{{ __('ปี') }} {{ $i }}</option>
                             @endfor
                         </select>
                         @error('year')<p class="form-error">{{ $message }}</p>@enderror
@@ -77,7 +77,7 @@
 
 @section('scripts')
 <script>
-    const facultyData = @json(config('faculties'));
+    const facultyData = @json(collect(config('faculties'))->mapWithKeys(fn ($deps, $fac) => [__($fac) => array_map(fn ($d) => __($d), $deps)]));
     const facultySelect = document.getElementById('faculty');
     const departmentSelect = document.getElementById('department');
     const oldDepartment = "{{ old('department') }}";

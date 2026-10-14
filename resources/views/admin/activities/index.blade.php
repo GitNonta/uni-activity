@@ -76,7 +76,7 @@
                         @php $totalPending = $act->pending_registrations_count + $act->pending_attendances_count; @endphp
                         @if($totalPending > 0)
                             <button type="button" onclick="loadPendingRequests({{ $act->id }})" class="badge badge-yellow" style="border:none; cursor:pointer; font-size:.7rem; animation: pulse 2s infinite;">
-                                {{ $totalPending }} คำขอ
+                                {{ $totalPending }} {{ __('คำขอ') }}
                             </button>
                         @else
                             <span class="text-xs text-muted">-</span>
@@ -122,7 +122,7 @@
 @if($completedActivities->count())
 <div style="margin-top:2rem; padding-top:1.5rem; border-top:1px solid #e2e8f0;">
     <h2 style="font-weight:600; color:#64748b; padding:0.5rem 0; display:flex; align-items:center; gap:8px;">
-        <svg style="width:20px; height:20px; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ __('กิจกรรมที่เสร็จสิ้นแล้ว') }} <span style="font-weight:400; font-size:0.85rem;">({{ $completedActivities->total() }} รายการ)</span>
+        <svg style="width:20px; height:20px; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ __('กิจกรรมที่เสร็จสิ้นแล้ว') }} <span style="font-weight:400; font-size:0.85rem;">({{ $completedActivities->total() }} {{ __('รายการ') }})</span>
     </h2>
     <div class="mt-3">
         <div class="table-wrap">

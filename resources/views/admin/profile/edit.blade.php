@@ -349,7 +349,7 @@ label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
                                     </div>
                                 </div>
                                 <span style="background: #e0e7ff; color: #4338ca; font-size: 0.725rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 9999px;">
-                                    {{ $activity->hour_count ?? 1 }} ชม.
+                                    {{ $activity->hour_count ?? 1 }} {{ __('ชม.') }}
                                 </span>
                             </div>
                         @endforeach

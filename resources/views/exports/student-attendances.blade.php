@@ -2,7 +2,7 @@
 <table>
     <thead>
         <tr>
-            <th colspan="9">ประวัติการเข้าร่วมกิจกรรม - {{ $student->full_name }} ({{ $student->student_id }})</th>
+            <th colspan="9">{{ __('ประวัติการเข้าร่วมกิจกรรม') }} - {{ $student->full_name }} ({{ $student->student_id }})</th>
         </tr>
         <tr>
             <th>{{ __('รหัสกิจกรรม') }}</th>
@@ -28,7 +28,7 @@
                 <td>
                     @switch($attendance->status)
                         @case('approved')
-                            อนุมัติ
+                            {{ __('อนุมัติ') }}
                             @break
                         @case('pending')
                             รออนุมัติ
@@ -48,8 +48,8 @@
     <tfoot>
         <tr>
             <td colspan="4"><strong>{{ __('รวมทั้งหมด') }}</strong></td>
-            <td><strong>{{ $attendances->sum('activity.activity_hours') }} ชั่วโมง</strong></td>
-            <td colspan="4"><strong>{{ $attendances->count() }} กิจกรรม</strong></td>
+            <td><strong>{{ $attendances->sum('activity.activity_hours') }} {{ __('ชั่วโมง') }}</strong></td>
+            <td colspan="4"><strong>{{ $attendances->count() }} {{ __('กิจกรรม') }}</strong></td>
         </tr>
     </tfoot>
 </table>

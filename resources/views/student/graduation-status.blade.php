@@ -32,7 +32,7 @@
             <div>
                 <h3 class="font-bold text-dark" style="font-size:1.1rem;color:#065f46;">{{ __('ยินดีด้วย! คุณผ่านเกณฑ์กิจกรรมเพื่อการสำเร็จการศึกษาแล้ว') }}</h3>
                 <p class="text-xs mt-1" style="color:#047857;line-height:1.4;">
-                    คุณสะสมชั่วโมงกิจกรรมครบถ้วนตามโครงสร้างหลักสูตรและข้อบังคับมหาวิทยาลัย (รวม {{ number_format($audit['total_hours'], 1) }} / {{ number_format($audit['min_total_hours'], 0) }} ชม.) ข้อมูลของคุณพร้อมสำหรับการประมวลผลสำเร็จการศึกษาจากฝ่ายทะเบียน
+                    {{ __('คุณสะสมชั่วโมงกิจกรรมครบถ้วนตามโครงสร้างหลักสูตรและข้อบังคับมหาวิทยาลัย (รวม') }} {{ number_format($audit['total_hours'], 1) }} / {{ number_format($audit['min_total_hours'], 0) }} {{ __('ชม.') }}) ข้อมูลของคุณพร้อมสำหรับการประมวลผลสำเร็จการศึกษาจากฝ่ายทะเบียน
                 </p>
             </div>
         </div>
@@ -44,7 +44,7 @@
             <div>
                 <h3 class="font-bold" style="font-size:1.1rem;color:#991b1b;">{{ __('คุณยังไม่ผ่านเกณฑ์ชั่วโมงกิจกรรมเพื่อการสำเร็จการศึกษา') }}</h3>
                 <p class="text-xs mt-1" style="color:#b91c1c;line-height:1.4;">
-                    ขณะนี้คุณมีชั่วโมงสะสม {{ number_format($audit['total_hours'], 1) }} ชม. จากเกณฑ์ขั้นต่ำ {{ number_format($audit['min_total_hours'], 0) }} ชม. และยังขาดคุณสมบัติต่อไปนี้:
+                    {{ __('ขณะนี้คุณมีชั่วโมงสะสม') }} {{ number_format($audit['total_hours'], 1) }} ชม. จากเกณฑ์ขั้นต่ำ {{ number_format($audit['min_total_hours'], 0) }} ชม. และยังขาดคุณสมบัติต่อไปนี้:
                 </p>
                 <ul class="text-xs mt-2" style="color:#b91c1c;padding-left:1.25rem;">
                     @foreach($audit['missing_requirements'] as $missing)
@@ -78,7 +78,7 @@
                             @php $pct = min(100, round(($uni['earned'] / max(1, $uni['required'])) * 100)); @endphp
                             <div style="width:{{ $pct }}%;background:{{ $uni['passed'] ? '#10b981' : '#ef4444' }};height:100%;"></div>
                         </div>
-                        <span class="text-xs font-semibold text-muted">{{ number_format($uni['earned'], 1) }} / {{ number_format($uni['required'], 0) }} ชม.</span>
+                        <span class="text-xs font-semibold text-muted">{{ number_format($uni['earned'], 1) }} / {{ number_format($uni['required'], 0) }} {{ __('ชม.') }}</span>
                     </div>
                 </div>
             @endif
@@ -98,7 +98,7 @@
                             @php $pct = min(100, round(($fac['earned'] / max(1, $fac['required'])) * 100)); @endphp
                             <div style="width:{{ $pct }}%;background:{{ $fac['passed'] ? '#10b981' : '#ef4444' }};height:100%;"></div>
                         </div>
-                        <span class="text-xs font-semibold text-muted">{{ number_format($fac['earned'], 1) }} / {{ number_format($fac['required'], 0) }} ชม.</span>
+                        <span class="text-xs font-semibold text-muted">{{ number_format($fac['earned'], 1) }} / {{ number_format($fac['required'], 0) }} {{ __('ชม.') }}</span>
                     </div>
                 </div>
             @endif
@@ -117,7 +117,7 @@
                             @php $pct = min(100, round(($cat['earned'] / max(1, $cat['required'])) * 100)); @endphp
                             <div style="width:{{ $pct }}%;background:{{ $cat['passed'] ? '#10b981' : '#ef4444' }};height:100%;"></div>
                         </div>
-                        <span class="text-xs font-semibold text-muted">{{ number_format($cat['earned'], 1) }} / {{ number_format($cat['required'], 0) }} ชม.</span>
+                        <span class="text-xs font-semibold text-muted">{{ number_format($cat['earned'], 1) }} / {{ number_format($cat['required'], 0) }} {{ __('ชม.') }}</span>
                     </div>
                 </div>
             @endforeach

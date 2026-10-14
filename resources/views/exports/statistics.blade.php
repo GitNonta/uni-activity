@@ -7,7 +7,7 @@
         @if($dateFrom || $dateTo)
             <tr>
                 <th colspan="3">
-                    ช่วงวันที่: {{ $dateFrom ? $dateFrom->format('d/m/Y') : __('เริ่มต้น') }} 
+                    {{ __('ช่วงวันที่') }}: {{ $dateFrom ? $dateFrom->format('d/m/Y') : __('เริ่มต้น') }} 
                     ถึง {{ $dateTo ? $dateTo->format('d/m/Y') : __('ปัจจุบัน') }}
                 </th>
             </tr>
@@ -16,42 +16,42 @@
     <tbody>
         <tr>
             <td><strong>{{ __('นักศึกษาทั้งหมด') }}</strong></td>
-            <td>{{ number_format($totalStudents) }} คน</td>
+            <td>{{ number_format($totalStudents) }} {{ __('คน') }}</td>
             <td>{{ $totalStudents > 0 ? number_format(($activeStudents / $totalStudents) * 100, 1) : 0 }}%</td>
         </tr>
         <tr>
             <td><strong>{{ __('นักศึกษาที่ใช้งานได้') }}</strong></td>
-            <td>{{ number_format($activeStudents) }} คน</td>
+            <td>{{ number_format($activeStudents) }} {{ __('คน') }}</td>
             <td>{{ $activeStudents > 0 ? number_format(($activeStudents / $totalStudents) * 100, 1) : 0 }}%</td>
         </tr>
         <tr>
             <td><strong>{{ __('กิจกรรมทั้งหมด') }}</strong></td>
-            <td>{{ number_format($totalActivities) }} กิจกรรม</td>
+            <td>{{ number_format($totalActivities) }} {{ __('กิจกรรม') }}</td>
             <td>-</td>
         </tr>
         <tr>
             <td><strong>{{ __('กิจกรรมที่เสร็จสิ้น') }}</strong></td>
-            <td>{{ number_format($completedActivities) }} กิจกรรม</td>
+            <td>{{ number_format($completedActivities) }} {{ __('กิจกรรม') }}</td>
             <td>{{ $totalActivities > 0 ? number_format(($completedActivities / $totalActivities) * 100, 1) : 0 }}%</td>
         </tr>
         <tr>
             <td><strong>{{ __('ชั่วโมงกิจกรรมรวม') }}</strong></td>
-            <td>{{ number_format($totalHours, 1) }} ชั่วโมง</td>
+            <td>{{ number_format($totalHours, 1) }} {{ __('ชั่วโมง') }}</td>
             <td>-</td>
         </tr>
         <tr>
             <td><strong>{{ __('การลงทะเบียนทั้งหมด') }}</strong></td>
-            <td>{{ number_format($totalRegistrations) }} ครั้ง</td>
+            <td>{{ number_format($totalRegistrations) }} {{ __('ครั้ง') }}</td>
             <td>-</td>
         </tr>
         <tr>
             <td><strong>{{ __('การเข้าร่วมทั้งหมด') }}</strong></td>
-            <td>{{ number_format($totalAttendances) }} ครั้ง</td>
+            <td>{{ number_format($totalAttendances) }} {{ __('ครั้ง') }}</td>
             <td>{{ $totalRegistrations > 0 ? number_format(($totalAttendances / $totalRegistrations) * 100, 1) : 0 }}%</td>
         </tr>
         <tr>
             <td><strong>{{ __('Feedback ที่ได้รับ') }}</strong></td>
-            <td>{{ number_format($totalFeedbacks) }} รายการ</td>
+            <td>{{ number_format($totalFeedbacks) }} {{ __('รายการ') }}</td>
             <td>-</td>
         </tr>
         <tr>
@@ -73,7 +73,7 @@
         @foreach($facultyStats as $stat)
             <tr>
                 <td>{{ $stat->faculty }}</td>
-                <td>{{ number_format($stat->count) }} คน</td>
+                <td>{{ number_format($stat->count) }} {{ __('คน') }}</td>
                 <td>{{ $activeStudents > 0 ? number_format(($stat->count / $activeStudents) * 100, 1) : 0 }}%</td>
             </tr>
         @endforeach
@@ -92,7 +92,7 @@
         @foreach($yearStats as $stat)
             <tr>
                 <td>ปี {{ $stat->year }}</td>
-                <td>{{ number_format($stat->count) }} คน</td>
+                <td>{{ number_format($stat->count) }} {{ __('คน') }}</td>
                 <td>{{ $activeStudents > 0 ? number_format(($stat->count / $activeStudents) * 100, 1) : 0 }}%</td>
             </tr>
         @endforeach

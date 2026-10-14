@@ -116,7 +116,7 @@
                 </div>
                 <div style="min-width:0;flex:1;">
                     <span class="text-muted block" style="font-size:.75rem;">{{ __('จำนวนรับ') }}</span>
-                    <p class="font-semi" style="margin:0;word-break:break-word;">{{ $job->quota }} คน</p>
+                    <p class="font-semi" style="margin:0;word-break:break-word;">{{ $job->quota }} {{ __('คน') }}</p>
                 </div>
             </div>
             @if($job->work_period)
@@ -212,7 +212,7 @@
         <div class="mb-4">
             <div class="flex justify-between text-sm mb-1">
                 <span class="text-muted">{{ __('ผู้ได้รับการยืนยัน') }}</span>
-                <span class="font-semi">{{ $job->confirmed_applicants }} / {{ $job->quota }} คน</span>
+                <span class="font-semi">{{ $job->confirmed_applicants }} / {{ $job->quota }} {{ __('คน') }}</span>
             </div>
             <div class="progress">
                 @php $pct = $job->progress_percent; @endphp
@@ -220,7 +220,7 @@
             </div>
             <p class="text-xs text-muted mt-1 flex items-center gap-1">
                 <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                ผู้สมัครทั้งหมด: {{ $job->total_applicants }} คน
+                {{ __('ผู้สมัครทั้งหมด') }}: {{ $job->total_applicants }} {{ __('คน') }}
             </p>
         </div>
 
@@ -231,7 +231,7 @@
                     @if($userApplication->status === 'pending')
                         <svg style="width:16px;height:16px;display:inline;margin-right:4px;vertical-align:-3px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> {{ __('คุณได้สมัครงานนี้แล้ว —') }} <strong>{{ __('รอการพิจารณา') }}</strong>
                     @elseif($userApplication->status === 'confirmed')
-                        <svg style="width:16px;height:16px;display:inline;margin-right:4px;color:#16a34a;vertical-align:-3px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> <strong>{{ __('ได้รับการยืนยัน') }}</strong>แล้ว
+                        <svg style="width:16px;height:16px;display:inline;margin-right:4px;color:#16a34a;vertical-align:-3px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> <strong>{{ __('ได้รับการยืนยัน') }}</strong>{{ __('{{ __('แล้ว') }}') }}
                     @else
                         <svg style="width:16px;height:16px;display:inline;margin-right:4px;color:#dc2626;vertical-align:-3px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> <strong>{{ __('ไม่ผ่านการพิจารณา') }}</strong>
                     @endif
@@ -260,7 +260,7 @@
 {{-- ปุ่มคอมเมนต์ + สอบถาม --}}
 <div class="flex gap-2 mt-4 mb-2" style="flex-wrap:wrap;">
     <button class="btn btn-outline flex-1" onclick="document.getElementById('commentSection').scrollIntoView({behavior:'smooth'})">
-        <x-icon name="chat" size="14" style="display:inline;margin-right:2px;vertical-align:-2px;" /> คอมเมนต์ ({{ $comments->count() }})
+        <x-icon name="chat" size="14" style="display:inline;margin-right:2px;vertical-align:-2px;" /> {{ __('คอมเมนต์') }} ({{ $comments->count() }})
     </button>
     @auth
     <button class="btn btn-primary flex-1" id="openChatBtn" data-job-id="{{ $job->id }}" data-job-title="{{ $job->title }}" data-chat-url="{{ route('chat.show', $job->id) }}">
@@ -286,7 +286,7 @@
 <div id="commentSection" class="card mt-2">
     <div class="card-header flex items-center gap-2">
         <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
-        ความคิดเห็น ({{ $comments->count() }})
+        {{ __('ความคิดเห็น') }} ({{ $comments->count() }})
     </div>
     <div class="card-body">
         {{-- ฟอร์มเพิ่มคอมเมนต์ --}}
@@ -310,7 +310,7 @@
                 @if(auth()->check() && auth()->id() === $comment->user_id)
                     <form method="POST" action="{{ route('jobs.comment.delete', $comment->id) }}" style="margin-left:auto;">
                         @csrf @method('DELETE')
-                        <button type="submit" class="text-xs text-danger" style="background:none;border:none;cursor:pointer;" onclick="return confirm('ลบคอมเมนต์?')">{{ __('ลบ') }}</button>
+                        <button type="submit" class="text-xs text-danger" style="background:none;border:none;cursor:pointer;" onclick="return confirm('ลบ{{ __('คอมเมนต์') }}?')">{{ __('ลบ') }}</button>
                     </form>
                 @endif
             </div>

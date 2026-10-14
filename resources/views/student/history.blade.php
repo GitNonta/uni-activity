@@ -25,7 +25,7 @@
                     @elseif($att->status === 'rejected')
                         <span class="badge badge-red" style="font-size:.7rem;">{{ __('ปฏิเสธ') }}</span>
                     @endif
-                    <span class="font-bold text-primary">{{ $att->activity->activity_hours }} ชม.</span>
+                    <span class="font-bold text-primary">{{ $att->activity->activity_hours }} {{ __('ชม.') }}</span>
                     <p class="text-xs text-muted">{{ $att->checked_in_at ? $att->checked_in_at->format('H:i') : '-' }}</p>
                     
                     @if($att->status === 'approved')

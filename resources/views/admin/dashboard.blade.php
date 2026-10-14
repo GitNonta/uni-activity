@@ -107,7 +107,7 @@ html.dark .approval-row:hover {
     <div>
         <h1 class="font-bold" style="font-size:1.5rem; margin:0; color:var(--text-main, #0f172a);">{{ __('ภาพรวมระบบ') }}</h1>
         <p class="text-xs text-muted" style="margin-top:3px;">
-            ยินดีต้อนรับ, {{ auth()->user()->full_name ?? auth()->user()->name }} &nbsp;·&nbsp; {{ now()->locale('th')->isoFormat('D MMMM GGGG') }}
+            {{ __('ยินดีต้อนรับ') }}, {{ auth()->user()->full_name ?? auth()->user()->name }} &nbsp;·&nbsp; {{ now()->locale('th')->isoFormat('D MMMM GGGG') }}
         </p>
     </div>
     <div class="flex items-center gap-2">
@@ -176,7 +176,7 @@ html.dark .approval-row:hover {
                 <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
         </div>
-        <p class="text-xs text-muted" style="margin-top:4px;">สมัคร {{ $stats['pendingRegistrations'] }} · เช็คอิน {{ $stats['pendingAttendances'] }}</p>
+        <p class="text-xs text-muted" style="margin-top:4px;">{{ __('สมัคร') }} {{ $stats['pendingRegistrations'] }} · เช็คอิน {{ $stats['pendingAttendances'] }}</p>
     </a>
 </div>
 
@@ -327,7 +327,7 @@ html.dark .approval-row:hover {
     </div>
     @if($totalPending > 8)
     <div style="padding:.75rem 1.1rem; text-align:center; background:rgba(254, 243, 199, 0.4); border-top:1px solid rgba(245, 158, 11, 0.2);">
-        <span class="text-xs text-muted">{{ __('แสดง 8 รายการล่าสุด —') }} <a href="{{ route('admin.activities.index') }}" style="color:#d97706; font-weight:600;">ดูทั้งหมด {{ $totalPending }} รายการ</a></span>
+        <span class="text-xs text-muted">{{ __('แสดง 8 รายการล่าสุด —') }} <a href="{{ route('admin.activities.index') }}" style="color:#d97706; font-weight:600;">{{ __('ดูทั้งหมด') }} {{ $totalPending }} {{ __('รายการ') }}</a></span>
     </div>
     @endif
 </div>
@@ -434,7 +434,7 @@ html.dark .approval-row:hover {
                                 @endif
                             </td>
                             <td data-label="{{ __('ผู้สมัคร') }}" class="text-center">
-                                <span class="badge badge-orange">{{ $job->applications_count }} คน</span>
+                                <span class="badge badge-orange">{{ $job->applications_count }} {{ __('คน') }}</span>
                             </td>
                             <td data-label="{{ __('จัดการ') }}" class="text-right">
                                 <a href="{{ route('admin.jobs.show', $job->id) }}" class="btn btn-outline btn-sm">{{ __('ดู') }}</a>

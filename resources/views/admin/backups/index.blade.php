@@ -24,7 +24,7 @@
     <div class="card" style="padding:1rem;">
         <p class="text-muted" style="font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin:0;">{{ __('ขนาดรวม') }}</p>
         <p style="font-size:1.1rem; font-weight:700; color:#0f172a; margin:4px 0 0;">{{ $formattedTotalSize }}</p>
-        <p class="text-muted" style="font-size:0.7rem; margin:2px 0 0;">{{ count($backups) }} ไฟล์</p>
+        <p class="text-muted" style="font-size:0.7rem; margin:2px 0 0;">{{ count($backups) }} {{ __('ไฟล์') }}</p>
     </div>
     <div class="card" style="padding:1rem;">
         <p class="text-muted" style="font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin:0;">{{ __('ล่าสุด') }}</p>
@@ -46,7 +46,7 @@
         <div style="height:6px; border-radius:99px; background:#e2e8f0; overflow:hidden; margin:6px 0 0;">
             <div style="height:100%; border-radius:99px; width:{{ $diskPercent }}%; background:{{ $diskPercent > 90 ? '#ef4444' : ($diskPercent > 70 ? '#eab308' : '#22c55e') }};"></div>
         </div>
-        <p class="text-muted" style="font-size:0.65rem; margin:4px 0 0;">ว่าง {{ $formattedDiskFree }}</p>
+        <p class="text-muted" style="font-size:0.65rem; margin:4px 0 0;">{{ __('ว่าง') }} {{ $formattedDiskFree }}</p>
     </div>
 </div>
 
@@ -59,7 +59,7 @@
 {{-- ═══ Table ═══ --}}
 <div class="card">
     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-        <span>รายการไฟล์สำรอง ({{ count($backups) }})</span>
+        <span>{{ __('รายการไฟล์สำรอง') }} ({{ count($backups) }})</span>
         <div style="display:flex; gap:4px;" id="filterTabs">
             <button onclick="filterBackups('all')" class="filter-tab active" data-filter="all">{{ __('ทั้งหมด') }}</button>
             @php

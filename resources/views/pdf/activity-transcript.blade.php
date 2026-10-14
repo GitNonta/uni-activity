@@ -290,7 +290,7 @@
                     </tr>
                     <tr>
                         <td class="info-label">{{ __('ระดับการศึกษา:') }}</td>
-                        <td class="info-val" colspan="3">ปริญญาตรี (ชั้นปีที่ {{ $user->year ?? '-' }})</td>
+                        <td class="info-val" colspan="3">{{ __('ปริญญาตรี (ชั้นปีที่') }} {{ $user->year ?? '-' }})</td>
                     </tr>
                 </table>
             </td>
@@ -300,7 +300,7 @@
     {{-- ผลการประเมินกิจกรรมรวม --}}
     <div class="result-box">
         <div class="result-box-title">{{ __('ผลการเข้าร่วมกิจกรรมพัฒนานักศึกษาตามเกณฑ์มหาวิทยาลัย') }}</div>
-        <div class="result-box-desc">{{ __('สะสมรวม') }} <strong>{{ number_format($totalHours, 1) }}</strong> ชั่วโมง / เกณฑ์ขั้นต่ำ {{ number_format($totalRequired, 1) }} ชั่วโมง
+        <div class="result-box-desc">{{ __('สะสมรวม') }} <strong>{{ number_format($totalHours, 1) }}</strong> {{ __('ชั่วโมง / เกณฑ์ขั้นต่ำ') }} {{ number_format($totalRequired, 1) }} {{ __('ชั่วโมง') }}
             (ระดับผลการประเมิน: <strong>{{ $levelLabel }}</strong>)
         </div>
     </div>
@@ -364,7 +364,7 @@
     <table class="footer-table">
         <tr>
             <td style="text-align: left;">
-                ออก ณ วันที่ {{ now()->addYears(543)->locale('th')->translatedFormat('d F') }} {{ now()->year + 543 }} | ระบบระเบียนกิจกรรมนักศึกษา
+                {{ __('ออก ณ วันที่') }} {{ now()->addYears(543)->locale('th')->translatedFormat('d F') }} {{ now()->year + 543 }} | ระบบระเบียนกิจกรรมนักศึกษา
             </td>
             <td style="text-align: right;">
                 Document Ref: <strong>{{ $docNumber }}</strong>

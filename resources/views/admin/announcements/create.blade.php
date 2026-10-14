@@ -55,7 +55,7 @@
                     <select name="target_faculty" class="form-control">
                         <option value="">{{ __('ส่งถึงทุกคน (นักศึกษาทุกคณะ)') }}</option>
                         @foreach($faculties as $f)
-                            <option value="{{ $f }}" {{ old('target_faculty') == $f ? 'selected' : '' }}>เฉพาะคณะ{{ $f }}</option>
+                            <option value="{{ $f }}" {{ old('target_faculty') == $f ? 'selected' : '' }}>{{ __('เฉพาะคณะ') }}{{ $f }}</option>
                         @endforeach
                     </select>
                     <div class="text-xs text-muted mt-1">{{ __('หากเลือกคณะ ประกาศจะแสดงเฉพาะนักศึกษาในคณะนั้น') }}</div>

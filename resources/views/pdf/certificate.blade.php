@@ -150,16 +150,16 @@
             </div>
 
             <div class="cert-body">{{ __('ได้เข้าร่วมและผ่านการประเมินชั่วโมงกิจกรรมเสริมหลักสูตร') }}<br>
-                <strong>{{ $certificate->title }}</strong><br>{{ __('รวมทั้งสิ้น') }} <strong>{{ number_format($certificate->hours_completed, 1) }}</strong> ชั่วโมงกิจกรรม 
+                <strong>{{ $certificate->title }}</strong><br>{{ __('รวมทั้งสิ้น') }} <strong>{{ number_format($certificate->hours_completed, 1) }}</strong> {{ __('ชั่วโมงกิจกรรม') }} 
                 ประจำปีการศึกษา {{ $certificate->academic_year ?? date('Y') }}
             </div>
 
             <table class="sign-table">
                 <tr>
                     <td style="width:33%; text-align:left; font-size:10px; color:#64748b;">
-                        <div class="code-box">รหัสใบรับรอง: {{ $certificate->certificate_code }}</div>
-                        <div>ออกให้ ณ วันที่: {{ $certificate->issued_at ? $certificate->issued_at->format('d/m/Y') : date('d/m/Y') }}</div>
-                        <div style="margin-top:2px;">ตรวจสอบออนไลน์: {{ route('certificates.verify', $certificate->certificate_code) }}</div>
+                        <div class="code-box">{{ __('รหัสใบรับรอง') }}: {{ $certificate->certificate_code }}</div>
+                        <div>{{ __('ออกให้ ณ วันที่') }}: {{ $certificate->issued_at ? $certificate->issued_at->format('d/m/Y') : date('d/m/Y') }}</div>
+                        <div style="margin-top:2px;">{{ __('ตรวจสอบออนไลน์') }}: {{ route('certificates.verify', $certificate->certificate_code) }}</div>
                         <div style="margin-top:6px;">{!! $qrCodeSvg !!}</div>
                     </td>
                     <td style="width:33%;">

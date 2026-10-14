@@ -402,11 +402,11 @@ html.dark .empty-state-icon { background: #27272a; }
     <div class="audit-header-badges">
         <span class="header-badge header-badge-total">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
-            ทั้งหมด {{ number_format($stats['total']) }} รายการ
+            {{ __('ทั้งหมด') }} {{ number_format($stats['total']) }} {{ __('รายการ') }}
         </span>
         <span class="header-badge header-badge-today">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            วันนี้ {{ $stats['today'] }} รายการ
+            {{ __('วันนี้') }} {{ $stats['today'] }} {{ __('รายการ') }}
         </span>
     </div>
 </div>

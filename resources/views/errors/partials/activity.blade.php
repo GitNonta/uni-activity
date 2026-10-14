@@ -157,7 +157,7 @@
         <section class="error-layout" aria-labelledby="error-title">
             <div class="illustration">
                 <svg viewBox="0 0 280 210" role="img" aria-labelledby="activity-art-title" xmlns="http://www.w3.org/2000/svg">
-                    <title id="activity-art-title">ตัวการ์ตูนระบบกิจกรรมสำหรับข้อผิดพลาด {{ $code }}</title>
+                    <title id="activity-art-title">{{ __('ตัวการ์ตูนระบบกิจกรรมสำหรับข้อผิดพลาด') }} {{ $code }}</title>
                     <circle cx="38" cy="44" r="4" fill="var(--accent)" class="activity-dot"/>
                     <circle cx="242" cy="57" r="5" fill="var(--primary)" class="activity-dot" style="animation-delay:.5s"/>
                     <circle cx="222" cy="165" r="3" fill="var(--accent)" class="activity-dot" style="animation-delay:1s"/>

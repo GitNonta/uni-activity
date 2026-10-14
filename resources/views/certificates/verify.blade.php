@@ -56,7 +56,7 @@
                 </div>
                 <div class="row-item">
                     <span class="row-label">{{ __('ชั่วโมงกิจกรรมที่สะสม') }}</span>
-                    <span class="row-value" style="color:#059669; font-weight:700;">{{ number_format($certificate->hours_completed, 1) }} ชั่วโมง</span>
+                    <span class="row-value" style="color:#059669; font-weight:700;">{{ number_format($certificate->hours_completed, 1) }} {{ __('ชั่วโมง') }}</span>
                 </div>
                 <div class="row-item">
                     <span class="row-label">{{ __('วันที่ออกเอกสาร') }}</span>
@@ -79,7 +79,7 @@
     </div>
 
     <div class="footer">
-        ระบบตรวจสอบความถูกต้องใบรับรองกิจกรรมนักศึกษา &copy; {{ date('Y') }} Phuket Rajabhat University
+        {{ __('ระบบตรวจสอบความถูกต้องใบรับรองกิจกรรมนักศึกษา') }} &copy; {{ date('Y') }} Phuket Rajabhat University
     </div>
 
 </body>

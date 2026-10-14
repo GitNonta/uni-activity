@@ -15,7 +15,7 @@
         <div class="flex items-center justify-between" style="flex-wrap:wrap;gap:.75rem;">
             <div>
                 <p class="font-bold" style="font-size:.95rem;margin-bottom:.15rem;">
-                    เกณฑ์ชั่วโมงรวมทั้งระบบ
+                    {{ __('เกณฑ์ชั่วโมงรวมทั้งระบบ') }}
                     @if($isOverridden)
                         <span class="badge badge-green" style="font-size:.7rem;margin-left:.4rem;">{{ __('กำหนดเอง') }}</span>
                     @else
@@ -24,7 +24,7 @@
                 </p>
                 <p class="text-xs text-muted">{{ __('ชั่วโมงขั้นต่ำรวมที่นักศึกษาต้องสะสมตลอดหลักสูตร') }}</p>
                 @if($isOverridden)
-                    <p class="text-xs" style="color:#64748b;margin-top:.2rem;">ผลรวมจากหมวดหมู่: {{ number_format($categorySum, 1) }} ชม.</p>
+                    <p class="text-xs" style="color:#64748b;margin-top:.2rem;">{{ __('ผลรวมจากหมวดหมู่') }}: {{ number_format($categorySum, 1) }} {{ __('ชม.') }}</p>
                 @endif
             </div>
             <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
@@ -45,7 +45,7 @@
                 <form method="POST" action="{{ route('admin.categories.required-hours.reset') }}">
                     @csrf @method('DELETE')
                     <button type="submit" class="btn btn-outline btn-sm" style="color:#64748b;font-size:.75rem;"
-                        onclick="return confirm('รีเซ็ตกลับไปใช้ผลรวมจากหมวดหมู่ ({{ number_format($categorySum, 1) }} ชม.)?')">{{ __('รีเซ็ต') }}                    </button>
+                        onclick="return confirm('รีเซ็ตกลับไปใช้{{ __('ผลรวมจากหมวดหมู่') }} ({{ number_format($categorySum, 1) }} {{ __('ชม.') }})?')">{{ __('รีเซ็ต') }}                    </button>
                 </form>
                 @endif
             </div>

@@ -43,12 +43,12 @@
                     @if($audit['is_eligible'])
                         <div style="background:#ecfdf5;border:1px solid #10b981;border-radius:0.5rem;padding:0.75rem 1rem;color:#065f46;font-size:0.875rem;" class="flex items-center gap-2">
                             <svg style="width:1.2rem;height:1.2rem;color:#059669;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            <span class="font-bold">ผ่านเกณฑ์กิจกรรมการสำเร็จการศึกษาครบถ้วน (สะสมได้ {{ number_format($audit['total_hours'], 1) }} / {{ number_format($audit['min_total_hours'], 1) }} ชม.)</span>
+                            <span class="font-bold">{{ __('ผ่านเกณฑ์กิจกรรมการสำเร็จการศึกษาครบถ้วน (สะสมได้') }} {{ number_format($audit['total_hours'], 1) }} / {{ number_format($audit['min_total_hours'], 1) }} {{ __('ชม.') }})</span>
                         </div>
                     @else
                         <div style="background:#fef2f2;border:1px solid #ef4444;border-radius:0.5rem;padding:0.75rem 1rem;color:#991b1b;font-size:0.875rem;" class="flex items-center gap-2">
                             <svg style="width:1.2rem;height:1.2rem;color:#dc2626;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                            <span>อยู่ระหว่างการสะสมชั่วโมง (สะสมแล้ว {{ number_format($audit['total_hours'], 1) }} ชม.)</span>
+                            <span>{{ __('อยู่ระหว่างการสะสมชั่วโมง (สะสมแล้ว') }} {{ number_format($audit['total_hours'], 1) }} {{ __('ชม.') }})</span>
                         </div>
                     @endif
                 </div>

@@ -21,11 +21,11 @@
     
     <div style="display:flex; gap:8px;">
         <span style="background:#141416; color:#f4f4f5; padding:6px 14px; border-radius:999px; font-size:0.75rem; font-weight:700; border:1px solid #27272a;">
-            ทั้งหมด {{ number_format($stats['total']) }} รายการ
+            {{ __('ทั้งหมด') }} {{ number_format($stats['total']) }} {{ __('รายการ') }}
         </span>
         <span style="background:rgba(234, 88, 12, 0.15); color:#f97316; padding:6px 14px; border-radius:999px; font-size:0.75rem; font-weight:700; border:1px solid rgba(234, 88, 12, 0.3); display:inline-flex; align-items:center; gap:6px;">
             <svg width="14" height="14" fill="#fbbf24" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-            คะแนนเฉลี่ย {{ number_format((float)($stats['average'] ?? 0), 2) }} / 5.0 คะแนน
+            {{ __('คะแนนเฉลี่ย') }} {{ number_format((float)($stats['average'] ?? 0), 2) }} / 5.0 คะแนน
         </span>
     </div>
 </div>
@@ -74,7 +74,7 @@
                 <select name="rating" class="form-control" style="font-size:.85rem; padding: 0.5rem 0.75rem; border-radius: 8px;">
                     <option value="">{{ __('-- ทุกระดับ --') }}</option>
                     @for($i = 5; $i >= 1; $i--)
-                        <option value="{{ $i }}" {{ request('rating') == $i ? 'selected' : '' }}>{{ $i }} คะแนน</option>
+                        <option value="{{ $i }}" {{ request('rating') == $i ? 'selected' : '' }}>{{ $i }} {{ __('คะแนน') }}</option>
                     @endfor
                 </select>
             </div>

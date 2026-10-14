@@ -30,7 +30,7 @@
                 <td>
                     @switch($activity->status)
                         @case('upcoming')
-                            จะมาถึง
+                            {{ __('จะมาถึง') }}
                             @break
                         @case('ongoing')
                             กำลังดำเนินการ

@@ -71,7 +71,7 @@
                 <svg style="width:1.1rem;height:1.1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
             </span>
         </div>
-        <p class="font-bold text-dark mt-2" style="font-size:1.4rem;">{{ $stats['total_registered'] }} <span style="font-size:0.8rem;font-weight:normal;color:#64748b;">/ {{ $activity->max_participants }} คน</span></p>
+        <p class="font-bold text-dark mt-2" style="font-size:1.4rem;">{{ $stats['total_registered'] }} <span style="font-size:0.8rem;font-weight:normal;color:#64748b;">/ {{ $activity->max_participants }} {{ __('คน') }}</span></p>
     </div>
 
     <div class="card stat-card" style="padding:1rem;background:#ffffff;border:1px solid #e2e8f0;border-radius:0.75rem;">
@@ -177,14 +177,14 @@
                 <label class="block text-xs font-semibold text-dark mb-1">{{ __('กลุ่มนักศึกษาเป้าหมาย') }} <span class="text-danger">*</span></label>
                 <select name="target_audience" id="targetAudience" class="form-control" style="width:100%;border-radius:0.5rem;font-size:0.875rem;" required onchange="updatePreview()">
                     <option value="approved" {{ old('target_audience', 'approved') == 'approved' ? 'selected' : '' }}>
-                        เฉพาะผู้ที่ได้รับการอนุมัติแล้วเท่านั้น ({{ $stats['approved_count'] }} คน) [แนะนำ]
+                        {{ __('เฉพาะผู้ที่ได้รับการอนุมัติแล้วเท่านั้น') }} ({{ $stats['approved_count'] }} {{ __('คน') }}) [แนะนำ]
                     </option>
                     <option value="all" {{ old('target_audience') == 'all' ? 'selected' : '' }}>
-                        นักศึกษาทุกคนที่ลงทะเบียน (รวมรออนุมัติ/ตัวสำรอง) ({{ $stats['total_registered'] }} คน)
+                        {{ __('นักศึกษาทุกคนที่ลงทะเบียน (รวมรออนุมัติ/ตัวสำรอง') }}) ({{ $stats['total_registered'] }} {{ __('คน') }})
                     </option>
                     @if($stats['waitlisted_count'] > 0)
                     <option value="waitlisted" {{ old('target_audience') == 'waitlisted' ? 'selected' : '' }}>
-                        เฉพาะผู้ที่อยู่ในรายชื่อสำรอง (Waitlisted: {{ $stats['waitlisted_count'] }} คน)
+                        {{ __('เฉพาะผู้ที่อยู่ในรายชื่อสำรอง') }} (Waitlisted: {{ $stats['waitlisted_count'] }} {{ __('คน') }})
                     </option>
                     @endif
                 </select>
@@ -206,13 +206,13 @@
                         <input type="checkbox" name="channels[]" value="line" checked style="width:1rem;height:1rem;accent-color:#06c755;">
                         <span class="flex items-center gap-1">
                             <svg style="width:1rem;height:1rem;color:#06c755;" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 5.92 2 10.75c0 2.98 1.77 5.6 4.46 7.15-.2.74-.72 2.7-1.03 3.86-.06.24.18.44.38.31 1.78-1.18 4.25-2.82 4.79-3.21.46.06.93.1 1.4.1 5.52 0 10-3.92 10-8.75S17.52 2 12 2z"/></svg>
-                            <span>LINE Official Push ({{ $stats['line_linked_count'] }} คนที่เปิดรับ)</span>
+                            <span>LINE Official Push ({{ $stats['line_linked_count'] }} {{ __('คนที่เปิดรับ') }})</span>
                         </span>
                     </label>
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width:100%;padding:0.75rem;font-size:0.95rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:0.5rem;" onclick="return confirm('ยืนยันส่งข้อความบรอดแคสต์ไปยังนักศึกษาในกิจกรรมนี้ทันที?')">
+            <button type="submit" class="btn btn-primary" style="width:100%;padding:0.75rem;font-size:0.95rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:0.5rem;" onclick="return confirm('ยืนยันส่งข้อความบรอดแคสต์ไปยังนักศึกษาใน{{ __('กิจกรรม') }}นี้ทันที?')">
                 <svg style="width:1.1rem;height:1.1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
                 <span>{{ __('บรอดแคสต์ส่งข้อความด่วนทันที') }}</span>
             </button>
@@ -247,7 +247,7 @@
                                 @if($stats['reminder_24h'])
                                     <span class="text-success font-medium flex items-center gap-1">
                                         <svg style="width:0.85rem;height:0.85rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                        ส่งแล้วเมื่อ {{ \Carbon\Carbon::parse($stats['reminder_24h']->sent_at)->format('d/m/Y H:i') }} (ถึง {{ $stats['reminder_24h']->recipients_count }} คน)
+                                        {{ __('ส่งแล้วเมื่อ') }} {{ \Carbon\Carbon::parse($stats['reminder_24h']->sent_at)->format('d/m/Y H:i') }} (ถึง {{ $stats['reminder_24h']->recipients_count }} {{ __('คน') }})
                                     </span>
                                 @else
                                     <span class="text-muted">{{ __('ยังไม่เคยส่ง — รอคิวอัตโนมัติ หรือกดส่งได้ทันที') }}</span>
@@ -257,7 +257,7 @@
                         <form action="{{ route('admin.activities.reminders.trigger', $activity) }}" method="POST" style="margin:0;">
                             @csrf
                             <input type="hidden" name="window" value="24h">
-                            <button type="submit" class="btn btn-outline btn-sm text-xs flex items-center gap-1" onclick="return confirm('ต้องการส่งแจ้งเตือนล่วงหน้า 1 วัน (24h) ไปยังผู้ลงทะเบียนกิจกรรมนี้ตอนนี้ใช่หรือไม่?')">
+                            <button type="submit" class="btn btn-outline btn-sm text-xs flex items-center gap-1" onclick="return confirm('ต้องการส่งแจ้งเตือนล่วงหน้า 1 วัน (24h) ไปยังผู้ลงทะเบียน{{ __('กิจกรรม') }}นี้ตอนนี้ใช่หรือไม่?')">
                                 <svg style="width:0.85rem;height:0.85rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                                 <span>{{ __('ส่ง 24h ตอนนี้') }}</span>
                             </button>
@@ -277,7 +277,7 @@
                                 @if($stats['reminder_2h'])
                                     <span class="text-success font-medium flex items-center gap-1">
                                         <svg style="width:0.85rem;height:0.85rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                        ส่งแล้วเมื่อ {{ \Carbon\Carbon::parse($stats['reminder_2h']->sent_at)->format('d/m/Y H:i') }} (ถึง {{ $stats['reminder_2h']->recipients_count }} คน)
+                                        {{ __('ส่งแล้วเมื่อ') }} {{ \Carbon\Carbon::parse($stats['reminder_2h']->sent_at)->format('d/m/Y H:i') }} (ถึง {{ $stats['reminder_2h']->recipients_count }} {{ __('คน') }})
                                     </span>
                                 @else
                                     <span class="text-muted">{{ __('ยังไม่เคยส่ง — รอคิวอัตโนมัติ หรือกดส่งได้ทันที') }}</span>
@@ -287,7 +287,7 @@
                         <form action="{{ route('admin.activities.reminders.trigger', $activity) }}" method="POST" style="margin:0;">
                             @csrf
                             <input type="hidden" name="window" value="2h">
-                            <button type="submit" class="btn btn-outline btn-sm text-xs flex items-center gap-1" onclick="return confirm('ต้องการส่งแจ้งเตือนล่วงหน้า 2 ชั่วโมง (2h) ไปยังผู้ลงทะเบียนกิจกรรมนี้ตอนนี้ใช่หรือไม่?')">
+                            <button type="submit" class="btn btn-outline btn-sm text-xs flex items-center gap-1" onclick="return confirm('ต้องการส่งแจ้งเตือนล่วงหน้า 2 ชั่วโมง (2h) ไปยังผู้ลงทะเบียน{{ __('กิจกรรม') }}นี้ตอนนี้ใช่หรือไม่?')">
                                 <svg style="width:0.85rem;height:0.85rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                                 <span>{{ __('ส่ง 2h ตอนนี้') }}</span>
                             </button>
@@ -322,7 +322,7 @@
                         <h4 id="previewTitle" class="font-bold text-sm mt-1" style="color:#0f172a;">{{ __('[ประกาศด่วน] หัวข้อประกาศจะแสดงที่นี่') }}</h4>
                         <p id="previewMessage" class="text-xs text-muted mt-1" style="line-height:1.4;white-space:pre-wrap;">{{ __('เนื้อหาข้อความประกาศที่คุณพิมพ์จะแสดงตัวอย่างสดในกล่องนี้...') }}</p>
                         <div class="mt-2 pt-2 text-xs flex items-center justify-between" style="border-top:1px dashed #e2e8f0;color:#64748b;">
-                            <span>กิจกรรม: {{ Str::limit($activity->title, 25) }}</span>
+                            <span>{{ __('กิจกรรม') }}: {{ Str::limit($activity->title, 25) }}</span>
                             <span class="text-primary font-medium">{{ __('แตะเพื่อดูกิจกรรม &rarr;') }}</span>
                         </div>
                     </div>
@@ -341,7 +341,7 @@
             </span>
             <h2 class="font-bold" style="font-size:1.1rem;color:#0f172a;margin:0;">{{ __('ประวัติการบรอดแคสต์ในกิจกรรมนี้') }}</h2>
         </div>
-        <span class="text-xs text-muted">ทั้งหมด {{ $stats['broadcast_history']->count() }} รายการ</span>
+        <span class="text-xs text-muted">{{ __('ทั้งหมด') }} {{ $stats['broadcast_history']->count() }} {{ __('รายการ') }}</span>
     </div>
 
     @if($stats['broadcast_history']->isEmpty())
@@ -396,11 +396,11 @@
                             @endif
                         </td>
                         <td style="padding:0.75rem;" class="text-center font-semi">
-                            {{ $b->recipients_count }} คน
+                            {{ $b->recipients_count }} {{ __('คน') }}
                         </td>
                         <td style="padding:0.75rem;" class="text-center">
                             @if($b->line_sent_count > 0)
-                                <span class="badge" style="background:#f0fdf4;color:#16a34a;font-size:0.75rem;">{{ $b->line_sent_count }} คน</span>
+                                <span class="badge" style="background:#f0fdf4;color:#16a34a;font-size:0.75rem;">{{ $b->line_sent_count }} {{ __('คน') }}</span>
                             @else
                                 <span class="text-xs text-muted">-</span>
                             @endif

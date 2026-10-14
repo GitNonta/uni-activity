@@ -60,7 +60,7 @@
                                 {{ $cert->title }}
                             </h3>
                             <div style="font-size:0.85rem; color:#10b981; font-weight:600; margin-bottom:1rem;">
-                                ชั่วโมงที่ผ่านการรับรอง: {{ number_format($cert->hours_completed, 1) }} ชม.
+                                {{ __('ชั่วโมงที่ผ่านการรับรอง') }}: {{ number_format($cert->hours_completed, 1) }} {{ __('ชม.') }}
                             </div>
                         </div>
 
@@ -82,7 +82,7 @@
                 <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1rem; background:var(--surface-hover, #f8fafc); border-radius:10px; border:1px solid var(--border, #f1f5f9);">
                     <div>
                         <div style="font-weight:600; color:var(--text-main, #0f172a); font-size:0.9rem;">{{ $cat->name }}</div>
-                        <div style="font-size:0.8rem; color:var(--text-muted, #64748b);">เกณฑ์ขั้นต่ำ: {{ $cat->required_hours ?? 0 }} ชั่วโมง</div>
+                        <div style="font-size:0.8rem; color:var(--text-muted, #64748b);">{{ __('เกณฑ์ขั้นต่ำ') }}: {{ $cat->required_hours ?? 0 }} {{ __('ชั่วโมง') }}</div>
                     </div>
                     <form action="{{ route('student.certificates.claim') }}" method="POST">
                         @csrf

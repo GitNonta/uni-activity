@@ -294,7 +294,7 @@ html.dark .btn-secondary:hover {
     @if($summary['unreviewed'] > 0)
     <button type="button" class="btn btn-success" onclick="markAllReviewed()">
         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-        ทำเครื่องหมายตรวจสอบแล้ว ({{ $summary['unreviewed'] }})
+        {{ __('ทำเครื่องหมายตรวจสอบแล้ว') }} ({{ $summary['unreviewed'] }})
     </button>
     @endif
 </div>
@@ -416,7 +416,7 @@ html.dark .btn-secondary:hover {
                     @if($log->user)
                         <div class="user-info">
                             <span class="user-name">{{ $log->user->full_name }}</span>
-                            <span class="user-id">รหัส: {{ $log->user->student_id }}</span>
+                            <span class="user-id">{{ __('รหัส') }}: {{ $log->user->student_id }}</span>
                         </div>
                     @else
                         <span style="color:var(--text-muted);">{{ __('ไม่ทราบตัวตน') }}</span>

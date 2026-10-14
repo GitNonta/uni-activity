@@ -52,7 +52,7 @@
     @if($pendingAtts->count() > 0)
     <div class="card mb-4">
         <div class="card-header" style="background:#fef3c7;color:#92400e;">
-            รอการอนุมัติ ({{ $pendingAtts->count() }} คน)
+            {{ __('รอการอนุมัติ') }} ({{ $pendingAtts->count() }} {{ __('คน') }})
         </div>
         <div style="max-height:300px;overflow-y:auto;">
             @foreach($pendingAtts->sortByDesc('checked_in_at') as $att)
@@ -96,7 +96,7 @@
     <div class="card mb-4" style="border-color:#fca5a5;">
         <div class="card-header" style="background:#fee2e2;color:#991b1b;display:flex;align-items:center;gap:6px;">
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-            <span>ภาพถ่าย Selfie รอการตรวจสอบยืนยันตัวตน ({{ $selfieReviewAtts->count() }} รายการ)</span>
+            <span>{{ __('ภาพถ่าย Selfie รอการตรวจสอบยืนยันตัวตน') }} ({{ $selfieReviewAtts->count() }} {{ __('รายการ') }})</span>
         </div>
         <div style="max-height:400px;overflow-y:auto;">
             @foreach($selfieReviewAtts->sortByDesc('checked_in_at') as $att)
@@ -104,7 +104,7 @@
                 <div class="flex items-start justify-between" style="flex-wrap:wrap;gap:1rem;">
                     <div style="flex:1;">
                         <p class="font-semi text-sm">{{ $att->user->full_name }} ({{ $att->user->student_id }})</p>
-                        <p class="text-xs text-muted mb-2">ความคล้าย: {{ $att->face_match_score }}% | {{ $att->checked_in_at ? $att->checked_in_at->format('H:i:s') : '-' }}</p>
+                        <p class="text-xs text-muted mb-2">{{ __('ความคล้าย') }}: {{ $att->face_match_score }}% | {{ $att->checked_in_at ? $att->checked_in_at->format('H:i:s') : '-' }}</p>
                         
                         <div style="display:flex;gap:1rem;align-items:center;margin-top:.5rem;">
                             <div style="text-align:center;">
@@ -126,7 +126,7 @@
                         <form method="POST" action="{{ route('admin.attendances.review-selfie', $att->id) }}">
                             @csrf
                             <input type="hidden" name="action" value="approve">
-                            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('ยืนยันว่ารูปตรงกัน (อนุมัติ)?')">{{ __('ใช่, คนเดียวกัน') }}</button>
+                            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('ยืนยันว่ารูปตรงกัน ({{ __('อนุมัติ') }})?')">{{ __('ใช่, คนเดียวกัน') }}</button>
                         </form>
                         <form method="POST" action="{{ route('admin.attendances.review-selfie', $att->id) }}">
                             @csrf
@@ -145,8 +145,8 @@
     @php $approvedAtts = $activity->attendances->where('status', 'approved'); @endphp
     <div class="card">
         <div class="card-header flex justify-between">
-            <span>อนุมัติแล้ว ({{ $approvedAtts->count() }} คน)</span>
-            <span class="text-muted text-sm">จาก {{ $activity->getRegisteredCount() }} คน</span>
+            <span>{{ __('อนุมัติแล้ว') }} ({{ $approvedAtts->count() }} {{ __('คน') }})</span>
+            <span class="text-muted text-sm">{{ __('{{ __('จาก') }}') }} {{ $activity->getRegisteredCount() }} {{ __('คน') }}</span>
         </div>
         <div style="max-height:400px;overflow-y:auto;">
             @forelse($approvedAtts->sortByDesc('checked_in_at') as $att)

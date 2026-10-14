@@ -92,7 +92,7 @@
 <div class="card mb-4">
     <div class="card-header flex items-center gap-2">
         <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-        ผู้สมัคร ({{ $job->applications->count() }})
+        {{ __('ผู้สมัคร') }} ({{ $job->applications->count() }})
     </div>
     <div class="table-wrap">
         <table>
@@ -167,7 +167,7 @@
 <div class="card">
     <div class="card-header flex items-center gap-2">
         <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
-        คอมเมนต์ ({{ $job->comments->count() }})
+        {{ __('คอมเมนต์') }} ({{ $job->comments->count() }})
     </div>
     <div class="card-body">
         @forelse($job->comments as $comment)
@@ -177,7 +177,7 @@
                 <span class="text-xs text-muted">{{ $comment->created_at->diffForHumans() }}</span>
                 <form method="POST" action="{{ route('admin.jobs.admin-comment-delete', $comment->id) }}" style="margin-left:auto;">
                     @csrf @method('DELETE')
-                    <button type="submit" class="text-xs text-danger" style="background:none;border:none;cursor:pointer;" onclick="return confirm('ลบคอมเมนต์?')">{{ __('ลบ') }}</button>
+                    <button type="submit" class="text-xs text-danger" style="background:none;border:none;cursor:pointer;" onclick="return confirm('ลบ{{ __('คอมเมนต์') }}?')">{{ __('ลบ') }}</button>
                 </form>
             </div>
             <p class="text-sm">{{ $comment->body }}</p>

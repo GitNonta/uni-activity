@@ -264,7 +264,7 @@
             </button>
 
             <span id="lastUpdated" style="font-size:0.775rem; color:var(--text-muted); min-width:110px; text-align:right;">
-                อัปเดต: {{ now()->format('H:i:s') }}
+                {{ __('อัปเดต') }}: {{ now()->format('H:i:s') }}
             </span>
         </div>
     </div>
@@ -386,7 +386,7 @@
         <div class="cluster-card" style="padding:1.25rem;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
                 <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em;">Security & Biometrics</span>
-                <span class="c-badge c-badge-success">เกรด {{ $status['security']['grade'] ?? 'A+' }}</span>
+                <span class="c-badge c-badge-success">{{ __('เกรด') }} {{ $status['security']['grade'] ?? 'A+' }}</span>
             </div>
             <div style="display:flex; align-items:baseline; gap:0.4rem;">
                 <div style="font-size:1.35rem; font-weight:800; color:var(--text-primary);">{{ $status['security']['score'] ?? 100 }}</div>
@@ -533,7 +533,7 @@
                 @php $failedCount = $status['queues']['failed_jobs'] ?? 0; @endphp
                 @if($failedCount > 0)
                     <a href="{{ route('admin.system.failed-jobs.index') }}" class="c-badge c-badge-danger" style="text-decoration:none;">
-                        {{ $failedCount }} งานล้มเหลว
+                        {{ $failedCount }} {{ __('งานล้มเหลว') }}
                     </a>
                 @else
                     <span class="c-badge c-badge-success">{{ __('0 ล้มเหลว') }}</span>
@@ -559,7 +559,7 @@
                     </div>
                     <div>
                         <span class="c-badge {{ $count > 0 ? 'c-badge-warning' : 'c-badge-neutral' }}">
-                            {{ $count }} ค้างในคิว
+                            {{ $count }} {{ __('ค้างในคิว') }}
                         </span>
                     </div>
                 </div>

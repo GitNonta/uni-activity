@@ -258,7 +258,7 @@
                         <td class="info-label">Student Name:</td>
                         <td class="info-val">{{ $student->english_name ?: '-' }}</td>
                         <td class="info-label">{{ __('ระดับการศึกษา:') }}</td>
-                        <td class="info-val">ปริญญาตรี (ชั้นปีที่ {{ $student->year ?: '-' }})</td>
+                        <td class="info-val">{{ __('ปริญญาตรี (ชั้นปีที่') }} {{ $student->year ?: '-' }})</td>
                     </tr>
                     <tr>
                         <td class="info-label">{{ __('คณะ (Faculty):') }}</td>
@@ -284,14 +284,14 @@
     @if($audit['is_eligible'])
         <div class="audit-badge-box audit-pass">
             <div class="audit-badge-title">{{ __('ผ่านเกณฑ์กิจกรรมพัฒนานักศึกษาเพื่อการสำเร็จการศึกษา (GRADUATION REQUIREMENT MET)') }}</div>
-            <div class="audit-badge-desc">นักศึกษามีชั่วโมงกิจกรรมครบถ้วนตามเกณฑ์หลักสูตร (สะสมได้ {{ number_format($audit['total_hours'], 1) }} / เกณฑ์ {{ number_format($audit['min_total_hours'], 1) }} ชม.)</div>
+            <div class="audit-badge-desc">{{ __('นักศึกษามีชั่วโมงกิจกรรมครบถ้วนตามเกณฑ์หลักสูตร (สะสมได้') }} {{ number_format($audit['total_hours'], 1) }} / เกณฑ์ {{ number_format($audit['min_total_hours'], 1) }} {{ __('ชม.') }})</div>
         </div>
     @else
         <div class="audit-badge-box audit-fail">
             <div class="audit-badge-title">{{ __('อยู่ระหว่างการสะสมชั่วโมงกิจกรรม (IN PROGRESS - REQUIREMENT NOT YET MET)') }}</div>
             <div class="audit-badge-desc">
-                ชั่วโมงสะสมรวม {{ number_format($audit['total_hours'], 1) }} / เกณฑ์ {{ number_format($audit['min_total_hours'], 1) }} ชม.
-                (ยังขาดอีก {{ number_format(max(0, $audit['min_total_hours'] - $audit['total_hours']), 1) }} ชม. ให้ครบตามโครงสร้างเกณฑ์หลักสูตร)
+                {{ __('ชั่วโมงสะสมรวม') }} {{ number_format($audit['total_hours'], 1) }} / เกณฑ์ {{ number_format($audit['min_total_hours'], 1) }} {{ __('ชม.') }}
+                (ยัง{{ __('ขาด') }}อีก {{ number_format(max(0, $audit['min_total_hours'] - $audit['total_hours']), 1) }} ชม. ให้ครบตามโครงสร้างเกณฑ์หลักสูตร)
             </div>
         </div>
     @endif
@@ -318,7 +318,7 @@
                     @if($scope['passed'])
                         <span class="badge-pass">{{ __('ผ่านเกณฑ์') }}</span>
                     @else
-                        <span class="badge-fail">ขาด {{ number_format($scope['deficit'], 1) }} ชม.</span>
+                        <span class="badge-fail">{{ __('ขาด') }} {{ number_format($scope['deficit'], 1) }} {{ __('ชม.') }}</span>
                     @endif
                 </td>
             </tr>
@@ -334,7 +334,7 @@
                     @if($cat['passed'])
                         <span class="badge-pass">{{ __('ผ่านเกณฑ์') }}</span>
                     @else
-                        <span class="badge-fail">ขาด {{ number_format($cat['deficit'], 1) }} ชม.</span>
+                        <span class="badge-fail">{{ __('ขาด') }} {{ number_format($cat['deficit'], 1) }} {{ __('ชม.') }}</span>
                     @endif
                 </td>
             </tr>
@@ -375,7 +375,7 @@
                     {{ $att->activity?->category?->name ?? __('ทั่วไป') }}
                     <span style="color: #64748b;">({{ $att->activity?->scope === 'university' ? __('ระดับมหาวิทยาลัย') : __('ระดับคณะ') }})</span>
                 </td>
-                <td style="text-align: center; font-weight: bold;">{{ number_format((float) ($att->activity?->activity_hours ?? 0), 1) }} ชม.</td>
+                <td style="text-align: center; font-weight: bold;">{{ number_format((float) ($att->activity?->activity_hours ?? 0), 1) }} {{ __('ชม.') }}</td>
             </tr>
             @empty
             <tr>
@@ -415,7 +415,7 @@
     <table class="footer-table">
         <tr>
             <td style="text-align: left;">
-                เอกสารทางการออก ณ วันที่ {{ $issueDateThai ?? $issueDate->format('d/m/Y') }} | ตรวจสอบความถูกต้องผ่านระบบระเบียนกิจกรรมนักศึกษาดิจิทัล
+                {{ __('เอกสารทางการออก ณ วันที่') }} {{ $issueDateThai ?? $issueDate->format('d/m/Y') }} | ตรวจสอบความถูกต้องผ่านระบบระเบียนกิจกรรมนักศึกษาดิจิทัล
             </td>
             <td style="text-align: right;">
                 Document Ref: <strong>{{ $docNumber }}</strong>

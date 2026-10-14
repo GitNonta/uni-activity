@@ -525,14 +525,14 @@ html.dark .line-unlink-btn:hover {
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-sm" style="font-weight: 600; color: var(--text-main, #334155);">{{ $cat['name'] }}</span>
                     <span class="text-sm" style="font-weight: 500; color: {{ $isCompleted ? '#16a34a' : '#64748b' }};">
-                        {{ number_format($cat['hours'], 1) }} / {{ number_format($cat['required'], 0) }} ชม.
+                        {{ number_format($cat['hours'], 1) }} / {{ number_format($cat['required'], 0) }} {{ __('ชม.') }}
                     </span>
                 </div>
                 <div style="height: 8px; background: #f1f5f9; border-radius: 999px; overflow: hidden; position: relative;">
                     <div style="position: absolute; top: 0; left: 0; height: 100%; width: {{ $p }}%; background: {{ $isCompleted ? '#10b981' : '#ea580c' }}; border-radius: 999px; transition: width 0.5s ease;"></div>
                 </div>
                 @if(!$isCompleted && $cat['required'] > 0)
-                <p class="text-xs" style="color: #475569; margin-top: 0.3rem; text-align: right; line-height: 1.5;">ขาดอีก {{ number_format($cat['required'] - $cat['hours'], 1) }} ชม.</p>
+                <p class="text-xs" style="color: #475569; margin-top: 0.3rem; text-align: right; line-height: 1.5;">{{ __('ขาดอีก') }} {{ number_format($cat['required'] - $cat['hours'], 1) }} {{ __('ชม.') }}</p>
                 @endif
             </div>
             @endforeach
@@ -569,7 +569,7 @@ html.dark .line-unlink-btn:hover {
                 <div style="text-align: right; flex-shrink: 0;">
                     @if($att->status === 'approved')
                         <span style="display: inline-flex; align-items: center; justify-content: center; background: #ecfdf5; color: #047857; font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 999px; border: 1px solid #a7f3d0; line-height: 1.5;">
-                            +{{ $att->activity->activity_hours }} ชม.
+                            +{{ $att->activity->activity_hours }} {{ __('ชม.') }}
                         </span>
                     @elseif($att->status === 'pending')
                         <span style="display: inline-flex; align-items: center; justify-content: center; background: #fffbeb; color: #92400e; font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 999px; border: 1px solid #fde68a; line-height: 1.5;">{{ __('รออนุมัติ') }}                        </span>
@@ -733,7 +733,7 @@ html.dark .line-unlink-btn:hover {
                         <!-- Thin divider -->
                         <div style="width: 100%; height: 1px; background: #e2e8f0; margin: 8px 0;"></div>
                         
-                        <div style="font-size: 14px; font-weight: 700; color: #1e293b !important;">สาขา{{ $user->department ?? 'วิทยาการคอมพิวเตอร์' }}</div>
+                        <div style="font-size: 14px; font-weight: 700; color: #1e293b !important;">{{ __('สาขา') }}{{ $user->department ?? 'วิทยาการคอมพิวเตอร์' }}</div>
                     </div>
 
                     <div style="flex: 1;"></div>

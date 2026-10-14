@@ -14,7 +14,7 @@
                     Failed Queue Jobs
                 </h1>
                 <span class="badge" style="background:{{ $totalFailed > 0 ? '#fee2e2' : '#dcfce7' }}; color:{{ $totalFailed > 0 ? '#b91c1c' : '#15803d' }}; font-weight:700; font-size:0.8rem; padding:4px 10px; border-radius:999px;">
-                    {{ $totalFailed }} งานที่ล้มเหลว
+                    {{ $totalFailed }} {{ __('งานที่ล้มเหลว') }}
                 </span>
             </div>
             <p style="color:#475569; font-size:0.9rem; margin:0.25rem 0 0 0; line-height:1.5;">{{ __('รายการงานเบื้องหลัง (LINE Notify, AI Extraction, PDF/Excel Exports) ที่ประมวลผลไม่สำเร็จ สามารถตรวจสอบสาเหตุและกด Retry ได้ทันที') }}            </p>

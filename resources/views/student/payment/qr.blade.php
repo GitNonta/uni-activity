@@ -6,13 +6,13 @@
 
 <div class="card mt-2">
     <div class="card-body" style="font-size:.875rem;">
-        <h1 class="font-bold" style="font-size:1.05rem;">💰 ชำระค่าสมัคร — {{ $activity->title }}</h1>
+        <h1 class="font-bold" style="font-size:1.05rem;">{{ __('💰 ชำระค่าสมัคร') }} — {{ $activity->title }}</h1>
 
         <div class="mt-2" style="display:flex; gap:.75rem; align-items:center; flex-wrap:wrap;">
             <span class="text-muted">{{ __('ยอดชำระ:') }}</span>
             <span class="font-bold" style="font-size:1.15rem;">฿{{ number_format($payment->amount, 2) }}</span>
             <span class="badge badge-orange">{{ $payment->status }}</span>
-            <span class="text-muted" style="font-size:.78rem;">อ้างอิง {{ $payment->ref }}</span>
+            <span class="text-muted" style="font-size:.78rem;">{{ __('อ้างอิง') }} {{ $payment->ref }}</span>
         </div>
 
         @php

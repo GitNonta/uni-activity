@@ -642,7 +642,7 @@ html.dark .sec-type-badge.badge-orange {
                     </span>
                 </div>
                 <p class="sec-show-subtitle">
-                    บันทึกเมื่อ {{ $securityLog->created_at->format('d/m/Y H:i:s') }}
+                    {{ __('บันทึกเมื่อ') }} {{ $securityLog->created_at->format('d/m/Y H:i:s') }}
                     <span style="opacity:0.75;">({{ $securityLog->created_at->diffForHumans() }})</span>
                 </p>
             </div>
@@ -917,7 +917,7 @@ html.dark .sec-type-badge.badge-orange {
                 </svg>
                 <span>{{ __('บัญชีอื่นที่เกี่ยวข้อง (จากอุปกรณ์หรือ IP เดียวกัน)') }}</span>
             </div>
-            <span style="font-size:.8rem;font-weight:700;color:var(--text-muted, #64748b);">{{ $relatedUsers->count() }} บัญชี</span>
+            <span style="font-size:.8rem;font-weight:700;color:var(--text-muted, #64748b);">{{ $relatedUsers->count() }} {{ __('บัญชี') }}</span>
         </div>
         <div class="sec-card-body">
             <div class="related-list">
@@ -972,7 +972,7 @@ html.dark .sec-type-badge.badge-orange {
                         <div>
                             <div style="font-weight:700;font-size:.95rem;">{{ __('เหตุการณ์นี้ได้รับการตรวจสอบความปลอดภัยแล้ว') }}</div>
                             <div style="font-size:.82rem;opacity:.9;margin-top:2px;">
-                                ตรวจสอบเมื่อ {{ $securityLog->reviewed_at?->format('d/m/Y H:i:s') }}
+                                {{ __('ตรวจสอบเมื่อ') }} {{ $securityLog->reviewed_at?->format('d/m/Y H:i:s') }}
                                 @if($securityLog->{{ __('reviewer)
                                     โดย') }} <strong style="font-weight:700;">{{ $securityLog->reviewer->full_name }}</strong>
                                 @endif

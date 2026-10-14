@@ -767,7 +767,7 @@ html.dark .follower-row:hover {
                 @php $groupPosts = $postsByType->get($type, collect()); @endphp
                 <div class="pub-feed-panel {{ $type === $defaultFeedType ? 'is-active' : '' }}" data-feed-panel="{{ $type }}" role="tabpanel">
                     @if ($groupPosts->isEmpty())
-                        <div class="pub-feed-panel-empty">ยังไม่มี{{ $group['label'] }}</div>
+                        <div class="pub-feed-panel-empty">{{ __('ยังไม่มี') }}{{ $group['label'] }}</div>
                     @else
                         @foreach ($groupPosts as $post)
                             <a href="{{ $post['url'] }}" class="pub-post-row">

@@ -37,10 +37,10 @@
         
         <div class="pt-4 border-t border-gray-100 flex justify-between items-center text-xs text-muted">
             <div>
-                <p>กลุ่มเป้าหมาย: คณะ{{ $announcement->target_faculty ?? __('ทุกคน') }}</p>
+                <p>{{ __('กลุ่มเป้าหมาย: คณะ') }}{{ $announcement->target_faculty ?? __('ทุกคน') }}</p>
             </div>
             <div>
-                <p>ประกาศโดย: {{ $announcement->creator->full_name }}</p>
+                <p>{{ __('ประกาศโดย') }}: {{ $announcement->creator->full_name }}</p>
             </div>
         </div>
 

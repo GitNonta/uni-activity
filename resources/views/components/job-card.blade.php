@@ -60,7 +60,7 @@
             <div style="margin-top:.5rem;">
                 <div class="flex justify-between text-xs text-muted">
                     <span>{{ __('ยืนยันแล้ว') }}</span>
-                    <span class="font-semi">{{ $job->confirmed_applicants }} / {{ $job->quota }} คน</span>
+                    <span class="font-semi">{{ $job->confirmed_applicants }} / {{ $job->quota }} {{ __('คน') }}</span>
                 </div>
                 <div class="progress" style="margin-top:.25rem;">
                     @php $pct = $job->progress_percent; @endphp

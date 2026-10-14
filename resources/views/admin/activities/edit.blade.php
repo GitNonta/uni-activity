@@ -812,21 +812,7 @@ document.addEventListener('DOMContentLoaded', function() {
     toggleNoCheckout();
 });
 
-@php
-    $initialDays = old('days', $activity->days->map(function($d) {
-        return [
-            'day_number' => $d->day_number,
-            'date' => $d->date->format('Y-m-d'),
-            'start_time' => $d->start_time ? \Carbon\Carbon::parse($d->start_time)->format('H:i') : null,
-            'end_time' => $d->end_time ? \Carbon\Carbon::parse($d->end_time)->format('H:i') : null,
-            'activity_hours' => (float)$d->activity_hours,
-            'checkin_open_at' => $d->checkin_open_at ? $d->checkin_open_at->format('Y-m-d\TH:i') : null,
-            'checkin_close_at' => $d->checkin_close_at ? $d->checkin_close_at->format('Y-m-d\TH:i') : null,
-            'checkout_open_at' => $d->checkout_open_at ? $d->checkout_open_at->format('Y-m-d\TH:i') : null,
-            'checkout_close_at' => $d->checkout_close_at ? $d->checkout_close_at->format('Y-m-d\TH:i') : null,
-        ];
-    }));
-@endphp
+ P1 
 const INITIAL_DAYS = @json($initialDays);
 
 function getDatesBetween(startDateStr, endDateStr) {

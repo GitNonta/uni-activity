@@ -37,4 +37,20 @@ class ActivityCategory extends Model
     {
         return $this->hasMany(Activity::class, 'category_id');
     }
+
+    /**
+     * [tag:2026-10-14-translation] ชื่อหมวดหมู่แปลตาม locale ผ่าน key ใน lang/{locale}.json
+     * (ชื่อหมวดเป็นชุดคงที่ ใช้ __($name) — ถ้าไม่มี key ใน locale นั้นจะ fallback เป็นข้อความเดิม)
+     */
+    public function getNameAttribute($value)
+    {
+        if (app()->getLocale() !== 'th') {
+            $t = __($value);
+            if (is_string($t) && $t !== $value) {
+                return $t;
+            }
+        }
+
+        return $value ?? null;
+    }
 }

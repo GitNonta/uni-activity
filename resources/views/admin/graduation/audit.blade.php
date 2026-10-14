@@ -48,7 +48,7 @@
 <div class="grid-4 mb-4" style="gap:1rem;">
     <div class="card stat-card" style="padding:1rem;background:#ffffff;border:1px solid #e2e8f0;border-radius:0.75rem;">
         <div class="flex items-center justify-between">
-            <span class="stat-label text-xs text-muted">นักศึกษาตามตัวกรอง ({{ ($report['filters']['year'] === 'all' || empty($report['filters']['year'])) ? __('ทุกชั้นปี') : 'ปี ' . $report['filters']['year'] }})</span>
+            <span class="stat-label text-xs text-muted">{{ __('นักศึกษาตามตัวกรอง') }} ({{ ($report['filters']['year'] === 'all' || empty($report['filters']['year'])) ? __('ทุกชั้นปี') : 'ปี ' . $report['filters']['year'] }})</span>
             <span style="color:#4f46e5;padding:0.3rem;background:#eef2ff;border-radius:0.375rem;">
                 <svg style="width:1.1rem;height:1.1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
             </span>
@@ -83,7 +83,7 @@
                 <svg style="width:1.1rem;height:1.1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </span>
         </div>
-        <p class="font-bold text-dark mt-2" style="font-size:1.4rem;">{{ $report['average_hours'] }} <span style="font-size:0.8rem;font-weight:normal;color:#64748b;">ชม. / {{ $report['criteria']->min_total_hours ?? 100 }}</span></p>
+        <p class="font-bold text-dark mt-2" style="font-size:1.4rem;">{{ $report['average_hours'] }} <span style="font-size:0.8rem;font-weight:normal;color:#64748b;">{{ __('ชม.') }} / {{ $report['criteria']->min_total_hours ?? 100 }}</span></p>
     </div>
 </div>
 
@@ -161,7 +161,7 @@
             </span>
             <h2 class="font-bold" style="font-size:1.1rem;color:#0f172a;margin:0;">{{ __('รายชื่อนักศึกษาและผลการตรวจสอบชั่วโมงกิจกรรม') }}</h2>
         </div>
-        <span class="text-xs text-muted">พบ {{ $report['audited_students']->count() }} รายการ</span>
+        <span class="text-xs text-muted">พบ {{ $report['audited_students']->count() }} {{ __('รายการ') }}</span>
     </div>
 
     @if($report['audited_students']->isEmpty())
@@ -199,31 +199,31 @@
                             <span class="font-bold {{ $audit['total_passed'] ? 'text-success' : 'text-danger' }}" style="font-size:1rem;">
                                 {{ number_format($audit['total_hours'], 1) }}
                             </span>
-                            <span class="text-xs text-muted">/ {{ number_format($audit['min_total_hours'], 0) }} ชม.</span>
+                            <span class="text-xs text-muted">/ {{ number_format($audit['min_total_hours'], 0) }} {{ __('ชม.') }}</span>
                         </td>
                         <td style="padding:0.75rem;">
                             <div class="flex gap-2" style="flex-wrap:wrap;">
                                 {{-- มหาวิทยาลัย --}}
                                 @if(isset($audit['scope_audit']['university']))
                                     @php $uni = $audit['scope_audit']['university']; @endphp
-                                    <span class="badge" style="background:{{ $uni['passed'] ? '#ecfdf5' : '#fee2e2' }};color:{{ $uni['passed'] ? '#059669' : '#dc2626' }};font-size:0.7rem;" title="{{ $uni['name'] }}: {{ $uni['earned'] }}/{{ $uni['required'] }} ชม.">
-                                        มหาลัย: {{ number_format($uni['earned'], 0) }}/{{ number_format($uni['required'], 0) }}
+                                    <span class="badge" style="background:{{ $uni['passed'] ? '#ecfdf5' : '#fee2e2' }};color:{{ $uni['passed'] ? '#059669' : '#dc2626' }};font-size:0.7rem;" title="{{ $uni['name'] }}: {{ $uni['earned'] }}/{{ $uni['required'] }} {{ __('ชม.') }}">
+                                        {{ __('มหาลัย') }}: {{ number_format($uni['earned'], 0) }}/{{ number_format($uni['required'], 0) }}
                                     </span>
                                 @endif
 
                                 {{-- คณะ --}}
                                 @if(isset($audit['scope_audit']['faculty']))
                                     @php $fac = $audit['scope_audit']['faculty']; @endphp
-                                    <span class="badge" style="background:{{ $fac['passed'] ? '#ecfdf5' : '#fee2e2' }};color:{{ $fac['passed'] ? '#059669' : '#dc2626' }};font-size:0.7rem;" title="{{ $fac['name'] }}: {{ $fac['earned'] }}/{{ $fac['required'] }} ชม.">
-                                        คณะ: {{ number_format($fac['earned'], 0) }}/{{ number_format($fac['required'], 0) }}
+                                    <span class="badge" style="background:{{ $fac['passed'] ? '#ecfdf5' : '#fee2e2' }};color:{{ $fac['passed'] ? '#059669' : '#dc2626' }};font-size:0.7rem;" title="{{ $fac['name'] }}: {{ $fac['earned'] }}/{{ $fac['required'] }} {{ __('ชม.') }}">
+                                        {{ __('คณะ') }}: {{ number_format($fac['earned'], 0) }}/{{ number_format($fac['required'], 0) }}
                                     </span>
                                 @endif
 
                                 {{-- จิตอาสา --}}
                                 @foreach($audit['category_audit'] as $cat)
-                                    @if(str_contains($cat['name'], 'จิตอาสา'))
-                                        <span class="badge" style="background:{{ $cat['passed'] ? '#ecfdf5' : '#fee2e2' }};color:{{ $cat['passed'] ? '#059669' : '#dc2626' }};font-size:0.7rem;" title="{{ $cat['name'] }}: {{ $cat['earned'] }}/{{ $cat['required'] }} ชม.">
-                                            จิตอาสา: {{ number_format($cat['earned'], 0) }}/{{ number_format($cat['required'], 0) }}
+                                    @if(str_contains($cat['name'], '{{ __('จิตอาสา') }}'))
+                                        <span class="badge" style="background:{{ $cat['passed'] ? '#ecfdf5' : '#fee2e2' }};color:{{ $cat['passed'] ? '#059669' : '#dc2626' }};font-size:0.7rem;" title="{{ $cat['name'] }}: {{ $cat['earned'] }}/{{ $cat['required'] }} {{ __('ชม.') }}">
+                                            {{ __('จิตอาสา') }}: {{ number_format($cat['earned'], 0) }}/{{ number_format($cat['required'], 0) }}
                                         </span>
                                     @endif
                                 @endforeach

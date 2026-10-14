@@ -39,7 +39,7 @@
 
         <div class="otp-code">{{ $otp }}</div>
 
-        <p style="text-align: center; color: #64748b; font-size: 13px;">{{ __('รหัสนี้จะหมดอายุใน') }} <strong>{{ $expiryMinutes }} นาที</strong>
+        <p style="text-align: center; color: #64748b; font-size: 13px;">{{ __('รหัสนี้จะหมดอายุใน') }} <strong>{{ $expiryMinutes }} {{ __('นาที') }}</strong>
         </p>
 
         <div class="info-box">
