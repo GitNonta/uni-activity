@@ -3725,6 +3725,49 @@ html.dark .act-search-submit-icon-btn.as-filter .act-filter-count-dot {
     border-color: #0f172a;
 }
 
+/* ── Typeahead suggestions ใต้ช่องค้นหาหน้ากิจกรรม ── */
+.act-suggest-box {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 60;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(2, 6, 23, 0.14);
+    overflow: hidden;
+    max-height: 320px;
+    overflow-y: auto;
+}
+.act-suggest-box[hidden] { display: none; }
+.act-suggest-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.75rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #0f172a;
+}
+.act-suggest-item + .act-suggest-item { border-top: 1px solid #f1f5f9; }
+.act-suggest-item:hover,
+.act-suggest-item.act-suggest-active { background: #fff7ed; color: #c2410c; }
+.act-suggest-item-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.act-suggest-item-date { flex-shrink: 0; font-size: 0.7rem; color: #94a3b8; }
+html[data-theme="dark"] .act-suggest-box,
+html.dark .act-suggest-box { background: #1e293b; border-color: #334155; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4); }
+html[data-theme="dark"] .act-suggest-item,
+html.dark .act-suggest-item { color: #e2e8f0; }
+html[data-theme="dark"] .act-suggest-item + .act-suggest-item,
+html.dark .act-suggest-item + .act-suggest-item { border-top-color: #334155; }
+html[data-theme="dark"] .act-suggest-item:hover,
+html.dark .act-suggest-item:hover,
+html[data-theme="dark"] .act-suggest-item.act-suggest-active,
+html.dark .act-suggest-item.act-suggest-active { background: rgba(234, 88, 12, 0.2); color: #fdba74; }
+html[data-theme="dark"] .act-suggest-item-date,
+html.dark .act-suggest-item-date { color: #64748b; }
+
 .act-search-btn-group {
     display: flex;
     align-items: center;

@@ -138,6 +138,7 @@ Route::middleware(['auth', 'role:staff'])->group(function () {
 
 // ── เส้นทางนักศึกษาที่เข้าดูได้โดยไม่ต้องเข้าสู่ระบบ ──
 Route::get('/activities', [ActivityController::class, 'index'])->name('activities.index');
+Route::get('/activities/suggest', [ActivityController::class, 'suggest'])->middleware('throttle:api-general')->name('activities.suggest'); // Typeahead กันับ — ต้องมาก่อน {activity}
 Route::get('/activities/{activity}', [ActivityController::class, 'show'])->name('activities.show');
 Route::get('/announcements', [StudentAnnouncementController::class, 'index'])->name('announcements.index');
 Route::get('/announcements/{announcement}', [StudentAnnouncementController::class, 'show'])->name('announcements.show');
