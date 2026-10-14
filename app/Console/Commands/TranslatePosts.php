@@ -7,6 +7,7 @@ namespace App\Console\Commands;
 
 use App\Models\Announcement;
 use App\Models\JobListing;
+use App\Models\Activity;
 use App\Services\PostTranslationService;
 use Illuminate\Console\Command;
 
@@ -16,6 +17,7 @@ class TranslatePosts extends Command
     protected const FIELD_MAP = [
         Announcement::class => ['title', 'content'],
         JobListing::class   => ['title', 'description', 'note'],
+        Activity::class    => ['title', 'description', 'location'],
     ];
 
     protected $signature   = 'posts:translate {--model= : announcement|job|all (default all)}';
@@ -30,6 +32,9 @@ class TranslatePosts extends Command
         }
         if ($which === 'all' || $which === 'job') {
             $this->translatePosts(JobListing::class, $service);
+        }
+        if ($which === 'all' || $which === 'activity') {
+            $this->translatePosts(Activity::class, $service);
         }
 
         return 0;

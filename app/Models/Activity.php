@@ -21,8 +21,11 @@ class Activity extends Model
     /** ฟิลด์ที่อนุญาตให้บันทึกผ่าน mass assignment */
     protected $fillable = [
         'title',
+        'title_en',          // [tag:2026-10-14-translation] cache คำแปล EN
         'description',
+        'description_en',
         'location',
+        'location_en',
         'activity_date',
         'is_multiday',
         'end_date',
@@ -92,6 +95,38 @@ class Activity extends Model
     }
 
     /** ความสัมพันธ์: กำหนดการรายวันของกิจกรรม (สำหรับกิจกรรมหลายวัน) */
+
+    /**
+     * [tag:2026-10-14-translation] แปลภาษาโพสต์กิจกรรม: เมื่อ locale = en และมี cache แปล EN
+     * แสดงข้อความอังกฤษ ถ้าไม่มี (หรือแปลไม่สำเร็จ) fallback เป็นไทยตามปกติ
+     */
+    public function getTitleAttribute($value)
+    {
+        if (app()->getLocale() === 'en' && filled($this->attributes['title_en'] ?? null)) {
+            return (string) $this->attributes['title_en'];
+        }
+
+        return $value ?? null;
+    }
+
+    public function getDescriptionAttribute($value)
+    {
+        if (app()->getLocale() === 'en' && filled($this->attributes['description_en'] ?? null)) {
+            return (string) $this->attributes['description_en'];
+        }
+
+        return $value ?? null;
+    }
+
+    public function getLocationAttribute($value)
+    {
+        if (app()->getLocale() === 'en' && filled($this->attributes['location_en'] ?? null)) {
+            return (string) $this->attributes['location_en'];
+        }
+
+        return $value ?? null;
+    }
+
     public function days(): HasMany
     {
         return $this->hasMany(ActivityDay::class)->orderBy('date')->orderBy('day_number');

@@ -41,6 +41,7 @@ class AppServiceProvider extends ServiceProvider
         // ── [tag:2026-10-14-translation] แปลโพสต์ (ประกาศ + งาน) อัตโนมัติเมื่อบันทึก ──
         \App\Models\Announcement::observe(\App\Observers\TranslatableObserver::class);
         \App\Models\JobListing::observe(\App\Observers\TranslatableObserver::class);
+        \App\Models\Activity::observe(\App\Observers\TranslatableObserver::class);
 
         \Carbon\Carbon::setLocale('th');
 

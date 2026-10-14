@@ -1,8 +1,8 @@
 <?php
 
 // ── [tag:2026-10-14-translation] Translatable Observer ──
-// Hook ตอนโพสต์ถูกบันทึก → แปลไทย→อังกฤษแล้ว cache ลงคอลัมน์ *_en (แยกเพียง 1 ครั้ง)
-// การแปลถูกทำแบบ async-ish (queue:afterResponse ถ้ามี) เพื่อไม่ให้ save ช้า
+// Hook ตอนโพสต์ถูกบันทึก → แปลไทย→อังกฤษแบบเรียลไทม์ แล้วเขียนลงคอลัมน์ *_en พร้อมบันทึกเดียวกัน
+// ถ้าแปลไม่สำเร็จ (API ล่ม / rate limit) → ปล่อย *_en ว่าง ระบบ fallback แสดงไทย
 
 namespace App\Observers;
 
@@ -11,8 +11,9 @@ use App\Services\PostTranslationService;
 class TranslatableObserver
 {
     protected const MAP = [
-        \App\Models\Announcement::class => ['title', 'body'],
-        \App\Models\JobListing::class   => ['title', 'description', 'requirements', 'benefits'],
+        \App\Models\Announcement::class => ['title', 'content'],             // → title_en, content_en
+        \App\Models\JobListing::class   => ['title', 'description', 'note'], // → *_en
+        \App\Models\Activity::class    => ['title', 'description', 'location'], // → *_en
     ];
 
     public function creating($model)
@@ -22,7 +23,7 @@ class TranslatableObserver
 
     public function updating($model)
     {
-        // แปลใหม่เฉพาะเมื่อมีการแก้ไขเนื้อหาต้นฉบับ (TH)
+        // แปลใหม่เฉพาะเมื่อแก้ไขเนื้อหาต้นฉบับ (TH) → EN จะถูกบันทึกพร้อม draft
         $fields = self::MAP[get_class($model)] ?? [];
 
         foreach ($fields as $field) {
@@ -41,8 +42,7 @@ class TranslatableObserver
             return;
         }
 
-        $service = app(PostTranslationService::class);
-        $texts   = [];
+        $texts = [];
 
         foreach ($fields as $field) {
             $val = $model->getAttribute($field);
@@ -57,14 +57,11 @@ class TranslatableObserver
         }
 
         try {
-            $out = $service->translateFields($texts);
+            $out = app(PostTranslationService::class)->translateFields($texts);
 
-            if (!empty($out)) {
-                // ทำแบบเงียบ ๆ เพื่อไม่ให้ dirty สาขาอื่น (แปลแค่ cache EN)
-                $model->fill($out)->syncChanges();
-            }
+            // ห้าม syncChanges ที่นี่ — ต้องให้ *_en คงอยู่ใน dirty เพื่อบันทึกลง DB
+            $model->fill($out);
         } catch (\Throwable $e) {
-            // fail-safe: ถ้าแปลไม่สำเร็จให้แสดงไทยแทน (fallback)
             report($e);
         }
     }
