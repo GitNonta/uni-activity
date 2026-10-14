@@ -10,6 +10,7 @@ use App\Models\Attendance;
 use App\Models\Registration;
 use App\Services\ActivityStatusService;
 use App\Services\ListCache;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
@@ -187,6 +188,37 @@ class ActivityController extends Controller
         );
 
         return view('activities.index', compact('activities', 'categories', 'registeredActivityIds', 'attendedActivityIds', 'geoActivities', 'completedActivities'));
+    }
+
+    /**
+     * Typeahead: แนะนำกิจกรรมตอนพิมพ์ค้นหา (สาธารณะ + throttle กัน scraping)
+     */
+    public function suggest(Request $request): JsonResponse
+    {
+        $q = ltrim(trim((string) $request->query('q', '')), '#');
+        if ($q === '') {
+            return response()->json(['suggestions' => []]);
+        }
+
+        $activities = Activity::query()
+            ->where('status', '!=', 'cancelled')
+            ->active()
+            ->where(function ($sq) use ($q) {
+                $sq->where('title', 'like', "%{$q}%")
+                   ->orWhere('description', 'like', "%{$q}%")
+                   ->orWhere('location', 'like', "%{$q}%");
+            })
+            ->orderBy('activity_date', 'asc')
+            ->limit(7)
+            ->get(['id', 'title', 'activity_date']);
+
+        return response()->json([
+            'suggestions' => $activities->map(fn ($a) => [
+                'id' => $a->id,
+                'title' => $a->title,
+                'date' => $a->activity_date->format('d/m/Y'),
+            ]),
+        ]);
     }
 
     public function show(Activity $activity): View

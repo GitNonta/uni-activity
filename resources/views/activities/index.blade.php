@@ -19,7 +19,8 @@
 <form method="GET" action="{{ route('activities.index') }}" class="act-search-bar" id="activitySearchForm">
     <div class="act-search-main-row">
         <div class="act-search-input-wrap">
-            <input type="text" name="search" id="actSearchInput" value="{{ request('search') }}" placeholder="{{ __('act.search_placeholder') }}" class="act-search-input">
+            <input type="text" name="search" id="actSearchInput" value="{{ request('search') }}" placeholder="{{ __('act.search_placeholder') }}" class="act-search-input" autocomplete="off" aria-haspopup="listbox" aria-controls="actSuggestBox" aria-expanded="false">
+            <div id="actSuggestBox" class="act-suggest-box" role="listbox" hidden></div>
             @if($hasSearched)
                 {{-- หลังค้นหา: ปุ่มไอคอนกลายเป็นตัวกรอง (โฟกัส/พิมพ์ในช่อง → กลับเป็นปุ่มค้นหา, กด Enter ยังค้นหาซ้ำได้) --}}
                 <button type="submit" id="searchSwapSubmitBtn" class="act-search-submit-icon-btn" style="display:none;" title="{{ __('act.search') }}" aria-label="{{ __('act.search') }}">
@@ -109,6 +110,71 @@ function toggleActFilters() {
     function showFilter() { bFilter.style.display = ''; bSearch.style.display = 'none'; }
     inp.addEventListener('focus', showSearch);
     inp.addEventListener('blur', function() { setTimeout(showFilter, 160); });
+})();
+
+// Typeahead: ใบ้กิจกรรมตอนพิมพ์ + ซ่อนแผงตัวกรองระหว่างพิมพ์
+(function(){
+    var inp = document.getElementById('actSearchInput');
+    var box = document.getElementById('actSuggestBox');
+    var panel = document.getElementById('actFilterPanel');
+    if (!inp || !box) return;
+    var hasSearched = {{ $hasSearched ? 'true' : 'false' }};
+    var suggestUrl = {!! json_encode(route('activities.suggest')) !!};
+    var showUrl = {!! json_encode(route('activities.show', ['activity' => '_ID_'])) !!};
+    var timer = null, ctrl = null, items = [], active = -1;
+
+    function setPanel(show) { if (panel) panel.style.display = (show && hasSearched) ? 'block' : 'none'; }
+    function hideBox() { box.innerHTML = ''; box.hidden = true; items = []; active = -1; inp.setAttribute('aria-expanded', 'false'); }
+    function paintActive() {
+        for (var i = 0; i < box.children.length; i++) {
+            box.children[i].classList.toggle('act-suggest-active', i === active);
+        }
+    }
+    function go(id) { window.location.href = showUrl.replace('_ID_', encodeURIComponent(id)); }
+    function render(list) {
+        if (!list.length) { hideBox(); return; }
+        items = list; active = -1; box.innerHTML = '';
+        list.forEach(function (s) {
+            var d = document.createElement('div');
+            d.className = 'act-suggest-item';
+            d.setAttribute('role', 'option');
+            var t = document.createElement('span'); t.className = 'act-suggest-item-title'; t.textContent = s.title; // textContent = กัน XSS (ไม่ใช้ innerHTML)
+            var dt = document.createElement('span'); dt.className = 'act-suggest-item-date'; dt.textContent = s.date;
+            d.appendChild(t); d.appendChild(dt);
+            d.addEventListener('mousedown', function (ev) { ev.preventDefault(); go(s.id); });
+            box.appendChild(d);
+        });
+        box.hidden = false;
+        inp.setAttribute('aria-expanded', 'true');
+    }
+    function fetchSuggest(q) {
+        if (ctrl) ctrl.abort();
+        ctrl = new AbortController();
+        fetch(suggestUrl + '?q=' + encodeURIComponent(q), { signal: ctrl.signal, headers: { 'Accept': 'application/json' } })
+            .then(function (r) { return r.ok ? r.json() : { suggestions: [] }; })
+            .then(function (data) { render(data.suggestions || []); })
+            .catch(function () { /* request ถูกยกเลิกหรือล้มเหลว — เงียบไว้ */ });
+    }
+    inp.addEventListener('input', function () {
+        var q = inp.value.trim();
+        setPanel(!q); // พิมพ์อยู่ → ซ่อนแผงตัวกรอง; ลบหมด → คืนแผง (เฉพาะถ้าเคยค้นหาแล้ว)
+        if (!q) { hideBox(); if (timer) clearTimeout(timer); return; }
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(function () { fetchSuggest(q); }, 300);
+    });
+    inp.addEventListener('keydown', function (e) {
+        var open = !box.hidden;
+        if (e.key === 'ArrowDown' && open && items.length) { e.preventDefault(); active = (active + 1) % items.length; paintActive(); }
+        else if (e.key === 'ArrowUp' && open && items.length) { e.preventDefault(); active = (active - 1 + items.length) % items.length; paintActive(); }
+        else if (e.key === 'Escape') { hideBox(); }
+        else if (e.key === 'Enter' && open && active >= 0) { e.preventDefault(); go(items[active].id); }
+    });
+    inp.addEventListener('blur', function () {
+        setTimeout(function () {
+            if (!box.contains(document.activeElement)) hideBox();
+            setPanel(true); // เลิกพิมพ์ → คืนแผงตัวกรอง (เฉพาะถ้าเคยค้นหาแล้ว)
+        }, 160);
+    });
 })();
 </script>
 
