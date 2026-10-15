@@ -424,7 +424,7 @@ html.dark .line-unlink-btn:hover {
                 <p style="color:var(--text-muted); font-size: 0.88rem; margin: 0 0 0.4rem 0; font-weight: 500;">{{ $user->student_id }}</p>
                 <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
                     <span style="background:var(--tint-orange); color:var(--tint-orange-text); padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600;">
-                        {{ $user->program ?? __('นักศึกษา') }}
+                        {{ $user->program ? __($user->program) : __('นักศึกษา') }}
                     </span>
                     @if($user->profile_photo)
                     <form method="POST" action="{{ route('profile.photo.destroy') }}" style="display:inline;">
