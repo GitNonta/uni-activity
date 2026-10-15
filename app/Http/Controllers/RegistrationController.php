@@ -36,7 +36,7 @@ class RegistrationController extends Controller
                 // ตรวจสอบช่วงเวลาลงทะเบียน
                 $now = now();
                 if ($now < $activityLocked->register_open_at || $now > $activityLocked->register_close_at) {
-                    throw new \Exception('ไม่อยู่ในช่วงเวลาลงทะเบียน');
+                    throw new \Exception(__('notify.err_not_in_window'));
                 }
 
                 $existing = Registration::where('user_id', $user->id)
@@ -44,7 +44,7 @@ class RegistrationController extends Controller
                     ->first();
 
                 if ($existing && in_array($existing->status, ['pending', 'approved', 'completed', 'waitlisted'], true)) {
-                    throw new \Exception('คุณลงทะเบียนกิจกรรมนี้แล้ว');
+                    throw new \Exception(__('notify.err_already_registered'));
                 }
 
                 // ตรวจสอบเวลาซ้อนทับ (Overlap check)
@@ -64,7 +64,7 @@ class RegistrationController extends Controller
                     ->exists();
 
                 if ($overlapping) {
-                    throw new \Exception('คุณมีกิจกรรมอื่นในช่วงเวลานี้แล้ว ไม่สามารถลงทะเบียนเวลาชนกันได้');
+                    throw new \Exception(__('notify.err_time_conflict'));
                 }
 
                 $count = Registration::where('activity_id', $activityLocked->id)
@@ -72,11 +72,11 @@ class RegistrationController extends Controller
                     ->count();
 
                 $statusToSet = 'approved';
-                $messageToSet = "คุณลงทะเบียนกิจกรรม \"{$activityLocked->title}\" เรียบร้อยแล้ว";
+                $messageToSet = __('notify.registered_msg', ['activity' => $activityLocked->title]);
 
                 if ($activityLocked->max_participants > 0 && $count >= $activityLocked->max_participants) {
                     $statusToSet = 'waitlisted';
-                    $messageToSet = "กิจกรรม \"{$activityLocked->title}\" เต็มแล้ว คุณถูกจัดให้อยู่ใน Waitlist";
+                    $messageToSet = __('notify.waitlisted_msg', ['activity' => $activityLocked->title]);
                 }
 
                 if ($existing) {
@@ -96,7 +96,7 @@ class RegistrationController extends Controller
 
                 Notification::create([
                     'user_id' => $user->id,
-                    'title'   => $statusToSet === 'waitlisted' ? 'อยู่ใน Waitlist' : 'ลงทะเบียนสำเร็จ',
+                    'title'   => $statusToSet === 'waitlisted' ? __('notify.waitlisted_title') : __('notify.registered_title'),
                     'message' => $messageToSet,
                     'type'    => 'registration',
                 ]);
@@ -108,7 +108,7 @@ class RegistrationController extends Controller
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('success', 'ลงทะเบียนกิจกรรมสำเร็จ!');
+        return back()->with('success', __('notify.flash_reg_success'));
     }
 
     /**
@@ -123,7 +123,7 @@ class RegistrationController extends Controller
 
         // อนุญาตยกเลิกเฉพาะก่อนกิจกรรมเริ่ม
         if ($activity->checkin_open_at && now() > $activity->checkin_open_at) {
-            return back()->with('error', 'ไม่สามารถยกเลิกได้ กิจกรรมเริ่มแล้ว');
+            return back()->with('error', __('notify.flash_cancel_too_late'));
         }
 
         DB::transaction(function () use ($registration, $activity): void {
@@ -136,8 +136,8 @@ class RegistrationController extends Controller
 
             Notification::create([
                 'user_id' => auth()->id(),
-                'title'   => 'ยกเลิกการลงทะเบียน',
-                'message' => "คุณยกเลิกการลงทะเบียนกิจกรรม \"{$activity->title}\"",
+                'title'   => __('notify.notify_cancel_title'),
+                'message' => __('notify.notify_cancel_msg', ['activity' => $activity->title]),
                 'type'    => 'registration',
             ]);
 
@@ -155,14 +155,14 @@ class RegistrationController extends Controller
                     $firstWaitlisted->update(['status' => 'approved']);
                     Notification::create([
                         'user_id' => $firstWaitlisted->user_id,
-                        'title'   => 'เลื่อนคิวสำเร็จ (Waitlist)',
-                        'message' => "คุณได้รับการเลื่อนคิวและลงทะเบียนกิจกรรม \"{$activity->title}\" สำเร็จแล้ว",
+                        'title'   => __('notify.waitlist_promoted_title'),
+                        'message' => __('notify.waitlist_promoted_msg', ['activity' => $activity->title]),
                         'type'    => 'registration',
                     ]);
                 }
             }
         });
 
-        return back()->with('success', 'ยกเลิกการลงทะเบียนสำเร็จ');
+        return back()->with('success', __('notify.flash_reg_cancel'));
     }
 }
