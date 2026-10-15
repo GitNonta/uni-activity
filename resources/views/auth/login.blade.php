@@ -47,14 +47,14 @@
     display:flex !important;
     align-items:center;
     gap:.15rem;
-    padding:.28rem .35rem;
+    padding:.22rem .3rem;
     background:var(--surface-hover, #f1f5f9);
     border:1px solid var(--border-color, #e2e8f0);
     border-radius:999px;
     font-size:.82rem;
 }
 .navbar-right.lang-switcher a {
-    padding:.35rem .85rem;
+    padding:.3rem .5rem;
     border-radius:999px;
     background:transparent;
     color:#64748b !important;
