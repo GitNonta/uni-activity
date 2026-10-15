@@ -1,6 +1,6 @@
 {{-- หน้าโปรไฟล์นักศึกษา: ข้อมูลส่วนตัว + สรุปชั่วโมงกิจกรรม + ประวัติล่าสุด --}}
 @extends('layouts.app')
-@section('title', __('โปรไฟล์ของฉัน')
+@section('title', __('โปรไฟล์ของฉัน'))
 
 @section('content')
 
@@ -416,7 +416,7 @@ html.dark .line-unlink-btn:hover {
                     @endif
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px; margin: 0 0 0.35rem 0;">
-                    <p style="color: #64748b; font-size: 0.92rem; font-weight: 600; margin: 0;">{{ $user->english_name ?? '(กำลังประมวลผลชื่อภาษาอังกฤษ...)' }}</p>
+                    <p style="color: #64748b; font-size: 0.92rem; font-weight: 600; margin: 0;">{{ $user->english_name ?? __('(กำลังประมวลผลชื่อภาษาอังกฤษ...)') }}</p>
                     <button onclick="editEnglishName('{{ addslashes($user->english_name) }}')" style="background: none; border: none; color: #ea580c; cursor: pointer; padding: 0; display: flex; align-items: center;" title="{{ __('แก้ไขชื่อภาษาอังกฤษ') }}">
                         <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                     </button>
@@ -424,13 +424,13 @@ html.dark .line-unlink-btn:hover {
                 <p style="color: #64748b; font-size: 0.88rem; margin: 0 0 0.4rem 0; font-weight: 500;">{{ $user->student_id }}</p>
                 <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
                     <span style="background: #ffedd5; color: #c2410c; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600;">
-                        {{ $user->program ?? 'นักศึกษา' }}
+                        {{ $user->program ?? __('นักศึกษา') }}
                     </span>
                     @if($user->profile_photo)
                     <form method="POST" action="{{ route('profile.photo.destroy') }}" style="display:inline;">
                         @csrf @method('DELETE')
                         <button type="submit" style="background: none; border: none; color: #ef4444; font-size: 0.75rem; cursor: pointer; text-decoration: underline; padding: 0;"
-                            onclick="return confirm('ต้องการลบรูปโปรไฟล์?')">{{ __('ลบรูป') }}</button>
+                            onclick="return confirm('{{ __('ต้องการลบรูปโปรไฟล์?') }}')">{{ __('ลบรูป') }}</button>
                     </form>
                     @endif
                 </div>
@@ -493,7 +493,7 @@ html.dark .line-unlink-btn:hover {
                 </div>
                 <div class="student-detail-text">
                     <p class="student-detail-label">{{ __('ชั้นปี') }}</p>
-                    <p class="student-detail-value">{{ $user->year ? 'ปี ' . $user->year : '-' }}</p>
+                    <p class="student-detail-value">{{ $user->year ? __('ปี') . ' ' . $user->year : '-' }}</p>
                 </div>
             </div>
             <div class="student-detail-item">
@@ -525,7 +525,7 @@ html.dark .line-unlink-btn:hover {
             @endphp
             <div>
                 <div class="flex justify-between items-center mb-2">
-                    <span class="text-sm" style="font-weight: 600; color: var(--text-main, #334155);">{{ $cat['name'] }}</span>
+                    <span class="text-sm" style="font-weight: 600; color: var(--text-main, #334155);">{{ __($cat['name']) }}</span>
                     <span class="text-sm" style="font-weight: 500; color: {{ $isCompleted ? '#16a34a' : '#64748b' }};">
                         {{ number_format($cat['hours'], 1) }} / {{ number_format($cat['required'], 0) }} {{ __('ชม.') }}
                     </span>
@@ -590,8 +590,8 @@ html.dark .line-unlink-btn:hover {
             <x-empty-state
                 icon="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                 title="{{ __('ยังไม่มีประวัติการเข้าร่วมกิจกรรม') }}"
-                description="เริ่มลงทะเบียนและเข้าร่วมกิจกรรมเพื่อสะสมชั่วโมงกิจกรรม"
-                actionLabel="ดูกิจกรรมทั้งหมด"
+                description="{{ __('เริ่มลงทะเบียนและเข้าร่วมกิจกรรมเพื่อสะสมชั่วโมงกิจกรรม') }}"
+                actionLabel="{{ __('ดูกิจกรรมทั้งหมด') }}"
                 actionUrl="{{ route('activities.index') }}"
                 size="sm"
             />
@@ -631,7 +631,7 @@ html.dark .line-unlink-btn:hover {
                     @csrf
                     <button type="submit"
                         style="position: relative; width: 44px; height: 24px; border-radius: 12px; border: none; cursor: pointer; transition: background 0.2s; background: {{ auth()->user()->line_notify_enabled ? '#06c755' : '#cbd5e1' }};"
-                        title="{{ auth()->user()->line_notify_enabled ? 'คลิกเพื่อปิด' : 'คลิกเพื่อเปิด' }}">
+                        title="{{ auth()->user()->line_notify_enabled ? __('คลิกเพื่อปิด') : __('คลิกเพื่อเปิด') }}">
                         <span style="position: absolute; top: 3px; width: 18px; height: 18px; background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: left 0.2s; left: {{ auth()->user()->line_notify_enabled ? '23px' : '3px' }};"></span>
                     </button>
                 </form>
@@ -644,7 +644,7 @@ html.dark .line-unlink-btn:hover {
             </div>
             @endif
 
-            <form method="POST" action="{{ route('line.unlink') }}" onsubmit="return confirm('ต้องการยกเลิกการผูกบัญชี LINE ใช่หรือไม่?')">
+            <form method="POST" action="{{ route('line.unlink') }}" onsubmit="return confirm('{{ __('ต้องการยกเลิกการผูกบัญชี LINE ใช่หรือไม่?') }}')">
                 @csrf
                 <button type="submit" class="line-unlink-btn">
                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
@@ -656,10 +656,10 @@ html.dark .line-unlink-btn:hover {
             {{-- ═══ สถานะ: ยังไม่ได้ผูก ═══ --}}
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.5rem; margin-bottom: 1.25rem;">
                 @foreach([
-                    ['icon'=>'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', 'text'=>'กิจกรรมใหม่'],
-                    ['icon'=>'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', 'text'=>'ประกาศงาน'],
-                    ['icon'=>'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z', 'text'=>'ข่าวประกาศ'],
-                    ['icon'=>'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 'text'=>'Reminder 1 วันก่อน'],
+                    ['icon'=>'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', 'text'=>__('กิจกรรมใหม่')],
+                    ['icon'=>'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', 'text'=>__('ประกาศงาน')],
+                    ['icon'=>'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z', 'text'=>__('ข่าวประกาศ')],
+                    ['icon'=>'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 'text'=>__('Reminder 1 วันก่อน')],
                 ] as $item)
                 <div class="line-feature-pill">
                     <svg width="14" height="14" fill="none" stroke="#06c755" viewBox="0 0 24 24" style="flex-shrink: 0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="{{ $item['icon'] }}"/></svg>

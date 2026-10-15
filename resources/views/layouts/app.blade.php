@@ -361,7 +361,7 @@
                         var btnTextEl = document.getElementById('notif-banner-btn-text');
 
                         if (badgeEl) {
-                            badgeEl.textContent = first.type === 'checkin_open' ? 'เช็คอินได้แล้ว' : 'ใกล้เปิดเช็คอิน';
+                            badgeEl.textContent = first.type === 'checkin_open' ? '{{ __('เช็คอินได้แล้ว') }}' : '{{ __('ใกล้เปิดเช็คอิน') }}';
                         }
                         if (titleEl) {
                             titleEl.textContent = first.title;
