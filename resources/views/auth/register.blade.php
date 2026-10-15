@@ -77,7 +77,8 @@
 
 @section('scripts')
 <script>
-    const facultyData = @json(collect(config('faculties'))->mapWithKeys(fn ($deps, $fac) => [__($fac) => array_map(fn ($d) => __($d), $deps)]));
+    {{-- กุญแจ = คีย์ไทยจาก config ตรงกับ value ของ option เสมอ (ทั้ง TH/EN) — ส่วนการแสดงผลใช้ depLabels --}}
+    const facultyData = @json(config('faculties'));
     const depLabels = @json(collect(config('faculties'))->flatMap(fn ($deps) => collect($deps)->mapWithKeys(fn ($d) => [$d => __($d)]))->all());
     const facultySelect = document.getElementById('faculty');
     const departmentSelect = document.getElementById('department');
