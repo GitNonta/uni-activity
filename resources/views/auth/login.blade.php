@@ -42,26 +42,6 @@
 </div>
 
 <style>
-/* หน้า login: ปุ่ม TH/EN ใน header bar — ไม่มีกรอบ (ลบ border/พื้นหลัง pill ออกแล้ว) */
-.navbar-right.lang-switcher {
-    display:flex !important;
-    align-items:center;
-    gap:.05rem;
-    font-size:.78rem;
-}
-.navbar-right.lang-switcher a {
-    padding:.22rem .3rem;
-    border-radius:999px;
-    background:transparent;
-    color:#64748b !important;
-    font-weight:600;
-    transition:background .2s, color .2s;
-}
-.navbar-right.lang-switcher a.active {
-    background:#ea580c !important;
-    color:#fff !important;
-    font-weight:700;
-}
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .login-submit-spinner {
     width: 18px !important;

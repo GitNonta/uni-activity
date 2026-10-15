@@ -1953,6 +1953,30 @@
 
     {{-- ── เมนู "เพิ่มเติม" (ปุ่ม ⋯ บนบาร์) — จอ ≤1366px ── --}}
     @php $__hide_more_sheet = request()->routeIs('login*', 'admin.login*', 'register*', 'password.*', 'admin.password.*'); @endphp
+    @if($__hide_more_sheet)
+    {{-- ปุ่ม TH/EN เฉพาะหน้า guest (login/register/lืมรหัส) — ตำแหน่งขวาบนใน header bar เดียวกันทุกหน้า ทั้ง desktop และมือถือ --}}
+    <style>
+    .navbar-right.lang-switcher {
+        display:flex !important;
+        align-items:center;
+        gap:.05rem;
+        font-size:.78rem;
+    }
+    .navbar-right.lang-switcher a {
+        padding:.22rem .3rem;
+        border-radius:999px;
+        background:transparent;
+        color:#64748b !important;
+        font-weight:600;
+        transition:background .2s, color .2s;
+    }
+    .navbar-right.lang-switcher a.active {
+        background:#ea580c !important;
+        color:#fff !important;
+        font-weight:700;
+    }
+    </style>
+    @endif
     @if(!($__hide_more_sheet ?? false))
     <div id="mobile-sheet-backdrop" class="mobile-sheet-backdrop" data-sheet-close></div>
     <div id="mobile-more-sheet" class="mobile-sheet" role="dialog" aria-modal="true" aria-label="{{ __('เมนูเพิ่มเติม') }}">
