@@ -9,7 +9,7 @@
     {{-- SEO: Title --}}
     <title>@yield('title', 'UNI Activity') | UNI Activity</title>
     {{-- SEO: Description --}}
-    <meta name="description" content="@yield('description', 'ระบบศูนย์รวมกิจกรรมมหาวิทยาลัย - ค้นหา ลงทะเบียน และติดตามกิจกรรมของคุณ')">
+    <meta name="description" content="@yield('description', __('ระบบศูนย์รวมกิจกรรมมหาวิทยาลัย - ค้นหา ลงทะเบียน และติดตามกิจกรรมของคุณ'))">
     <meta name="author" content="@yield('author', 'UNI Activity')">
     @yield('head')
     {{-- Canonical URL --}}
@@ -20,14 +20,14 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ request()->url() }}">
     <meta property="og:title" content="@yield('title', 'UNI Activity') | UNI Activity">
-    <meta property="og:description" content="@yield('description', 'ระบบศูนย์รวมกิจกรรมมหาวิทยาลัย - ค้นหา ลงทะเบียน และติดตามกิจกรรมของคุณ')">
+    <meta property="og:description" content="@yield('description', __('ระบบศูนย์รวมกิจกรรมมหาวิทยาลัย - ค้นหา ลงทะเบียน และติดตามกิจกรรมของคุณ'))">
     <meta property="og:image" content="{{ asset('logo.svg') }}">
     <meta property="og:site_name" content="UNI Activity">
     <meta property="og:locale" content="th_TH">
     {{-- Twitter --}}
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="@yield('title', 'UNI Activity') | UNI Activity">
-    <meta name="twitter:description" content="@yield('description', 'ระบบศูนย์รวมกิจกรรมมหาวิทยาลัย - ค้นหา ลงทะเบียน และติดตามกิจกรรมของคุณ')">
+    <meta name="twitter:description" content="@yield('description', __('ระบบศูนย์รวมกิจกรรมมหาวิทยาลัย - ค้นหา ลงทะเบียน และติดตามกิจกรรมของคุณ'))">
     <meta name="twitter:image" content="{{ asset('logo.svg') }}">
     <link rel="icon" type="image/svg+xml" href="{{ asset('logo.svg') }}">
     {{-- Preconnect to Google Fonts (resolve DNS early) --}}

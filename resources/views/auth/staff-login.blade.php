@@ -1,6 +1,6 @@
 {{-- หน้าเข้าสู่ระบบผู้จัดกิจกรรม (staff): ใช้อีเมล + รหัสผ่าน --}}
 <!DOCTYPE html>
-<html lang="th">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -56,6 +56,14 @@
             <svg class="icon-xl" style="margin:0 auto 1rem;color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
             <h1 class="font-bold" style="font-size:1.5rem;">{{ __('ผู้จัดกิจกรรม') }}</h1>
             <p class="text-muted text-sm mt-1">{{ __('เข้าสู่ระบบด้วยอีเมลและรหัสผ่าน') }}</p>
+            {{-- i18n switcher (TH / EN) — เหมือนหน้าอื่น ให้ผู้จัดกิจกรรมเลือกภาษาได้เอง --}}
+            <div class="lang-switcher" style="display:flex; justify-content:center; gap:.5rem; margin-top:.85rem; font-size:.82rem; color:#64748b;">
+                <a href="{{ route('lang.switcher', 'th') }}"
+                   style="text-decoration:none; {{ app()->getLocale() === 'th' ? 'font-weight:700; color:#ea580c;' : 'color:inherit;' }}">TH</a>
+                <span style="opacity:.5;">/</span>
+                <a href="{{ route('lang.switcher', 'en') }}"
+                   style="text-decoration:none; {{ app()->getLocale() === 'en' ? 'font-weight:700; color:#ea580c;' : 'color:inherit;' }}">EN</a>
+            </div>
         </div>
 
         {{-- ฟอร์มกรอกอีเมลและรหัสผ่าน --}}
