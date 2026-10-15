@@ -1,6 +1,6 @@
 {{-- หน้าเข้าสู่ระบบนักศึกษา: ใช้รหัสนักศึกษาเข้าสู่ระบบ --}}
 @extends('layouts.app')
-@section('title', __('login.title'))
+@section('title', __('เข้าสู่ระบบ'))
 
 @section('content')
 <div class="container-sm" style="padding-top:4rem;">
@@ -42,30 +42,6 @@
 </div>
 
 <style>
-/* หน้า login: ปุ่ม TH/EN อยู่ใน header bar (navbar ขวา) — จัดรูปแบบเป็น pill เด่น */
-.navbar-right.lang-switcher {
-    display:flex !important;
-    align-items:center;
-    gap:.05rem;
-    padding:.15rem .22rem;
-    background:var(--surface-hover, #f1f5f9);
-    border:1px solid var(--border-color, #e2e8f0);
-    border-radius:999px;
-    font-size:.78rem;
-}
-.navbar-right.lang-switcher a {
-    padding:.22rem .3rem;
-    border-radius:999px;
-    background:transparent;
-    color:#64748b !important;
-    font-weight:600;
-    transition:background .2s, color .2s;
-}
-.navbar-right.lang-switcher a.active {
-    background:#ea580c !important;
-    color:#fff !important;
-    font-weight:700;
-}
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .login-submit-spinner {
     width: 18px !important;

@@ -51,19 +51,19 @@
     </style>
 </head>
 <body>
+    {{-- i18n switcher (TH / EN) — มุมขวาบน ตำแหน่งเดียวกับหน้าอื่น (login/register/lืมรหัส) --}}
+    <div class="lang-switcher" style="position:fixed; top:.55rem; right:.8rem; display:flex; align-items:center; gap:.05rem; font-size:.78rem; z-index:50;">
+        <a href="{{ route('lang.switcher', 'th') }}"
+           style="text-decoration:none; padding:.22rem .3rem; border-radius:999px; background:transparent; color:#64748b; font-weight:600; {{ app()->getLocale() === 'th' ? 'background:#ea580c !important; color:#fff !important;' : '' }}">TH</a>
+        <span style="opacity:.5;">/</span>
+        <a href="{{ route('lang.switcher', 'en') }}"
+           style="text-decoration:none; padding:.22rem .3rem; border-radius:999px; background:transparent; color:#64748b; font-weight:600; {{ app()->getLocale() === 'en' ? 'background:#ea580c !important; color:#fff !important;' : '' }}">EN</a>
+    </div>
     <div class="container-sm" style="padding-top:6rem;">
         <div class="text-center mb-4">
             <svg class="icon-xl" style="margin:0 auto 1rem;color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
             <h1 class="font-bold" style="font-size:1.5rem;">{{ __('ผู้จัดกิจกรรม') }}</h1>
             <p class="text-muted text-sm mt-1">{{ __('เข้าสู่ระบบด้วยอีเมลและรหัสผ่าน') }}</p>
-            {{-- i18n switcher (TH / EN) — เหมือนหน้าอื่น ให้ผู้จัดกิจกรรมเลือกภาษาได้เอง --}}
-            <div class="lang-switcher" style="display:flex; justify-content:center; gap:.5rem; margin-top:.85rem; font-size:.82rem; color:#64748b;">
-                <a href="{{ route('lang.switcher', 'th') }}"
-                   style="text-decoration:none; {{ app()->getLocale() === 'th' ? 'font-weight:700; color:#ea580c;' : 'color:inherit;' }}">TH</a>
-                <span style="opacity:.5;">/</span>
-                <a href="{{ route('lang.switcher', 'en') }}"
-                   style="text-decoration:none; {{ app()->getLocale() === 'en' ? 'font-weight:700; color:#ea580c;' : 'color:inherit;' }}">EN</a>
-            </div>
         </div>
 
         {{-- ฟอร์มกรอกอีเมลและรหัสผ่าน --}}
@@ -85,8 +85,7 @@
                     </div>
                     <div class="form-group">
                         <label class="checkbox-label">
-                            <input type="checkbox" name="remember"> {{ __('จดจำฉันไว้') }}
-                        </label>
+                            <input type="checkbox" name="remember"> {{ __('จดจำฉันไว้') }}                        </label>
                     </div>
                     <button type="submit" id="staffSubmitBtn" class="btn btn-primary btn-block btn-lg" style="display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;">
                         <span>{{ __('เข้าสู่ระบบ') }}</span>
