@@ -78,6 +78,7 @@
 @section('scripts')
 <script>
     const facultyData = @json(collect(config('faculties'))->mapWithKeys(fn ($deps, $fac) => [__($fac) => array_map(fn ($d) => __($d), $deps)]));
+    const depLabels = @json(collect(config('faculties'))->flatMap(fn ($deps) => collect($deps)->mapWithKeys(fn ($d) => [$d => __($d)]))->all());
     const facultySelect = document.getElementById('faculty');
     const departmentSelect = document.getElementById('department');
     const oldDepartment = "{{ old('department') }}";
