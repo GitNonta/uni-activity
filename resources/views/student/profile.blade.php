@@ -727,13 +727,13 @@ html.dark .line-unlink-btn:hover {
                         @if($user->english_name)
                             <div style="font-size: 14px; font-weight: 700; color:var(--text-muted) !important; margin-bottom: 6px;">{{ strtoupper($user->english_name) }}</div>
                         @else
-                            <div style="font-size: 12px; font-weight: 600; color:var(--text-muted) !important; margin-bottom: 6px; font-style: italic;">(No English Name)</div>
+                            <div style="font-size: 12px; font-weight: 600; color:var(--text-muted) !important; margin-bottom: 6px; font-style: italic;">{{ __('(ยังไม่มีชื่อภาษาอังกฤษ)') }}</div>
                         @endif
                         
                         <!-- Thin divider -->
                         <div style="width: 100%; height: 1px; background: #e2e8f0; margin: 8px 0;"></div>
                         
-                        <div style="font-size: 14px; font-weight: 700; color:var(--text-main) !important;">{{ __('สาขา') }}{{ $user->department ?? 'วิทยาการคอมพิวเตอร์' }}</div>
+                        <div style="font-size: 14px; font-weight: 700; color:var(--text-main) !important;">{{ __('สาขา') }}{{ $user->department ? __($user->department) : __('วิทยาการคอมพิวเตอร์') }}</div>
                     </div>
 
                     <div style="flex: 1;"></div>
@@ -829,6 +829,9 @@ html.dark .line-unlink-btn:hover {
     opacity: 0.6;
     background: radial-gradient(circle 300px at var(--mouse-x, 50%) var(--mouse-y, 30%), rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.12) 40%, transparent 75%);
     transition: opacity 0.2s ease;
+    /* พื้นหลังบัตร (แถบหัว 75px บนสุด) ต้องไม่เลือนตามเมาส์ — mask เงาสะท้อนให้เริ่มใต้แถบพื้นหลัง */
+    mask-image: linear-gradient(to bottom, transparent 75px, #000 105px);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 75px, #000 105px);
 }
 
 
