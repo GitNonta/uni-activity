@@ -72,12 +72,12 @@ class AdminRegistrationController extends Controller
 
         Notification::create([
             'user_id' => $registration->user_id,
-            'title'   => 'การลงทะเบียนได้รับการอนุมัติ',
-            'message' => "การขอเข้าร่วมกิจกรรม \"{$registration->activity->title}\" ได้รับการอนุมัติแล้ว",
+            'title'   => __('notify.registration_approved_title'),
+            'message' => __('notify.registration_approved_msg', ['activity' => $registration->activity->title]),
             'type'    => 'registration_approved',
         ]);
 
-        return back()->with('success', 'อนุมัติการลงทะเบียนสำเร็จ');
+        return back()->with('success', __('notify.flash_approve_ok'));
     }
 
     /**
@@ -93,11 +93,11 @@ class AdminRegistrationController extends Controller
 
         Notification::create([
             'user_id' => $registration->user_id,
-            'title'   => 'การลงทะเบียนถูกปฏิเสธ',
-            'message' => "การขอเข้าร่วมกิจกรรม \"{$registration->activity->title}\" ไม่ได้รับการอนุมัติ",
+            'title'   => __('notify.registration_rejected_title'),
+            'message' => __('notify.registration_rejected_msg', ['activity' => $registration->activity->title]),
             'type'    => 'registration_rejected',
         ]);
 
-        return back()->with('success', 'ปฏิเสธการลงทะเบียนสำเร็จ');
+        return back()->with('success', __('notify.flash_reject_ok'));
     }
 }

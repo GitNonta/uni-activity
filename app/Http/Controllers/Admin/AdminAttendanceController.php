@@ -54,7 +54,7 @@ class AdminAttendanceController extends Controller
 
         $user = User::where('student_id', $request->validated('student_id'))->first();
         if (!$user) {
-            return back()->with('error', 'ไม่พบรหัสนักศึกษา');
+            return back()->with('error', __('notify.err_student_not_found'));
         }
 
         $registration = Registration::where('user_id', $user->id)
@@ -63,12 +63,12 @@ class AdminAttendanceController extends Controller
             ->first();
 
         if (!$registration) {
-            return back()->with('error', 'นักศึกษาไม่ได้ลงทะเบียนกิจกรรมนี้');
+            return back()->with('error', __('notify.err_student_not_registered'));
         }
 
         $exists = $activity->attendances()->where('user_id', $user->id)->exists();
         if ($exists) {
-            return back()->with('error', 'นักศึกษาเช็คอินไปแล้ว');
+            return back()->with('error', __('notify.err_already_checked_in'));
         }
 
         DB::transaction(function () use ($activity, $user, $request) {
@@ -104,8 +104,8 @@ class AdminAttendanceController extends Controller
 
             Notification::create([
                 'user_id' => $attendance->user_id,
-                'title'   => 'บันทึกกิจกรรมสำเร็จ',
-                'message' => "บันทึกการเข้าร่วมกิจกรรม \"{$attendance->activity->title}\" ได้รับการอนุมัติแล้ว คุณได้รับ {$attendance->activity->activity_hours} ชม.",
+                'title'   => __('notify.attendance_ok_title'),
+                'message' => __('notify.attendance_ok_msg', ['activity' => $attendance->activity->title, 'hours' => $attendance->activity->activity_hours]),
                 'type'    => 'attendance_approved',
             ]);
 
@@ -119,7 +119,7 @@ class AdminAttendanceController extends Controller
             }
         });
 
-        return back()->with('success', 'อนุมัติการเข้าร่วมสำเร็จ');
+        return back()->with('success', __('notify.flash_att_ok'));
     }
 
     /**
@@ -139,13 +139,13 @@ class AdminAttendanceController extends Controller
 
             Notification::create([
                 'user_id' => $attendance->user_id,
-                'title'   => 'บันทึกกิจกรรมไม่สำเร็จ',
-                'message' => "บันทึกการเข้าร่วมกิจกรรม \"{$attendance->activity->title}\" ถูกปฏิเสธ กรุณาติดต่อผู้จัด",
+                'title'   => __('notify.attendance_no_title'),
+                'message' => __('notify.attendance_no_msg', ['activity' => $attendance->activity->title]),
                 'type'    => 'attendance_rejected',
             ]);
         });
 
-        return back()->with('success', 'ปฏิเสธการเข้าร่วมสำเร็จ');
+        return back()->with('success', __('notify.flash_att_no'));
     }
 
     /**
