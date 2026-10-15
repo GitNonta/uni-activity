@@ -823,6 +823,8 @@ html.dark .line-unlink-btn:hover {
     position: relative;
     font-family: 'Kanit', sans-serif;
     user-select: none;
+    /* มือถือ: ลากบัตรแล้วหน้าเว็บด้านหลังห้ามเลื่อนตามนิ้ว */
+    touch-action: none;
     transform-style: preserve-3d;
     will-change: transform;
     transition: transform 0.12s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.25s ease;
@@ -914,30 +916,44 @@ html.dark .line-unlink-btn:hover {
         studentCard.style.setProperty('--mouse-y', '30%');
     }
 
+    // ── rAF-driven tilt: วาดตาม refresh rate จริงของจอ (120Hz ได้เต็มที่) ──
+    // + cache layout ต่อ touch เดียว ตัด getBoundingClientRect ทุก event (layout thrash)
+    let rectCache = null, lastX = 0, lastY = 0, rafPending = false;
+
     function handleCardMove(e) {
         if (!studentCard) return;
-        const rect = studentCard.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-        const x = (clientX - rect.left) / rect.width;
-        const y = (clientY - rect.top) / rect.height;
-
-        if (x < 0 || x > 1 || y < 0 || y > 1) return;
-
-        const rotateX = ((y - 0.5) * -20).toFixed(2);
-        const rotateY = ((x - 0.5) * 20).toFixed(2);
-
-        studentCard.style.transform = `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-        studentCard.style.setProperty('--mouse-x', `${(x * 100).toFixed(1)}%`);
-        studentCard.style.setProperty('--mouse-y', `${(y * 100).toFixed(1)}%`);
+        const t = e.touches ? e.touches[0] : e;
+        if (!t) return;
+        lastX = t.clientX; lastY = t.clientY;
+        if (rafPending) return;
+        rafPending = true;
+        requestAnimationFrame(function () {
+            rafPending = false;
+            const rect = rectCache || (rectCache = studentCard.getBoundingClientRect());
+            const x = (lastX - rect.left) / rect.width;
+            const y = (lastY - rect.top) / rect.height;
+            if (x < 0 || x > 1 || y < 0 || y > 1) return;
+            const rotateX = ((y - 0.5) * -20).toFixed(2);
+            const rotateY = ((x - 0.5) * 20).toFixed(2);
+            studentCard.style.transform = `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+            studentCard.style.setProperty('--mouse-x', `${(x * 100).toFixed(1)}%`);
+            studentCard.style.setProperty('--mouse-y', `${(y * 100).toFixed(1)}%`);
+        });
     }
 
     if (studentCard) {
+        studentCard.addEventListener('mousedown', function () { rectCache = studentCard.getBoundingClientRect(); });
         studentCard.addEventListener('mousemove', handleCardMove);
-        studentCard.addEventListener('mouseleave', resetCardTilt);
+        studentCard.addEventListener('mouseleave', function () { rectCache = null; resetCardTilt(); });
+        studentCard.addEventListener('mouseenter', function (e) { rectCache = studentCard.getBoundingClientRect(); lastX = e.clientX; lastY = e.clientY; });
+        studentCard.addEventListener('touchstart', function (e) {
+            rectCache = studentCard.getBoundingClientRect();
+            const t0 = e.touches[0]; if (t0) { lastX = t0.clientX; lastY = t0.clientY; }
+        }, { passive: true });
         studentCard.addEventListener('touchmove', handleCardMove, { passive: true });
-        studentCard.addEventListener('touchend', resetCardTilt);
+        studentCard.addEventListener('touchend', function () { rectCache = null; resetCardTilt(); });
+        studentCard.addEventListener('touchcancel', function () { rectCache = null; resetCardTilt(); });
+        window.addEventListener('resize', function () { rectCache = null; });
     }
 
     // Ensure no legacy theme overrides remain
