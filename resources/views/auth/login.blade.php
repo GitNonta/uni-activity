@@ -4,15 +4,6 @@
 
 @section('content')
 <div class="container-sm" style="padding-top:4rem;">
-    {{-- ตัวเปลี่ยนภาษา (TH / EN) — หัวบาร์ด้านบน ฝั่งขวาของจอ (fixed) --}}
-    <div style="position:fixed; top:.85rem; right:1.1rem; z-index:80;">
-        <div class="login-lang-pill" style="display:inline-flex; align-items:center; gap:.15rem; padding:.25rem .3rem; background:var(--surface-hover, #f1f5f9); border:1px solid var(--border-color, #e2e8f0); border-radius:999px; font-size:.82rem;">
-            <a href="{{ route('lang.switcher', 'th') }}"
-               style="text-decoration:none; padding:.35rem .85rem; border-radius:999px; transition:all .2s; {{ app()->getLocale() === 'th' ? 'background:#ea580c; color:#fff; font-weight:700;' : 'color:#64748b; font-weight:600;' }}">{{ app()->getLocale() === 'th' ? 'TH' : 'TH' }}</a>
-            <a href="{{ route('lang.switcher', 'en') }}"
-               style="text-decoration:none; padding:.35rem .85rem; border-radius:999px; transition:all .2s; {{ app()->getLocale() === 'en' ? 'background:#ea580c; color:#fff; font-weight:700;' : 'color:#64748b; font-weight:600;' }}">EN</a>
-        </div>
-    </div>
     <div class="text-center mb-4">
         <h1 class="font-bold" style="font-size:1.5rem;">{{ __('login.title') }}</h1>
         <p class="text-muted text-sm mt-1">{{ __('login.subtitle') }}</p>
@@ -51,8 +42,30 @@
 </div>
 
 <style>
-/* เฉพาะหน้า login: ซ่อนปุ่มภาษาเล็กชุด navbar ให้เหลือ pill มุมขวาบนตัวเดียว */
-.navbar-right.lang-switcher { display:none !important; }
+/* หน้า login: ปุ่ม TH/EN อยู่ใน header bar (navbar ขวา) — จัดรูปแบบเป็น pill เด่น */
+.navbar-right.lang-switcher {
+    display:flex !important;
+    align-items:center;
+    gap:.15rem;
+    padding:.28rem .35rem;
+    background:var(--surface-hover, #f1f5f9);
+    border:1px solid var(--border-color, #e2e8f0);
+    border-radius:999px;
+    font-size:.82rem;
+}
+.navbar-right.lang-switcher a {
+    padding:.35rem .85rem;
+    border-radius:999px;
+    background:transparent;
+    color:#64748b !important;
+    font-weight:600;
+    transition:background .2s, color .2s;
+}
+.navbar-right.lang-switcher a.active {
+    background:#ea580c !important;
+    color:#fff !important;
+    font-weight:700;
+}
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .login-submit-spinner {
     width: 18px !important;
