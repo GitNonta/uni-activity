@@ -29,12 +29,14 @@
         .br { bottom: -2px; right: -2px; border-width: 0 4px 4px 0; border-radius: 0 0 12px 0; }
 
         /* Scan line */
-        .scan-line { position: absolute; left: 0; right: 0; height: 2px; background: #10b981; box-shadow: 0 0 10px 2px #10b981; animation: scan 2s infinite cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.8; }
+        .scan-line { position: absolute; left: 0; right: 0; top: 0; height: 100%; background: none; box-shadow: none; transform: translateY(0); will-change: transform, opacity; animation: scan 2s infinite cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.8; pointer-events: none; }
+        /* 120fps: เส้นสแกนจริงอยู่ที่ ::before ชิดยอดของ wrapper — ขยับด้วย translateY (compositor) */
+        .scan-line::before { content: ''; display: block; width: 100%; height: 2px; background: #10b981; box-shadow: 0 0 10px 2px #10b981; }
         @keyframes scan {
-            0% { top: 0; opacity: 0; }
+            0% { transform: translateY(0); opacity: 0; }
             10% { opacity: 1; }
             90% { opacity: 1; }
-            100% { top: 100%; opacity: 0; }
+            100% { transform: translateY(100%); opacity: 0; }
         }
 
         .spinner { width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 10px; }

@@ -32,18 +32,33 @@
 .scan-line {
     position: absolute;
     width: 100%;
+    top: 0;
+    height: 100%;
+    background: none;
+    box-shadow: none;
+    /* 120fps: เส้นสแกนอยู่ที่ ::before ชิดยอดของ wrapper สูงเต็มกรอบ
+       จึงขยับด้วย translateY (compositor เท่านั้น — ไม่มี layout ต่อเฟรม)
+       ตำแหน่งที่เห็นตรงกับ top(%) แบบเดิมทุกค่า */
+    transform: translateY(0);
+    will-change: transform, opacity;
+    animation: scanMove 2s linear infinite;
+    z-index: 20;
+    pointer-events: none;
+}
+.scan-line::before {
+    content: '';
+    display: block;
+    width: 100%;
     height: 2.5px;
     background: linear-gradient(90deg, transparent 5%, rgba(251, 146, 60, 0.95) 50%, transparent 95%);
     box-shadow: 0 0 12px rgba(249, 115, 22, 0.9), 0 0 24px rgba(234, 88, 12, 0.5);
-    animation: scanMove 2s linear infinite;
-    z-index: 20;
 }
 
 @keyframes scanMove {
-    0% { top: 0%; opacity: 0; }
+    0% { transform: translateY(0%); opacity: 0; }
     10% { opacity: 1; }
     90% { opacity: 1; }
-    100% { top: 100%; opacity: 0; }
+    100% { transform: translateY(100%); opacity: 0; }
 }
 
 /* ===== Corner Brackets ===== */

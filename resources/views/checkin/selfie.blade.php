@@ -209,13 +209,26 @@
         .scan-line {
             position: absolute;
             width: 100%;
+            top: 0;
+            height: 100%;
+            background: none;
+            box-shadow: none;
+            /* 120fps: เส้นสแกนอยู่ที่ ::before — ขยับด้วย translateY (compositor เท่านั้น) */
+            transform: translateY(0);
+            will-change: transform, opacity;
+            animation: scanMove 2.6s ease-in-out infinite;
+            z-index: 20;
+            pointer-events: none;
+        }
+        .scan-line::before {
+            content: '';
+            display: block;
+            width: 100%;
             height: 2.5px;
             background: linear-gradient(90deg, transparent 5%, rgba(251, 146, 60, 0.95) 50%, transparent 95%);
             box-shadow: 0 0 12px rgba(249, 115, 22, 0.9), 0 0 24px rgba(234, 88, 12, 0.5);
-            animation: scanMove 2.6s ease-in-out infinite;
-            z-index: 20;
         }
-        @keyframes scanMove { 0% { top: 6%; opacity: 0; } 12% { opacity: 1; } 88% { opacity: 1; } 100% { top: 94%; opacity: 0; } }
+        @keyframes scanMove { 0% { transform: translateY(6%); opacity: 0; } 12% { opacity: 1; } 88% { opacity: 1; } 100% { transform: translateY(94%); opacity: 0; } }
 
         .corner { position: absolute; width: 26px; height: 26px; border-color: rgba(249, 115, 22, 0.95); border-style: solid; border-width: 0; transition: border-color 0.3s; filter: drop-shadow(0 0 6px rgba(249, 115, 22, 0.5)); }
         .corner-tl { top: 0; left: 0; border-top-width: 2.5px; border-left-width: 2.5px; border-top-left-radius: 110px; }
