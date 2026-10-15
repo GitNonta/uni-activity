@@ -743,7 +743,7 @@ html.dark .line-unlink-btn:hover {
                         @if($user->english_name)
                             <div style="font-size: 14px; font-weight: 700; color: #334155 !important; margin-bottom: 6px;">{{ strtoupper($user->english_name) }}</div>
                         @else
-                            <div style="font-size: 12px; font-weight: 600; color: #475569 !important; margin-bottom: 6px; font-style: italic;">(No English Name)</div>
+                            <div style="font-size: 12px; font-weight: 600; color: #475569 !important; margin-bottom: 6px; font-style: italic;">{{ __('(ยังไม่มีชื่อภาษาอังกฤษ)') }}</div>
                         @endif
                         
                         <!-- Thin divider -->
@@ -845,6 +845,9 @@ html.dark .line-unlink-btn:hover {
     opacity: 0.6;
     background: radial-gradient(circle 300px at var(--mouse-x, 50%) var(--mouse-y, 30%), rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.12) 40%, transparent 75%);
     transition: opacity 0.2s ease;
+    /* พื้นหลังบัตร (แถบหัว 75px บนสุด) ต้องไม่เลือนตามเมาส์ — mask เงาสะท้อนให้เริ่มใต้แถบพื้นหลัง */
+    mask-image: linear-gradient(to bottom, transparent 75px, #000 105px);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 75px, #000 105px);
 }
 
 
