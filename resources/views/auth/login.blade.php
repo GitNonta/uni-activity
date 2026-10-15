@@ -42,15 +42,11 @@
 </div>
 
 <style>
-/* หน้า login: ปุ่ม TH/EN อยู่ใน header bar (navbar ขวา) — จัดรูปแบบเป็น pill เด่น */
+/* หน้า login: ปุ่ม TH/EN ใน header bar — ไม่มีกรอบ (ลบ border/พื้นหลัง pill ออกแล้ว) */
 .navbar-right.lang-switcher {
     display:flex !important;
     align-items:center;
     gap:.05rem;
-    padding:.15rem .22rem;
-    background:var(--surface-hover, #f1f5f9);
-    border:1px solid var(--border-color, #e2e8f0);
-    border-radius:999px;
     font-size:.78rem;
 }
 .navbar-right.lang-switcher a {
