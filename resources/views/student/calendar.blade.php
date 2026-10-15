@@ -74,12 +74,15 @@
 <script>
 var EVENTS_URL = '{{ route("student.calendar.events") }}';
 var CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').content;
+// ปฏิบัติตามภาษาปัจจุบันของระบบ (EN ใช้ locale EN ของ FullCalendar + en-US ของปุ่มวันที่)
+var CAL_LOCALE = '{{ app()->getLocale() === 'en' ? 'en' : 'th' }}';
+var DATE_LOCALE = CAL_LOCALE === 'en' ? 'en-US' : 'th-TH';
 
 document.addEventListener('DOMContentLoaded', function() {
     var calEl = document.getElementById('activity-calendar');
 
     var cal = new FullCalendar.Calendar(calEl, {
-        locale: 'th',
+        locale: CAL_LOCALE,
         initialView: window.innerWidth < 640 ? 'listMonth' : 'dayGridMonth',
         headerToolbar: {
             left:   'prev,next today',
@@ -105,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
             info.jsEvent.preventDefault();
             var ep = info.event.extendedProps;
             var start = info.event.start;
-            var dateStr = start ? start.toLocaleDateString('th-TH', {
+            var dateStr = start ? start.toLocaleDateString(DATE_LOCALE, {
                 year: 'numeric', month: 'long', day: 'numeric',
                 weekday: 'short'
             }) : '';
