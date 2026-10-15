@@ -46,15 +46,15 @@
 .navbar-right.lang-switcher {
     display:flex !important;
     align-items:center;
-    gap:.15rem;
-    padding:.22rem .3rem;
+    gap:.05rem;
+    padding:.15rem .22rem;
     background:var(--surface-hover, #f1f5f9);
     border:1px solid var(--border-color, #e2e8f0);
     border-radius:999px;
-    font-size:.82rem;
+    font-size:.78rem;
 }
 .navbar-right.lang-switcher a {
-    padding:.3rem .5rem;
+    padding:.22rem .3rem;
     border-radius:999px;
     background:transparent;
     color:#64748b !important;
