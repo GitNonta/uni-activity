@@ -4,6 +4,15 @@
 
 @section('content')
 <div class="container-sm" style="padding-top:4rem;">
+    {{-- ตัวเปลี่ยนภาษา (TH / EN) ที่หัวหน้าล็อกอิน — เด่นกว่าปุ่มเล็กใน navbar --}}
+    <div style="display:flex; justify-content:center; margin-bottom:1.25rem;">
+        <div class="login-lang-pill" style="display:inline-flex; align-items:center; gap:.15rem; padding:.25rem .3rem; background:var(--surface-hover, #f1f5f9); border:1px solid var(--border-color, #e2e8f0); border-radius:999px; font-size:.82rem;">
+            <a href="{{ route('lang.switcher', 'th') }}"
+               style="text-decoration:none; padding:.35rem .85rem; border-radius:999px; transition:all .2s; {{ app()->getLocale() === 'th' ? 'background:#ea580c; color:#fff; font-weight:700;' : 'color:#64748b; font-weight:600;' }}">{{ app()->getLocale() === 'th' ? 'TH' : 'TH' }}</a>
+            <a href="{{ route('lang.switcher', 'en') }}"
+               style="text-decoration:none; padding:.35rem .85rem; border-radius:999px; transition:all .2s; {{ app()->getLocale() === 'en' ? 'background:#ea580c; color:#fff; font-weight:700;' : 'color:#64748b; font-weight:600;' }}">EN</a>
+        </div>
+    </div>
     <div class="text-center mb-4">
         <h1 class="font-bold" style="font-size:1.5rem;">{{ __('login.title') }}</h1>
         <p class="text-muted text-sm mt-1">{{ __('login.subtitle') }}</p>
