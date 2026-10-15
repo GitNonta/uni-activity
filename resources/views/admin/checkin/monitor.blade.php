@@ -17,7 +17,7 @@
                 <p class="text-xs text-muted mt-2">{{ __('แสดง QR Code เพื่อเช็คอินเข้างาน (QR ที่ 1)') }}</p>
                 <form method="POST" action="{{ route('admin.activities.regenerate-qr', $activity->id) }}" class="mt-3">
                     @csrf
-                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('ยืนยันสร้าง QR เข้างานใหม่? QR เดิมจะใช้งานไม่ได้ทันที')">{{ __('สร้าง QR เข้างานใหม่') }}</button>
+                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('{{ __('ยืนยันสร้าง QR เข้างานใหม่? QR เดิมจะใช้งานไม่ได้ทันที') }}')">{{ __('สร้าง QR เข้างานใหม่') }}</button>
                 </form>
             </div>
         </div>
@@ -30,7 +30,7 @@
                 <p class="text-xs text-muted mt-2">{{ __('แสดง QR Code เพื่อบันทึกออกงานและรับชั่วโมง (QR ที่ 2)') }}</p>
                 <form method="POST" action="{{ route('admin.activities.regenerate-checkout-qr', $activity->id) }}" class="mt-3">
                     @csrf
-                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('ยืนยันสร้าง QR ออกงานใหม่? QR เดิมจะใช้งานไม่ได้ทันที')">{{ __('สร้าง QR ออกงานใหม่') }}</button>
+                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('{{ __('ยืนยันสร้าง QR ออกงานใหม่? QR เดิมจะใช้งานไม่ได้ทันที') }}')">{{ __('สร้าง QR ออกงานใหม่') }}</button>
                 </form>
             </div>
         </div>
@@ -126,12 +126,12 @@
                         <form method="POST" action="{{ route('admin.attendances.review-selfie', $att->id) }}">
                             @csrf
                             <input type="hidden" name="action" value="approve">
-                            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('ยืนยันว่ารูปตรงกัน (อนุมัติ)?')">{{ __('ใช่, คนเดียวกัน') }}</button>
+                            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('{{ __('ยืนยันว่ารูปตรงกัน (อนุมัติ)?') }}')">{{ __('ใช่, คนเดียวกัน') }}</button>
                         </form>
                         <form method="POST" action="{{ route('admin.attendances.review-selfie', $att->id) }}">
                             @csrf
                             <input type="hidden" name="action" value="reject">
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('ยืนยันว่ารูปไม่ตรงกัน (ปฏิเสธการเช็คอิน)?')">{{ __('ไม่ใช่, ปฏิเสธ') }}</button>
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('{{ __('ยืนยันว่ารูปไม่ตรงกัน (ปฏิเสธการเช็คอิน)?') }}')">{{ __('ไม่ใช่, ปฏิเสธ') }}</button>
                         </form>
                     </div>
                 </div>

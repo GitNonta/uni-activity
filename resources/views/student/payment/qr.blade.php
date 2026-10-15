@@ -31,7 +31,7 @@
                 <form method="POST" action="{{ route('activities.pay.paid', $activity) }}" class="mt-2">
                     @csrf
                     <button type="submit" class="btn btn-primary btn-block"
-                            onclick="return confirm('ยืนยันว่าได้ชำระแล้ว? (Soft-launch — บันทึกสถานะ paid)')">{{ __('ฉันชำระเงินแล้ว — ยืนยัน') }}                    </button>
+                            onclick="return confirm('{{ __('ยืนยันว่าได้ชำระแล้ว? (Soft-launch — บันทึกสถานะ paid)') }}')">{{ __('ฉันชำระเงินแล้ว — ยืนยัน') }}                    </button>
                 </form>
             </div>
         @elseif(!$enablePay)

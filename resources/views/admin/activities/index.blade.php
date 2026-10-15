@@ -84,7 +84,7 @@
                     </td>
                     <td data-label="{{ __('จัดการ') }}" class="text-right">
                         <div class="flex justify-end gap-2" style="justify-content:flex-end; align-items:center;">
-                            <form method="POST" action="{{ route('admin.activities.clone', $act->id) }}" style="display:inline;" onsubmit="return confirm('คุณต้องการคัดลอกกิจกรรมนี้เพื่อสร้างรายการใหม่ใช่หรือไม่?');">
+                            <form method="POST" action="{{ route('admin.activities.clone', $act->id) }}" style="display:inline;" onsubmit="return confirm('{{ __('คุณต้องการคัดลอกกิจกรรมนี้เพื่อสร้างรายการใหม่ใช่หรือไม่?') }}');">
                                 @csrf
                                 <button type="submit" class="btn btn-outline btn-sm" style="color:#4f46e5; border-color:#c7d2fe;" title="{{ __('คัดลอกกิจกรรมนี้') }}">{{ __('คัดลอก') }}</button>
                             </form>
@@ -92,7 +92,7 @@
                             <a href="{{ route('admin.activities.edit', $act->id) }}" class="btn btn-outline btn-sm">{{ __('แก้ไข') }}</a>
                             <form method="POST" action="{{ route('admin.activities.destroy', $act->id) }}" style="display:inline;">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('ยืนยันลบ?')">{{ __('ลบ') }}</button>
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('{{ __('ยืนยันลบ?') }}')">{{ __('ลบ') }}</button>
                             </form>
                         </div>
                     </td>

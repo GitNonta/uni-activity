@@ -168,6 +168,6 @@ class AdminAttendanceController extends Controller
 
         $this->auditApprove($attendance, ($action === 'approve' ? 'อนุมัติ' : 'ปฏิเสธ') . " ภาพ Selfie รหัสเข้าร่วม #{$attendance->id}");
 
-        return back()->with('success', 'ตรวจสอบภาพ Selfie เรียบร้อยแล้ว');
+        return back()->with('success', __('flash.ตรวจสอบภาพ Selfie เรียบร้อยแล้ว'));
     }
 }

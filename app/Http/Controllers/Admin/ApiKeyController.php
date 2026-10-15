@@ -28,7 +28,7 @@ class ApiKeyController extends Controller
         // Create token for the authenticated admin
         $token = auth()->user()->createToken((string) $request->name);
 
-        return back()->with('success', 'API Key สร้างสำเร็จ กรุณาคัดลอก Token ด้านล่างเก็บไว้ เพราะจะแสดงเพียงครั้งเดียว: ' . $token->plainTextToken)
+        return back()->with('success', __('flash.API Key สร้างสำเร็จ กรุณาคัดลอก Token ด้านล่างเก็บไว้ เพราะจะแสดงเพียงครั้งเดียว: ') . $token->plainTextToken)
                      ->with('new_token', $token->plainTextToken);
     }
 
@@ -40,6 +40,6 @@ class ApiKeyController extends Controller
 
         $apiKey->delete();
 
-        return back()->with('success', 'ลบ API Key เรียบร้อยแล้ว');
+        return back()->with('success', __('flash.ลบ API Key เรียบร้อยแล้ว'));
     }
 }

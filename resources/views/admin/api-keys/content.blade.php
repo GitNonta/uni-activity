@@ -107,7 +107,7 @@
                                             {{ $token->created_at->translatedFormat('d M Y') }}
                                         </td>
                                         <td style="padding:1.1rem 1.5rem; text-align:right;">
-                                            <form action="{{ route('admin.api-keys.destroy', $token->id) }}" method="POST" onsubmit="return confirm('ยืนยันการลบ API Key นี้? หากยกเลิกแล้ว บริการหรือภายนอกที่กำลังใช้คีย์นี้จะไม่สามารถเชื่อมต่อได้อีกทันที')">
+                                            <form action="{{ route('admin.api-keys.destroy', $token->id) }}" method="POST" onsubmit="return confirm('{{ __('ยืนยันการลบ API Key นี้? หากยกเลิกแล้ว บริการหรือภายนอกที่กำลังใช้คีย์นี้จะไม่สามารถเชื่อมต่อได้อีกทันที') }}')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-danger btn-sm" style="padding:0.4rem 0.85rem; border-radius:8px; font-size:0.775rem; font-weight:600; cursor:pointer; line-height:1.5;">{{ __('ยกเลิกสิทธิ์ (Revoke)') }}                                                </button>

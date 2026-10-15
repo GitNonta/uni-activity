@@ -97,7 +97,7 @@ class JobAdminController extends Controller
         // ยิง event เพื่อส่ง LINE notification แบบ async
         JobPublished::dispatch($job);
 
-        return redirect()->route('admin.jobs.index')->with('success', 'สร้างประกาศงานเรียบร้อย');
+        return redirect()->route('admin.jobs.index')->with('success', __('flash.สร้างประกาศงานเรียบร้อย'));
     }
 
     /** แสดงรายละเอียดงาน + ผู้สมัคร + คำถาม */
@@ -164,7 +164,7 @@ class JobAdminController extends Controller
 
         ListCache::bump(ListCache::GROUP_JOBS);
 
-        return redirect()->route('admin.jobs.show', $job->id)->with('success', 'อัปเดตประกาศงานเรียบร้อย');
+        return redirect()->route('admin.jobs.show', $job->id)->with('success', __('flash.อัปเดตประกาศงานเรียบร้อย'));
     }
 
     /** ลบประกาศงาน */
@@ -180,7 +180,7 @@ class JobAdminController extends Controller
 
         ListCache::bump(ListCache::GROUP_JOBS);
 
-        return redirect()->route('admin.jobs.index')->with('success', 'ลบประกาศงานเรียบร้อย');
+        return redirect()->route('admin.jobs.index')->with('success', __('flash.ลบประกาศงานเรียบร้อย'));
     }
 
     /** เปลี่ยนสถานะประกาศงาน */
@@ -194,7 +194,7 @@ class JobAdminController extends Controller
         ListCache::bump(ListCache::GROUP_JOBS);
 
         $labels = ['open' => 'เปิดรับสมัคร', 'closed' => 'ปิดรับสมัคร', 'completed' => 'เสร็จสิ้น'];
-        return back()->with('success', 'เปลี่ยนสถานะเป็น "' . $labels[$request->status] . '" เรียบร้อย');
+        return back()->with('success', __('flash.เปลี่ยนสถานะเป็น "') . $labels[$request->status] . '" เรียบร้อย');
     }
 
     /** Confirm / Reject ผู้สมัคร */
@@ -208,7 +208,7 @@ class JobAdminController extends Controller
         // ตรวจสอบ quota ถ้า confirm
         if ($request->status === 'confirmed') {
             if (!$job->hasAvailableSlots()) {
-                return back()->with('error', 'จำนวนผู้ได้รับการยืนยันครบตามโควต้าแล้ว');
+                return back()->with('error', __('flash.จำนวนผู้ได้รับการยืนยันครบตามโควต้าแล้ว'));
             }
         }
 
@@ -226,7 +226,7 @@ class JobAdminController extends Controller
 
         $comment->delete();
 
-        return back()->with('success', 'ลบคอมเมนต์เรียบร้อย');
+        return back()->with('success', __('flash.ลบคอมเมนต์เรียบร้อย'));
     }
 
     /** ส่งออกรายชื่อผู้สมัคร (CSV/Excel) */

@@ -71,7 +71,7 @@
                     <td data-label="{{ __('จัดการ') }}" class="text-right">
                         <div class="flex justify-end gap-2">
                             <a href="{{ route('admin.announcements.edit', $item->id) }}" class="btn btn-outline btn-sm">{{ __('แก้ไข') }}</a>
-                            <form method="POST" action="{{ route('admin.announcements.destroy', $item->id) }}" onsubmit="return confirm('ยืนยันลบประกาศนี้?')" style="margin:0;">
+                            <form method="POST" action="{{ route('admin.announcements.destroy', $item->id) }}" onsubmit="return confirm('{{ __('ยืนยันลบประกาศนี้?') }}')" style="margin:0;">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn btn-sm" style="background:#fee2e2;color:#b91c1c; border:none; line-height:1.5;">{{ __('ลบ') }}</button>
                             </form>

@@ -136,6 +136,6 @@ class ProfileAdminController extends Controller
         // Audit Log
         $this->auditUpdate($user, $oldValues, "แก้ไขโปรไฟล์ส่วนตัว");
 
-        return redirect()->route('admin.profile.edit')->with('success', 'อัปเดตข้อมูลโปรไฟล์เรียบร้อยแล้ว');
+        return redirect()->route('admin.profile.edit')->with('success', __('flash.อัปเดตข้อมูลโปรไฟล์เรียบร้อยแล้ว'));
     }
 }

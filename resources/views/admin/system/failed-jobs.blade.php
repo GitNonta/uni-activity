@@ -27,13 +27,13 @@
             </a>
 
             @if($totalFailed > 0)
-                <form action="{{ route('admin.system.failed-jobs.retry-all') }}" method="POST" onsubmit="return confirm('คุณต้องการส่งงานที่ล้มเหลวทั้งหมดกลับเข้าคิวประมวลผลใหม่ใช่หรือไม่?');" style="display:inline;">
+                <form action="{{ route('admin.system.failed-jobs.retry-all') }}" method="POST" onsubmit="return confirm('{{ __('คุณต้องการส่งงานที่ล้มเหลวทั้งหมดกลับเข้าคิวประมวลผลใหม่ใช่หรือไม่?') }}');" style="display:inline;">
                     @csrf
                     <button type="submit" class="btn btn-primary btn-sm" style="background:#4f46e5; border-color:#4f46e5;">
                         <svg style="width:16px; height:16px; margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>{{ __('ลองใหม่ทั้งหมด (Retry All)') }}                    </button>
                 </form>
 
-                <form action="{{ route('admin.system.failed-jobs.flush') }}" method="POST" onsubmit="return confirm('คุณแน่ใจหรือไม่ว่าต้องการล้างรายการงานที่ล้มเหลวทั้งหมด?');" style="display:inline;">
+                <form action="{{ route('admin.system.failed-jobs.flush') }}" method="POST" onsubmit="return confirm('{{ __('คุณแน่ใจหรือไม่ว่าต้องการล้างรายการงานที่ล้มเหลวทั้งหมด?') }}');" style="display:inline;">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-danger btn-sm" style="background:#b91c1c; border-color:#b91c1c; color:#fff; line-height:1.5;">
@@ -139,7 +139,7 @@
                                     <button type="submit" class="btn btn-primary btn-sm" style="font-size:0.75rem; padding:3px 8px; background:#4338ca; border-color:#4338ca; line-height:1.5;" title="{{ __('ส่งกลับเข้าคิวลองใหม่') }}">{{ __('ลองใหม่') }}                                    </button>
                                 </form>
 
-                                <form action="{{ route('admin.system.failed-jobs.destroy', $job->id) }}" method="POST" onsubmit="return confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?');" style="display:inline;">
+                                <form action="{{ route('admin.system.failed-jobs.destroy', $job->id) }}" method="POST" onsubmit="return confirm('{{ __('คุณต้องการลบรายการนี้ใช่หรือไม่?') }}');" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-outline btn-sm" style="font-size:0.75rem; padding:3px 8px; color:#b91c1c; border-color:#fca5a5; line-height:1.5;" title="{{ __('ลบทิ้ง') }}">{{ __('ลบ') }}                                    </button>

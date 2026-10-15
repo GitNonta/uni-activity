@@ -98,7 +98,7 @@ class BackupAdminController extends Controller
         if (!$backup) {
             return redirect()
                 ->route('admin.backups.index')
-                ->with('error', 'ไม่พบไฟล์สำรองข้อมูลที่ระบุ');
+                ->with('error', __('flash.ไม่พบไฟล์สำรองข้อมูลที่ระบุ'));
         }
 
         log_action(
@@ -124,7 +124,7 @@ class BackupAdminController extends Controller
         if (!$backup) {
             return redirect()
                 ->route('admin.backups.index')
-                ->with('error', 'ไม่พบไฟล์สำรองข้อมูลที่ต้องการลบ');
+                ->with('error', __('flash.ไม่พบไฟล์สำรองข้อมูลที่ต้องการลบ'));
         }
 
         $this->backupRepo->delete($filename);

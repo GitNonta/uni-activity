@@ -150,7 +150,7 @@
                             <div class="alert mb-3" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem;border-radius:4px;">{{ __('ยังไม่มี QR Code สำหรับเข้างาน') }}                            </div>
                         @endif
                         
-                        <form method="POST" action="{{ route('admin.activities.regenerate-qr', $activity->id) }}" onsubmit="return confirm('ยืนยันสร้าง QR เข้างานใหม่? ลิงก์และ QR เดิมจะไม่สามารถใช้งานได้อีก')">
+                        <form method="POST" action="{{ route('admin.activities.regenerate-qr', $activity->id) }}" onsubmit="return confirm('{{ __('ยืนยันสร้าง QR เข้างานใหม่? ลิงก์และ QR เดิมจะไม่สามารถใช้งานได้อีก') }}')">
                             @csrf
                             <div class="flex items-center gap-2" style="flex-wrap:wrap;">
                                 <select name="expires_in_hours" class="form-control form-control-sm" style="width:auto;font-size:0.75rem;padding:0.25rem;">
@@ -179,7 +179,7 @@
                             <div class="alert mb-3" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem;border-radius:4px;">{{ __('ยังไม่มี QR Code สำหรับออกงาน') }}                            </div>
                         @endif
                         
-                        <form method="POST" action="{{ route('admin.activities.regenerate-checkout-qr', $activity->id) }}" onsubmit="return confirm('ยืนยันสร้าง QR ออกงานใหม่? ลิงก์และ QR เดิมจะไม่สามารถใช้งานได้อีก')">
+                        <form method="POST" action="{{ route('admin.activities.regenerate-checkout-qr', $activity->id) }}" onsubmit="return confirm('{{ __('ยืนยันสร้าง QR ออกงานใหม่? ลิงก์และ QR เดิมจะไม่สามารถใช้งานได้อีก') }}')">
                             @csrf
                             <div class="flex items-center gap-2" style="flex-wrap:wrap;">
                                 <select name="expires_in_hours" class="form-control form-control-sm" style="width:auto;font-size:0.75rem;padding:0.25rem;">

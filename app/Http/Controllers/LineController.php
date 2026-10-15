@@ -49,18 +49,18 @@ class LineController extends Controller
         $state = $request->input('state', '');
         if (!$state || !Cache::pull('line_oauth_state:' . $state)) {
             return redirect()->route('student.profile')
-                ->with('error', 'ผูก LINE ไม่สำเร็จ: ข้อมูลไม่ถูกต้อง (invalid state)');
+                ->with('error', __('flash.ผูก LINE ไม่สำเร็จ: ข้อมูลไม่ถูกต้อง (invalid state)'));
         }
 
         if ($request->has('error')) {
             return redirect()->route('student.profile')
-                ->with('error', 'ยกเลิกการผูก LINE');
+                ->with('error', __('flash.ยกเลิกการผูก LINE'));
         }
 
         $code = $request->input('code');
         if (!$code) {
             return redirect()->route('student.profile')
-                ->with('error', 'ผูก LINE ไม่สำเร็จ: ไม่มี authorization code');
+                ->with('error', __('flash.ผูก LINE ไม่สำเร็จ: ไม่มี authorization code'));
         }
 
         // ใช้ callback URL เดียวกันกับที่ส่งไป LINE
@@ -68,14 +68,14 @@ class LineController extends Controller
         $tokenData = $this->lineService->exchangeToken($code, $callbackUrl);
         if (!$tokenData || empty($tokenData['access_token'])) {
             return redirect()->route('student.profile')
-                ->with('error', 'ผูก LINE ไม่สำเร็จ: ไม่สามารถรับ access token ได้');
+                ->with('error', __('flash.ผูก LINE ไม่สำเร็จ: ไม่สามารถรับ access token ได้'));
         }
 
         // ดึงข้อมูล Profile จาก LINE
         $profile = $this->lineService->getLineProfile($tokenData['access_token']);
         if (!$profile || empty($profile['userId'])) {
             return redirect()->route('student.profile')
-                ->with('error', 'ผูก LINE ไม่สำเร็จ: ไม่สามารถดึงข้อมูลโปรไฟล์ LINE ได้');
+                ->with('error', __('flash.ผูก LINE ไม่สำเร็จ: ไม่สามารถดึงข้อมูลโปรไฟล์ LINE ได้'));
         }
 
         $lineUserId     = $profile['userId'];
@@ -88,7 +88,7 @@ class LineController extends Controller
 
         if ($existingUser) {
             return redirect()->route('student.profile')
-                ->with('error', 'บัญชี LINE นี้ถูกผูกกับผู้ใช้คนอื่นแล้ว กรุณาใช้บัญชี LINE อื่น');
+                ->with('error', __('flash.บัญชี LINE นี้ถูกผูกกับผู้ใช้คนอื่นแล้ว กรุณาใช้บัญชี LINE อื่น'));
         }
 
         // บันทึก LINE User ID
@@ -151,7 +151,7 @@ class LineController extends Controller
 
         if (!$user->line_user_id) {
             return redirect()->route('student.profile')
-                ->with('error', 'ยังไม่ได้ผูกบัญชี LINE');
+                ->with('error', __('flash.ยังไม่ได้ผูกบัญชี LINE'));
         }
 
         $displayName = $user->line_display_name;
@@ -175,7 +175,7 @@ class LineController extends Controller
 
         if (!$user->line_user_id) {
             return redirect()->route('student.profile')
-                ->with('error', 'กรุณาผูกบัญชี LINE ก่อน');
+                ->with('error', __('flash.กรุณาผูกบัญชี LINE ก่อน'));
         }
 
         $user->update([

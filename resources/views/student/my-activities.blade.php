@@ -159,7 +159,7 @@
                 @if($reg->status === 'approved' && !$att && in_array($status, ['upcoming','open','ongoing']))
                 <form method="POST" action="{{ route('registrations.destroy', $reg->id) }}">
                     @csrf @method('DELETE')
-                    <button type="submit" class="btn btn-outline btn-sm" style="color:var(--tint-red-text);border-color:var(--tint-red-border);font-size:.72rem;" onclick="return confirm('ยืนยันยกเลิก?')">{{ __('ยกเลิก') }}</button>
+                    <button type="submit" class="btn btn-outline btn-sm" style="color:var(--tint-red-text);border-color:var(--tint-red-border);font-size:.72rem;" onclick="return confirm('{{ __('ยืนยันยกเลิก?') }}')">{{ __('ยกเลิก') }}</button>
                 </form>
                 @endif
             </div>

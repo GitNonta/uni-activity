@@ -236,7 +236,7 @@
                 @if($userRegistration->status !== 'cancelled' && !$userAttendance)
                     <form method="POST" action="{{ route('registrations.destroy', $userRegistration->id) }}" class="mt-2">
                         @csrf @method('DELETE')
-                        <button type="submit" class="btn btn-danger btn-block" onclick="return confirm('ยืนยันยกเลิกการลงทะเบียน?')">{{ __('ยกเลิกการลงทะเบียน') }}</button>
+                        <button type="submit" class="btn btn-danger btn-block" onclick="return confirm('{{ __('ยืนยันยกเลิกการลงทะเบียน?') }}')">{{ __('ยกเลิกการลงทะเบียน') }}</button>
                     </form>
                 @endif
             @elseif($activity->computed_status === 'open' && $activity->getRemainingSlots() > 0)

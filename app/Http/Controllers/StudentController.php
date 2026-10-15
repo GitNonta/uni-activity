@@ -97,7 +97,7 @@ class StudentController extends Controller
     {
         $this->summaryService->updateEnglishName($request->user(), (string) $request->validated('english_name'));
 
-        return redirect()->back()->with('success', 'อัปเดตชื่อภาษาอังกฤษเรียบร้อยแล้ว');
+        return redirect()->back()->with('success', __('flash.อัปเดตชื่อภาษาอังกฤษเรียบร้อยแล้ว'));
     }
 
     /**

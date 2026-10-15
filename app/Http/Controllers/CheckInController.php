@@ -49,7 +49,7 @@ class CheckInController extends Controller
     {
         // N10 fix: Require authentication — QR token alone is not enough
         if (!auth()->check()) {
-            return redirect()->route('login')->with('error', 'กรุณาเข้าสู่ระบบก่อนเช็คอิน');
+            return redirect()->route('login')->with('error', __('flash.กรุณาเข้าสู่ระบบก่อนเช็คอิน'));
         }
 
         $activity = Activity::where('qr_token', $token)
@@ -96,14 +96,14 @@ class CheckInController extends Controller
             ->firstOrFail();
 
         if ($activity->qr_expires_at && now()->gt($activity->qr_expires_at)) {
-            return back()->with('error', 'QR Code หมดอายุแล้ว');
+            return back()->with('error', __('flash.QR Code หมดอายุแล้ว'));
         }
 
         // ปิดระบบ QR เมื่อกิจกรรมสิ้นสุดแล้ว
         if (($activity->qr_checkout_token === $token)
             ? $activity->isCheckoutQrClosed()
             : $activity->isCheckInQrClosed()) {
-            return back()->with('error', 'กิจกรรมสิ้นสุดแล้ว — ระบบ QR Code ถูกปิดใช้งาน');
+            return back()->with('error', __('flash.กิจกรรมสิ้นสุดแล้ว — ระบบ QR Code ถูกปิดใช้งาน'));
         }
 
         // N7 fix: Use database transaction with lock to prevent race condition
@@ -248,7 +248,7 @@ class CheckInController extends Controller
     {
         Activity::findOrFail($activityId);
 
-        return back()->with('error', 'กรุณาสแกน QR Code หน้างานเพื่อเช็คอินกิจกรรม');
+        return back()->with('error', __('flash.กรุณาสแกน QR Code หน้างานเพื่อเช็คอินกิจกรรม'));
     }
 
     /**
@@ -287,12 +287,12 @@ class CheckInController extends Controller
         $activity = Activity::where('qr_token', $token)->firstOrFail();
 
         if ($activity->qr_expires_at && now()->gt($activity->qr_expires_at)) {
-            return back()->with('error', 'QR Code หมดอายุแล้ว')->withInput();
+            return back()->with('error', __('flash.QR Code หมดอายุแล้ว'))->withInput();
         }
 
         // ปิดระบบ Walk-in เมื่อกิจกรรมสิ้นสุดแล้ว
         if ($activity->isCompleted()) {
-            return back()->with('error', 'กิจกรรมสิ้นสุดแล้ว — ระบบ Walk-in QR ถูกปิดใช้งาน')->withInput();
+            return back()->with('error', __('flash.กิจกรรมสิ้นสุดแล้ว — ระบบ Walk-in QR ถูกปิดใช้งาน'))->withInput();
         }
 
         $result = $this->checkInService->processWalkInCheckIn(

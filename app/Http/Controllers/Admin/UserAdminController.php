@@ -185,7 +185,7 @@ class UserAdminController extends Controller
         Gate::authorize('delete', $user);
 
         if ($user->id === auth()->id()) {
-            return back()->with('error', 'ไม่สามารถลบบัญชีของตัวเองได้');
+            return back()->with('error', __('flash.ไม่สามารถลบบัญชีของตัวเองได้'));
         }
 
         $label = $user->role === 'student' ? 'นักศึกษา' : 'เจ้าหน้าที่';
@@ -202,7 +202,7 @@ class UserAdminController extends Controller
         Gate::authorize('toggle', $user);
 
         if ($user->id === auth()->id()) {
-            return back()->with('error', 'ไม่สามารถปิดการใช้งานบัญชีของตัวเองได้');
+            return back()->with('error', __('flash.ไม่สามารถปิดการใช้งานบัญชีของตัวเองได้'));
         }
 
         $user->update(['is_active' => !$user->is_active]);

@@ -100,7 +100,7 @@ class ProfilePhotoController extends Controller
 
             Log::info("ProfilePhotoController: Photo uploaded for user #{$user->id}, dispatched ExtractFaceBiometricsJob");
 
-            return back()->with('success', 'อัปโหลดรูปโปรไฟล์เรียบร้อยแล้ว (ระบบกำลังสกัดรหัสใบหน้าผ่าน Background Queue)');
+            return back()->with('success', __('flash.อัปโหลดรูปโปรไฟล์เรียบร้อยแล้ว (ระบบกำลังสกัดรหัสใบหน้าผ่าน Background Queue)'));
         } catch (\Throwable $e) {
             Log::error('ProfilePhotoController upload error: ' . $e->getMessage());
             return back()->withErrors(['error' => 'เกิดข้อผิดพลาดในการอัปโหลด: ' . $e->getMessage()]);
@@ -128,7 +128,7 @@ class ProfilePhotoController extends Controller
                 'face_descriptor_js' => null,
             ]);
 
-            return back()->with('success', 'ลบรูปโปรไฟล์เรียบร้อยแล้ว');
+            return back()->with('success', __('flash.ลบรูปโปรไฟล์เรียบร้อยแล้ว'));
         } catch (\Throwable $e) {
             Log::error('ProfilePhotoController delete error: ' . $e->getMessage());
             return back()->withErrors(['error' => 'เกิดข้อผิดพลาดในการลบรูป: ' . $e->getMessage()]);

@@ -239,7 +239,7 @@
             @elseif($job->isOpen() && $job->hasAvailableSlots())
                 <form method="POST" action="{{ route('jobs.apply', $job->id) }}">
                     @csrf
-                    <button type="submit" class="btn btn-primary btn-block btn-lg" onclick="return confirm('ยืนยันสมัครงานนี้?')">
+                    <button type="submit" class="btn btn-primary btn-block btn-lg" onclick="return confirm('{{ __('ยืนยันสมัครงานนี้?') }}')">
                         <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>{{ __('สมัครงาน') }}                    </button>
                 </form>
             @else
@@ -310,7 +310,7 @@
                 @if(auth()->check() && auth()->id() === $comment->user_id)
                     <form method="POST" action="{{ route('jobs.comment.delete', $comment->id) }}" style="margin-left:auto;">
                         @csrf @method('DELETE')
-                        <button type="submit" class="text-xs text-danger" style="background:none;border:none;cursor:pointer;" onclick="return confirm('ลบคอมเมนต์?')">{{ __('ลบ') }}</button>
+                        <button type="submit" class="text-xs text-danger" style="background:none;border:none;cursor:pointer;" onclick="return confirm('{{ __('ลบคอมเมนต์?') }}')">{{ __('ลบ') }}</button>
                     </form>
                 @endif
             </div>

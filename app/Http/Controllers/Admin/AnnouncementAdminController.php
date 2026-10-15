@@ -84,7 +84,7 @@ class AnnouncementAdminController extends Controller
             AnnouncementPublished::dispatch($announcement);
         }
 
-        return redirect()->route('admin.announcements.index')->with('success', 'สร้างประกาศสำเร็จ!');
+        return redirect()->route('admin.announcements.index')->with('success', __('flash.สร้างประกาศสำเร็จ!'));
     }
 
     /** ฟอร์มแก้ไขประกาศ */
@@ -125,7 +125,7 @@ class AnnouncementAdminController extends Controller
 
         ListCache::bump(ListCache::GROUP_ANNOUNCEMENTS);
 
-        return redirect()->route('admin.announcements.index')->with('success', 'อัปเดตประกาศสำเร็จ!');
+        return redirect()->route('admin.announcements.index')->with('success', __('flash.อัปเดตประกาศสำเร็จ!'));
     }
 
     /** ลบประกาศ */
@@ -138,7 +138,7 @@ class AnnouncementAdminController extends Controller
 
         ListCache::bump(ListCache::GROUP_ANNOUNCEMENTS);
 
-        return redirect()->route('admin.announcements.index')->with('success', 'ลบประกาศสำเร็จ');
+        return redirect()->route('admin.announcements.index')->with('success', __('flash.ลบประกาศสำเร็จ'));
     }
 
     /** สลับสถานะการเปิดใช้งาน */

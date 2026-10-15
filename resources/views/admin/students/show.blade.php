@@ -186,7 +186,7 @@
                         <div style="display:flex;gap:.25rem;justify-content:flex-end;">
                             @if(!auth()->user()->isStaff() || (isset($att->activity) && $att->activity->created_by === auth()->id()))
                                 <button type="button" class="btn btn-outline btn-sm" onclick="openEditModal({{ $att->id }}, '{{ $att->status }}', '{{ $att->checked_in_at?->format('Y-m-d\TH:i') }}')" style="font-size:.75rem;padding:.25rem .5rem;">{{ __('แก้ไข') }}                                </button>
-                                <form method="POST" action="{{ route('admin.students.attendances.delete', [$student->id, $att->id]) }}" onsubmit="return confirm('ลบบันทึกกิจกรรมนี้?')">
+                                <form method="POST" action="{{ route('admin.students.attendances.delete', [$student->id, $att->id]) }}" onsubmit="return confirm('{{ __('ลบบันทึกกิจกรรมนี้?') }}')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="btn btn-sm" style="font-size:.75rem;padding:.25rem .5rem;background:#fee2e2;color:#b91c1c;border:1px solid #fecaca;line-height:1.5;">{{ __('ลบ') }}</button>
                                 </form>
