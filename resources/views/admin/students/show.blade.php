@@ -5,9 +5,7 @@
 @section('content')
 <div class="flex items-center gap-2 mb-4" style="flex-wrap:wrap;">
     <a href="{{ route('admin.students.index') }}" class="text-sm text-muted" style="display:flex;align-items:center;gap:.25rem;">
-        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-        {{ __('รายชื่อนักศึกษา') }}
-    </a>
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>{{ __('รายชื่อนักศึกษา') }}    </a>
     <span class="text-muted">/</span>
     <span class="text-sm font-semi">{{ $student->full_name }}</span>
 </div>
@@ -32,9 +30,7 @@
         </div>
         <div>
             <button type="button" onclick="handleSendMessageClick()" class="btn" style="display:flex;align-items:center;gap:.35rem;padding:.45rem 1rem;border-radius:8px;font-weight:600;font-size:.8rem;background:#fff;color:#1e40af;border:none;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -1px rgba(0,0,0,0.06);cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='none'">
-                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-                {{ __('ส่งข้อความ') }}
-            </button>
+                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>{{ __('ส่งข้อความ') }}            </button>
         </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;">
@@ -113,16 +109,14 @@
 <div class="card mb-4">
     <div class="card-body">
         <h3 class="font-bold mb-3" style="font-size:.95rem;display:flex;align-items:center;gap:.5rem;">
-            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            {{ __('เพิ่มบันทึกกิจกรรม') }}
-        </h3>
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>{{ __('เพิ่มบันทึกกิจกรรม') }}        </h3>
         <form method="POST" action="{{ route('admin.students.attendances.add', $student->id) }}">
             @csrf
             <div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:.5rem;align-items:end;flex-wrap:wrap;">
                 <div>
                     <label class="form-label" style="font-size:.8rem;">{{ __('กิจกรรม') }}</label>
                     <select name="activity_id" class="form-control" required>
-                        <option value="">-- {{ __('เลือกกิจกรรม --') }}</option>
+                        <option value="">{{ __('-- เลือกกิจกรรม --') }}</option>
                         @foreach($activities as $act)
                             <option value="{{ $act->id }}">{{ $act->title }} ({{ $act->activity_hours }} {{ __('ชม.') }}· {{ $act->activity_date->format('d/m/Y') }})</option>
                         @endforeach
@@ -149,7 +143,7 @@
 <div class="card">
     <div class="card-body" style="padding-bottom:.5rem;">
         <div class="flex items-center justify-between mb-3">
-            <h3 class="font-bold" style="font-size:.95rem;">{{ __('บันทึกกิจกรรมทั้งหมด (') }}{{ $attendances->count() }} {{ __('รายการ)') }}</h3>
+            <h3 class="font-bold" style="font-size:.95rem;">{{ __('บันทึกกิจกรรมทั้งหมด') }} ({{ $attendances->count() }} {{ __('รายการ') }})</h3>
         </div>
     </div>
     <div style="overflow-x:auto;">
@@ -185,16 +179,14 @@
                     </td>
                     <td style="text-align:center;">
                         <span class="badge {{ $att->status === 'approved' ? 'badge-green' : ($att->status === 'pending' ? 'badge-yellow' : 'badge-red') }}" style="font-size:.75rem;">
-                            {{ $att->status === 'approved' ? 'สำเร็จ' : ($att->status === 'pending' ? 'รออนุมัติ' : 'ปฏิเสธ') }}
+                            {{ $att->status === 'approved' ? __('สำเร็จ') : ($att->status === 'pending' ? __('รออนุมัติ') : __('ปฏิเสธ')) }}
                         </span>
                     </td>
                     <td style="text-align:right;">
                         <div style="display:flex;gap:.25rem;justify-content:flex-end;">
                             @if(!auth()->user()->isStaff() || (isset($att->activity) && $att->activity->created_by === auth()->id()))
-                                <button type="button" class="btn btn-outline btn-sm" onclick="openEditModal({{ $att->id }}, '{{ $att->status }}', '{{ $att->checked_in_at?->format('Y-m-d\TH:i') }}')" style="font-size:.75rem;padding:.25rem .5rem;">
-                                    {{ __('แก้ไข') }}
-                                </button>
-                                <form method="POST" action="{{ route('admin.students.attendances.delete', [$student->id, $att->id]) }}" onsubmit="return confirm('ลบบันทึกกิจกรรมนี้?')">
+                                <button type="button" class="btn btn-outline btn-sm" onclick="openEditModal({{ $att->id }}, '{{ $att->status }}', '{{ $att->checked_in_at?->format('Y-m-d\TH:i') }}')" style="font-size:.75rem;padding:.25rem .5rem;">{{ __('แก้ไข') }}                                </button>
+                                <form method="POST" action="{{ route('admin.students.attendances.delete', [$student->id, $att->id]) }}" onsubmit="return confirm('{{ __('ลบบันทึกกิจกรรมนี้?') }}')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="btn btn-sm" style="font-size:.75rem;padding:.25rem .5rem;background:#fee2e2;color:#b91c1c;border:1px solid #fecaca;line-height:1.5;">{{ __('ลบ') }}</button>
                                 </form>
@@ -252,7 +244,7 @@
 <div id="chatSelectionModal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.4);align-items:center;justify-content:center;">
     <div class="modal-content" style="background:var(--surface, #fff);border:1px solid var(--border, #e2e8f0);border-radius:12px;padding:1.5rem;width:100%;max-width:450px;margin:1rem;box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="font-bold text-slate-800" style="font-size:1rem;margin:0;color:var(--text-main, #1e293b);">{{ __('เลือกเรื่องที่จะติดต่อกับ') }}{{ $student->full_name }}</h3>
+            <h3 class="font-bold text-slate-800" style="font-size:1rem;margin:0;color:var(--text-main, #1e293b);">{{ __('เลือกเรื่องที่จะติดต่อกับ') }} {{ $student->full_name }}</h3>
             <button type="button" onclick="closeChatSelectionModal()" style="background:none;border:none;color:#94a3b8;cursor:pointer;display:flex;align-items:center;justify-content:center;">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
@@ -269,7 +261,7 @@
             <select id="chatJobSelect" class="form-control" style="width:100%;">
                 <option value="0">{{ __('ติดต่อสอบถามทั่วไป (General Inquiry)') }}</option>
                 @foreach($chatJobs as $cj)
-                    <option value="{{ $cj->id }}">{{ __('งาน:') }}{{ $cj->title }} ({{ $cj->position }})</option>
+                    <option value="{{ $cj->id }}">{{ __('งาน') }}: {{ $cj->title }} ({{ $cj->position }})</option>
                 @endforeach
             </select>
         </div>

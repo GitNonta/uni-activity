@@ -1,6 +1,6 @@
 {{-- หน้ามอนิเตอร์เช็คอิน (Admin): QR URL + เช็คอิน manual + รายชื่อผู้เช็คอินแล้ว --}}
 @extends('layouts.admin')
-@section('title', __('Monitor Check-in')
+@section('title', __('Monitor Check-in'))
 
 @section('content')
 <a href="{{ route('admin.activities.show', $activity->id) }}" class="text-sm text-primary">&larr; {{ __('กลับ') }}</a>
@@ -11,26 +11,26 @@
     <div>
         {{-- QR Check-in URL สำหรับให้นักศึกษาสแกน --}}
         <div class="card mb-4">
-            <div class="card-header" style="background:#dcfce7;color:#166534;">QR {{ __('สำหรับ') }}"{{ __('เข้างาน') }}"</div>
+            <div class="card-header" style="background:#dcfce7;color:#166534;">{{ __('QR สำหรับ "เข้างาน"') }}</div>
             <div class="card-body text-center">
                 <code class="text-sm" style="word-break:break-all;">{{ url('/check-in/' . $activity->qr_token) }}</code>
                 <p class="text-xs text-muted mt-2">{{ __('แสดง QR Code เพื่อเช็คอินเข้างาน (QR ที่ 1)') }}</p>
                 <form method="POST" action="{{ route('admin.activities.regenerate-qr', $activity->id) }}" class="mt-3">
                     @csrf
-                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('ยืนยันสร้าง QR เข้างานใหม่? QR เดิมจะใช้งานไม่ได้ทันที')">{{ __('สร้าง QR เข้างานใหม่') }}</button>
+                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('{{ __('ยืนยันสร้าง QR เข้างานใหม่? QR เดิมจะใช้งานไม่ได้ทันที') }}')">{{ __('สร้าง QR เข้างานใหม่') }}</button>
                 </form>
             </div>
         </div>
 
         {{-- QR Check-out URL สำหรับให้นักศึกษาสแกน --}}
         <div class="card mb-4">
-            <div class="card-header" style="background:#ffedd5;color:#9a3412;">QR {{ __('สำหรับ') }}"{{ __('ออกงาน (รับชั่วโมง)') }}"</div>
+            <div class="card-header" style="background:#ffedd5;color:#9a3412;">{{ __('QR สำหรับ "ออกงาน (รับชั่วโมง)"') }}</div>
             <div class="card-body text-center">
                 <code class="text-sm" style="word-break:break-all;">{{ url('/check-in/' . $activity->qr_checkout_token) }}</code>
                 <p class="text-xs text-muted mt-2">{{ __('แสดง QR Code เพื่อบันทึกออกงานและรับชั่วโมง (QR ที่ 2)') }}</p>
                 <form method="POST" action="{{ route('admin.activities.regenerate-checkout-qr', $activity->id) }}" class="mt-3">
                     @csrf
-                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('ยืนยันสร้าง QR ออกงานใหม่? QR เดิมจะใช้งานไม่ได้ทันที')">{{ __('สร้าง QR ออกงานใหม่') }}</button>
+                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('{{ __('ยืนยันสร้าง QR ออกงานใหม่? QR เดิมจะใช้งานไม่ได้ทันที') }}')">{{ __('สร้าง QR ออกงานใหม่') }}</button>
                 </form>
             </div>
         </div>
@@ -118,7 +118,7 @@
                                 <img src="{{ asset('storage/' . $att->selfie_photo_path) }}" 
                                      style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #ef4444;" 
                                      alt="Selfie">
-                                <p class="text-xs text-muted mt-1" style="color:#ef4444;">Selfie {{ __('ที่ถ่าย') }}</p>
+                                <p class="text-xs text-muted mt-1" style="color:#ef4444;">{{ __('Selfie ที่ถ่าย') }}</p>
                             </div>
                         </div>
                     </div>
@@ -126,12 +126,12 @@
                         <form method="POST" action="{{ route('admin.attendances.review-selfie', $att->id) }}">
                             @csrf
                             <input type="hidden" name="action" value="approve">
-                            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('ยืนยันว่ารูปตรงกัน (อนุมัติ)?')">{{ __('ใช่, คนเดียวกัน') }}</button>
+                            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('{{ __('ยืนยันว่ารูปตรงกัน (อนุมัติ)?') }}')">{{ __('ใช่, คนเดียวกัน') }}</button>
                         </form>
                         <form method="POST" action="{{ route('admin.attendances.review-selfie', $att->id) }}">
                             @csrf
                             <input type="hidden" name="action" value="reject">
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('ยืนยันว่ารูปไม่ตรงกัน (ปฏิเสธการเช็คอิน)?')">{{ __('ไม่ใช่, ปฏิเสธ') }}</button>
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('{{ __('ยืนยันว่ารูปไม่ตรงกัน (ปฏิเสธการเช็คอิน)?') }}')">{{ __('ไม่ใช่, ปฏิเสธ') }}</button>
                         </form>
                     </div>
                 </div>

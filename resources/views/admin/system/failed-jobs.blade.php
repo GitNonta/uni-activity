@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('Failed Queue Jobs Management')
+@section('title', __('Failed Queue Jobs Management'))
 
 @section('content')
 <div class="container-fluid" style="max-width:1200px; margin:0 auto; padding-bottom:3rem;">
@@ -17,9 +17,7 @@
                     {{ $totalFailed }} {{ __('งานที่ล้มเหลว') }}
                 </span>
             </div>
-            <p style="color:#475569; font-size:0.9rem; margin:0.25rem 0 0 0; line-height:1.5;">
-                {{ __('รายการงานเบื้องหลัง (LINE Notify, AI Extraction, PDF/Excel Exports) ที่ประมวลผลไม่สำเร็จ สามารถตรวจสอบสาเหตุและกด Retry ได้ทันที') }}
-            </p>
+            <p style="color:#475569; font-size:0.9rem; margin:0.25rem 0 0 0; line-height:1.5;">{{ __('รายการงานเบื้องหลัง (LINE Notify, AI Extraction, PDF/Excel Exports) ที่ประมวลผลไม่สำเร็จ สามารถตรวจสอบสาเหตุและกด Retry ได้ทันที') }}            </p>
         </div>
 
         <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
@@ -29,21 +27,17 @@
             </a>
 
             @if($totalFailed > 0)
-                <form action="{{ route('admin.system.failed-jobs.retry-all') }}" method="POST" onsubmit="return confirm('คุณต้องการส่งงานที่ล้มเหลวทั้งหมดกลับเข้าคิวประมวลผลใหม่ใช่หรือไม่?');" style="display:inline;">
+                <form action="{{ route('admin.system.failed-jobs.retry-all') }}" method="POST" onsubmit="return confirm('{{ __('คุณต้องการส่งงานที่ล้มเหลวทั้งหมดกลับเข้าคิวประมวลผลใหม่ใช่หรือไม่?') }}');" style="display:inline;">
                     @csrf
                     <button type="submit" class="btn btn-primary btn-sm" style="background:#4f46e5; border-color:#4f46e5;">
-                        <svg style="width:16px; height:16px; margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                        {{ __('ลองใหม่ทั้งหมด (Retry All)') }}
-                    </button>
+                        <svg style="width:16px; height:16px; margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>{{ __('ลองใหม่ทั้งหมด (Retry All)') }}                    </button>
                 </form>
 
-                <form action="{{ route('admin.system.failed-jobs.flush') }}" method="POST" onsubmit="return confirm('คุณแน่ใจหรือไม่ว่าต้องการล้างรายการงานที่ล้มเหลวทั้งหมด?');" style="display:inline;">
+                <form action="{{ route('admin.system.failed-jobs.flush') }}" method="POST" onsubmit="return confirm('{{ __('คุณแน่ใจหรือไม่ว่าต้องการล้างรายการงานที่ล้มเหลวทั้งหมด?') }}');" style="display:inline;">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-danger btn-sm" style="background:#b91c1c; border-color:#b91c1c; color:#fff; line-height:1.5;">
-                        <svg style="width:16px; height:16px; margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                        {{ __('ล้างทั้งหมด (Flush All)') }}
-                    </button>
+                        <svg style="width:16px; height:16px; margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>{{ __('ล้างทั้งหมด (Flush All)') }}                    </button>
                 </form>
             @endif
         </div>
@@ -78,7 +72,7 @@
 
             <div style="min-width:160px;">
                 <select name="queue" class="form-select" style="font-size:0.875rem; border-radius:8px; border:1px solid #cbd5e1; padding:0.45rem 0.75rem; width:100%; line-height:1.5;">
-                    <option value="">-- {{ __('ทุก Queue Channel --') }}</option>
+                    <option value="">{{ __('-- ทุก Queue Channel --') }}</option>
                     @foreach($queues as $q)
                         <option value="{{ $q }}" {{ request('queue') === $q ? 'selected' : '' }}>queue:{{ $q }}</option>
                     @endforeach
@@ -138,23 +132,17 @@
                                 {{ $job->failed_at }}
                             </td>
                             <td style="padding:0.75rem 1rem; text-align:right; white-space:nowrap;">
-                                <button onclick="viewJobDetails('{{ $job->uuid }}')" class="btn btn-outline btn-sm" style="font-size:0.75rem; padding:3px 8px; margin-right:4px; line-height:1.5;" title="{{ __('ดูรายละเอียด Exception') }}">
-                                    {{ __('รายละเอียด') }}
-                                </button>
+                                <button onclick="viewJobDetails('{{ $job->uuid }}')" class="btn btn-outline btn-sm" style="font-size:0.75rem; padding:3px 8px; margin-right:4px; line-height:1.5;" title="{{ __('ดูรายละเอียด Exception') }}">{{ __('รายละเอียด') }}                                </button>
 
                                 <form action="{{ route('admin.system.failed-jobs.retry', $job->id) }}" method="POST" style="display:inline;">
                                     @csrf
-                                    <button type="submit" class="btn btn-primary btn-sm" style="font-size:0.75rem; padding:3px 8px; background:#4338ca; border-color:#4338ca; line-height:1.5;" title="{{ __('ส่งกลับเข้าคิวลองใหม่') }}">
-                                        {{ __('ลองใหม่') }}
-                                    </button>
+                                    <button type="submit" class="btn btn-primary btn-sm" style="font-size:0.75rem; padding:3px 8px; background:#4338ca; border-color:#4338ca; line-height:1.5;" title="{{ __('ส่งกลับเข้าคิวลองใหม่') }}">{{ __('ลองใหม่') }}                                    </button>
                                 </form>
 
-                                <form action="{{ route('admin.system.failed-jobs.destroy', $job->id) }}" method="POST" onsubmit="return confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?');" style="display:inline;">
+                                <form action="{{ route('admin.system.failed-jobs.destroy', $job->id) }}" method="POST" onsubmit="return confirm('{{ __('คุณต้องการลบรายการนี้ใช่หรือไม่?') }}');" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-outline btn-sm" style="font-size:0.75rem; padding:3px 8px; color:#b91c1c; border-color:#fca5a5; line-height:1.5;" title="{{ __('ลบทิ้ง') }}">
-                                        {{ __('ลบ') }}
-                                    </button>
+                                    <button type="submit" class="btn btn-outline btn-sm" style="font-size:0.75rem; padding:3px 8px; color:#b91c1c; border-color:#fca5a5; line-height:1.5;" title="{{ __('ลบทิ้ง') }}">{{ __('ลบ') }}                                    </button>
                                 </form>
                             </td>
                         </tr>

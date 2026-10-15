@@ -18,9 +18,9 @@
                     @if($activity->allow_walkin)<span class="badge" style="background:#dcfce7;color:#166534;">{{ __('เปิดรับ Walk-in') }}</span>@else<span class="badge" style="background:#fee2e2;color:#991b1b;">{{ __('เฉพาะผู้ลงทะเบียน') }}</span>@endif
                     @if($activity->category)<span class="badge badge-orange">{{ $activity->category->name }}</span>@endif
                     @if($activity->scope === 'faculty')
-                        <span class="badge" style="background:#fef3c7;color:#92400e;">{{ __('คณะ') }}: {{ __($activity->faculty) }}</span>
+                        <span class="badge" style="background:#fef3c7;color:#92400e;">{{ __('คณะ') }}: {{ $activity->faculty }}</span>
                     @elseif($activity->scope === 'department')
-                        <span class="badge" style="background:#ffedd5;color:#5b21b6;">{{ __('สาขา') }}: {{ __($activity->department) }} ({{ __($activity->faculty) }})</span>
+                        <span class="badge" style="background:#ffedd5;color:#5b21b6;">{{ __('สาขา') }}: {{ $activity->department }} ({{ $activity->faculty }})</span>
                     @else
                         <span class="badge" style="background:#e0f2fe;color:#0369a1;">{{ __('ระดับมหาวิทยาลัย') }}</span>
                     @endif
@@ -29,7 +29,7 @@
             <div class="flex gap-2">
                 <a href="{{ route('admin.activities.broadcast', $activity->id) }}" class="btn btn-primary btn-sm flex items-center gap-1" title="{{ __('ส่งประกาศด่วนและตั้งเตือนอัตโนมัติ') }}">
                     <svg style="width:1rem;height:1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>
-                    <span>{{ __('บรอดแคสต์') }}& {{ __('แจ้งเตือน') }}</span>
+                    <span>{{ __('บรอดแคสต์ & แจ้งเตือน') }}</span>
                 </a>
                 <a href="{{ route('admin.activities.edit', $activity->id) }}" class="btn btn-outline btn-sm">{{ __('แก้ไข') }}</a>
                 <a href="{{ route('admin.activities.participants', $activity->id) }}" class="btn btn-outline btn-sm">{{ __('ผู้เข้าร่วม') }}</a>
@@ -115,7 +115,7 @@
                             <span class="toggle-slider"></span>
                         </label>
                         <span class="text-sm font-semi {{ $activity->allow_early_checkin ? 'text-success' : 'text-muted' }}">
-                            {{ $activity->allow_early_checkin ? 'เปิดอยู่' : 'ปิดอยู่' }}
+                            {{ $activity->allow_early_checkin ? __('เปิดอยู่') : __('ปิดอยู่') }}
                         </span>
                     </label>
                 </form>
@@ -132,13 +132,13 @@
                         <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
                         <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                     </svg>
-                    <span><strong>{{ __('กิจกรรมสิ้นสุดแล้ว') }}</strong> — {{ __('ระบบ QR Code ทั้งหมด (เข้างาน / ออกงาน / Walk-in) ถูกปิดใช้งาน') }}</span>
+                    <span><strong>{{ __('กิจกรรมสิ้นสุดแล้ว') }}</strong> {{ __('— ระบบ QR Code ทั้งหมด (เข้างาน / ออกงาน / Walk-in) ถูกปิดใช้งาน') }}</span>
                 </div>
             @else
             <div class="grid-2" style="gap:1rem;">
                 {{-- QR 1: Check-in --}}
                 <div class="card" style="border:1px solid #dcfce7;box-shadow:none;">
-                    <div class="card-header" style="background:#dcfce7;color:#166534;padding:0.75rem 1rem;">QR {{ __('ที่ 1: เข้างาน (Check-in)') }}</div>
+                    <div class="card-header" style="background:#dcfce7;color:#166534;padding:0.75rem 1rem;">{{ __('QR ที่ 1: เข้างาน (Check-in)') }}</div>
                     <div class="card-body" style="padding:1rem;">
                         @if($activity->qr_token)
                             <div class="flex items-center gap-2 mb-3" style="flex-wrap:wrap;">
@@ -147,19 +147,17 @@
                                 <button onclick="showQRModal('{{ url('/check-in/' . $activity->qr_token) }}', 'QR {{ __('สำหรับเข้างาน') }}')" class="btn btn-sm btn-outline" style="white-space:nowrap;">{{ __('แสดง QR') }}</button>
                             </div>
                         @else
-                            <div class="alert mb-3" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem;border-radius:4px;">
-                                {{ __('ยังไม่มี QR Code สำหรับเข้างาน') }}
-                            </div>
+                            <div class="alert mb-3" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem;border-radius:4px;">{{ __('ยังไม่มี QR Code สำหรับเข้างาน') }}                            </div>
                         @endif
                         
-                        <form method="POST" action="{{ route('admin.activities.regenerate-qr', $activity->id) }}" onsubmit="return confirm('ยืนยันสร้าง QR เข้างานใหม่? ลิงก์และ QR เดิมจะไม่สามารถใช้งานได้อีก')">
+                        <form method="POST" action="{{ route('admin.activities.regenerate-qr', $activity->id) }}" onsubmit="return confirm('{{ __('ยืนยันสร้าง QR เข้างานใหม่? ลิงก์และ QR เดิมจะไม่สามารถใช้งานได้อีก') }}')">
                             @csrf
                             <div class="flex items-center gap-2" style="flex-wrap:wrap;">
                                 <select name="expires_in_hours" class="form-control form-control-sm" style="width:auto;font-size:0.75rem;padding:0.25rem;">
-                                    <option value="">-- {{ __('ไม่จำกัดเวลา --') }}</option>
-                                    <option value="1">1 {{ __('ชั่วโมง') }}</option>
-                                    <option value="6">6 {{ __('ชั่วโมง') }}</option>
-                                    <option value="24">24 {{ __('ชั่วโมง') }}</option>
+                                    <option value="">{{ __('-- ไม่จำกัดเวลา --') }}</option>
+                                    <option value="1">{{ __('1 ชั่วโมง') }}</option>
+                                    <option value="6">{{ __('6 ชั่วโมง') }}</option>
+                                    <option value="24">{{ __('24 ชั่วโมง') }}</option>
                                 </select>
                                 <button type="submit" class="btn btn-sm" style="background:#166534;color:#fff;">{{ __('สร้าง QR ใหม่') }}</button>
                             </div>
@@ -169,7 +167,7 @@
 
                 {{-- QR 2: Check-out --}}
                 <div class="card" style="border:1px solid #ffedd5;box-shadow:none;">
-                    <div class="card-header" style="background:#ffedd5;color:#9a3412;padding:0.75rem 1rem;">QR {{ __('ที่ 2: ออกงาน (Check-out)') }}</div>
+                    <div class="card-header" style="background:#ffedd5;color:#9a3412;padding:0.75rem 1rem;">{{ __('QR ที่ 2: ออกงาน (Check-out)') }}</div>
                     <div class="card-body" style="padding:1rem;">
                         @if($activity->qr_checkout_token)
                             <div class="flex items-center gap-2 mb-3" style="flex-wrap:wrap;">
@@ -178,19 +176,17 @@
                                 <button onclick="showQRModal('{{ url('/check-in/' . $activity->qr_checkout_token) }}', 'QR {{ __('สำหรับออกงาน (รับชั่วโมง)') }}')" class="btn btn-sm btn-outline" style="white-space:nowrap;">{{ __('แสดง QR') }}</button>
                             </div>
                         @else
-                            <div class="alert mb-3" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem;border-radius:4px;">
-                                {{ __('ยังไม่มี QR Code สำหรับออกงาน') }}
-                            </div>
+                            <div class="alert mb-3" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem;border-radius:4px;">{{ __('ยังไม่มี QR Code สำหรับออกงาน') }}                            </div>
                         @endif
                         
-                        <form method="POST" action="{{ route('admin.activities.regenerate-checkout-qr', $activity->id) }}" onsubmit="return confirm('ยืนยันสร้าง QR ออกงานใหม่? ลิงก์และ QR เดิมจะไม่สามารถใช้งานได้อีก')">
+                        <form method="POST" action="{{ route('admin.activities.regenerate-checkout-qr', $activity->id) }}" onsubmit="return confirm('{{ __('ยืนยันสร้าง QR ออกงานใหม่? ลิงก์และ QR เดิมจะไม่สามารถใช้งานได้อีก') }}')">
                             @csrf
                             <div class="flex items-center gap-2" style="flex-wrap:wrap;">
                                 <select name="expires_in_hours" class="form-control form-control-sm" style="width:auto;font-size:0.75rem;padding:0.25rem;">
-                                    <option value="">-- {{ __('ไม่จำกัดเวลา --') }}</option>
-                                    <option value="1">1 {{ __('ชั่วโมง') }}</option>
-                                    <option value="6">6 {{ __('ชั่วโมง') }}</option>
-                                    <option value="24">24 {{ __('ชั่วโมง') }}</option>
+                                    <option value="">{{ __('-- ไม่จำกัดเวลา --') }}</option>
+                                    <option value="1">{{ __('1 ชั่วโมง') }}</option>
+                                    <option value="6">{{ __('6 ชั่วโมง') }}</option>
+                                    <option value="24">{{ __('24 ชั่วโมง') }}</option>
                                 </select>
                                 <button type="submit" class="btn btn-sm" style="background:#9a3412;color:#fff;">{{ __('สร้าง QR ใหม่') }}</button>
                             </div>
@@ -211,9 +207,7 @@
                             <a href="{{ route('checkin.walkin', $activity->qr_token) }}" target="_blank" class="btn btn-sm" style="background:#b45309;color:#fff;white-space:nowrap;line-height:1.5;">{{ __('เปิดหน้า Walk-in') }}</a>
                         </div>
                     @else
-                        <div class="alert" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem;border-radius:4px;">
-                            {{ __('กรุณาสร้าง QR Code เข้างานก่อน') }}
-                        </div>
+                        <div class="alert" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem;border-radius:4px;">{{ __('กรุณาสร้าง QR Code เข้างานก่อน') }}                        </div>
                     @endif
                 </div>
             </div>

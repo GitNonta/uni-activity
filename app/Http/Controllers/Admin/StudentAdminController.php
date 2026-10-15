@@ -136,7 +136,7 @@ class StudentAdminController extends Controller
             ->exists();
 
         if ($exists) {
-            return back()->with('error', 'นักศึกษาคนนี้มีบันทึกกิจกรรมนี้อยู่แล้ว');
+            return back()->with('error', __('flash.นักศึกษาคนนี้มีบันทึกกิจกรรมนี้อยู่แล้ว'));
         }
 
         DB::transaction(function () use ($student, $request): void {
@@ -152,7 +152,7 @@ class StudentAdminController extends Controller
             $this->auditCreate($att, "เพิ่มบันทึกกิจกรรมให้ \"{$student->full_name}\"");
         });
 
-        return back()->with('success', 'เพิ่มบันทึกกิจกรรมเรียบร้อยแล้ว');
+        return back()->with('success', __('flash.เพิ่มบันทึกกิจกรรมเรียบร้อยแล้ว'));
     }
 
     /** Admin แก้ไขสถานะ/เวลาของการเข้าร่วมกิจกรรม */
@@ -177,7 +177,7 @@ class StudentAdminController extends Controller
             $this->auditUpdate($attendance, $oldValues, "แก้ไขบันทึกกิจกรรมของ \"{$student->full_name}\"");
         });
 
-        return back()->with('success', 'อัปเดตบันทึกกิจกรรมเรียบร้อยแล้ว');
+        return back()->with('success', __('flash.อัปเดตบันทึกกิจกรรมเรียบร้อยแล้ว'));
     }
 
     /** Admin ลบบันทึกการเข้าร่วมกิจกรรม */
@@ -191,7 +191,7 @@ class StudentAdminController extends Controller
             $attendance->delete();
         });
 
-        return back()->with('success', 'ลบบันทึกกิจกรรมเรียบร้อยแล้ว');
+        return back()->with('success', __('flash.ลบบันทึกกิจกรรมเรียบร้อยแล้ว'));
     }
 
     /** ส่งข้อความแรกเริ่มแชทกับนักศึกษา */
@@ -255,6 +255,6 @@ class StudentAdminController extends Controller
 
         // 3. Redirect to the inbox thread
         return redirect()->route('admin.inbox.show', [$jobId, $student->id])
-            ->with('success', 'ส่งข้อความถึงนักศึกษาเรียบร้อยแล้ว');
+            ->with('success', __('flash.ส่งข้อความถึงนักศึกษาเรียบร้อยแล้ว'));
     }
 }

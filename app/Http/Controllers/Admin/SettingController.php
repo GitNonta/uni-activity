@@ -52,7 +52,7 @@ class SettingController extends Controller
             Setting::set('auto_approve_require_liveness', $request->boolean('auto_approve_require_liveness') ? '1' : '0');
             Setting::set('auto_approve_prevent_shared_device', $request->boolean('auto_approve_prevent_shared_device') ? '1' : '0');
 
-            return back()->with('success', 'บันทึกกฎการอนุมัติอัตโนมัติ (Smart Auto-Approval Rules) เรียบร้อยแล้ว');
+            return back()->with('success', __('flash.บันทึกกฎการอนุมัติอัตโนมัติ (Smart Auto-Approval Rules) เรียบร้อยแล้ว'));
         }
 
         if ($request->has('auto_approve_min_face_score')) {
@@ -63,6 +63,6 @@ class SettingController extends Controller
             Setting::set('auto_approve_prevent_shared_device', $request->boolean('auto_approve_prevent_shared_device') ? '1' : '0');
         }
 
-        return back()->with('success', 'บันทึกการตั้งค่าระบบเรียบร้อยแล้ว');
+        return back()->with('success', __('flash.บันทึกการตั้งค่าระบบเรียบร้อยแล้ว'));
     }
 }

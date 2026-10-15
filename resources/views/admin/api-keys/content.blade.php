@@ -11,13 +11,11 @@
                 <div style="background:#b45309; color:#fff; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:14px; font-weight:700;">!</div>
                 <div style="flex:1;">
                     <h3 class="font-bold mb-1" style="color:#92400e; font-size:1.05rem;">{{ __('สร้าง API Key สำเร็จ!') }}</h3>
-                    <p class="text-sm mb-4" style="color:#b45309; line-height:1.5;">{{ __('กรุณาคัดลอกและเก็บ API Key ด้านล่างนี้ไว้ในที่ปลอดภัยทันที') }}<strong>{{ __('ระบบจะไม่แสดงรหัสเต็มนี้ให้เห็นอีกครั้ง:') }}</strong></p>
+                    <p class="text-sm mb-4" style="color:#b45309; line-height:1.5;">{{ __('กรุณาคัดลอกและเก็บ API Key ด้านล่างนี้ไว้ในที่ปลอดภัยทันที') }} <strong>{{ __('ระบบจะไม่แสดงรหัสเต็มนี้ให้เห็นอีกครั้ง:') }}</strong></p>
                     
                     <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:stretch; max-width:650px;">
                         <code class="font-mono text-xs break-all" id="newTokenText" style="flex:1; background:#fff; padding:10px 14px; border-radius:8px; border:1px solid #fcd34d; display:inline-block; font-weight:700; color:#1e293b; box-shadow:inset 0 1px 2px rgba(0,0,0,0.02);">{{ session('new_token') }}</code>
-                        <button onclick="copyToken()" id="copyBtn" class="btn btn-primary" style="background:#d97706; color:white; border:none; padding:0 1.25rem; border-radius:8px; font-weight:600; cursor:pointer; transition:all 0.2s;">
-                            {{ __('คัดลอกคีย์') }}
-                        </button>
+                        <button onclick="copyToken()" id="copyBtn" class="btn btn-primary" style="background:#d97706; color:white; border:none; padding:0 1.25rem; border-radius:8px; font-weight:600; cursor:pointer; transition:all 0.2s;">{{ __('คัดลอกคีย์') }}                        </button>
                     </div>
                 </div>
             </div>
@@ -34,9 +32,7 @@
                 <h3 class="font-semi flex items-center gap-2" style="font-size:1.05rem; margin:0;">
                     <svg style="width:20px; height:20px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    {{ __('สร้าง API Key ใหม่') }}
-                </h3>
+                    </svg>{{ __('สร้าง API Key ใหม่') }}                </h3>
             </div>
             <div class="card-body" style="padding:1.5rem;">
                 <form action="{{ route('admin.api-keys.store') }}" method="POST">
@@ -49,9 +45,7 @@
                         @enderror
                     </div>
                     
-                    <button type="submit" class="btn btn-primary" style="background:#ea580c; color:white; border-radius:8px; font-weight:600; border:none; padding:0.65rem 1rem; width:100%; box-shadow:0 2px 4px rgba(234,88,12,0.15);">
-                        {{ __('สร้างกุญแจ API Key') }}
-                    </button>
+                    <button type="submit" class="btn btn-primary" style="background:#ea580c; color:white; border-radius:8px; font-weight:600; border:none; padding:0.65rem 1rem; width:100%; box-shadow:0 2px 4px rgba(234,88,12,0.15);">{{ __('สร้างกุญแจ API Key') }}                    </button>
                 </form>
             </div>
         </div>
@@ -64,9 +58,7 @@
                 <h3 class="font-semi flex items-center gap-2" style="font-size:1.05rem; margin:0;">
                     <svg style="width:20px; height:20px; color:#ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
-                    </svg>
-                    API Keys {{ __('ที่ใช้งานอยู่') }}
-                </h3>
+                    </svg>{{ __('API Keys ที่ใช้งานอยู่') }}                </h3>
             </div>
             <div class="card-body" style="padding:0;">
                 
@@ -115,12 +107,10 @@
                                             {{ $token->created_at->translatedFormat('d M Y') }}
                                         </td>
                                         <td style="padding:1.1rem 1.5rem; text-align:right;">
-                                            <form action="{{ route('admin.api-keys.destroy', $token->id) }}" method="POST" onsubmit="return confirm('ยืนยันการลบ API Key นี้? หากยกเลิกแล้ว บริการหรือภายนอกที่กำลังใช้คีย์นี้จะไม่สามารถเชื่อมต่อได้อีกทันที')">
+                                            <form action="{{ route('admin.api-keys.destroy', $token->id) }}" method="POST" onsubmit="return confirm('{{ __('ยืนยันการลบ API Key นี้? หากยกเลิกแล้ว บริการหรือภายนอกที่กำลังใช้คีย์นี้จะไม่สามารถเชื่อมต่อได้อีกทันที') }}')">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm" style="padding:0.4rem 0.85rem; border-radius:8px; font-size:0.775rem; font-weight:600; cursor:pointer; line-height:1.5;">
-                                                    {{ __('ยกเลิกสิทธิ์ (Revoke)') }}
-                                                </button>
+                                                <button type="submit" class="btn btn-danger btn-sm" style="padding:0.4rem 0.85rem; border-radius:8px; font-size:0.775rem; font-weight:600; cursor:pointer; line-height:1.5;">{{ __('ยกเลิกสิทธิ์ (Revoke)') }}                                                </button>
                                             </form>
                                         </td>
                                     </tr>

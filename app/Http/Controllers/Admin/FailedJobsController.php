@@ -120,7 +120,7 @@ class FailedJobsController extends Controller
             if ($request->wantsJson() || $request->is('api/*')) {
                 return response()->json(['status' => 'error', 'message' => 'ไม่พบงานที่ล้มเหลวตามรหัสที่ระบุ'], 404);
             }
-            return back()->with('error', 'ไม่พบงานที่ล้มเหลวตามรหัสที่ระบุ');
+            return back()->with('error', __('flash.ไม่พบงานที่ล้มเหลวตามรหัสที่ระบุ'));
         }
 
         try {
@@ -152,7 +152,7 @@ class FailedJobsController extends Controller
             if ($request->wantsJson() || $request->is('api/*')) {
                 return response()->json(['status' => 'ok', 'message' => 'ไม่มีรายการงานที่ล้มเหลวค้างอยู่ในระบบ']);
             }
-            return back()->with('info', 'ไม่มีรายการงานที่ล้มเหลวค้างอยู่ในระบบ');
+            return back()->with('info', __('flash.ไม่มีรายการงานที่ล้มเหลวค้างอยู่ในระบบ'));
         }
 
         try {
@@ -182,7 +182,7 @@ class FailedJobsController extends Controller
             if ($request->wantsJson() || $request->is('api/*')) {
                 return response()->json(['status' => 'error', 'message' => 'ไม่พบงานที่ล้มเหลวตามรหัสที่ระบุ'], 404);
             }
-            return back()->with('error', 'ไม่พบงานที่ล้มเหลวตามรหัสที่ระบุ');
+            return back()->with('error', __('flash.ไม่พบงานที่ล้มเหลวตามรหัสที่ระบุ'));
         }
 
         DB::table('failed_jobs')->where('id', $job->id)->delete();
@@ -214,7 +214,7 @@ class FailedJobsController extends Controller
             if ($request->wantsJson() || $request->is('api/*')) {
                 return response()->json(['status' => 'ok', 'message' => 'ไม่มีรายการงานที่ล้มเหลวค้างอยู่ในระบบ']);
             }
-            return back()->with('info', 'ไม่มีรายการงานที่ล้มเหลวค้างอยู่ในระบบ');
+            return back()->with('info', __('flash.ไม่มีรายการงานที่ล้มเหลวค้างอยู่ในระบบ'));
         }
 
         DB::table('failed_jobs')->delete();

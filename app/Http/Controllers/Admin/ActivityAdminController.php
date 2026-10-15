@@ -207,7 +207,7 @@ class ActivityAdminController extends Controller
         // Broadcast event เพื่อส่ง LINE notification แบบ async
         ActivityPublished::dispatch($activity);
 
-        return redirect()->route('admin.activities.index')->with('success', 'สร้างกิจกรรมสำเร็จ!');
+        return redirect()->route('admin.activities.index')->with('success', __('flash.สร้างกิจกรรมสำเร็จ!'));
     }
 
     /**
@@ -347,7 +347,7 @@ class ActivityAdminController extends Controller
 
         ListCache::bump(ListCache::GROUP_ACTIVITIES);
 
-        return redirect()->route('admin.activities.index')->with('success', 'อัปเดตกิจกรรมสำเร็จ!');
+        return redirect()->route('admin.activities.index')->with('success', __('flash.อัปเดตกิจกรรมสำเร็จ!'));
     }
 
     /**
@@ -364,7 +364,7 @@ class ActivityAdminController extends Controller
 
         ListCache::bump(ListCache::GROUP_ACTIVITIES);
 
-        return redirect()->route('admin.activities.index')->with('success', 'ลบกิจกรรมสำเร็จ');
+        return redirect()->route('admin.activities.index')->with('success', __('flash.ลบกิจกรรมสำเร็จ'));
     }
 
     /**
@@ -394,7 +394,7 @@ class ActivityAdminController extends Controller
 
         ListCache::bump(ListCache::GROUP_ACTIVITIES);
 
-        return redirect()->route('admin.dashboard')->with('success', 'สร้างกิจกรรมด่วนสำเร็จ!');
+        return redirect()->route('admin.dashboard')->with('success', __('flash.สร้างกิจกรรมด่วนสำเร็จ!'));
     }
 
     /**
@@ -423,7 +423,7 @@ class ActivityAdminController extends Controller
 
         // กิจกรรมสิ้นสุดแล้ว → ปิดระบบ QR ไม่ให้สร้างใหม่
         if ($activity->isCheckInQrClosed()) {
-            return back()->with('error', 'กิจกรรมสิ้นสุดแล้ว — ระบบ QR Code ถูกปิด ไม่สามารถสร้าง QR เข้างานใหม่ได้');
+            return back()->with('error', __('flash.กิจกรรมสิ้นสุดแล้ว — ระบบ QR Code ถูกปิด ไม่สามารถสร้าง QR เข้างานใหม่ได้'));
         }
 
         $oldToken = $activity->qr_token;
@@ -442,7 +442,7 @@ class ActivityAdminController extends Controller
         $this->auditUpdate($activity, ['qr_token' => $oldToken], "สร้าง QR Code ใหม่สำหรับกิจกรรม \"{$activity->title}\"");
 
         $expiryMsg = $expiresAt ? ' (หมดอายุใน ' . $request->expires_in_hours . ' ชั่วโมง)' : '';
-        return back()->with('success', 'สร้าง QR Code ใหม่สำเร็จแล้ว' . $expiryMsg);
+        return back()->with('success', __('flash.สร้าง QR Code ใหม่สำเร็จแล้ว') . $expiryMsg);
     }
 
     /**
@@ -454,7 +454,7 @@ class ActivityAdminController extends Controller
 
         // กิจกรรมสิ้นสุดแล้ว → ปิดระบบ QR ไม่ให้สร้างใหม่
         if ($activity->isCheckoutQrClosed()) {
-            return back()->with('error', 'กิจกรรมสิ้นสุดแล้ว — ระบบ QR Code ถูกปิด ไม่สามารถสร้าง QR ออกงานใหม่ได้');
+            return back()->with('error', __('flash.กิจกรรมสิ้นสุดแล้ว — ระบบ QR Code ถูกปิด ไม่สามารถสร้าง QR ออกงานใหม่ได้'));
         }
 
         $oldToken = $activity->qr_checkout_token;
@@ -466,7 +466,7 @@ class ActivityAdminController extends Controller
 
         $this->auditUpdate($activity, ['qr_checkout_token' => $oldToken], "สร้าง QR Code ออกงานใหม่สำหรับกิจกรรม \"{$activity->title}\"");
 
-        return back()->with('success', 'สร้าง QR Code ออกงานใหม่สำเร็จแล้ว');
+        return back()->with('success', __('flash.สร้าง QR Code ออกงานใหม่สำเร็จแล้ว'));
     }
 
     /**

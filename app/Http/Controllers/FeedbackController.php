@@ -30,7 +30,7 @@ class FeedbackController extends Controller
 
         if (!$attendance) {
             return redirect()->route('activities.index')
-                ->with('error', 'คุณยังไม่ได้เข้าร่วมกิจกรรมนี้');
+                ->with('error', __('flash.คุณยังไม่ได้เข้าร่วมกิจกรรมนี้'));
         }
 
         // ตรวจสอบว่าประเมินไปแล้วหรือไม่
@@ -40,7 +40,7 @@ class FeedbackController extends Controller
 
         if ($existingFeedback) {
             return redirect()->route('activities.index')
-                ->with('error', 'คุณได้ประเมินกิจกรรมนี้ไปแล้ว');
+                ->with('error', __('flash.คุณได้ประเมินกิจกรรมนี้ไปแล้ว'));
         }
 
         return view('student.feedback.create', compact('activity'));
@@ -58,7 +58,7 @@ class FeedbackController extends Controller
             ->first();
 
         if (!$attendance) {
-            return back()->with('error', 'คุณยังไม่ได้เข้าร่วมกิจกรรมนี้');
+            return back()->with('error', __('flash.คุณยังไม่ได้เข้าร่วมกิจกรรมนี้'));
         }
 
         // ตรวจสอบว่าประเมินไปแล้วหรือไม่
@@ -67,7 +67,7 @@ class FeedbackController extends Controller
             ->exists();
 
         if ($existingFeedback) {
-            return back()->with('error', 'คุณได้ประเมินกิจกรรมนี้ไปแล้ว');
+            return back()->with('error', __('flash.คุณได้ประเมินกิจกรรมนี้ไปแล้ว'));
         }
 
         $data = $request->validate([
@@ -105,6 +105,6 @@ class FeedbackController extends Controller
         ]);
 
         return redirect()->route('activities.index')
-            ->with('success', 'ขอบคุณสำหรับการประเมินกิจกรรม!');
+            ->with('success', __('flash.ขอบคุณสำหรับการประเมินกิจกรรม!'));
     }
 }

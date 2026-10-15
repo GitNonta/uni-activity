@@ -73,7 +73,7 @@
         {{-- Badges --}}
         <div class="flex items-center gap-2 mb-2" style="flex-wrap:wrap;">
             <span class="badge {{ $job->job_type === 'parttime' ? 'job-badge-parttime' : 'job-badge-general' }}" style="font-size:.8rem;">
-                {{ $job->job_type === 'parttime' ? 'Part-time' : 'งานทั่วไป' }}
+                {{ $job->job_type === 'parttime' ? 'Part-time' : __('งานทั่วไป') }}
             </span>
             @if($job->status === 'open')
                 <span class="badge badge-green flex items-center gap-1"><svg style="width:10px;height:10px;" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg> {{ __('เปิดรับสมัคร') }}</span>
@@ -94,7 +94,7 @@
 
         {{-- บล็อกผู้สร้างงาน สไตล์ YouTube --}}
         <div>
-            <x-creator-badge :creator="$job->creator" default-role="หน่วยงานผู้ลงประกาศงาน" />
+            <x-creator-badge :creator="$job->creator" default-role="{{ __('หน่วยงานผู้ลงประกาศงาน') }}" />
         </div>
 
         <hr class="divider">
@@ -176,14 +176,14 @@
                 </div>
                 <div style="min-width:0;flex:1;">
                     <span class="text-muted block" style="font-size:.75rem;">{{ __('เพศที่รับ') }}</span>
-                    <p class="font-semi" style="margin:0;word-break:break-word;">{{ $job->gender === 'male' ? 'ชาย' : ($job->gender === 'female' ? 'หญิง' : 'ไม่จำกัด') }}</p>
+                    <p class="font-semi" style="margin:0;word-break:break-word;">{{ $job->gender === 'male' ? __('ชาย') : ($job->gender === 'female' ? __('หญิง') : __('ไม่จำกัด')) }}</p>
                 </div>
             </div>
         </div>
 
         @if($job->note)
         <div class="alert alert-info text-sm mt-4" style="background:#fef3c7;color:#92400e;border-color:#fde68a;line-height:1.6;">
-            <strong>* {{ __('หมายเหตุ:') }}</strong> @linkify($job->note)
+            <strong>{{ __('* หมายเหตุ:') }}</strong> @linkify($job->note)
         </div>
         @endif
 
@@ -194,21 +194,15 @@
         <div style="margin-bottom:1rem;">
             <div class="flex items-center justify-between mb-2">
                 <p class="font-semi text-sm flex items-center gap-1">
-                    <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                    {{ __('แผนที่สถานที่งาน') }}
-                </p>
-                <button type="button" onclick="openDirections({{ $job->latitude }}, {{ $job->longitude }})" class="btn btn-outline btn-sm" style="padding: 2px 10px; font-size: 11px;">
-                    {{ __('เปิดแอปแผนที่') }}
-                </button>
+                    <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>{{ __('แผนที่สถานที่งาน') }}                </p>
+                <button type="button" onclick="openDirections({{ $job->latitude }}, {{ $job->longitude }})" class="btn btn-outline btn-sm" style="padding: 2px 10px; font-size: 11px;">{{ __('เปิดแอปแผนที่') }}                </button>
             </div>
             
                 <div id="jobDetailMap" style="height:200px;border-radius:8px;border:1px solid #e2e8f0;margin-top:8px;"></div>
             </div>
 
             <a href="{{ route('map.index', ['type' => 'job', 'id' => $job->id, 'nav' => 1]) }}" class="btn btn-primary btn-block btn-sm mt-2 text-center" style="text-decoration:none;">
-                <svg class="icon-sm" style="display:inline;vertical-align:-2px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                {{ __('ดูแผนที่และเริ่มบอกเส้นทาง') }}
-            </a>
+                <svg class="icon-sm" style="display:inline;vertical-align:-2px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>{{ __('ดูแผนที่และเริ่มบอกเส้นทาง') }}            </a>
 
         </div>
         <hr class="divider">
@@ -235,7 +229,7 @@
             @if($userApplication)
                 <div class="alert {{ $userApplication->status === 'confirmed' ? 'alert-success' : ($userApplication->status === 'rejected' ? 'alert-error' : 'alert-info') }} text-sm" style="{{ $userApplication->status === 'pending' ? 'background:#fef3c7;color:#92400e;border-color:#fde68a;' : '' }}">
                     @if($userApplication->status === 'pending')
-                        <svg style="width:16px;height:16px;display:inline;margin-right:4px;vertical-align:-3px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> {{ __('คุณได้สมัครงานนี้แล้ว —') }}<strong>{{ __('รอการพิจารณา') }}</strong>
+                        <svg style="width:16px;height:16px;display:inline;margin-right:4px;vertical-align:-3px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> {{ __('คุณได้สมัครงานนี้แล้ว —') }} <strong>{{ __('รอการพิจารณา') }}</strong>
                     @elseif($userApplication->status === 'confirmed')
                         <svg style="width:16px;height:16px;display:inline;margin-right:4px;color:#16a34a;vertical-align:-3px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> <strong>{{ __('ได้รับการยืนยัน') }}</strong>{{ __('แล้ว') }}
                     @else
@@ -245,10 +239,8 @@
             @elseif($job->isOpen() && $job->hasAvailableSlots())
                 <form method="POST" action="{{ route('jobs.apply', $job->id) }}">
                     @csrf
-                    <button type="submit" class="btn btn-primary btn-block btn-lg" onclick="return confirm('ยืนยันสมัครงานนี้?')">
-                        <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        {{ __('สมัครงาน') }}
-                    </button>
+                    <button type="submit" class="btn btn-primary btn-block btn-lg" onclick="return confirm('{{ __('ยืนยันสมัครงานนี้?') }}')">
+                        <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>{{ __('สมัครงาน') }}                    </button>
                 </form>
             @else
                 <button disabled class="btn btn-outline btn-block">{{ __('ไม่สามารถสมัครได้ในขณะนี้') }}</button>
@@ -257,11 +249,8 @@
         @guest
             <div style="margin-top:16px; text-align:center;">
                 <a href="{{ route('login') }}" class="btn btn-primary btn-block btn-lg" style="text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-weight:700; border-radius:10px; width: 100%; box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);">
-                    <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-                    {{ __('เข้าสู่ระบบเพื่อสมัครงาน') }}
-                </a>
-                <p class="text-xs mt-3 mb-0" style="color:#64748b;">
-                    {{ __('ยังไม่มีบัญชีนักศึกษา?') }}<a href="{{ route('register') }}" style="color:#ea580c; text-decoration:underline; font-weight:600;">{{ __('สมัครสมาชิกที่นี่') }}</a>
+                    <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>{{ __('เข้าสู่ระบบเพื่อสมัครงาน') }}                </a>
+                <p class="text-xs mt-3 mb-0" style="color:#64748b;">{{ __('ยังไม่มีบัญชีนักศึกษา?') }} <a href="{{ route('register') }}" style="color:#ea580c; text-decoration:underline; font-weight:600;">{{ __('สมัครสมาชิกที่นี่') }}</a>
                 </p>
             </div>
         @endguest
@@ -275,8 +264,7 @@
     </button>
     @auth
     <button class="btn btn-primary flex-1" id="openChatBtn" data-job-id="{{ $job->id }}" data-job-title="{{ $job->title }}" data-chat-url="{{ route('chat.show', $job->id) }}">
-        <x-icon name="chat" size="14" style="display:inline;margin-right:2px;vertical-align:-2px;" /> {{ __('แชทสอบถามผู้ดูแล') }}
-    </button>
+        <x-icon name="chat" size="14" style="display:inline;margin-right:2px;vertical-align:-2px;" /> {{ __('แชทสอบถามผู้ดูแล') }}    </button>
     @endauth
 </div>
 <script>
@@ -314,7 +302,7 @@
         @forelse($comments as $comment)
         <div class="job-comment" style="border-bottom:1px solid #f1f5f9;padding:.75rem 0;">
             <div class="flex items-center gap-2 mb-1">
-                <span class="font-semi text-sm">{{ $comment->user->full_name ?? 'ผู้ใช้' }}</span>
+                <span class="font-semi text-sm">{{ $comment->user->full_name ?? __('ผู้ใช้') }}</span>
                 @if($comment->user->isStaffOrAdmin())
                     <span class="badge badge-orange" style="font-size:.6rem;">{{ __('ผู้ดูแล') }}</span>
                 @endif
@@ -322,7 +310,7 @@
                 @if(auth()->check() && auth()->id() === $comment->user_id)
                     <form method="POST" action="{{ route('jobs.comment.delete', $comment->id) }}" style="margin-left:auto;">
                         @csrf @method('DELETE')
-                        <button type="submit" class="text-xs text-danger" style="background:none;border:none;cursor:pointer;" onclick="return confirm('ลบคอมเมนต์?')">{{ __('ลบ') }}</button>
+                        <button type="submit" class="text-xs text-danger" style="background:none;border:none;cursor:pointer;" onclick="return confirm('{{ __('ลบคอมเมนต์?') }}')">{{ __('ลบ') }}</button>
                     </form>
                 @endif
             </div>
@@ -332,7 +320,7 @@
             @foreach($comment->replies as $reply)
             <div style="margin-left:1.5rem;padding:.5rem 0;border-left:2px solid #e2e8f0;padding-left:.75rem;margin-top:.5rem;">
                 <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semi text-sm">{{ $reply->user->full_name ?? 'ผู้ใช้' }}</span>
+                    <span class="font-semi text-sm">{{ $reply->user->full_name ?? __('ผู้ใช้') }}</span>
                     @if($reply->user->isStaffOrAdmin())
                         <span class="badge badge-orange" style="font-size:.6rem;">{{ __('ผู้ดูแล') }}</span>
                     @endif
@@ -344,7 +332,7 @@
 
             {{-- ปุ่ม Reply --}}
             @auth
-            <button class="text-xs text-primary mt-1" style="background:none;border:none;cursor:pointer;" onclick="toggleReply({{ $comment->id }})">↩ {{ __('ตอบกลับ') }}</button>
+            <button class="text-xs text-primary mt-1" style="background:none;border:none;cursor:pointer;" onclick="toggleReply({{ $comment->id }})">{{ __('↩ ตอบกลับ') }}</button>
             <form method="POST" action="{{ route('jobs.comment', $job->id) }}" id="replyForm{{ $comment->id }}" style="display:none;margin-top:.5rem;margin-left:1.5rem;">
                 @csrf
                 <input type="hidden" name="parent_id" value="{{ $comment->id }}">

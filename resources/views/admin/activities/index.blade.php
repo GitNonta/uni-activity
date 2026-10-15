@@ -1,13 +1,11 @@
 @extends('layouts.admin')
-@section('title', __('จัดการกิจกรรม')
+@section('title', __('จัดการกิจกรรม'))
 
 @section('content')
 <div class="flex items-center justify-between mb-4">
     <h1 class="font-bold" style="font-size:1.5rem;">{{ __('จัดการกิจกรรม') }}</h1>
     <a href="{{ route('admin.activities.create') }}" class="btn btn-primary btn-sm">
-        <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-        {{ __('สร้างใหม่') }}
-    </a>
+        <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>{{ __('สร้างใหม่') }}    </a>
 </div>
 
 {{-- ฟอร์มค้นหาและกรองตามสถานะ --}}
@@ -67,14 +65,14 @@
                             <img src="{{ Storage::url($act->image_path) }}" alt="" style="width:40px; height:40px; object-fit:cover; border-radius:8px; background:#f1f5f9;">
                         @endif
                     </td>
-                    <td data-label="ชื่อ">
+                    <td data-label="{{ __('ชื่อ') }}">
                         <a href="{{ route('admin.activities.show', $act->id) }}" class="font-semi" title="{{ $act->title }}">{{ Str::limit($act->title, 40, '...') }}</a>
                         <p class="text-xs text-muted" title="{{ $act->category->name ?? '-' }}">{{ Str::limit($act->category->name ?? '-', 30, '...') }}</p>
                     </td>
-                    <td data-label="วันที่" class="text-center text-muted">{{ $act->activity_date->format('d/m/Y') }}</td>
-                    <td data-label="สถานะ" class="text-center">@include('components.status-badge', ['status' => $act->computed_status])</td>
-                    <td data-label="ผู้สมัคร" class="text-center">{{ $act->getRegisteredCount() }}/{{ $act->max_participants }}</td>
-                    <td data-label="คำขออนุมัติ" class="text-center">
+                    <td data-label="{{ __('วันที่') }}" class="text-center text-muted">{{ $act->activity_date->format('d/m/Y') }}</td>
+                    <td data-label="{{ __('สถานะ') }}" class="text-center">@include('components.status-badge', ['status' => $act->computed_status])</td>
+                    <td data-label="{{ __('ผู้สมัคร') }}" class="text-center">{{ $act->getRegisteredCount() }}/{{ $act->max_participants }}</td>
+                    <td data-label="{{ __('คำขออนุมัติ') }}" class="text-center">
                         @php $totalPending = $act->pending_registrations_count + $act->pending_attendances_count; @endphp
                         @if($totalPending > 0)
                             <button type="button" onclick="loadPendingRequests({{ $act->id }})" class="badge badge-yellow" style="border:none; cursor:pointer; font-size:.7rem; animation: pulse 2s infinite;">
@@ -84,9 +82,9 @@
                             <span class="text-xs text-muted">-</span>
                         @endif
                     </td>
-                    <td data-label="จัดการ" class="text-right">
+                    <td data-label="{{ __('จัดการ') }}" class="text-right">
                         <div class="flex justify-end gap-2" style="justify-content:flex-end; align-items:center;">
-                            <form method="POST" action="{{ route('admin.activities.clone', $act->id) }}" style="display:inline;" onsubmit="return confirm('คุณต้องการคัดลอกกิจกรรมนี้เพื่อสร้างรายการใหม่ใช่หรือไม่?');">
+                            <form method="POST" action="{{ route('admin.activities.clone', $act->id) }}" style="display:inline;" onsubmit="return confirm('{{ __('คุณต้องการคัดลอกกิจกรรมนี้เพื่อสร้างรายการใหม่ใช่หรือไม่?') }}');">
                                 @csrf
                                 <button type="submit" class="btn btn-outline btn-sm" style="color:#4f46e5; border-color:#c7d2fe;" title="{{ __('คัดลอกกิจกรรมนี้') }}">{{ __('คัดลอก') }}</button>
                             </form>
@@ -94,7 +92,7 @@
                             <a href="{{ route('admin.activities.edit', $act->id) }}" class="btn btn-outline btn-sm">{{ __('แก้ไข') }}</a>
                             <form method="POST" action="{{ route('admin.activities.destroy', $act->id) }}" style="display:inline;">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('ยืนยันลบ?')">{{ __('ลบ') }}</button>
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('{{ __('ยืนยันลบ?') }}')">{{ __('ลบ') }}</button>
                             </form>
                         </div>
                     </td>
@@ -124,8 +122,7 @@
 @if($completedActivities->count())
 <div style="margin-top:2rem; padding-top:1.5rem; border-top:1px solid #e2e8f0;">
     <h2 style="font-weight:600; color:#64748b; padding:0.5rem 0; display:flex; align-items:center; gap:8px;">
-        <svg style="width:20px; height:20px; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        {{ __('กิจกรรมที่เสร็จสิ้นแล้ว') }}<span style="font-weight:400; font-size:0.85rem;">({{ $completedActivities->total() }} {{ __('รายการ)') }}</span>
+        <svg style="width:20px; height:20px; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ __('กิจกรรมที่เสร็จสิ้นแล้ว') }} <span style="font-weight:400; font-size:0.85rem;">({{ $completedActivities->total() }} {{ __('รายการ') }})</span>
     </h2>
     <div class="mt-3">
         <div class="table-wrap">
@@ -179,7 +176,7 @@
     <div class="card" style="width:100%; max-width:600px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1);">
         <div class="card-body" style="padding:1.25rem; border-bottom:1px solid #f1f5f9; flex-shrink:0;">
             <div class="flex items-center justify-between">
-                <h3 class="font-bold" style="font-size:1.1rem;">{{ __('คำขออนุมัติ:') }}<span id="modalActivityTitle" style="color:#1e40af;"></span></h3>
+                <h3 class="font-bold" style="font-size:1.1rem;">{{ __('คำขออนุมัติ:') }} <span id="modalActivityTitle" style="color:#1e40af;"></span></h3>
                 <button type="button" onclick="closePendingModal()" class="text-muted" style="background:none; border:none; cursor:pointer;">
                     <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>

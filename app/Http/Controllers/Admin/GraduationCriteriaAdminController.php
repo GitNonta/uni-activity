@@ -64,6 +64,6 @@ class GraduationCriteriaAdminController extends Controller
 
         return redirect()
             ->route('admin.graduation.criteria.index')
-            ->with('success', 'บันทึกการปรับปรุงเกณฑ์ชั่วโมงกิจกรรมการสำเร็จการศึกษาเรียบร้อยแล้ว');
+            ->with('success', __('flash.บันทึกการปรับปรุงเกณฑ์ชั่วโมงกิจกรรมการสำเร็จการศึกษาเรียบร้อยแล้ว'));
     }
 }

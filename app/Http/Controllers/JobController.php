@@ -234,7 +234,7 @@ class JobController extends Controller
     public function apply(Request $request, JobListing $job): \Illuminate\Http\RedirectResponse
     {
         if (!$job->isOpen()) {
-            return back()->with('error', 'ประกาศงานนี้ปิดรับสมัครแล้ว');
+            return back()->with('error', __('flash.ประกาศงานนี้ปิดรับสมัครแล้ว'));
         }
 
         // ตรวจสอบว่าสมัครแล้วหรือยัง
@@ -243,12 +243,12 @@ class JobController extends Controller
             ->first();
 
         if ($existing) {
-            return back()->with('error', 'คุณได้สมัครงานนี้แล้ว');
+            return back()->with('error', __('flash.คุณได้สมัครงานนี้แล้ว'));
         }
 
         // ตรวจสอบ quota
         if (!$job->hasAvailableSlots()) {
-            return back()->with('error', 'ตำแหน่งงานเต็มแล้ว');
+            return back()->with('error', __('flash.ตำแหน่งงานเต็มแล้ว'));
         }
 
         JobApplication::create([
@@ -257,7 +257,7 @@ class JobController extends Controller
             'status'         => 'pending',
         ]);
 
-        return back()->with('success', 'สมัครงานเรียบร้อย รอการพิจารณาจากผู้ดูแล');
+        return back()->with('success', __('flash.สมัครงานเรียบร้อย รอการพิจารณาจากผู้ดูแล'));
     }
 
     /** เพิ่มคอมเมนต์ */
@@ -288,7 +288,7 @@ class JobController extends Controller
             'body'           => $data['body'],
         ]);
 
-        return back()->with('success', 'แสดงความคิดเห็นเรียบร้อย');
+        return back()->with('success', __('flash.แสดงความคิดเห็นเรียบร้อย'));
     }
 
     /** ลบคอมเมนต์ (เจ้าของหรือ Admin/Staff Owner เท่านั้น) */
@@ -297,6 +297,6 @@ class JobController extends Controller
         \Illuminate\Support\Facades\Gate::authorize('delete', $comment);
 
         $comment->delete();
-        return back()->with('success', 'ลบคอมเมนต์เรียบร้อย');
+        return back()->with('success', __('flash.ลบคอมเมนต์เรียบร้อย'));
     }
 }
