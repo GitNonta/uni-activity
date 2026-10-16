@@ -58,6 +58,11 @@
         <span style="opacity:.5;">/</span>
         <a href="{{ route('lang.switcher', 'en') }}"
            style="text-decoration:none; padding:.22rem .3rem; border-radius:999px; background:transparent; color:#64748b; font-weight:600; {{ app()->getLocale() === 'en' ? 'background:#ea580c !important; color:#fff !important;' : '' }}">EN</a>
+        <a href="{{ route('about') }}"
+           style="display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem; margin-left:.25rem; border-radius:999px; background:transparent; color:#64748b; text-decoration:none; transition:background .2s, color .2s;"
+           title="{{ __('เกี่ยวกับ UNI Activity') }}" aria-label="{{ __('เกี่ยวกับ UNI Activity') }}" onmouseover="this.style.background='#ea580c';this.style.color='#fff';" onmouseout="this.style.background='transparent';this.style.color='#64748b';">
+            <svg width="16" height="16" style="width:16px;height:16px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 16v-4m0-4h.01"/></svg>
+        </a>
     </div>
     <div class="container-sm" style="padding-top:6rem;">
         <div class="text-center mb-4">

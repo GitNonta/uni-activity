@@ -1,6 +1,6 @@
 {{-- หน้ารีเซ็ตรหัสผ่านสำหรับ Staff --}}
 @extends('layouts.app')
-@section('title', __('รีเซ็ตรหัสผ่าน')
+@section('title', __('รีเซ็ตรหัสผ่าน'))
 
 @section('content')
 <div class="container" style="max-width:400px;margin:2rem auto;">

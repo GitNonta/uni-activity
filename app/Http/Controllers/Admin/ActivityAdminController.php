@@ -441,7 +441,7 @@ class ActivityAdminController extends Controller
 
         $this->auditUpdate($activity, ['qr_token' => $oldToken], "สร้าง QR Code ใหม่สำหรับกิจกรรม \"{$activity->title}\"");
 
-        $expiryMsg = $expiresAt ? ' (หมดอายุใน ' . $request->expires_in_hours . ' ชั่วโมง)' : '';
+        $expiryMsg = $expiresAt ? ' ' . __('flash.หมดอายุใน :h ชั่วโมง', ['h' => $request->expires_in_hours]) : '';
         return back()->with('success', __('flash.สร้าง QR Code ใหม่สำเร็จแล้ว') . $expiryMsg);
     }
 
@@ -501,6 +501,6 @@ class ActivityAdminController extends Controller
         ListCache::bump(ListCache::GROUP_ACTIVITIES);
 
         return redirect()->route('admin.activities.edit', $newActivity)
-            ->with('success', "คัดลอกกิจกรรม \"{$activity->title}\" สำเร็จ! กรุณาตั้งวันเวลาและตรวจสอบข้อมูลก่อนเผยแพร่");
+            ->with('success', __('คัดลอกกิจกรรม ":t" สำเร็จ! กรุณาตั้งวันเวลาและตรวจสอบข้อมูลก่อนเผยแพร่', ['t' => $activity->title]));
     }
 }

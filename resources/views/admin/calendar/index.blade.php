@@ -573,7 +573,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var calEl = document.getElementById('master-calendar');
 
     calendarInstance = new FullCalendar.Calendar(calEl, {
-        locale: 'th',
+        locale: '{{ app()->getLocale() === 'en' ? 'en' : 'th' }}',
         initialView: window.innerWidth < 768 ? 'listMonth' : 'dayGridMonth',
         headerToolbar: {
             left: 'prev,next today',

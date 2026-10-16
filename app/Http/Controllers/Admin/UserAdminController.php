@@ -117,7 +117,7 @@ class UserAdminController extends Controller
 
         $roleLabels = ['student' => 'นักศึกษา', 'staff' => 'เจ้าหน้าที่', 'admin' => 'ผู้ดูแลระบบ'];
         $label = $roleLabels[$data['role']] ?? 'ผู้ใช้';
-        return redirect()->route('admin.users.index')->with('success', "สร้าง{$label} \"{$data['full_name']}\" สำเร็จ");
+        return redirect()->route('admin.users.index')->with('success', __('สร้าง:label ":name" สำเร็จ', ['label' => $label, 'name' => $data['full_name']]));
     }
 
     /** แสดงฟอร์มแก้ไขผู้ใช้ */
@@ -176,7 +176,7 @@ class UserAdminController extends Controller
 
         $roleLabels = ['student' => 'นักศึกษา', 'staff' => 'เจ้าหน้าที่', 'admin' => 'ผู้ดูแลระบบ'];
         $label = $roleLabels[$user->role] ?? 'ผู้ใช้';
-        return redirect()->route('admin.users.index')->with('success', "อัปเดต{$label} \"{$user->full_name}\" สำเร็จ");
+        return redirect()->route('admin.users.index')->with('success', __('อัปเดต:label ":name" สำเร็จ', ['label' => $label, 'name' => $user->full_name]));
     }
 
     /** ลบผู้ใช้ */
@@ -193,7 +193,7 @@ class UserAdminController extends Controller
         $this->auditDelete($user, "ลบผู้ใช้ ({$user->role}): \"{$name}\"");
         $user->delete();
 
-        return redirect()->route('admin.users.index')->with('success', "ลบ{$label} \"{$name}\" สำเร็จ");
+        return redirect()->route('admin.users.index')->with('success', __('ลบ:label ":name" สำเร็จ', ['label' => $label, 'name' => $name]));
     }
 
     /** สลับสถานะเปิด/ปิดการใช้งาน */
@@ -209,6 +209,6 @@ class UserAdminController extends Controller
         $this->auditToggle($user, ($user->is_active ? 'เปิด' : 'ปิด') . "การใช้งาน: \"{$user->full_name}\"");
 
         $status = $user->is_active ? 'เปิดใช้งาน' : 'ปิดการใช้งาน';
-        return back()->with('success', "{$status} \"{$user->full_name}\" สำเร็จ");
+        return back()->with('success', __('เปลี่ยนสถานะ: :status ":name" สำเร็จ', ['status' => $status, 'name' => $user->full_name]));
     }
 }

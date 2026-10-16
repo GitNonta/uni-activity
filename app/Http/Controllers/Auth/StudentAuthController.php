@@ -40,12 +40,12 @@ class StudentAuthController extends Controller
                     ->first();
 
         if (!$user) {
-            return back()->withErrors(['student_id' => 'รหัสนักศึกษาไม่ถูกต้อง'])->withInput();
+            return back()->withErrors(['student_id' => __('รหัสนักศึกษาไม่ถูกต้อง')])->withInput();
         }
 
         // ป้องกันเจ้าหน้าที่เข้าทางช่องนักศึกษา
         if ($user->isStaff()) {
-            return back()->withErrors(['student_id' => 'ผู้จัดกิจกรรมกรุณาเข้าสู่ระบบทางหน้าผู้ดูแล'])->withInput();
+            return back()->withErrors(['student_id' => __('ผู้จัดกิจกรรมกรุณาเข้าสู่ระบบทางหน้าผู้ดูแล')])->withInput();
         }
 
         // โหมด OTP สำหรับบัญชีที่ระบุใน AUTH_OTP_BYPASS_IDS (.env) — ไม่มี ID ฝังในโค้ด

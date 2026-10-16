@@ -105,7 +105,7 @@
 
 {{-- ── กิจกรรมที่ลงทะเบียนปกติ ── --}}
 @php
-    $sectionTitle = $todos->isNotEmpty() ? 'รายการลงทะเบียนทั้งหมด' : null;
+    $sectionTitle = $todos->isNotEmpty() ? __('รายการลงทะเบียนทั้งหมด') : null;
 @endphp
 
 @if($sectionTitle && $registrations->isNotEmpty())
@@ -127,7 +127,7 @@
                     @include('components.status-badge', ['status' => $status])
                     @php
                         $sc = ['pending'=>'badge-yellow','approved'=>'badge-green','cancelled'=>'badge-gray','rejected'=>'badge-red', 'waitlisted'=>'badge-yellow'];
-                        $sl = ['pending'=>'รออนุมัติลงทะเบียน','approved'=>'ลงทะเบียนสำเร็จ','cancelled'=>'ยกเลิก','rejected'=>'ปฏิเสธ', 'waitlisted'=>'Waitlist (รอคิว)'];
+                        $sl = ['pending'=>__('รออนุมัติลงทะเบียน'),'approved'=>__('ลงทะเบียนสำเร็จ'),'cancelled'=>__('ยกเลิก'),'rejected'=>__('ปฏิเสธ'), 'waitlisted'=>__('Waitlist (รอคิว)')];
                     @endphp
                     <span class="badge {{ $sc[$reg->status] ?? 'badge-gray' }}" style="font-size:.72rem; padding:.25rem .6rem; border-radius:999px;">{{ $sl[$reg->status] ?? $reg->status }}</span>
                     

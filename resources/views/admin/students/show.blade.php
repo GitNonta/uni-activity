@@ -1,6 +1,6 @@
 {{-- หน้าจัดการโปรไฟล์และชั่วโมงนักศึกษา (Admin) --}}
 @extends('layouts.admin')
-@section('title', 'จัดการนักศึกษา: ' . $student->full_name)
+@section('title', __('จัดการนักศึกษา: ') . $student->full_name)
 
 @section('content')
 <div class="flex items-center gap-2 mb-4" style="flex-wrap:wrap;">
@@ -69,7 +69,7 @@
                 </div>
                 <div class="flex justify-between">
                     <span class="text-xs text-muted">{{ __('ชั้นปี') }}</span>
-                    <span class="text-sm">{{ $student->year ? 'ปี '.$student->year : '-' }}</span>
+                    <span class="text-sm">{{ $student->year ? __('ปี :y', ['y' => $student->year]) : '-' }}</span>
                 </div>
                 <div class="flex justify-between">
                     <span class="text-xs text-muted">{{ __('ภาคเรียน') }}</span>

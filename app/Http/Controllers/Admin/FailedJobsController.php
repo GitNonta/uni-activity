@@ -138,7 +138,7 @@ class FailedJobsController extends Controller
             ]);
         }
 
-        return back()->with('success', "ส่งงาน '{$job->queue}' (ID: {$job->id}) กลับเข้าคิวเพื่อลองใหม่อีกครั้งเรียบร้อยแล้ว");
+        return back()->with('success', __('ส่งงาน :queue (ID: :id) กลับเข้าคิวเพื่อลองใหม่อีกครั้งเรียบร้อยแล้ว', ['queue' => $job->queue, 'id' => $job->id]));
     }
 
     /**
@@ -168,7 +168,7 @@ class FailedJobsController extends Controller
             ]);
         }
 
-        return back()->with('success', "ส่งงานที่ล้มเหลวทั้งหมด ({$count} รายการ) กลับเข้าคิวเพื่อลองใหม่เรียบร้อยแล้ว");
+        return back()->with('success', __('ส่งงานที่ล้มเหลวทั้งหมด (:n รายการ) กลับเข้าคิวเรียบร้อยแล้ว', ['n' => $count]));
     }
 
     /**
@@ -200,7 +200,7 @@ class FailedJobsController extends Controller
             ]);
         }
 
-        return back()->with('success', "ลบรายการงานที่ล้มเหลว ID: {$job->id} ออกจากระบบเรียบร้อยแล้ว");
+        return back()->with('success', __('ลบรายการงานที่ล้มเหลว ID: :id เรียบร้อยแล้ว', ['id' => $job->id]));
     }
 
     /**
@@ -232,7 +232,7 @@ class FailedJobsController extends Controller
             ]);
         }
 
-        return back()->with('success', "ล้างรายการงานที่ล้มเหลวทั้งหมด ({$count} รายการ) เรียบร้อยแล้ว");
+        return back()->with('success', __('ล้างรายการงานที่ล้มเหลวทั้งหมด (:n รายการ) เรียบร้อยแล้ว', ['n' => $count]));
     }
 }
 

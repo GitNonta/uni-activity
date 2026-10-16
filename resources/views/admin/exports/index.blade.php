@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', __('ส่งออกรายงาน')
+@section('title', __('ส่งออกรายงาน'))
 
 @section('styles')
 <style>

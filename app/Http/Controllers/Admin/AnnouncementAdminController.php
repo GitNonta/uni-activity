@@ -152,6 +152,6 @@ class AnnouncementAdminController extends Controller
         ListCache::bump(ListCache::GROUP_ANNOUNCEMENTS);
         $this->auditToggle($announcement, "{$status}การใช้งานประกาศ \"{$announcement->title}\"");
 
-        return back()->with('success', "{$status}การใช้งานประกาศเรียบร้อยแล้ว");
+        return back()->with('success', __('สลับสถานะประกาศ: :statusการใช้งานเรียบร้อยแล้ว', ['status' => $status]));
     }
 }

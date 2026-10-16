@@ -1,6 +1,6 @@
 {{-- เลย์เอาต์หลักฝั่งนักศึกษา: navbar + bottom nav (mobile) + เนื้อหา --}}
 <!DOCTYPE html>
-<html lang="th">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -60,6 +60,11 @@
                 <a href="{{ route('lang.switcher', 'en') }}"
                    class="{{ app()->getLocale() === 'en' ? 'active' : '' }}"
                    style="text-decoration:none; {{ app()->getLocale() === 'en' ? 'font-weight:700; color:var(--primary, #2563eb);' : 'color:inherit;' }}">EN</a>
+                <a href="{{ route('about') }}" class="about-info-link"
+                   style="display:inline-flex; align-items:center; justify-content:center; width:1.6rem; height:1.6rem; margin-left:.25rem; border-radius:999px; color:#64748b; text-decoration:none; transition:background .2s, color .2s;"
+                   title="{{ __('เกี่ยวกับ UNI Activity') }}" aria-label="{{ __('เกี่ยวกับ UNI Activity') }}">
+                    <svg width="17" height="17" style="width:17px;height:17px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 16v-4m0-4h.01"/></svg>
+                </a>
             </div>
             @auth
             {{-- Desktop nav links (ซ่อนบนมือถือ) --}}
@@ -105,7 +110,7 @@
             <div class="navbar-right navbar-desktop">
                 <span class="navbar-user">
                     <svg class="icon-sm" style="display:inline;margin-right:.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                    {{ auth()->user()->full_name }}
+                    {{ auth()->user()->displayName() }}
                 </span>
 
                 <!-- SVG Theme Toggle Button (Desktop Auth) -->
@@ -853,7 +858,7 @@
         var CSRF = document.querySelector('meta[name="csrf-token"]').content;
         var USER_ID = '{{ auth()->id() }}';
         var MY_PHOTO = '{{ auth()->user()->profile_photo ? asset("storage/".auth()->user()->profile_photo) : "" }}';
-        var MY_NAME = '{{ auth()->user()->full_name ?? auth()->user()->name ?? __('คุณ') }}';
+        var MY_NAME = '{{ auth()->user()->displayName() ?? __('คุณ') }}';
 
         var panelOpen = false;
         var threads = [];
@@ -1970,10 +1975,19 @@
         font-weight:600;
         transition:background .2s, color .2s;
     }
-    .navbar-right.lang-switcher a.active {
+        .navbar-right.lang-switcher a.active {
         background:#ea580c !important;
         color:#fff !important;
         font-weight:700;
+    }
+    .navbar-right.lang-switcher .about-info-link {
+        width:1.55rem !important;
+        height:1.55rem !important;
+        margin-left:.15rem;
+    }
+    .navbar-right.lang-switcher .about-info-link:hover {
+        background:#ea580c;
+        color:#fff !important;
     }
     </style>
     @endif
@@ -1983,7 +1997,7 @@
         <div class="mobile-sheet-grip"></div>
         <div class="mobile-sheet-head">
             @auth
-            <span class="mobile-sheet-user">{{ auth()->user()->full_name }}</span>
+            <span class="mobile-sheet-user">{{ auth()->user()->displayName() }}</span>
             @else
             <span class="mobile-sheet-user">UNI Activity</span>
             @endauth
@@ -1999,6 +2013,11 @@
             <a href="{{ route('lang.switcher', 'en') }}"
                class="{{ app()->getLocale() === 'en' ? 'active' : '' }}"
                style="text-decoration:none; {{ app()->getLocale() === 'en' ? 'font-weight:700; color:var(--primary, #2563eb);' : 'color:inherit;' }}">EN</a>
+            <a href="{{ route('about') }}" class="about-info-link"
+               style="display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem; margin-left:.3rem; border-radius:999px; color:#64748b; text-decoration:none; transition:background .2s, color .2s;"
+               title="{{ __('เกี่ยวกับ UNI Activity') }}" aria-label="{{ __('เกี่ยวกับ UNI Activity') }}">
+                <svg width="18" height="18" style="width:18px;height:18px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 16v-4m0-4h.01"/></svg>
+            </a>
         </div>
         @auth
         <a href="{{ route('map.index') }}" class="mobile-sheet-item">
@@ -2032,6 +2051,149 @@
     })();
     </script>
     @endif
+
+    {{-- ── Scroll Reveal System: การ์ด/บล็อกขึ้น-จางแบบนุ่มตอนเลื่อนถึง (scroll-reveal-system) ── --}}
+    <style>
+        html.js-reveal .reveal { opacity: 0; }
+        html.js-reveal .reveal.reveal-in {
+            animation: reveal-up .65s cubic-bezier(.22,1,.36,1) both;
+        }
+        @keyframes reveal-up {
+            from { opacity: 0; transform: scale(.975); }  /* zoom+fade เท่านั้น ไม่ลากตำแหน่ง กันทับกล่องข้างเคียง */
+            to   { opacity: 1; transform: none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            html.js-reveal .reveal { opacity: 1 !important; transform: none !important; animation: none !important; }
+        }
+    </style>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}">
+    (function() {
+        var docEl = document.documentElement;
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        if (!('IntersectionObserver' in window)) return;
+        docEl.classList.add('js-reveal');
+        var SELECTOR = '.card, [data-reveal], .grid-3 > *, .grid-4 > *';
+        var io = new IntersectionObserver(function(entries) {
+            entries.forEach(function(en) {
+                if (!en.isIntersecting) return;
+                en.target.classList.add('reveal-in');
+                io.unobserve(en.target);
+            });
+        }, { rootMargin: '0px 0px -36px 0px', threshold: 0.06 });
+        function scan() {
+            var added = [];
+            document.querySelectorAll(SELECTOR).forEach(function(el) {
+                if (el.classList.contains('reveal')) return;
+                if (el.dataset.revealSkip === '1') return;
+                var st = getComputedStyle(el);
+                if (st.position === 'fixed' || st.position === 'sticky') return;
+                if (!el.offsetParent && st.display !== 'none') return; // อยู่ใต้ display:none ของพ่อ
+                el.classList.add('reveal');
+                added.push(el);
+            });
+            // stagger: ลูกที่ใช้พ่อคนเดียวกัน ทยอย delay 80ms/ชิ้น (จำกัด 6 จังหวะแรก)
+            var byParent = {};
+            added.forEach(function(el) {
+                var p = el.parentElement;
+                (byParent[p] = byParent[p] || []).push(el);
+            });
+            Object.keys(byParent).forEach(function(p) {
+                var group = byParent[p];
+                if (group.length < 2) return;
+                group.forEach(function(el, i) {
+                    el.style.animationDelay = (Math.min(i, 5) * 0.08) + 's';
+                });
+            });
+            // element ที่อยู่ในจอแล้วตอน scan → โชว์ทันทีไม่ต้องรอ IO
+            added.forEach(function(el) {
+                var r = el.getBoundingClientRect();
+                if (r.top < window.innerHeight && r.bottom > 0) { el.classList.add('reveal-in'); io.unobserve(el); }
+                else io.observe(el);
+            });
+        }
+        scan();
+        // fail-safe กันจอขาว (ไม่แย่งอนิเมชัน): บังคับเฉพาะ .reveal ที่ 'อยู่ในจอ' — IO ปกติยิงก่อนเสมอ,
+        // เบราว์เซอร์ที่ IO พัง fail-safe เช็กเองทุก 2 วิ ตอนเลื่อนถึงก็ยังได้เล่นอนิเมชัน
+        setInterval(function() {
+            document.querySelectorAll('.reveal:not(.reveal-in)').forEach(function(el) {
+                var r = el.getBoundingClientRect();
+                if (r.top < window.innerHeight && r.bottom > 0) el.classList.add('reveal-in');
+            });
+        }, 2000);
+        // rescan รับ content ที่ render หลัง (Alpine/fetch)
+        [420, 1100, 2600].forEach(function(ms) { setTimeout(scan, ms); });
+        window.addEventListener('load', scan);
+    })();
+    </script>
+
+    {{-- ── Scroll FX System: scrollbar+progress+navbar shadow+parallax (scrollfx-system) ── --}}
+    <style>
+        html.js-scrollfx { scrollbar-color:#ea580c transparent; scrollbar-width:thin; }
+        html.js-scrollfx ::-webkit-scrollbar { width:10px; height:10px; }
+        html.js-scrollfx ::-webkit-scrollbar-track { background:transparent; }
+        html.js-scrollfx ::-webkit-scrollbar-thumb {
+            border-radius:999px; border:2px solid rgba(0,0,0,0); background-clip:content-box;
+            background-color:#ea580c;
+            background-image:linear-gradient(180deg,#fb923c,#ea580c);
+        }
+        html.js-scrollfx ::-webkit-scrollbar-thumb:hover { background-image:linear-gradient(180deg,#ea580c,#c2410c); }
+        html[data-theme="dark"].js-scrollfx ::-webkit-scrollbar-thumb,
+        html.dark.js-scrollfx ::-webkit-scrollbar-thumb { background-image:linear-gradient(180deg,#75757f,#3f3f46); }
+        #scroll-progress-bar {
+            position:fixed; top:0; left:0; right:0; height:3px; z-index:30; pointer-events:none;
+            background-image:linear-gradient(90deg,#ea580c,#f97316 55%,#2563eb);
+            transform:scaleX(0); transform-origin:0 50%; will-change:transform; opacity:.92;
+            box-shadow:0 0 8px rgba(234,88,12,.35);
+        }
+        html.js-scrollfx .navbar.scrolled { box-shadow:0 4px 16px rgba(15,23,42,.08); }
+        html[data-theme="dark"].js-scrollfx .navbar.scrolled, html.dark.js-scrollfx .navbar.scrolled { box-shadow:0 4px 16px rgba(0,0,0,.35); }
+        [data-parallax] { will-change:transform; }
+    </style>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}">
+    (function() {
+        var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var docEl = document.documentElement;
+        docEl.classList.add('js-scrollfx');
+        var bar = document.createElement('div');
+        bar.id = 'scroll-progress-bar';
+        if (!reduce) document.body.appendChild(bar);
+        var navbar = document.querySelector('.navbar');
+        var paras = [];
+        function collect() {
+            paras = [];
+            document.querySelectorAll('[data-parallax]').forEach(function(el) {
+                if (el.dataset.parallaxDone === '1') return;
+                el.dataset.parallaxDone = '1';
+                paras.push({ el: el, speed: parseFloat(el.dataset.parallax) || 0.12 });
+            });
+        }
+        var ticking = false;
+        function onScroll() {
+            if (ticking) return;
+            ticking = true;
+            requestAnimationFrame(function() {
+                var y = window.scrollY || 0;
+                var max = Math.max(1, docEl.scrollHeight - window.innerHeight);
+                if (bar) bar.style.transform = 'scaleX(' + Math.min(1, y / max).toFixed(4) + ')';
+                if (navbar) navbar.classList.toggle('scrolled', y > 8);
+                if (!reduce && paras.length) {
+                    for (var i = 0; i < paras.length; i++) {
+                        var p = paras[i];
+                        var r = p.el.getBoundingClientRect();
+                        var off = (r.top + r.height / 2 - window.innerHeight / 2) * -p.speed;
+                        off = Math.max(-14, Math.min(14, off)); /* clamp กันลอยไปทับข้อความใกล้เคียง */
+                        p.el.style.transform = 'translateY(' + off.toFixed(1) + 'px)';
+                    }
+                }
+                ticking = false;
+            });
+        }
+        collect(); onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', function() { collect(); onScroll(); }, { passive: true });
+        [650, 1600, 3200].forEach(function(ms) { setTimeout(function() { collect(); onScroll(); }, ms); });
+    })();
+    </script>
 
     @yield('scripts')
     @stack('styles')

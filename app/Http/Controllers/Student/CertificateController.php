@@ -48,16 +48,16 @@ class CertificateController extends Controller
             $category = ActivityCategory::findOrFail($categoryId);
             $cert = $this->certificateService->issueCategoryCertificate($user, $category);
             if (!$cert) {
-                return back()->with('error', "คุณยังสะสมชั่วโมงกิจกรรมในหมวด \"{$category->name}\" ไม่ครบตามเกณฑ์");
+                return back()->with('error', __('ชั่วโมงหมวด ":cat" ยังไม่ครบตามเกณฑ์', ['cat' => __($category->name)]));
             }
         } else {
             $cert = $this->certificateService->issueGeneralCertificate($user);
             if (!$cert) {
-                return back()->with('error', "ไม่สามารถออกใบรับรองได้");
+                return back()->with('error', __('ไม่สามารถออกใบรับรองได้'));
             }
         }
 
-        return redirect()->route('student.certificates.index')->with('success', "ออกใบรับรอง \"{$cert->title}\" สำเร็จเรียบร้อยแล้ว!");
+        return redirect()->route('student.certificates.index')->with('success', __('ออกใบรับรอง ":t" สำเร็จ', ['t' => $cert->title]));
     }
 
     /**

@@ -94,7 +94,7 @@ class MapController extends Controller
                     'badge' => $act->is_mandatory ? 'กิจกรรมบังคับ' : 'กิจกรรม',
                     'badge_class' => $act->is_mandatory ? 'badge-red' : 'badge-orange',
                     'status' => $act->computed_status ?? $act->status,
-                    'meta_info' => $act->activity_hours . ' ชม. | ' . ($act->activity_date ? $act->activity_date->format('d/m/Y') : ''),
+                    'meta_info' => $act->activity_hours . ' ' . __('ชม.') . ' | ' . ($act->activity_date ? $act->activity_date->format('d/m/Y') : ''),
                     'detail_url' => route('activities.show', $act),
                     'detail_button_text' => 'ดูรายละเอียดกิจกรรมเต็ม',
                     'checkin_radius' => (int) ($act->checkin_radius ?? 100),
@@ -249,7 +249,7 @@ class MapController extends Controller
         }
 
         if ($act->activity_hours) {
-            $parts[] = 'ชั่วโมงกิจกรรม: ' . $act->activity_hours . ' ชม.';
+            $parts[] = __('ชั่วโมงกิจกรรม: ') . $act->activity_hours . ' ' . __('ชม.');
         }
 
         if ($act->activity_date) {

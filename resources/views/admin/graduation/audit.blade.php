@@ -49,6 +49,7 @@
     <div class="card stat-card" style="padding:1rem;background:#ffffff;border:1px solid #e2e8f0;border-radius:0.75rem;">
         <div class="flex items-center justify-between">
             <span class="stat-label text-xs text-muted">{{ __('นักศึกษาตามตัวกรอง (') }}{{ ($report['filters']['year'] === 'all' || empty($report['filters']['year'])) ? __('ทุกชั้นปี') : 'ปี ' . $report['filters']['year'] }})</span>
+
             <span style="color:#4f46e5;padding:0.3rem;background:#eef2ff;border-radius:0.375rem;">
                 <svg style="width:1.1rem;height:1.1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
             </span>
@@ -108,7 +109,7 @@
             <select name="faculty" class="form-control" style="font-size:0.85rem;padding:0.4rem 0.6rem;border-radius:0.375rem;">
                 <option value="">{{ __('ทุกคณะ') }}</option>
                 @foreach($report['faculties'] as $fac)
-                    <option value="{{ $fac }}" {{ ($report['filters']['faculty'] == $fac) ? 'selected' : '' }}>{{ $fac }}</option>
+                    <option value="{{ $fac }}" {{ ($report['filters']['faculty'] == $fac) ? 'selected' : '' }}>{{ __($fac) }}</option>
                 @endforeach
             </select>
         </div>
@@ -119,7 +120,7 @@
             <select name="department" class="form-control" style="font-size:0.85rem;padding:0.4rem 0.6rem;border-radius:0.375rem;">
                 <option value="">{{ __('ทุกสาขาวิชา') }}</option>
                 @foreach($report['departments'] as $dept)
-                    <option value="{{ $dept }}" {{ ($report['filters']['department'] == $dept) ? 'selected' : '' }}>{{ $dept }}</option>
+                    <option value="{{ $dept }}" {{ ($report['filters']['department'] == $dept) ? 'selected' : '' }}>{{ __($dept) }}</option>
                 @endforeach
             </select>
         </div>
@@ -188,7 +189,7 @@
                     <tr style="border-bottom:1px solid #f1f5f9;">
                         <td style="padding:0.75rem;">
                             <div class="font-bold text-dark">{{ $s->student_id }}</div>
-                            <div class="text-xs text-muted">{{ $s->full_name }}</div>
+                            <div class="text-xs text-muted">{{ $s->displayName() }}</div>
                             <span class="badge" style="background:#f1f5f9;color:#475569;font-size:0.65rem;margin-top:2px;">{{ __('ปี') }}{{ $s->year ?: '-' }}</span>
                         </td>
                         <td style="padding:0.75rem;">
@@ -266,6 +267,7 @@
                                 <form action="{{ route('admin.graduation.audit.alert', $s) }}" method="POST" style="margin:0;display:inline;">
                                     @csrf
                                     <button type="submit" class="btn btn-outline btn-sm text-xs flex items-center gap-1" style="padding:0.25rem 0.5rem;color:#d97706;border-color:#fde68a;" title="{{ __('ส่งแจ้งเตือนเร่งรัดชั่วโมง (In-App + LINE)') }}" onclick="return confirm('ส่งแจ้งเตือนเร่งรัดชั่วโมงกิจกรรมไปยัง {{ $s->full_name }} ({{ $s->student_id }}) {{ __('ใช่หรือไม่?') }}')">
+
                                         <svg style="width:0.85rem;height:0.85rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
                                         <span>{{ __('เตือน') }}</span>
                                     </button>
@@ -397,6 +399,7 @@ function openAuditModal(userId) {
             <div style="margin-bottom:0.75rem;">
                 <h4 class="font-bold text-xs text-muted uppercase tracking-wider mb-2">{{ __('โครงสร้างหมวดหมู่กิจกรรม (Category)') }}</h4>
                 ${catHtml || '<div class="text-xs text-muted">{{ __('- ไม่มีข้อกำหนดเฉพาะหมวด -') }}</div>'}
+
             </div>
 
             ${missingHtml}

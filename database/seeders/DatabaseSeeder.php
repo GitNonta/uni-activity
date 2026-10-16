@@ -10,6 +10,7 @@ use App\Models\Registration;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 /**
@@ -21,7 +22,18 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Truncate related tables to avoid duplicate constraints
-        DB::statement('TRUNCATE TABLE users, registrations, attendances, activities, activity_categories, activity_feedbacks, rooms, room_user RESTART IDENTITY CASCADE');
+        if (DB::getDriverName() === 'sqlite') {
+            // SQLite ไม่รองรับ TRUNCATE ... RESTART IDENTITY CASCADE (Postgres syntax)
+            Schema::disableForeignKeyConstraints();
+            foreach (['registrations','attendances','activity_feedbacks','room_user','rooms','activities','activity_categories','users'] as $t) {
+                DB::table($t)->delete();
+            }
+            Schema::enableForeignKeyConstraints();
+            // รีเซ็ต autoincrement ให้เริ่มนับใหม่
+            try { DB::statement("DELETE FROM sqlite_sequence WHERE name IN ('users','registrations','attendances','activities','activity_categories','activity_feedbacks','rooms','room_user')"); } catch (\Throwable $e) {}
+        } else {
+            DB::statement('TRUNCATE TABLE users, registrations, attendances, activities, activity_categories, activity_feedbacks, rooms, room_user RESTART IDENTITY CASCADE');
+        }
 
         // Ensure admin user exists
         $this->call(AdminUserSeeder::class);

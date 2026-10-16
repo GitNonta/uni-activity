@@ -1,6 +1,6 @@
 {{-- หน้ารายชื่อผู้ลงทะเบียน (Admin): ตารางผู้สมัคร + ปุ่มอนุมัติ/ปฏิเสธ --}}
 @extends('layouts.admin')
-@section('title', 'ผู้เข้าร่วม - ' . $activity->title)
+@section('title', __('ผู้เข้าร่วม') . ' - ' . (app()->getLocale() === 'en' && ($activity->title_en ?? null) ? $activity->title_en : $activity->title))
 
 @section('content')
 <a href="{{ route('admin.activities.show', $activity->id) }}" class="text-sm text-primary">&larr; {{ __('กลับ') }}</a>
@@ -38,7 +38,7 @@
                     <td class="text-center">
                         @php
                             $sc = ['pending'=>'badge-yellow','approved'=>'badge-green','cancelled'=>'badge-gray','rejected'=>'badge-red'];
-                            $statusLabels = ['pending'=>'รออนุมัติ','approved'=>'ลงทะเบียนแล้ว','cancelled'=>'ยกเลิก','rejected'=>'ปฏิเสธ'];
+                            $statusLabels = ['pending'=>__('รออนุมัติ'),'approved'=>__('ลงทะเบียนแล้ว'),'cancelled'=>__('ยกเลิก'),'rejected'=>__('ปฏิเสธ')];
                             
                             // ตรวจสอบว่ามี attendance ที่ approved หรือไม่
                             $hasApprovedAttendance = $reg->user->attendances()
@@ -48,7 +48,7 @@
                             
                             // ถ้าลงทะเบียนแล้วและมี attendance approved = สำเร็จ
                             if ($reg->status === 'approved' && $hasApprovedAttendance) {
-                                $displayStatus = 'สำเร็จ';
+                                $displayStatus = __('สำเร็จ');
                                 $badgeClass = 'badge-orange';
                             } else {
                                 $displayStatus = $statusLabels[$reg->status] ?? $reg->status;

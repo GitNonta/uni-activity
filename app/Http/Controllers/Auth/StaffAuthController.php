@@ -70,7 +70,7 @@ class StaffAuthController extends Controller
                 'ua'    => $request->userAgent(),
             ]);
 
-            return back()->withErrors(['email' => 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'])->withInput();
+            return back()->withErrors(['email' => __('อีเมลหรือรหัสผ่านไม่ถูกต้อง')])->withInput();
         }
 
         // โหมด OTP สำหรับบัญชีที่ระบุใน AUTH_OTP_BYPASS_IDS (.env) — ไม่มี ID ฝังในโค้ด

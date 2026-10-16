@@ -1,0 +1,16 @@
+# เสิร์ฟเฉพาะ loopback — Cloudflare quick-tunnel ชี้มาที่พอร์ตนี้
+# cloudflared → Caddy(8301) → Laravel(8199)
+:8301 {
+	reverse_proxy 127.0.0.1:8199 {
+		# cloudflared ต่อเข้ามาจาก 127.0.0.1 — ประกาศให้เชื่อว่าเป็น trusted proxy
+		# จึงคงหัว X-Forwarded-For ของ Cloudflare edge (IP ผู้ใช้จริง) แล้ว append หมายเลข hop ต่อท้าย
+		trusted_proxies 127.0.0.1
+
+		# ชุด header มาตรฐานที่ cloudflared ส่งไม่ครบเอง — ปรับให้ครบที่นี่
+		header_up X-Forwarded-Proto https
+		header_up X-Forwarded-Host {http.request.host}
+		header_up X-Forwarded-Port 443
+		header_up X-Forwarded-Prefix /
+		header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+	}
+}

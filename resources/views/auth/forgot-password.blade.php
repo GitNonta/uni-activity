@@ -1,6 +1,6 @@
 {{-- หน้าลืมรหัสผ่านสำหรับ Staff --}}
 @extends('layouts.app')
-@section('title', __('ลืมรหัสผ่าน')
+@section('title', __('ลืมรหัสผ่าน'))
 
 @section('content')
 <div class="container" style="max-width:400px;margin:2rem auto;">

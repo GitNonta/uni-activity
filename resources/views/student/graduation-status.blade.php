@@ -33,6 +33,7 @@
                 <h3 class="font-bold text-dark" style="font-size:1.1rem;color:#065f46;">{{ __('ยินดีด้วย! คุณผ่านเกณฑ์กิจกรรมเพื่อการสำเร็จการศึกษาแล้ว') }}</h3>
                 <p class="text-xs mt-1" style="color:#047857;line-height:1.4;">
                     {{ __('คุณสะสมชั่วโมงกิจกรรมครบถ้วนตามโครงสร้างหลักสูตรและข้อบังคับมหาวิทยาลัย (รวม') }} {{ number_format($audit['total_hours'], 1) }} / {{ number_format($audit['min_total_hours'], 0) }} {{ __('ชม.') }}) {{ __('ข้อมูลของคุณพร้อมสำหรับการประมวลผลสำเร็จการศึกษาจากฝ่ายทะเบียน') }}
+
                 </p>
             </div>
         </div>
@@ -71,6 +72,7 @@
                         <span class="font-bold text-sm text-dark">{{ $uni['name'] }}</span>
                         <span class="badge {{ $uni['passed'] ? 'badge-green' : 'badge-red' }}" style="font-size:0.75rem;">
                             {{ $uni['passed'] ? __('ครบเกณฑ์') : 'ขาด ' . number_format($uni['deficit'], 1) . ' ชม.' }}
+
                         </span>
                     </div>
                     <div style="display:flex;align-items:center;gap:0.75rem;">
@@ -91,6 +93,7 @@
                         <span class="font-bold text-sm text-dark">{{ $fac['name'] }}</span>
                         <span class="badge {{ $fac['passed'] ? 'badge-green' : 'badge-red' }}" style="font-size:0.75rem;">
                             {{ $fac['passed'] ? __('ครบเกณฑ์') : 'ขาด ' . number_format($fac['deficit'], 1) . ' ชม.' }}
+
                         </span>
                     </div>
                     <div style="display:flex;align-items:center;gap:0.75rem;">
@@ -110,6 +113,7 @@
                         <span class="font-bold text-sm text-dark">{{ $cat['name'] }}</span>
                         <span class="badge {{ $cat['passed'] ? 'badge-green' : 'badge-red' }}" style="font-size:0.75rem;">
                             {{ $cat['passed'] ? __('ครบเกณฑ์') : 'ขาด ' . number_format($cat['deficit'], 1) . ' ชม.' }}
+
                         </span>
                     </div>
                     <div style="display:flex;align-items:center;gap:0.75rem;">

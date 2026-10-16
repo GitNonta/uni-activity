@@ -1,6 +1,6 @@
 {{-- หน้าแสดงผลเช็คอินสำเร็จ: ชื่อกิจกรรม + วันที่ + ชั่วโมง + สถานะอนุมัติ --}}
 @extends('layouts.app')
-@section('title', __('เช็คอินสำเร็จ')
+@section('title', __('เช็คอินสำเร็จ'))
 
 @section('content')
 <div class="container-sm" style="padding-top:2rem;">

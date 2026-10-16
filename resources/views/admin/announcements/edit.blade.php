@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', __('แก้ไขประกาศ')
+@section('title', __('แก้ไขประกาศ'))
 
 @section('content')
 <div class="flex items-center justify-between mb-4">

@@ -122,7 +122,7 @@ class GraduationAuditService
 
         if (!$totalPassed) {
             $deficit = $minTotalHours - $totalHours;
-            $missingRequirements[] = "ชั่วโมงรวมยังไม่ครบเกณฑ์ (มี {$totalHours} / ขาดอีก {$deficit} ชม.)";
+            $missingRequirements[] = __('ชั่วโมงรวมยังไม่ครบเกณฑ์ (มี :earned / ขาดอีก :def ชม.)', ['earned' => $totalHours, 'def' => $deficit]);
         }
 
         // 2. ตรวจสอบชั่วโมงแยกตามขอบเขต (Scope: university, faculty/department)
@@ -137,15 +137,15 @@ class GraduationAuditService
             if ($scopeKey === 'university') {
                 $earned = (float) $attendances->filter(fn(Attendance $a) => ($a->activity?->scope ?? '') === 'university')
                     ->sum(fn(Attendance $a) => (float) ($a->activity?->activity_hours ?? 0));
-                $label = 'กิจกรรมระดับมหาวิทยาลัย (ส่วนกลาง)';
+                $label = __('กิจกรรมระดับมหาวิทยาลัย (ส่วนกลาง)');
             } elseif ($scopeKey === 'faculty') {
                 $earned = (float) $attendances->filter(fn(Attendance $a) => in_array($a->activity?->scope ?? '', ['faculty', 'department'], true))
                     ->sum(fn(Attendance $a) => (float) ($a->activity?->activity_hours ?? 0));
-                $label = 'กิจกรรมระดับคณะ/สาขาวิชา';
+                $label = __('กิจกรรมระดับคณะ/สาขาวิชา');
             } else {
                 $earned = (float) $attendances->filter(fn(Attendance $a) => ($a->activity?->scope ?? '') === $scopeKey)
                     ->sum(fn(Attendance $a) => (float) ($a->activity?->activity_hours ?? 0));
-                $label = "กิจกรรมระดับ " . ucfirst($scopeKey);
+                $label = __('กิจกรรมระดับ :x', ['x' => ucfirst($scopeKey)]);
             }
 
             $passed = $earned >= $requiredHours;
@@ -153,7 +153,7 @@ class GraduationAuditService
 
             if (!$passed) {
                 $allScopesPassed = false;
-                $missingRequirements[] = "ยังขาด{$label} อีก {$deficit} ชม. (มี {$earned} / {$requiredHours})";
+                $missingRequirements[] = __('ยังขาด:cat อีก :def ชม. (มี :earned / :req)', ['cat' => $label, 'def' => $deficit, 'earned' => $earned, 'req' => $requiredHours]);
             }
 
             $scopeAudit[$scopeKey] = [
@@ -175,12 +175,12 @@ class GraduationAuditService
 
         foreach ($catReqs as $catKey => $requiredHours) {
             $requiredHours = (float) $requiredHours;
-            $catName = 'หมวดหมู่กิจกรรม';
+            $catName = __('หมวดหมู่กิจกรรม');
             $earned = 0.0;
 
             if (is_numeric($catKey)) {
                 $categoryModel = $allCategories->get((int) $catKey);
-                $catName = $categoryModel ? $categoryModel->name : "หมวดหมู่ #{$catKey}";
+                $catName = $categoryModel ? __($categoryModel->name) : __('หมวดหมู่ #:n', ['n' => $catKey]);
                 $isVolunteer = $categoryModel && (str_contains($categoryModel->name, 'จิตอาสา') || str_contains($categoryModel->name, 'บำเพ็ญประโยชน์'));
 
                 if ($isVolunteer) {
@@ -196,7 +196,7 @@ class GraduationAuditService
                         ->sum(fn(Attendance $a) => (float) ($a->activity?->activity_hours ?? 0));
                 }
             } elseif ($catKey === 'volunteer' || str_contains(strtolower((string) $catKey), 'volunteer')) {
-                $catName = 'กิจกรรมจิตอาสาและบำเพ็ญประโยชน์';
+                $catName = __('กิจกรรมจิตอาสาและบำเพ็ญประโยชน์');
                 $earned = (float) $attendances->filter(function (Attendance $a) {
                     $name = $a->activity?->category?->name ?? '';
                     return str_contains($name, 'จิตอาสา') || str_contains($name, 'บำเพ็ญประโยชน์');
@@ -206,7 +206,7 @@ class GraduationAuditService
                     $name = $a->activity?->category?->name ?? '';
                     return str_contains(strtolower($name), strtolower((string) $catKey));
                 })->sum(fn(Attendance $a) => (float) ($a->activity?->activity_hours ?? 0));
-                $catName = "หมวด " . ucfirst((string) $catKey);
+                $catName = __('หมวด :x', ['x' => ucfirst((string) $catKey)]);
             }
 
             $passed = $earned >= $requiredHours;
@@ -214,7 +214,7 @@ class GraduationAuditService
 
             if (!$passed) {
                 $allCategoriesPassed = false;
-                $missingRequirements[] = "ยังขาด{$catName} อีก {$deficit} ชม. (มี {$earned} / {$requiredHours})";
+                $missingRequirements[] = __('ยังขาด:cat อีก :def ชม. (มี :earned / :req)', ['cat' => $catName, 'def' => $deficit, 'earned' => $earned, 'req' => $requiredHours]);
             }
 
             $categoryAudit[$catKey] = [
@@ -234,7 +234,7 @@ class GraduationAuditService
         $mandatoryDeficit = $mandatoryPassed ? 0.0 : ($minMandatory - $mandatoryEarned);
 
         if (!$mandatoryPassed && $minMandatory > 0) {
-            $missingRequirements[] = "ยังขาดชั่วโมงกิจกรรมภาคบังคับอีก {$mandatoryDeficit} ชม. (มี {$mandatoryEarned} / {$minMandatory})";
+            $missingRequirements[] = __('ยังขาดชั่วโมงกิจกรรมภาคบังคับอีก :def ชม. (มี :earned / :req)', ['def' => $mandatoryDeficit, 'earned' => $mandatoryEarned, 'req' => $minMandatory]);
         }
 
         // สรุปสถานะการสำเร็จการศึกษา (ผ่านเกณฑ์ทั้งหมดหรือไม่)
