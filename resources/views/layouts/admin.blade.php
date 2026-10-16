@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -739,6 +739,15 @@ html.dark .admin-search-result-row:hover {
             <kbd>Ctrl K</kbd>
         </button>
 
+        <!-- i18n switcher (TH / EN) — ตามเลย์เอาต์หน้านักศึกษา -->
+        <div class="lang-switcher" style="display:flex; align-items:center; gap:.4rem; font-size:.85rem; margin-right:2px;">
+            <a href="{{ route('lang.switcher', 'th') }}"
+               style="text-decoration:none; {{ app()->getLocale() === 'th' ? 'font-weight:700; color:#f97316;' : 'color:inherit; opacity:.65;' }}">TH</a>
+            <span style="opacity:.5;">/</span>
+            <a href="{{ route('lang.switcher', 'en') }}"
+               style="text-decoration:none; {{ app()->getLocale() === 'en' ? 'font-weight:700; color:#f97316;' : 'color:inherit; opacity:.65;' }}">EN</a>
+        </div>
+
         <!-- Theme Mode Toggle Button (SVG Sun / Moon) -->
         <button id="adminThemeToggleBtn" onclick="toggleThemeMode()" class="sb-theme-toggle-btn" title="{{ __('สลับโหมดมืด / สว่าง (Dark / Light Mode)') }}">
             <!-- Sun SVG Icon (shown in Dark Mode) -->
@@ -888,8 +897,8 @@ html.dark .admin-search-result-row:hover {
                 <a href="{{ route('admin.profile.edit') }}" class="sb-user" style="padding:0; background:none; flex:1;">
                     <x-avatar :user="auth()->user()" size="38" style="border: 2px solid rgba(255,255,255,0.25); box-shadow: 0 2px 6px rgba(0,0,0,0.2);" />
                     <div class="sb-user-info sb-link-text">
-                        <div class="sb-user-name">{{ auth()->user()->full_name ?? 'ผู้ใช้' }}</div>
-                        <div class="sb-user-role">{{ auth()->user()->isAdmin() ? 'ผู้ดูแลระบบ' : 'เจ้าหน้าที่' }}</div>
+                        <div class="sb-user-name">{{ auth()->user()->displayName() }}</div>
+                        <div class="sb-user-role">{{ auth()->user()->isAdmin() ? __('ผู้ดูแลระบบ') : __('เจ้าหน้าที่') }}</div>
                     </div>
                 </a>
                 <form method="POST" action="{{ route('admin.logout') }}" class="sb-logout-btn">

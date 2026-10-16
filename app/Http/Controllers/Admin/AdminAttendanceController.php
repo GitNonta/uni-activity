@@ -83,7 +83,7 @@ class AdminAttendanceController extends Controller
             $this->auditCreate($att, "เช็คอิน manual: {$user->full_name} ในกิจกรรม \"{$activity->title}\"");
         });
 
-        return back()->with('success', "เช็คอิน {$user->full_name} สำเร็จ");
+        return back()->with('success', __('เช็คอิน :name สำเร็จ', ['name' => $user->displayName()]));
     }
 
     /**

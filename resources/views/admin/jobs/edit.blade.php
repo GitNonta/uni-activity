@@ -1,6 +1,6 @@
 {{-- Admin: แก้ไขประกาศงาน --}}
 @extends('layouts.admin')
-@section('title', __('แก้ไขประกาศงาน')
+@section('title', __('แก้ไขประกาศงาน'))
 
 @section('content')
 <a href="{{ route('admin.jobs.show', $job->id) }}" class="text-sm text-primary mb-2" style="display:inline-block;">&larr; {{ __('กลับรายละเอียด') }}</a>

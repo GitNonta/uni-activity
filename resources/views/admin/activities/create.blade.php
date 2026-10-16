@@ -1,6 +1,6 @@
 {{-- หน้าสร้างกิจกรรมใหม่ (Admin): ฟอร์มกรอกข้อมูลครบถ้วน --}}
 @extends('layouts.admin')
-@section('title', __('สร้างกิจกรรม')
+@section('title', __('สร้างกิจกรรม'))
 
 @section('content')
 <a href="{{ route('admin.activities.index') }}" class="text-sm text-primary">&larr; {{ __('กลับ') }}</a>

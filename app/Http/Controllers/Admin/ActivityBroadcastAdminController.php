@@ -49,7 +49,7 @@ class ActivityBroadcastAdminController extends Controller
 
         return redirect()
             ->route('admin.activities.broadcast', $activity)
-            ->with('success', "ส่งข้อความบรอดแคสต์เรียบร้อยแล้ว (ส่งถึงนักศึกษา {$broadcast->recipients_count} คน {$lineMsg})");
+            ->with('success', __('ส่งข้อความบรอดแคสต์เรียบร้อยแล้ว (ส่งถึงนักศึกษา :n คน :line)', ['n' => $broadcast->recipients_count, 'line' => $lineMsg]));
     }
 
     /**
@@ -69,6 +69,6 @@ class ActivityBroadcastAdminController extends Controller
 
         return redirect()
             ->route('admin.activities.broadcast', $activity)
-            ->with('success', "ส่งแจ้งเตือน Auto-Reminder ({$windowText}) สำเร็จ (นักศึกษา {$result['recipients_count']} คน {$lineMsg})");
+            ->with('success', __('ส่งแจ้งเตือน Auto-Reminder (:win) สำเร็จ (นักศึกษา :n คน :line)', ['win' => $windowText, 'n' => $result['recipients_count'], 'line' => $lineMsg]));
     }
 }

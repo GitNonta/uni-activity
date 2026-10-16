@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('นำเข้านักศึกษาแบบชุด (Bulk Student Import)')
+@section('title', __('นำเข้านักศึกษาแบบชุด (Bulk Student Import)'))
 
 @section('content')
 <div class="container-fluid" style="max-width:1000px; margin:0 auto; padding-bottom:3rem;">

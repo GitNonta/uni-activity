@@ -1,6 +1,6 @@
 {{-- หน้าตรวจสอบสถานะความพร้อมจบการศึกษาและ Official Transcript ฝั่งนักศึกษา --}}
 @extends('layouts.app')
-@section('title', __('ตรวจสอบสถานะการสำเร็จการศึกษา (Graduation Status)')
+@section('title', __('ตรวจสอบสถานะการสำเร็จการศึกษา (Graduation Status)'))
 
 @section('content')
 <div style="max-width:850px;margin:2rem auto;padding:0 1rem;">
@@ -32,7 +32,7 @@
             <div>
                 <h3 class="font-bold text-dark" style="font-size:1.1rem;color:#065f46;">{{ __('ยินดีด้วย! คุณผ่านเกณฑ์กิจกรรมเพื่อการสำเร็จการศึกษาแล้ว') }}</h3>
                 <p class="text-xs mt-1" style="color:#047857;line-height:1.4;">
-                    {{ __('คุณสะสมชั่วโมงกิจกรรมครบถ้วนตามโครงสร้างหลักสูตรและข้อบังคับมหาวิทยาลัย (รวม') }}{{ number_format($audit['total_hours'], 1) }} / {{ number_format($audit['min_total_hours'], 0) }} {{ __('ชม.) ข้อมูลของคุณพร้อมสำหรับการประมวลผลสำเร็จการศึกษาจากฝ่ายทะเบียน') }}
+                    {{ __('คุณสะสมชั่วโมงกิจกรรมครบถ้วนตามโครงสร้างหลักสูตรและข้อบังคับมหาวิทยาลัย (รวม :a / :b ชม.) ข้อมูลของคุณพร้อมสำหรับการประมวลผลสำเร็จการศึกษาจากฝ่ายทะเบียน', ['a' => number_format($audit['total_hours'], 1), 'b' => number_format($audit['min_total_hours'], 0)]) }}
                 </p>
             </div>
         </div>
@@ -70,7 +70,7 @@
                     <div class="flex items-center justify-between mb-1">
                         <span class="font-bold text-sm text-dark">{{ $uni['name'] }}</span>
                         <span class="badge {{ $uni['passed'] ? 'badge-green' : 'badge-red' }}" style="font-size:0.75rem;">
-                            {{ $uni['passed'] ? 'ครบเกณฑ์' : 'ขาด ' . number_format($uni['deficit'], 1) . ' ชม.' }}
+                            {{ $uni['passed'] ? __('ครบเกณฑ์') : __('ขาด :x ชม.', ['x' => number_format($uni['deficit'], 1)]) }}
                         </span>
                     </div>
                     <div style="display:flex;align-items:center;gap:0.75rem;">
@@ -90,7 +90,7 @@
                     <div class="flex items-center justify-between mb-1">
                         <span class="font-bold text-sm text-dark">{{ $fac['name'] }}</span>
                         <span class="badge {{ $fac['passed'] ? 'badge-green' : 'badge-red' }}" style="font-size:0.75rem;">
-                            {{ $fac['passed'] ? 'ครบเกณฑ์' : 'ขาด ' . number_format($fac['deficit'], 1) . ' ชม.' }}
+                            {{ $fac['passed'] ? __('ครบเกณฑ์') : __('ขาด :x ชม.', ['x' => number_format($fac['deficit'], 1)]) }}
                         </span>
                     </div>
                     <div style="display:flex;align-items:center;gap:0.75rem;">
@@ -109,7 +109,7 @@
                     <div class="flex items-center justify-between mb-1">
                         <span class="font-bold text-sm text-dark">{{ $cat['name'] }}</span>
                         <span class="badge {{ $cat['passed'] ? 'badge-green' : 'badge-red' }}" style="font-size:0.75rem;">
-                            {{ $cat['passed'] ? 'ครบเกณฑ์' : 'ขาด ' . number_format($cat['deficit'], 1) . ' ชม.' }}
+                            {{ $cat['passed'] ? __('ครบเกณฑ์') : __('ขาด :x ชม.', ['x' => number_format($cat['deficit'], 1)]) }}
                         </span>
                     </div>
                     <div style="display:flex;align-items:center;gap:0.75rem;">

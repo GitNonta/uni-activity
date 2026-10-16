@@ -76,14 +76,41 @@ Route::get('/', function () {
         return redirect()->route('activities.index');
     }
     return redirect()->route('login');
-});
+});    // ── [debug] แสดง header จริงที่ Laravel เห็น (ใช้สำหรับทดสอบ Cloudflare Tunnel) ──
+    Route::get('/debug/headers', function (\Illuminate\Http\Request $r) {
+        return response()->json([
+            'ip'           => $r->ip(),
+            'is_secure'    => $r->isSecure(),
+            'host'         => $r->getHost(),
+            'scheme'       => $r->getScheme(),
+            'x_forwarded_for'   => $r->header('X-Forwarded-For'),
+            'x_forwarded_proto' => $r->header('X-Forwarded-Proto'),
+            'x_forwarded_host'  => $r->header('X-Forwarded-Host'),
+            'cf_connecting_ip'  => $r->header('CF-Connecting-IP'),
+            'headers_forwarded' => $r->header('Forwarded'),
+            'trusted_proxy_trusted' => $r->isFromTrustedProxy(),
+        ], 200, ['Cache-Control' => 'no-store'], JSON_PRETTY_PRINT);
+    });
 
-Route::get('/lang/{locale}', function ($locale) {
+    Route::get('/lang/{locale}', function ($locale) {
     abort_unless(in_array($locale, ['th', 'en'], true), 404);
-    \Mcamara\LaravelLocalization\Facades\LaravelLocalization::setLocale($locale);
+    app()->setLocale($locale);
     session(['locale' => $locale]);
     return back();
 })->name('lang.switcher');
+
+// ── About page: หน้าสไลด์แนะนำแอป interactive showcase (ดูได้โดยไม่ต้องเข้าสู่ระบบ) ──
+// เสิร์ฟไฟล์ public/onboarding.html โดยตรง + no-store กันแคช HTML เก่า ทั้ง browser และ CDN
+Route::get('/about', function () {
+    $html = @file_get_contents(public_path('onboarding.html'));
+    if ($html === false) {
+        return response()->view('about')->header('Cache-Control', 'no-store, max-age=0');
+    }
+    return response()->make($html, 200, [
+        'Content-Type' => 'text/html; charset=utf-8',
+        'Cache-Control' => 'no-store, max-age=0',
+    ]);
+})->name('about');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [StudentAuthController::class, 'showLogin'])->name('login');

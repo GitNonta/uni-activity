@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', __('ตรวจสอบความถูกต้อง Official Activity Transcript')
+@section('title', __('ตรวจสอบความถูกต้อง Official Activity Transcript'))
 
 @section('content')
 <div style="max-width:680px;margin:2rem auto;padding:0 1rem;">

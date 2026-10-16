@@ -1,6 +1,6 @@
 {{-- หน้าฟอร์มประเมินกิจกรรม --}}
 @extends('layouts.app')
-@section('title', __('ประเมินกิจกรรม')
+@section('title', __('ประเมินกิจกรรม'))
 
 @section('content')
 <div class="container" style="max-width:700px;margin:0 auto;padding:1.5rem;">

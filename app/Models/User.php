@@ -41,6 +41,14 @@ class User extends Authenticatable
                     $user->student_id ? 'user' . $user->student_id : null,
                 );
             }
+            // ชื่อ EN อัตโนมัติสำหรับบัญชีที่สร้างใหม่ (import/register/SSO/admin):
+            // ใช้ english_name ถ้ากรอกมาแล้ว ไม่มี → romanize จากชื่อไทยด้วย ICU transliterate
+            if (empty($user->full_name_en) && !empty($user->english_name)) {
+                $user->full_name_en = $user->english_name;
+            }
+            if (empty($user->full_name_en) && preg_match('/[\x{0E01}-\x{0E5B}]/u', (string) $user->full_name)) {
+                $user->full_name_en = self::romanizeThai((string) $user->full_name);
+            }
         });
     }
 
@@ -109,6 +117,7 @@ class User extends Authenticatable
         'email',
         'password',
         'full_name',
+        'full_name_en',
         'english_name',
         'phone',
         'position',
@@ -272,6 +281,31 @@ class User extends Authenticatable
             'female' => 'female',
             default  => 'neutral',
         };
+    }
+
+    /** โรมันไทย→Latin (ICU transliterate) + จัด Title Case ของแต่ละคำ */
+    /** โรมันไทย → Latin (ICU transliterate) + Title Case รายคำ */
+    public static function romanizeThai(string $thaiName): string
+    {
+        if (function_exists('transliterator_transliterate')) {
+            $rul = "Any-Latin; Latin-ASCII; [\p{Mn}] Remove";
+            $lat = transliterator_transliterate($rul, $thaiName);
+            if (is_string($lat) && trim($lat) !== "" && !preg_match("/[\x{0E01}-\x{0E5B}]/u", $lat)) {
+                $lat = preg_replace("/\s+/", " ", $lat) ?? "";
+                return trim(mb_convert_case($lat, MB_CASE_TITLE, "UTF-8"));
+            }
+        }
+        return trim($thaiName);
+    }
+
+    /** ชื่อแสดงตาม locale (EN → full_name_en → english_name → ชื่อไทย) */
+    public function displayName(): string
+    {
+        if (app()->getLocale() === 'en') {
+            if ($this->full_name_en) return $this->full_name_en;
+            if ($this->english_name) return (string) $this->english_name;
+        }
+        return (string) $this->full_name;
     }
 
     /**

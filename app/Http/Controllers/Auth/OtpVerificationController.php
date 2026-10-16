@@ -96,7 +96,7 @@ class OtpVerificationController extends Controller
         
         if (!$resetData || $resetData['email'] !== $email) {
             return redirect()->route('admin.password.request')
-                ->withErrors(['email' => 'เซสชันหมดอายุหรือข้อมูลไม่ถูกต้อง กรุณาเริ่มขั้นตอนใหม่']);
+                ->withErrors(['email' => __('เซสชันหมดอายุหรือข้อมูลไม่ถูกต้อง กรุณาเริ่มขั้นตอนใหม่')]);
         }
 
         // --- ดำเนินการเปลี่ยนรหัสผ่านด้วยระบบมาตรฐานของ Laravel ---

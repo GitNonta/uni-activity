@@ -193,8 +193,8 @@ class JobAdminController extends Controller
 
         ListCache::bump(ListCache::GROUP_JOBS);
 
-        $labels = ['open' => 'เปิดรับสมัคร', 'closed' => 'ปิดรับสมัคร', 'completed' => 'เสร็จสิ้น'];
-        return back()->with('success', __('flash.เปลี่ยนสถานะเป็น "') . $labels[$request->status] . '" เรียบร้อย');
+        $labels = ['open' => __('เปิดรับสมัคร'), 'closed' => __('ปิดรับสมัคร'), 'completed' => __('เสร็จสิ้น')];
+        return back()->with('success', __('flash.เปลี่ยนสถานะเป็น :s แล้ว', ['s' => $labels[$request->status]]));
     }
 
     /** Confirm / Reject ผู้สมัคร */
@@ -215,7 +215,7 @@ class JobAdminController extends Controller
         $application->update(['status' => $request->status]);
 
         $label = $request->status === 'confirmed' ? 'ยืนยัน' : 'ปฏิเสธ';
-        return back()->with('success', "{$label}ผู้สมัครเรียบร้อย");
+        return back()->with('success', __('ปรับสถานะผู้สมัคร: :label เรียบร้อย', ['label' => $label]));
     }
 
     /** ลบคอมเมนต์ (Admin/Staff Owner) */

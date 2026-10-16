@@ -67,6 +67,6 @@ class PaymentController extends Controller
         }
 
         return redirect()->route('activities.pay.show', $activity)
-            ->with('success', "ยืนยันรายการชำระเงิน {$payment->ref} แล้ว (Soft-launch — รอ staff ตรวจ)");
+            ->with('success', __('ยืนยันการชำระเงิน :ref แล้ว (รอเจ้าหน้าที่ตรวจสอบ)', ['ref' => $payment->ref]));
     }
 }

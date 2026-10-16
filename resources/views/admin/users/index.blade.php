@@ -1,6 +1,6 @@
 {{-- หน้าจัดการผู้ใช้งานทั้งหมด (Admin): นักศึกษา + เจ้าหน้าที่ --}}
 @extends('layouts.admin')
-@section('title', __('จัดการผู้ใช้งาน')
+@section('title', __('จัดการผู้ใช้งาน'))
 
 @section('content')
 <div class="flex items-center justify-between mb-4" style="flex-wrap:wrap;gap:.75rem;">

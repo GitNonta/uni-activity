@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', __('สำรองและกู้คืนข้อมูลระบบ')
+@section('title', __('สำรองและกู้คืนข้อมูลระบบ'))
 
 @section('content')
 <div class="flex items-center justify-between mb-4">

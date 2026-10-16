@@ -1,6 +1,6 @@
 {{-- หน้าจัดการหมวดหมู่กิจกรรม (Admin): ดู, สร้าง, แก้ไขเกณฑ์ชั่วโมง, ลบ --}}
 @extends('layouts.admin')
-@section('title', __('จัดการหมวดหมู่กิจกรรม')
+@section('title', __('จัดการหมวดหมู่กิจกรรม'))
 
 @section('content')
 <div class="flex items-center justify-between mb-4">

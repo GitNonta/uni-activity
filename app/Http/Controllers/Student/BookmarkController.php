@@ -36,7 +36,7 @@ class BookmarkController extends Controller
         }
 
         return back()->with('success', $bookmarked
-            ? "บันทึกกิจกรรม \"{$activity->title}\" ไว้ในบุ๊กมาร์กแล้ว"
-            : "ยกเลิกบุ๊กมาร์กกิจกรรม \"{$activity->title}\" แล้ว");
+            ? __('flash.บันทึกกิจกรรม ":t" ไว้ในบุ๊กมาร์กแล้ว', ['t' => $activity->title])
+            : __('flash.ยกเลิกบุ๊กมาร์กกิจกรรม ":t" แล้ว', ['t' => $activity->title]));
     }
 }

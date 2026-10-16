@@ -124,6 +124,16 @@ class ActivityConflictService
      *
      * @return array{has_conflict: bool, conflict_count: int, conflicts: array<int, array<string, mixed>>, message: string}
      */
+    /**
+     * AJAX Endpoint: ตรวจสอบความขัดแย้งของสถานที่และวันเวลาแบบ Real-time
+     */
+
+    /** ชื่อกิจกรรมตาม locale (EN → title_en ถ้ามี) */
+    private function actTitle(Activity $act): string
+    {
+        return (app()->getLocale() === 'en' && $act->title_en) ? $act->title_en : $act->title;
+    }
+
     public function checkConflict(
         string $location,
         string $activityDate,
@@ -300,7 +310,7 @@ class ActivityConflictService
                 if ($this->areActivitiesConflicting($actA, $actB)) {
                     $infoB = [
                         'id'           => $actB->id,
-                        'title'        => $actB->title,
+                        'title'        => $this->actTitle($actB),
                         'location'     => $actB->location,
                         'time_display' => ($actB->start_time ? substr($actB->start_time, 0, 5) : '00:00') . ' - ' . ($actB->end_time ? substr($actB->end_time, 0, 5) : '23:59'),
                         'edit_url'     => route('admin.activities.edit', $actB),
@@ -309,7 +319,7 @@ class ActivityConflictService
 
                     $infoA = [
                         'id'           => $actA->id,
-                        'title'        => $actA->title,
+                        'title'        => $this->actTitle($actA),
                         'location'     => $actA->location,
                         'time_display' => ($actA->start_time ? substr($actA->start_time, 0, 5) : '00:00') . ' - ' . ($actA->end_time ? substr($actA->end_time, 0, 5) : '23:59'),
                         'edit_url'     => route('admin.activities.edit', $actA),
@@ -370,7 +380,7 @@ class ActivityConflictService
 
             return [
                 'id'              => (string) $act->id,
-                'title'           => $act->title,
+                'title'           => $this->actTitle($act),
                 'start'           => $startIso,
                 'end'             => $endIso,
                 'allDay'          => empty($act->start_time) && empty($act->end_time),

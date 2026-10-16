@@ -1,6 +1,6 @@
 {{-- หน้า Dashboard ผู้ดูแล: เข้ากับธีมระบบ 100% สถิติ + Unified Approval Queue + กิจกรรม + ประกาศงาน + ประกาศล่าสุด + Audit Logs --}}
 @extends('layouts.admin')
-@section('title', __('ภาพรวมระบบ')
+@section('title', __('ภาพรวมระบบ'))
 
 @section('styles')
 <style>
@@ -102,12 +102,16 @@ html.dark .approval-row:hover {
 @endsection
 
 @section('content')
+@php
+    $locEN = app()->getLocale() === 'en';
+    $pick = fn($th, $en) => ($locEN && $en) ? $en : $th;
+@endphp
 {{-- ═══ 1. หัวข้อหน้า & ปุ่มการทำงาน ═══ --}}
 <div class="flex items-center justify-between mb-6" style="flex-wrap:wrap; gap:1rem;">
     <div>
         <h1 class="font-bold" style="font-size:1.5rem; margin:0; color:var(--text-main, #0f172a);">{{ __('ภาพรวมระบบ') }}</h1>
         <p class="text-xs text-muted" style="margin-top:3px;">
-            {{ __('ยินดีต้อนรับ,') }}{{ auth()->user()->full_name ?? auth()->user()->name }} &nbsp;·&nbsp; {{ now()->locale('th')->isoFormat('D MMMM GGGG') }}
+            {{ __('ยินดีต้อนรับ,') }}{{ auth()->user()->displayName() }} &nbsp;·&nbsp; {{ app()->getLocale() === 'en' ? now()->isoFormat('D MMMM YYYY') : now()->locale('th')->isoFormat('D MMMM GGGG') }}
         </p>
     </div>
     <div class="flex items-center gap-2">
@@ -242,24 +246,24 @@ html.dark .approval-row:hover {
         $allPending->push([
             'id'       => $reg->id,
             'type'     => 'registration',
-            'name'     => $reg->user->full_name ?? '-',
+            'name'     => $reg->user->displayName(),
             'sid'      => $reg->user->student_id ?? '',
             'faculty'  => $reg->user->faculty ? __($reg->user->faculty) : '',
-            'activity' => $reg->activity->title ?? '-',
+            'activity' => $pick($reg->activity->title ?? '-', $reg->activity->title_en ?? null),
             'time'     => $reg->created_at,
-            'detail'   => 'ขอลงทะเบียนเข้าร่วม',
+            'detail'   => __('ขอลงทะเบียนเข้าร่วม'),
         ]);
     }
     foreach($pendingAttendances as $att) {
         $allPending->push([
             'id'           => $att->id,
             'type'         => 'attendance',
-            'name'         => $att->user->full_name ?? '-',
+            'name'         => $att->user->displayName(),
             'sid'          => $att->user->student_id ?? '',
             'faculty'      => $att->user->faculty ? __($att->user->faculty) : '',
-            'activity'     => $att->activity->title ?? '-',
+            'activity'     => $pick($att->activity->title ?? '-', $att->activity->title_en ?? null),
             'time'         => $att->created_at,
-            'detail'       => $att->distance_meters ? 'เช็คอิน GPS ห่าง '.number_format($att->distance_meters,0).' ม.' : 'บันทึกเช็คอิน',
+            'detail'       => $att->distance_meters ? __('เช็คอิน GPS ห่าง :m ม.', ['m' => number_format($att->distance_meters, 0)]) : __('บันทึกเช็คอิน'),
             'risk_reasons' => $att->risk_reasons,
         ]);
     }
@@ -286,7 +290,7 @@ html.dark .approval-row:hover {
             {{-- Type Badge --}}
             <span style="flex-shrink:0; font-size:.7rem; font-weight:600; padding:3px 8px; border-radius:999px;
                 {{ $item['type'] === 'registration' ? 'background:#ffedd5;color:#c2410c;' : 'background:#dcfce7;color:#15803d;' }}">
-                {{ $item['type'] === 'registration' ? 'ลงทะเบียน' : 'เช็คอิน' }}
+                {{ $item['type'] === 'registration' ? __('ลงทะเบียน') : __('เช็คอิน') }}
             </span>
             {{-- Info --}}
             <div style="flex:1; min-width:0;">
@@ -303,7 +307,7 @@ html.dark .approval-row:hover {
                     @foreach($item['risk_reasons'] as $reason)
                     <span style="display:inline-flex; align-items:center; gap:3px; font-size:0.7rem; font-weight:600; padding:1px 6px; border-radius:4px; background:#fef2f2; color:#b91c1c; border:1px solid #fecaca;">
                         <svg style="width:11px; height:11px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                        {{ $reason }}
+                        {{ __($reason) }}
                     </span>
                     @endforeach
                 </div>
@@ -358,13 +362,13 @@ html.dark .approval-row:hover {
             <tbody>
                 @forelse($recentActivities as $act)
                 <tr>
-                    <td data-label="ชื่อกิจกรรม" class="font-semi" title="{{ $act->title }}">
-                        <a href="{{ route('admin.activities.show', $act->id) }}" class="text-primary font-semi">{{ Str::limit($act->title, 42, '...') }}</a>
-                        <p class="text-xs text-muted" style="margin:2px 0 0 0;">{{ $act->category->name ?? 'ทั่วไป' }}</p>
+                    <td data-label="{{ __('ชื่อกิจกรรม') }}" class="font-semi" title="{{ $pick($act->title, $act->title_en) }}">
+                        <a href="{{ route('admin.activities.show', $act->id) }}" class="text-primary font-semi">{{ Str::limit($pick($act->title, $act->title_en), 42, '...') }}</a>
+                        <p class="text-xs text-muted" style="margin:2px 0 0 0;">{{ __($act->category->name ?? 'ทั่วไป') }}</p>
                     </td>
-                    <td data-label="วันที่" class="text-center text-muted">{{ $act->activity_date->format('d/m/Y') }}</td>
-                    <td data-label="สถานะ" class="text-center">@include('components.status-badge', ['status' => $act->computed_status])</td>
-                    <td data-label="ผู้เข้าร่วม" class="text-center">
+                    <td data-label="{{ __('วันที่') }}" class="text-center text-muted">{{ $act->activity_date->format('d/m/Y') }}</td>
+                    <td data-label="{{ __('สถานะ') }}" class="text-center">@include('components.status-badge', ['status' => $act->computed_status])</td>
+                    <td data-label="{{ __('ผู้เข้าร่วม') }}" class="text-center">
                         @php
                             $regCount = $act->registrations()->where('status','approved')->count();
                             $attCount = $act->attendances()->where('status','approved')->count();
@@ -376,7 +380,7 @@ html.dark .approval-row:hover {
                             </span>
                         @endif
                     </td>
-                    <td data-label="จัดการ" class="text-right">
+                    <td data-label="{{ __('จัดการ') }}" class="text-right">
                         <div class="flex justify-end gap-2" style="justify-content:flex-end;">
                             <a href="{{ route('admin.activities.show', $act->id) }}" class="btn btn-outline btn-sm">{{ __('ดู') }}</a>
                             <a href="{{ route('admin.activities.edit', $act->id) }}" class="btn btn-outline btn-sm">{{ __('แก้ไข') }}</a>
@@ -428,21 +432,21 @@ html.dark .approval-row:hover {
                     <tbody>
                         @forelse($recentJobs as $job)
                         <tr>
-                            <td data-label="หัวข้องาน">
-                                <a href="{{ route('admin.jobs.show', $job->id) }}" class="text-primary font-semi">{{ Str::limit($job->title, 28) }}</a>
+                            <td data-label="{{ __('หัวข้องาน') }}">
+                                <a href="{{ route('admin.jobs.show', $job->id) }}" class="text-primary font-semi">{{ Str::limit($pick($job->title, $job->title_en), 28) }}</a>
                             </td>
-                            <td data-label="ตำแหน่ง" class="text-xs text-muted">{{ $job->position }}</td>
-                            <td data-label="สถานะ" class="text-center">
+                            <td data-label="{{ __('ตำแหน่ง') }}" class="text-xs text-muted">{{ $job->position }}</td>
+                            <td data-label="{{ __('สถานะ') }}" class="text-center">
                                 @if($job->status === 'open')
                                     <span class="badge badge-green">{{ __('เปิด') }}</span>
                                 @else
                                     <span class="badge badge-gray">{{ __('ปิด') }}</span>
                                 @endif
                             </td>
-                            <td data-label="ผู้สมัคร" class="text-center">
+                            <td data-label="{{ __('ผู้สมัคร') }}" class="text-center">
                                 <span class="badge badge-orange">{{ $job->applications_count }} {{ __('คน') }}</span>
                             </td>
-                            <td data-label="จัดการ" class="text-right">
+                            <td data-label="{{ __('จัดการ') }}" class="text-right">
                                 <a href="{{ route('admin.jobs.show', $job->id) }}" class="btn btn-outline btn-sm">{{ __('ดู') }}</a>
                             </td>
                         </tr>
@@ -480,15 +484,15 @@ html.dark .approval-row:hover {
                     <tbody>
                         @forelse($recentAnnouncements as $item)
                         <tr>
-                            <td data-label="หัวข้อ">
-                                <div class="font-semi text-sm truncate" style="max-width:200px;" title="{{ $item->title }}">{{ Str::limit($item->title, 26, '...') }}</div>
+                            <td data-label="{{ __('หัวข้อ') }}">
+                                <div class="font-semi text-sm truncate" style="max-width:200px;" title="{{ $pick($item->title, $item->title_en) }}">{{ Str::limit($pick($item->title, $item->title_en), 26, '...') }}</div>
                                 <div class="text-xs text-muted">{{ $item->created_at->format('d/m/Y') }}</div>
                             </td>
-                            <td data-label="กลุ่มเป้าหมาย"><span class="badge badge-orange">{{ $item->target_faculty ?? 'ทุกคน' }}</span></td>
-                            <td data-label="สถานะ" class="text-center">
-                                <span class="badge {{ $item->is_active ? 'badge-green' : 'badge-gray' }}">{{ $item->is_active ? 'เปิด' : 'ปิด' }}</span>
+                            <td data-label="{{ __('กลุ่มเป้าหมาย') }}"><span class="badge badge-orange">{{ $item->target_faculty ? __($item->target_faculty) : __('ทุกคน') }}</span></td>
+                            <td data-label="{{ __('สถานะ') }}" class="text-center">
+                                <span class="badge {{ $item->is_active ? 'badge-green' : 'badge-gray' }}">{{ $item->is_active ? __('เปิด') : __('ปิด') }}</span>
                             </td>
-                            <td data-label="จัดการ" class="text-right">
+                            <td data-label="{{ __('จัดการ') }}" class="text-right">
                                 <a href="{{ route('admin.announcements.edit', $item->id) }}" class="btn btn-outline btn-sm">{{ __('แก้ไข') }}</a>
                             </td>
                         </tr>
@@ -557,7 +561,7 @@ html.dark .approval-row:hover {
             </div>
             <div style="flex:1; min-width:0;">
                 <div style="display:flex; align-items:center; justify-content:space-between; gap:.5rem; margin-bottom:2px;">
-                    <span style="font-size:.85rem; font-weight:700; color:var(--text-main, #1e293b);">{{ $log->user->full_name ?? 'System' }}</span>
+                    <span style="font-size:.85rem; font-weight:700; color:var(--text-main, #1e293b);">{{ $log->user->displayName() }}</span>
                     <span style="font-size:.7rem; color:#94a3b8; white-space:nowrap; flex-shrink:0;">{{ $log->created_at->diffForHumans() }}</span>
                 </div>
                 <p style="font-size:.8rem; color:var(--text-muted, #64748b); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:0;">{{ $log->description }}</p>

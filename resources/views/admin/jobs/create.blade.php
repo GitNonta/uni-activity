@@ -1,6 +1,6 @@
 {{-- Admin: สร้างประกาศงานใหม่ --}}
 @extends('layouts.admin')
-@section('title', __('สร้างประกาศงาน')
+@section('title', __('สร้างประกาศงาน'))
 
 @section('content')
 <a href="{{ route('admin.jobs.index') }}" class="text-sm text-primary mb-2" style="display:inline-block;">&larr; {{ __('กลับรายการ') }}</a>

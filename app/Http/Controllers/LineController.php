@@ -140,7 +140,7 @@ class LineController extends Controller
         ]);
 
         return redirect()->route('student.profile')
-            ->with('success', "ผูกบัญชี LINE สำเร็จ! เชื่อมต่อกับ {$lineDisplayName} แล้ว");
+            ->with('success', __('ผูกบัญชี LINE สำเร็จ! เชื่อมต่อกับ :name แล้ว', ['name' => $lineDisplayName]));
     }
 
     /** ยกเลิกการผูก LINE */
@@ -164,7 +164,7 @@ class LineController extends Controller
         Log::info('User unlinked LINE account', ['user_id' => $user->id]);
 
         return redirect()->route('student.profile')
-            ->with('success', "ยกเลิกการผูกบัญชี LINE ({$displayName}) สำเร็จ");
+            ->with('success', __('ยกเลิกการผูกบัญชี LINE (:name) สำเร็จ', ['name' => $displayName]));
     }
 
     /** สลับเปิด/ปิดการแจ้งเตือน LINE */
@@ -184,7 +184,7 @@ class LineController extends Controller
 
         $status = $user->line_notify_enabled ? 'เปิด' : 'ปิด';
         return redirect()->route('student.profile')
-            ->with('success', "{$status}การแจ้งเตือนผ่าน LINE แล้ว");
+            ->with('success', __('สลับแจ้งเตือน LINE: :status', ['status' => $status]));
     }
 
     /** LINE Webhook endpoint (รับ events จาก LINE) */

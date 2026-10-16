@@ -1,6 +1,6 @@
 {{-- ปฏิทินกิจกรรมอัจฉริยะ (Interactive Master Calendar) — Admin & Staff --}}
 @extends('layouts.admin')
-@section('title', __('ปฏิทินกิจกรรมอัจฉริยะ')
+@section('title', __('ปฏิทินกิจกรรมอัจฉริยะ'))
 
 @section('styles')
 {{-- FullCalendar v6 CDN --}}
@@ -393,7 +393,7 @@ html[data-theme="dark"] .fc-list-event-time {
                     {{ number_format($stats['conflicts_count']) }}
                 </div>
                 <div style="font-size:0.72rem; color:{{ $stats['conflicts_count'] > 0 ? '#b91c1c' : '#16a34a' }}; margin-top:2px;">
-                    {{ $stats['conflicts_count'] > 0 ? 'คลิกดูรายการที่ทับซ้อน' : 'ไม่มีกิจกรรมชนกัน ปกติดี' }}
+                    {{ $stats['conflicts_count'] > 0 ? __('คลิกดูรายการที่ทับซ้อน') : __('ไม่มีกิจกรรมชนกัน ปกติดี') }}
                 </div>
             </div>
         </div>
@@ -599,7 +599,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var calEl = document.getElementById('master-calendar');
 
     calendarInstance = new FullCalendar.Calendar(calEl, {
-        locale: 'th',
+        locale: '{{ app()->getLocale() === 'en' ? 'en' : 'th' }}',
         initialView: window.innerWidth < 768 ? 'listMonth' : 'dayGridMonth',
         headerToolbar: {
             left: 'prev,next today',

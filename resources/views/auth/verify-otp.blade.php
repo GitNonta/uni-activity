@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('ยืนยัน OTP')
+@section('title', __('ยืนยัน OTP'))
 
 @section('styles')
 <style>

@@ -97,7 +97,7 @@ class GraduationAuditAdminController extends Controller
         if ($audit['is_eligible']) {
             return redirect()
                 ->back()
-                ->with('error', "นักศึกษารหัส {$user->student_id} มีชั่วโมงกิจกรรมครบถ้วนตามเกณฑ์แล้ว ไม่จำเป็นต้องส่งแจ้งเตือนขาดชั่วโมง");
+                ->with('error', __('นักศึกษารหัส :sid มีชั่วโมงครบแล้ว ไม่จำเป็นต้องแจ้งเตือน', ['sid' => $user->student_id]));
         }
 
         $result = $this->auditService->sendDeficitAlert($user, $audit, $request->user());
@@ -106,7 +106,7 @@ class GraduationAuditAdminController extends Controller
 
         return redirect()
             ->back()
-            ->with('success', "ส่งแจ้งเตือนเร่งรัดชั่วโมงกิจกรรมไปยังนักศึกษา {$user->full_name} ({$user->student_id}) ผ่าน In-App{$lineMsg} เรียบร้อยแล้ว");
+            ->with('success', __('ส่งแจ้งเตือนเร่งรัดชั่วโมงไปยังนักศึกษา :name (:sid) ผ่าน In-App:line เรียบร้อยแล้ว', ['name' => $user->displayName(), 'sid' => $user->student_id, 'line' => $lineMsg]));
     }
 
     /**

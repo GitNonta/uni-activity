@@ -1,6 +1,6 @@
 {{-- หน้าแก้ไขกิจกรรม (Admin): ฟอร์มแก้ไขข้อมูลกิจกรรมที่มีอยู่ --}}
 @extends('layouts.admin')
-@section('title', __('แก้ไขกิจกรรม')
+@section('title', __('แก้ไขกิจกรรม'))
 
 @section('content')
 <div class="activity-edit-container">

@@ -1,6 +1,6 @@
 {{-- Admin: รายการประกาศงานทั้งหมด --}}
 @extends('layouts.admin')
-@section('title', __('ประกาศงาน')
+@section('title', __('ประกาศงาน'))
 
 @section('content')
 <div class="flex items-center justify-between mb-4" style="flex-wrap:wrap;gap:.5rem;">

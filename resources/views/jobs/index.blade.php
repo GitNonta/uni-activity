@@ -1,6 +1,6 @@
 {{-- หน้ารายการประกาศงานทั้งหมด: ค้นหา + กรอง + Grid Card --}}
 @extends('layouts.app')
-@section('title', __('หางาน / Part-time')
+@section('title', __('หางาน / Part-time'))
 
 @section('content')
 <div class="act-header-row">

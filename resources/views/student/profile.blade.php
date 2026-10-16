@@ -406,7 +406,7 @@ html.dark .line-unlink-btn:hover {
             </div>
             <div style="flex: 1; min-width: 0;">
                 <div style="display: flex; align-items: center; gap: 8px; margin: 0 0 0.25rem 0;">
-                    <h1 style="font-size: 1.25rem; font-weight: 700; color: var(--text-main, #1e293b); margin: 0; line-height: 1.4;">{{ $user->full_name }}</h1>
+                    <h1 style="font-size: 1.25rem; font-weight: 700; color: var(--text-main, #1e293b); margin: 0; line-height: 1.4;">{{ $user->displayName() }}</h1>
                     @if($user->line_user_id)
                         <span title="{{ __('ผูกบัญชี LINE เรียบร้อยแล้ว') }}" style="display: inline-flex; align-items: center; justify-content: center;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="#06c755">
@@ -739,7 +739,7 @@ html.dark .line-unlink-btn:hover {
                         <div style="font-size: 11px; color: #1e293b !important; font-weight: 700; margin-bottom: 0px; line-height: 1.5;">{{ __('รหัสนักศึกษา :') }}</div>
                         <div style="font-size: 24px; font-weight: 700; letter-spacing: 1px; color: #0f172a !important; margin-bottom: 8px; line-height: 1.5;">{{ $user->student_id }}</div>
                         
-                        <div style="font-size: 20px; font-weight: 700; color: #0f172a !important; line-height: 1.5; letter-spacing: -0.3px;">{{ $user->full_name }}</div>
+                        <div style="font-size: 20px; font-weight: 700; color: #0f172a !important; line-height: 1.5; letter-spacing: -0.3px;">{{ $user->displayName() }}</div>
                         @if($user->english_name)
                             <div style="font-size: 14px; font-weight: 700; color: #334155 !important; margin-bottom: 6px;">{{ strtoupper($user->english_name) }}</div>
                         @else

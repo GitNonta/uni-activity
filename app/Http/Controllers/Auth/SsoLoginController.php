@@ -42,7 +42,7 @@ class SsoLoginController extends Controller
         [$cfg, $discovery] = $this->cfg();
         $authUrl = $discovery['authorization_endpoint'] ?? null;
         if (! $authUrl || empty($cfg['client_id']) || empty($cfg['redirect_uri'])) {
-            return redirect()->route('login')->withErrors(['sso' => 'SSO ยังไม่พร้อม (ตรวจ SSO_ISSUER / discovery)']);
+            return redirect()->route('login')->withErrors(['sso' => __('SSO ยังไม่พร้อม (ตรวจ SSO_ISSUER / discovery)')]);
         }
 
         return redirect($authUrl.'?'.http_build_query([
@@ -58,16 +58,16 @@ class SsoLoginController extends Controller
     {
         [$cfg, $discovery] = $this->cfg();
         if ($request->input('state') !== session()->token()) {
-            return redirect()->route('login')->withErrors(['sso' => 'SSO state ไม่ถูกต้อง']);
+            return redirect()->route('login')->withErrors(['sso' => __('SSO state ไม่ถูกต้อง')]);
         }
         if ($request->has('error') || ! $request->filled('code')) {
-            return redirect()->route('login')->withErrors(['sso' => 'SSO callback ไม่สมบูรณ์']);
+            return redirect()->route('login')->withErrors(['sso' => __('SSO callback ไม่สมบูรณ์')]);
         }
 
         $tokenUrl     = $discovery['token_endpoint']    ?? null;
         $userinfoUrl  = $discovery['userinfo_endpoint'] ?? null;
         if (! $tokenUrl) {
-            return redirect()->route('login')->withErrors(['sso' => 'SSO token endpoint ไม่พบ']);
+            return redirect()->route('login')->withErrors(['sso' => __('SSO token endpoint ไม่พบ')]);
         }
 
         try {
@@ -81,7 +81,7 @@ class SsoLoginController extends Controller
         } catch (\Throwable $e) {
             Log::warning('SSO token exchange failed', ['error' => $e->getMessage()]);
 
-            return redirect()->route('login')->withErrors(['sso' => 'SSO ล้มเหลว']);
+            return redirect()->route('login')->withErrors(['sso' => __('SSO ล้มเหลว')]);
         }
 
         $profile = [];
@@ -91,7 +91,7 @@ class SsoLoginController extends Controller
         $email = $profile['email'] ?? null;
         $name  = $profile['name'] ?? ($email ? explode('@', $email)[0] : null);
         if (! $email) {
-            return redirect()->route('login')->withErrors(['sso' => 'ไม่ได้รับ email จากผู้ให้บริการ']);
+            return redirect()->route('login')->withErrors(['sso' => __('ไม่ได้รับ email จากผู้ให้บริการ')]);
         }
 
         $user = User::firstOrCreate(

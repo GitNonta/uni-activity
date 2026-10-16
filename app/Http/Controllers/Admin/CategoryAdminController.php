@@ -46,7 +46,7 @@ class CategoryAdminController extends Controller
 
         Setting::set('total_required_hours', $request->total_required_hours);
 
-        return back()->with('success', __('flash.บันทึกเกณฑ์ชั่วโมงรวม ') . number_format((float) $request->total_required_hours, 1) . ' ชม. เรียบร้อยแล้ว');
+        return back()->with('success', __('flash.บันทึกเกณฑ์ชั่วโมงรวม :h ชม. เรียบร้อยแล้ว', ['h' => number_format((float) $request->total_required_hours, 1)]));
     }
 
     /** รีเซ็ตเกณฑ์ชั่วโมงรวมกลับไปใช้ผลรวมจากหมวดหมู่ */
@@ -90,7 +90,7 @@ class CategoryAdminController extends Controller
         ]);
         $this->auditCreate($cat, "สร้างหมวดหมู่ \"{$cat->name}\"");
 
-        return back()->with('success', __('flash.เพิ่มหมวดหมู่ "') . $request->name . '" เรียบร้อยแล้ว');
+        return back()->with('success', __('flash.เพิ่มหมวดหมู่ ":n" เรียบร้อยแล้ว', ['n' => $request->name]));
     }
 
     /** อัปเดตข้อมูลหมวดหมู่ (ชื่อ, คำอธิบาย, เกณฑ์ชั่วโมง, สี, ตัวเลือกเพิ่มเติม) */
@@ -126,7 +126,7 @@ class CategoryAdminController extends Controller
         ]);
         $this->auditUpdate($category, $oldValues, "แก้ไขหมวดหมู่ \"{$category->name}\"");
 
-        return back()->with('success', __('flash.อัปเดตหมวดหมู่ "') . $category->name . '" เรียบร้อยแล้ว');
+        return back()->with('success', __('flash.อัปเดตหมวดหมู่ ":n" เรียบร้อยแล้ว', ['n' => $category->name]));
     }
 
     /** ลบหมวดหมู่ (ถ้าไม่มีกิจกรรมอยู่) */
@@ -137,7 +137,7 @@ class CategoryAdminController extends Controller
         $category->loadCount('activities');
 
         if ($category->activities_count > 0) {
-            return back()->with('error', __('flash.ไม่สามารถลบได้ เนื่องจากมีกิจกรรม ') . $category->activities_count . ' รายการอยู่ในหมวดหมู่นี้');
+            return back()->with('error', __('flash.ไม่สามารถลบได้ เนื่องจากมีกิจกรรม :n รายการอยู่ในหมวดหมู่นี้', ['n' => $category->activities_count]));
         }
 
         $this->auditDelete($category, "ลบหมวดหมู่ \"{$category->name}\"");

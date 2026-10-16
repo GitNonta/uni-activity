@@ -1,6 +1,6 @@
 {{-- หน้าโปรไฟล์สาธารณะของผู้ใช้: ข้อมูล + สถิติ + ผลงานล่าสุด + ปุ่มติดตาม (UI แบบไร้ Box เรียบร้อย มินิมอล) --}}
 @extends('layouts.app')
-@section('title', 'โปรไฟล์ — ' . ($profileUser->full_name ?? 'ผู้ใช้'))
+@section('title', __('โปรไฟล์ — ') . ($profileUser->displayName()))
 
 @section('content')
 
@@ -611,19 +611,19 @@ html.dark .follower-row:hover {
             </div>
             <div class="pub-user-meta">
                 <div class="pub-name-row">
-                    <h1 class="pub-name">{{ $profileUser->full_name }}</h1>
+                    <h1 class="pub-name">{{ $profileUser->displayName() }}</h1>
                     @if($profileUser->isStaffOrAdmin())
                         <span class="pub-role-tag">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="#06c755" aria-label="{{ __('ผู้จัดกิจกรรมทางการ') }}" title="{{ __('ผู้จัดกิจกรรมทางการ') }}">
                                 <path d="M22.5 12.5c0-1.58-.8-2.97-2-3.79.44-1.61.04-3.35-1.11-4.5-1.15-1.15-2.89-1.55-4.5-1.11-.82-1.2-2.21-2-3.79-2s-2.97.8-3.79 2c-1.61-.44-3.35-.04-4.5 1.11-1.15 1.15-1.55 2.89-1.11 4.5-1.2.82-2 2.21-2 3.79s.8 2.97 2 3.79c-.44 1.61-.04 3.35 1.11 4.5 1.15 1.15 2.89 1.55 4.5 1.11.82 1.2 2.21 2 3.79 2s2.97-.8 3.79-2c1.61.44 3.35.04 4.5-1.11 1.15-1.15 1.55-2.89 1.11-4.5 1.2-.82 2-2.21 2-3.79zm-12.21 4.21l-3.5-3.5 1.41-1.41 2.09 2.09 5.68-5.68 1.41 1.41-7.09 7.09z"/>
                             </svg>
-                            {{ $profileUser->isStaff() ? 'เจ้าหน้าที่' : 'ผู้ดูแลระบบ' }}
+                            {{ $profileUser->isStaff() ? __('เจ้าหน้าที่') : __('ผู้ดูแลระบบ') }}
                         </span>
                     @endif
                 </div>
 
                 @if($profileUser->english_name)
-                    <p class="pub-english-name">{{ $profileUser->english_name }}</p>
+                    <p class="pub-english-name">{{ $profileUser->displayName() }}</p>
                 @endif
 
                 {{-- รายละเอียดสังกัด / ตำแหน่ง / คณะ / สาขา / ชั้นปี --}}
@@ -632,7 +632,7 @@ html.dark .follower-row:hover {
                         @if($profileUser->position || $profileUser->organization)
                             <span class="pub-meta-pill">
                                 <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                                {{ $profileUser->position ?? $profileUser->organization }}
+                                {{ __($profileUser->position ?? $profileUser->organization) }}
                             </span>
                         @endif
                     @else
@@ -687,9 +687,9 @@ html.dark .follower-row:hover {
                     class="pub-message-btn"
                     id="pubMessageBtn"
                     data-target-id="{{ $profileUser->id }}"
-                    data-target-name="{{ $profileUser->full_name }}"
+                    data-target-name="{{ $profileUser->displayName() }}"
                     data-target-url="{{ route('users.show', $profileUser) }}"
-                    title="{{ __('ส่งข้อความถึง') }}{{ $profileUser->full_name }}">
+                    title="{{ __('ส่งข้อความถึง') }}{{ $profileUser->displayName() }}">
                     <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                     </svg>
@@ -795,7 +795,7 @@ html.dark .follower-row:hover {
                 <x-empty-state
                     icon="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
                     title="{{ __('ยังไม่มีผลงานที่เผยแพร่') }}"
-                    description="{{ $profileUser->isStaffOrAdmin() ? 'ผู้ใช้นี้ยังไม่เคยเผยแพร่กิจกรรมหรือประกาศงาน' : 'กดติดตามเพื่อรับข่าวสารจากผู้ใช้นี้ในอนาคต' }}"
+                    description="{{ $profileUser->isStaffOrAdmin() ? __('ผู้ใช้นี้ยังไม่เคยเผยแพร่กิจกรรมหรือประกาศงาน') : __('กดติดตามเพื่อรับข่าวสารจากผู้ใช้นี้ในอนาคต') }}"
                     size="sm" />
             @endif
         </div>

@@ -54,7 +54,7 @@ class LoginOtpController extends Controller
             return back()->with('status', 'ส่งรหัส OTP ใหม่เรียบร้อยแล้ว');
         }
 
-        return back()->withErrors(['otp' => 'เกิดข้อผิดพลาดในการส่งรหัส OTP']);
+        return back()->withErrors(['otp' => __('เกิดข้อผิดพลาดในการส่งรหัส OTP')]);
     }
 
     /** ยืนยัน OTP และ Log in พร้อมระบบป้องกัน Brute-force และ Timing Attacks */

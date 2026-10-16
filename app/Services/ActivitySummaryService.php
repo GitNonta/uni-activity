@@ -478,6 +478,8 @@ class ActivitySummaryService
     public function updateEnglishName(User $user, string $englishName): void
     {
         $user->english_name = $englishName;
+        // ซิงก์ชื่อ EN ที่ใช้แสดงผลทุกหน้า (หน้าแอดมิน/รายชื่อ) ให้ตรงกับค่าที่ผู้ใช้แก้เองเสมอ
+        $user->full_name_en = $englishName;
         $user->save();
     }
 

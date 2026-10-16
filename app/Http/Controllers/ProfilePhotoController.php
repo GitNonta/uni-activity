@@ -28,18 +28,18 @@ class ProfilePhotoController extends Controller
 
         $user = $request->user();
         if (!$user) {
-            return back()->withErrors(['error' => 'ไม่สามารถระบุตัวตนของผู้ใช้']);
+            return back()->withErrors(['error' => __('ไม่สามารถระบุตัวตนของผู้ใช้')]);
         }
 
         try {
             $file = $request->file('profile_photo');
             if (!$file) {
-                return back()->withErrors(['error' => 'ไม่พบไฟล์รูปภาพ']);
+                return back()->withErrors(['error' => __('ไม่พบไฟล์รูปภาพ')]);
             }
 
             $imageInfo = @getimagesize($file->getRealPath());
             if (!$imageInfo) {
-                return back()->withErrors(['error' => 'ไฟล์รูปภาพไม่ถูกต้องหรือเสียหาย']);
+                return back()->withErrors(['error' => __('ไฟล์รูปภาพไม่ถูกต้องหรือเสียหาย')]);
             }
 
             $filename = 'profile_' . $user->id . '_' . time() . '.webp';
@@ -61,7 +61,7 @@ class ProfilePhotoController extends Controller
             };
 
             if (!$src) {
-                return back()->withErrors(['error' => 'ไม่สามารถอ่านไฟล์รูปภาพนี้ได้']);
+                return back()->withErrors(['error' => __('ไม่สามารถอ่านไฟล์รูปภาพนี้ได้')]);
             }
 
             $width  = imagesx($src);
@@ -103,7 +103,7 @@ class ProfilePhotoController extends Controller
             return back()->with('success', __('flash.อัปโหลดรูปโปรไฟล์เรียบร้อยแล้ว (ระบบกำลังสกัดรหัสใบหน้าผ่าน Background Queue)'));
         } catch (\Throwable $e) {
             Log::error('ProfilePhotoController upload error: ' . $e->getMessage());
-            return back()->withErrors(['error' => 'เกิดข้อผิดพลาดในการอัปโหลด: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => __('เกิดข้อผิดพลาดในการอัปโหลด: :msg', ['msg' => $e->getMessage()])]);
         }
     }
 
@@ -114,7 +114,7 @@ class ProfilePhotoController extends Controller
     {
         $user = $request->user();
         if (!$user) {
-            return back()->withErrors(['error' => 'ไม่สามารถระบุตัวตนของผู้ใช้']);
+            return back()->withErrors(['error' => __('ไม่สามารถระบุตัวตนของผู้ใช้')]);
         }
 
         try {
@@ -131,7 +131,7 @@ class ProfilePhotoController extends Controller
             return back()->with('success', __('flash.ลบรูปโปรไฟล์เรียบร้อยแล้ว'));
         } catch (\Throwable $e) {
             Log::error('ProfilePhotoController delete error: ' . $e->getMessage());
-            return back()->withErrors(['error' => 'เกิดข้อผิดพลาดในการลบรูป: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => __('เกิดข้อผิดพลาดในการลบรูป: :msg', ['msg' => $e->getMessage()])]);
         }
     }
 

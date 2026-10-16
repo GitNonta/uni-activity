@@ -83,11 +83,11 @@ class BackupAdminController extends Controller
 
             return redirect()
                 ->route('admin.backups.index')
-                ->with('success', "สร้างการสำรองข้อมูล [{$type}] สำเร็จ: {$result['filename']} ({$result['formatted_size']})");
+                ->with('success', __('สร้างการสำรองข้อมูล [:type] สำเร็จ: :file (:size)', ['type' => $type, 'file' => $result['filename'], 'size' => $result['formatted_size']]));
         } catch (Exception $e) {
             return redirect()
                 ->route('admin.backups.index')
-                ->with('error', "การสำรองข้อมูลล้มเหลว: " . $e->getMessage());
+                ->with('error', __('การสำรองข้อมูลล้มเหลว: :msg', ['msg' => $e->getMessage()]));
         }
     }
 
@@ -138,7 +138,7 @@ class BackupAdminController extends Controller
 
         return redirect()
             ->route('admin.backups.index')
-            ->with('success', "ลบไฟล์สำรองข้อมูล {$filename} เรียบร้อยแล้ว");
+            ->with('success', __('ลบไฟล์สำรองข้อมูล :file เรียบร้อยแล้ว', ['file' => $filename]));
     }
 
     public function clean(Request $request): RedirectResponse

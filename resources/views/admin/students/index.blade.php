@@ -1,6 +1,6 @@
 {{-- หน้ารายชื่อนักศึกษาทั้งหมด (Admin): ค้นหา + กรอง + active badges + progress bar + quick export --}}
 @extends('layouts.admin')
-@section('title', __('จัดการนักศึกษา')
+@section('title', __('จัดการนักศึกษา'))
 
 @section('content')
 <div class="flex items-center justify-between mb-4" style="flex-wrap:wrap;gap:.75rem;">
@@ -39,12 +39,12 @@
 {{-- Active Filter Badges --}}
 @php
     $activeFilters = [];
-    if(request('search'))     $activeFilters['search']     = ['label' => 'ค้นหา: '.request('search'), 'key' => 'search'];
+    if(request('search'))     $activeFilters['search']     = ['label' => __('ค้นหา: ').request('search'), 'key' => 'search'];
     if(request('faculty'))    $activeFilters['faculty']    = ['label' => __('คณะ: ').request('faculty'),   'key' => 'faculty'];
     if(request('department')) $activeFilters['department'] = ['label' => __('สาขา: ').request('department'),'key' => 'department'];
-    if(request('year'))       $activeFilters['year']       = ['label' => 'ปี '.request('year'),         'key' => 'year'];
+    if(request('year'))       $activeFilters['year']       = ['label' => __('ปี :y', ['y' => request('year')]),         'key' => 'year'];
     if(request('program'))    $activeFilters['program']    = ['label' => request('program'),            'key' => 'program'];
-    if(request('completion')) $activeFilters['completion'] = ['label' => request('completion') === 'complete' ? 'ครบเกณฑ์' : 'ยังไม่ครบ', 'key' => 'completion'];
+    if(request('completion')) $activeFilters['completion'] = ['label' => request('completion') === 'complete' ? __('ครบเกณฑ์') : __('ยังไม่ครบ'), 'key' => 'completion'];
 @endphp
 @if(count($activeFilters) > 0)
 <div class="flex" style="gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem;">
@@ -74,7 +74,7 @@
                 <select name="faculty" class="form-control">
                     <option value="">{{ __('ทุกคณะ') }}</option>
                     @foreach($faculties as $f)
-                        <option value="{{ $f }}" {{ request('faculty') == $f ? 'selected' : '' }}>{{ $f }}</option>
+                        <option value="{{ $f }}" {{ request('faculty') == $f ? 'selected' : '' }}>{{ __($f) }}</option>
                     @endforeach
                 </select>
             </div>
@@ -101,7 +101,7 @@
                 <select name="program" class="form-control">
                     <option value="">{{ __('ทุกภาคเรียน') }}</option>
                     @foreach($programs as $p)
-                        <option value="{{ $p }}" {{ request('program') == $p ? 'selected' : '' }}>{{ $p }}</option>
+                        <option value="{{ $p }}" {{ request('program') == $p ? 'selected' : '' }}>{{ __($p) }}</option>
                     @endforeach
                 </select>
             </div>
@@ -143,7 +143,7 @@
                 @endphp
                 <tr>
                     <td>
-                        <div class="font-semi text-sm" title="{{ $student->full_name }}">{{ Str::limit($student->full_name, 35, '...') }}</div>
+                        <div class="font-semi text-sm" title="{{ $student->displayName() }}">{{ Str::limit($student->displayName(), 35, '...') }}</div>
                         <div class="text-xs text-muted">{{ $student->student_id }}</div>
                     </td>
                     <td>
@@ -156,7 +156,7 @@
                             @if($student->program)
                             <span style="font-size:.7rem;border-radius:4px;padding:1px 6px;line-height:1.5;
                                 {{ $student->program === 'กศ.บป.' ? 'background:#fee2e2;color:#991b1b;border:1px solid #fecaca;' : 'background:#ffedd5;color:#9a3412;border:1px solid #fed7aa;' }}">
-                                {{ $student->program }}
+                                {{ __($student->program) }}
                             </span>
                             @endif
                         </div>
@@ -170,7 +170,7 @@
                             <div style="background:{{ $barColor }};border-radius:999px;height:5px;width:{{ $pct }}%;transition:width .4s;"></div>
                         </div>
                         <div style="font-size:.7rem;color:{{ $hrs >= $totalRequired ? '#16a34a' : '#94a3b8' }};margin-top:1px;">
-                            {!! $hrs >= $totalRequired ? 'ครบเกณฑ์ <svg style="width:14px;height:14px;display:inline;color:#16a34a;margin-left:2px;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>' : number_format($pct, 0).'%' !!}
+                            {!! $hrs >= $totalRequired ? __('ครบเกณฑ์').' <svg style="width:14px;height:14px;display:inline;color:#16a34a;margin-left:2px;vertical-align:-2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>' : number_format($pct, 0).'%' !!}
                         </div>
                     </td>
                     <td style="text-align:center;" class="text-sm">{{ $student->approved_count }}</td>

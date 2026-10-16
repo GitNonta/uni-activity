@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>UNI Activity — Interactive Onboarding Showcase</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=Mitr:wght@500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #ffffff;
+            --accent-orange: #ea580c;
+            --accent-glow: rgba(194, 89, 37, 0.24);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-dark);
+            color: #1c1d22;
+            font-family: 'Noto Sans Thai', 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .font-mono-num {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .grad-cover {
+            background: linear-gradient(90deg, #f97316 0%, #8b5cf6 55%, #3b66f5 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .grad-01 {
+            background: linear-gradient(90deg, #d96528 0%, #a84d24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .grad-02 {
+            background: linear-gradient(90deg, #f97316 0%, #9b5de5 60%, #6366f1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .grad-03 {
+            background: linear-gradient(90deg, #f97316 0%, #9a7b3e 55%, #4ea885 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .grad-04 {
+            background: linear-gradient(90deg, #f97316 0%, #b56c32 55%, #847743 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .grad-05 {
+            background: linear-gradient(90deg, #f97316 0%, #9e5847 50%, #5c5799 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .grad-06 {
+            background: linear-gradient(90deg, #f97316 0%, #9c4ca5 55%, #5e2ced 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stage-perspective {
+            perspective: 1400px;
+        }
+
+        .slide-panel {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4.5rem 1.5rem 2.5rem;
+            pointer-events: none;
+            opacity: 0;
+            will-change: transform, opacity, filter;
+            transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+                        opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+                        filter 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .slide-panel.active {
+            pointer-events: auto;
+            opacity: 1;
+            transform: translate3d(0, 0, 0) scale(1) rotateX(0deg);
+            filter: blur(0px);
+            z-index: 20;
+        }
+
+        /* Mode 1: Parallax Spring (Default) */
+        [data-mode="parallax"] .slide-panel.prev {
+            transform: translate3d(0, -14%, -120px) scale(0.92) rotateX(8deg);
+            opacity: 0;
+            filter: blur(6px);
+            z-index: 10;
+        }
+        [data-mode="parallax"] .slide-panel.next {
+            transform: translate3d(0, 16%, -80px) scale(0.94) rotateX(-8deg);
+            opacity: 0;
+            filter: blur(6px);
+            z-index: 10;
+        }
+
+        /* Mode 2: 3D Cube Flip */
+        [data-mode="cube"] .slide-panel.prev {
+            transform: translate3d(0, -55%, -300px) rotateX(65deg) scale(0.85);
+            opacity: 0;
+            filter: blur(4px);
+        }
+        [data-mode="cube"] .slide-panel.next {
+            transform: translate3d(0, 55%, -300px) rotateX(-65deg) scale(0.85);
+            opacity: 0;
+            filter: blur(4px);
+        }
+
+        /* Mode 3: Glass Zoom Morph */
+        [data-mode="morph"] .slide-panel.prev {
+            transform: scale(1.18);
+            opacity: 0;
+            filter: blur(18px);
+        }
+        [data-mode="morph"] .slide-panel.next {
+            transform: scale(0.82);
+            opacity: 0;
+            filter: blur(18px);
+        }
+
+        /* ความลึก 3D จริงของทุกโหมด */
+        .stage-perspective { transform-style: preserve-3d; }
+        [data-mode="cube"] .slide-panel { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+        [data-mode="cube"] .slide-panel.prev { transform-origin: center bottom; }
+        [data-mode="cube"] .slide-panel.next { transform-origin: center top; }
+        [data-mode="morph"] .slide-panel { will-change: transform, opacity, filter; }
+
+        .stagger-item {
+            opacity: 0;
+            transform: translateY(28px) scale(0.96);
+            transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .slide-panel.active .stagger-item {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .slide-panel.active .delay-1 { transition-delay: 0.08s; }
+        .slide-panel.active .delay-2 { transition-delay: 0.16s; }
+        .slide-panel.active .delay-3 { transition-delay: 0.25s; }
+        .slide-panel.active .delay-4 { transition-delay: 0.34s; }
+        .slide-panel.active .delay-5 { transition-delay: 0.44s; }
+
+        /* Blinking block cursor on category tags */
+        @keyframes cursorBlink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0.15; }
+        }
+        .block-cursor {
+            display: inline-block;
+            width: 7px;
+            height: 14px;
+            margin-left: 5px;
+            vertical-align: middle;
+            animation: cursorBlink 1.05s infinite;
+        }
+
+        /* Thin line cursor inside search box */
+        .line-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 20px;
+            background-color: #f97316;
+            margin-left: 4px;
+            vertical-align: middle;
+            animation: cursorBlink 0.9s infinite;
+        }
+
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px) rotate(var(--rot, 0deg)); }
+            50% { transform: translateY(-7px) rotate(var(--rot, 0deg)); }
+        }
+        .animate-float {
+            animation: floatSlow 4.2s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); opacity: 0.55; }
+            50% { transform: scale(1.12); opacity: 0.85; }
+        }
+        .ambient-orb {
+            animation: pulseGlow 6s ease-in-out infinite;
+        }
+
+        /* Slide 01 stacked cards transition */
+        .stack-card {
+            transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+                        box-shadow 0.5s ease,
+                        opacity 0.5s ease;
+        }
+        .slide-panel:not(.active) .stack-card-1 {
+            transform: translateY(40px) rotate(0deg) scale(0.85) !important;
+        }
+        .slide-panel:not(.active) .stack-card-2 {
+            transform: translateY(40px) rotate(0deg) scale(0.85) !important;
+        }
+        .slide-panel:not(.active) .stack-card-3 {
+            transform: translateY(40px) rotate(0deg) scale(0.85) !important;
+        }
+
+        /* Slide 06 bar growth */
+        .chart-bar {
+            height: 12%;
+            transition: height 1s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .slide-panel.active .chart-bar-1 { height: var(--h1, 24%); transition-delay: 0.35s; }
+        .slide-panel.active .chart-bar-2 { height: var(--h2, 38%); transition-delay: 0.43s; }
+        .slide-panel.active .chart-bar-3 { height: var(--h3, 33%); transition-delay: 0.51s; }
+        .slide-panel.active .chart-bar-4 { height: var(--h4, 58%); transition-delay: 0.59s; }
+        .slide-panel.active .chart-bar-5 { height: var(--h5, 86%); transition-delay: 0.68s; }
+
+        /* Slide 02 OTP digit pop */
+        .otp-digit {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(12px) scale(0.7);
+            transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .slide-panel.active .otp-digit {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        /* Ticket dashed divider with side cutouts */
+        .ticket-cutout-left, .ticket-cutout-right {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background-color: #ffffff;
+            border-radius: 9999px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .ticket-cutout-left { left: -13px; }
+        .ticket-cutout-right { right: -13px; }
+
+        @keyframes eqBounce {
+            0%, 100% { height: 4px; }
+            50% { height: 16px; }
+        }
+        .eq-bar {
+            width: 3px;
+            border-radius: 9999px;
+            background: #f97316;
+            animation: eqBounce 0.6s ease-in-out infinite;
+        }
+        .eq-bar:nth-child(2) { animation-delay: 0.15s; }
+        .eq-bar:nth-child(3) { animation-delay: 0.3s; }
+        .eq-bar:nth-child(4) { animation-delay: 0.1s; }
+
+        @keyframes shimmerSweep {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .shimmer-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
+            transform: translateX(-100%);
+            animation: shimmerSweep 2.8s infinite;
+        }
+
+        /* ตัวอักษร display ใหญ่บนจอเครื่อง — Mitr (Thai display) */
+        .phone-headline {
+            font-family: 'Mitr', 'Noto Sans Thai', sans-serif;
+            font-weight: 600;
+            line-height: 1.18;
+            letter-spacing: -0.01em;
+        }
+
+        /* ปุ่ม login มินิมอลบนจอ — เส้นบาง สีส้ม ไม่มี gradient/shimmer */
+        .login-cta-min {
+            min-height: 42px;
+            padding: 0.55rem 1.1rem;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid rgba(224,112,43,0.4);
+            background: rgba(234,88,12,0.07);
+            color: #f97316;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            cursor: pointer;
+            animation: minPulse 3.2s ease-in-out infinite;
+        }
+        .login-cta-min:active { transform: scale(0.96); }
+        @keyframes minPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(224,112,43,0); transform: scale(1); }
+            50% { box-shadow: 0 0 14px 1px rgba(224,112,43,0.15); transform: scale(1.03); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .login-cta-min { animation: none; }
+        }
+
+        /* คนวนรอบตัว U แล้วประกอบรวม — replay ทุกครั้งที่สไลด์ปก active */
+        .fig-anim {
+            transform-box: view-box;
+            transform-origin: 70px 76px;
+        }
+        .slide-panel:not(.active) .fig-anim { animation: none; opacity: 0; }
+        .slide-panel.active .fig-anim {
+            animation: figOrbitIn 1.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        .slide-panel.active .fig-2 { animation-delay: 0.12s; }
+        .slide-panel.active .fig-3 { animation-delay: 0.24s; }
+        .slide-panel.active .fig-4 { animation-delay: 0.36s; }
+        @keyframes figOrbitIn {
+            0%   { transform: rotate(-270deg) scale(1.3); opacity: 0; }
+            18%  { opacity: 1; }
+            100% { transform: rotate(0deg) scale(1); opacity: 1; }
+        }
+        .slide-panel.active .fig-2 { animation-name: figOrbitAlt; }
+        .slide-panel.active .fig-3 { animation-name: figOrbitAlt; animation-delay: 0.24s; }
+        @keyframes figOrbitAlt {
+            0%   { transform: rotate(220deg) scale(1.3); opacity: 0; }
+            18%  { opacity: 1; }
+            100% { transform: rotate(0deg) scale(1); opacity: 1; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .slide-panel.active .fig-anim { animation: none; opacity: 1; }
+        }
+    </style>
+</head>
+<body class="relative select-none overflow-hidden" data-mode="morph">
+
+    <!-- Dynamic Ambient Radial Background Glow -->
+    <div id="ambientBg" class="pointer-events-none fixed inset-0 z-0 transition-all duration-1000 flex items-center justify-center">
+        <div id="ambientOrbTop" class="ambient-orb absolute -top-10 w-80 h-80 rounded-full blur-3xl"
+             style="background: radial-gradient(circle, rgba(234,88,12,0.10) 0%, rgba(234,88,12,0) 70%);"></div>
+        <div id="ambientOrbCenter" class="ambient-orb absolute top-1/2 -translate-y-1/2 w-[26rem] h-[26rem] rounded-full blur-3xl transition-all duration-1000"
+             style="background: radial-gradient(circle, rgba(234,88,12,0.10) 0%, rgba(99,102,241,0.03) 55%, rgba(255,255,255,0) 75%);"></div>
+    </div>
+
+    <!-- Top Floating Header Controls -->
+    <header class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 sm:px-8 py-3.5 pointer-events-none">
+        <!-- Brand Mini Pill -->
+        <button onclick="goToSlide(0)" class="pointer-events-auto group flex items-center gap-2.5 bg-white/80 hover:bg-zinc-200/90 backdrop-blur-md border border-zinc-200 rounded-full px-3.5 py-1.5 transition-all">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#ea580c] group-hover:scale-125 transition-transform"></span>
+            <span class="text-xs sm:text-sm font-semibold tracking-wide text-zinc-800">UNI Activity</span>
+            <span id="slideCounterBadge" class="hidden text-[11px] font-mono-num text-zinc-500 bg-zinc-100 px-2 py-0.5 rounded-full">Cover</span>
+        </button>
+
+        <!-- Right Controls: Animation Style + Autoplay + TH/EN Language Toggle -->
+        <div class="pointer-events-auto flex items-center gap-2">
+
+            <!-- Direct Login Shortcut -->
+            <button onclick="goToSlide(7)"
+                class="hidden md:flex items-center gap-1.5 bg-white/80 hover:bg-zinc-100 backdrop-blur-md border border-zinc-200 rounded-full px-3 py-1.5 text-xs font-semibold text-zinc-800 transition-all">
+                <span data-i18n="nav_login">เข้าสู่ระบบ</span>
+            </button>
+
+            <!-- TH / EN Switcher (Referenced in Slide 01!) -->
+            <button id="langToggleBtn" onclick="toggleLanguage()"
+                class="flex items-center bg-white/90 hover:bg-zinc-100 backdrop-blur-md border border-orange-500/30 rounded-full p-0.5 text-xs font-semibold transition-all shadow-lg shadow-orange-950/20">
+                <span id="langTH" class="px-2.5 py-1 rounded-full bg-[#ea580c] text-white transition-all">TH</span>
+                <span id="langEN" class="px-2.5 py-1 rounded-full text-zinc-500 transition-all">EN</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Right Edge Scrollbar Track & Interactive Dot Nav -->
+    <aside class="fixed right-2.5 sm:right-5 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center gap-3">
+        <!-- Quick Jump Dots -->
+        <div id="navDots" class="flex flex-col gap-2.5 mb-2">
+            <!-- Dynamically populated by JS -->
+        </div>
+        <!-- Orange Vertical Scroll Indicator Track (Matches the screenshots) -->
+        <div class="relative w-1 h-28 sm:h-36 bg-zinc-200 rounded-full overflow-hidden">
+            <div id="orangeScrollThumb"
+                 class="w-full bg-gradient-to-b from-[#f97316] to-[#b84a1c] rounded-full transition-all duration-500"
+                 style="height: 25%; transform: translateY(0%);"></div>
+        </div>
+    </aside>
+
+    <!-- Main Stage Container -->
+    <main id="stageContainer" class="stage-perspective relative w-full h-full max-w-xl mx-auto z-10">
+
+        <!-- ==========================================
+             SLIDE 0: COVER (รู้จักแอปของเรา - UNI Activity)
+             ========================================== -->
+        <section class="slide-panel active" data-slide="0">
+            <div class="w-full max-w-md mx-auto flex flex-col items-center text-center">
+
+                <!-- Glowing Multi-Color Community "U" Logo -->
+                <div class="stagger-item delay-1 relative mb-8 sm:mb-10 group cursor-pointer" onclick="nextSlide()">
+                    <!-- Warm Halo behind Logo -->
+                    <div class="absolute -inset-8 rounded-full blur-2xl opacity-75 group-hover:opacity-100 transition-opacity duration-700"
+                         style="background: radial-gradient(circle, rgba(249,115,22,0.42) 0%, rgba(139,92,246,0.18) 50%, rgba(0,0,0,0) 75%);"></div>
+
+                    <!-- SVG Community U Emblem -->
+                    <div class="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full flex items-center justify-center">
+                        <svg viewBox="0 0 140 140" class="w-full h-full drop-shadow-[0_0_25px_rgba(249,115,22,0.35)] transition-transform duration-500 group-hover:scale-105">
+                            <defs>
+                                <linearGradient id="uLeftGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#38bdf8" />
+                                    <stop offset="100%" stop-color="#2563eb" />
+                                </linearGradient>
+                                <linearGradient id="uRightGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#a855f7" />
+                                    <stop offset="100%" stop-color="#6366f1" />
+                                </linearGradient>
+                                <linearGradient id="topGreenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#a3e635" />
+                                    <stop offset="100%" stop-color="#16a34a" />
+                                </linearGradient>
+                                <linearGradient id="rightGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#facc15" />
+                                    <stop offset="100%" stop-color="#ea580c" />
+                                </linearGradient>
+                            </defs>
+                            <!-- Outer upper arcs -->
+                            <path d="M 24 62 A 48 48 0 0 1 65 20" fill="none" stroke="url(#uLeftGrad)" stroke-width="4.5" stroke-linecap="round"/>
+                            <path d="M 78 20 A 48 48 0 0 1 116 62" fill="none" stroke="url(#topGreenGrad)" stroke-width="4.5" stroke-linecap="round"/>
+<!-- Top reaching green figure -->
+                            <g class="fig-anim fig-1">
+                                <circle cx="70" cy="30" r="6.5" fill="url(#topGreenGrad)"/>
+                                <path d="M 55 28 Q 70 43 70 62 Q 70 43 85 20" fill="none" stroke="url(#topGreenGrad)" stroke-width="7" stroke-linecap="round"/>
+                            </g>
+                            <!-- Central U Pillars -->
+                            <path d="M 46 52 L 46 84 A 24 24 0 0 0 74 108 L 70 96 A 12 12 0 0 1 58 84 L 58 56 Z" fill="url(#uLeftGrad)"/>
+                            <path d="M 94 52 L 94 84 A 24 24 0 0 1 64 108 L 64 96 A 12 12 0 0 0 82 84 L 82 56 Z" fill="url(#uRightGrad)"/>
+<!-- Center blue dot -->
+                            <g class="fig-anim fig-4">
+                                <circle cx="70" cy="76" r="6.5" fill="#2563eb"/>
+                            </g>
+<!-- Left blue figure -->
+                            <g class="fig-anim fig-2">
+                                <circle cx="33" cy="68" r="5.5" fill="#38bdf8"/>
+                                <path d="M 22 68 Q 33 85 45 96 L 45 78 Q 34 76 22 68 Z" fill="url(#uLeftGrad)"/>
+                            </g>
+<!-- Right orange figure -->
+                            <g class="fig-anim fig-3">
+                                <circle cx="107" cy="68" r="5.5" fill="#fbbf24"/>
+                                <path d="M 118 68 Q 107 85 95 96 L 95 78 Q 106 76 118 68 Z" fill="url(#rightGoldGrad)"/>
+                            </g>
+                            <!-- Bottom purple embrace arc -->
+                            <path d="M 28 92 A 48 48 0 0 0 112 92" fill="none" stroke="url(#uRightGrad)" stroke-width="5" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Subtitle -->
+                <p data-i18n="cover_sub" class="stagger-item delay-2 text-[#f97316] text-base sm:text-lg font-medium tracking-[0.18em] mb-3">
+                    รู้จักแอปของเรา
+                </p>
+
+                <!-- Main Headline -->
+                <h1 class="stagger-item delay-3 text-4xl sm:text-6xl font-extrabold tracking-tight text-zinc-900 mb-4">
+                    UNI Activity
+                </h1>
+
+                <!-- Tagline -->
+                <p class="stagger-item delay-4 text-xl sm:text-2xl font-bold text-zinc-900 leading-relaxed">
+                    <span data-i18n="cover_tag_1">ทุกกิจกรรม ทุกโอกาส</span>
+                    <span data-i18n="cover_tag_2" class="grad-cover ml-1">ในที่เดียว</span>
+                </p>
+
+                <!-- Interactive Commercial Ad CTA + Swipe CTA -->
+                <div class="stagger-item delay-5 mt-10 flex flex-col items-center gap-3">
+                    <div class="flex items-center gap-2">
+                        <button onclick="nextSlide()" class="group flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-xs text-zinc-600 transition-all">
+                            <span data-i18n="cta_start">เลื่อนดูทีละขั้นตอน</span>
+                            <svg class="w-3.5 h-3.5 text-[#f97316] group-hover:translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                            </svg>
+                        </button>
+                        <button onclick="goToSlide(7)" class="px-4 py-2 rounded-full bg-white/90 hover:bg-zinc-100 border border-orange-500/30 text-xs font-semibold text-[#f97316] transition-all">
+                            <span data-i18n="cta_skip_login">ข้ามไปเข้าสู่ระบบ →</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SLIDE 01: แนะนำระบบ (Welcome to UNI Activity)
+             ========================================== -->
+        <section class="slide-panel" data-slide="1">
+            <div class="w-full max-w-md mx-auto flex flex-col items-center text-center">
+                <!-- Step Number -->
+                <span class="stagger-item delay-1 font-mono-num text-sm font-bold tracking-widest text-[#f97316] mb-1.5">01</span>
+
+                <!-- Category Label with Blinking Block Cursor -->
+                <div class="stagger-item delay-1 text-xs sm:text-sm font-medium tracking-[0.22em] text-[#5c8df6] mb-4 flex items-center">
+                    <span class="typewriter-text" data-i18n="s1_cat">แนะนำระบบ</span>
+                    <span class="block-cursor bg-[#5c8df6]/80"></span>
+                </div>
+
+                <!-- Terracotta Circle Badge -->
+                <div onclick="pulseBadge(this)" class="stagger-item delay-2 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#ea580c] shadow-[0_0_35px_rgba(234,88,12,0.35)] flex items-center justify-center mb-5 cursor-pointer hover:scale-105 transition-transform">
+                    <svg class="w-7 h-7 text-orange-200/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                    </svg>
+                </div>
+
+                <!-- Heading -->
+                <h2 class="stagger-item delay-2 text-2xl sm:text-4xl font-extrabold leading-tight mb-3">
+                    <span data-i18n="s1_title_1" class="block text-zinc-900">ยินดีต้อนรับสู่ UNI Activity</span>
+                    <span data-i18n="s1_title_2" class="grad-01 block mt-1">ที่เดียว</span>
+                </h2>
+
+                <!-- Description -->
+                <p data-i18n="s1_desc" class="stagger-item delay-3 text-zinc-600 text-sm sm:text-base leading-relaxed max-w-sm mb-8">
+                    ศูนย์รวมกิจกรรม งาน และฝึกงานของมหาวิทยาลัย รองรับทั้งภาษาไทยและอังกฤษ เปลี่ยนภาษาได้จากปุ่ม TH / EN มุมขวาบน
+                </p>
+
+                <!-- Bottom Visual: 3 Stacked Fanning Activity Cards -->
+                <div onclick="cycleCardStack()" title="คลิกเพื่อสลับการ์ดตัวอย่าง"
+                     class="stagger-item delay-4 relative w-72 sm:w-80 h-48 sm:h-52 cursor-pointer group">
+
+                    <!-- Back Card 1 (Tilted Left) -->
+                    <div id="fanCard1" class="stack-card stack-card-1 absolute inset-x-4 top-2 h-32 rounded-2xl bg-white border border-zinc-200 p-3 shadow-xl"
+                         style="transform: translate(-18px, -8px) rotate(-8deg) scale(0.92);">
+                        <div class="w-full h-16 rounded-xl opacity-75"
+                             style="background: linear-gradient(100deg, #8c421e 0%, #5c3a58 60%, #2d3a6e 100%);"></div>
+                    </div>
+
+                    <!-- Middle Card 2 (Tilted Right) -->
+                    <div id="fanCard2" class="stack-card stack-card-2 absolute inset-x-4 top-5 h-32 rounded-2xl bg-white border border-zinc-200 p-3 shadow-xl"
+                         style="transform: translate(22px, 2px) rotate(6deg) scale(0.96);">
+                        <div class="w-full h-16 rounded-xl"
+                             style="background: linear-gradient(100deg, #ea580c 0%, #6d4682 55%, #2b49b0 100%);"></div>
+                    </div>
+
+                    <!-- Front Card 3 (Main Active Card with "เปิดรับ" badge) -->
+                    <div id="fanCard3" class="stack-card stack-card-3 absolute inset-x-2 bottom-2 h-36 rounded-2xl bg-white border border-zinc-200 p-3.5 shadow-2xl group-hover:-translate-y-1 transition-transform"
+                         style="transform: translate(-6px, 12px) rotate(1.5deg) scale(1);">
+                        <!-- Gradient Banner -->
+                        <div class="relative w-full h-16 rounded-xl mb-3"
+                             style="background: linear-gradient(95deg, #2d4bc4 0%, #6d4788 50%, #b85423 100%);">
+                            <!-- Green Open Pill Badge -->
+                            <span data-i18n="s1_badge" class="absolute -bottom-2.5 right-2.5 px-3 py-0.5 rounded-full bg-[#3b8764] text-white text-xs font-semibold shadow-md">
+                                เปิดรับ
+                            </span>
+                        </div>
+                        <!-- Skeleton Lines -->
+                        <div class="w-3/5 h-2.5 bg-zinc-200 rounded-full mb-2"></div>
+                        <div class="w-2/5 h-2.5 bg-zinc-800 rounded-full"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SLIDE 02: การเข้าสู่ระบบ (Student ID + OTP Login)
+             ========================================== -->
+        <section class="slide-panel" data-slide="2">
+            <div class="w-full max-w-md mx-auto flex flex-col items-center text-center">
+                <!-- Step Number -->
+                <span class="stagger-item delay-1 font-mono-num text-sm font-bold tracking-widest text-[#f97316] mb-1.5">02</span>
+
+                <!-- Category Label -->
+                <div class="stagger-item delay-1 text-xs sm:text-sm font-medium tracking-[0.22em] text-[#4f7df3] mb-4 flex items-center">
+                    <span class="typewriter-text" data-i18n="s2_cat">การเข้าสู่ระบบ</span>
+                    <span class="block-cursor bg-[#4f7df3]"></span>
+                </div>
+
+                <!-- Terracotta Circle Badge -->
+                <div onclick="regenerateOTP()" class="stagger-item delay-2 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#ea580c] shadow-[0_0_35px_rgba(234,88,12,0.35)] flex items-center justify-center mb-5 cursor-pointer hover:scale-105 transition-transform" title="คลิกเพื่อสุ่มรหัส OTP ใหม่">
+                    <svg class="w-7 h-7 text-orange-200/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    </svg>
+                </div>
+
+                <!-- Heading -->
+                <h2 class="stagger-item delay-2 text-2xl sm:text-4xl font-extrabold leading-tight mb-3">
+                    <span data-i18n="s2_title_1" class="block text-zinc-900">เข้าสู่ระบบด้วยรหัสนักศึกษา</span>
+                    <span data-i18n="s2_title_2" class="grad-02 block mt-1">ไม่ต้องจำรหัสผ่าน</span>
+                </h2>
+
+                <!-- Description -->
+                <p data-i18n="s2_desc" class="stagger-item delay-3 text-zinc-600 text-sm sm:text-base leading-relaxed max-w-sm mb-7">
+                    นักศึกษากรอกรหัสนักศึกษา แล้วรับรหัส OTP ทางอีเมล — อาจารย์/เจ้าหน้าที่จัดกิจกรรมเข้าด้วยอีเมลและรหัสผ่าน
+                </p>
+
+                <!-- Bottom Visual: Full iPhone Mockup (theme-orange rim) with OTP Code -->
+                <div onclick="regenerateOTP()" title="คลิกเพื่อส่งรหัส OTP ใหม่"
+                     class="stagger-item delay-4 relative cursor-pointer">
+                    <div class="animate-float relative w-44 sm:w-52" style="--rot: -3deg;">
+                        <!-- Warm orange halo -->
+                        <div class="absolute -inset-8 rounded-full blur-2xl opacity-60 pointer-events-none"
+                             style="background: radial-gradient(circle, rgba(249,115,22,0.28) 0%, rgba(139,92,246,0.10) 55%, rgba(255,255,255,0) 75%);"></div>
+
+                        <!-- Full iPhone frame (SVG) — ขอบสีส้มธีมหลัก -->
+                        <svg viewBox="0 0 220 460" class="relative w-full" role="img" aria-label="iPhone แสดงรหัส OTP">
+                            <!-- Body with theme-orange rim -->
+                            <rect x="8" y="8" width="204" height="444" rx="40" fill="#17181c" stroke="#f97316" stroke-width="2.5"/>
+                            <!-- Warm screen -->
+                            <rect x="18" y="18" width="184" height="424" rx="31" fill="#1c130b"/>
+                            <ellipse cx="110" cy="150" rx="70" ry="60" fill="rgba(249,115,22,0.18)"/>
+                            <!-- Dynamic island -->
+                            <rect x="88" y="34" width="44" height="14" rx="7" fill="#23252c"/>
+                            <!-- Side buttons -->
+                            <rect x="4" y="130" width="5" height="36" rx="2.5" fill="#2e313a"/>
+                            <rect x="211" y="150" width="5" height="70" rx="2.5" fill="#2e313a"/>
+                        </svg>
+
+                        <!-- Screen clip: OTP UI lives strictly inside the screen -->
+                        <div class="absolute overflow-hidden" style="left:8.2%; right:8.2%; top:3.9%; bottom:3.9%; border-radius:24px;">
+                            <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 pointer-events-none">
+                                <span data-i18n="s2_otp_label" class="text-sm text-orange-200/90 tracking-wide">รหัสยืนยัน</span>
+
+                                <!-- Row 1 OTP Digits: 5 8 2 9 -->
+                                <div id="otpRow1" class="flex items-center justify-center gap-4 text-3xl sm:text-4xl font-extrabold text-[#f97316] font-mono-num">
+                                    <span class="otp-digit" style="transition-delay: 0.35s">5</span>
+                                    <span class="otp-digit" style="transition-delay: 0.45s">8</span>
+                                    <span class="otp-digit" style="transition-delay: 0.55s">2</span>
+                                    <span class="otp-digit" style="transition-delay: 0.65s">9</span>
+                                </div>
+                                <!-- Row 2 OTP Digits: 1 4 -->
+                                <div id="otpRow2" class="flex items-center justify-center gap-4 text-3xl sm:text-4xl font-extrabold text-[#f97316] font-mono-num">
+                                    <span class="otp-digit" style="transition-delay: 0.75s">1</span>
+                                    <span class="otp-digit" style="transition-delay: 0.85s">4</span>
+                                </div>
+                            </div>
+
+                            <!-- Home indicator -->
+                            <div class="absolute left-1/2 -translate-x-1/2 bottom-[3%] w-[36%] h-[3px] rounded-full bg-zinc-700 pointer-events-none"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SLIDE 03: การค้นหา (Search & Filter in Seconds)
+             ========================================== -->
+        <section class="slide-panel" data-slide="3">
+            <div class="w-full max-w-md mx-auto flex flex-col items-center text-center">
+                <!-- Step Number -->
+                <span class="stagger-item delay-1 font-mono-num text-sm font-bold tracking-widest text-[#f97316] mb-1.5">03</span>
+
+                <!-- Category Label -->
+                <div class="stagger-item delay-1 text-xs sm:text-sm font-medium tracking-[0.22em] text-[#5bb5a2] mb-4 flex items-center">
+                    <span class="typewriter-text" data-i18n="s3_cat">การค้นหา</span>
+                    <span class="block-cursor bg-[#5bb5a2]"></span>
+                </div>
+
+                <!-- Terracotta Circle Badge -->
+                <div class="stagger-item delay-2 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#ea580c] shadow-[0_0_35px_rgba(234,88,12,0.35)] flex items-center justify-center mb-5">
+                    <svg class="w-7 h-7 text-orange-200/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+
+                <!-- Heading -->
+                <h2 class="stagger-item delay-2 text-2xl sm:text-4xl font-extrabold leading-tight mb-3">
+                    <span data-i18n="s3_title_1" class="block text-zinc-900">ค้นหากิจกรรมที่ใช่</span>
+                    <span data-i18n="s3_title_2" class="grad-03 block mt-1">ในไม่กี่วินาที</span>
+                </h2>
+
+                <!-- Description -->
+                <p data-i18n="s3_desc" class="stagger-item delay-3 text-zinc-600 text-sm sm:text-base leading-relaxed max-w-sm mb-7">
+                    ค้นหาและกรองกิจกรรมตามหมวดหมู่ คณะ ชั้นปี และสถานะเปิด/ปิดรับ — บุ๊กมาร์กกิจกรรมที่สนใจไว้กลับมาดูภายหลัง
+                </p>
+
+                <!-- Bottom Visual: Filter Pills + Search Input + Result Bar -->
+                <div class="stagger-item delay-4 w-full max-w-xs sm:max-w-sm flex flex-col items-center gap-3.5">
+                    <!-- 4 Interactive Filter Pills -->
+                    <div class="flex flex-wrap items-center justify-center gap-2">
+                        <button onclick="selectSearchFilter(0)" class="filter-pill px-4 py-2 rounded-full bg-[#ea580c] text-white text-xs sm:text-sm font-semibold shadow-lg transition-transform active:scale-95">
+                            <span data-i18n="s3_pill_1">กิจกรรม</span>
+                        </button>
+                        <button onclick="selectSearchFilter(1)" class="filter-pill px-3.5 py-1.5 rounded-full bg-[#366e68] text-zinc-900 text-xs leading-tight font-medium transition-transform active:scale-95">
+                            <span data-i18n="s3_pill_2">งาน/<br>ฝึกงาน</span>
+                        </button>
+                        <button onclick="selectSearchFilter(2)" class="filter-pill px-4 py-2 rounded-full bg-[#2956b2] text-zinc-900 text-xs sm:text-sm font-medium transition-transform active:scale-95">
+                            <span data-i18n="s3_pill_3">คณะ</span>
+                        </button>
+                        <button onclick="selectSearchFilter(3)" class="filter-pill px-3.5 py-1.5 rounded-full bg-[#3b8764] text-zinc-900 text-xs leading-tight font-medium transition-transform active:scale-95">
+                            <span data-i18n="s3_pill_4">เปิด<br>รับ</span>
+                        </button>
+                    </div>
+
+                    <!-- Search Bar with Magnifying Glass & Blinking Orange Cursor -->
+                    <div class="w-64 sm:w-72 px-4 py-2.5 rounded-2xl bg-zinc-100 border border-zinc-200 flex items-center gap-2.5 shadow-inner">
+                        <svg class="w-5 h-5 text-zinc-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <span id="liveSearchText" class="text-xs sm:text-sm text-zinc-600 font-medium truncate"></span>
+                        <span class="line-cursor"></span>
+                    </div>
+
+                    <!-- Result Card Preview -->
+                    <div id="searchResultCard" class="w-72 sm:w-80 mt-1 p-3 rounded-2xl bg-white/90 border border-zinc-200 flex items-center justify-between gap-3 transition-all duration-300">
+                        <!-- Gradient Thumbnail Square -->
+                        <div id="searchThumb" class="w-11 h-11 rounded-xl shrink-0 transition-all duration-500"
+                             style="background: linear-gradient(135deg, #ea580c 0%, #468778 100%);"></div>
+                        <!-- Skeleton Progress Bar -->
+                        <div class="flex-1 h-2.5 bg-zinc-200 rounded-full overflow-hidden">
+                            <div id="searchBarFill" class="h-full bg-zinc-500/60 rounded-full transition-all duration-500" style="width: 75%"></div>
+                        </div>
+                        <!-- Quota Circle Badge -->
+                        <div class="px-3 py-1.5 rounded-full bg-orange-50 border border-orange-500/20 text-[#f97316] text-[11px] font-bold leading-tight text-center shrink-0">
+                            <span id="searchQuotaText" data-i18n="s3_quota">รับ 20<br>คน</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SLIDE 04: การเข้าร่วม (Register, Waitlist & QR Check-in)
+             ========================================== -->
+        <section class="slide-panel" data-slide="4">
+            <div class="w-full max-w-md mx-auto flex flex-col items-center text-center">
+                <!-- Step Number -->
+                <span class="stagger-item delay-1 font-mono-num text-sm font-bold tracking-widest text-[#f97316] mb-1.5">04</span>
+
+                <!-- Category Label -->
+                <div class="stagger-item delay-1 text-xs sm:text-sm font-medium tracking-[0.22em] text-[#5bb5a2] mb-4 flex items-center">
+                    <span class="typewriter-text" data-i18n="s4_cat">การเข้าร่วม</span>
+                    <span class="block-cursor bg-[#5bb5a2]/40"></span>
+                </div>
+
+                <!-- Terracotta Circle Badge -->
+                <div class="stagger-item delay-2 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#ea580c] shadow-[0_0_35px_rgba(234,88,12,0.35)] flex items-center justify-center mb-5">
+                    <svg class="w-7 h-7 text-orange-200/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+                    </svg>
+                </div>
+
+                <!-- Heading -->
+                <h2 class="stagger-item delay-2 text-2xl sm:text-4xl font-extrabold leading-tight mb-3">
+                    <span data-i18n="s4_title_1" class="block text-zinc-900">สมัคร รอเข้าคิว และเช็คอิน</span>
+                    <span data-i18n="s4_title_2" class="grad-04 block mt-1">แตะไม่กี่ครั้ง</span>
+                </h2>
+
+                <!-- Description -->
+                <p data-i18n="s4_desc" class="stagger-item delay-3 text-zinc-600 text-sm sm:text-base leading-relaxed max-w-sm mb-6">
+                    ลงทะเบียนนัดเดียว ถ้าเต็มสามารถรอเข้าคิว (waitlist) ชำระค่าสมัครออนไลน์ และเช็คอินหน้างานด้วย QR code
+                </p>
+
+                <!-- Bottom Visual: QR Ticket Card + Floating "คิวรอ ลำดับ 3" Pill -->
+                <div class="stagger-item delay-4 relative w-72 sm:w-80 pt-4">
+                    <!-- Floating Waitlist Pill Badge -->
+                    <div class="animate-float absolute -top-1 -right-2 z-20 px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold text-white shadow-xl"
+                         style="--rot: 6deg; background: linear-gradient(90deg, #ea580c 0%, #3d7a6e 100%);">
+                        <span data-i18n="s4_waitlist">คิวรอ ลำดับ 3</span>
+                    </div>
+
+                    <!-- Dark Ticket Pass Card -->
+                    <div onclick="triggerQRScan(this)" title="คลิกเพื่อจำลองการสแกน QR เช็คอิน"
+                         class="relative w-64 sm:w-68 mx-auto rounded-3xl bg-white border border-zinc-200 p-5 shadow-2xl transform -rotate-3 hover:rotate-0 transition-all duration-500 cursor-pointer overflow-hidden">
+
+                        <p data-i18n="s4_ticket_head" class="text-xs font-semibold tracking-widest text-[#f97316] mb-3.5">
+                            บัตรเข้างาน
+                        </p>
+
+                        <!-- Stylized QR Code Pattern -->
+                        <div class="relative w-28 h-28 mx-auto mb-4 grid grid-cols-2 gap-3 p-1">
+                            <!-- Top-Left Finder Square -->
+                            <div class="border-[5px] border-zinc-800 rounded-lg"></div>
+                            <!-- Top-Right Finder Square -->
+                            <div class="border-[5px] border-zinc-800 rounded-lg"></div>
+                            <!-- Bottom-Left Finder Square -->
+                            <div class="border-[5px] border-zinc-800 rounded-lg"></div>
+                            <!-- Bottom-Right Data Modules -->
+                            <div class="grid grid-cols-2 gap-1.5 p-0.5">
+                                <div class="bg-zinc-700 rounded-sm"></div>
+                                <div class="bg-zinc-700 rounded-sm"></div>
+                                <div class="bg-zinc-700 rounded-sm"></div>
+                                <div class="bg-zinc-700 rounded-sm"></div>
+                            </div>
+                            <!-- Scanline Effect Bar -->
+                            <div id="qrScanBar" class="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-[#f97316] to-transparent opacity-0 transition-all duration-700"></div>
+                        </div>
+
+                        <!-- Perforated Ticket Divider with Side Cutouts -->
+                        <div class="relative my-3 py-1">
+                            <div class="ticket-cutout-left"></div>
+                            <div class="border-t-2 border-dashed border-zinc-300"></div>
+                            <div class="ticket-cutout-right"></div>
+                        </div>
+
+                        <!-- Ticket Event Footer -->
+                        <p data-i18n="s4_ticket_foot" class="text-[11px] sm:text-xs text-zinc-500 leading-snug">
+                            งานสาธิตโรงเรียน STEM 2026 · หอประชุม 3
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SLIDE 05: ตารางกิจกรรม (Calendar & Map Schedule)
+             ========================================== -->
+        <section class="slide-panel" data-slide="5">
+            <div class="w-full max-w-md mx-auto flex flex-col items-center text-center">
+                <!-- Step Number -->
+                <span class="stagger-item delay-1 font-mono-num text-sm font-bold tracking-widest text-[#f97316] mb-1.5">05</span>
+
+                <!-- Category Label -->
+                <div class="stagger-item delay-1 text-xs sm:text-sm font-medium tracking-[0.22em] text-[#4f7df3] mb-4 flex items-center">
+                    <span class="typewriter-text" data-i18n="s5_cat">ตารางกิจกรรม</span>
+                    <span class="block-cursor bg-[#4f7df3]"></span>
+                </div>
+
+                <!-- Terracotta Circle Badge -->
+                <div class="stagger-item delay-2 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#ea580c] shadow-[0_0_35px_rgba(234,88,12,0.35)] flex items-center justify-center mb-5">
+                    <svg class="w-7 h-7 text-orange-200/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+
+                <!-- Heading -->
+                <h2 class="stagger-item delay-2 text-2xl sm:text-4xl font-extrabold leading-tight mb-3">
+                    <span data-i18n="s5_title_1" class="block text-zinc-900">ตารางของคุณ บนแผนที่</span>
+                    <span data-i18n="s5_title_2" class="grad-05 block mt-1">ไม่พลาดแม้แต่เล่ห์</span>
+                </h2>
+
+                <!-- Description -->
+                <p data-i18n="s5_desc" class="stagger-item delay-3 text-zinc-600 text-sm sm:text-base leading-relaxed max-w-sm mb-7">
+                    ดูตารางกิจกรรมในปฏิทิน หาสถานที่จัดผ่านแผนที่ และติดตามประกาศงาน/ฝึกงานที่เปิดรับใหม่
+                </p>
+
+                <!-- Bottom Visual: Calendar Dot Grid + Location Pill -->
+                <div class="stagger-item delay-4 relative w-72 sm:w-80 flex flex-col items-center">
+                    <!-- Dark Calendar Card -->
+                    <div class="w-60 sm:w-64 rounded-3xl bg-white border border-zinc-200 p-6 shadow-2xl transform rotate-2 hover:rotate-0 transition-transform duration-500">
+                        <!-- 7 cols x 4 rows Dot Matrix -->
+                        <div id="calendarMatrix" class="grid grid-cols-7 gap-3 place-items-center">
+                            <!-- Row 1 -->
+                            <span class="w-3.5 h-3.5 rounded-full bg-zinc-200"></span>
+                            <span class="w-3.5 h-3.5 rounded-full bg-zinc-200"></span>
+                            <span class="w-3.5 h-3.5 rounded-full bg-zinc-200"></span>
+                            <span class="w-3.5 h-3.5 rounded-full bg-zinc-200"></span>
+                            <span class="w-3.5 h-3.5 rounded-full bg-zinc-200"></span>
+                            <span class="w-3.5 h-3.5 rounded-full bg-zinc-200"></span>
+                            <span class="w-3.5 h-3.5 rounded-full bg-zinc-200"></span>
+                            <!-- Row 2 (Col 3 highlighted orange) -->
+                            <span class="w-3.5 h-3.5 rounded-full bg-zinc-200"></span>
+                            <span class="w-3.5 h-3.5 rounded-full bg-zinc-200"></span>
+                            <span onclick="selectCalendarEvent(0)" class="w-3.5 h-3.5 rounded-full bg-[#ea580c] cursor-pointer hover:scale-125 transition-transform"></span>
+                            <span class="w-3.5 h-3.5 rounded-full bg-zinc-200"></span>
+                            <span class="w-3.5 h-3.5 rounded-full bg-zinc-200"></span>
+                            <span class="w-3.5 h-3.5 rounded-full bg-zinc-200"></span>
+                            <span class="w-3.5 h-3.5 rounded-full bg-zinc-200"></span>
+                            <!-- Row 3 (Col 3 highlighted glowing blue) -->
+                            <span class="w-3.5 h-3.5 rounded-full bg-zinc-200"></span>
+                            <span class="w-3.5 h-3.5 rounded-full bg-zinc-200"></span>
+                            <span onclick="selectCalendarEvent(1)" class="relative flex items-center justify-center w-4 h-4 rounded-full bg-[#365cf5] ring-4 ring-[#365cf5]/30 cursor-pointer hover:scale-125 transition-transform">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-50"></span>
+                            </span>
+                            <span class="w-3.5 h-3.5 rounded-full bg-zinc-200"></span>
+                            <span class="w-3.5 h-3.5 rounded-full bg-zinc-200"></span>
+                            <span class="w-3.5 h-3.5 rounded-full bg-zinc-200"></span>
+                            <span class="w-3.5 h-3.5 rounded-full bg-zinc-200"></span>
+                            <!-- Row 4 (Col 3 highlighted orange) -->
+                            <span class="w-3.5 h-3.5 rounded-full bg-zinc-200"></span>
+                            <span class="w-3.5 h-3.5 rounded-full bg-zinc-200"></span>
+                            <span onclick="selectCalendarEvent(2)" class="w-3.5 h-3.5 rounded-full bg-[#ea580c] cursor-pointer hover:scale-125 transition-transform"></span>
+                            <span class="w-3.5 h-3.5 rounded-full bg-zinc-200"></span>
+                            <span class="w-3.5 h-3.5 rounded-full bg-zinc-200"></span>
+                            <span class="w-3.5 h-3.5 rounded-full bg-zinc-200"></span>
+                            <span class="w-3.5 h-3.5 rounded-full bg-zinc-200"></span>
+                        </div>
+                    </div>
+
+                    <!-- Floating Location Pin Badge at Bottom Right -->
+                    <div id="locationPinBadge" class="animate-float mt-3 self-end mr-2 px-4 py-2 rounded-full bg-white border border-zinc-200 shadow-xl flex items-center gap-2"
+                         style="--rot: -2deg;">
+                        <svg class="w-4 h-4 text-[#f97316] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        <span id="locationPinText" data-i18n="s5_loc" class="text-xs font-semibold text-[#f97316]">
+                            หอประชุม 3 · อาคาร B
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SLIDE 06: ความคืบหน้า (Graduation Activity Progress)
+             ========================================== -->
+        <section class="slide-panel" data-slide="6">
+            <div class="w-full max-w-md mx-auto flex flex-col items-center text-center">
+                <!-- Step Number -->
+                <span class="stagger-item delay-1 font-mono-num text-sm font-bold tracking-widest text-[#f97316] mb-1.5">06</span>
+
+                <!-- Category Label -->
+                <div class="stagger-item delay-1 text-xs sm:text-sm font-medium tracking-[0.22em] text-[#7c5dfa] mb-4 flex items-center">
+                    <span class="typewriter-text" data-i18n="s6_cat">ความคืบหน้า</span>
+                    <span class="block-cursor bg-[#7c5dfa]"></span>
+                </div>
+
+                <!-- Terracotta Circle Badge -->
+                <div class="stagger-item delay-2 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#ea580c] shadow-[0_0_35px_rgba(234,88,12,0.35)] flex items-center justify-center mb-5">
+                    <svg class="w-7 h-7 text-orange-200/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                </div>
+
+                <!-- Heading -->
+                <h2 class="stagger-item delay-2 text-2xl sm:text-4xl font-extrabold leading-tight mb-3">
+                    <span data-i18n="s6_title_1" class="block text-zinc-900">สรุปกิจกรรมของคุณ</span>
+                    <span data-i18n="s6_title_2" class="grad-06 block mt-1">จนถึงวันจบการศึกษา</span>
+                </h2>
+
+                <!-- Description -->
+                <p data-i18n="s6_desc" class="stagger-item delay-3 text-zinc-600 text-sm sm:text-base leading-relaxed max-w-sm mb-6">
+                    ติดตามชั่วโมงกิจกรรมและความคืบหน้าจนถึงวันสำเร็จการศึกษา — ไม่มีกิจกรรมไหนหายหรือถูกสรุปพลาด
+                </p>
+
+                <!-- Bottom Visual: Bar Chart Card + Floating "46 ชั่วโมง · 82%" Pill -->
+                <div class="stagger-item delay-4 relative w-72 sm:w-80 pt-5">
+                    <!-- Floating Hours & Percentage Pill -->
+                    <div class="animate-float absolute -top-1 right-0 z-20 px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold text-white shadow-xl"
+                         style="--rot: 7deg; background: linear-gradient(90deg, #ea580c 0%, #5e2ced 100%);">
+                        <span id="hoursCounterText">46 ชั่วโมง · 82%</span>
+                    </div>
+
+                    <!-- Bar Chart Card -->
+                    <div onclick="randomizeChartBars()" title="คลิกเพื่อจำลองความคืบหน้าแต่ละชั้นปี"
+                         class="w-60 sm:w-64 h-44 mx-auto rounded-3xl bg-white border border-zinc-200 p-5 shadow-2xl transform -rotate-2 hover:rotate-0 transition-transform duration-500 flex items-end justify-between gap-3 cursor-pointer">
+                        <div class="chart-bar chart-bar-1 w-full bg-zinc-200 rounded-t-xl"></div>
+                        <div class="chart-bar chart-bar-2 w-full bg-zinc-200 rounded-t-xl"></div>
+                        <div class="chart-bar chart-bar-3 w-full bg-zinc-200 rounded-t-xl"></div>
+                        <div class="chart-bar chart-bar-4 w-full bg-zinc-200 rounded-t-xl"></div>
+                        <div class="chart-bar chart-bar-5 w-full rounded-t-xl shadow-[0_0_20px_rgba(147,51,234,0.35)]"
+                             style="background: linear-gradient(180deg, #f97316 0%, #8b42a8 55%, #5b21b6 100%);"></div>
+                    </div>
+
+                    <!-- CTA to Proceed Directly to Final Login Screen -->
+                    <button onclick="goToSlide(7)"
+                        class="mt-5 relative overflow-hidden shimmer-btn inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#f97316] to-[#6d28d9] text-white text-xs sm:text-sm font-bold shadow-lg shadow-orange-950/50 hover:scale-105 transition-transform">
+                        <span data-i18n="s6_cta_login">พร้อมแล้ว! เข้าสู่ระบบใช้งานเลย</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SLIDE 07: หน้าสุดท้าย — เข้าสู่ระบบทันที (Interactive Login Finale)
+             ========================================== -->
+                                <section class="slide-panel" data-slide="7">
+            <div class="w-full max-w-md mx-auto flex flex-col items-center text-center">
+                <div class="stagger-item delay-2 flex flex-col items-center">
+                    <!-- Heading above the phone (outside the device) -->
+                    <div class="mb-6 flex flex-col items-center gap-1.5">
+                        <div class="stagger-item delay-1 inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-500/10 border border-orange-500/30 text-[#f97316] text-xs font-bold">
+                            <span class="w-2 h-2 rounded-full bg-[#f97316] animate-ping"></span>
+                            <span data-i18n="s7_badge">เริ่มต้นใช้งานทันที · START NOW</span>
+                        </div>
+                        <h2 class="stagger-item delay-1 phone-headline text-2xl sm:text-4xl text-zinc-900">
+                            <span data-i18n="s7_title_1">เข้าสู่ระบบ UNI Activity</span>
+                        </h2>
+                        <p data-i18n="s7_title_2" class="stagger-item delay-2 grad-cover text-lg sm:text-xl font-bold">ทุกโอกาสพร้อมให้คุณเริ่มต้น</p>
+                    </div>
+
+                    <div class="animate-float relative w-52 sm:w-64" style="--rot: -2deg;">
+                        <!-- Minimal phone mockup (line-art SVG) -->
+                        <svg viewBox="0 0 220 460" class="relative w-full" role="img" aria-label="โทรศัพท์แสดงปุ่มเข้าสู่ระบบ">
+                            <!-- Body -->
+                            <rect x="8" y="8" width="204" height="444" rx="40" fill="#17181c" stroke="#2e313a" stroke-width="3"/>
+                            <!-- Screen -->
+                            <rect x="18" y="18" width="184" height="424" rx="31" fill="#101113"/>
+                            <!-- Dynamic island -->
+                            <rect x="88" y="34" width="44" height="14" rx="7" fill="#22242a"/>
+                            <!-- Side buttons -->
+                            <rect x="4" y="130" width="5" height="36" rx="2.5" fill="#2e313a"/>
+                            <rect x="211" y="150" width="5" height="70" rx="2.5" fill="#2e313a"/>
+                        </svg>
+
+                        <!-- Screen clip: iOS UI lives STRICTLY inside the screen -->
+                        <div class="absolute overflow-hidden" style="left:8.2%; right:8.2%; top:3.9%; bottom:3.9%; border-radius:24px;">
+                            <!-- iOS status bar -->
+                            <div class="absolute left-0 right-0 top-[7%] px-[9%] flex items-center justify-between pointer-events-none">
+                                <span class="font-mono-num text-[9px] sm:text-[10px] text-zinc-500 tracking-wider">9:41</span>
+                                <span class="flex items-center gap-[3px]" aria-hidden="true">
+                                    <span class="flex items-end gap-[1.5px]">
+                                        <span class="w-[2px] h-[4px] bg-zinc-500 rounded-sm"></span>
+                                        <span class="w-[2px] h-[6px] bg-zinc-500 rounded-sm"></span>
+                                        <span class="w-[2px] h-[8px] bg-zinc-500 rounded-sm"></span>
+                                    </span>
+                                    <svg class="text-zinc-500" style="width:9px;height:9px;" fill="currentColor" viewBox="0 0 24 24"><path d="M12 18.5c.9 0 1.6-.7 1.6-1.6s-.7-1.6-1.6-1.6-1.6.7-1.6 1.6.7 1.6 1.6 1.6zM4.9 11.4l2.1 2.1c2.8-2.8 7.2-2.8 10 0l2.1-2.1c-3.9-3.9-10.3-3.9-14.2 0z"/></svg>
+                                    <span class="inline-block w-[15px] h-[7px] border border-zinc-500 rounded-[2px] p-[1px]"><span class="block h-full w-[70%] bg-zinc-500 rounded-[1px]"></span></span>
+                                </span>
+                            </div>
+
+                            <!-- App headline (big display font) -->
+                            <div class="absolute left-0 right-0 top-[22%] text-center pointer-events-none px-3">
+                                <span data-i18n="s7_screen_head" class="phone-headline text-[1.5rem] sm:text-[2.1rem] text-zinc-100">เข้าสู่ระบบเลยตอนนี้</span>
+                            </div>
+
+                            <!-- Real login button inside the screen -->
+                            <div class="absolute left-0 right-0 top-[58%] flex justify-center pointer-events-none">
+                                <a href="/login" class="login-cta-min pointer-events-auto" role="button" aria-label="เข้าสู่ระบบ UNI Activity">
+                                    <span data-i18n="nav_login" class="leading-tight text-center">เข้าสู่ระบบ</span>
+                                </a>
+                            </div>
+
+                            <!-- iOS home indicator -->
+                            <div class="absolute left-1/2 -translate-x-1/2 bottom-[3%] w-[36%] h-[3px] rounded-full bg-zinc-600 pointer-events-none"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 bg-white/85 backdrop-blur-md border border-zinc-200 rounded-full px-3 py-1.5 shadow-2xl">
+        <button onclick="prevSlide()" class="p-2 rounded-full hover:bg-zinc-200 text-zinc-600 transition-colors" aria-label="Previous slide">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 15l7-7 7 7"/>
+            </svg>
+        </button>
+        <span id="footerHint" class="hidden" aria-hidden="true"></span>
+        <button onclick="nextSlide()" class="p-2 rounded-full bg-[#ea580c] hover:bg-[#f97316] text-white transition-colors" aria-label="Next slide">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 9l-7 7-7-7"/>
+            </svg>
+        </button>
+    </footer>
+
+    <script>
+        // Bilingual Content Dictionary (Supports the TH / EN toggle mentioned in Slide 01)
+        const i18nData = {
+            th: {
+                nav_login: "เข้าสู่ระบบ",
+                cover_sub: "รู้จักแอปของเรา",
+                cover_tag_1: "ทุกกิจกรรม ทุกโอกาส",
+                cover_tag_2: "ในที่เดียว",
+                cta_start: "เลื่อนดูทีละขั้นตอน",
+                cta_skip_login: "ข้ามไปเข้าสู่ระบบ →",
+                s1_cat: "แนะนำระบบ",
+                s1_title_1: "ยินดีต้อนรับสู่ UNI Activity",
+                s1_title_2: "ที่เดียว",
+                s1_desc: "ศูนย์รวมกิจกรรม งาน และฝึกงานของมหาวิทยาลัย รองรับทั้งภาษาไทยและอังกฤษ เปลี่ยนภาษาได้จากปุ่ม TH / EN มุมขวาบน",
+                s1_badge: "เปิดรับ",
+                s2_cat: "การเข้าสู่ระบบ",
+                s2_title_1: "เข้าสู่ระบบด้วยรหัสนักศึกษา",
+                s2_title_2: "ไม่ต้องจำรหัสผ่าน",
+                s2_desc: "นักศึกษากรอกรหัสนักศึกษา แล้วรับรหัส OTP ทางอีเมล — อาจารย์/เจ้าหน้าที่จัดกิจกรรมเข้าด้วยอีเมลและรหัสผ่าน",
+                s2_otp_label: "รหัสยืนยัน",
+                s3_cat: "การค้นหา",
+                s3_title_1: "ค้นหากิจกรรมที่ใช่",
+                s3_title_2: "ในไม่กี่วินาที",
+                s3_desc: "ค้นหาและกรองกิจกรรมตามหมวดหมู่ คณะ ชั้นปี และสถานะเปิด/ปิดรับ — บุ๊กมาร์กกิจกรรมที่สนใจไว้กลับมาดูภายหลัง",
+                s3_pill_1: "กิจกรรม",
+                s3_pill_2: "งาน/<br>ฝึกงาน",
+                s3_pill_3: "คณะ",
+                s3_pill_4: "เปิด<br>รับ",
+                s3_quota: "รับ 20<br>คน",
+                s4_cat: "การเข้าร่วม",
+                s4_title_1: "สมัคร รอเข้าคิว และเช็คอิน",
+                s4_title_2: "แตะไม่กี่ครั้ง",
+                s4_desc: "ลงทะเบียนนัดเดียว ถ้าเต็มสามารถรอเข้าคิว (waitlist) ชำระค่าสมัครออนไลน์ และเช็คอินหน้างานด้วย QR code",
+                s4_waitlist: "คิวรอ ลำดับ 3",
+                s4_ticket_head: "บัตรเข้างาน",
+                s4_ticket_foot: "งานสาธิตโรงเรียน STEM 2026 · หอประชุม 3",
+                s5_cat: "ตารางกิจกรรม",
+                s5_title_1: "ตารางของคุณ บนแผนที่",
+                s5_title_2: "ไม่พลาดแม้แต่เล่ห์",
+                s5_desc: "ดูตารางกิจกรรมในปฏิทิน หาสถานที่จัดผ่านแผนที่ และติดตามประกาศงาน/ฝึกงานที่เปิดรับใหม่",
+                s5_loc: "หอประชุม 3 · อาคาร B",
+                s6_cat: "ความคืบหน้า",
+                s6_title_1: "สรุปกิจกรรมของคุณ",
+                s6_title_2: "จนถึงวันจบการศึกษา",
+                s6_desc: "ติดตามชั่วโมงกิจกรรมและความคืบหน้าจนถึงวันสำเร็จการศึกษา — ไม่มีกิจกรรมไหนหายหรือถูกสรุปพลาด",
+                s6_cta_login: "พร้อมแล้ว! เข้าสู่ระบบใช้งานเลย",
+                s7_badge: "เริ่มต้นใช้งานทันที · START NOW",
+                s7_title_1: "เข้าสู่ระบบ UNI Activity",
+                s7_screen_head: "เข้าสู่ระบบเลยตอนนี้",
+                s7_title_2: "ทุกโอกาสพร้อมให้คุณเริ่มต้น",
+                s7_tab_student: "🎓 นักศึกษา (OTP)",
+                s7_tab_staff: "💼 อาจารย์ / เจ้าหน้าที่",
+                s7_label_stdid: "รหัสนักศึกษา (Student ID)",
+                s7_otp_hint: "ระบบจะส่งรหัสยืนยัน OTP 6 หลักไปยังอีเมลมหาวิทยาลัยของคุณโดยไม่ต้องใช้รหัสผ่าน",
+                s7_btn_send_otp: "รับรหัสยืนยัน OTP ทางอีเมล",
+                s7_back: "เปลี่ยนรหัส",
+                s7_enter_otp: "กรอกรหัสยืนยัน OTP 6 หลัก (รหัสจำลอง: 582914)",
+                s7_btn_verify: "ยืนยันรหัส OTP และเข้าสู่ระบบ",
+                s7_label_email: "อีเมลมหาวิทยาลัย",
+                s7_label_pass: "รหัสผ่าน",
+                s7_btn_staff_login: "เข้าสู่ระบบสำหรับผู้จัดกิจกรรม",
+                s7_success_title: "เข้าสู่ระบบสำเร็จ!"
+            },
+            en: {
+                nav_login: "Sign In",
+                cover_sub: "DISCOVER OUR APP",
+                cover_tag_1: "Every Activity, Every Opportunity",
+                cover_tag_2: "in One Place",
+                cta_start: "Explore step by step",
+                cta_skip_login: "Skip to Sign In →",
+                s1_cat: "OVERVIEW",
+                s1_title_1: "Welcome to UNI Activity",
+                s1_title_2: "All-in-One",
+                s1_desc: "Your university hub for campus events, part-time jobs, and internships. Supports both Thai and English via the TH / EN toggle at the top right.",
+                s1_badge: "Open",
+                s2_cat: "AUTHENTICATION",
+                s2_title_1: "Sign in with Student ID",
+                s2_title_2: "Passwordless OTP",
+                s2_desc: "Students simply enter their Student ID to receive an email OTP — Faculty and organizers sign in with email and password.",
+                s2_otp_label: "Verification Code",
+                s3_cat: "DISCOVERY",
+                s3_title_1: "Find the Right Activity",
+                s3_title_2: "In Seconds",
+                s3_desc: "Search and filter events by category, faculty, year, and open status — bookmark favorites to revisit anytime.",
+                s3_pill_1: "Events",
+                s3_pill_2: "Jobs/<br>Intern",
+                s3_pill_3: "Faculty",
+                s3_pill_4: "Open<br>Now",
+                s3_quota: "20<br>Seats",
+                s4_cat: "PARTICIPATION",
+                s4_title_1: "Apply, Waitlist & Check-in",
+                s4_title_2: "In a Few Taps",
+                s4_desc: "One-tap registration, automatic waitlist queue when full, online fee payment, and instant venue check-in via QR code.",
+                s4_waitlist: "Waitlist #3",
+                s4_ticket_head: "ENTRY PASS",
+                s4_ticket_foot: "STEM School Showcase 2026 · Hall 3",
+                s5_cat: "SCHEDULE & MAP",
+                s5_title_1: "Your Schedule on the Map",
+                s5_title_2: "Never Miss a Beat",
+                s5_desc: "View your activity timeline on the calendar, locate venues on the interactive map, and track newly opened internships.",
+                s5_loc: "Auditorium 3 · Building B",
+                s6_cat: "PROGRESSION",
+                s6_title_1: "Your Activity Summary",
+                s6_title_2: "Until Graduation",
+                s6_desc: "Track your accumulated activity hours and graduation milestones — no activity record is ever lost or miscounted.",
+                s6_cta_login: "Ready! Sign In Now",
+                s7_badge: "GET STARTED · SIGN IN NOW",
+                s7_title_1: "Sign in to UNI Activity",
+                s7_screen_head: "Sign In Now",
+                s7_title_2: "Every Opportunity Awaits You",
+                s7_tab_student: "🎓 Student (OTP)",
+                s7_tab_staff: "💼 Faculty / Staff",
+                s7_label_stdid: "Student ID",
+                s7_otp_hint: "We will send a 6-digit passwordless OTP code straight to your university email.",
+                s7_btn_send_otp: "Get OTP Verification Code",
+                s7_back: "Change ID",
+                s7_enter_otp: "Enter 6-digit OTP code (Demo code: 582914)",
+                s7_btn_verify: "Verify OTP & Sign In",
+                s7_label_email: "University Email",
+                s7_label_pass: "Password",
+                s7_btn_staff_login: "Sign In as Organizer",
+                s7_success_title: "Signed In Successfully!"
+            }
+        };
+
+        // Sound effect engine (whoosh chime ตอนเปลี่ยนสไลด์ — Web Audio API, ไม่ใช้ไฟล์ภายนอก)
+
+        let currentSlide = 0;
+        const totalSlides = 8; // Slide 0 (Cover) + Slides 1..6 + Slide 7 (Login Finale)
+        let currentLang = 'th';
+        let isAnimating = false;
+        let searchTypewriterInterval = null;
+        let audioCtx = null;
+
+        const slides = document.querySelectorAll('.slide-panel');
+        const navDotsContainer = document.getElementById('navDots');
+        const orangeScrollThumb = document.getElementById('orangeScrollThumb');
+        const slideCounterBadge = document.getElementById('slideCounterBadge');
+        const ambientOrbCenter = document.getElementById('ambientOrbCenter');
+
+        // Thai-aware splitting: สระลอย/วรรณยุกต์เกาะกับตัวหลัก (ไม่พิมพ์หลุดเป็นเต่งเดี่ยว)
+        const THAI_CM = /[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E]/;
+        function clusters(str) {
+            var out = [], i = 0;
+            while (i < str.length) {
+                var ch = str[i]; i++;
+                while (i < str.length && THAI_CM.test(str[i])) { ch += str[i]; i++; }
+                out.push(ch);
+            }
+            return out;
+        }
+
+        // Ambient glow palette per slide (0 to 7)
+        const slideGlows = [
+            "radial-gradient(circle, rgba(249,115,22,0.14) 0%, rgba(99,102,241,0.05) 55%, rgba(255,255,255,0) 75%)",
+            "radial-gradient(circle, rgba(234,88,12,0.14) 0%, rgba(59,130,246,0.05) 55%, rgba(255,255,255,0) 75%)",
+            "radial-gradient(circle, rgba(249,115,22,0.15) 0%, rgba(139,92,246,0.06) 55%, rgba(255,255,255,0) 75%)",
+            "radial-gradient(circle, rgba(234,88,12,0.13) 0%, rgba(78,168,133,0.06) 55%, rgba(255,255,255,0) 75%)",
+            "radial-gradient(circle, rgba(234,88,12,0.14) 0%, rgba(61,122,110,0.06) 55%, rgba(255,255,255,0) 75%)",
+            "radial-gradient(circle, rgba(234,88,12,0.13) 0%, rgba(54,92,245,0.07) 55%, rgba(255,255,255,0) 75%)",
+            "radial-gradient(circle, rgba(234,88,12,0.14) 0%, rgba(124,93,250,0.08) 55%, rgba(255,255,255,0) 75%)",
+            "radial-gradient(circle, rgba(249,115,22,0.18) 0%, rgba(99,102,241,0.10) 55%, rgba(255,255,255,0) 75%)"
+        ];
+
+        function initNavDots() {
+            navDotsContainer.innerHTML = '';
+            for (let i = 0; i < totalSlides; i++) {
+                const btn = document.createElement('button');
+                btn.className = `w-2 h-2 rounded-full transition-all duration-300 ${i === currentSlide ? 'bg-[#f97316] h-5' : 'bg-zinc-300 hover:bg-zinc-500'}`;
+                btn.title = i === 0 ? 'Cover' : (i === 7 ? 'Login' : `0${i}`);
+                btn.onclick = () => goToSlide(i);
+                navDotsContainer.appendChild(btn);
+            }
+        }
+
+        function updateChrome() {
+            // Update dots
+            const dots = navDotsContainer.children;
+            for (let i = 0; i < dots.length; i++) {
+                dots[i].className = `w-2 rounded-full transition-all duration-300 ${i === currentSlide ? 'bg-[#f97316] h-5 shadow-[0_0_8px_#f97316]' : 'bg-zinc-300 hover:bg-zinc-500 h-2'}`;
+            }
+
+            // Update right-edge orange scroll thumb
+            const thumbHeightPct = 100 / totalSlides;
+            const translatePct = currentSlide * 100;
+            orangeScrollThumb.style.height = `${thumbHeightPct}%`;
+            orangeScrollThumb.style.transform = `translateY(${translatePct}%)`;
+
+            // Update header badge
+            if (currentSlide === 0) {
+                slideCounterBadge.textContent = 'Cover';
+            } else if (currentSlide === 7) {
+                slideCounterBadge.textContent = currentLang === 'th' ? 'เข้าสู่ระบบ' : 'Login';
+            } else {
+                slideCounterBadge.textContent = `0${currentSlide} / 06`;
+            }
+
+            // Update ambient glow
+            ambientOrbCenter.style.background = slideGlows[currentSlide];
+        }
+
+        function goToSlide(targetIndex) {
+            if (isAnimating || targetIndex === currentSlide || targetIndex < 0 || targetIndex >= totalSlides) return;
+            isAnimating = true;
+
+            currentSlide = targetIndex;
+            playSlideWhooshSFX(currentSlide);
+
+            slides.forEach((panel, idx) => {
+                panel.classList.remove('active', 'prev', 'next');
+                if (idx === currentSlide) {
+                    panel.classList.add('active');
+                } else if (idx < currentSlide) {
+                    panel.classList.add('prev');
+                } else {
+                    panel.classList.add('next');
+                }
+            });
+
+            updateChrome();
+            runSlideSpecificAnimations(currentSlide);
+
+            setTimeout(() => {
+                isAnimating = false;
+            }, 680);
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                goToSlide(currentSlide + 1);
+            } else {
+                // สไลด์สุดท้ายแล้วเลื่อนอีก → ไปหน้าแรกจริงของแอปที่แสดงกิจกรรมต่างๆ
+                window.location.href = '/';
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                goToSlide(currentSlide - 1);
+            }
+        }
+
+        function runSlideSpecificAnimations(index) {
+            // Thai-aware typewriter effect on the active slide's category tag
+            const activePanel = slides[index];
+            const catEl = activePanel.querySelector('.typewriter-text');
+            if (catEl) {
+                const fullText = catEl.getAttribute('data-fulltext') || catEl.textContent;
+                catEl.setAttribute('data-fulltext', fullText);
+                catEl.textContent = '';
+                const u = clusters(fullText);
+                let chi = 0;
+                const typeInterval = setInterval(() => {
+                    chi++;
+                    catEl.textContent = u.slice(0, chi).join('');
+                    if (chi >= u.length) clearInterval(typeInterval);
+                }, 48);
+            }
+
+            // Slide 03: Live search bar typing simulation (Thai-aware)
+            if (searchTypewriterInterval) clearInterval(searchTypewriterInterval);
+            if (index === 3) {
+                const searchSamples = currentLang === 'th'
+                    ? ["จิตอาสา มหาวิทยาลัย", "ฝึกงาน สายเทคโนโลยี", "ชมรมดนตรีสากล"]
+                    : ["Campus Volunteer", "Tech Internship 2026", "Music Club Audition"];
+                const phrase = searchSamples[0];
+                const searchEl = document.getElementById('liveSearchText');
+                searchEl.textContent = '';
+                const su = clusters(phrase);
+                let c = 0;
+                searchTypewriterInterval = setInterval(() => {
+                    c++;
+                    searchEl.textContent = su.slice(0, c).join('');
+                    if (c >= su.length) clearInterval(searchTypewriterInterval);
+                }, 70);
+            }
+
+            // Slide 06: Count up 46 hours & 82%
+            if (index === 6) {
+                animateProgressCounter(46, 82);
+            }
+
+        }
+
+        // Sound effect engine (whoosh chime ตอนเปลี่ยนสไลด์ — Web Audio API, ไม่ใช้ไฟล์ภายนอก)
+        function ensureAudioContext() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) audioCtx = new AudioContextClass();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        // Subtle futuristic whoosh + chime on slide change
+        function playSlideWhooshSFX(slideIdx) {
+            if (!audioCtx) return;
+            try {
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                const baseFreq = 220 + slideIdx * 35;
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(baseFreq, now);
+                osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.45, now + 0.22);
+
+                gain.gain.setValueAtTime(0.001, now);
+                gain.gain.linearRampToValueAtTime(0.035, now + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } catch (e) {}
+        }
+
+
+        // Slide 07 ใช้ปุ่มลิงก์ตรง /login — ฟังก์ชัน login จำลองเดิมถูกถอดออก
+
+        function animateProgressCounter(targetHours, targetPct) {
+            const el = document.getElementById('hoursCounterText');
+            let step = 0;
+            const totalSteps = 28;
+            const timer = setInterval(() => {
+                step++;
+                const curH = Math.round((targetHours * step) / totalSteps);
+                const curP = Math.round((targetPct * step) / totalSteps);
+                el.textContent = currentLang === 'th'
+                    ? `${curH} ชั่วโมง · ${curP}%`
+                    : `${curH} Hours · ${curP}%`;
+                if (step >= totalSteps) clearInterval(timer);
+            }, 30);
+        }
+
+        // Slide 01: Interactive Card Stack Cycling
+        let stackOrder = 0;
+        function cycleCardStack() {
+            stackOrder = (stackOrder + 1) % 3;
+            const c1 = document.getElementById('fanCard1');
+            const c2 = document.getElementById('fanCard2');
+            const c3 = document.getElementById('fanCard3');
+            const transforms = [
+                "translate(-18px, -8px) rotate(-8deg) scale(0.92)",
+                "translate(22px, 2px) rotate(6deg) scale(0.96)",
+                "translate(-6px, 12px) rotate(1.5deg) scale(1)"
+            ];
+            c1.style.transform = transforms[(0 + stackOrder) % 3];
+            c2.style.transform = transforms[(1 + stackOrder) % 3];
+            c3.style.transform = transforms[(2 + stackOrder) % 3];
+        }
+
+        // Slide 02: Interactive OTP Regenerator
+        function regenerateOTP() {
+            const digits = document.querySelectorAll('.otp-digit');
+            digits.forEach((d, idx) => {
+                d.style.transform = 'translateY(10px) scale(0.6)';
+                d.style.opacity = '0';
+                setTimeout(() => {
+                    d.textContent = Math.floor(Math.random() * 10);
+                    d.style.transform = 'translateY(0) scale(1)';
+                    d.style.opacity = '1';
+                }, 120 + idx * 70);
+            });
+        }
+
+        // Slide 03: Filter Pill Selection
+        function selectSearchFilter(idx) {
+            const thumb = document.getElementById('searchThumb');
+            const fill = document.getElementById('searchBarFill');
+            const quota = document.getElementById('searchQuotaText');
+            const searchEl = document.getElementById('liveSearchText');
+
+            const configs = [
+                { grad: "linear-gradient(135deg, #ea580c 0%, #468778 100%)", width: "75%", thQ: "รับ 20<br>คน", enQ: "20<br>Seats", thTxt: "ค่ายอาสาพัฒนาชนบท", enTxt: "Rural Volunteer Camp" },
+                { grad: "linear-gradient(135deg, #366e68 0%, #2956b2 100%)", width: "55%", thQ: "รับ 8<br>อัตรา", enQ: "8<br>Roles", thTxt: "UX/UI Designer Intern", enTxt: "UX/UI Designer Intern" },
+                { grad: "linear-gradient(135deg, #2956b2 0%, #7c5dfa 100%)", width: "88%", thQ: "รับ 50<br>คน", enQ: "50<br>Seats", thTxt: "คณะวิศวกรรมศาสตร์", enTxt: "Faculty of Engineering" },
+                { grad: "linear-gradient(135deg, #3b8764 0%, #ea580c 100%)", width: "64%", thQ: "รับ 35<br>คน", enQ: "35<br>Seats", thTxt: "เปิดรับสมัครวันนี้", enTxt: "Open for Registration" }
+            ];
+            const cfg = configs[idx];
+            thumb.style.background = cfg.grad;
+            fill.style.width = cfg.width;
+            quota.innerHTML = currentLang === 'th' ? cfg.thQ : cfg.enQ;
+            searchEl.textContent = currentLang === 'th' ? cfg.thTxt : cfg.enTxt;
+        }
+
+        // Slide 04: QR Check-in Laser Animation
+        function triggerQRScan(card) {
+            const bar = document.getElementById('qrScanBar');
+            bar.style.opacity = '1';
+            bar.style.transform = 'translateY(105px)';
+            setTimeout(() => {
+                bar.style.opacity = '0';
+                bar.style.transform = 'translateY(0px)';
+            }, 700);
+        }
+
+        // Slide 05: Calendar Dot Click
+        function selectCalendarEvent(idx) {
+            const locText = document.getElementById('locationPinText');
+            const thLocs = ["หอประชุม 1 · อาคาร A", "หอประชุม 3 · อาคาร B", "ลานกิจกรรมกลาง · อาคาร C"];
+            const enLocs = ["Main Hall 1 · Building A", "Auditorium 3 · Building B", "Central Plaza · Building C"];
+            locText.textContent = currentLang === 'th' ? thLocs[idx] : enLocs[idx];
+        }
+
+        // Slide 06: Interactive Bar Chart Randomizer
+        function randomizeChartBars() {
+            const panel = slides[6];
+            const h4 = Math.floor(45 + Math.random() * 25);
+            const h5 = Math.floor(72 + Math.random() * 22);
+            panel.style.setProperty('--h4', `${h4}%`);
+            panel.style.setProperty('--h5', `${h5}%`);
+            const hours = Math.round((h5 / 100) * 56);
+            animateProgressCounter(hours, h5);
+        }
+
+        function pulseBadge(el) {
+            el.classList.add('scale-110');
+            setTimeout(() => el.classList.remove('scale-110'), 250);
+        }
+
+        function setTransitionMode(mode) {
+            document.body.setAttribute('data-mode', mode);
+            ['parallax', 'cube', 'morph'].forEach(m => {
+                const btn = document.getElementById(`mode-${m}`);
+                if (btn) {
+                    btn.className = m === mode
+                        ? "px-2.5 py-1 rounded-full bg-[#ea580c] text-white font-medium transition-all"
+                        : "px-2.5 py-1 rounded-full text-zinc-500 hover:text-zinc-900 transition-all";
+                }
+            });
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'th' ? 'en' : 'th';
+            const dict = i18nData[currentLang];
+
+            // Toggle button active pill
+            document.getElementById('langTH').className = currentLang === 'th'
+                ? "px-2.5 py-1 rounded-full bg-[#ea580c] text-white transition-all"
+                : "px-2.5 py-1 rounded-full text-zinc-500 transition-all";
+            document.getElementById('langEN').className = currentLang === 'en'
+                ? "px-2.5 py-1 rounded-full bg-[#ea580c] text-white transition-all"
+                : "px-2.5 py-1 rounded-full text-zinc-500 transition-all";
+
+            // Update all data-i18n elements
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key]) {
+                    el.innerHTML = dict[key];
+                    if (el.classList.contains('typewriter-text')) {
+                        el.setAttribute('data-fulltext', dict[key]);
+                    }
+                }
+            });
+
+            if (currentSlide === 6) animateProgressCounter(46, 82);
+            updateChrome();
+        }
+
+        // Mouse Wheel Navigation
+        let wheelTimeout = null;
+        window.addEventListener('wheel', (e) => {
+            if (wheelTimeout) return;
+            if (Math.abs(e.deltaY) > 22) {
+                if (e.deltaY > 0) nextSlide();
+                else prevSlide();
+                wheelTimeout = setTimeout(() => { wheelTimeout = null; }, 750);
+            }
+        }, { passive: true });
+
+        // Touch Swipe Up / Down Navigation
+        let touchStartY = 0;
+        let touchStartX = 0;
+        window.addEventListener('touchstart', (e) => {
+            touchStartY = e.changedTouches[0].screenY;
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        window.addEventListener('touchend', (e) => {
+            const deltaY = touchStartY - e.changedTouches[0].screenY;
+            const deltaX = touchStartX - e.changedTouches[0].screenX;
+            if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 40) {
+                if (deltaY > 0) nextSlide();
+                else prevSlide();
+            } else if (Math.abs(deltaX) > 50) {
+                if (deltaX > 0) nextSlide();
+                else prevSlide();
+            }
+        }, { passive: true });
+
+        // Keyboard Arrow Navigation
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'PageUp') {
+                e.preventDefault();
+                prevSlide();
+            }
+        });
+
+        // Initialize on load
+        window.onload = function () {
+            initNavDots();
+            // Set initial classes for slides 1..7 as next
+            slides.forEach((panel, idx) => {
+                if (idx > 0) panel.classList.add('next');
+            });
+            updateChrome();
+        };
+    </script>
+</body>
+</html>
