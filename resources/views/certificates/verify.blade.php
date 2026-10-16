@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ __('ตรวจสอบใบรับรองกิจกรรม | PKRU Activity Certificate Verification') }}</title>
+    <title>{{ __('ตรวจสอบใบรับรองกิจกรรม') }}| PKRU Activity Certificate Verification</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -73,13 +73,15 @@
             </div>
 
             <div class="content" style="text-align:center; padding:2rem 1.5rem;">
-                <p style="color:#64748b; font-size:0.9rem; margin-bottom:1rem;">{{ __('รหัส') }} <code>{{ $code }}</code> {{ __('ไม่ตรงกับบันทึกในฐานข้อมูลมหาวิทยาลัย กรุณาตรวจสอบรหัสหรือติดต่อกองพัฒนานักศึกษา') }}                </p>
+                <p style="color:#64748b; font-size:0.9rem; margin-bottom:1rem;">
+                    {{ __('รหัส') }}<code>{{ $code }}</code> {{ __('ไม่ตรงกับบันทึกในฐานข้อมูลมหาวิทยาลัย กรุณาตรวจสอบรหัสหรือติดต่อกองพัฒนานักศึกษา') }}
+                </p>
             </div>
         @endif
     </div>
 
     <div class="footer">
-        {{ __('ระบบตรวจสอบความถูกต้องใบรับรองกิจกรรมนักศึกษา') }} &copy; {{ date('Y') }} Phuket Rajabhat University
+        {{ __('ระบบตรวจสอบความถูกต้องใบรับรองกิจกรรมนักศึกษา') }}&copy; {{ date('Y') }} Phuket Rajabhat University
     </div>
 
 </body>

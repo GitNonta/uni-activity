@@ -1,6 +1,6 @@
 {{-- หน้าตั้งค่าเกณฑ์ชั่วโมงกิจกรรมตามโครงสร้างการสำเร็จการศึกษา (Admin) --}}
 @extends('layouts.admin')
-@section('title', __('กำหนดเกณฑ์ชั่วโมงกิจกรรมการสำเร็จการศึกษา'))
+@section('title', __('กำหนดเกณฑ์ชั่วโมงกิจกรรมการสำเร็จการศึกษา')
 
 @section('content')
 <div class="mb-4">
@@ -53,14 +53,14 @@
 
         {{-- ชื่อเกณฑ์ --}}
         <div class="mb-4">
-            <label class="block text-xs font-semibold text-dark mb-1">{{ __('ชื่อเกณฑ์การสำเร็จการศึกษา') }} <span class="text-danger">*</span></label>
+            <label class="block text-xs font-semibold text-dark mb-1">{{ __('ชื่อเกณฑ์การสำเร็จการศึกษา') }}<span class="text-danger">*</span></label>
             <input type="text" name="name" class="form-control" value="{{ old('name', $criteria->name ?? 'เกณฑ์กิจกรรมมาตรฐานมหาวิทยาลัย (ปริญญาตรี)') }}" required style="width:100%;border-radius:0.5rem;font-size:0.875rem;">
         </div>
 
         {{-- ชั่วโมงรวม --}}
         <div class="grid-2 mb-4" style="gap:1rem;">
             <div>
-                <label class="block text-xs font-semibold text-dark mb-1">{{ __('ชั่วโมงสะสมรวมขั้นต่ำ (ชม.)') }} <span class="text-danger">*</span></label>
+                <label class="block text-xs font-semibold text-dark mb-1">{{ __('ชั่วโมงสะสมรวมขั้นต่ำ (ชม.)') }}<span class="text-danger">*</span></label>
                 <input type="number" step="0.5" name="min_total_hours" class="form-control" value="{{ old('min_total_hours', $criteria->min_total_hours ?? 100) }}" required min="1" max="500" style="width:100%;border-radius:0.5rem;font-size:0.875rem;">
                 <span class="text-xs text-muted">{{ __('เกณฑ์มาตรฐาน: 100 ชั่วโมง') }}</span>
             </div>
@@ -81,7 +81,7 @@
         <div class="grid-3 mb-4" style="gap:1rem;">
             {{-- 1. บังคับมหาวิทยาลัย --}}
             <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:0.5rem;padding:1rem;">
-                <label class="block text-xs font-semibold text-dark mb-1">{{ __('1. กิจกรรมระดับมหาวิทยาลัย (ส่วนกลาง)') }}</label>
+                <label class="block text-xs font-semibold text-dark mb-1">1. {{ __('กิจกรรมระดับมหาวิทยาลัย (ส่วนกลาง)') }}</label>
                 <div class="flex items-center gap-1 mt-2">
                     <input type="number" step="0.5" name="scope_university" class="form-control" value="{{ old('scope_university', $criteria->scope_requirements['university'] ?? 40) }}" required min="0" max="300" style="border-radius:0.375rem;font-size:0.875rem;">
                     <span class="text-xs text-muted">{{ __('ชม.') }}</span>
@@ -91,7 +91,7 @@
 
             {{-- 2. กิจกรรมคณะ --}}
             <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:0.5rem;padding:1rem;">
-                <label class="block text-xs font-semibold text-dark mb-1">{{ __('2. กิจกรรมระดับคณะ / สาขาวิชา') }}</label>
+                <label class="block text-xs font-semibold text-dark mb-1">2. {{ __('กิจกรรมระดับคณะ / สาขาวิชา') }}</label>
                 <div class="flex items-center gap-1 mt-2">
                     <input type="number" step="0.5" name="scope_faculty" class="form-control" value="{{ old('scope_faculty', $criteria->scope_requirements['faculty'] ?? 40) }}" required min="0" max="300" style="border-radius:0.375rem;font-size:0.875rem;">
                     <span class="text-xs text-muted">{{ __('ชม.') }}</span>
@@ -110,7 +110,7 @@
                 }
             @endphp
             <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:0.5rem;padding:1rem;">
-                <label class="block text-xs font-semibold text-dark mb-1">{{ __('3. กิจกรรมจิตอาสา / บำเพ็ญประโยชน์') }}</label>
+                <label class="block text-xs font-semibold text-dark mb-1">3. {{ __('กิจกรรมจิตอาสา / บำเพ็ญประโยชน์') }}</label>
                 <div class="flex items-center gap-1 mt-2">
                     <input type="number" step="0.5" name="category_volunteer" class="form-control" value="{{ old('category_volunteer', $volHours) }}" required min="0" max="200" style="border-radius:0.375rem;font-size:0.875rem;">
                     <span class="text-xs text-muted">{{ __('ชม.') }}</span>
@@ -125,7 +125,9 @@
             <textarea name="description" rows="3" class="form-control" style="width:100%;border-radius:0.5rem;font-size:0.875rem;">{{ old('description', $criteria->description) }}</textarea>
         </div>
 
-        <button type="submit" class="btn btn-primary" style="padding:0.6rem 1.25rem;font-size:0.875rem;">{{ __('บันทึกการปรับปรุงเกณฑ์') }}        </button>
+        <button type="submit" class="btn btn-primary" style="padding:0.6rem 1.25rem;font-size:0.875rem;">
+            {{ __('บันทึกการปรับปรุงเกณฑ์') }}
+        </button>
     </form>
 </div>
 @endsection

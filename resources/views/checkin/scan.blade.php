@@ -1,6 +1,6 @@
 {{-- หน้ายืนยันเช็คอินจาก QR: แสดงชื่อกิจกรรม + ปุ่มยืนยัน --}}
 @extends('layouts.app')
-@section('title', __('เช็คอิน'))
+@section('title', __('เช็คอิน')
 
 @section('content')
 <div class="container-sm" style="padding-top:2rem;">

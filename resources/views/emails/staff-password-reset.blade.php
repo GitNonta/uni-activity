@@ -99,12 +99,14 @@
             <p>{{ __('กรุณาคลิกปุ่มด้านล่างเพื่อตั้งรหัสผ่านใหม่:') }}</p>
             
             <div style="text-align: center;">
-                <a href="{{ route('admin.password.reset', $token) }}?email={{ urlencode($email) }}" class="reset-button">{{ __('รีเซ็ตรหัสผ่าน') }}                </a>
+                <a href="{{ route('admin.password.reset', $token) }}?email={{ urlencode($email) }}" class="reset-button">
+                    {{ __('รีเซ็ตรหัสผ่าน') }}
+                </a>
             </div>
             
             <div class="security-notice">
                 <p><strong><svg style="width:16px;height:16px;display:inline;vertical-align:-2px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> {{ __('ความปลอดภัย:') }}</strong></p
-                <p>{{ __('ลิงก์นี้จะหมดอายุภายใน') }} {{ config('auth.passwords.staffs.expire', 60) }} {{ __('นาที') }}</p>
+                <p>{{ __('ลิงก์นี้จะหมดอายุภายใน') }}{{ config('auth.passwords.staffs.expire', 60) }} {{ __('นาที') }}</p>
                 <p>{{ __('หากคุณไม่ได้เป็นผู้ร้องขอรีเซ็ตรหัสผ่าน กรุณาละเว้นอีเมลนี้') }}</p>
             </div>
             
@@ -116,7 +118,9 @@
         
         <div class="footer">
             <p>{{ __('ระบบจัดการกิจกรรมนักศึกษา') }}</p>
-            <p style="font-size: 12px; margin-top: 5px;">{{ __('อีเมลนี้ถูกส่งโดยระบบอัตโนมัติ กรุณาไม่ตอบกลับ') }}            </p>
+            <p style="font-size: 12px; margin-top: 5px;">
+                {{ __('อีเมลนี้ถูกส่งโดยระบบอัตโนมัติ กรุณาไม่ตอบกลับ') }}
+            </p>
         </div>
     </div>
 </body>

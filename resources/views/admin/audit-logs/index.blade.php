@@ -1,6 +1,6 @@
 {{-- หน้า Audit Log: แสดงประวัติการกระทำของ Admin ทั้งหมด (Premium UI) --}}
 @extends('layouts.admin')
-@section('title', __('Audit Logs — ประวัติการดำเนินงาน'))
+@section('title', __('Audit Logs — {{ __('ประวัติการดำเนินงาน') }}')
 
 @section('styles')
 <style>
@@ -402,11 +402,11 @@ html.dark .empty-state-icon { background: #27272a; }
     <div class="audit-header-badges">
         <span class="header-badge header-badge-total">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
-            {{ __('ทั้งหมด') }} {{ number_format($stats['total']) }} {{ __('รายการ') }}
+            {{ __('ทั้งหมด') }}{{ number_format($stats['total']) }} {{ __('รายการ') }}
         </span>
         <span class="header-badge header-badge-today">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            {{ __('วันนี้') }} {{ $stats['today'] }} {{ __('รายการ') }}
+            {{ __('วันนี้') }}{{ $stats['today'] }} {{ __('รายการ') }}
         </span>
     </div>
 </div>
@@ -454,7 +454,9 @@ html.dark .empty-state-icon { background: #27272a; }
 {{-- ─── Filter Section ─── --}}
 <form method="GET" action="{{ route('admin.audit-logs.index') }}" class="audit-filter-card">
     <div class="audit-filter-header">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>{{ __('ตัวกรองขั้นสูง') }}    </div>
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+        {{ __('ตัวกรองขั้นสูง') }}
+    </div>
     <div class="audit-filter-body">
         <div class="filter-grid">
             <div class="filter-field" style="flex:1.5;">
@@ -464,7 +466,7 @@ html.dark .empty-state-icon { background: #27272a; }
             <div class="filter-field">
                 <label>{{ __('ผู้ดำเนินการ') }}</label>
                 <select name="user_id" class="form-control">
-                    <option value="">{{ __('— ทั้งหมด —') }}</option>
+                    <option value="">— {{ __('ทั้งหมด —') }}</option>
                     @foreach($admins as $admin)
                         <option value="{{ $admin->id }}" {{ request('user_id') == $admin->id ? 'selected' : '' }}>{{ $admin->full_name }}</option>
                     @endforeach
@@ -473,7 +475,7 @@ html.dark .empty-state-icon { background: #27272a; }
             <div class="filter-field">
                 <label>{{ __('การกระทำ') }}</label>
                 <select name="action" class="form-control">
-                    <option value="">{{ __('— ทั้งหมด —') }}</option>
+                    <option value="">— {{ __('ทั้งหมด —') }}</option>
                     <option value="create" {{ request('action') === 'create' ? 'selected' : '' }}>{{ __('สร้าง') }}</option>
                     <option value="update" {{ request('action') === 'update' ? 'selected' : '' }}>{{ __('แก้ไข') }}</option>
                     <option value="delete" {{ request('action') === 'delete' ? 'selected' : '' }}>{{ __('ลบ') }}</option>
@@ -493,7 +495,9 @@ html.dark .empty-state-icon { background: #27272a; }
             </div>
             <div class="filter-actions">
                 <button type="submit" class="filter-btn-primary">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>{{ __('กรอง') }}                </button>
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    {{ __('กรอง') }}
+                </button>
                 <a href="{{ route('admin.audit-logs.index') }}" class="filter-btn-clear">{{ __('ล้าง') }}</a>
             </div>
         </div>
@@ -566,7 +570,9 @@ html.dark .empty-state-icon { background: #27272a; }
                     <td class="td-ip">{{ $log->ip_address ?? '-' }}</td>
                     <td>
                         <a href="{{ route('admin.audit-logs.show', $log->id) }}" class="td-action-btn">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>{{ __('ดู') }}                        </a>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            {{ __('ดู') }}
+                        </a>
                     </td>
                 </tr>
                 @empty

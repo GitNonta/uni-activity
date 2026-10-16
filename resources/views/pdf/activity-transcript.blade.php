@@ -290,7 +290,7 @@
                     </tr>
                     <tr>
                         <td class="info-label">{{ __('ระดับการศึกษา:') }}</td>
-                        <td class="info-val" colspan="3">{{ __('ปริญญาตรี (ชั้นปีที่') }} {{ $user->year ?? '-' }})</td>
+                        <td class="info-val" colspan="3">{{ __('ปริญญาตรี (ชั้นปีที่') }}{{ $user->year ?? '-' }})</td>
                     </tr>
                 </table>
             </td>
@@ -300,7 +300,8 @@
     {{-- ผลการประเมินกิจกรรมรวม --}}
     <div class="result-box">
         <div class="result-box-title">{{ __('ผลการเข้าร่วมกิจกรรมพัฒนานักศึกษาตามเกณฑ์มหาวิทยาลัย') }}</div>
-        <div class="result-box-desc">{{ __('สะสมรวม') }} <strong>{{ number_format($totalHours, 1) }}</strong> {{ __('ชั่วโมง / เกณฑ์ขั้นต่ำ') }} {{ number_format($totalRequired, 1) }} {{ __('ชั่วโมง') }}
+        <div class="result-box-desc">
+            {{ __('สะสมรวม') }}<strong>{{ number_format($totalHours, 1) }}</strong> {{ __('ชั่วโมง / เกณฑ์ขั้นต่ำ') }}{{ number_format($totalRequired, 1) }} {{ __('ชั่วโมง') }}
             ({{ __('ระดับผลการประเมิน:') }}<strong>{{ $levelLabel }}</strong>)
         </div>
     </div>
@@ -332,7 +333,9 @@
     </table>
 
     {{-- ข้อความรับรองทางการ --}}
-    <div class="cert-block">{{ __('ขอรับรองว่าตลอดระยะเวลาการศึกษา นักศึกษาได้เข้าร่วมกิจกรรมตามรายงานที่บันทึกไว้ในระเบียนกิจกรรมนักศึกษาจริงทุกประการ') }}    </div>
+    <div class="cert-block">
+        {{ __('ขอรับรองว่าตลอดระยะเวลาการศึกษา นักศึกษาได้เข้าร่วมกิจกรรมตามรายงานที่บันทึกไว้ในระเบียนกิจกรรมนักศึกษาจริงทุกประการ') }}
+    </div>
 
     {{-- ส่วนลงนามทางการ (2 คอลัมน์) --}}
     <table class="sig-table">
@@ -344,7 +347,7 @@
                 @else
                     <div class="sig-placeholder"></div>
                 @endif
-                <div class="sig-name">{{ __('( อาจารย์ ดร.สมชาย ใจดี )') }}</div>
+                <div class="sig-name">( {{ __('อาจารย์ ดร.สมชาย ใจดี )') }}</div>
                 <div class="sig-pos">{{ __('ผู้อำนวยการกองพัฒนานักศึกษา') }}</div>
             </td>
             <td>
@@ -354,7 +357,7 @@
                 @else
                     <div class="sig-placeholder"></div>
                 @endif
-                <div class="sig-name">{{ __('( ผู้ช่วยศาสตราจารย์ ดร.วิภาดา วิจิตรศิลป์ )') }}</div>
+                <div class="sig-name">( {{ __('ผู้ช่วยศาสตราจารย์ ดร.วิภาดา วิจิตรศิลป์ )') }}</div>
                 <div class="sig-pos">{{ __('รองอธิการบดีฝ่ายพัฒนานักศึกษาและศิษย์เก่าสัมพันธ์') }}</div>
             </td>
         </tr>
@@ -364,7 +367,7 @@
     <table class="footer-table">
         <tr>
             <td style="text-align: left;">
-                {{ __('ออก ณ วันที่') }} {{ now()->addYears(543)->locale('th')->translatedFormat('d F') }} {{ now()->year + 543 }} | {{ __('ระบบระเบียนกิจกรรมนักศึกษา') }}
+                {{ __('ออก ณ วันที่') }}{{ now()->addYears(543)->locale('th')->translatedFormat('d F') }} {{ now()->year + 543 }} | {{ __('ระบบระเบียนกิจกรรมนักศึกษา') }}
             </td>
             <td style="text-align: right;">
                 Document Ref: <strong>{{ $docNumber }}</strong>

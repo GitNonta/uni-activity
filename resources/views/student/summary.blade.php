@@ -1,6 +1,6 @@
 {{-- หน้าสรุปชั่วโมงกิจกรรม: ชั่วโมงรวม + แยกตามหมวดหมู่แบบไร้ Box/Card สะอาดตา --}}
 @extends('layouts.app')
-@section('title', __('สรุปกิจกรรม')))
+@section('title', __('สรุปกิจกรรม'))
 
 @section('content')
 <style>
@@ -28,7 +28,7 @@
 }
 .cat-summary-item {
     padding: 0.95rem 0.25rem;
-    border-bottom:var(--border));
+    border-bottom: 1px solid var(--border-color, #e2e8f0);
     transition: background-color 0.15s ease;
 }
 .cat-summary-item:last-child {
@@ -48,15 +48,15 @@
 .cat-summary-pct {
     font-size: 0.78rem;
     font-weight: 700;
-    color:var(--text-muted);
-    background:var(--bg-main);
+    color: #475569;
+    background: #f1f5f9;
     padding: 0.15rem 0.5rem;
     border-radius: 999px;
     letter-spacing: 0.02em;
 }
 .cat-summary-pct.is-complete {
     background: #dcfce7;
-    color:var(--tint-green-text);
+    color: #15803d;
 }
 .cat-progress-track {
     height: 8px;
@@ -93,7 +93,7 @@
     gap: 4px;
 }
 .cat-summary-status.is-pass {
-    color:var(--tint-green-text);
+    color: #16a34a;
     font-weight: 600;
 }
 .cat-summary-hours {
@@ -154,7 +154,9 @@ html.dark .cat-summary-hours {
             <p class="hero-sub">{{ __('จากทั้งหมด') }} {{ $totalRequired }} {{ __('ชั่วโมงที่กำหนด') }}</p>
         </div>
         <a href="{{ route('student.summary.pdf') }}" class="btn" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);gap:.375rem;">
-            <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>{{ __('ดาวน์โหลด PDF') }}        </a>
+            <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            {{ __('ดาวน์โหลด PDF') }}
+        </a>
     </div>
 </div>
 
@@ -185,9 +187,13 @@ html.dark .cat-summary-hours {
         <div class="cat-summary-foot">
             @if($isComplete)
                 <span class="cat-summary-status is-pass">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>{{ __('ผ่านเกณฑ์ขั้นต่ำ') }}                </span>
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    {{ __('ผ่านเกณฑ์ขั้นต่ำ') }}
+                </span>
             @else
-                <span class="cat-summary-status">{{ __('ต้องการอีก') }} <strong style="color: #ef4444; font-weight: 600;">{{ number_format($cat['required'] - $cat['hours'], 1) }}</strong> {{ __('ชม.') }}                </span>
+                <span class="cat-summary-status">
+                    {{ __('ต้องการอีก') }} <strong style="color: #ef4444; font-weight: 600;">{{ number_format($cat['required'] - $cat['hours'], 1) }}</strong> {{ __('ชม.') }}
+                </span>
             @endif
             <span class="cat-summary-hours">
                 <span class="cat-summary-hours-val" style="color: {{ $isComplete ? '#16a34a' : '#ea580c' }};">{{ number_format($cat['hours'], 1) }}</span>

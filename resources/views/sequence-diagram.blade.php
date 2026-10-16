@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', __('ลำดับการใช้งานระบบกิจกรรมนักศึกษา'))
+@section('title', __('ลำดับการใช้งานระบบกิจกรรมนักศึกษา')
 
 @section('content')
 <style>
@@ -125,7 +125,7 @@
         <div class="legend" aria-label="{{ __('คำอธิบายสัญลักษณ์') }}">
             <span><i class="legend-line"></i> {{ __('คำขอ / การกระทำ') }}</span>
             <span><i class="legend-line legend-dashed"></i> {{ __('ผลลัพธ์ / การตอบกลับ') }}</span>
-            <span>{{ __('▱ หมายเหตุหรือเงื่อนไขของระบบ') }}</span>
+            <span>▱ {{ __('หมายเหตุหรือเงื่อนไขของระบบ') }}</span>
         </div>
     </div>
 </div>

@@ -2,7 +2,7 @@
 <table>
     <thead>
         <tr>
-            <th colspan="9">{{ __('ประวัติการเข้าร่วมกิจกรรม') }} - {{ $student->full_name }} ({{ $student->student_id }})</th>
+            <th colspan="9">{{ __('ประวัติการเข้าร่วมกิจกรรม -') }}{{ $student->full_name }} ({{ $student->student_id }})</th>
         </tr>
         <tr>
             <th>{{ __('รหัสกิจกรรม') }}</th>

@@ -128,7 +128,7 @@ class PostTranslationService
     {
         $window = mb_substr($text, 0, $max);
 
-        foreach (["\n", '. ', ' '] as $sep) {
+        foreach (["\n", '. ', ' ', '、'] as $sep) {
             $pos = mb_strrpos($window, $sep);
 
             if ($pos !== false && $pos > 40) {

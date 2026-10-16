@@ -1,6 +1,6 @@
 {{-- หน้าฟอร์มประเมินกิจกรรม --}}
 @extends('layouts.app')
-@section('title', __('ประเมินกิจกรรม'))
+@section('title', __('ประเมินกิจกรรม')
 
 @section('content')
 <div class="container" style="max-width:700px;margin:0 auto;padding:1.5rem;">
@@ -17,7 +17,7 @@
 
                 {{-- คะแนนรวม --}}
                 <div style="margin-bottom:1.5rem;">
-                    <label class="form-label" style="font-weight:600;margin-bottom:.5rem;">{{ __('คะแนนโดยรวม') }} <span style="color:#dc2626;">*</span></label>
+                    <label class="form-label" style="font-weight:600;margin-bottom:.5rem;">{{ __('คะแนนโดยรวม') }}<span style="color:#dc2626;">*</span></label>
                     <div style="display:flex;gap:.5rem;justify-content:center;margin-top:.75rem;">
                         @for($i = 1; $i <= 5; $i++)
                         <label style="cursor:pointer;">

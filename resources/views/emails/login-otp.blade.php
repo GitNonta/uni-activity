@@ -34,12 +34,13 @@
             <p style="margin-top: 5px; color: #64748b;">{{ __('การยืนยันตัวตนเพื่อเข้าสู่ระบบ') }}</p>
         </div>
 
-        <p>{{ __('สวัสดีคุณ') }} <strong>{{ $fullName }}</strong>,</p>
+        <p>{{ __('สวัสดีคุณ') }}<strong>{{ $fullName }}</strong>,</p>
         <p>{{ __('มีการพยายามเข้าสู่ระบบบัญชีของคุณ กรุณาใช้รหัส OTP ด้านล่างเพื่อดำเนินการต่อ:') }}</p>
 
         <div class="otp-code">{{ $otp }}</div>
 
-        <p style="text-align: center; color: #64748b; font-size: 13px;">{{ __('รหัสนี้จะหมดอายุใน') }} <strong>{{ $expiryMinutes }} {{ __('นาที') }}</strong>
+        <p style="text-align: center; color: #64748b; font-size: 13px;">
+            {{ __('รหัสนี้จะหมดอายุใน') }}<strong>{{ $expiryMinutes }} {{ __('นาที') }}</strong>
         </p>
 
         <div class="info-box">

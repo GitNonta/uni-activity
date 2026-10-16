@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('ยืนยันการเข้าสู่ระบบ'))
+@section('title', __('ยืนยันการเข้าสู่ระบบ')
 
 @section('styles')
 <style>
@@ -17,7 +17,8 @@
             <svg style="width: 32px; height: 32px; color: #ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
         </div>
         <h1 style="font-size: 1.5rem; font-weight: 700;">{{ __('ยืนยันรหัส OTP') }}</h1>
-        <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.5rem; line-height: 1.5;">{{ __('ป้อนรหัส 6 หลักที่ส่งไปยัง') }} <br>
+        <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.5rem; line-height: 1.5;">
+            {{ __('ป้อนรหัส 6 หลักที่ส่งไปยัง') }}<br>
             <strong>{{ $email }}</strong>
         </p>
     </div>
@@ -53,8 +54,12 @@
 
     <form id="resend-form" method="POST" action="{{ route('login.otp.resend') }}" style="text-align: center; margin-top: 2rem;" onsubmit="handleResendSubmit(this)">
         @csrf
-        <p style="font-size: 0.8125rem; color: #64748b;">{{ __('หากไม่ได้รับรหัส?') }}            <button type="submit" id="resendBtn" style="background: none; border: none; color: #ea580c; text-decoration: none; font-weight: 600; cursor: pointer; padding: 0; font-family: inherit;">{{ __('ส่งใหม่อีกครั้ง') }}            </button>
-            <span id="countdownText" style="display:none; color:#94a3b8; margin-left:4px;">{{ __('(ใน') }} <span id="secondsLeft">60</span>s)</span>
+        <p style="font-size: 0.8125rem; color: #64748b;">
+            {{ __('หากไม่ได้รับรหัส?') }}
+            <button type="submit" id="resendBtn" style="background: none; border: none; color: #ea580c; text-decoration: none; font-weight: 600; cursor: pointer; padding: 0; font-family: inherit;">
+                {{ __('ส่งใหม่อีกครั้ง') }}
+            </button>
+            <span id="countdownText" style="display:none; color:#94a3b8; margin-left:4px;">({{ __('ใน') }}<span id="secondsLeft">60</span>s)</span>
         </p>
     </form>
 

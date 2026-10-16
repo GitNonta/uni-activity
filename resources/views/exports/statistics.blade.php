@@ -7,8 +7,8 @@
         @if($dateFrom || $dateTo)
             <tr>
                 <th colspan="3">
-                    {{ __('ช่วงวันที่') }}: {{ $dateFrom ? $dateFrom->format('d/m/Y') : __('เริ่มต้น') }} 
-                    {{ __('ถึง') }}{{ $dateTo ? $dateTo->format('d/m/Y') : __('ปัจจุบัน') }}
+                    {{ __('ช่วงวันที่:') }}{{ $dateFrom ? $dateFrom->format('d/m/Y') : 'เริ่มต้น' }} 
+                    {{ __('ถึง') }}{{ $dateTo ? $dateTo->format('d/m/Y') : 'ปัจจุบัน' }}
                 </th>
             </tr>
         @endif
@@ -50,7 +50,7 @@
             <td>{{ $totalRegistrations > 0 ? number_format(($totalAttendances / $totalRegistrations) * 100, 1) : 0 }}%</td>
         </tr>
         <tr>
-            <td><strong>{{ __('Feedback ที่ได้รับ') }}</strong></td>
+            <td><strong>Feedback {{ __('ที่ได้รับ') }}</strong></td>
             <td>{{ number_format($totalFeedbacks) }} {{ __('รายการ') }}</td>
             <td>-</td>
         </tr>

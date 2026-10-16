@@ -5,7 +5,7 @@
 @section('content')
 <div class="flex items-center justify-between mb-4">
     <h1 class="font-bold" style="font-size:1.4rem;">
-        {{ __('แก้ไข') }}{{ $user->role === 'staff' ? __('เจ้าหน้าที่') : __('นักศึกษา') }}: {{ $user->full_name }}
+        {{ __('แก้ไข') }}{{ $user->role === 'staff' ? 'เจ้าหน้าที่' : 'นักศึกษา' }}: {{ $user->full_name }}
     </h1>
     <a href="{{ route('admin.users.index') }}" class="btn btn-outline btn-sm" style="display:inline-flex;align-items:center;gap:.35rem;">
         <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
@@ -39,14 +39,14 @@
 
             {{-- ชื่อ-สกุล --}}
             <div class="mb-3">
-                <label class="form-label">{{ __('ชื่อ-สกุล') }} <span style="color:#dc2626;">*</span></label>
+                <label class="form-label">{{ __('ชื่อ-สกุล') }}<span style="color:#dc2626;">*</span></label>
                 <input type="text" name="full_name" value="{{ old('full_name', $user->full_name) }}" class="form-control" required>
                 @error('full_name') <div class="text-xs" style="color:#dc2626;margin-top:.25rem;">{{ $message }}</div> @enderror
             </div>
 
             {{-- อีเมล --}}
             <div class="mb-3">
-                <label class="form-label">{{ __('อีเมล') }} <span style="color:#dc2626;">*</span></label>
+                <label class="form-label">{{ __('อีเมล') }}<span style="color:#dc2626;">*</span></label>
                 @if($user->role === 'student')
                     <input type="email" name="email" value="{{ old('email', $user->email) }}" class="form-control" readonly style="background:var(--surface-hover, #f8fafc);color:var(--text-muted, #64748b);">
                     <div class="text-xs text-muted mt-1">{{ __('อีเมลนักศึกษาถูกตั้งค่าอัตโนมัติตามรหัสนักศึกษา') }}</div>
@@ -71,7 +71,7 @@
             @if($user->role === 'student')
                 {{-- รหัสนักศึกษา --}}
                 <div class="mb-3">
-                    <label class="form-label">{{ __('รหัสนักศึกษา') }} <span style="color:#dc2626;">*</span></label>
+                    <label class="form-label">{{ __('รหัสนักศึกษา') }}<span style="color:#dc2626;">*</span></label>
                     <input type="text" name="student_id" value="{{ old('student_id', $user->student_id) }}" class="form-control" required>
                     @error('student_id') <div class="text-xs" style="color:#dc2626;margin-top:.25rem;">{{ $message }}</div> @enderror
                 </div>
@@ -116,8 +116,8 @@
                         <label class="form-label">{{ __('ภาคเรียน') }}</label>
                         <select name="program" class="form-control">
                             <option value="">{{ __('เลือกภาคเรียน') }}</option>
-                            <option value="{{ __('ปกติ') }}" {{ old('program', $user->program) == __('ปกติ') ? 'selected' : '' }}>{{ __('ปกติ (จันทร์-ศุกร์)') }}</option>
-                            <option value="{{ __('กศ.บป.') }}" {{ old('program', $user->program) == __('กศ.บป.') ? 'selected' : '' }}>{{ __('กศ.บป. (เสาร์-อาทิตย์)') }}</option>
+                            <option value="ปกติ" {{ old('program', $user->program) == 'ปกติ' ? 'selected' : '' }}>{{ __('ปกติ (จันทร์-ศุกร์)') }}</option>
+                            <option value="กศ.บป." {{ old('program', $user->program) == 'กศ.บป.' ? 'selected' : '' }}>{{ __('กศ.บป. (เสาร์-อาทิตย์)') }}</option>
                         </select>
                         @error('program') <div class="text-xs" style="color:#dc2626;margin-top:.25rem;">{{ $message }}</div> @enderror
                     </div>

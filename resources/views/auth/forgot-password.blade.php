@@ -1,6 +1,6 @@
 {{-- หน้าลืมรหัสผ่านสำหรับ Staff --}}
 @extends('layouts.app')
-@section('title', __('ลืมรหัสผ่าน'))
+@section('title', __('ลืมรหัสผ่าน')
 
 @section('content')
 <div class="container" style="max-width:400px;margin:2rem auto;">
@@ -32,11 +32,15 @@
                 </div>
 
                 <div style="margin-bottom:1rem;">
-                    <button type="submit" class="btn btn-primary btn-block" style="padding:.75rem;">{{ __('ส่งลิงก์รีเซ็ตรหัสผ่าน') }}                    </button>
+                    <button type="submit" class="btn btn-primary btn-block" style="padding:.75rem;">
+                        {{ __('ส่งลิงก์รีเซ็ตรหัสผ่าน') }}
+                    </button>
                 </div>
 
                 <div style="text-align:center;">
-                    <a href="{{ route('admin.login') }}" style="color:#64748b;font-size:.9rem;">&larr; {{ __('กลับไปหน้าเข้าสู่ระบบ') }}                    </a>
+                    <a href="{{ route('admin.login') }}" style="color:#64748b;font-size:.9rem;">
+                        &larr; {{ __('กลับไปหน้าเข้าสู่ระบบ') }}
+                    </a>
                 </div>
             </form>
         </div>

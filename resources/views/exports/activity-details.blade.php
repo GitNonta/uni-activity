@@ -2,7 +2,7 @@
 <table>
     <thead>
         <tr>
-            <th colspan="11">{{ __('รายละเอียดกิจกรรม') }} - {{ $activity->title }}</th>
+            <th colspan="11">{{ __('รายละเอียดกิจกรรม -') }}{{ $activity->title }}</th>
         </tr>
         <tr>
             <th colspan="2">{{ __('วันที่จัด') }}</th>

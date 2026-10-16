@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('ยืนยัน OTP'))
+@section('title', __('ยืนยัน OTP')
 
 @section('styles')
 <style>
@@ -15,7 +15,8 @@
 <div class="auth-container" style="max-width: 400px; margin: 4rem auto; padding: 2rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
     <div style="text-align: center; margin-bottom: 2rem;">
         <h1 style="font-size: 1.5rem; font-weight: 700;">{{ __('ยืนยันรหัส OTP') }}</h1>
-        <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.5rem; line-height: 1.5;">{{ __('เราได้ส่งรหัสยืนยัน 6 หลักไปที่') }} <br>
+        <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.5rem; line-height: 1.5;">
+            {{ __('เราได้ส่งรหัสยืนยัน 6 หลักไปที่') }}<br>
             <strong>{{ $email }}</strong>
         </p>
     </div>
@@ -96,7 +97,9 @@
     </form>
 
     <div style="text-align: center; margin-top: 2rem;">
-        <p style="font-size: 0.8125rem; color: #64748b;">{{ __('ไม่ได้รับรหัส?') }}            <a href="{{ route('admin.password.request') }}" style="color: #ea580c; text-decoration: none; font-weight: 500;">{{ __('ส่งใหม่อีกครั้ง') }}</a>
+        <p style="font-size: 0.8125rem; color: #64748b;">
+            {{ __('ไม่ได้รับรหัส?') }}
+            <a href="{{ route('admin.password.request') }}" style="color: #ea580c; text-decoration: none; font-weight: 500;">{{ __('ส่งใหม่อีกครั้ง') }}</a>
         </p>
     </div>
 </div>

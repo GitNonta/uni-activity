@@ -34,7 +34,8 @@
 
         <div class="otp-code">{{ $otp }}</div>
 
-        <p style="text-align: center; color: #ef4444; font-size: 14px;">{{ __('รหัสนี้จะหมดอายุภายใน') }} <strong>{{ $expiryMinutes }} {{ __('นาที') }}</strong>
+        <p style="text-align: center; color: #ef4444; font-size: 14px;">
+            {{ __('รหัสนี้จะหมดอายุภายใน') }}<strong>{{ $expiryMinutes }} {{ __('นาที') }}</strong>
         </p>
 
         <p>{{ __('หากคุณไม่ได้เป็นผู้ร้องขอ กรุณาละเว้นอีเมลฉบับนี้') }}</p>
