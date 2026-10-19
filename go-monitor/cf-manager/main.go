@@ -221,7 +221,7 @@ func tryAdoptTunnel() (string, bool) {
 //
 // Returns (hasConnections, known). known=false means the state could not be
 // determined — callers must treat that as "no data" and skip the check.
-func tunnelEdgeState() (hasConnections, known bool) {
+func tunnelEdgeState_LEGACY() (hasConnections, known bool) {
 	client := &http.Client{Timeout: 2 * time.Second}
 	for port := 20241; port <= 20245; port++ {
 		metricsURL := fmt.Sprintf("http://127.0.0.1:%d/metrics", port)
@@ -453,18 +453,41 @@ func updateLINEWebhook(httpURL string) {
 }
 
 // notifyTelegramMessage sends an arbitrary message to the configured Telegram chat.
+// alertKeyboard สร้าง inline keyboard สำหรับปุ่มกดควบคุมในข้อความแจ้งเตือน
+func alertKeyboard(kind string) map[string]interface{} {
+	other := "restart_ssh"
+	if kind == "SSH" {
+		other = "restart_web"
+	}
+	return map[string]interface{}{
+		"inline_keyboard": [][]map[string]string{
+			{{"text": "📊 สถานะ", "callback_data": "cmd:/tunnel_status"}, {"text": "🔗 URL ทั้งหมด", "callback_data": "cmd:/links"}},
+			{{"text": "🔄 รีเซ็ต " + kind, "callback_data": "cmd:/restart_" + strings.ToLower(kind)}, {"text": "🔄 รีเซ็ตอีกตัว", "callback_data": "cmd:/" + other}},
+		},
+	}
+}
+
 func notifyTelegramMessage(msg string) {
+	notifyTelegramMessageKb(msg, nil)
+}
+
+// notifyTelegramMessageKb — ส่งข้อความพร้อม inline keyboard (UI ปุ่มกดได้)
+func notifyTelegramMessageKb(msg string, markup map[string]interface{}) {
 	token := readEnv("TELEGRAM_BOT_TOKEN")
 	chatID := readEnv("TELEGRAM_CHAT_ID")
 	if token == "" || chatID == "" {
 		return
 	}
-	body, _ := json.Marshal(map[string]interface{}{
+	payload := map[string]interface{}{
 		"chat_id":                  chatID,
 		"text":                     msg,
 		"parse_mode":               "HTML",
 		"disable_web_page_preview": true,
-	})
+	}
+	if markup != nil {
+		payload["reply_markup"] = markup
+	}
+	body, _ := json.Marshal(payload)
 	req, err := http.NewRequest("POST", "https://api.telegram.org/bot"+token+"/sendMessage", bytes.NewBuffer(body))
 	if err != nil {
 		return
@@ -554,6 +577,377 @@ func pushToGitHub(httpURL, sshURL string) {
 // ──────────────────────────────────────────────────────────────────────────────
 // Tunnel lifecycle
 // ──────────────────────────────────────────────────────────────────────────────
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Per-tunnel descriptor (WEB / SSH) — แยกลิงก์ให้รีเซ็ตอิสระกัน
+// หลักการ: web/ssh = 2 tunnel อิสระจากกัน แยก metrics, log, process pattern,
+// fail counters และ cooldown ย่อยของตัวเอง — ตัวใด error ให้รีเซ็ตเฉพาะตัวนั้น
+// ──────────────────────────────────────────────────────────────────────────────
+
+type tunnelDesc struct {
+	Kind       string // "WEB" | "SSH"
+	ProcPat    string // pgrep pattern เฉพาะของ tunnel นี้
+	MetricsURL string // metrics ของ cloudflared ตัวนี้
+	LogPath    string // log ของ cloudflared ตัวนี้
+	OriginURL  string // target ที่ cloudflared ยิงเข้าหา (สำหรับ WEB)
+}
+
+var tunnelDescriptors = map[string]tunnelDesc{
+	"WEB": {
+		Kind:       "WEB",
+		ProcPat:    "cloudflared tunnel --url http://",
+		MetricsURL: "http://127.0.0.1:20241/metrics",
+		LogPath:    logHTTP,
+		OriginURL:  "", // filled at runtime from TUNNEL_TARGET_URL
+	},
+	"SSH": {
+		Kind:       "SSH",
+		ProcPat:    "cloudflared tunnel --url ssh://",
+		MetricsURL: "http://127.0.0.1:20242/metrics",
+		LogPath:    logSSH,
+	},
+}
+
+func descFor(kind string) tunnelDesc {
+	d, ok := tunnelDescriptors[kind]
+	if !ok {
+		log.Printf("[CF-MGR][%s] ❌ unknown kind", kind)
+	}
+	return d
+}
+
+// procAliveKind ตรวจว่า cloudflared ตัวนี้ยังทำงานอยู่หรือไม่ — แบบ per-kind
+func procAliveKind(kind string) bool {
+	d := descFor(kind)
+	out, err := exec.Command("pgrep", "-f", d.ProcPat).Output()
+	return err == nil && len(strings.TrimSpace(string(out))) > 0
+}
+
+// killOneCloudflared ฆ่าเฉพาะ process cloudflared ของ kind นั้น — ไม่แตะตัวอื่น
+func killOneCloudflared(kind string) {
+	d := descFor(kind)
+	_ = exec.Command("pkill", "-9", "-f", d.ProcPat).Run()
+	for i := 0; i < 10; i++ {
+		time.Sleep(300 * time.Millisecond)
+		if !procAliveKind(kind) {
+			break
+		}
+		// fallback: kill by exact PID
+		if out, err := exec.Command("pgrep", "-f", d.ProcPat).Output(); err == nil {
+			for _, pidStr := range strings.Fields(string(out)) {
+				_ = exec.Command("kill", "-9", pidStr).Run()
+			}
+		}
+	}
+	time.Sleep(1 * time.Second)
+}
+
+// startOneTunnel spawn cloudflared เฉพาะ kind แล้วรอ URL จาก log ของตัวเอง (สูงสุด 60 วิ)
+func startOneTunnel(kind string) (string, error) {
+	d := descFor(kind)
+	target := d.OriginURL
+	if kind == "WEB" {
+		if t := readEnv("TUNNEL_TARGET_URL"); t != "" {
+			target = t
+		}
+	}
+	if target == "" {
+		target = "http://127.0.0.1:8080"
+	}
+	if kind == "SSH" && readEnv("ENABLE_SSH_TUNNEL") != "true" {
+		return "", fmt.Errorf("ENABLE_SSH_TUNNEL is not true in .env — not spawning %s tunnel", kind)
+	}
+
+	// Truncate log ของตัวเองเพื่อแยก URL รอบใหม่จากรอบเก่า
+	_ = os.WriteFile(d.LogPath, []byte(""), 0644)
+
+	cmd := fmt.Sprintf(
+		"nohup cloudflared tunnel --url %s --protocol http2 --edge-ip-version 4 --no-autoupdate > %s 2>&1 &",
+		target, d.LogPath,
+	)
+	log.Printf("[CF-MGR][%s] 🚀 spawning cloudflared → %s", kind, target)
+	runner := exec.Command("sh", "-c", cmd)
+	if err := runner.Start(); err != nil {
+		return "", fmt.Errorf("[CF-MGR][%s] spawn fail: %w", kind, err)
+	}
+	go func() { _ = runner.Wait() }() // reap wrapper
+
+	// รอ URL จาก log (max 60s) + ตรวจ 429 ระหว่างรอ
+	for i := 0; i < 60; i++ {
+		time.Sleep(1 * time.Second)
+		if data, err := os.ReadFile(d.LogPath); err == nil {
+			s := string(data)
+			if strings.Contains(s, "429 Too Many Requests") || strings.Contains(s, "1015") {
+				return "", fmt.Errorf("[CF-MGR][%s] rate-limited by Cloudflare (429/1015)", kind)
+			}
+		}
+		if u := lastURLFromLog(d.LogPath); u != "" {
+			return u, nil
+		}
+	}
+	return "", fmt.Errorf("[CF-MGR][%s] timeout: no URL within 60s", kind)
+}
+
+// applyOneNewURL apply side-effects แบบเลือกตัว — ไม่แตะ side-effects ของอีกตัว
+func applyOneNewURL(kind, newURL string) {
+	if newURL == "" {
+		return
+	}
+	if kind == "WEB" {
+		mu.Lock()
+		activeTunnelURL = newURL
+		mu.Unlock()
+		updateEnv(map[string]string{"APP_URL": newURL})
+		clearLaravelCache()
+		updateLINEWebhook(newURL)
+		notifyTelegramURLChange(newURL)
+		pushToGitHub(newURL, lastURLFromLog(logSSH))
+		log.Printf("[CF-MGR][WEB] 📌 APP_URL → %s", newURL)
+	} else { // SSH
+		updateEnv(map[string]string{"SSH_TUNNEL_URL": newURL})
+		notifyTelegramMessageKb(fmt.Sprintf(
+			"🔁 <b>SSH Tunnel URL เปลี่ยน</b>\n━━━━━━━━━━━━━━━━━━━━\n🔒 <b>SSH ใหม่:</b> %s\nฝั่ง web ยังใช้ URL เดิมได้ปกติ — ไม่กระทบกัน",
+			newURL,
+		), alertKeyboard("SSH"))
+		log.Printf("[CF-MGR][SSH] 📌 SSH_TUNNEL_URL → %s", newURL)
+	}
+}
+
+// restartOneTunnelVerified restart เฉพาะ kind + verify จาก public side ก่อนคืนค่า
+func restartOneTunnelVerified(kind, oldURL string) (string, error) {
+	d := descFor(kind)
+	// Adoption-first: ถ้า process เดิมยังมีชีวิตและตอบได้ (แค่ URL ค้าง) → adopt ไม่ต้อง spawn ใหม่
+	if procAliveKind(kind) {
+		if clientEdgeOK(d.MetricsURL) {
+			if u := lastURLFromLog(d.LogPath); u != "" && u != oldURL {
+				applyOneNewURL(kind, u)
+				return u, nil
+			}
+		}
+	}
+	killOneCloudflared(kind)
+	newURL, err := startOneTunnel(kind)
+	if err != nil {
+		return "", err
+	}
+	// Verify จาก public side
+	verify := newProbeClient(8 * time.Second)
+	deadline := time.Now().Add(90 * time.Second)
+	for time.Now().Before(deadline) {
+		resp, e := verify.Head(newURL)
+		if e == nil {
+			sc := resp.StatusCode
+			resp.Body.Close()
+			if sc < 530 {
+				log.Printf("[CF-MGR][%s] ✅ verified live — %s", kind, newURL)
+				applyOneNewURL(kind, newURL)
+				return newURL, nil
+			}
+		}
+		time.Sleep(3 * time.Second)
+	}
+	return "", fmt.Errorf("[CF-MGR][%s] new URL %s not serving after 90s (Error 1033?)", kind, newURL)
+}
+
+// clientEdgeOK อ่าน metrics เฉพาะตัวของ kind (20241=WEB / 20242=SSH) — แยกจากตัวอื่น
+func clientEdgeOK(metricsURL string) bool {
+	client := &http.Client{Timeout: 4 * time.Second}
+	resp, err := client.Get(metricsURL)
+	if err != nil {
+		return false
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return false
+	}
+	for _, line := range strings.Split(string(body), "\n") {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "cloudflared_tunnel_server_locations{") {
+			f := strings.Fields(line)
+			if len(f) >= 2 {
+				return f[len(f)-1] != "0"
+			}
+		}
+	}
+	return false
+}
+
+// perTunnelHealth เก็บ fail counter ของ web / ssh แยกกัน
+type perTunnelHealth struct {
+	failCount     int
+	edgeFailCount int
+	lastRestart   time.Time
+}
+
+var tunnelHealth = map[string]*perTunnelHealth{
+	"WEB": {},
+	"SSH": {},
+}
+
+// metricsHostname ดึงชื่อ host ปัจจุบันของ tunnel ตัวนั้นจาก metrics โดยตรง
+// (ไม่พึ่ง log file — runsv เขียน log ผ่าน svlogd ไม่ใช่ ~/cloudflared.log)
+func metricsHostname(metricsURL string) string {
+	client := &http.Client{Timeout: 4 * time.Second}
+	resp, err := client.Get(metricsURL)
+	if err != nil {
+		return ""
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return ""
+	}
+	for _, line := range strings.Split(string(body), "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "cloudflared_tunnel_user_hostnames_counts{") {
+			start := strings.Index(line, `https://`)
+			end := strings.Index(line, `.trycloudflare.com`)
+			if start >= 0 && end > start {
+				return line[start : end+len(`.trycloudflare.com`)]
+			}
+		}
+	}
+	return ""
+}
+
+// sshActiveURL — URL ของ SSH tunnel (จาก log ของตัวเองก่อน, fallback .env)
+func sshActiveURL() string {
+	// trust order: metrics 20242 (live ที่สุด) → log → .env
+	if u := metricsHostname(tunnelDescriptors["SSH"].MetricsURL); isValidTunnelURL(u) {
+		return u
+	}
+	if u := lastURLFromLog(logSSH); isValidTunnelURL(u) {
+		return u
+	}
+	if env := readEnv("SSH_TUNNEL_URL"); isValidTunnelURL(env) {
+		return env
+	}
+	return ""
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Per-tunnel health watcher — หัวใจของการแยกลิงก์
+// ตรวจ WEB / SSH แยกกันทุก 15 วิ — ตัวไหนล่มก็ restart เฉพาะตัวนั้น
+// ──────────────────────────────────────────────────────────────────────────────
+func runPerTunnelHealth() {
+	for {
+		time.Sleep(healthCheckInterval)
+		for _, kind := range []string{"WEB", "SSH"} {
+			checkOneTunnel(kind)
+		}
+	}
+}
+
+func checkOneTunnel(kind string) {
+	h := tunnelHealth[kind]
+	d := descFor(kind)
+
+	// Cooldown เฉพาะของตัว (ใช้ global cooldown file เพื่อไม่ให้ spawn ซ้ำถ้าเพิ่งโดน 429 ทั้งระบบ)
+	isCd, rem, reason := getCooldownRemaining()
+	if isCd {
+		log.Printf("[CF-MGR][%s] ⏳ cooldown active %v (%s) — skipping", kind, rem, reason)
+		return
+	}
+
+	url := ""
+	if kind == "WEB" {
+		url = getActiveURL()
+	} else {
+		url = sshActiveURL()
+	}
+
+	restartNeeded := false
+	reasonStr := ""
+
+	if !procAliveKind(kind) {
+		h.failCount++
+		log.Printf("[CF-MGR][%s] ⚠️  process down — fail=%d", kind, h.failCount)
+		if h.failCount >= failThreshold {
+			restartNeeded = true
+			reasonStr = kind + " cloudflared process down"
+		}
+	} else if url != "" && isValidTunnelURL(url) {
+		probe := newProbeClient(8 * time.Second)
+		resp, err := probe.Head(url)
+		if err == nil && resp.StatusCode < 530 {
+			resp.Body.Close()
+			h.failCount = 0
+			h.edgeFailCount = 0
+			log.Printf("[CF-MGR][%s] ✅ %s — OK", kind, url)
+		} else {
+			h.failCount++
+			sc := -1
+			if err == nil {
+				sc = resp.StatusCode
+				resp.Body.Close()
+			}
+			log.Printf("[CF-MGR][%s] ⚠️  %s unreachable (HTTP %d / %v) — fail=%d", kind, url, sc, err, h.failCount)
+
+			threshold := failThreshold
+			if clientEdgeOK(d.MetricsURL) {
+				threshold = 8 // DNS grace
+			}
+			if h.failCount >= threshold {
+				restartNeeded = true
+				reasonStr = fmt.Sprintf("%s public URL unreachable (HTTP %d)", kind, sc)
+			}
+			if !restartNeeded && !clientEdgeOK(d.MetricsURL) {
+				h.edgeFailCount++
+				log.Printf("[CF-MGR][%s] ⚠️ edge disconnected — edgeFail=%d", kind, h.edgeFailCount)
+				if h.edgeFailCount >= edgeFailThreshold {
+					restartNeeded = true
+					reasonStr = kind + " lost edge connection (Error 1033)"
+				}
+			}
+		}
+	} else {
+		// ไม่มี URL ที่ valid — ลองดึงจาก log ของตัวเองก่อน
+		if u := lastURLFromLog(d.LogPath); u != "" && isValidTunnelURL(u) {
+			if kind == "WEB" {
+				mu.Lock()
+				activeTunnelURL = u
+				mu.Unlock()
+			}
+			log.Printf("[CF-MGR][%s] 💡 recovered URL from log: %s", kind, u)
+		} else {
+			h.failCount++
+			log.Printf("[CF-MGR][%s] ⚠️ no valid URL — fail=%d", kind, h.failCount)
+			if h.failCount >= failThreshold {
+				restartNeeded = true
+				reasonStr = kind + " has no valid URL"
+			}
+		}
+	}
+
+	if restartNeeded && time.Since(h.lastRestart) > restartCooldown {
+		h.lastRestart = time.Now()
+		h.failCount = 0
+		h.edgeFailCount = 0
+		log.Printf("[CF-MGR][%s] 🔄 Auto-restart TRIGGERED (%s)", kind, reasonStr)
+		notifyTelegramMessageKb(fmt.Sprintf(
+			"🎯 <b>%s Tunnel Restart</b> (ลิงก์แยกอิสระ — ตัวอื่นไม่กระทบ)\n━━━━━━━━━━━━━━━━━━━━\n⚠️ %s\n🔄 <i>กำลังขอ URL ใหม่เฉพาะ %s…</i>",
+			kind, reasonStr, kind,
+		), alertKeyboard(kind))
+		newURL, err := restartOneTunnelVerified(kind, url)
+		if err != nil {
+			log.Printf("[CF-MGR][%s] restart fail: %v", kind, err)
+			if strings.Contains(err.Error(), "rate-limited") {
+				setCooldown(10*time.Minute, "Rate-limited — "+kind)
+			}
+			notifyTelegramMessage(fmt.Sprintf(
+				"🚨 <b>%s Tunnel ใช้งานไม่ได้ชั่วคราว — รีเซ็ตไม่สำเร็จ</b>\n━━━━━━━━━━━━━━━━━━━━\n"+
+					"❌ เหตุผล: %v\n"+
+					"⏳ ระบบจะลองใหม่อัตโนมัติหลัง cooldown (ถ้า rate-limit ~10 นาที)\n"+
+					"💡 อีกตัว (/%s) ยังใช้งานได้ปกติ\n"+
+					"ตรวจสอบทีหลังด้วย /tunnel_status",
+				kind, err, map[string]string{"WEB": "restart_ssh", "SSH": "restart_web"}[kind],
+			))
+		} else {
+			clearCooldown()
+			log.Printf("[CF-MGR][%s] ✅ restart OK — new URL %s", kind, newURL)
+		}
+	}
+}
 
 func killCloudflared() {
 	_ = exec.Command("pkill", "-9", "-f", "cloudflared").Run()
@@ -662,25 +1056,39 @@ func startTunnels() (httpURL, sshURL string, err error) {
 // runURLWatcher passively monitors cloudflared.log and applies side-effects
 // when it detects a new URL (e.g. tunnel spontaneously reconnected).
 func runURLWatcher() {
-	lastURL := getActiveURL()
+	// v4: metrics-driven per-tunnel — URL จาก metrics (ไม่ใช่ log สะสมเก่า)
+	watchURLs := map[string]string{
+		"WEB": getActiveURL(),
+		"SSH": sshActiveURL(),
+	}
 	for {
 		time.Sleep(urlScanInterval)
-		cur := lastURLFromLog(logHTTP)
-		if cur == "" || cur == lastURL {
-			continue
+		for _, kind := range []string{"WEB", "SSH"} {
+			var cur string
+			if kind == "WEB" {
+				cur = getActiveURL()
+			} else {
+				cur = sshActiveURL()
+			}
+			prev, hadPrev := watchURLs[kind]
+			if cur == "" || cur == prev && hadPrev {
+				continue
+			}
+			if hadPrev && prev != "" && cur != prev {
+				log.Printf("[CF-MGR][%s] 👀 URL changed (spontaneous): %s → %s", kind, prev, cur)
+				applyOneNewURL(kind, cur)
+			}
+			watchURLs[kind] = cur
 		}
-		if !isURLAlive(cur) {
-			continue
-		}
-		sshCur := lastURLFromLog(logSSH)
-		lastURL = cur
-		applyNewURL(cur, sshCur)
 	}
 }
 
 // getActiveURL returns currently active tunnel URL with fallbacks:
 // in-memory activeTunnelURL -> last URL from cloudflared.log -> APP_URL from .env
 func getActiveURL() string {
+	if u := metricsHostname(tunnelDescriptors["WEB"].MetricsURL); isValidTunnelURL(u) {
+		return u
+	}
 	mu.RLock()
 	cur := activeTunnelURL
 	mu.RUnlock()
@@ -771,7 +1179,7 @@ func writeCooldownFile(active bool, rem time.Duration, reason string) {
 // alive. To catch that case we also probe cloudflared's metrics endpoint
 // (cloudflared_tunnel_server_locations): when it reports 0 edge locations we
 // restart the tunnel after only edgeFailThreshold consecutive observations.
-func runHealthWatcher() {
+func runHealthWatcher_LEGACY() {
 	failCount := 0
 	edgeFailCount := 0
 	lastRestart := time.Time{}
@@ -831,7 +1239,7 @@ func runHealthWatcher() {
 				// If cloudflared itself confirms edge connection is active, allow up to 8 failures (2 minutes)
 				// for DNS propagation before concluding the tunnel is broken.
 				threshold := failThreshold
-				if edgeOK, known := tunnelEdgeState(); known && edgeOK {
+				if edgeOK, known := tunnelEdgeState_LEGACY(); known && edgeOK {
 					threshold = 8
 					log.Printf("[CF-MGR][HEALTH] ℹ️  cloudflared edge is connected — granting DNS grace (failCount=%d/%d)", failCount, threshold)
 				}
@@ -846,7 +1254,7 @@ func runHealthWatcher() {
 			// The URL keeps serving the 1033 page while the process looks fine.
 			// Only act when the metrics endpoint gives a definite answer.
 			if !restartNeeded {
-				if edgeOK, known := tunnelEdgeState(); known {
+				if edgeOK, known := tunnelEdgeState_LEGACY(); known {
 					if edgeOK {
 						edgeFailCount = 0
 					} else {
@@ -1004,29 +1412,66 @@ func main() {
 	// healthy, keep it. Only kill + re-register when nothing healthy exists —
 	// this preserves user-facing URLs and saves the Cloudflare registration
 	// quota (HTTP 429 rate limit after ~30 quick-tunnel registrations/hour).
-	if adopted, ok := tryAdoptTunnel(); ok {
-		log.Printf("[CF-MGR] Adopted existing tunnel %s — skipping fresh registration", adopted)
-		clearCooldown()
-	} else if isCloudflaredAlive() {
-		log.Println("[CF-MGR] cloudflared running but no healthy URL found — replacing tunnel")
-		killCloudflared()
-	}
-
-	httpURL, sshURL, err := startTunnels()
-	if err != nil {
-		log.Printf("[CF-MGR] Initial tunnel start failed: %v", err)
-		if strings.Contains(err.Error(), "rate-limited") {
-			setCooldown(10*time.Minute, "Rate-limited by Cloudflare (HTTP 429 / Error 1015)")
+	// Boot แบบ per-tunnel: ตัวไหนยังมีชีวิต (process + URL live จาก metrics) ให้ adopt
+	// เฉพาะตัวที่ตาย/ไม่มี URL ออม จึง spawn ใหม่ — web/ssh ไม่ผูกชะตากรรมกัน
+	for _, kind := range []string{"WEB", "SSH"} {
+		d := descFor(kind)
+		url := ""
+		if kind == "WEB" {
+			url = getActiveURL()
+		} else {
+			url = sshActiveURL()
 		}
-		log.Println("[CF-MGR] Continuing with background watchers…")
-	} else {
+		alive := procAliveKind(kind)
+		liveURL := metricsHostname(d.MetricsURL)
+		if alive && isValidTunnelURL(liveURL) {
+			log.Printf("[CF-MGR][%s] 👟 boot-adopt live tunnel %s — skip spawn", kind, liveURL)
+			if kind == "WEB" && isValidTunnelURL(url) && url == liveURL {
+				continue // ทุกอย่าง sync อยู่แล้ว
+			}
+			applyOneNewURL(kind, liveURL)
+			continue
+		}
+		if !alive && isValidTunnelURL(url) {
+			log.Printf("[CF-MGR][%s] 💤 no process — spawning fresh", kind)
+		}
+		spawnURL, err := startOneTunnel(kind)
+		if err != nil {
+			log.Printf("[CF-MGR][%s] boot spawn fail: %v", kind, err)
+			if strings.Contains(err.Error(), "rate-limited") {
+				setCooldown(10*time.Minute, "Rate-limited by Cloudflare (HTTP 429 / Error 1015)")
+				break
+			}
+			continue
+		}
+		if kind == "WEB" {
+			// verify web URL ก่อน propagate (Error 1033 guard)
+			probe := newProbeClient(8 * time.Second)
+			verified := false
+			for i := 0; i < 20; i++ {
+				resp, e := probe.Head(spawnURL)
+				if e == nil {
+					sc := resp.StatusCode
+					resp.Body.Close()
+					if sc < 530 {
+						verified = true
+						break
+					}
+				}
+				time.Sleep(3 * time.Second)
+			}
+			if !verified {
+				log.Printf("[CF-MGR][WEB] ⚠️ boot URL %s not verified — skip apply", spawnURL)
+				continue
+			}
+		}
 		clearCooldown()
-		applyNewURL(httpURL, sshURL)
+		applyOneNewURL(kind, spawnURL)
 	}
 
 	// Start background watchers
 	go runURLWatcher()
-	go runHealthWatcher()
+	go runPerTunnelHealth()
 
 	// 1-second ticker to keep cf-cooldown.json updated in real-time for live second ticking
 	go func() {

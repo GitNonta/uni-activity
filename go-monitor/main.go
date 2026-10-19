@@ -5,25 +5,32 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net"
+		"net"
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	"os/signal"
+		"runtime"
 	"path/filepath"
-	"strings"
+		"strings"
 	"sync"
 	"syscall"
 	"time"
 
 	"uni-activity/go-monitor/collector"
 	"uni-activity/go-monitor/config"
+	"uni-activity/go-monitor/metrics"
 	"uni-activity/go-monitor/server"
+	"uni-activity/go-monitor/socks5"
+	"uni-activity/go-monitor/sysinfo"
 	"uni-activity/go-monitor/telegram"
 	"uni-activity/go-monitor/tunnel"
 )
 
+
 func main() {
+	pinThaiTimeLocal() // เวลาประเทศไทย (Asia/Bangkok +07)
 	portFlag := flag.Int("port", 9999, "HTTP port to listen on")
 	flag.Parse()
 
@@ -46,6 +53,9 @@ func main() {
 	// Start Background Engines
 	log.Println("🤖 Starting Telegram Bot Poller...")
 	telegram.StartBotPoller()
+
+	log.Println("\U0001f9e6 Starting built-in SOCKS5 proxy on :1080...")
+	go socks5.StartServer(1080)
 
 	log.Println("☁️ Starting Cloudflare Tunnel Watcher...")
 	tunnel.StartTunnelWatcher()
@@ -159,6 +169,104 @@ func main() {
 
 	// Notify Telegram of Startup
 	go telegram.SendStartup(*portFlag)
+
+	// ── 4b. Auto-Balance: ระบบโอเวอร์โหลดต่อเนื่อง 2 รอบ → รักษาบาลานซ์เอง
+	//  RAM ≥95% → php artisan cache:clear (คืนหน่วยความจำ)
+	//  CPU ≥95% → renice +10 top process ที่ไม่ใช่ service หลัก (denice safe)
+	//  cooldown 15 นาทีต่อประเภท + รายงานผลเข้า Telegram
+	go func() {
+		defer func() { if r := recover(); r != nil { log.Printf(" Panic(autoBalance) %v", r) } }()
+		streak := map[string]int{}
+		lastAct := map[string]time.Time{}
+		for {
+			time.Sleep(30 * time.Second)
+			func() {
+				defer func() { if r := recover(); r != nil { log.Printf(" Panic(abCheck) %v", r) } }()
+				mem := sysinfo.GetMemory()
+				load := sysinfo.GetLoad()
+				cores := runtime.NumCPU()
+				loadPct := load[0] / float64(cores) * 100
+				cpuPct := metrics.CPUUsage()
+				now := time.Now()
+				if mem.Percent >= 95 {
+					streak["ram"]++
+				} else {
+					streak["ram"] = 0
+				}
+				if cpuPct >= 95 {
+					streak["cpu"]++
+				} else {
+					streak["cpu"] = 0
+				}
+				if streak["ram"] >= 2 && now.Sub(lastAct["ram"]) >= 15*time.Minute {
+					lastAct["ram"] = now
+					out, err := exec.Command("sh", "-c", "cd ~/uni-activity && php artisan cache:clear --force 2>&1 | tail -2").CombinedOutput()
+					telegram.Send(fmt.Sprintf("⚔️ <b>Auto-Balance: RAM %.1f%% สูงต่อเนื่อง</b>\nตรวจ: น้ำหนักผู้กินหน่วยความจำ\nล้าง Laravel cache และคืนทุก: <pre>%s</pre>", mem.Percent, strings.TrimSpace(string(out))))
+					log.Printf("⚔ [AutoBalance] RAM %.1f%% → cache:clear err=%v out=%s", mem.Percent, err, strings.TrimSpace(string(out)))
+				}
+				if streak["cpu"] >= 2 && now.Sub(lastAct["cpu"]) >= 15*time.Minute {
+					lastAct["cpu"] = now
+					script := `ps -eo pid,pcpu,comm --sort=-pcpu | head -4 | tail -n +2 | awk '{print $1}' | while read p; do c=$(cat /proc/$p/comm 2>/dev/null); case "$c" in nginx|php-fpm*|postgres|valkey*|cloudflared|go-monitor|cf-manager-bin|sshd|microsocks|php) ;; *) renice +10 -p $p >/dev/null 2>&1 && echo "renice +10 $c(pid $p)";; esac; done`
+					out, err := exec.Command("sh", "-c", script).CombinedOutput()
+					action := strings.TrimSpace(string(out))
+					if action == "" {
+						action = "(no non-critical top process)"
+					}
+					telegram.Send(fmt.Sprintf("⚔️ <b>Auto-Balance: CPU จริง %.1f%% สูงต่อเนื่อง</b>\n📊 Load 1m: %.2f / %d cores (%.1f%%)\nทำ: ลดลำดับความสำคัญ (lower priority): <pre>%s</pre>", cpuPct, load[0], cores, loadPct, action))
+					log.Printf("⚔ [AutoBalance] CPU %.1f%% → %s err=%v", cpuPct, action, err)
+				}
+			}()
+		}
+	}()
+
+	// ── 4. Auto Resource Watcher: RAM / CPU ─────────────────────────────────
+	// ทุก 30 วิ เช็ค RAM ≥ 95% หรือ CPU (load 1m) ≥ 95% ของ cores
+	// → ส่ง Telegram อัตโนมัติ (cooldown 10 นาทีต่อชนิด กันสแปม)
+	go func() {
+		defer func() { if r := recover(); r != nil { log.Printf(" Panic(resourceWatcher) %v", r) } }()
+		lastAlert := map[string]time.Time{}
+		for {
+			time.Sleep(30 * time.Second)
+			func() {
+				defer func() { if r := recover(); r != nil { log.Printf(" Panic(check) %v", r) } }()
+				mem := sysinfo.GetMemory()
+				load := sysinfo.GetLoad()
+				cores := runtime.NumCPU()
+				loadPercent := load[0] / float64(cores) * 100
+				cpuPct := metrics.CPUUsage()
+				now := time.Now()
+
+				if mem.Percent >= 95 {
+					if t, ok := lastAlert["ram"]; ok && now.Sub(t) < 10*time.Minute {
+						return
+					}
+					lastAlert["ram"] = now
+					telegram.Send(fmt.Sprintf(
+						"🚨 <b>ALERT: RAM เกือบเต็ม</b>\n"+
+							"🧠 RAM: <b>%.1f%%</b> (%d / %d MB ใช้งาน)\n"+
+							"⏰ %s\n"+
+							"💡 แนะนำ: <code>/top</code> เพื่อดู process ที่กินหน่วยความจำ",
+						mem.Percent, mem.UsedMB, mem.TotalMB, now.Format("15:04:05 02/01")))
+					log.Printf("🚨 [ResourceWatcher] RAM alert sent (%.1f%%)", mem.Percent)
+				}
+
+				if cpuPct >= 95 {
+					if t, ok := lastAlert["cpu"]; ok && now.Sub(t) < 10*time.Minute {
+						return
+					}
+					lastAlert["cpu"] = now
+					telegram.Send(fmt.Sprintf(
+						"🚨 <b>ALERT: CPU ทำงานหนัก</b>\n"+
+							"🔥 CPU จริง: <b>%.1f%%</b>\n"+
+							"📊 Load 1m: %.2f จาก %d cores (%.1f%%)\n"+
+							"⏰ %s\n"+
+							"💡 แนะนำ: <code>/top</code> เพื่อดู process ที่กิน CPU",
+						cpuPct, load[0], cores, loadPercent, now.Format("15:04:05 02/01")))
+					log.Printf("🚨 [ResourceWatcher] CPU alert sent (cpu %.1f%%, load %.2f/%d)", cpuPct, load[0], cores)
+				}
+			}()
+		}
+	}()
 
 	// ── 4. Graceful Shutdown ──────────────────────────────────────────────────
 	sigChan := make(chan os.Signal, 1)
