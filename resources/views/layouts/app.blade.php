@@ -66,6 +66,16 @@
                     <svg width="17" height="17" style="width:17px;height:17px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 16v-4m0-4h.01"/></svg>
                 </a>
             </div>
+            {{-- i18n switcher (TH / EN) --}}
+            <div class="navbar-right lang-switcher" style="display:flex; align-items:center; gap:.4rem; font-size:.85rem;">
+                <a href="{{ route('lang.switcher', 'th') }}"
+                   class="{{ app()->getLocale() === 'th' ? 'active' : '' }}"
+                   style="text-decoration:none; {{ app()->getLocale() === 'th' ? 'font-weight:700; color:var(--primary, #2563eb);' : 'color:inherit;' }}">TH</a>
+                <span>/</span>
+                <a href="{{ route('lang.switcher', 'en') }}"
+                   class="{{ app()->getLocale() === 'en' ? 'active' : '' }}"
+                   style="text-decoration:none; {{ app()->getLocale() === 'en' ? 'font-weight:700; color:var(--primary, #2563eb);' : 'color:inherit;' }}">EN</a>
+            </div>
             @auth
             {{-- Desktop nav links (ซ่อนบนมือถือ) --}}
             <nav class="navbar-center navbar-desktop">

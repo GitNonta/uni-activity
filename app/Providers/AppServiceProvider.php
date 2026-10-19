@@ -69,6 +69,16 @@ class AppServiceProvider extends ServiceProvider
         $this->configureOutboundProxy();
         $this->registerConsoleCommandLogger();
         $this->registerFollowerNotificationEvents();
+        $this->registerViewComposers();
+    }
+
+    /** ลงทะเบียน View Composer (ข้อมูลเสริมให้หน้ากิจกรรม) */
+    private function registerViewComposers(): void
+    {
+        \Illuminate\Support\Facades\View::composer(
+            'activities.show',
+            \App\View\Composers\ActivityFeedbackComposer::class
+        );
     }
 
     /**

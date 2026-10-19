@@ -253,4 +253,92 @@ class ActivityController extends Controller
 
         return view('activities.show', compact('activity', 'userRegistration', 'userAttendance'));
     }
+    /**
+     * ปฏิทินกิจกรรมสาธารณะ: วางกิจกรรมทั้งเดือนบนปฏิทินพร้อมกรองหมวด/ค้นหา
+     */
+    public function calendar(Request $request): View
+    {
+        $categories = ListCache::remember(
+            ListCache::GROUP_ACTIVITY_CATEGORIES,
+            'all',
+            3600,
+            fn () => ActivityCategory::query()->orderBy('name')->get()
+        );
+
+        $monthParam = $request->input('month', date('Y-m'));
+        try {
+            $month = \Carbon\Carbon::parse($monthParam.'-01');
+        } catch (\Throwable) {
+            $month = now()->copy()->startOfMonth();
+        }
+        $month = $month->startOfMonth();
+
+        $startStr = $month->copy()->toDateString();
+        $endStr = $month->copy()->endOfMonth()->toDateString();
+
+        $categoryId = $request->input('category');
+        $search = trim((string) $request->input('search', ''));
+
+        $cacheSuffix = md5(serialize([1, $month->format('Y-m'), $categoryId, $search]));
+
+        $activities = ListCache::remember(
+            ListCache::GROUP_ACTIVITIES,
+            "cal_{$cacheSuffix}",
+            300,
+            function () use ($startStr, $endStr, $categoryId, $search) {
+                return Activity::query()
+                    ->with('category')
+                    ->where(function ($q) use ($startStr, $endStr) {
+                        $q->whereBetween('activity_date', [$startStr, $endStr])
+                          ->orWhere(function ($sq) use ($startStr, $endStr) {
+                              $sq->whereNotNull('end_date')
+                                 ->where('end_date', '>=', $startStr)
+                                 ->where('activity_date', '<=', $endStr);
+                          });
+                    })
+                    ->where('status', '!=', 'cancelled')
+                    ->when($categoryId, fn ($qq) => $qq->where('category_id', $categoryId))
+                    ->when($search !== '', fn ($qq) => $qq->where(function ($sq) use ($search) {
+                        $sq->where('title', 'like', "%{$search}%")
+                           ->orWhere('location', 'like', "%{$search}%");
+                    }))
+                    ->orderBy('activity_date')
+                    ->orderBy('start_time')
+                    ->get();
+            }
+        );
+
+        // จัดกลุ่มตามวันรองรับกิจกรรมหลายวัน (วนทุกวันในช่วง)
+        $byDate = [];
+        /** @var \Carbon\Carbon $m */
+        $mStart = $month->copy();
+        $mEnd = $month->copy()->endOfMonth();
+
+        foreach ($activities as $a) {
+            $d0 = \Carbon\Carbon::parse($a->activity_date);
+            $d1 = $a->end_date ? \Carbon\Carbon::parse($a->end_date) : $d0;
+
+            $s = $d0->max($mStart);
+            $e = $d1->min($mEnd);
+            for ($d = $s->copy(); $d->lessThanOrEqualTo($e); $d->addDay()) {
+                $key = $d->toDateString();
+                $byDate[$key][] = $a;
+            }
+        }
+
+        return view('activities.calendar', [
+            'month' => $month,
+            'byDate' => $byDate,
+            'categories' => $categories,
+            'prevMonth' => $month->copy()->subMonth()->format('Y-m'),
+            'nextMonth' => $month->copy()->addMonth()->format('Y-m'),
+            'prevLabel' => $month->copy()->subMonth()->translatedFormat('F Y'),
+            'nextLabel' => $month->copy()->addMonth()->translatedFormat('F Y'),
+            'selCategory' => $categoryId,
+            'selSearch' => $search,
+            'totalInMonth' => $activities->count(),
+        ]);
+    }
+
+
 }

@@ -166,6 +166,7 @@ Route::middleware(['auth', 'role:staff'])->group(function () {
 // ── เส้นทางนักศึกษาที่เข้าดูได้โดยไม่ต้องเข้าสู่ระบบ ──
 Route::get('/activities', [ActivityController::class, 'index'])->name('activities.index');
 Route::get('/activities/suggest', [ActivityController::class, 'suggest'])->middleware('throttle:api-general')->name('activities.suggest'); // Typeahead กัน scraping — ต้องมาก่อน {activity}
+Route::get('/activities/calendar', [ActivityController::class, 'calendar'])->name('activities.calendar'); // server-only (รันก่อน {activity} กัน route ชน)
 Route::get('/activities/{activity}', [ActivityController::class, 'show'])->name('activities.show');
 Route::get('/announcements', [StudentAnnouncementController::class, 'index'])->name('announcements.index');
 Route::get('/announcements/{announcement}', [StudentAnnouncementController::class, 'show'])->name('announcements.show');
@@ -215,6 +216,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/recommendations', [RecommendationController::class, 'index'])->name('recommendations.index');      // (7) กิจกรรมที่ระบบแนะนำ
     // ── (4) บุ๊กมาร์กกิจกรรม: toggle ติด/เอาออก ──
     Route::post('/activities/{activity}/bookmark', [BookmarkController::class, 'toggle'])->name('activity.bookmark');
+    // ── server-only alias (views ใช้ชื่อ activities.bookmark.toggle) ──
+    Route::post('/activities/{activity}/bookmark-toggle', [BookmarkController::class, 'toggle'])->name('activities.bookmark.toggle');
     Route::get('/history', [StudentController::class, 'history'])->name('student.history');                          // ประวัติการเข้าร่วม
     Route::get('/summary', [StudentController::class, 'summary'])->name('student.summary');                          // สรุปชั่วโมง
     Route::get('/summary/pdf', [StudentController::class, 'downloadPdf'])->name('student.summary.pdf');              // ดาวน์โหลด PDF ใบแสดงผลกิจกรรม
