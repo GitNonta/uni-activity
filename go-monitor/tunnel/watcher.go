@@ -51,6 +51,9 @@ func (s *TunnelStatus) GetStatus() (bool, int, string, string) {
 // Constants
 // ──────────────────────────────────────────────────────────────────────────────
 
+var applyMu sync.Mutex // กัน applyNewURL วนซ้ำซ้อน
+var lastAppliedWeb, lastAppliedSSH string
+
 var cfURLRegex = regexp.MustCompile(`https://[a-zA-Z0-9-]+\.trycloudflare\.com`)
 
 const (
@@ -192,6 +195,18 @@ func isURLAlive(url string) bool {
 
 // GetActiveURL returns the best-known live public URL for the HTTP tunnel.
 func GetActiveURL() string {
+	// 0. LIVE จาก metrics ของเว็บหลัก (20241) ก่อนเสมอ — กัน status/ไฟล์ค่าเก่าค้าง
+	// และถ้า metrics ต่างจากที่จดไว้ → apply ทันที (คล้าย SSH)
+	if web := liveWebURLFromMetrics(); web != "" {
+		Status.mu.RLock()
+		cur := Status.URL
+		Status.mu.RUnlock()
+		if web != cur {
+			// apply เดี๋ยว watcher จัดการ
+		}
+		return web
+	}
+
 	Status.mu.RLock()
 	cur := Status.URL
 	Status.mu.RUnlock()
@@ -211,9 +226,13 @@ func GetActiveURL() string {
 		}
 	}
 
-	// 2. cloudflared metrics endpoints (ports 20241-20245)
+	// 2. cloudflared metrics endpoints — เว็บหลักก่อน (20241 = tunnel 127.0.0.1:8088)
+	// แยกจาก SSH tunnel (20242) เพื่อไม่ให้ค่าปนกัน
+	if u := liveWebURLFromMetrics(); u != "" {
+		return u
+	}
 	httpClient := &http.Client{Timeout: 1 * time.Second}
-	for port := 20241; port <= 20245; port++ {
+	for port := 20243; port <= 20245; port++ {
 		metricsURL := fmt.Sprintf("http://127.0.0.1:%d/metrics", port)
 		if resp, err := httpClient.Get(metricsURL); err == nil {
 			body, _ := io.ReadAll(resp.Body)
@@ -233,7 +252,94 @@ func GetActiveURL() string {
 }
 
 // GetSSHURL returns the best-known live public URL for the SSH tunnel.
+// liveSSHURLFromMetrics ดึง userHostname ปัจจุบันจาก cloudflared metrics (20241-20245)
+// — แหล่งข้อมูล live ที่เชื่อถือได้แม้ไฟล์ log ว่าง/ถูก truncate
+// liveURLFromMetrics(ports...) ดึง userHostname ปัจจุบันของ tunnel ที่ metrics
+// ตัวแรกในรายการ ports ที่สำเร็จ — แหล่งข้อมูล live ที่เชื่อถือได้แม้ไฟล์ log ว่าง/ถูก truncate
+func liveURLFromMetrics(ports ...int) string {
+	client := &http.Client{Timeout: 2 * time.Second}
+	for _, port := range ports {
+		resp, err := client.Get(fmt.Sprintf("http://127.0.0.1:%d/metrics", port))
+		if err != nil {
+			continue
+		}
+		body, _ := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		// หมายเหตุ: metrics 20241 = tunnel เว็บหลัก (127.0.0.1:8088), 20242 = tunnel SSH (ssh://localhost:8022)
+		if m := cfURLRegex.Find(body); m != nil {
+			return string(m)
+		}
+	}
+	return ""
+}
+
+// liveSSHURLFromMetrics — URL ของ SSH tunnel เท่านั้น (svc cloudflared-ssh → metrics 20242)
+func liveSSHURLFromMetrics() string {
+	if u := liveURLFromMetrics(20242); u != "" {
+		return u
+	}
+	// fallback: SSH tunnel สำรอง port อื่นที่ไม่ใช่ตัวเว็บหลัก 20241
+	for _, port := range []int{20243, 20244, 20245} {
+		if u := liveURLFromMetrics(port); u != "" {
+			return u
+		}
+	}
+	return ""
+}
+
+// liveWebURLFromMetrics — URL ของ tunnel เว็บหลักเท่านั้น (metrics 20241)
+func liveWebURLFromMetrics() string {
+	return liveURLFromMetrics(20241)
+}
+
+// notifySSHChanged — แจ้ง Telegram เมื่อ SSH tunnel URL เปลี่ยน
+// เพื่อให้ผู้ใช้รู้ว่าต้องใช้ "สาย" (URL) ใหม่ในการเชื่อมต่อ SSH
+func notifySSHChanged(newURL, oldURL string) {
+	// กันเรียกซ้อน/ซ้ำซ้อนกันเอง: applyNewURL จะอัปเดต Status.SSHURL ภายใต้ lock
+	// และ GetSSHURL ที่ถูกเรียกซ้ำจะเห็นค่าใหม่ → ไม่ส่งซ้ำ
+	prev := oldURL
+	if prev == "" {
+		Status.mu.RLock()
+		prev = Status.SSHURL
+		Status.mu.RUnlock()
+	}
+
+	applyNewURL(GetActiveURL(), newURL)
+
+	// แสดง "สายเก่า" ให้สมเหตุผลเสมอ — ถ้าไม่มีค่าเก่า (เช่น tunnel เพิ่ง start ครั้งแรก) ให้แจ้งต่างไป
+	oldLine := "🚫 <b>เก่า (หมดอายุ):</b> " + prev
+	if prev == "" {
+		oldLine = "🚫 <b>เก่า:</b> <i>ไม่มี (tunnel เพิ่งเชื่อมต่อครั้งแรก)</i>"
+	}
+	thTime := time.Now().Format("2006-01-02 15:04:05")
+
+	text := fmt.Sprintf(
+		"🔒 <b>SSH URL เปลี่ยน — ใช้สายใหม่</b>\n"+
+			"━━━━━━━━━━━━━━━━━━━━\n"+
+			"🆕 <b>URL ใหม่:</b> %s\n"+
+			oldLine+"\n"+
+			"🔌 <b>วิธีต่อ:</b> ssh -p 8022 u0_a175@localhost ผ่าน cloudflared access\n"+
+			"⏰ <i>เวลาไทย %s — ตรวจพบอัตโนมัติจาก metrics, อัปเดต active_url.json แล้ว</i>",
+		newURL, thTime,
+	)
+	telegram.Send(text)
+	log.Printf("[Tunnel][SSH-NOTIFY] SSH URL changed → %s (old=%q)", newURL, prev)
+}
+
 func GetSSHURL() string {
+	// 1) LIVE จาก metrics ก่อนเสมอ — กันค่าเก่าค้างเมื่อ tunnel รีเชื่อมต่อและได้ URL ใหม่
+	if live := liveSSHURLFromMetrics(); live != "" {
+		Status.mu.RLock()
+		cur := Status.SSHURL
+		Status.mu.RUnlock()
+		if live != cur {
+			// metrics ต่างจากที่จดไว้ → apply + แจ้ง Telegram (async)
+			// notify/apply เดี๋ยว watcher จัดการ (กัน goroutine ซ้อนจาก read paths)
+		}
+		return live
+	}
+
+	// 2) status ในหน่วยความจำ
 	Status.mu.RLock()
 	cur := Status.SSHURL
 	Status.mu.RUnlock()
@@ -241,6 +347,7 @@ func GetSSHURL() string {
 		return cur
 	}
 
+	// 3) active_url.json
 	activePath := filepath.Join(config.AppConfig.ProjectRoot, "docs", "active_url.json")
 	if f, err := os.Open(activePath); err == nil {
 		defer f.Close()
@@ -252,15 +359,7 @@ func GetSSHURL() string {
 		}
 	}
 
-	httpClient := &http.Client{Timeout: 2 * time.Second}
-	if resp, err := httpClient.Get("http://127.0.0.1:20242/metrics"); err == nil {
-		body, _ := io.ReadAll(resp.Body)
-		resp.Body.Close()
-		if m := cfURLRegex.Find(body); m != nil {
-			return string(m)
-		}
-	}
-
+	// 4) ssh log file (เผื่อแบบเก่ายังเขียนไฟล์อยู่)
 	return scanLastURLFromLog(logSSHPath)
 }
 
@@ -338,6 +437,24 @@ func waitForOrigin(targetURL string, timeout time.Duration) bool {
 
 // applyNewURL runs all side-effects after detecting a new tunnel URL.
 func applyNewURL(httpURL, sshURL string) {
+	applyMu.Lock()
+	defer applyMu.Unlock()
+
+	// กัน apply ซ้ำ ๆ (loop): skip ถ้า (web,ssh) นี้ apply ไปแล้ว
+	if httpURL == lastAppliedWeb && sshURL == lastAppliedSSH {
+		return
+	}
+
+	Status.mu.Lock()
+	if Status.URL == httpURL && Status.SSHURL == sshURL {
+		Status.mu.Unlock()
+		lastAppliedWeb, lastAppliedSSH = httpURL, sshURL
+		return
+	}
+	Status.mu.Unlock()
+
+	lastAppliedWeb, lastAppliedSSH = httpURL, sshURL
+
 	log.Printf("[Tunnel] New URL detected: %s (SSH: %s)", httpURL, sshURL)
 
 	// 1. Update Status
@@ -683,7 +800,15 @@ func StartURLWatcher() {
 				continue
 			}
 
-			sshCur := scanLastURLFromLog(logSSHPath)
+			// แยกแหล่ง URL ตาม tunnel ของตัวเอง:
+			// เว็บหลักจาก metrics 20241, SSH จาก metrics 20242 (log เป็น fallback)
+			if webLive := liveWebURLFromMetrics(); webLive != "" {
+				cur = webLive
+			}
+			sshCur := liveSSHURLFromMetrics()
+			if sshCur == "" {
+				sshCur = scanLastURLFromLog(logSSHPath)
+			}
 			lastURL = cur
 			applyNewURL(cur, sshCur)
 		}

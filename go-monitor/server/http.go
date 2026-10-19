@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"encoding/json"
 	"net/http"
 	"os"
@@ -11,6 +12,8 @@ import (
 	"time"
 
 	"uni-activity/go-monitor/collector"
+	"uni-activity/go-monitor/control"
+	"uni-activity/go-monitor/metrics"
 	"uni-activity/go-monitor/deploy"
 	"uni-activity/go-monitor/proxy"
 	"uni-activity/go-monitor/speedtest"
@@ -49,6 +52,23 @@ func (s *HTTPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	path := r.URL.Path
+
+	// 2b. Prometheus exposition (replaces squid/pgbouncer/hw exporters)
+	if path == "/tg" || path == "/tg/" {
+		s.handleTGDashboard(w, r)
+		return
+	}
+
+	if path == "/metrics" {
+		metrics.HandleMetrics(w, r)
+		return
+	}
+
+	// 2c. Service control API (dashboard + Telegram)
+	if path == "/api/control" {
+		control.HandleControl(w, r)
+		return
+	}
 
 	// 3. API Endpoints — Core Telemetry
 	if path == "/api/stats" {
@@ -376,4 +396,206 @@ func (s *HTTPServer) handleFailedJobs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(resp)
+}
+
+
+// handleTGDashboard — mini dashboard สำหรับ Telegram WebApp
+// SVG เพียวๆ (ไม่มีรูป bitmap) + fetch /api/stats + /api/tunnel-urls ทุก 5 วิ
+// ธีม: dark-crypto (dapp / เหรียญ) — ใช้ font mono + gradient + neon accents
+func (s *HTTPServer) handleTGDashboard(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-store")
+	fmt.Fprint(w, `<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>UniActivity Monitor</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{
+    --bg:#0b0e14; --card:#121722; --card2:#151b28; --line:#1e2635;
+    --txt:#e6edf7; --dim:#8b98ab; --up:#22d3a5; --down:#ff5470; --warn:#ffb454;
+    --neon1:#6c5ce7; --neon2:#00d2ff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  body{background:radial-gradient(1200px 800px at 50% -10%, #14203a 0%, var(--bg) 55%);color:var(--txt);padding:14px 12px 30px}
+  .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;letter-spacing:.5px}
+  .brand .dot{width:10px;height:10px;border-radius:99px;background:var(--up);box-shadow:0 0 12px var(--up)}
+  .live{font-size:11px;color:var(--dim)}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .card{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:14px;padding:12px;position:relative;overflow:hidden}
+  .card:before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,rgba(108,92,231,.08),rgba(0,210,255,.06));pointer-events:none}
+  .lbl{font-size:11px;color:var(--dim);display:flex;justify-content:space-between}
+  .val{font-size:26px;font-weight:800;margin-top:4px}
+  .sub{font-size:11px;color:var(--dim);margin-top:2px}
+  .ok{color:var(--up)} .bad{color:var(--down)} .wr{color:var(--warn)}
+  .val{transition:color .4s ease}
+  .chip .st{width:18px;height:18px;transition:stroke .3s,fill .3s}
+  .bar{transition:width .6s cubic-bezier(.4,0,.2,1)}
+  #disk-bar{transition:width .6s cubic-bezier(.4,0,.2,1)}
+  .poly{transition:all .45s ease-out}
+  svg circle,s{transition:all .45s ease-out}
+  svg{width:100%;height:auto;display:block}
+  .tunnels{margin-top:10px;display:grid;gap:10px}
+  .chip{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+  .chip b{font-size:12px}
+  .chip .u{margin-left:auto;font-size:15px}
+  .stonks{margin-top:12px;background:linear-gradient(180deg,#0f1523,#141b2b);border:1px solid var(--line);border-radius:14px;padding:10px}
+  .stonks h3{font-size:11px;color:var(--dim);font-weight:600;margin-bottom:6px}
+  a.btn{display:block;text-align:center;margin-top:12px;padding:12px;border-radius:12px;text-decoration:none;font-weight:700;
+    background:linear-gradient(90deg,var(--neon1),var(--neon2));color:#fff;box-shadow:0 6px 20px rgba(0,210,255,.25)}
+</style>
+</head>
+<body>
+  <div class="head">
+    <div class="brand"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="margin-right:6px"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6c5ce7"/><stop offset="1" stop-color="#00d2ff"/></linearGradient></defs><rect x="1" y="1" width="22" height="22" rx="6" fill="url(#lg)"/><path d="M5 13 L9 9 L12 12 L16 7 L19 10" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="16" cy="7" r="1.3" fill="#fff"/></svg> UNIACTIVITY <span style="color:var(--dim);font-weight:500">MONITOR</span></div>
+    <div class="live" id="stamp">--</div>
+  </div>
+
+  <div class="grid">
+    <div class="card"><div class="lbl"><span>CPU</span><span id="cpu-core"></span></div>
+      <div class="val" id="cpu">--%</div>
+      <svg viewBox="0 0 100 26" preserveAspectRatio="none"><defs>
+        <linearGradient id="gc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6c5ce7" stop-opacity=".9"/><stop offset="1" stop-color="#6c5ce7" stop-opacity="0"/></linearGradient></defs>
+        <polyline id="cpu-line" fill="none" stroke="#6c5ce7" stroke-width="1.6" points=""/><polygon id="cpu-fill" fill="url(#gc)" points=""/><circle r="1.6" fill="#6c5ce7" cx="0" cy="0" id="cpu-dot"/></svg>
+    </div>
+    <div class="card"><div class="lbl"><span>RAM</span><span id="mem-sub"></span></div>
+      <div class="val" id="mem">--%</div>
+      <svg viewBox="0 0 100 26" preserveAspectRatio="none"><defs>
+        <linearGradient id="gm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#00d2ff" stop-opacity=".9"/><stop offset="1" stop-color="#00d2ff" stop-opacity="0"/></linearGradient></defs>
+        <polyline id="mem-line" fill="none" stroke="#00d2ff" stroke-width="1.6" points=""/><polygon id="mem-fill" fill="url(#gm)" points=""/><circle r="1.6" fill="#00d2ff" cx="0" cy="0" id="mem-dot"/></svg>
+    </div>
+    <div class="card"><div class="lbl"><span>DISK</span><span id="disk-sub"></span></div>
+      <div class="val" id="disk">--%</div>
+      <svg viewBox="0 0 120 12" preserveAspectRatio="none"><rect x="0" y="0" width="120" height="12" rx="6" fill="#1a2233"/><rect id="disk-bar" x="0" y="0" width="0" height="12" rx="6" fill="url(#gd)"/>
+      <defs><linearGradient id="gd" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#22d3a5"/><stop offset="1" stop-color="#ffb454"/></linearGradient></defs></svg>
+    </div>
+    <div class="card"><div class="lbl"><span>NET</span><span id="net-sub">Rx / Tx</span></div>
+      <div class="val" id="net">--</div><div class="sub" id="net-sub2">--</div>
+    </div>
+  </div>
+
+  <div class="stonks">
+    <h3>CHART 12H (Ticker-style)</h3>
+    <svg viewBox="0 0 300 60" preserveAspectRatio="none">
+      <defs><linearGradient id="gs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22d3a5" stop-opacity=".35"/><stop offset="1" stop-color="#22d3a5" stop-opacity="0"/></linearGradient></defs>
+      <g id="candles"></g><g id="candle-wicks"></g>
+    </svg>
+  </div>
+
+  <div class="tunnels">
+    <div class="chip"><span id="tw" class="st"><svg viewBox="0 0 24 24" fill="none" class="st" style="animation:spin 1.2s linear infinite"><circle cx="12" cy="12" r="9" stroke="#8b98ab" stroke-width="2" stroke-dasharray="38 20" stroke-linecap="round"/></svg></span><b>WEB</b><span class="dim" style="color:var(--dim);font-size:10px" id="tww"></span><span class="u" id="twu"></span></div>
+    <div class="chip"><span id="ts" class="st"><svg viewBox="0 0 24 24" fill="none" class="st" style="animation:spin 1.2s linear infinite"><circle cx="12" cy="12" r="9" stroke="#8b98ab" stroke-width="2" stroke-dasharray="38 20" stroke-linecap="round"/></svg></span><b>SSH</b><span class="dim" style="color:var(--dim);font-size:10px" id="tss"></span><span class="u" id="tsu"></span></div>
+  </div>
+
+  <a class="btn" id="open-login" href="#" target="_blank">เปิดเว็บเต็ม (Login)</a>
+
+<script>
+const tg = window.Telegram && window.Telegram.WebApp ? Telegram.WebApp : null;
+if (tg) { tg.expand(); tg.setHeaderColor && tg.setHeaderColor('#0b0e14'); tg.setBackgroundColor && tg.setBackgroundColor('#0b0e14'); if(tg.enableClosingConfirmation) tg.enableClosingConfirmation(); }
+
+// ── SVG icon factory (ไม่มีอิโมจิ) ──
+const ICON = {
+  check: function(c){ return '<svg viewBox="0 0 24 24" fill="none" class="st"><circle cx=\'12\' cy=\'12\' r=\'10\' stroke=\''+c+'\' stroke-width=\'2\'/><path d=\'M7.5 12.5 L10.5 15.5 L16.5 9\' stroke=\''+c+'\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/></svg>'; },
+  cross: function(c){ return '<svg viewBox="0 0 24 24" fill="none" class="st"><circle cx=\'12\' cy=\'12\' r=\'10\' stroke=\''+c+'\' stroke-width=\'2\'/><path d=\'M8.5 8.5 L15.5 15.5 M15.5 8.5 L8.5 15.5\' stroke=\''+c+'\' stroke-width=\'2\' stroke-linecap=\'round\'/></svg>'; },
+  idle: function(c){ return '<svg viewBox="0 0 24 24" fill="none" class="st" style=\'animation:spin 1.2s linear infinite\'><circle cx=\'12\' cy=\'12\' r=\'9\' stroke=\''+c+'\' stroke-width=\'2\' stroke-dasharray=\'38 20\' stroke-linecap=\'round\'/></svg>'; }
+};
+const spinKey = document.createElement('style');
+spinKey.textContent='@keyframes spin{to{transform:rotate(360deg)}}';
+document.head.appendChild(spinKey);
+const setIcon=(id, state)=>{
+  const el=pick(id); const col = state==='ok'? '#22d3a5' : state==='bad'? '#ff5470':'#8b98ab';
+  const svg = state==='ok'?ICON.check(col):state==='bad'?ICON.cross(col):ICON.idle(col);
+  if(el.dataset.state!==state){ el.dataset.state=state; el.innerHTML=svg; } // re-render เฉพาะ state เปลี่ยน
+};
+
+const hist = {cpu:[],mem:[]};
+const pick=(id)=>document.getElementById(id);
+function lineSVG(id, arr){ // วาด sparkline จาก history
+  const w=100,h=26,n=26;
+  const data=arr.slice(-n);
+  if(data.length<2)return;
+  const max=Math.max(...data,100), min=Math.min(...data,0);
+  let pts=[], i=0;
+  for(const v of data){ const x=(i/(n-1))*w; const y=h - ((v-min)/Math.max(max-min,1))*h; pts.push(x.toFixed(1)+","+y.toFixed(1)); i++; }
+  const last=pts[pts.length-1].split(",");
+  pick(id+"-line").setAttribute("points", pts.join(" "));
+  pick(id+"-fill").setAttribute("points", "0,"+h+" "+pts.join(" ")+" "+w+","+h);
+  pick(id+"-dot").setAttribute("cx", last[0]); pick(id+"-dot").setAttribute("cy", last[1]);
+}
+async function refresh(){
+  try{
+    const r=await fetch("/api/stats"); const s=await r.json();
+    // v15: schema จริงจาก /api/stats
+    const cores=navigator.hardwareConcurrency||4;
+    const loadArr=(s.load&&Array.isArray(s.load))?s.load:null;
+    const cpuPct=loadArr?(loadArr[0]/(s.cpu_cores||cores))*100:0;
+    const cpu=cpuPct||0;
+    const memPercent=(s.memory&&s.memory.percent)||0;
+    const memUsed=(s.memory&&s.memory.used_mb)?s.memory.used_mb+"MB":"";
+    const memTotal=(s.memory&&s.memory.total_mb)?(s.memory.total_mb/1024).toFixed(1)+"GB":"";
+    const diskPercent=(s.disk&&s.disk.percent)||0;
+    const diskUsed=(s.disk&&s.disk.used_gb)?s.disk.used_gb+"GB":"";
+    const diskTotal=(s.disk&&s.disk.total_gb)?s.disk.total_gb+"GB":"";
+    const rx=(s.network&&(s.network.rx_rate||s.network.RxRate))||"";
+    const tx=(s.network&&(s.network.tx_rate||s.network.TxRate))||"";
+    pick("cpu").textContent=(+cpu).toFixed(1)+"%";
+    pick("cpu-core").textContent=loadArr?("load "+loadArr[0]+" / ")+(s.cpu_cores||cores)+" cores":"";
+    pick("cpu").className="val "+(+cpu>85?"bad":(+cpu>60?"wr":"ok"));
+    hist.cpu.push(+cpu); lineSVG("cpu",hist.cpu);
+    pick("mem").textContent=(+memPercent).toFixed(1)+"%";
+    pick("mem-sub").textContent=memUsed&&memTotal?memUsed+" / "+memTotal:"";
+    pick("mem").className="val "+(+memPercent>90?"bad":(+memPercent>75?"wr":"ok"));
+    hist.mem.push(+memPercent); lineSVG("mem",hist.mem);
+    pick("disk").textContent=(+diskPercent).toFixed(1)+"%";
+    pick("disk-sub").textContent=diskUsed&&diskTotal?diskUsed+" / "+diskTotal:"";
+    pick("disk-bar").setAttribute("width", Math.min(120, (+diskPercent)*1.2));
+    pick("net").textContent=rx||"--";
+    pick("net-sub2").textContent="Tx: "+(tx||"--");
+    pick("stamp").textContent=new Date().toLocaleTimeString("th-TH",{hour12:false});
+  }catch(e){ pick("stamp").textContent="ERR: "+e.message; }
+  try{
+    let t = null;
+    if (s.cf_status && s.cf_status.url) t = { http_url: s.cf_status.url };
+    if (!t) { const r2=await fetch("/api/tunnel-urls"); t = await r2.json(); }
+    if (s.cf_status && s.cf_status.online !== undefined && t.http_url) {
+      // online จาก cf_status (ping โดย go-monitor เอง)
+      t.cf_online = s.cf_status.online;
+    }
+    if (t.http_url && t.cf_online === false) {
+      // URL มีแต่ go-monitor บอก offline → ทำเครื่องหมายให้หน้าจอ
+      t.http_url_marker = "offline";
+    }
+    const ok=(u)=>typeof u==="string"&&u.includes("trycloudflare.com");
+    setIcon("tw", ok(t.http_url)?"ok":"bad");
+    pick("tww").textContent=t.http_url?t.http_url.replace("https://","").split(".")[0]:"offline";
+    pick("twu").innerHTML=ok(t.http_url)?("<a href=\""+t.http_url+"/login\" target=\"_blank\" style=\"color:#00d2ff;font-size:11px\">open ↗</a>"):"";
+    setIcon("ts", ok(t.ssh_url)?"ok":"bad");
+    pick("tss").textContent=t.ssh_url?t.ssh_url.replace("https://","").split(".")[0]:"offline";
+    pick("tsu").innerHTML=ok(t.ssh_url)?("<a href=\""+t.http_url+"/login\" target=\"_blank\" style=\"color:#00d2ff;font-size:11px\">via web ↗</a>"):"";
+    if (ok(t.http_url)) pick("open-login").href=t.http_url+"/login";
+  }catch(e){}
+}
+refresh(); setInterval(refresh,5000);
+// mini candles จาก cpu history (สไตล์ crypto)
+function drawCandles(){
+  const g=pick("candles"), g2=pick("candle-wicks");
+  if(!g||hist.cpu.length<5)return;
+  let inner=""; let inner2="";
+  const data=hist.cpu.slice(-16); const n=data.length;
+  const max=Math.max(100,...data), min=0;
+  const bw=300/n;
+  data.forEach((v,i)=>{ const x=i*bw; const hp=60-((v-min)/max)*60; const bh=Math.max(2,(v/100)*60*0.7); 
+    const col=(v>80)?"#ff5470":(v>60?"#ffb454":"#22d3a5");
+    inner+=("<rect x=\""+(x+bw*0.25).toFixed(1)+"\" y=\""+(60-hp).toFixed(1)+"\" width=\""+(bw*0.5).toFixed(1)+"\" height=\""+bh.toFixed(1)+"\" rx=\"1.2\" fill=\""+col+"\" opacity=\"0.85\"/>");
+    inner2+=("<line x1=\""+(x+bw*0.5).toFixed(1)+"\" y1=\""+(60-hp-3).toFixed(1)+"\" x2=\""+(x+bw*0.5).toFixed(1)+"\" y2=\""+(60-hp+bh+3).toFixed(1)+"\" stroke=\""+col+"\" stroke-width=\"0.7\" opacity=\"0.7\"/>"); });
+  g.innerHTML=inner; g2.innerHTML=inner2;
+}
+setInterval(drawCandles,5000);
+setInterval(()=>{},30000);
+if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred("light");
+</script>
+</body></html>`)
 }

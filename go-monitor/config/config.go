@@ -31,7 +31,7 @@ var AppConfig = &Config{
 	AlertPending:      make(map[string]int),
 	AlertResolveCount: make(map[string]int),
 	AlertsHistory:     make([]map[string]interface{}, 0),
-	TunnelTargetURL:   "http://127.0.0.1:8088",
+	TunnelTargetURL:   "http://127.0.0.1:8080",
 	AiServiceURL:      "http://127.0.0.1:8001",
 }
 

@@ -96,6 +96,52 @@ func Send(text string) {
 	SendToChat("", text)
 }
 
+// SendToChatFast โพสต์ข้อความตรงทันที — ไม่ผ่านคิว msgChan
+// ใช้กับการตอบคำสั่ง Telegram เพื่อ latency ต่ำสุด (ไม่รอ alert ก่อนหน้า)
+func SendToChatFast(chatID, text string) {
+	token, defaultChatID := config.AppConfig.GetTelegramCreds()
+	if token == "" {
+		return
+	}
+	if chatID == "" {
+		chatID = defaultChatID
+	}
+	if chatID == "" {
+		return
+	}
+	client := &http.Client{Timeout: 12 * time.Second}
+	go func() {
+		parts := splitMessage(text, 3800)
+		for i, part := range parts {
+			url := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", token)
+			body, _ := json.Marshal(map[string]interface{}{
+				"chat_id":                  chatID,
+				"text":                     part,
+				"parse_mode":               "HTML",
+				"disable_web_page_preview": true,
+			})
+			for attempt := 0; attempt < 2; attempt++ {
+				resp, err := client.Post(url, "application/json", bytes.NewBuffer(body))
+				if err == nil {
+					sc := resp.StatusCode
+					resp.Body.Close()
+					if sc == 200 {
+						log.Printf("📨 Telegram fast message sent to %s (HTTP 200)", chatID)
+						break
+					}
+					log.Printf("⚠️ Telegram Fast HTTP %d (attempt %d)", sc, attempt+1)
+				} else {
+					log.Printf("⚠️ Telegram Fast error (attempt %d): %v", attempt+1, err)
+				}
+				time.Sleep(500 * time.Millisecond)
+			}
+			if i < len(parts)-1 {
+				time.Sleep(150 * time.Millisecond) // throttle ต่ำสุดสำหรับ multi-chunk
+			}
+		}
+	}()
+}
+
 // SendToChat queues a message for a specific chat ID
 func SendToChat(chatID, text string) {
 	select {

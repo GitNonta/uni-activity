@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -285,23 +287,12 @@ func (c *Collector) Collect() ([]byte, error) {
 		ListeningPorts:   services.GetListeningPorts(),
 		AdvancedMetrics: map[string]interface{}{
 			"cpu_freqs":  sysinfo.GetCPUFreqs(),
-			"wifi_rssi":  "-50 dBm",
+			"wifi_rssi": realStats().wifi,
 			"net_speeds": sysinfo.GetNetSpeeds(),
 			"top_procs":  sysinfo.GetTopProcesses(),
-			"postgres": map[string]interface{}{
-				"status":      "healthy",
-				"db_size":     "24 MB",
-				"connections": 5,
-			},
-			"redis": map[string]interface{}{
-				"status":      "healthy",
-				"used_memory": "2.4M",
-				"clients":     3,
-			},
-			"queue": map[string]interface{}{
-				"pending": 0,
-				"failed":  0,
-			},
+			"postgres":   realStats().pg,
+			"redis":      realStats().rd,
+			"queue":      realStats().q,
 			"cloudflared": map[string]interface{}{
 				"status":     "healthy",
 				"latency_ms": cfPing,
@@ -309,18 +300,8 @@ func (c *Collector) Collect() ([]byte, error) {
 			"gpu": sysinfo.GetGPUInfo(),
 		},
 		PublicIP: currentPublicIP,
-		AICluster: map[string]interface{}{
-			"cluster_status": "healthy",
-			"healthy_count":  1,
-			"total_count":    1,
-			"nodes": []map[string]interface{}{
-				{"host": "127.0.0.1:8001", "available": true},
-			},
-		},
-		Proxy: map[string]interface{}{
-			"squid":   "running",
-			"workers": []string{"worker-1", "worker-2"},
-		},
+		AICluster: realAICluster(),
+		Proxy: realProxy(),
 		Alerts:        activeAlerts,
 		AlertsHistory: config.AppConfig.GetAlertHistory(),
 	}
@@ -762,4 +743,188 @@ func getGithubDeployLogs(projectRoot string) map[string]interface{} {
 	}
 
 	return res
+}
+
+
+// ---- Real stats: แทนค่า placeholder ด้วยค่าจริง (cache 15s) ----
+type realStatsT struct {
+	pg   map[string]interface{}
+	rd   map[string]interface{}
+	q    map[string]interface{}
+	wifi string
+}
+
+var rsc struct {
+	sync.Mutex
+	v  realStatsT
+	at time.Time
+	ok bool
+}
+
+func realStats() realStatsT {
+	rsc.Lock()
+	defer rsc.Unlock()
+	if rsc.ok && time.Since(rsc.at) < 15*time.Second {
+		return rsc.v
+	}
+	v := realStatsT{
+		pg:   realPostgres(),
+		rd:   realRedis(),
+		q:    realQueue(),
+		wifi: realWifi(),
+	}
+	rsc.v, rsc.at, rsc.ok = v, time.Now(), true
+	return v
+}
+
+func envFileVal(key string) string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return ""
+	}
+	b, err := os.ReadFile(filepath.Join(home, "uni-activity", ".env"))
+	if err != nil {
+		return ""
+	}
+	for _, line := range strings.Split(string(b), "\n") {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, key+"=") {
+			return strings.Trim(strings.TrimPrefix(line, key+"="), `"'`)
+		}
+	}
+	return ""
+}
+
+func atoiSafe(s string) int {
+	n, err := strconv.Atoi(strings.TrimSpace(s))
+	if err != nil {
+		return 0
+	}
+	return n
+}
+
+func realWifi() string {
+	b, err := os.ReadFile("/proc/net/wireless")
+	if err != nil {
+		return "n/a"
+	}
+	for _, line := range strings.Split(string(b), "\n") {
+		line = strings.TrimSpace(line)
+		if !strings.HasPrefix(line, "wlan0:") {
+			continue
+		}
+		f := strings.Fields(line)
+		if len(f) >= 4 {
+			return strings.TrimSuffix(f[3], ".") + " dBm"
+		}
+	}
+	return "n/a"
+}
+
+func pgOne(sql string) string {
+	cmd := exec.Command("psql", "-h", "127.0.0.1", "-p", "5432", "-U", "postgres", "-d", "uni_activity", "-t", "-A", "-c", sql)
+	cmd.Env = append(os.Environ(), "PGPASSWORD=UniActivityPostgres2026!")
+	out, _ := cmd.CombinedOutput()
+	return strings.TrimSpace(string(out))
+}
+
+func realPostgres() map[string]interface{} {
+	res := map[string]interface{}{"status": "down", "db_size": "-", "connections": 0}
+	out := pgOne("SELECT pg_size_pretty(pg_database_size('uni_activity')) || '|' || (SELECT count(*) FROM pg_stat_activity WHERE datname='uni_activity')")
+	if strings.Contains(out, "|") {
+		parts := strings.SplitN(out, "|", 2)
+		res["status"] = "healthy"
+		res["db_size"] = strings.TrimSpace(parts[0])
+		res["connections"] = atoiSafe(parts[1])
+	}
+	return res
+}
+
+func realRedis() map[string]interface{} {
+	res := map[string]interface{}{"status": "down", "used_memory": "-", "clients": 0}
+	pass := envFileVal("REDIS_PASSWORD")
+	if pass == "" {
+		return res
+	}
+	runInfo := func(section, key string) string {
+		out, err := exec.Command("valkey-cli", "-p", "6379", "-a", pass, "--no-auth-warning", "INFO", section).CombinedOutput()
+		if err != nil {
+			return ""
+		}
+		for _, line := range strings.Split(string(out), "\n") {
+			line = strings.TrimSpace(line)
+			if strings.HasPrefix(line, key+":") {
+				return strings.TrimSpace(strings.TrimPrefix(line, key+":"))
+			}
+		}
+		return ""
+	}
+	mem := runInfo("memory", "used_memory_human")
+	clients := runInfo("clients", "connected_clients")
+	if mem == "" && clients == "" {
+		return res
+	}
+	res["status"] = "healthy"
+	if mem != "" {
+		res["used_memory"] = mem
+	}
+	res["clients"] = atoiSafe(clients)
+	return res
+}
+
+func realQueue() map[string]interface{} {
+	res := map[string]interface{}{"pending": -1, "failed": -1}
+	out := pgOne("SELECT (SELECT count(*) FROM jobs) || '|' || (SELECT count(*) FROM failed_jobs)")
+	if strings.Contains(out, "|") {
+		parts := strings.SplitN(out, "|", 2)
+		res["pending"] = atoiSafe(parts[0])
+		res["failed"] = atoiSafe(parts[1])
+	}
+	return res
+}
+
+func tcpUp(host string, port int) bool {
+	c, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", host, port), 150*time.Millisecond)
+	if err != nil {
+		return false
+	}
+	c.Close()
+	return true
+}
+
+func realAICluster() map[string]interface{} {
+	up := tcpUp("127.0.0.1", 8001)
+	total, healthy := 1, 0
+	if up {
+		healthy = 1
+	}
+	status := "degraded"
+	if healthy == total {
+		status = "healthy"
+	}
+	return map[string]interface{}{
+		"cluster_status": status,
+		"healthy_count":  healthy,
+		"total_count":    total,
+		"nodes": []map[string]interface{}{
+			{"host": "127.0.0.1:8001", "available": up},
+		},
+	}
+}
+
+func realProxy() map[string]interface{} {
+	squidUp := tcpUp("127.0.0.1", 3128)
+	workers := []string{}
+	if out, err := exec.Command("sh", "-c", "pgrep -f 'squid.*worker' | wc -l").Output(); err == nil {
+		if n := atoiSafe(string(out)); n > 0 {
+			for i := 1; i <= n && i <= 6; i++ {
+				workers = append(workers, fmt.Sprintf("worker-%d", i))
+			}
+		}
+	}
+	status := "stopped"
+	if squidUp {
+		status = "running"
+	}
+	return map[string]interface{}{"squid": status, "workers": workers}
 }
