@@ -2407,5 +2407,8 @@
     "ลบผู้ใช้ (:r): \":n\"": "Deleted user (:r): \":n\"",
     "เปิดการใช้งาน: \":n\"": "Enabled user \":n\"",
     "ปิดการใช้งาน: \":n\"": "Disabled user \":n\"",
-    "นำเข้านักศึกษาสำเร็จ: สร้างใหม่ :c1 คน, อัปเดต :c2 คน, ข้าม :c3 คน": "Student import completed: :c1 created, :c2 updated, :c3 skipped"
+    "นำเข้านักศึกษาสำเร็จ: สร้างใหม่ :c1 คน, อัปเดต :c2 คน, ข้าม :c3 คน": "Student import completed: :c1 created, :c2 updated, :c3 skipped",
+    "สัมมนา AI ในอนาคต": "AI Future Seminar",
+    "ปลูกป่าชายเลน": "Mangrove Forest Planting",
+    "แข่งขันฟุตซอลต้านยาเสพติด": "Anti-Drug Futsal Tournament"
 }
