@@ -8,7 +8,7 @@
     <a href="{{ route('activities.calendar') }}" class="act-rec-job-pill" title="{{ __('ดูในปฏิทิน') }}"
         style="background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe;">
         <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-        <span>ปฏิทิน</span>
+        <span>{{ __('ปฏิทิน') }}</span>
     </a>
     <a href="{{ route('jobs.index') }}" class="act-rec-job-pill" title="{{ __('แนะนำ หางาน / Part-time') }}">
         <x-icon name="job" size="13" />
@@ -175,7 +175,7 @@ function toggleActFilters() {
                     <img src="{{ Storage::url($act->image_path) }}" alt="{{ $act->title }}" style="width:100%; height:140px; object-fit:cover; background:#f1f5f9;">
                 @endif
                 <div style="padding:0.75rem;">
-                    <a href="{{ route('activities.show', $act) }}" style="font-weight:600; color:#1e293b; text-decoration:none;">{{ $act->title }}</a>
+                    <a href="{{ route('activities.show', $act) }}" style="font-weight:600; color:#1e293b; text-decoration:none;">{{ __($act->title) }}</a>
                     <p style="margin:4px 0 0; font-size:0.8rem; color:#94a3b8;">{{ $act->activity_date->format('d/m/Y') }} · {{ $act->category->name ?? '' }}</p>
                 </div>
             </div>

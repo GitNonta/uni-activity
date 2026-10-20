@@ -106,6 +106,17 @@ Route::get('/about', function () {
     if ($html === false) {
         return response()->view('about')->header('Cache-Control', 'no-store, max-age=0');
     }
+
+    // i18n: บูตสไลด์ตามภาษาของ session (onboarding.html มี dict th/en ครบในตัว)
+    $locale = (string) session('locale', (string) config('app.locale', 'th'));
+    if ($locale === 'en') {
+        $html = str_replace(
+            ["<html lang=\"th\"", "let currentLang = 'th';"],
+            ["<html lang=\"en\"", "let currentLang = 'en';"],
+            $html
+        );
+    }
+
     return response()->make($html, 200, [
         'Content-Type' => 'text/html; charset=utf-8',
         'Cache-Control' => 'no-store, max-age=0',

@@ -4,7 +4,7 @@ return array (
   'app_name' => 'UNI Activity',
   'switch' => 'Switch language',
   'activities' => 'Activities',
-  'search' => 'ค้นหา',
+  'search' => 'Search',
   'filter' => 'Filters',
   'calendar' => 'Calendar',
   'detail' => 'Activity detail',

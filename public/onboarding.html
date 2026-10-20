@@ -1482,11 +1482,11 @@
             });
         }
 
-        function toggleLanguage() {
-            currentLang = currentLang === 'th' ? 'en' : 'th';
+        // Hydrate all data-i18n texts with the current language (idempotent)
+        function applyLang() {
             const dict = i18nData[currentLang];
 
-            // Toggle button active pill
+            // Active pill reflects currentLang
             document.getElementById('langTH').className = currentLang === 'th'
                 ? "px-2.5 py-1 rounded-full bg-[#ea580c] text-white transition-all"
                 : "px-2.5 py-1 rounded-full text-zinc-500 transition-all";
@@ -1507,6 +1507,12 @@
 
             if (currentSlide === 6) animateProgressCounter(46, 82);
             updateChrome();
+            document.documentElement.setAttribute('lang', currentLang);
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'th' ? 'en' : 'th';
+            applyLang();
         }
 
         // Mouse Wheel Navigation
@@ -1559,6 +1565,8 @@
                 if (idx > 0) panel.classList.add('next');
             });
             updateChrome();
+            // Boot hydration: server may inject currentLang='en' for session locale cognition
+            if (currentLang === 'en') applyLang();
         };
     </script>
 </body>
