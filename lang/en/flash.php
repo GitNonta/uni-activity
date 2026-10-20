@@ -88,10 +88,6 @@ return array (
   'บันทึกกิจกรรม ":t" ไว้ในบุ๊กมาร์กแล้ว' => 'Saved activity ":t" to your bookmarks.',
   'ยกเลิกบุ๊กมาร์กกิจกรรม ":t" แล้ว' => 'Removed activity ":t" from your bookmarks.',
   'คุณไม่มีสิทธิ์เข้าถึงหน้าดังกล่าว' => 'You do not have permission to access that page.',
-);
-
-// ── Thai -> English labels (activities index) ──
-return array (
   'รายการกิจกรรม' => 'Activities',
   'ค้นหาและลงทะเบียนเข้าร่วมกิจกรรมของมหาวิทยาลัย - ดูกิจกรรมที่กำลังเปิดรับสมัครและที่จัดขึ้นแล้ว' => 'Search and register for university activities - see those open for registration and those already held',
   'ดูในปฏิทิน' => 'View in calendar',
