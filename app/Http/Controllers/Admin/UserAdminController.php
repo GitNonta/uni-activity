@@ -113,7 +113,7 @@ class UserAdminController extends Controller
         }
 
         $user = User::create($userData);
-        $this->auditCreate($user, "สร้างผู้ใช้ ({$data['role']}): \"{$data['full_name']}\"");
+        $this->auditCreate($user, __('สร้างผู้ใช้ (:r): ":n"', ['r' => $data['role'], 'n' => $data['full_name']]));
 
         $roleLabels = ['student' => 'นักศึกษา', 'staff' => 'เจ้าหน้าที่', 'admin' => 'ผู้ดูแลระบบ'];
         $label = $roleLabels[$data['role']] ?? 'ผู้ใช้';
@@ -172,7 +172,7 @@ class UserAdminController extends Controller
 
         $oldValues = $user->only(['full_name', 'email', 'is_active']);
         $user->save();
-        $this->auditUpdate($user, $oldValues, "แก้ไขผู้ใช้ \"{$user->full_name}\"");
+        $this->auditUpdate($user, $oldValues, __('แก้ไขผู้ใช้ ":n"', ['n' => $user->full_name]));
 
         $roleLabels = ['student' => 'นักศึกษา', 'staff' => 'เจ้าหน้าที่', 'admin' => 'ผู้ดูแลระบบ'];
         $label = $roleLabels[$user->role] ?? 'ผู้ใช้';
@@ -190,7 +190,7 @@ class UserAdminController extends Controller
 
         $label = $user->role === 'student' ? 'นักศึกษา' : 'เจ้าหน้าที่';
         $name  = $user->full_name;
-        $this->auditDelete($user, "ลบผู้ใช้ ({$user->role}): \"{$name}\"");
+        $this->auditDelete($user, __('ลบผู้ใช้ (:r): ":n"', ['r' => $user->role, 'n' => $name]));
         $user->delete();
 
         return redirect()->route('admin.users.index')->with('success', __('ลบ:label ":name" สำเร็จ', ['label' => $label, 'name' => $name]));
@@ -206,7 +206,7 @@ class UserAdminController extends Controller
         }
 
         $user->update(['is_active' => !$user->is_active]);
-        $this->auditToggle($user, ($user->is_active ? 'เปิด' : 'ปิด') . "การใช้งาน: \"{$user->full_name}\"");
+        $this->auditToggle($user, __($user->is_active ? 'เปิดการใช้งาน: ":n"' : 'ปิดการใช้งาน: ":n"', ['n' => $user->full_name]));
 
         $status = $user->is_active ? 'เปิดใช้งาน' : 'ปิดการใช้งาน';
         return back()->with('success', __('เปลี่ยนสถานะ: :status ":name" สำเร็จ', ['status' => $status, 'name' => $user->full_name]));

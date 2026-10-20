@@ -88,7 +88,7 @@ class CategoryAdminController extends Controller
             'color'          => $request->color ?? '#3B82F6',
             'options'        => $options,
         ]);
-        $this->auditCreate($cat, "สร้างหมวดหมู่ \"{$cat->name}\"");
+        $this->auditCreate($cat, __('สร้างหมวดหมู่ ":n"', ['n' => $cat->name]));
 
         return back()->with('success', __('flash.เพิ่มหมวดหมู่ ":n" เรียบร้อยแล้ว', ['n' => $request->name]));
     }
@@ -124,7 +124,7 @@ class CategoryAdminController extends Controller
             'color'          => $request->color ?? $category->color,
             'options'        => $options,
         ]);
-        $this->auditUpdate($category, $oldValues, "แก้ไขหมวดหมู่ \"{$category->name}\"");
+        $this->auditUpdate($category, $oldValues, __('แก้ไขหมวดหมู่ ":n"', ['n' => $category->name]));
 
         return back()->with('success', __('flash.อัปเดตหมวดหมู่ ":n" เรียบร้อยแล้ว', ['n' => $category->name]));
     }
@@ -140,7 +140,7 @@ class CategoryAdminController extends Controller
             return back()->with('error', __('flash.ไม่สามารถลบได้ เนื่องจากมีกิจกรรม :n รายการอยู่ในหมวดหมู่นี้', ['n' => $category->activities_count]));
         }
 
-        $this->auditDelete($category, "ลบหมวดหมู่ \"{$category->name}\"");
+        $this->auditDelete($category, __('ลบหมวดหมู่ ":n"', ['n' => $category->name]));
         $category->delete();
         return back()->with('success', __('flash.ลบหมวดหมู่เรียบร้อยแล้ว'));
     }

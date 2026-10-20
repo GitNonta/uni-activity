@@ -73,7 +73,7 @@ class AnnouncementAdminController extends Controller
         $data['published_at'] = $request->filled('published_at') ? $request->input('published_at') : null;
 
         $announcement = Announcement::create($data);
-        $this->auditCreate($announcement, "สร้างประกาศ \"{$announcement->title}\"");
+        $this->auditCreate($announcement, __('สร้างประกาศ ":t"', ['t' => $announcement->title]));
 
         // New post must be visible immediately — bump the list-cache version
         // so every cached announcements page is invalidated in one write.
@@ -121,7 +121,7 @@ class AnnouncementAdminController extends Controller
 
         $oldValues = $announcement->only(['title', 'is_active', 'target_faculty']);
         $announcement->update($data);
-        $this->auditUpdate($announcement, $oldValues, "แก้ไขประกาศ \"{$announcement->title}\"");
+        $this->auditUpdate($announcement, $oldValues, __('แก้ไขประกาศ ":t"', ['t' => $announcement->title]));
 
         ListCache::bump(ListCache::GROUP_ANNOUNCEMENTS);
 
@@ -133,7 +133,7 @@ class AnnouncementAdminController extends Controller
     {
         Gate::authorize('delete', $announcement);
 
-        $this->auditDelete($announcement, "ลบประกาศ \"{$announcement->title}\"");
+        $this->auditDelete($announcement, __('ลบประกาศ ":t"', ['t' => $announcement->title]));
         $announcement->delete();
 
         ListCache::bump(ListCache::GROUP_ANNOUNCEMENTS);
@@ -150,7 +150,7 @@ class AnnouncementAdminController extends Controller
         $status = $announcement->is_active ? 'เปิด' : 'ปิด';
 
         ListCache::bump(ListCache::GROUP_ANNOUNCEMENTS);
-        $this->auditToggle($announcement, "{$status}การใช้งานประกาศ \"{$announcement->title}\"");
+        $this->auditToggle($announcement, __($announcement->is_active ? 'เปิดการใช้งานประกาศ ":t"' : 'ปิดการใช้งานประกาศ ":t"', ['t' => $announcement->title]));
 
         return back()->with('success', __('สลับสถานะประกาศ: :statusการใช้งานเรียบร้อยแล้ว', ['status' => $status]));
     }

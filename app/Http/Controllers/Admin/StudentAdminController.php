@@ -149,7 +149,7 @@ class StudentAdminController extends Controller
                 'verified_by'   => auth()->id(),
                 'is_verified'   => $request->status === 'approved',
             ]);
-            $this->auditCreate($att, "เพิ่มบันทึกกิจกรรมให้ \"{$student->full_name}\"");
+            $this->auditCreate($att, __('เพิ่มบันทึกกิจกรรมให้ ":n"', ['n' => $student->full_name]));
         });
 
         return back()->with('success', __('flash.เพิ่มบันทึกกิจกรรมเรียบร้อยแล้ว'));
@@ -174,7 +174,7 @@ class StudentAdminController extends Controller
                 'verified_by'   => auth()->id(),
                 'is_verified'   => $request->status === 'approved',
             ]);
-            $this->auditUpdate($attendance, $oldValues, "แก้ไขบันทึกกิจกรรมของ \"{$student->full_name}\"");
+            $this->auditUpdate($attendance, $oldValues, __('แก้ไขบันทึกกิจกรรมของ ":n"', ['n' => $student->full_name]));
         });
 
         return back()->with('success', __('flash.อัปเดตบันทึกกิจกรรมเรียบร้อยแล้ว'));
@@ -187,7 +187,7 @@ class StudentAdminController extends Controller
         Gate::authorize('delete', $attendance);
 
         DB::transaction(function () use ($attendance, $student): void {
-            $this->auditDelete($attendance, "ลบบันทึกกิจกรรมของ \"{$student->full_name}\"");
+            $this->auditDelete($attendance, __('ลบบันทึกกิจกรรมของ ":n"', ['n' => $student->full_name]));
             $attendance->delete();
         });
 

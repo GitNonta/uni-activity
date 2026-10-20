@@ -32,7 +32,7 @@ class AdminQuickApprovalController extends Controller
                 Gate::authorize('approve', $item);
 
                 $item->update(['status' => 'approved']);
-                $this->auditApprove($item, "อนุมัติการลงทะเบียน #{$item->id} (Dashboard)");
+                $this->auditApprove($item, __('อนุมัติการลงทะเบียน #:id (Dashboard)', ['id' => $item->id]));
                 return 'ลงทะเบียน';
             }
 
@@ -44,7 +44,7 @@ class AdminQuickApprovalController extends Controller
                 'is_verified' => true,
                 'verified_by' => $user->id,
             ]);
-            $this->auditApprove($item, "อนุมัติการเข้าร่วม #{$item->id} (Dashboard)");
+            $this->auditApprove($item, __('อนุมัติการเข้าร่วม #:id (Dashboard)', ['id' => $item->id]));
 
             // อัปเดต registration เป็น completed ถ้ามี (Atomic)
             $reg = Registration::where('user_id', $item->user_id)
@@ -86,7 +86,7 @@ class AdminQuickApprovalController extends Controller
                 Gate::authorize('reject', $item);
 
                 $item->update(['status' => 'rejected']);
-                $this->auditReject($item, "ปฏิเสธการลงทะเบียน #{$item->id} (Dashboard)");
+                $this->auditReject($item, __('ปฏิเสธการลงทะเบียน #:id (Dashboard)', ['id' => $item->id]));
                 return 'ลงทะเบียน';
             }
 
@@ -97,7 +97,7 @@ class AdminQuickApprovalController extends Controller
                 'status'      => 'rejected',
                 'verified_by' => $user->id,
             ]);
-            $this->auditReject($item, "ปฏิเสธการเข้าร่วม #{$item->id} (Dashboard)");
+            $this->auditReject($item, __('ปฏิเสธการเข้าร่วม #:id (Dashboard)', ['id' => $item->id]));
             return 'เช็คอิน';
         });
 

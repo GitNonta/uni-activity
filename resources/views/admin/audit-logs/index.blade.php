@@ -566,7 +566,7 @@ html.dark .empty-state-icon { background: #27272a; }
                     <td>
                         <span class="model-tag">{{ $log->model_label }}</span>
                     </td>
-                    <td class="td-desc" title="{{ $log->description }}">{{ $log->description }}</td>
+                    <td class="td-desc" title="{{ $log->description_display }}">{{ $log->description_display }}</td>
                     <td class="td-ip">{{ $log->ip_address ?? '-' }}</td>
                     <td>
                         <a href="{{ route('admin.audit-logs.show', $log->id) }}" class="td-action-btn">

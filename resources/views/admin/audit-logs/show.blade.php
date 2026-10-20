@@ -300,7 +300,7 @@ html.dark .diff-new { background: rgba(34, 197, 94, 0.2); color: #86efac; }
 
         <div class="desc-block">
             <div class="info-label" style="margin-bottom:6px;">{{ __('คำอธิบาย') }}</div>
-            <p class="desc-text">{{ $log->description }}</p>
+            <p class="desc-text">{{ $log->description_display }}</p>
         </div>
     </div>
 </div>

@@ -68,7 +68,7 @@ class AdminRegistrationController extends Controller
         Gate::authorize('approve', $registration);
 
         $registration->update(['status' => 'approved']);
-        $this->auditApprove($registration, "อนุมัติการลงทะเบียน #{$registration->id}");
+        $this->auditApprove($registration, __('อนุมัติการลงทะเบียน #:id', ['id' => $registration->id]));
 
         Notification::create([
             'user_id' => $registration->user_id,
@@ -89,7 +89,7 @@ class AdminRegistrationController extends Controller
         Gate::authorize('reject', $registration);
 
         $registration->update(['status' => 'rejected']);
-        $this->auditReject($registration, "ปฏิเสธการลงทะเบียน #{$registration->id}");
+        $this->auditReject($registration, __('ปฏิเสธการลงทะเบียน #:id', ['id' => $registration->id]));
 
         Notification::create([
             'user_id' => $registration->user_id,

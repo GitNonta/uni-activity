@@ -558,7 +558,7 @@ html.dark .approval-row:hover {
                     <span style="font-size:.85rem; font-weight:700; color:var(--text-main, #1e293b);">{{ $log->user->displayName() }}</span>
                     <span style="font-size:.7rem; color:#94a3b8; white-space:nowrap; flex-shrink:0;">{{ $log->created_at->diffForHumans() }}</span>
                 </div>
-                <p style="font-size:.8rem; color:var(--text-muted, #64748b); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:0;">{{ $log->description }}</p>
+                <p style="font-size:.8rem; color:var(--text-muted, #64748b); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:0;">{{ $log->description_display }}</p>
             </div>
             <div style="flex-shrink:0;">
                 <span class="badge" style="background:{{ $actionBg }}; color:{{ $actionColor }}; font-size:0.7rem;">
@@ -600,7 +600,7 @@ html.dark .approval-row:hover {
                         <label class="form-label" style="color:var(--text-main, #0f172a);">{{ __('หมวดหมู่') }} <span class="text-danger">*</span></label>
                         <select name="category_id" class="form-control" required>
                             @foreach($categories as $cat)
-                                <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                <option value="{{ $cat->id }}">{{ __($cat->name) }}</option>
                             @endforeach
                         </select>
                     </div>

@@ -64,7 +64,7 @@
                     <td>{{ $log->user->role ?? '-' }}</td>
                     <td>{{ $log->user->is_active ? 'Active' : 'Inactive' }}</td>
                     <td>{{ $log->action }}</td>
-                    <td title="{{ $log->description ?? '-' }}">{{ Str::limit($log->description ?? '-', 45, '...') }}</td>
+                    <td title="{{ $log->description_display ?? '-' }}">{{ Str::limit($log->description_display ?? '-', 45, '...') }}</td>
                     <td>{{ $log->ip_address }}</td>
                     <td style="font-size:0.85rem;color:#475569;" title="{{ $log->user_agent }}">{{ Str::limit($log->user_agent, 35, '...') }}</td>
                     <td style="white-space:nowrap;">{{ $log->created_at->format('Y-m-d H:i:s') }}</td>

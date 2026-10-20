@@ -80,7 +80,7 @@ class AdminAttendanceController extends Controller
                 'is_verified' => true,
                 'ip_address'  => $request->ip(),
             ]);
-            $this->auditCreate($att, "เช็คอิน manual: {$user->full_name} ในกิจกรรม \"{$activity->title}\"");
+            $this->auditCreate($att, __('เช็คอิน manual: :n ในกิจกรรม ":t"', ['n' => $user->full_name, 't' => $activity->title]));
         });
 
         return back()->with('success', __('เช็คอิน :name สำเร็จ', ['name' => $user->displayName()]));
@@ -100,7 +100,7 @@ class AdminAttendanceController extends Controller
                 'is_verified' => true,
                 'verified_by' => Auth::id(),
             ]);
-            $this->auditApprove($attendance, "อนุมัติการเข้าร่วม #{$attendance->id}");
+            $this->auditApprove($attendance, __('อนุมัติการเข้าร่วม #:id', ['id' => $attendance->id]));
 
             Notification::create([
                 'user_id' => $attendance->user_id,
@@ -135,7 +135,7 @@ class AdminAttendanceController extends Controller
                 'status'      => 'rejected',
                 'verified_by' => Auth::id(),
             ]);
-            $this->auditReject($attendance, "ปฏิเสธการเข้าร่วม #{$attendance->id}");
+            $this->auditReject($attendance, __('ปฏิเสธการเข้าร่วม #:id', ['id' => $attendance->id]));
 
             Notification::create([
                 'user_id' => $attendance->user_id,
@@ -166,7 +166,7 @@ class AdminAttendanceController extends Controller
             'is_verified'          => $action === 'approve',
         ]);
 
-        $this->auditApprove($attendance, ($action === 'approve' ? 'อนุมัติ' : 'ปฏิเสธ') . " ภาพ Selfie รหัสเข้าร่วม #{$attendance->id}");
+        $this->auditApprove($attendance, __($action === 'approve' ? 'อนุมัติ ภาพ Selfie รหัสเข้าร่วม #:id' : 'ปฏิเสธ ภาพ Selfie รหัสเข้าร่วม #:id', ['id' => $attendance->id]));
 
         return back()->with('success', __('flash.ตรวจสอบภาพ Selfie เรียบร้อยแล้ว'));
     }

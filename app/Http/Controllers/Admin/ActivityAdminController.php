@@ -199,7 +199,7 @@ class ActivityAdminController extends Controller
             return $activity;
         });
 
-        $this->auditCreate($activity, "สร้างกิจกรรม \"{$activity->title}\"");
+        $this->auditCreate($activity, __('สร้างกิจกรรม ":t"', ['t' => $activity->title]));
 
         // New post must be visible immediately on /activities and the map.
         ListCache::bump(ListCache::GROUP_ACTIVITIES);
@@ -343,7 +343,7 @@ class ActivityAdminController extends Controller
             }
         });
 
-        $this->auditUpdate($activity, $oldValues, "แก้ไขกิจกรรม \"{$activity->title}\"");
+        $this->auditUpdate($activity, $oldValues, __('แก้ไขกิจกรรม ":t"', ['t' => $activity->title]));
 
         ListCache::bump(ListCache::GROUP_ACTIVITIES);
 
@@ -358,7 +358,7 @@ class ActivityAdminController extends Controller
         Gate::authorize('delete', $activity);
 
         DB::transaction(function () use ($activity): void {
-            $this->auditDelete($activity, "ลบกิจกรรม \"{$activity->title}\"");
+            $this->auditDelete($activity, __('ลบกิจกรรม ":t"', ['t' => $activity->title]));
             $activity->delete();
         });
 
@@ -390,7 +390,7 @@ class ActivityAdminController extends Controller
             'qr_checkout_token' => $qrService->generateToken(),
         ]));
 
-        $this->auditCreate($activity, "สร้างกิจกรรมด่วน \"{$activity->title}\"");
+        $this->auditCreate($activity, __('สร้างกิจกรรมด่วน ":t"', ['t' => $activity->title]));
 
         ListCache::bump(ListCache::GROUP_ACTIVITIES);
 
@@ -405,7 +405,7 @@ class ActivityAdminController extends Controller
         Gate::authorize('manage', $activity);
 
         $activity->update(['allow_early_checkin' => !$activity->allow_early_checkin]);
-        $this->auditToggle($activity, ($activity->allow_early_checkin ? 'เปิด' : 'ปิด') . "เช็คอินก่อนเวลา: \"{$activity->title}\"");
+        $this->auditToggle($activity, __($activity->allow_early_checkin ? 'เปิดเช็คอินก่อนเวลา: ":t"' : 'ปิดเช็คอินก่อนเวลา: ":t"', ['t' => $activity->title]));
 
         $msg = $activity->allow_early_checkin
             ? "เปิดอนุญาตบันทึกกิจกรรมก่อนเวลาแล้ว"
@@ -439,7 +439,7 @@ class ActivityAdminController extends Controller
             'qr_expires_at' => $expiresAt,
         ]);
 
-        $this->auditUpdate($activity, ['qr_token' => $oldToken], "สร้าง QR Code ใหม่สำหรับกิจกรรม \"{$activity->title}\"");
+        $this->auditUpdate($activity, ['qr_token' => $oldToken], __('สร้าง QR Code ใหม่สำหรับกิจกรรม ":t"', ['t' => $activity->title]));
 
         $expiryMsg = $expiresAt ? ' ' . __('flash.หมดอายุใน :h ชั่วโมง', ['h' => $request->expires_in_hours]) : '';
         return back()->with('success', __('flash.สร้าง QR Code ใหม่สำเร็จแล้ว') . $expiryMsg);
@@ -464,7 +464,7 @@ class ActivityAdminController extends Controller
             'qr_checkout_token' => $newToken,
         ]);
 
-        $this->auditUpdate($activity, ['qr_checkout_token' => $oldToken], "สร้าง QR Code ออกงานใหม่สำหรับกิจกรรม \"{$activity->title}\"");
+        $this->auditUpdate($activity, ['qr_checkout_token' => $oldToken], __('สร้าง QR Code ออกงานใหม่สำหรับกิจกรรม ":t"', ['t' => $activity->title]));
 
         return back()->with('success', __('flash.สร้าง QR Code ออกงานใหม่สำเร็จแล้ว'));
     }
@@ -496,7 +496,7 @@ class ActivityAdminController extends Controller
         $cloneData['qr_checkout_token'] = $qrService->generateToken();
 
         $newActivity = Activity::create($cloneData);
-        $this->auditLog('clone_activity', "คัดลอกกิจกรรม #{$activity->id} \"{$activity->title}\" เป็น #{$newActivity->id}", Activity::class, $newActivity->id);
+        $this->auditLog('clone_activity', __('คัดลอกกิจกรรม #:id ":t" เป็น #:id2', ['id' => $activity->id, 't' => $activity->title, 'id2' => $newActivity->id]), Activity::class, $newActivity->id);
 
         ListCache::bump(ListCache::GROUP_ACTIVITIES);
 

@@ -47,7 +47,7 @@ class StudentImportController extends Controller
 
         $this->auditLog(
             'import_students',
-            "นำเข้านักศึกษาสำเร็จ: สร้างใหม่ {$result['created_count']} คน, อัปเดต {$result['updated_count']} คน, ข้าม {$result['skipped_count']} คน",
+            __('นำเข้านักศึกษาสำเร็จ: สร้างใหม่ :c1 คน, อัปเดต :c2 คน, ข้าม :c3 คน', ['c1' => $result['created_count'], 'c2' => $result['updated_count'], 'c3' => $result['skipped_count']]),
             User::class,
             null
         );
