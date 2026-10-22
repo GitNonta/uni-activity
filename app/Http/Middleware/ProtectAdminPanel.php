@@ -37,11 +37,11 @@ class ProtectAdminPanel
 
         // If trying to access admin login, check IP whitelist if configured
         if ($request->path() === 'admin/login' || str_starts_with($request->path(), 'admin/login')) {
-            $whitelist = env('ADMIN_IP_WHITELIST');
-            
+            // อ่านผ่าน config() เพื่อไม่ให้ whitelist ถูกปิดเงียบ ๆ เมื่อรัน config:cache
+            $allowedIps = (array) config('security.admin_ip_whitelist', []);
+
             // If IP whitelist is configured, enforce it
-            if ($whitelist) {
-                $allowedIps = array_map('trim', explode(',', $whitelist));
+            if ($allowedIps !== []) {
                 if (!in_array($request->ip(), $allowedIps, strict: true)) {
                     // Log attempt
                     \Illuminate\Support\Facades\Log::warning('Admin login attempt from non-whitelisted IP: ' . $request->ip(), [

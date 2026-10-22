@@ -37,9 +37,9 @@ return Application::configure(basePath: dirname(__DIR__))
                 if (auth()->check() && (auth()->user()->isAdmin() || auth()->user()->isStaff())) {
                     return $next($request);
                 }
-                $whitelist = env('ADMIN_IP_WHITELIST');
-                if ($whitelist) {
-                    $allowedIps = array_map('trim', explode(',', $whitelist));
+                // อ่านผ่าน config() ไม่ใช่ env() เพื่อให้ยังทำงานหลัง config:cache
+                $allowedIps = (array) config('security.admin_ip_whitelist', []);
+                if ($allowedIps !== []) {
                     if (!in_array($request->ip(), $allowedIps, strict: true)) {
                         $view = view()->exists('errors.403') ? 'errors.403' : (view()->exists('errors.500') ? 'errors.500' : null);
                         return $view
