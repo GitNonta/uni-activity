@@ -43,4 +43,6 @@ Route::middleware(['auth:sanctum', 'throttle:api-general'])->group(function () {
 });
 
 
-Route::post("/face/test-compare", [App\Http\Controllers\Api\TestFaceController::class, "compare"])->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class]);
+// หมายเหตุด้านความปลอดภัย: เคยมี POST /api/face/test-compare (ไม่มี auth/rate limit)
+// ซึ่งเปิดโอกาสให้ใครก็ได้ยิงรูปขึ้นมาเทียบกับ face descriptor ของนักศึกษาเป้าหมาย
+// (biometric oracle + เปิดเผยชื่อ/รหัสนักศึกษา) — ลบออกแล้ว ห้ามเพิ่มกลับ
