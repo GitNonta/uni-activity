@@ -1,3 +1,0 @@
-Trying with no loader given ...
-Waiting for the device
-Device detected :)

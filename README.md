@@ -1,153 +1,194 @@
 # University Activity Management & Verification System
-### ระบบบริหารจัดการกิจกรรมนักศึกษาและเช็คชื่อเข้าร่วมด้วย AI สแกนใบหน้าและ Real-Time WebSockets
 
-[![Laravel](https://img.shields.io/badge/Laravel-11.x%20%2F%2012.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
+### ระบบบริหารจัดการกิจกรรมนักศึกษา + เช็คชื่อด้วย AI สแกนใบหน้าและ Real-Time WebSockets
+
+[![Laravel](https://img.shields.io/badge/Laravel-13.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
 [![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://php.net)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://postgresql.org)
 [![Redis](https://img.shields.io/badge/Redis-Cache%20%26%20Queue-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io)
-[![Laravel Reverb](https://img.shields.io/badge/WebSockets-Laravel%20Reverb-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com/docs/reverb)
-[![Python AI](https://img.shields.io/badge/Python%20AI-InsightFace-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
+[![Reverb](https://img.shields.io/badge/WebSockets-Reverb-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com/docs/reverb)
+[![FastAPI](https://img.shields.io/badge/AI%20Service-FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![PHPUnit](https://img.shields.io/badge/Tests-PHPUnit%2011-3C9CD7?style=for-the-badge&logo=phpunit&logoColor=white)](https://phpunit.de)
 
 ---
 
-## ภาพรวมระบบ (System Overview)
+## ภาพรวมโปรเจกต์
 
-**University Activity System** คือแพลตฟอร์มระดับองค์กรสำหรับการบริหารจัดการกิจกรรมนักศึกษา การลงทะเบียน การสแกนเช็คชื่อเข้างาน และการประมวลผลข้อมูลกิจกรรมแบบ Real-time โดยได้รับการออกแบบด้วยสถาปัตยกรรม High Performance รองรับผู้ใช้งานจำนวนมาก พร้อมระบบยืนยันตัวตนด้วยใบหน้า (AI Face Verification & Liveness Detection) และการเชื่อมต่อการแจ้งเตือนผ่าน LINE Official Account อัตโนมัติ
+แพลตฟอร์มสำหรับมหาวิทยาลัยที่รวมงานบริหารกิจกรรมนักศึกษาไว้ในระบบเดียว ตั้งแต่การสร้างกิจกรรม
+การลงทะเบียน การเช็คชื่อด้วยใบหน้าและ QR แบบไดนามิก ไปจนถึงการออกใบรับรองการเข้าร่วมกิจกรรม
+ออกแบบให้ทำงานแบบ **server-authoritative** (การตัดสินใจเรื่องยืนยันตัวตน/สิทธิ์ทั้งหมดอยู่ฝั่ง server)
+รองรับการอัปเดตแบบ real-time และมีชุดทดสอบอัตโนมัติครอบคลุมฟีเจอร์หลัก
 
----
+**สิ่งที่โปรเจกต์นี้แสดงให้เห็น (สำหรับพอร์ตโฟลิโอ):**
 
-## สถาปัตยกรรมระบบ (System Architecture)
-
-### 1. โครงสร้างและแผนผังระบบรวม (Main System Architecture)
-![University Activity System Plan](svg/university_activity_system_plan.svg)
-
----
-
-### 2. สถาปัตยกรรม Real-Time Communication (Laravel Reverb & WebSockets)
-![Laravel Reverb Realtime Architecture](svg/laravel_reverb_realtime_chat_architecture.svg)
-
----
-
-### 3. กระบวนการรับส่งข้อมูลการแจ้งเตือน Real-Time (Message Flow)
-![Realtime Message Flow](svg/realtime_message_flow.svg)
+- ออกแบบและพัฒนา full-stack application ขนาดใหญ่ (Laravel + PostgreSQL + Redis + WebSockets)
+- ทำงานร่วมกับ AI microservice (Python/FastAPI + onnxruntime) ผ่าน API ที่มี API-key กำกับ
+- ออกแบบระบบยืนยันตัวตนหลายชั้น (Sanctum, OTP, RBAC, Audit log, SSO/OIDC)
+- เขียน automated tests ด้วย PHPUnit ครอบคลุม business logic และ security (51 Feature + 2 Unit)
+- ดูแล deployment บน environment จำกัด (Android/Termux) พร้อมเอกสารสถาปัตยกรรมครบ
 
 ---
 
-## คุณสมบัติหลักของระบบ (Core Features)
+## คุณสมบัติหลัก
 
-### 1. ระบบยืนยันตัวตนด้วยใบหน้า (AI Face Verification & Passive Liveness)
-- **Face Landmark & Alignment:** ตรวจจับโครงหน้าและจุดสำคัญบนใบหน้าเพื่อจัดตำแหน่งก่อนส่งประมวลผล
-- **Passive Liveness Heuristic:** ระบบตรวจจับความเป็นบุคคลจริงเบื้องต้นผ่านการวิเคราะห์ Texture (LBP), Frequency Domain (FFT), Eye Landmarks และ Color Variance เพื่อคัดกรองภาพถ่ายและหน้าจอมือถือ
-- **InsightFace AI Service (ArcFace 512D):** ประมวลผลและเปรียบเทียบ Face Embedding ความแม่นยำสูงบนเซิร์ฟเวอร์แบบ Server-Authoritative
+**1. ยืนยันตัวตนด้วยใบหน้า (AI Face Verification)**
 
-### 2. ระบบสื่อสารและแจ้งเตือน Real-Time (Real-Time Engine)
-- **Laravel Reverb WebSockets:** อัปเดตสถานะการเช็คชื่อ จำนวนผู้เข้าร่วม และการแชตสดทันทีโดยไม่ต้อง Refresh หน้าจอ
-- **LINE Official Account Integration:** ส่งข้อความแจ้งเตือนผลการลงทะเบียนและการเข้างานไปยัง LINE ของนักศึกษาโดยตรง
-- **Redis Queue Worker:** ประมวลผล Background Jobs สำหรับการส่งข้อความและการออกเอกสารแบบ Asynchronous
+- ตรวจจับใบหน้า + จัดตำแหน่ง (SCRFD + alignment) และสกัด embedding 512 มิติ (ArcFace / MobileFaceNet)
+- Passive liveness heuristic (LBP, FFT, eye landmarks, color variance) คัดกรองภาพถ่าย/หน้าจอ
+- ประมวลผลฝั่ง server เท่านั้น — client ไม่ถือ embedding หรือผลตัดสินใจ
 
-### 3. ระบบเช็คชื่อเข้าร่วมกิจกรรมอัจฉริยะ (Smart Attendance System)
-- **Dynamic QR Code Scanning:** เช็คชื่อเข้างานด้วยการสแกน QR Code แบบปรับเปลี่ยนตามเวลาเพื่อป้องกันการทุจริต
-- **Walk-in Registration:** รองรับการลงทะเบียนและเช็คชื่อหน้างานสำหรับผู้ไม่ได้ลงทะเบียนล่วงหน้า
-- **Selfie Verification:** ถ่ายภาพยืนยันตัวตนขณะเช็คชื่อเข้างานพร้อมระบบบันทึกพิกัดสถานที่ (Geolocation)
+**2. Real-Time Engine**
 
-### 4. ระบบการควบคุมสิทธิ์และบันทึกความปลอดภัย (Security & Governance)
-- **Role-Based Access Control (RBAC):** กำหนดสิทธิ์ผู้ใช้งานอย่างเป็นสัดส่วน (System Admin, Staff / Organizer, Student)
-- **Audit Logging Engine:** บันทึกประวัติการเข้าถึงและการเปลี่ยนแปลงข้อมูลสำคัญในระบบทั้งหมดเพื่อความโปร่งใส
-- **Sanctum & OTP Authentication:** ระบบยืนยันตัวตนสองชั้นผ่าน OTP สำหรับการเข้าถึงข้อมูลระดับสูง
+- Laravel Reverb (WebSockets) อัปเดตสถานะเช็คชื่อ จำนวนผู้เข้าร่วม และแชตแบบทันที
+- Redis queue worker ประมวลผลงานเบื้องหลัง (แจ้งเตือน, ออกเอกสาร) แบบ asynchronous
+- LINE Official Account แจ้งผลการลงทะเบียน/เข้างานให้นักศึกษา
 
-### 5. ระบบรายงานและออกเอกสารทางการ (Official Reporting & Transcripts)
-- **Activity Transcript Generation:** สร้างเอกสารรับรองการเข้าร่วมกิจกรรม (PDF) พร้อมฟอนต์ภาษาไทยสารบัญ (Sarabun)
-- **Excel Data Export/Import:** นำเข้าและส่งออกข้อมูลนักศึกษาและผลการเข้าร่วมกิจกรรมรูปแบบไฟล์ Excel
+**3. ระบบเช็คชื่อกิจกรรม**
 
----
+- Dynamic QR Code เปลี่ยนตามเวลา กันการนำ QR ไปใช้ซ้ำ
+- Walk-in registration สำหรับผู้ไม่ได้ลงทะเบียนล่วงหน้า
+- Selfie verification พร้อมบันทึกพิกัด (geolocation) และ risk scoring
 
-### 6. ระบบแนะนำกิจกรรมอัตโนมัติ (Recommendation Engine)
-- **ผู้ใช้ที่ติดตาม:** จัดกิจกรรมที่ผู้สร้างเป็นผู้ที่นักศึกษาติดตามจากตาราง `follows`
-- **ประวัติลงทะเบียน:** เรียงจากหมวดหมู่จาก 10 รายการลงทะเบียนล่าสุด และ fallback เป็นกิจกรรมยอดนิยมเท่านั้น
-- **เข้าใช้งาน:** `GET /recommendations` (ต้อง Login) — เห็นกิจกรรมที่ระบบแนะนำตรงพร้อมบันทึก
+**4. ความปลอดภัยและการกำกับดูแล**
 
-### 7. ล็อกอินด้วย SSO (OAuth2 / OIDC)
-- Generic discovery-based provider — รองรับ IdP ที่ model หลักตาม [OpenID Connect](https://openid.net)
-- **``.env``:** `SSO_ENABLED=true`, `SSO_ISSUER`, `SSO_CLIENT_ID/SECRET`, `SSO_REDIRECT_URI`, `SSO_DISCOVERY_URL` (พร้อม route auto-calculated)
-- Route: `/auth/sso/redirect` (ไป IdP), `/auth/sso/callback` (สร้าง user ครั้งคราวถ้า login สำเร็จ)
-- **ผ่านเอา: สูงกว่า SSO disabled default — ถ้าใช้จริงต้อง config IdP + SSO_ENABLED=true
+- RBAC (System Admin / Staff / Student), Faculty-scoped authorization
+- Audit logging ทุกการเข้าถึง/แก้ไขข้อมูลสำคัญ
+- Sanctum + OTP, Security headers, rate limiting, SQL binding safety
 
-### 8. ปฏิทิน ค้นหา/กรอง และ บุ๊กมาร์กกิจกรรม
-- หน้า `GET /calendar` แสดงกิจกรรมตาม JSON endpoint เดินระบบ, การกรองและค้นหาแข็งแรง
-- ปุ่ม "บันทึกเอาไว้" defaults ไป Route `POST /activities/{id}/bookmark` สะสม Bookmark จับเข้าระบบ
+**5. รายงานและเอกสารทางการ**
 
-### 9. ระบบสากล (i18n) + PromptPay + ลำดับการลงทะเบียนแบบ Real-time
-- i18n: สลับภาษาไทย + อังกฤษผ่าน `GET /lang/{locale}`
-- การรับเงินผ่าน PromptPay เพื่อทำ `pending` บนเครื่องระบบบุคคล: ระบุตรง ๆ มี QR PromptPay, ความสัมพันธ์อัตโนมัติ
-- จัดการคิวรอเข้าจอง: น้องที่สมัคร `waitlisted` — เมื่อสั่งตัดคำสั่งระบบจะจัดระเบียบอัตโนมัติ
+- ใบรับรองการเข้าร่วมกิจกรรม (PDF, ฟอนต์ไทย Sarabun), Transcript
+- นำเข้า/ส่งออกข้อมูลนักศึกษาและผลเข้าร่วมกิจกรรม (Excel)
 
-| ส่วนประกอบ (Component) | เทคโนโลยีที่ใช้ (Technology) | หน้าที่การทำงาน (Description) |
-|:---|:---|:---|
-| **Backend Framework** | Laravel 13.x / 12.x | Core Web Application, RESTful APIs, Business Logic |
-| **Language** | PHP 8.2+ | Server-side Application Execution |
-| **Primary Database** | PostgreSQL 16 | Relational Database for Enterprise Data Storage |
-| **Cache & Queue** | Redis | In-Memory Caching & Background Job Queueing |
-| **Real-Time WebSockets** | Laravel Reverb | Bi-directional Real-Time Events & Broadcasts |
-| **AI Microservice** | Python 3.11 / FastAPI / InsightFace | Face Encoding Extraction & Matching Engine |
-| **Frontend Styling** | Tailwind CSS / Alpine.js | Modern Responsive User Interface |
-| **Web Server / Proxy** | Nginx & Cloudflare Tunnel | High-Performance Reverse Proxy & Secure HTTPS Tunneling |
+**6. ฟีเจอร์เสริม**
+
+- ปฏิทินกิจกรรม, ค้นหา/กรอง, บุ๊กมาร์ก, Recommendation engine
+- i18n ไทย/อังกฤษ, PromptPay QR, waitlist จัดคิวอัตโนมัติ, SSO (OAuth2/OIDC)
 
 ---
 
-## เอกสารสถาปัตยกรรมและคู่มือระบบ (Documentation Index)
+## สถาปัตยกรรม (สรุป)
 
-เอกสารทางเทคนิคและคู่มือการพัฒนาระบบถูกจัดเก็บไว้อย่างเป็นหมวดหมู่ในโฟลเดอร์ [`docs/`](./docs/):
+- **Web layer:** Laravel (Blade + REST API) เสิร์ฟผ่าน Nginx/FrankenPHP
+- **Data layer:** PostgreSQL 16 เป็น source of truth, Redis สำหรับ cache/session/queue
+- **Realtime layer:** Laravel Reverb (WebSocket) กระจาย event ผ่าน Redis pub/sub
+- **AI layer:** FastAPI service (SCRFD detection + ArcFace/MobileFaceNet 512D embedding + passive liveness) — Laravel เรียกผ่าน HTTP พร้อม API key
+- **Jobs:** Redis queue worker สำหรับแจ้งเตือน LINE / ออกเอกสาร / นำเข้าข้อมูล
 
-* **[คู่มืออ้างอิง API (API Quick Reference)](./docs/API_QUICK_REFERENCE.md)** — รายละเอียดและโครงสร้าง API Endpoints
-* **[คู่มือการทดสอบ API (API Testing Guide)](./docs/API_TESTING_GUIDE.md)** — วิธีการทดสอบระบบ API
-* **[ระบบสแกนใบหน้า AI (Face System Summary)](./docs/FACE_SYSTEM_SUMMARY.md)** — สถาปัตยกรรมและการทำงานของระบบสแกนใบหน้า
-* **[คู่มือสถาปัตยกรรม InsightFace (InsightFace Architecture)](./docs/INSIGHTFACE_ARCHITECTURE.md)** — โครงสร้างแบบจำลอง AI
-* **[ระบบ Real-Time Chat & Reverb (Laravel Reverb Setup)](./docs/laravel-reverb-chat-agent.md)** — สถาปัตยกรรม WebSockets
-* **[คู่มือตั้งค่าระบบเครือข่าย (Network Setup Guide)](./docs/NETWORK_SETUP_GUIDE.md)** — การเชื่อมต่อ Network และ Cloudflare Tunnel
+ไดอะแกรมสถาปัตยกรรมแบบเต็ม (SVG: system plan, realtime flow, ER, sequence, use-case)
+ถูกจัดเก็บไว้ที่ [`GitNonta/backup`](https://github.com/GitNonta/backup) → `svg/`, `docs/diagrams/`
 
 ---
 
-## ขั้นตอนการติดตั้งและเริ่มใช้งาน (Deployment & Installation)
+## Tech Stack
 
-### 1. คัดลอก Repository และติดตั้ง Dependencies
-```bash
-git clone https://github.com/GitNonta/uni-activity.git
-cd uni-activity
+| ส่วนประกอบ | เทคโนโลยี |
+|:---|:---|
+| Backend | Laravel 13.x, PHP 8.2+ |
+| Database | PostgreSQL 16 (80 migrations) |
+| Cache / Queue | Redis |
+| Real-Time | Laravel Reverb (WebSockets) |
+| Frontend | Blade, Tailwind CSS, Alpine.js, Vite |
+| AI Microservice | Python 3.11, FastAPI, onnxruntime (SCRFD + ArcFace/MobileFaceNet 512D) |
+| Auth | Laravel Sanctum, OTP, OIDC SSO |
+| Testing | PHPUnit 11 (Feature + Unit) |
+| Infra | Nginx, Cloudflare Tunnel, Docker (optional) |
 
-# ติดตั้ง PHP Dependencies
-composer install
+---
 
-# ติดตั้ง Frontend Dependencies
-npm install
+## โครงสร้างโปรเจกต์
+
+```text
+uni-activity/
+├── app/                  # Controllers, Models, Services, Jobs, Policies
+├── bootstrap/  config/   # Laravel bootstrap และ configuration
+├── database/             # migrations (80), seeders, factories
+├── docs/                 # GitHub Pages (หน้า landing/callback)
+├── public/               # entrypoint + assets
+├── resources/            # Blade views, CSS/JS (Vite)
+├── routes/               # web / api / console routes
+├── storage/              # runtime storage (logs, cache, views)
+├── ai_service/           # FastAPI face-verification service (Python)
+├── face_dx/  face_cpp/   # face embedding engine (Direct3D11 / ncnn) + tooling
+├── scripts/              # ops & maintenance scripts
+└── docker-compose.yml    # optional container stack
 ```
 
-### 2. ตั้งค่า Environment File
+---
+
+## เริ่มต้นใช้งาน
+
+**ความต้องการของระบบ:** PHP 8.2+, Composer, Node.js 20+, PostgreSQL 16, Redis
+
 ```bash
+# 1) ติดตั้ง dependencies
+composer install
+npm install
+
+# 2) ตั้งค่า environment
 cp .env.example .env
 php artisan key:generate
-```
 
-### 3. ตั้งค่าและเตรียมฐานข้อมูล (Database Migration & Seeding)
-```bash
+# 3) เตรียมฐานข้อมูล
 php artisan migrate --seed
+
+# 4) build frontend
+npm run build
+
+# 5) รันบริการ
+php artisan serve                       # web app
+php artisan reverb:start --port=8082    # websocket
+php artisan queue:work redis            # background jobs
 ```
 
-### 4. เรียกทำงานบริการหลัก (Start Core Services)
+**AI service (ไม่บังคับ — ใช้เมื่อต้องการฟีเจอร์สแกนใบหน้า):**
+
 ```bash
-# รัน Queue Worker
-php artisan queue:work redis
-
-# รัน Laravel Reverb (WebSocket Server)
-php artisan reverb:start --host=0.0.0.0 --port=8082
-
-# รัน Frontend Build / Dev Server
-npm run dev
+cd ai_service
+pip install -r requirements.txt
+python server.py        # FastAPI บนพอร์ตภายใน LAN
 ```
+
+ตั้งค่าใน `.env` ของ Laravel: `AI_SERVICE_URL`, `AI_SERVER_KEY`
+
+---
+
+## การทดสอบ
+
+ชุดทดสอบ PHPUnit (58 ไฟล์ — Feature 51 / Unit 2) ถูกจัดเก็บแยกไว้ที่
+[`GitNonta/backup`](https://github.com/GitNonta/backup) เพื่อให้ repo นี้เหลือเฉพาะ
+production code; ต้องการรันเทสให้ copy `tests/` + `phpunit.xml` กลับเข้ามาก่อนแล้วรัน:
+
+```bash
+php artisan test
+```
+
+หัวข้อที่ชุดทดสอบครอบคลุม: authorization/policies, check-in race conditions และ
+transaction atomicity, QR token rotation, face-verification security bypass,
+queue architecture, realtime events, backup system, PDPA/biometric encryption
+
+---
+
+## เอกสาร
+
+เอกสารทางเทคนิค (API reference, testing guide, face system, InsightFace architecture,
+Reverb/chat setup, network setup, flowcharts) และไดอะแกรมทั้งหมด ถูกย้ายไปเก็บที่
+[`GitNonta/backup`](https://github.com/GitNonta/backup) เพื่อให้ repo นี้เหลือเฉพาะโค้ด
+— ดูสารบัญทั้งหมดได้ใน `README.md` ของ repo นั้น
+
+---
+
+## Repositories
+
+| Repo | เนื้อหา |
+|---|---|
+| **uni-activity** (นี้) | ระบบหลัก Laravel + AI service + face engine |
+| [GitNonta/monitor](https://github.com/GitNonta/monitor) | ชุด monitoring (Go service + React dashboard) แยกออกไปดูแลต่างหาก |
+| [GitNonta/backup](https://github.com/GitNonta/backup) | เอกสาร ไดอะแกรม test suite และไฟล์ ops ที่แยกออกจาก repo หลัก |
 
 ---
 
 <p align="center">
-  Developed for University Activity Management & Verification System<br>
-  <strong>Official Enterprise Documentation</strong>
+  <strong>University Activity Management & Verification System</strong><br/>
+  Laravel · PostgreSQL · Redis · Reverb · FastAPI · PHPUnit
 </p>

@@ -1,7 +1,0 @@
-node_modules/
-dist/
-dist-ssr/
-*.local
-*.tar.gz
-*.zip
-.DS_Store

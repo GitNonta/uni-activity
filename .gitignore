@@ -1,15 +1,14 @@
 # =================================================================
-# LARAVEL PRODUCTION GITIGNORE
-# Directs Git to ONLY track production source code & configuration
+#  University Activity Management & Verification System
+#  .gitignore — track เฉพาะ source code, config ตัวอย่าง และ asset ที่ใช้จริง
 # =================================================================
 
 # -----------------------------------------------------------------
-# 1. Environment & Sensitive Credentials (DO NOT COMMIT)
+# 1. Environment & Secrets (ห้าม commit ของจริง)
 # -----------------------------------------------------------------
 .env
 .env.*
 !.env.example
-!.env.*.example
 *.key
 *.pem
 *.crt
@@ -17,89 +16,100 @@
 *.p12
 id_rsa*
 auth.json
-go-monitor/go-monitor
-go-monitor/cf-manager/cf-manager
-go-monitor/*.exe
+*.secret
 
 # -----------------------------------------------------------------
-# 2. Database Dumps & Personal Data (DO NOT COMMIT)
+# 2. Dependencies & Build Tooling
 # -----------------------------------------------------------------
-*.sql
-*.sql.bak
-database_dumps/
-*.xlsx
-*.csv
-*.xls
-*.pdf
+/vendor/
+/node_modules/
+/public/hot/
+pip_wheels/
+.venv/
+venv/
 
 # -----------------------------------------------------------------
-# 3. User Uploads, Media & Binary Model Weights (DO NOT COMMIT)
+# 3. Framework Runtime State
 # -----------------------------------------------------------------
 /public/storage
-/storage/app/public/
-/storage/logs/
-/storage/framework/cache/
-/storage/framework/sessions/
-/storage/framework/views/
-*.jpg
-*.jpeg
-*.png
-*.gif
-*.webp
-*.mp4
+/storage/app/public/*
+!/storage/app/public/.gitignore
+/storage/app/private/*
+/storage/logs/*
+!/storage/logs/.gitignore
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/framework/testing/*
+!/storage/framework/testing/.gitignore
+/bootstrap/cache/*.php
+!/bootstrap/cache/.gitignore
+
+# -----------------------------------------------------------------
+# 4. User Uploads & Heavy Binaries
+#    (รูป/วิดีโอใน public/, docs/, svg/ ยัง track ได้ — กันเฉพาะ uploads)
+# -----------------------------------------------------------------
+/public/uploads/
+/face_cpp/testdata/
+/face_dx/testdata/
+*.onnx
+*.pt
+*.pth
+*.bin
+*.dll
+*.so
+*.exe
+*.o
+*.obj
 *.zip
 *.rar
 *.7z
 *.tar.gz
-*.pt
-*.pth
-*.onnx
-*.bin
-
-# Allow architectural SVG diagrams or logos
-!/public/*.svg
-!/public/favicon.ico
+*.pdf
+*.sql
+*.sql.bak
+*.xlsx
+*.xls
+*.csv
+database_dumps/
+/face_dx/build/
+/face_cpp/build/
 
 # -----------------------------------------------------------------
-# 4. Dependency Directories & Compiled Assets
+# 5. Logs & Generated Dumps
 # -----------------------------------------------------------------
-/vendor/
-/node_modules/
-# /public/build/
-/public/hot/
-monitor-ui/node_modules/
-monitor-ui/dist/
-pip_wheels/
+*.log
+/logs/
+/watchdog_logs/
+/face_dx/reports/celeba_*.json
+lang/.extracted*.json
+
+# -----------------------------------------------------------------
+# 6. Python
+# -----------------------------------------------------------------
 __pycache__/
 **/__pycache__/
-*.pyc
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
 
 # -----------------------------------------------------------------
-# 5. Non-Production & Hardware Tools (DO NOT COMMIT)
-# -----------------------------------------------------------------
-/edl/
-/edl_extracted_data/
-/scripts/
-!/scripts/*.sh
-!/scripts/cluster/
-!/scripts/cluster/*.sh
-/watchdog_logs/
-/socketserver/
-py/test_*.py
-*.log
-
-# -----------------------------------------------------------------
-# 6. IDE, OS & Local AI Configs
+# 7. IDE, OS & Local Tooling
 # -----------------------------------------------------------------
 .DS_Store
 Thumbs.db
-/.vscode/
 /.idea/
-/.claud/
-.phpunit.result.cache
-/.phpunit.cache/
+/.vscode/
+/.claude/
+/.agents/
 scratch/
-face_dx/identity_CelebA.txt
+*.swp
+*~
 .rr.yaml
 frankenphp
-lang/.extracted*.json
+.phpunit.result.cache
+/.phpunit.cache/
+/coverage/
