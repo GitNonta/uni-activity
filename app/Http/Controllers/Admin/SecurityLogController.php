@@ -19,9 +19,9 @@ class SecurityLogController extends Controller
     /** แสดงรายการ security logs พร้อม filter */
     public function index(Request $request)
     {
-        abort_unless(auth()->user()?->isAdmin(), 403, 'เฉพาะ Admin เท่านั้น');
+        abort_unless(auth()->user()?->isAdmin(), 403, __('เฉพาะ Admin เท่านั้น'));
 
-        $query = SecurityLog::with(['user:id,full_name,student_id', 'reviewer:id,full_name'])
+        $query = SecurityLog::with(['user:id,full_name,full_name_en,english_name,student_id', 'reviewer:id,full_name,full_name_en,english_name'])
             ->orderByDesc('created_at');
 
         // Filter by event type
@@ -59,7 +59,7 @@ class SecurityLogController extends Controller
     /** ดูรายละเอียด security log */
     public function show(SecurityLog $securityLog)
     {
-        abort_unless(auth()->user()?->isAdmin(), 403, 'เฉพาะ Admin เท่านั้น');
+        abort_unless(auth()->user()?->isAdmin(), 403, __('เฉพาะ Admin เท่านั้น'));
 
         $securityLog->load(['user', 'reviewer']);
 
@@ -67,7 +67,7 @@ class SecurityLogController extends Controller
         $relatedUsers = collect();
         if (!empty($securityLog->related_user_ids)) {
             $relatedUsers = User::whereIn('id', $securityLog->related_user_ids)
-                ->select('id', 'full_name', 'student_id', 'faculty', 'role', 'email')
+                ->select('id', 'full_name', 'full_name_en', 'english_name', 'student_id', 'faculty', 'role', 'email')
                 ->get();
         }
 
@@ -77,7 +77,7 @@ class SecurityLogController extends Controller
     /** Mark security log ว่าตรวจสอบแล้ว */
     public function markReviewed(SecurityLog $securityLog): JsonResponse
     {
-        abort_unless(auth()->user()?->isAdmin(), 403, 'เฉพาะ Admin เท่านั้น');
+        abort_unless(auth()->user()?->isAdmin(), 403, __('เฉพาะ Admin เท่านั้น'));
 
         $securityLog->update([
             'is_reviewed' => true,
@@ -85,13 +85,13 @@ class SecurityLogController extends Controller
             'reviewed_by' => auth()->id(),
         ]);
 
-        return response()->json(['success' => true, 'message' => 'ทำเครื่องหมายตรวจสอบแล้ว']);
+        return response()->json(['success' => true, 'message' => __('ทำเครื่องหมายตรวจสอบแล้ว')]);
     }
 
     /** Mark ทั้งหมดว่าตรวจสอบแล้ว */
     public function markAllReviewed(): JsonResponse
     {
-        abort_unless(auth()->user()?->isAdmin(), 403, 'เฉพาะ Admin เท่านั้น');
+        abort_unless(auth()->user()?->isAdmin(), 403, __('เฉพาะ Admin เท่านั้น'));
 
         SecurityLog::where('is_reviewed', false)->update([
             'is_reviewed' => true,
@@ -99,6 +99,6 @@ class SecurityLogController extends Controller
             'reviewed_by' => auth()->id(),
         ]);
 
-        return response()->json(['success' => true, 'message' => 'ทำเครื่องหมายทั้งหมดแล้ว']);
+        return response()->json(['success' => true, 'message' => __('ทำเครื่องหมายทั้งหมดแล้ว')]);
     }
 }

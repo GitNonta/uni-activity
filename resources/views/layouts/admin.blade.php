@@ -895,7 +895,7 @@ html.dark .admin-search-result-row:hover {
                 <a href="{{ route('admin.profile.edit') }}" class="sb-user" style="padding:0; background:none; flex:1;">
                     <x-avatar :user="auth()->user()" size="38" style="border: 2px solid rgba(255,255,255,0.25); box-shadow: 0 2px 6px rgba(0,0,0,0.2);" />
                     <div class="sb-user-info sb-link-text">
-                        <div class="sb-user-name">{{ auth()->user()->full_name ?? __('ผู้ใช้') }}</div>
+                        <div class="sb-user-name">{{ auth()->user()?->displayName() ?? __('ผู้ใช้') }}</div>
 
                         <div class="sb-user-role">{{ auth()->user()->isAdmin() ? __('ผู้ดูแลระบบ') : __('เจ้าหน้าที่') }}</div>
                     </div>

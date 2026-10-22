@@ -100,8 +100,8 @@ html[data-theme="dark"] .export-field-label:hover {
                                 'email'         => __('อีเมล'),
                                 'is_active'     => __('สถานะบัญชี'),
                                 'total_hours'   => __('ชั่วโมงทั้งหมด'),
-                                'approved_count'=> 'จำนวนกิจกรรม',
-                                'created_at'    => 'วันที่สมัคร',
+                                'approved_count'=> __('จำนวนกิจกรรม'),
+                                'created_at'    => __('วันที่สมัคร'),
                             ];
                         @endphp
                         @foreach($availableFields as $key => $label)

@@ -687,7 +687,7 @@ html.dark .sec-type-badge.badge-orange {
                     <span class="sec-info-value">{{ $securityLog->created_at->format('d/m/Y H:i:s') }}</span>
                 </div>
                 <div class="sec-info-row">
-                    <span class="sec-info-label">IP Address</span>
+                    <span class="sec-info-label">{{ __('ที่อยู่ IP') }}</span>
                     <span class="sec-info-value mono">
                         {{ $securityLog->ip_address ?? '—' }}
                         @if($securityLog->ip_address)
@@ -698,7 +698,7 @@ html.dark .sec-type-badge.badge-orange {
                     </span>
                 </div>
                 <div class="sec-info-row">
-                    <span class="sec-info-label">Device Hash</span>
+                    <span class="sec-info-label">{{ __('แฮชอุปกรณ์') }}</span>
                     <span class="sec-info-value mono" style="font-size:.76rem;">
                         {{ $securityLog->device_fingerprint ?? '—' }}
                         @if($securityLog->device_fingerprint)
@@ -739,9 +739,9 @@ html.dark .sec-type-badge.badge-orange {
                             default   => 'user-role-student',
                         };
                         $roleLabel = match($role) {
-                            'admin'   => 'ผู้ดูแลระบบ',
-                            'staff'   => 'เจ้าหน้าที่',
-                            default   => 'นักศึกษา',
+                            'admin'   => __('ผู้ดูแลระบบ'),
+                            'staff'   => __('เจ้าหน้าที่'),
+                            default   => __('นักศึกษา'),
                         };
                     @endphp
                     <span class="user-role-badge {{ $roleClass }}">{{ $roleLabel }}</span>
@@ -753,7 +753,7 @@ html.dark .sec-type-badge.badge-orange {
                         <x-avatar :user="$securityLog->user" size="42" />
                         <div class="user-hero-details">
                             <div class="user-hero-name">
-                                <span>{{ $securityLog->user->full_name }}</span>
+                                <span>{{ $securityLog->user->displayName() }}</span>
                             </div>
                             <div class="user-hero-sub">{{ $securityLog->user->email }}</div>
                         </div>
@@ -841,10 +841,10 @@ html.dark .sec-type-badge.badge-orange {
             @php
                 $details = $securityLog->details;
                 $reasonMap = [
-                    'wrong_password'   => 'รหัสผ่านไม่ถูกต้อง',
-                    'user_not_found'   => 'ไม่พบบัญชีผู้ใช้ในระบบ',
-                    'account_inactive' => 'บัญชีถูกระงับการใช้งาน',
-                    'rate_limit'       => 'ส่งคำขอถี่เกินขีดจำกัด',
+                    'wrong_password'   => __('รหัสผ่านไม่ถูกต้อง'),
+                    'user_not_found'   => __('ไม่พบบัญชีผู้ใช้ในระบบ'),
+                    'account_inactive' => __('บัญชีถูกระงับการใช้งาน'),
+                    'rate_limit'       => __('ส่งคำขอถี่เกินขีดจำกัด'),
                 ];
             @endphp
 
@@ -852,13 +852,13 @@ html.dark .sec-type-badge.badge-orange {
             <div class="tech-details-grid">
                 @if(!empty($details['email']))
                     <div class="tech-box">
-                        <div class="tech-box-label">Email Attempted</div>
+                        <div class="tech-box-label">{{ __('อีเมลที่พยายามใช้งาน') }}</div>
                         <div class="tech-box-value">{{ $details['email'] }}</div>
                     </div>
                 @endif
                 @if(!empty($details['reason']))
                     <div class="tech-box">
-                        <div class="tech-box-label">{{ __('Reason / สาเหตุ') }}</div>
+                        <div class="tech-box-label">{{ __('สาเหตุ') }}</div>
                         <div class="tech-box-value">
                             <span style="color:#dc2626;">{{ $reasonMap[$details['reason']] ?? $details['reason'] }}</span>
                         </div>
@@ -866,7 +866,7 @@ html.dark .sec-type-badge.badge-orange {
                 @endif
                 @if(!empty($details['method']) || !empty($details['url']))
                     <div class="tech-box">
-                        <div class="tech-box-label">HTTP Request</div>
+                        <div class="tech-box-label">{{ __('คำขอ HTTP') }}</div>
                         <div class="tech-box-value" style="font-size:.82rem;">
                             @if(!empty($details['method']))
                                 <span style="background:#ea580c;color:#fff;padding:1px 6px;border-radius:4px;font-size:.72rem;font-weight:700;margin-right:4px;">{{ $details['method'] }}</span>
@@ -877,7 +877,7 @@ html.dark .sec-type-badge.badge-orange {
                 @endif
                 @if(!empty($details['message']))
                     <div class="tech-box">
-                        <div class="tech-box-label">System Message</div>
+                        <div class="tech-box-label">{{ __('ข้อความจากระบบ') }}</div>
                         <div class="tech-box-value">{{ $details['message'] }}</div>
                     </div>
                 @endif
@@ -885,7 +885,7 @@ html.dark .sec-type-badge.badge-orange {
 
             @if(!empty($details['user_agent']))
                 <div class="tech-box" style="margin-bottom:1.25rem;">
-                    <div class="tech-box-label">User Agent</div>
+                    <div class="tech-box-label">{{ __('ยูสเอเจนต์') }}</div>
                     <div class="tech-box-value mono" style="font-size:.76rem;color:var(--text-muted, #64748b);">
                         {{ $details['user_agent'] }}
                     </div>
@@ -925,7 +925,7 @@ html.dark .sec-type-badge.badge-orange {
                 <div class="related-item">
                     <x-avatar :user="$ru" size="36" />
                     <div class="related-details">
-                        <div class="related-name">{{ $ru->full_name }}</div>
+                        <div class="related-name">{{ $ru->displayName() }}</div>
                         <div class="related-meta">
                             @if($ru->role === 'student' && $ru->student_id)
                                 {{ $ru->student_id }} · {{ $ru->faculty ?? __('นักศึกษา') }}
@@ -974,12 +974,12 @@ html.dark .sec-type-badge.badge-orange {
                             <div style="font-size:.82rem;opacity:.9;margin-top:2px;">
                                 {{ __('ตรวจสอบเมื่อ') }}{{ $securityLog->reviewed_at?->format('d/m/Y H:i:s') }}
                                 @if($securityLog->reviewer)
-                                    {{ __('โดย') }}<strong style="font-weight:700;">{{ $securityLog->reviewer->full_name }}</strong>
+                                    {{ __('โดย') }}<strong style="font-weight:700;">{{ $securityLog->reviewer->displayName() }}</strong>
                                 @endif
                             </div>
                         </div>
                     </div>
-                    <span style="font-size:.78rem;font-weight:700;padding:4px 10px;background:rgba(22,101,52,0.12);border-radius:6px;">VERIFIED</span>
+                    <span style="font-size:.78rem;font-weight:700;padding:4px 10px;background:rgba(22,101,52,0.12);border-radius:6px;">{{ __('ยืนยันแล้ว') }}</span>
                 </div>
             @else
                 <div class="review-banner review-banner-pending">

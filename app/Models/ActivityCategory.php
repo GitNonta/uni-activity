@@ -53,4 +53,17 @@ class ActivityCategory extends Model
 
         return $value ?? null;
     }
+
+    /** คำอธิบายหมวดหมู่แปลตาม locale ผ่าน key ใน lang/{locale}.json (fallback เป็นข้อความเดิม) */
+    public function getDescriptionAttribute($value)
+    {
+        if (app()->getLocale() !== 'th' && filled($value)) {
+            $t = __($value);
+            if (is_string($t) && $t !== $value) {
+                return $t;
+            }
+        }
+
+        return $value ?? null;
+    }
 }

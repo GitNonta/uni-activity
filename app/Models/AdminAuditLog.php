@@ -62,11 +62,11 @@ class AdminAuditLog extends Model
         if (!$this->model_type) return '-';
 
         return match (class_basename($this->model_type)) {
-            'Activity'     => 'กิจกรรม',
-            'User'         => 'ผู้ใช้',
-            'Registration' => 'การลงทะเบียน',
-            'Attendance'   => 'การเข้าร่วม',
-            'ActivityCategory' => 'หมวดหมู่',
+            'Activity'     => __('กิจกรรม'),
+            'User'         => __('ผู้ใช้'),
+            'Registration' => __('การลงทะเบียน'),
+            'Attendance'   => __('การเข้าร่วม'),
+            'ActivityCategory' => __('หมวดหมู่'),
             default        => class_basename($this->model_type),
         };
     }

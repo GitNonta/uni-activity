@@ -28,7 +28,7 @@
 
             <div class="form-group mb-4">
                 <label class="form-label" style="font-weight:600;">{{ __('ชื่อกิจกรรม') }} <span style="color:#ef4444;">*</span></label>
-                <input type="text" name="title" value="{{ old('title', $activity->title) }}" class="form-control" required placeholder="{{ __('ระบุชื่อกิจกรรมให้ชัดเจน') }}">
+                <input type="text" name="title" value="{{ old('title', $activity->getRawOriginal('title')) }}" class="form-control" required placeholder="{{ __('ระบุชื่อกิจกรรมให้ชัดเจน') }}">
             </div>
 
             <div class="form-row">
@@ -42,13 +42,13 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label" style="font-weight:600;">{{ __('สถานที่จัดกิจกรรม') }} <span style="color:#ef4444;">*</span></label>
-                    <input type="text" name="location" id="locationInput" value="{{ old('location', $activity->location) }}" class="form-control" required placeholder="{{ __('เช่น ห้องประชุม 1 อาคารเรียนรวม') }}" oninput="debouncedConflictCheck()">
+                    <input type="text" name="location" id="locationInput" value="{{ old('location', $activity->getRawOriginal('location')) }}" class="form-control" required placeholder="{{ __('เช่น ห้องประชุม 1 อาคารเรียนรวม') }}" oninput="debouncedConflictCheck()">
                 </div>
             </div>
 
             <div class="form-group mb-4">
                 <label class="form-label" style="font-weight:600;">{{ __('รายละเอียดกิจกรรม') }}</label>
-                <textarea name="description" rows="5" class="form-control" placeholder="{{ __('รายละเอียด วัตถุประสงค์ กำหนดการ หรือข้อปฏิบัติต่างๆ') }}">{{ old('description', $activity->description) }}</textarea>
+                <textarea name="description" rows="5" class="form-control" placeholder="{{ __('รายละเอียด วัตถุประสงค์ กำหนดการ หรือข้อปฏิบัติต่างๆ') }}">{{ old('description', $activity->getRawOriginal('description')) }}</textarea>
             </div>
 
             <div class="form-row">
@@ -64,12 +64,12 @@
                     <label class="form-label" style="font-weight:600;">{{ __('สถานะกิจกรรม') }} <span style="color:#ef4444;">*</span></label>
                     @php
                         $statusOptions = [
-                            'upcoming' => 'กำลังจะเปิด',
-                            'open' => 'เปิดรับสมัคร',
-                            'full' => 'เต็มแล้ว',
-                            'ongoing' => 'กำลังจัดกิจกรรม',
-                            'done' => 'เสร็จสิ้น',
-                            'cancelled' => 'ยกเลิก'
+                            'upcoming' => __('กำลังจะเปิด'),
+                            'open' => __('เปิดรับสมัคร'),
+                            'full' => __('เต็มแล้ว'),
+                            'ongoing' => __('กำลังจัดกิจกรรม'),
+                            'done' => __('เสร็จสิ้น'),
+                            'cancelled' => __('ยกเลิก')
                         ];
                     @endphp
                     <select name="status" class="form-control" required>

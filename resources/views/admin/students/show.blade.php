@@ -73,7 +73,7 @@
                 </div>
                 <div class="flex justify-between">
                     <span class="text-xs text-muted">{{ __('ภาคเรียน') }}</span>
-                    <span class="text-sm font-mini">{{ $student->program ?? '-' }}</span>
+                    <span class="text-sm font-mini">{{ $student->program ? __($student->program) : '-' }}</span>
                 </div>
                 <div class="flex justify-between">
                     <span class="text-xs text-muted">{{ __('อีเมล') }}</span>

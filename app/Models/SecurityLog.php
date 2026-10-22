@@ -59,11 +59,11 @@ class SecurityLog extends Model
     public function getEventTypeLabelAttribute(): string
     {
         return match ($this->event_type) {
-            'multi_account_login'  => 'เข้าสู่ระบบหลายบัญชี (Multi Account Login)',
-            'suspicious_checkin'   => 'การเช็คอินน่าสงสัย (Suspicious Checkin)',
-            'device_mismatch'      => 'อุปกรณ์ไม่ตรงกับที่บันทึกไว้',
-            'staff_login_failed'   => 'เข้าสู่ระบบเจ้าหน้าที่ไม่สำเร็จ',
-            'rate_limit_exceeded'  => 'คำขอเกินขีดจำกัดความปลอดภัย',
+            'multi_account_login'  => __('เข้าสู่ระบบหลายบัญชี (Multi Account Login)'),
+            'suspicious_checkin'   => __('การเช็คอินน่าสงสัย (Suspicious Checkin)'),
+            'device_mismatch'      => __('อุปกรณ์ไม่ตรงกับที่บันทึกไว้'),
+            'staff_login_failed'   => __('เข้าสู่ระบบเจ้าหน้าที่ไม่สำเร็จ'),
+            'rate_limit_exceeded'  => __('คำขอเกินขีดจำกัดความปลอดภัย'),
             default                => ucwords(str_replace('_', ' ', (string) $this->event_type)),
         };
     }

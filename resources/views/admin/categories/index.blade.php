@@ -90,10 +90,10 @@
                     <td data-label="{{ __('จัดการ') }}" class="text-right">
                         <div class="flex justify-end gap-2">
                             <button type="button" class="btn btn-outline btn-sm"
-                                onclick="openEditModal({{ $cat->id }}, '{{ addslashes($cat->name) }}', '{{ addslashes($cat->description ?? '') }}', {{ (float)$cat->required_hours }}, '{{ $cat->color ?? '#3B82F6' }}', {{ json_encode($cat->options ?? []) }})"
+                                onclick="openEditModal({{ $cat->id }}, '{{ addslashes($cat->getRawOriginal('name')) }}', '{{ addslashes($cat->getRawOriginal('description') ?? '') }}', {{ (float)$cat->required_hours }}, '{{ $cat->color ?? '#3B82F6' }}', {{ json_encode($cat->options ?? []) }})"
                                 style="font-size:.75rem;">{{ __('แก้ไข') }}                            </button>
                             @if($cat->activities_count === 0)
-                            <form method="POST" action="{{ route('admin.categories.destroy', $cat->id) }}" onsubmit="return confirm('ลบหมวดหมู่ {{ $cat->name }} ?')" style="margin:0;">
+                            <form method="POST" action="{{ route('admin.categories.destroy', $cat->id) }}" onsubmit="return confirm('{{ __('ลบหมวดหมู่') }} {{ $cat->name }} ?')" style="margin:0;">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn btn-sm" style="font-size:.75rem;background:#fee2e2;color:#b91c1c;border:none;line-height:1.5;">{{ __('ลบ') }}</button>
                             </form>

@@ -266,10 +266,10 @@ class User extends Authenticatable
     public function getGenderLabelAttribute(): string
     {
         return match ($this->gender) {
-            'male'   => 'ชาย',
-            'female' => 'หญิง',
-            'other'  => 'อื่นๆ / ไม่ระบุ',
-            default  => 'ไม่ระบุ',
+            'male'   => __('ชาย'),
+            'female' => __('หญิง'),
+            'other'  => __('อื่นๆ / ไม่ระบุ'),
+            default  => __('ไม่ระบุ'),
         };
     }
 

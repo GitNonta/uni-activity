@@ -35,11 +35,11 @@
 {{-- สถิติการกระจายคะแนน (Rating Cards) --}}
 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
     @foreach([
-        ['rating' => 5, 'count' => $stats['rating_5'], 'color' => '#10b981', 'label' => 'ระดับ 5 (มากที่สุด)'],
-        ['rating' => 4, 'count' => $stats['rating_4'], 'color' => '#84cc16', 'label' => 'ระดับ 4 (มาก)'],
-        ['rating' => 3, 'count' => $stats['rating_3'], 'color' => '#eab308', 'label' => 'ระดับ 3 (ปานกลาง)'],
-        ['rating' => 2, 'count' => $stats['rating_2'], 'color' => '#f97316', 'label' => 'ระดับ 2 (น้อย)'],
-        ['rating' => 1, 'count' => $stats['rating_1'], 'color' => '#ef4444', 'label' => 'ระดับ 1 (น้อยที่สุด)']
+        ['rating' => 5, 'count' => $stats['rating_5'], 'color' => '#10b981', 'label' => __('ระดับ 5 (มากที่สุด)')],
+        ['rating' => 4, 'count' => $stats['rating_4'], 'color' => '#84cc16', 'label' => __('ระดับ 4 (มาก)')],
+        ['rating' => 3, 'count' => $stats['rating_3'], 'color' => '#eab308', 'label' => __('ระดับ 3 (ปานกลาง)')],
+        ['rating' => 2, 'count' => $stats['rating_2'], 'color' => '#f97316', 'label' => __('ระดับ 2 (น้อย)')],
+        ['rating' => 1, 'count' => $stats['rating_1'], 'color' => '#ef4444', 'label' => __('ระดับ 1 (น้อยที่สุด)')]
     ] as $rc)
         <div class="card" style="border: 1px solid #27272a; background: #1c1c1f; text-align:center; border-radius:10px; padding: 1rem 0.5rem;">
             <p style="font-size:1.65rem; font-weight:800; color:{{ $rc['color'] }}; margin:0; line-height:1.5;">{{ number_format($rc['count']) }}</p>
@@ -122,7 +122,7 @@
                                     {{ __('ไม่เปิดเผยตัวตน') }}
                                 </span>
                             @else
-                                <span class="font-semi" style="color:#f4f4f5;" title="{{ $fb->user->full_name ?? '-' }}">{{ Str::limit($fb->user->full_name ?? '-', 35, '...') }}</span>
+                                <span class="font-semi" style="color:#f4f4f5;" title="{{ $fb->user?->displayName() ?? '-' }}">{{ Str::limit($fb->user?->displayName() ?? '-', 35, '...') }}</span>
                             @endif
                         </td>
                         <td style="padding:1.1rem 1.5rem;">
@@ -139,7 +139,7 @@
                             {{ $fb->comment ?? '-' }}
                         </td>
                         <td style="padding:1.1rem 1.5rem; color:#a1a1aa; font-size:0.8rem;">
-                            {{ $fb->created_at->translatedFormat('d M Y H:i น.') }}
+                            {{ $fb->created_at->translatedFormat(app()->getLocale() === 'th' ? 'd M Y H:i น.' : 'd M Y H:i') }}
                         </td>
                         <td style="padding:1.1rem 1.5rem; text-align:right;">
                             <a href="{{ route('admin.feedbacks.show', $fb->activity_id) }}" class="btn btn-sm" style="font-size:0.75rem; padding:0.4rem 0.85rem; border-radius:6px; background:#141416; border:1px solid #27272a; color:#f4f4f5; text-decoration:none; display:inline-flex; align-items:center; gap:6px; font-weight:600;">

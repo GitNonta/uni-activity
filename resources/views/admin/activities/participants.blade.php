@@ -30,7 +30,7 @@
                     <td class="text-muted">{{ __($reg->user->faculty) }}</td>
                     <td class="text-sm">
                         @if($reg->user->program)
-                            <span class="text-xs {{ $reg->user->program === __('กศ.บป.') ? 'text-purple-600' : 'text-orange-600' }}" style="font-weight:600;">{{ $reg->user->program }}</span>
+                            <span class="text-xs {{ $reg->user->program === 'กศ.บป.' ? 'text-purple-600' : 'text-orange-600' }}" style="font-weight:600;">{{ __($reg->user->program) }}</span>
                         @else
                             -
                         @endif
@@ -96,7 +96,7 @@
                     <td class="text-muted">{{ __($att->user->faculty) }}</td>
                     <td class="text-sm">
                         @if($att->user->program)
-                            <span class="text-xs {{ $att->user->program === __('กศ.บป.') ? 'text-purple-600' : 'text-orange-600' }}" style="font-weight:600;">{{ $att->user->program }}</span>
+                            <span class="text-xs {{ $att->user->program === 'กศ.บป.' ? 'text-purple-600' : 'text-orange-600' }}" style="font-weight:600;">{{ __($att->user->program) }}</span>
                         @else
                             -
                         @endif

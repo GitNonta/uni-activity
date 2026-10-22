@@ -47,7 +47,7 @@ class FeedbackAdminController extends Controller
         if (auth()->user()->isStaff()) {
             $activitiesQuery->where('created_by', auth()->id());
         }
-        $activities = $activitiesQuery->take(50)->get(['id', 'title', 'activity_date']);
+        $activities = $activitiesQuery->take(50)->get(['id', 'title', 'title_en', 'activity_date']);
 
         // สถิติสรุป
         if (auth()->user()->isStaff()) {
@@ -125,10 +125,10 @@ class FeedbackAdminController extends Controller
 
         // Detailed Topics Breakdown (Counts for 5, 4, 3, 2, 1 and average)
         $topics = [
-            'content'      => 'เนื้อหากิจกรรมและประโยชน์ที่ได้รับ',
-            'speaker'      => 'วิทยากร / ผู้บรรยาย / ผู้ดำเนินกิจกรรม',
-            'location'     => 'สถานที่ / โสตทัศนูปกรณ์ / ระบบดิจิทัล',
-            'organization' => 'การบริหารจัดการและการประสานงาน',
+            'content'      => __('เนื้อหากิจกรรมและประโยชน์ที่ได้รับ'),
+            'speaker'      => __('วิทยากร / ผู้บรรยาย / ผู้ดำเนินกิจกรรม'),
+            'location'     => __('สถานที่ / โสตทัศนูปกรณ์ / ระบบดิจิทัล'),
+            'organization' => __('การบริหารจัดการและการประสานงาน'),
         ];
 
         $topicStats = [];
@@ -149,13 +149,13 @@ class FeedbackAdminController extends Controller
 
         $clientFeedbacks = $feedbacks->map(fn($f) => [
             'id'           => $f->id,
-            'user_name'    => $f->is_anonymous ? 'ไม่ระบุตัวตน (Anonymous)' : ($f->user->full_name ?? 'ผู้เข้าร่วม'),
+            'user_name'    => $f->is_anonymous ? __('ไม่ระบุตัวตน (Anonymous)') : ($f->user?->displayName() ?? __('ผู้เข้าร่วม')),
             'student_code' => $f->is_anonymous ? '-' : ($f->user->student_code ?? $f->user->email ?? '-'),
             'is_anonymous' => (bool) $f->is_anonymous,
             'rating'       => (int) $f->rating,
             'ratings'      => $f->ratings ?? [],
             'comment'      => $f->comment ?? '',
-            'time_thai'    => $f->created_at->translatedFormat('d M Y H:i น.'),
+            'time_thai'    => $f->created_at->translatedFormat(app()->getLocale() === 'th' ? 'd M Y H:i น.' : 'd M Y H:i'),
         ])->values()->all();
 
         return view('admin.feedbacks.show', compact('activity', 'feedbacks', 'clientFeedbacks', 'stats', 'topicStats'));

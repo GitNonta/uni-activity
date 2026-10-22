@@ -20,12 +20,12 @@
             <option value="">{{ __('ทุกสถานะ') }}</option>
             @php
                 $statusMap = [
-                    'upcoming' => 'เร็วๆ นี้',
-                    'open' => 'เปิดรับสมัคร', 
-                    'full' => 'เต็ม',
-                    'ongoing' => 'กำลังดำเนินการ',
-                    'done' => 'เสร็จสิ้น',
-                    'cancelled' => 'ยกเลิก'
+                    'upcoming' => __('เร็วๆ นี้'),
+                    'open' => __('เปิดรับสมัคร'),
+                    'full' => __('เต็ม'),
+                    'ongoing' => __('กำลังดำเนินการ'),
+                    'done' => __('เสร็จสิ้น'),
+                    'cancelled' => __('ยกเลิก')
                 ];
             @endphp
             @foreach($statusMap as $value => $label)

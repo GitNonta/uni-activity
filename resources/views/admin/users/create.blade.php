@@ -1,6 +1,6 @@
 {{-- หน้าสร้างผู้ใช้ใหม่ (Admin): นักศึกษา หรือ เจ้าหน้าที่ --}}
 @extends('layouts.admin')
-@section('title', $type === 'staff' ? 'สร้างเจ้าหน้าที่' : 'สร้างนักศึกษา')
+@section('title', $type === 'staff' ? __('สร้างเจ้าหน้าที่') : __('สร้างนักศึกษา'))
 
 @section('content')
 <div class="flex items-center justify-between mb-4">

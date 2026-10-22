@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'สรุปผลการประเมิน: ' . $activity->title)
+@section('title', __('สรุปผลการประเมิน:') . ' ' . $activity->title)
 
 @section('content')
 <div class="gform-container">
@@ -129,11 +129,11 @@
 
                     <div class="gform-bar-list">
                         @foreach([
-                            ['score' => 5, 'label' => '5 (พึงพอใจมากที่สุด)', 'count' => $stats['rating_5'], 'color' => '#10b981'],
-                            ['score' => 4, 'label' => '4 (พึงพอใจมาก)', 'count' => $stats['rating_4'], 'color' => '#84cc16'],
-                            ['score' => 3, 'label' => '3 (พึงพอใจปานกลาง)', 'count' => $stats['rating_3'], 'color' => '#eab308'],
-                            ['score' => 2, 'label' => '2 (พึงพอใจน้อย)', 'count' => $stats['rating_2'], 'color' => '#f97316'],
-                            ['score' => 1, 'label' => '1 (พึงพอใจน้อยที่สุด)', 'count' => $stats['rating_1'], 'color' => '#ef4444'],
+                            ['score' => 5, 'label' => __('5 (พึงพอใจมากที่สุด)'), 'count' => $stats['rating_5'], 'color' => '#10b981'],
+                            ['score' => 4, 'label' => __('4 (พึงพอใจมาก)'), 'count' => $stats['rating_4'], 'color' => '#84cc16'],
+                            ['score' => 3, 'label' => __('3 (พึงพอใจปานกลาง)'), 'count' => $stats['rating_3'], 'color' => '#eab308'],
+                            ['score' => 2, 'label' => __('2 (พึงพอใจน้อย)'), 'count' => $stats['rating_2'], 'color' => '#f97316'],
+                            ['score' => 1, 'label' => __('1 (พึงพอใจน้อยที่สุด)'), 'count' => $stats['rating_1'], 'color' => '#ef4444'],
                         ] as $bar)
                             @php
                                 $percent = $stats['total'] > 0 ? round(($bar['count'] / $stats['total']) * 100, 1) : 0;
@@ -172,11 +172,11 @@
                         @endphp
                         <div class="gform-bar-list">
                             @foreach([
-                                ['score' => 5, 'label' => '5 (มากที่สุด)', 'count' => $ts['rating_5'], 'color' => '#10b981'],
-                                ['score' => 4, 'label' => '4 (มาก)', 'count' => $ts['rating_4'], 'color' => '#84cc16'],
-                                ['score' => 3, 'label' => '3 (ปานกลาง)', 'count' => $ts['rating_3'], 'color' => '#eab308'],
-                                ['score' => 2, 'label' => '2 (น้อย)', 'count' => $ts['rating_2'], 'color' => '#f97316'],
-                                ['score' => 1, 'label' => '1 (น้อยที่สุด)', 'count' => $ts['rating_1'], 'color' => '#ef4444'],
+                                ['score' => 5, 'label' => __('5 (มากที่สุด)'), 'count' => $ts['rating_5'], 'color' => '#10b981'],
+                                ['score' => 4, 'label' => __('4 (มาก)'), 'count' => $ts['rating_4'], 'color' => '#84cc16'],
+                                ['score' => 3, 'label' => __('3 (ปานกลาง)'), 'count' => $ts['rating_3'], 'color' => '#eab308'],
+                                ['score' => 2, 'label' => __('2 (น้อย)'), 'count' => $ts['rating_2'], 'color' => '#f97316'],
+                                ['score' => 1, 'label' => __('1 (น้อยที่สุด)'), 'count' => $ts['rating_1'], 'color' => '#ef4444'],
                             ] as $bar)
                                 @php
                                     $percent = $ts['count'] > 0 ? round(($bar['count'] / $ts['count']) * 100, 1) : 0;
@@ -272,14 +272,14 @@
                                         <span class="gform-anon-badge">
                                             <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>{{ __('ไม่เปิดเผยตัวตน') }}                                        </span>
                                     @else
-                                        <span class="gform-user-name">{{ $tf->user->full_name ?? __('ผู้เข้าร่วม') }}</span>
+                                        <span class="gform-user-name">{{ $tf->user?->displayName() ?? __('ผู้เข้าร่วม') }}</span>
                                     @endif
                                     <span class="gform-rating-pill" style="color: {{ $ratingColor }}; border-color: {{ $ratingColor }}40;">
                                         <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                                         {{ $tf->rating }} / 5 {{ __('คะแนน') }}
                                     </span>
                                 </div>
-                                <span class="gform-text-time">{{ $tf->created_at->translatedFormat('d M Y H:i น.') }}</span>
+                                <span class="gform-text-time">{{ $tf->created_at->translatedFormat(app()->getLocale() === 'th' ? 'd M Y H:i น.' : 'd M Y H:i') }}</span>
                             </div>
                             <p class="gform-text-body">{{ $tf->comment }}</p>
                         </div>

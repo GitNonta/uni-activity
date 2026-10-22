@@ -79,7 +79,7 @@
                 @forelse($users as $user)
                 <tr>
                     <td data-label="{{ __('ชื่อ') }}">
-                        <div class="font-semi text-sm" title="{{ $user->full_name }}">{{ Str::limit($user->full_name, 35, '...') }}</div>
+                        <div class="font-semi text-sm" title="{{ $user->displayName() }}">{{ Str::limit($user->displayName(), 35, '...') }}</div>
                     </td>
                     <td data-label="{{ __('บทบาท') }}">
                         @if($user->role === 'staff')
@@ -96,7 +96,7 @@
                     </td>
                     <td data-label="{{ __('คณะ / สาขา') }}">
                         <div class="text-sm">{{ $user->faculty ? __($user->faculty) : '-' }}</div>
-                        <div class="text-xs text-muted line-clamp-1">{{ $user->department ? __($user->department) : '' }} @if($user->program) ({{ $user->program }}) @endif</div>
+                        <div class="text-xs text-muted line-clamp-1">{{ $user->department ? __($user->department) : '' }} @if($user->program) ({{ __($user->program) }}) @endif</div>
                     </td>
                     <td data-label="{{ __('สถานะ') }}" class="text-center">
                         @if($user->is_active)
@@ -115,7 +115,7 @@
                                 </button>
                             </form>
                             @if($user->id !== auth()->id())
-                            <form method="POST" action="{{ route('admin.users.destroy', $user->id) }}" style="margin:0;" onsubmit="return confirm('ยืนยันลบผู้ใช้ {{ $user->full_name }}?');">
+                            <form method="POST" action="{{ route('admin.users.destroy', $user->id) }}" style="margin:0;" onsubmit="return confirm('{{ __('ยืนยันลบผู้ใช้') }} {{ $user->displayName() }}?');">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn btn-sm" style="background:#fee2e2;color:#b91c1c;font-size:.75rem;border:none;line-height:1.5;">{{ __('ลบ') }}</button>
                             </form>

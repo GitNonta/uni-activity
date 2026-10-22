@@ -380,7 +380,7 @@ label[for="profilePhotoInput"]:hover .avatar-hover-overlay {
                                 <div style="display: flex; align-items: center; gap: 0.6rem;">
                                     <div style="width: 8px; height: 8px; border-radius: 50%; background: #6366f1; flex-shrink: 0;"></div>
                                     <div>
-                                        <strong style="color: #0f172a; font-size: 0.825rem;">{{ $log->description ?: $log->action }}</strong>
+                                        <strong style="color: #0f172a; font-size: 0.825rem;">{{ $log->description_display ?: $log->action }}</strong>
                                         <div style="font-size: 0.7rem; color: #94a3b8; font-family: monospace; margin-top: 0.1rem;">
                                             IP: {{ $log->ip_address }}
                                         </div>

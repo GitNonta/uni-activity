@@ -344,9 +344,9 @@ html.dark .btn-secondary:hover {
     <div class="filter-group">
         <select name="event_type" class="filter-input">
             <option value="">{{ __('ทุกประเภทเหตุการณ์') }}</option>
-            <option value="multi_account_login" @selected(request('event_type') === 'multi_account_login')>Multi-Account Login</option>
-            <option value="suspicious_checkin"  @selected(request('event_type') === 'suspicious_checkin')>Suspicious Check-in</option>
-            <option value="device_mismatch"     @selected(request('event_type') === 'device_mismatch')>Device Mismatch</option>
+            <option value="multi_account_login" @selected(request('event_type') === 'multi_account_login')>{{ __('เข้าสู่ระบบหลายบัญชี') }}</option>
+            <option value="suspicious_checkin"  @selected(request('event_type') === 'suspicious_checkin')>{{ __('การเช็คอินน่าสงสัย') }}</option>
+            <option value="device_mismatch"     @selected(request('event_type') === 'device_mismatch')>{{ __('อุปกรณ์ไม่ตรงกัน') }}</option>
         </select>
     </div>
     <div class="filter-group">
@@ -415,7 +415,7 @@ html.dark .btn-secondary:hover {
                 <td>
                     @if($log->user)
                         <div class="user-info">
-                            <span class="user-name">{{ $log->user->full_name }}</span>
+                            <span class="user-name">{{ $log->user->displayName() }}</span>
                             <span class="user-id">{{ __('รหัส') }}: {{ $log->user->student_id }}</span>
                         </div>
                     @else

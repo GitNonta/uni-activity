@@ -1,6 +1,6 @@
 {{-- หน้ารายละเอียด Audit Log — Premium UI --}}
 @extends('layouts.admin')
-@section('title', 'รายละเอียด Log #' . $log->id)
+@section('title', __('รายละเอียด') . ' Log #' . $log->id)
 
 @section('styles')
 <style>
