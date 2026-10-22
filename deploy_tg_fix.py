@@ -2,12 +2,8 @@
 import os
 import sys
 import time
-import importlib.util
 
 _here = os.path.dirname(os.path.abspath(__file__))
-_spec = importlib.util.spec_from_file_location("deploy_cf_base", os.path.join(_here, "deploy_cf.py"))
-
-# Reuse credential loading from deploy_cf.py without executing its deploy steps:
 sys.path.insert(0, _here)
 import paramiko
 

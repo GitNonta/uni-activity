@@ -17,7 +17,6 @@ import (
 	"uni-activity/go-monitor/deploy"
 	"uni-activity/go-monitor/proxy"
 	"uni-activity/go-monitor/speedtest"
-	"uni-activity/go-monitor/tunnel"
 )
 
 type HTTPServer struct {
@@ -99,13 +98,16 @@ func (s *HTTPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 4. API Endpoints — Cloudflare Tunnel
 	if path == "/api/tunnel-urls" {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		json.NewEncoder(w).Encode(tunnel.GetTunnelURLs())
+		json.NewEncoder(w).Encode(collector.GetTunnelURLs())
 		return
 	}
 
 	if path == "/api/restart-tunnel" {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		go tunnel.DoRestartTunnel()
+		// ไม่มี DoRestartTunnel แล้ว — ให้ cf-manager ซึ่งเป็นเจ้าของ
+		// lifecycle จัดการ: kill cloudflared แล้ว health watcher ของ cf-manager
+		// จะ spawn tunnel ใหม่ที่ verify แล้วแทน (เคสเดิมของ Step 0 เดิม)
+		go func() { _ = exec.Command("pkill", "-9", "-f", "cloudflared").Run() }()
 		json.NewEncoder(w).Encode(map[string]string{"status": "ok", "message": "Tunnel restart initiated"})
 		return
 	}

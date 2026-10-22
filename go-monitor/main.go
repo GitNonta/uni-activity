@@ -25,7 +25,6 @@ import (
 	"uni-activity/go-monitor/socks5"
 	"uni-activity/go-monitor/sysinfo"
 	"uni-activity/go-monitor/telegram"
-	"uni-activity/go-monitor/tunnel"
 )
 
 
@@ -57,8 +56,8 @@ func main() {
 	log.Println("\U0001f9e6 Starting built-in SOCKS5 proxy on :1080...")
 	go socks5.StartServer(1080)
 
-	log.Println("☁️ Starting Cloudflare Tunnel Watcher...")
-	tunnel.StartTunnelWatcher()
+	log.Println("☁️ Starting Cloudflare Tunnel health probe...")
+	collector.StartTunnelHealth()
 
 	// Initialize Telemetry Collector
 	col := collector.NewCollector(projectRoot)

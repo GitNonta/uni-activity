@@ -22,7 +22,6 @@ import (
 	"uni-activity/go-monitor/services"
 	"uni-activity/go-monitor/speedtest"
 	"uni-activity/go-monitor/sysinfo"
-	"uni-activity/go-monitor/tunnel"
 )
 
 type FullStats struct {
@@ -154,7 +153,7 @@ func (c *Collector) Collect() ([]byte, error) {
 		}
 	}
 
-	cfURL := tunnel.GetActiveURL()
+	cfURL := ActiveTunnelURL()
 	sshSessions, sftpSessions, scpSessions := services.GetActiveSessions()
 
 	// Track session open/close events and persist history across restarts
@@ -200,7 +199,7 @@ func (c *Collector) Collect() ([]byte, error) {
 	tempStr := sysinfo.GetTemp()
 	svcs := services.CheckAllServices()
 
-	cfOnline, cfPing, cfErr, cfURLStr := tunnel.Status.GetStatus()
+	cfOnline, cfPing, cfErr, cfURLStr := TunnelStatus()
 	if cfURLStr == "" {
 		cfURLStr = cfURL
 	}

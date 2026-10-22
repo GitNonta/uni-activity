@@ -1,7 +1,6 @@
 // cf-manager — Cloudflare Tunnel Manager (Go replacement for Python scripts)
 //
-// แทนที่:
-//   - py/auto_update_tunnel_url.py
+// แทนที่สคริปต์ Python เดิม:
 //   - py/start_cf_ubuntu.py
 //
 // รันบน Termux/S1:
@@ -1393,7 +1392,7 @@ func main() {
 
 	log.Println("╔══════════════════════════════════════════════════════╗")
 	log.Println("║   cf-manager v2.2 — Go Cloudflare Tunnel Manager    ║")
-	log.Println("║   Replaces: auto_update_tunnel_url.py                ║")
+	log.Println("║   Cloudflare Tunnel Lifecycle Manager                 ║")
 	log.Println("╚══════════════════════════════════════════════════════╝")
 
 	// Graceful shutdown: stop the manager only. cloudflared is intentionally
