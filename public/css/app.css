@@ -1684,6 +1684,7 @@ html[data-theme="dark"] .cf-msg-bubble-other { background: #36383a !important; c
         border-color: #3c4043 !important;
         color: #e8eaed !important;
     }
+}
 /* ── In-App Turn-by-Turn Navigation Styles ── */
 .leaflet-routing-container { display: none !important; }
 
