@@ -53,36 +53,68 @@ class FaceVerificationService
         }
 
         try {
-            // 4. ส่งคำขอไปยัง AI Load Balancer พร้อมระบบกระจายโหลดและ Automatic Failover
-            $lbResponse = $this->loadBalancer->executeWithFailover(
-                function (string $nodeUrl, string $apiKey, int $timeout) use ($imageDecoded, $user): array {
-                    $httpRequest = Http::timeout($timeout);
-                    $fwdHeaders = ['X-API-Key' => $apiKey];
-                    /* UI build attribution: lets the AI node log which scan-page
-                       build produced each frame (stale cached pages are then
-                       visible in the node log instead of being silent). */
-                    if ($uiBuild = (string) request()->header('X-Scan-UI')) {
-                        $fwdHeaders['X-Scan-UI'] = $uiBuild;
-                    }
-                    $httpRequest = $httpRequest->withHeaders($fwdHeaders);
+            // 4. เส้นทางหลัก: face_api (ncnn native บน S2) — ถ้าล่มจะ fallback ไป AI cluster
+            $result   = null;
+            $nodeUsed = '';
+            $faceApi  = app(FaceExtractApiService::class);
+            if ($faceApi->isEnabled()) {
+                try {
+                    $faceApiResult = $faceApi->verify(
+                        $imageDecoded,
+                        (array) $user->face_descriptor,
+                        (bool) ($options['check_liveness'] ?? true)
+                    );
+                    $result   = $faceApiResult;
+                    $nodeUsed = (string) ($faceApiResult['node'] ?? 'face-api');
 
-                    $response = $httpRequest
-                        ->attach('image', $imageDecoded, 'frame.jpg')
-                        ->post(rtrim($nodeUrl, '/') . '/verify', [
-                            'known_embedding' => json_encode($user->face_descriptor),
-                            'check_liveness'  => 'true',
+                    // node นี้ใช้ liveness แบบ heuristic (ไม่มี anti-spoof model) — บันทึกไว้เพื่อ audit
+                    if (($faceApiResult['liveness_mode'] ?? '') === 'heuristic') {
+                        Log::info('Face verify via face_api (heuristic liveness)', [
+                            'user_id'       => $user->id,
+                            'is_match'      => $faceApiResult['is_match'] ?? null,
+                            'similarity'    => $faceApiResult['similarity'] ?? null,
+                            'liveness_pass' => $faceApiResult['liveness_passed'] ?? null,
+                            'rejection'     => $faceApiResult['liveness_checks']['rejection_reason'] ?? null,
                         ]);
-
-                    if (!$response->successful()) {
-                        throw new \RuntimeException("Node {$nodeUrl} returned HTTP {$response->status()}: " . $response->body());
                     }
-
-                    return $response->json();
+                } catch (Throwable $e) {
+                    Log::warning("face_api verify failed for user {$user->id}, falling back to AI cluster: " . $e->getMessage());
                 }
-            );
+            }
 
-            $result         = $lbResponse['result'];
-            $nodeUsed       = $lbResponse['node_used'];
+            if ($result === null) {
+                // AI Load Balancer (เดิม) พร้อมระบบกระจายโหลดและ Automatic Failover
+                $lbResponse = $this->loadBalancer->executeWithFailover(
+                    function (string $nodeUrl, string $apiKey, int $timeout) use ($imageDecoded, $user): array {
+                        $httpRequest = Http::timeout($timeout);
+                        $fwdHeaders = ['X-API-Key' => $apiKey];
+                        /* UI build attribution: lets the AI node log which scan-page
+                           build produced each frame (stale cached pages are then
+                           visible in the node log instead of being silent). */
+                        if ($uiBuild = (string) request()->header('X-Scan-UI')) {
+                            $fwdHeaders['X-Scan-UI'] = $uiBuild;
+                        }
+                        $httpRequest = $httpRequest->withHeaders($fwdHeaders);
+
+                        $response = $httpRequest
+                            ->attach('image', $imageDecoded, 'frame.jpg')
+                            ->post(rtrim($nodeUrl, '/') . '/verify', [
+                                'known_embedding' => json_encode($user->face_descriptor),
+                                'check_liveness'  => 'true',
+                            ]);
+
+                        if (!$response->successful()) {
+                            throw new \RuntimeException("Node {$nodeUrl} returned HTTP {$response->status()}: " . $response->body());
+                        }
+
+                        return $response->json();
+                    }
+                );
+
+                $result   = $lbResponse['result'];
+                $nodeUsed = $lbResponse['node_used'];
+            }
+
             $processingTime = (int) round((microtime(true) - $startTime) * 1000);
 
             if ($processingTime > 4000) {
@@ -92,6 +124,7 @@ class FaceVerificationService
             $isMatch        = (bool) ($result['is_match'] ?? false);
             $score          = (float) ($result['score_percentage'] ?? 0.0);
             $livenessPassed = (bool) ($result['liveness_passed'] ?? ($result['liveness']['passed'] ?? true));
+            $rejection      = $this->classifyRejection($result, $isMatch);
 
             return array_merge($result, [
                 'status'           => 'success',
@@ -99,11 +132,15 @@ class FaceVerificationService
                 'is_match'         => $isMatch,
                 'score_percentage' => $score,
                 'liveness_passed'  => $livenessPassed,
+                'rejection_reason' => $rejection['reason'],
+                'rejection_kind'   => $rejection['kind'],
+                'rejection_message'=> $rejection['message'],
                 'processing_ms'    => $processingTime,
                 'server_ms'        => $result['processing_ms'] ?? 0,
                 'network_ms'       => max(0, $processingTime - ((int) ($result['processing_ms'] ?? 0))),
                 'node_used'        => $nodeUsed,
-                'failovers'        => $lbResponse['failovers'],
+                'liveness_mode'    => $result['liveness_mode'] ?? null,
+                'failovers'        => $lbResponse['failovers'] ?? 0,
             ]);
         } catch (Throwable $e) {
             Log::error("Python Face Verification cluster error for user {$user->id}: " . $e->getMessage());
@@ -123,6 +160,24 @@ class FaceVerificationService
     public function checkServerHealth(): array
     {
         $allHealth = $this->loadBalancer->checkAllNodesHealth();
+
+        // face_api (ncnn native) แสดงรวมในรายการ node เดียวกันเพื่อให้ dashboard เห็นทั้งไปป์ไลน์
+        $faceApi = app(FaceExtractApiService::class);
+        foreach ($faceApi->healthAll() as $faceHealth) {
+            $allHealth[] = [
+                'url'          => (string) ($faceHealth['url'] ?? ''),
+                'available'    => (bool) ($faceHealth['available'] ?? false),
+                'status'       => ($faceHealth['available'] ?? false) ? 'healthy' : 'down',
+                'models'       => $faceHealth['models'] ?? [],
+                'backend'      => $faceHealth['backend'] ?? null,
+                'pipeline'     => $faceHealth['pipeline'] ?? null,
+                'latency_ms'   => $faceHealth['latency_ms'] ?? null,
+                'circuit_open' => false,
+                'error'        => $faceHealth['error'] ?? null,
+                'checked_at'   => time(),
+            ];
+        }
+
         $availableNodes = array_filter($allHealth, fn(array $n) => ($n['available'] ?? false) === true);
 
         if (!empty($availableNodes)) {
@@ -170,8 +225,22 @@ class FaceVerificationService
                 return;
             }
 
-            $lbResponse = $this->loadBalancer->executeWithFailover(
-                function (string $nodeUrl, string $apiKey, int $timeout) use ($imageBytes, $photoPath): array {
+            // เส้นทางหลัก: face_api (ncnn native) — ถ้าล้มเหลวจึงกลับไปใช้ AI cluster เดิม
+            $aiResult = null;
+            $nodeUsed = '';
+            $faceApi  = app(FaceExtractApiService::class);
+            if ($faceApi->isEnabled()) {
+                try {
+                    $aiResult = $faceApi->extract($imageBytes, basename($photoPath));
+                    $nodeUsed = (string) ($aiResult['node'] ?? 'face-api');
+                } catch (Throwable $e) {
+                    Log::warning("face_api extract failed for user {$user->id}, falling back to AI cluster: " . $e->getMessage());
+                }
+            }
+
+            if ($aiResult === null) {
+                $lbResponse = $this->loadBalancer->executeWithFailover(
+                    function (string $nodeUrl, string $apiKey, int $timeout) use ($imageBytes, $photoPath): array {
                     $httpReq = Http::timeout($timeout);
                     if (!empty($apiKey)) {
                         $httpReq = $httpReq->withHeaders(['X-API-Key' => $apiKey]);
@@ -185,11 +254,13 @@ class FaceVerificationService
                         throw new \RuntimeException("Extract failed on {$nodeUrl} with HTTP {$response->status()}");
                     }
 
-                    return $response->json();
-                }
-            );
+                        return $response->json();
+                    }
+                );
+                $aiResult = $lbResponse['result'];
+                $nodeUsed = $lbResponse['node_used'];
+            }
 
-            $aiResult = $lbResponse['result'];
             $updateData = [];
 
             if (!$user->face_descriptor && !empty($aiResult['embedding_512d'])) {
@@ -204,7 +275,7 @@ class FaceVerificationService
 
             if (!empty($updateData)) {
                 $user->update($updateData);
-                Log::info("FaceVerificationService: Encodings auto-extracted for user {$user->id} on {$lbResponse['node_used']}");
+                Log::info("FaceVerificationService: Encodings auto-extracted for user {$user->id} on {$nodeUsed}");
             }
         } catch (Throwable $e) {
             Log::warning("Auto-extraction failed for user {$user->id}: " . $e->getMessage());
@@ -248,6 +319,41 @@ class FaceVerificationService
         }
 
         return $decoded;
+    }
+
+    /**
+     * แปลง rejection ของ liveness/คุณภาพภาพให้ผู้เรียกใช้แยกได้ว่า
+     * "ภาพใช้ไม่ได้ ให้ถ่ายใหม่" (quality) หรือ "สงสัยปลอม/ไม่ใช่ตัวจริง" (spoof)
+     *
+     * @param  array<string, mixed> $result
+     * @return array{reason: ?string, kind: ?string, message: ?string}
+     */
+    private function classifyRejection(array $result, bool $isMatch): array
+    {
+        $reason = (string) ($result['liveness_checks']['rejection_reason']
+            ?? $result['depth_liveness_checks']['rejection_reason']
+            ?? '');
+
+        if ($reason === '') {
+            if ($isMatch) {
+                return ['reason' => null, 'kind' => null, 'message' => null];
+            }
+
+            $reason = (string) ($result['status'] ?? '') === 'no_face' ? 'no_face' : 'face_mismatch';
+        }
+
+        return match ($reason) {
+            'face_too_small'      => ['reason' => $reason, 'kind' => 'quality', 'message' => 'ใบหน้าเล็กเกินไปในภาพ กรุณาถ่ายให้ใกล้ขึ้นและให้ใบหน้าอยู่กลางภาพ'],
+            'image_blurry'        => ['reason' => $reason, 'kind' => 'quality', 'message' => 'ภาพสั่นหรือเบลอ กรุณาถือกล้องให้นิ่งแล้วถ่ายใหม่'],
+            'bad_exposure'        => ['reason' => $reason, 'kind' => 'quality', 'message' => 'ภาพสว่างหรือมืดเกินไป กรุณาหาแสงที่พอเหมาะแล้วถ่ายใหม่'],
+            'low_color_variance'  => ['reason' => $reason, 'kind' => 'quality', 'message' => 'ภาพขาดรายละเอียดสี (อาจเกิดจากแสงจ้า) กรุณาถ่ายใหม่ในที่แสงปกติ'],
+            'no_face'             => ['reason' => $reason, 'kind' => 'quality', 'message' => 'ไม่พบใบหน้าในภาพ กรุณาจัดใบหน้าให้อยู่ในกรอบและถ่ายใหม่'],
+            'face_mismatch'       => ['reason' => $reason, 'kind' => 'mismatch', 'message' => 'ใบหน้าไม่ตรงกับข้อมูลที่ลงทะเบียนไว้'],
+            'screen_moire_detected' => ['reason' => $reason, 'kind' => 'spoof', 'message' => 'ตรวจพบการใช้หน้าจอดิจิทัล (Screen Replay)'],
+            'glass_glare_detected'  => ['reason' => $reason, 'kind' => 'spoof', 'message' => 'ตรวจพบแสงสะท้อนจอกระจกหรือแผ่นฟิล์ม'],
+            'color_gamut_rejected'  => ['reason' => $reason, 'kind' => 'spoof', 'message' => 'ตรวจพบภาพถ่ายหรือภาพพิมพ์ (Photo Attack)'],
+            default                 => ['reason' => $reason, 'kind' => 'spoof', 'message' => 'ตรวจพบรูปถ่ายหรือภาพปลอมบนหน้าจอ'],
+        };
     }
 
     /**

@@ -28,8 +28,9 @@ class AiLoadBalancerService
             return array_values(array_filter(array_map('trim', $configuredUrls)));
         }
 
+        // ไม่มี AI_SERVERS / AI_SERVER_URL = ไม่ใช้ Python AI node เลย (face_api เป็นหลัก)
         $singleUrl = (string) config('services.ai_server.url', '');
-        return !empty($singleUrl) ? [$singleUrl] : ['http://127.0.0.1:8001'];
+        return !empty($singleUrl) ? [$singleUrl] : [];
     }
 
     public function getApiKey(): string

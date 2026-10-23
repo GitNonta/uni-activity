@@ -3,8 +3,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\User;
+use App\Services\FaceExtractApiService;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
@@ -145,22 +146,34 @@ class ExtractMissingFaceEncodings extends Command
             return ['success' => true, 'message' => 'Already has both encodings (skipped)'];
         }
 
-        // อ่านไฟล์และส่งไป AI Server
+        // อ่านไฟล์และส่งไปสกัด: face_api (ncnn) ก่อน ถ้าปิด/ล้มเหลวค่อยใช้ AI Server เดิม
         try {
-            $httpReq = Http::timeout(15);
-            $aiKey = config('services.ai_server.key');
-            if (!empty($aiKey)) {
-                $httpReq = $httpReq->withHeaders(['X-API-Key' => $aiKey]);
-            }
-            $response = $httpReq
-                ->attach('image', file_get_contents($fullPath), basename($fullPath))
-                ->post(rtrim($aiServerUrl, '/') . '/extract');
-
-            if (!$response->successful()) {
-                return ['success' => false, 'message' => 'AI Server error: ' . $response->body()];
+            $aiResult = null;
+            $faceApi = app(FaceExtractApiService::class);
+            if ($faceApi->isEnabled()) {
+                try {
+                    $aiResult = $faceApi->extract(file_get_contents($fullPath), basename($fullPath));
+                } catch (\Throwable $e) {
+                    Log::warning("face_api extract failed for user {$user->id}, falling back to AI server: " . $e->getMessage());
+                }
             }
 
-            $aiResult = $response->json();
+            if ($aiResult === null) {
+                $httpReq = Http::timeout(15);
+                $aiKey = config('services.ai_server.key');
+                if (!empty($aiKey)) {
+                    $httpReq = $httpReq->withHeaders(['X-API-Key' => $aiKey]);
+                }
+                $response = $httpReq
+                    ->attach('image', file_get_contents($fullPath), basename($fullPath))
+                    ->post(rtrim($aiServerUrl, '/') . '/extract');
+
+                if (!$response->successful()) {
+                    return ['success' => false, 'message' => 'AI Server error: ' . $response->body()];
+                }
+
+                $aiResult = $response->json();
+            }
             
             // เตรียม update data
             $updateData = [];

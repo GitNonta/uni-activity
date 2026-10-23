@@ -6,6 +6,7 @@ namespace App\Jobs;
 
 use App\Models\User;
 use App\Services\AiLoadBalancerService;
+use App\Services\FaceExtractApiService;
 use App\Services\FaceVerificationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -32,7 +33,7 @@ class ExtractFaceBiometricsJob implements ShouldQueue
         $this->onQueue('ai');
     }
 
-    public function handle(AiLoadBalancerService $loadBalancer): void
+    public function handle(AiLoadBalancerService $loadBalancer, FaceExtractApiService $faceApi): void
     {
         $user = User::find($this->userId);
         if (!$user) {
@@ -71,26 +72,41 @@ class ExtractFaceBiometricsJob implements ShouldQueue
             return;
         }
 
-        $lbResponse = $loadBalancer->executeWithFailover(
-            function (string $nodeUrl, string $apiKey, int $timeout) use ($imageContents, $photoRelPath): array {
-                $http = Http::timeout($timeout);
-                if (!empty($apiKey)) {
-                    $http = $http->withHeaders(['X-API-Key' => $apiKey]);
-                }
-
-                $response = $http
-                    ->attach('image', $imageContents, basename($photoRelPath))
-                    ->post(rtrim($nodeUrl, '/') . '/extract');
-
-                if (!$response->successful()) {
-                    throw new \RuntimeException("Node {$nodeUrl} extract returned HTTP {$response->status()}: " . $response->body());
-                }
-
-                return $response->json();
+        // เส้นทางหลัก: face_api (ncnn บน S2) — ถ้าล้มเหลวจะ fallback ไป AI cluster เดิม
+        $data = null;
+        $nodeUsed = '';
+        if ($faceApi->isEnabled()) {
+            try {
+                $data = $faceApi->extract($imageContents, basename($photoRelPath));
+                $nodeUsed = (string) ($data['node'] ?? 'face-api');
+            } catch (Throwable $e) {
+                Log::warning("ExtractFaceBiometricsJob: face_api failed for User #{$this->userId}, falling back to AI cluster: " . $e->getMessage());
             }
-        );
+        }
 
-        $data = $lbResponse['result'];
+        if ($data === null) {
+            $lbResponse = $loadBalancer->executeWithFailover(
+                function (string $nodeUrl, string $apiKey, int $timeout) use ($imageContents, $photoRelPath): array {
+                    $http = Http::timeout($timeout);
+                    if (!empty($apiKey)) {
+                        $http = $http->withHeaders(['X-API-Key' => $apiKey]);
+                    }
+
+                    $response = $http
+                        ->attach('image', $imageContents, basename($photoRelPath))
+                        ->post(rtrim($nodeUrl, '/') . '/extract');
+
+                    if (!$response->successful()) {
+                        throw new \RuntimeException("Node {$nodeUrl} extract returned HTTP {$response->status()}: " . $response->body());
+                    }
+
+                    return $response->json();
+                }
+            );
+            $data = $lbResponse['result'];
+            $nodeUsed = $lbResponse['node_used'];
+        }
+
         $updated = false;
 
         if (!empty($data['embedding_512d']) && is_array($data['embedding_512d'])) {
@@ -113,7 +129,7 @@ class ExtractFaceBiometricsJob implements ShouldQueue
 
         if ($updated) {
             $user->save();
-            Log::info("ExtractFaceBiometricsJob: Successfully extracted and encrypted biometrics for User #{$this->userId}");
+            Log::info("ExtractFaceBiometricsJob: Successfully extracted and encrypted biometrics for User #{$this->userId} via {$nodeUsed}");
         } else {
             Log::warning("ExtractFaceBiometricsJob: No face detected in photo for User #{$this->userId}");
         }

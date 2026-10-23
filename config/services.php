@@ -46,13 +46,28 @@ return [
     ],
     
     'ai_server' => [
-        'url'                       => env('AI_SERVER_URL', 'http://127.0.0.1:8001'),
+        // ว่าง = ไม่มี Python AI node (ใช้ face_api เท่านั้น; face_api ก็ว่าง = ไม่มีบริการใบหน้า)
+        'url'                       => env('AI_SERVER_URL', ''),
         'urls'                      => env('AI_SERVERS') ? array_values(array_filter(array_map('trim', explode(',', (string) env('AI_SERVERS'))))) : null,
         'key'                       => env('AI_SERVER_KEY', env('AI_SERVICE_API_KEY', 'uni-activity-ai-secret-key-2026')),
         'timeout'                   => (int) env('AI_SERVER_TIMEOUT', 6),
         'retry'                     => (int) env('AI_SERVER_RETRIES', 2),
         'circuit_breaker_threshold' => (int) env('AI_CIRCUIT_BREAKER_THRESHOLD', 3),
         'circuit_breaker_cooldown'  => (int) env('AI_CIRCUIT_BREAKER_COOLDOWN', 30),
+    ],
+
+    /*
+    | face_api — บริการสกัดใบหน้าแบบ native (ncnn) ที่รันบนเครื่อง S2
+    | POST /extract: รับรูปเต็ม -> SCRFD detect -> ArcFace align -> 512D embedding
+    | POST /verify:  เทียบ selfie กับ embedding ที่ลงทะเบียนไว้ + liveness
+    | FACE_API_URLS = หลายโหนดคั่นด้วย comma (web จะ failover ตามลำดับ), FACE_API_URL = โหนดเดียว
+    | ปล่อยว่างทั้งคู่ = ไม่ใช้ (กลับไปใช้ ai_server cluster เดิม)
+    */
+    'face_api' => [
+        'url'     => env('FACE_API_URL', ''),
+        'urls'    => array_values(array_filter(array_map('trim', explode(',', (string) env('FACE_API_URLS', ''))))),
+        'key'     => env('FACE_API_KEY') ?: env('AI_SERVER_KEY', env('AI_SERVICE_API_KEY', '')),
+        'timeout' => (int) env('FACE_API_TIMEOUT', 15),
     ],
 
     // ── (8) SSO OAuth2/OIDC — เปิดใช้ด้วย .env: SSO_ENABLED=true + SSO_ISSUER + SSO_CLIENT_ID/SECRET/REDIRECT_URI ──

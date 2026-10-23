@@ -201,6 +201,15 @@
                 return target;
             }
 
+            // เลือก URL เว็บเท่านั้น — ถ้า url กับ ssh_url เป็นค่าเดียวกัน (ฟิลด์สลับ)
+            // ถือว่าไม่น่าเชื่อถือ แล้วไปใช้ fallback ที่เป็นเว็บจริง
+            function pickWebUrl(data) {
+                if (!data || typeof data.url !== 'string') return null;
+                if (!/^https?:\/\//i.test(data.url)) return null;
+                if (data.ssh_url && data.url === data.ssh_url) return null;
+                return data.url;
+            }
+
             async function fetchWithTimeout(url, timeoutMs) {
                 const controller = new AbortController();
                 const id = setTimeout(() => controller.abort(), timeoutMs);
@@ -258,8 +267,9 @@
                     const res = await fetchWithTimeout('active_url.json?t=' + Date.now(), 2500);
                     if (res.ok) {
                         const data = await res.json();
-                        if (data && data.url && data.url.startsWith('http')) {
-                            finalUrl = data.url;
+                        const picked = pickWebUrl(data);
+                        if (picked) {
+                            finalUrl = picked;
                         }
                     }
                 } catch (e) {
@@ -281,8 +291,9 @@
                         const res = await fetchWithTimeout(rawUrl, 2500);
                         if (res.ok) {
                             const data = await res.json();
-                            if (data && data.url && data.url.startsWith('http')) {
-                                finalUrl = data.url;
+                            const pickedRaw = pickWebUrl(data);
+                            if (pickedRaw) {
+                                finalUrl = pickedRaw;
                             }
                         }
                     } catch (e2) {

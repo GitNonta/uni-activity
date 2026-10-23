@@ -249,16 +249,42 @@ class ClusterHealthService
             }
         }
 
+        // face_api (ncnn native) — เป็นส่วนหนึ่งของไปป์ไลน์สกัดใบหน้า (รองรับหลายโหนด)
+        $totalNodes = count($nodes);
+        $faceApi = app(FaceExtractApiService::class);
+        foreach ($faceApi->healthAll() as $index => $faceHealth) {
+            $totalNodes++;
+            $faceOk = (bool) ($faceHealth['available'] ?? false);
+            if ($faceOk) {
+                $healthyCount++;
+            }
+            $nodeStatuses[] = [
+                'id'              => 'face-api-' . ($index + 1),
+                'url'             => (string) ($faceHealth['url'] ?? ''),
+                'status'          => $faceOk ? 'HEALTHY' : 'OFFLINE',
+                'circuit_breaker' => 'CLOSED',
+                'latency_ms'      => $faceHealth['latency_ms'] ?? null,
+                'models'          => $faceHealth['models'] ?? ['detector' => true, 'recognizer' => true],
+                'pipeline'        => $faceHealth['pipeline'] ?? null,
+                'backend'         => $faceHealth['backend'] ?? null,
+                'avg_ms'          => $faceHealth['avg_ms'] ?? null,
+                'requests'        => $faceHealth['requests'] ?? null,
+                'errors'          => $faceHealth['errors'] ?? null,
+                'uptime_s'        => $faceHealth['uptime_s'] ?? null,
+                'error'           => $faceHealth['error'] ?? null,
+            ];
+        }
+
         $clusterState = 'HEALTHY';
         if ($healthyCount === 0) {
             $clusterState = 'CRITICAL';
-        } elseif ($healthyCount < count($nodes)) {
+        } elseif ($healthyCount < $totalNodes) {
             $clusterState = 'DEGRADED';
         }
 
         return [
             'cluster_state'    => $clusterState,
-            'total_nodes'      => count($nodes),
+            'total_nodes'      => $totalNodes,
             'healthy_nodes'    => $healthyCount,
             'nodes'            => $nodeStatuses,
             'timeout_sec'      => $this->aiLoadBalancerService->getTimeout(),
