@@ -12,6 +12,8 @@
 
 @section('content')
 <div class="auth-container" style="max-width: 400px; margin: 4rem auto; padding: 2rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+    <x-page-back :href="route('login')" :label="__('กลับไปหน้าเข้าสู่ระบบ')" />
+
     <div style="text-align: center; margin-bottom: 2rem;">
         <div style="width: 64px; height: 64px; background: #fff7ed; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
             <svg style="width: 32px; height: 32px; color: #ea580c;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
@@ -63,12 +65,6 @@
         </p>
     </form>
 
-    <div style="text-align: center; margin-top: 1.5rem;">
-        <a href="{{ route('login') }}" style="display:inline-flex;align-items:center;gap:.35rem;font-size: 0.8125rem; color: #94a3b8; text-decoration: none;">
-            <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-            <span>{{ __('กลับไปหน้าเข้าสู่ระบบ') }}</span>
-        </a>
-    </div>
 </div>
 
 <script>

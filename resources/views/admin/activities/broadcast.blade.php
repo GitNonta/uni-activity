@@ -4,13 +4,7 @@
 
 @section('content')
 <div class="mb-4">
-    <div class="flex items-center gap-2 text-sm text-muted mb-2">
-        <a href="{{ route('admin.activities.index') }}" class="text-primary hover:underline">{{ __('กิจกรรมทั้งหมด') }}</a>
-        <span>/</span>
-        <a href="{{ route('admin.activities.show', $activity) }}" class="text-primary hover:underline">{{ Str::limit($activity->title, 30) }}</a>
-        <span>/</span>
-        <span class="text-dark font-medium">{{ __('บรอดแคสต์ & แจ้งเตือน') }}</span>
-    </div>
+    <x-page-back :href="route('admin.activities.show', $activity)" :label="__('กลับรายละเอียดกิจกรรม')" />
 
     <div class="flex items-center justify-between" style="flex-wrap:wrap;gap:1rem;">
         <div>
@@ -25,10 +19,6 @@
             <p class="text-xs text-muted mt-1">{{ __('ส่งประกาศด่วนผ่าน In-App / Reverb / LINE และจัดการระบบ Auto-Reminder ล่วงหน้าลด No-show rate') }}</p>
         </div>
         <div class="flex gap-2">
-            <a href="{{ route('admin.activities.show', $activity) }}" class="btn btn-outline btn-sm flex items-center gap-1">
-                <svg style="width:0.9rem;height:0.9rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                <span>{{ __('กลับหน้ารายละเอียด') }}</span>
-            </a>
             <a href="{{ route('admin.activities.participants', $activity) }}" class="btn btn-outline btn-sm flex items-center gap-1">
                 <svg style="width:0.9rem;height:0.9rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                 <span>{{ __('รายชื่อผู้เข้าร่วม') }}</span>

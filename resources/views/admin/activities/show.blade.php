@@ -3,7 +3,7 @@
 @section('title', $activity->title)
 
 @section('content')
-<a href="{{ route('admin.activities.index') }}" class="text-sm text-primary">&larr; {{ __('กลับ') }}</a>
+<x-page-back :href="route('admin.activities.index')" :label="__('กลับรายการกิจกรรม')" />
 
 {{-- การ์ดข้อมูลกิจกรรม --}}
 <div class="card mt-2 mb-4">

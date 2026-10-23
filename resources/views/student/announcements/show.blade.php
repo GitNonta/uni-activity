@@ -2,10 +2,7 @@
 @section('title', $announcement->title)
 
 @section('content')
-<div class="mb-4">
-    <a href="{{ route('announcements.index') }}" class="text-sm text-primary flex items-center gap-1">
-        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>{{ __('กลับไปรายการประกาศ') }}    </a>
-</div>
+<x-page-back :href="route('announcements.index')" :label="__('กลับรายการประกาศ')" />
 
 <div class="card overflow-hidden">
     <div style="height:6px;background:{{ $announcement->type==='danger'?'#dc2626':($announcement->type==='warning'?'#d97706':($announcement->type==='success'?'#16a34a':'#ea580c')) }};"></div>

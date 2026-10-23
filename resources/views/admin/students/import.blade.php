@@ -5,6 +5,8 @@
 @section('content')
 <div class="container-fluid" style="max-width:1000px; margin:0 auto; padding-bottom:3rem;">
 
+    <x-page-back :href="route('admin.students.index')" :label="__('กลับรายชื่อนักศึกษา')" />
+
     <!-- Top Header -->
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
         <div>
@@ -16,7 +18,6 @@
         <div style="display:flex; align-items:center; gap:0.5rem;">
             <a href="{{ route('admin.students.import.template') }}" class="btn btn-outline" style="display:inline-flex; align-items:center; gap:6px; font-size:0.875rem; border-radius:8px; padding:0.5rem 1rem;">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>{{ __('ดาวน์โหลดแม่แบบ CSV (Template)') }}            </a>
-            <a href="{{ route('admin.students.index') }}" class="btn btn-outline" style="font-size:0.875rem; border-radius:8px; padding:0.5rem 1rem;">{{ __('กลับหน้ารายชื่อ') }}            </a>
         </div>
     </div>
 

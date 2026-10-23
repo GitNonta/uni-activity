@@ -607,12 +607,7 @@ html.dark .sec-type-badge.badge-orange {
 <div class="sec-detail-wrap">
 
     {{-- Back Navigation --}}
-    <div style="margin-bottom: 1rem;">
-        <a href="{{ route('admin.security-logs.index') }}" class="detail-back-link">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-            <span>{{ __('กลับไปหน้ารายการ Security Logs') }}</span>
-        </a>
-    </div>
+    <x-page-back :href="route('admin.security-logs.index')" :label="__('กลับไปหน้ารายการ Security Logs')" />
 
     {{-- Header Section --}}
     <div class="sec-show-header">

@@ -2,17 +2,12 @@
 @section('title', __('สรุปผลการประเมิน:') . ' ' . $activity->title)
 
 @section('content')
+<x-page-back :href="route('admin.feedbacks.index')" :label="__('กลับรายการประเมิน')" />
+
 <div class="gform-container">
 
     {{-- ── 1. Top Navigation Bar ────────────────────────────────────────── --}}
-    <div class="gform-nav-bar">
-        <a href="{{ route('admin.feedbacks.index') }}" class="gform-back-btn" title="{{ __('กลับหน้ารายการการประเมิน') }}">
-            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-            </svg>
-            <span>{{ __('รายการประเมิน') }}</span>
-        </a>
-
+    <div class="gform-nav-bar" style="justify-content:flex-end;">
         <div class="gform-actions">
             <button onclick="window.print()" class="gform-btn gform-btn-secondary" title="{{ __('พิมพ์สรุปรายงานหรือบันทึกเป็น PDF') }}">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">

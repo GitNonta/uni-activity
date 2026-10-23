@@ -57,7 +57,7 @@
     .dir-step-dist { color: #475569; font-size: 0.75rem; margin-top: 2px; line-height: 1.5; }
 </style>
 
-<a href="{{ route('jobs.index') }}" class="text-sm text-primary">&larr; {{ __('กลับรายการงาน') }}</a>
+<x-page-back :href="route('jobs.index')" :label="__('กลับรายการงาน')" />
 
 <div class="card mt-2">
     {{-- รูปภาพ --}}

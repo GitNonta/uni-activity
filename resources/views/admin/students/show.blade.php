@@ -3,12 +3,7 @@
 @section('title', __('จัดการนักศึกษา: ') . $student->full_name)
 
 @section('content')
-<div class="flex items-center gap-2 mb-4" style="flex-wrap:wrap;">
-    <a href="{{ route('admin.students.index') }}" class="text-sm text-muted" style="display:flex;align-items:center;gap:.25rem;">
-        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>{{ __('รายชื่อนักศึกษา') }}    </a>
-    <span class="text-muted">/</span>
-    <span class="text-sm font-semi">{{ $student->full_name }}</span>
-</div>
+<x-page-back :href="route('admin.students.index')" :label="__('กลับรายชื่อนักศึกษา')" />
 
 {{-- Hero: ข้อมูลนักศึกษา + สรุปชั่วโมง --}}
 <div style="background:linear-gradient(135deg,#1e40af,#ea580c);border-radius:12px;padding:1.25rem 1.5rem;color:#fff;margin-bottom:1.25rem;">

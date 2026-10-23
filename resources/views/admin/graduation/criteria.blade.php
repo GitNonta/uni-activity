@@ -4,11 +4,7 @@
 
 @section('content')
 <div class="mb-4">
-    <div class="flex items-center gap-2 text-sm text-muted mb-2">
-        <a href="{{ route('admin.graduation.audit.index') }}" class="text-primary hover:underline">{{ __('รายงานตรวจสอบการสำเร็จการศึกษา') }}</a>
-        <span>/</span>
-        <span class="text-dark font-medium">{{ __('ตั้งค่าเกณฑ์ชั่วโมงกิจกรรม') }}</span>
-    </div>
+    <x-page-back :href="route('admin.graduation.audit.index')" :label="__('กลับรายงานตรวจสอบการสำเร็จการศึกษา')" />
 
     <div class="flex items-center justify-between" style="flex-wrap:wrap;gap:1rem;">
         <div>
@@ -19,12 +15,6 @@
                 <span>{{ __('กำหนดเกณฑ์ชั่วโมงกิจกรรมตามโครงสร้างหลักสูตร') }}</span>
             </h1>
             <p class="text-xs text-muted mt-1">{{ __('กำหนดสัดส่วนชั่วโมงบังคับมหาวิทยาลัย, กิจกรรมคณะ, และกิจกรรมจิตอาสาเพื่อตรวจสอบเงื่อนไขการจบการศึกษา') }}</p>
-        </div>
-        <div>
-            <a href="{{ route('admin.graduation.audit.index') }}" class="btn btn-outline btn-sm flex items-center gap-1">
-                <svg style="width:0.9rem;height:0.9rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                <span>{{ __('กลับหน้ารายงาน Audit') }}</span>
-            </a>
         </div>
     </div>
 </div>
@@ -122,7 +112,7 @@
         {{-- คำอธิบายเกณฑ์ --}}
         <div class="mb-4">
             <label class="block text-xs font-semibold text-dark mb-1">{{ __('คำอธิบายและข้อบังคับเพิ่มเติม') }}</label>
-            <textarea name="description" rows="3" class="form-control" style="width:100%;border-radius:0.5rem;font-size:0.875rem;">{{ old('description', $criteria->description) }}</textarea>
+            <textarea name="description" rows="3" class="form-control" style="width:100%;border-radius:0.5rem;font-size:0.875rem;">{{ old('description', $criteria->description ?? '') }}</textarea>
         </div>
 
         <button type="submit" class="btn btn-primary" style="padding:0.6rem 1.25rem;font-size:0.875rem;">

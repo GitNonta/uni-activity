@@ -6,6 +6,8 @@
 <div class="container" style="max-width:400px;margin:2rem auto;">
     <div class="card">
         <div class="card-body" style="padding:2rem;">
+            <x-page-back :href="route('admin.login')" :label="__('กลับไปหน้าเข้าสู่ระบบ')" />
+
             <div style="text-align:center;margin-bottom:1.5rem;">
                 <h1 style="font-size:1.5rem;font-weight:700;margin-bottom:.5rem;line-height:1.5;">{{ __('รีเซ็ตรหัสผ่าน') }}</h1>
                 <p class="text-muted" style="font-size:.9rem;line-height:1.5;">{{ __('ตั้งรหัสผ่านใหม่สำหรับบัญชีของคุณ') }}</p>
@@ -60,11 +62,6 @@
                     </button>
                 </div>
 
-                <div style="text-align:center;">
-                    <a href="{{ route('admin.login') }}" style="color:#64748b;font-size:.9rem;">
-                        &larr; {{ __('กลับไปหน้าเข้าสู่ระบบ') }}
-                    </a>
-                </div>
             </form>
         </div>
     </div>

@@ -227,12 +227,7 @@ html.dark .diff-new { background: rgba(34, 197, 94, 0.2); color: #86efac; }
 @section('content')
 
 {{-- ─── Back Button + Title ─── --}}
-<div style="margin-bottom: .75rem;">
-    <a href="{{ route('admin.audit-logs.index') }}" class="detail-back-link">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-        {{ __('กลับไปหน้ารายการ') }}
-    </a>
-</div>
+<x-page-back :href="route('admin.audit-logs.index')" :label="__('กลับไปหน้ารายการ')" />
 
 <div class="detail-header">
     @php

@@ -2,7 +2,7 @@
 @section('title', __('ปฏิทินกิจกรรม'))
 
 @section('content')
-<a href="{{ route('activities.index') }}" class="text-sm text-primary">&larr; {{ __('กลับรายการกิจกรรม') }}</a>
+<x-page-back :href="route('activities.index')" :label="__('กลับรายการกิจกรรม')" />
 
 <div class="card mt-2">
     <div class="card-body" style="font-size:.875rem;">
