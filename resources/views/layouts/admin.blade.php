@@ -297,6 +297,8 @@ html.dark .modal-body .text-muted {
     display: flex;
     align-items: stretch;
     height: 100%;
+    min-width: 0;
+    flex: 1 1 auto;
 }
 
 .admin-brand-box {
@@ -337,6 +339,7 @@ html.dark .modal-body .text-muted {
     align-items: center;
     gap: 14px;
     padding-left: 20px;
+    min-width: 0;
 }
 
 .admin-page-title {
@@ -349,11 +352,16 @@ html.dark .modal-body .text-muted {
     align-items: center;
     white-space: nowrap;
     transition: color .2s;
+    /* Tablet: ย่อด้วย … แทนการดันช่องค้นหา/ปุ่มออกนอกจอ */
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .admin-topbar-right {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .sb-toggle-btn {
@@ -415,6 +423,7 @@ html.dark .modal-body .text-muted {
     padding-top: 64px;
     display: flex; 
     min-height: 100vh; 
+    min-height: 100dvh; /* iPad/แท็บเล็ต: กันช่องว่างเมื่อแถบเครื่องมือเบราว์เซอร์ยืด/หดระหว่างหมุนจอ */
     background: var(--adm-content-bg); 
     transition: background .2s;
 }
@@ -633,8 +642,10 @@ html.dark .modal-body .text-muted {
 .table-fixed { table-layout: fixed !important; width: 100% !important; }
 .table-wrap.table-fixed { width: 100% !important; max-width: 100% !important; }
 
-/* Tablet Auto-Collapse (769px - 1024px) */
-@media (min-width: 769px) and (max-width: 1024px) {
+/* Tablet Auto-Collapse (768px - 1024px)
+   ครอบคลุม iPad แนวตั้ง (768) ด้วย เพื่อให้เมนูด้านข้างยังอยู่ครบ
+   ทั้งแนวตั้งและแนวนอน — หมุนจอแล้วเลย์เอาต์ไม่สลับไปมาระหว่างจอเล็ก/เดสก์ท็อป */
+@media (min-width: 768px) and (max-width: 1024px) {
     .admin-brand-box { width: 80px; padding: 0; justify-content: center; }
     .admin-brand-text { display: none; }
     .sb-sidebar { width: 80px; }
@@ -646,11 +657,40 @@ html.dark .modal-body .text-muted {
     .sb-sidebar .sb-user-info, 
     .sb-sidebar .sb-logout-btn { display: none; }
     .sb-sidebar .sb-user { justify-content: center; padding: 8px 0; }
-    .sb-main { padding: 24px; }
+    .sb-main { padding: 20px; }
+
+    /* ปุ่มเมนูบนแท็บเล็ต: เปิดแถบเมนูเต็มความกว้างทับเนื้อหา
+       เพราะรางไอคอนอย่างเดียวอ่านชื่อเมนูไม่ได้บนจอสัมผัส (ไม่มี hover tooltip) */
+    .sb-sidebar.mobile-open {
+        width: 260px;
+        z-index: 400;
+        box-shadow: 0 18px 48px rgba(0, 0, 0, .35);
+    }
+    .sb-sidebar.mobile-open .sb-link { justify-content: flex-start; gap: 12px; padding: 12px 14px; }
+    .sb-sidebar.mobile-open .sb-link-text,
+    .sb-sidebar.mobile-open .sb-user-info,
+    .sb-sidebar.mobile-open .sb-logout-btn { display: revert !important; }
+    .sb-sidebar.mobile-open .sb-section-label { display: block !important; }
+    .sb-sidebar.mobile-open .sb-user { justify-content: flex-start; gap: 12px; padding: 8px 10px; }
+
+    /* ── Touch-first sizing: ปุ่มทุกตัวต้องกดด้วยนิ้วได้ (>= 44px) ── */
+    .sb-toggle-btn, .sb-theme-toggle-btn { width: 44px; height: 44px; }
+    .btn { min-height: 44px; }
+    .btn-sm { min-height: 40px; min-width: 44px; padding: .5rem .9rem; font-size: .8rem; }
+    .modal-close { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; }
+    .form-control { min-height: 44px; }
+
+    /* Keyboard hint ไม่มีความหมายบนจอสัมผัส — ย่อช่องค้นหาเหลือไอคอน */
+    .sb-search-btn { min-width: 44px; width: 44px; height: 44px; padding: 0; justify-content: center; }
+    .sb-search-btn span span, .sb-search-btn kbd { display: none; }
+    .admin-topbar-right { gap: 8px !important; }
+
+    /* ตารางแบบเลื่อนแนวนอน: ลากนิ้วเลื่อนได้ลื่น และไม่ลากทั้งหน้าไปด้วย */
+    .table-wrap { overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
 }
 
 /* Mobile */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
     .admin-brand-box { width: auto; border-right: none; padding: 0 12px; }
     .admin-brand-text { font-size: 1rem; }
     .admin-page-title { display: none; }
@@ -672,6 +712,34 @@ html.dark .modal-body .text-muted {
 /* Small phones */
 @media (max-width: 480px) {
     .admin-chat-widget { width: min(340px, 100%); height: min(480px, 65vh); }
+}
+
+/* การ์ดสถิติ: หน้าจอ 600–768px (แท็บเล็ตแนวตั้ง/มือถือแนวนอน) ใช้ 2 คอลัมน์
+   เพื่อไม่ให้การ์ดยืดเต็มความกว้างจนต้องเลื่อนยาวเกินจำเป็น */
+@media (min-width: 600px) and (max-width: 768px) {
+    .sb-main .grid-3,
+    .sb-main .grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    .sb-main .stat-card { padding: 1rem; }
+}
+
+/* ── Touch-first controls ──
+   iPad แนวนอนกว้าง 1180–1366px จะไม่ตรงกับช่วง 768–1024 ข้างบน
+   จึงใช้ pointer: coarse เพิ่ม เพื่อให้จอสัมผัสทุกความกว้างได้ปุ่มขนาดนิ้วกด
+   (>= 44px) เหมือนกันทั้งแนวตั้งและแนวนอน */
+@media (pointer: coarse), (max-width: 1200px) {
+    .btn { min-height: 44px; }
+    .btn-sm { min-height: 40px; min-width: 44px; padding: .5rem .9rem; font-size: .8rem; }
+    .sb-toggle-btn, .sb-theme-toggle-btn { width: 44px; height: 44px; }
+    .modal-close { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; }
+    .form-control { min-height: 44px; }
+    .sb-link { min-height: 44px; }
+    /* แถบคีย์ลัดไม่มีความหมายบนจอสัมผัส */
+    .sb-search-btn kbd { display: none; }
+    .sb-search-btn { min-width: auto; height: 44px; }
+    .table-wrap { overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
 }
 
 /* Quick Omnisearch result item hover */
@@ -943,9 +1011,11 @@ html.dark .admin-search-result-row:hover {
     // ── Mobile menu drawer (hardened: id-bound listener independent of inline
     //     onclick; open/close helpers usable from any other page script) ──
     (function() {
-        var mqMobile = window.matchMedia('(max-width: 768px)');
+        var mqMobile = window.matchMedia('(max-width: 767px)');
+        // แท็บเล็ต (768–1024): ใช้รางเมนู 80px และเปิดเมนูเต็มเป็น drawer เมื่อกดปุ่มเมนู
+        var mqTablet = window.matchMedia('(min-width: 768px) and (max-width: 1024px)');
 
-        window.isMobileViewport = function() { return mqMobile.matches; };
+        window.isMobileViewport = function() { return mqMobile.matches || mqTablet.matches; };
 
         function setMenuExpanded(expanded) {
             var btn = document.getElementById('adminMenuToggleBtn');
@@ -989,8 +1059,8 @@ html.dark .admin-search-result-row:hover {
         };
 
         window.toggleSidebar = function() {
-            // Mobile: hamburger opens the off-canvas drawer; Desktop: collapse/expand
-            if (mqMobile.matches) {
+            // Mobile/Tablet: hamburger opens the off-canvas drawer; Desktop: collapse/expand
+            if (mqMobile.matches || mqTablet.matches) {
                 window.toggleMobileSidebar();
                 return;
             }
@@ -1022,15 +1092,17 @@ html.dark .admin-search-result-row:hover {
         // Close the drawer after tapping a nav link; reset state across breakpoint changes
         document.addEventListener('click', function(e) {
             var link = e.target.closest ? e.target.closest('.sb-link') : null;
-            if (!link || !mqMobile.matches) return;
+            if (!link || !(mqMobile.matches || mqTablet.matches)) return;
             if (link.getAttribute('href') && !link.getAttribute('href').startsWith('#')) {
                 window.closeMobileSidebar();
             }
         });
+        // หมุนจอ/เปลี่ยนขนาด: ปิด drawer และคืนสถานะ scroll กันหน้าค้างเลื่อนไม่ได้
         if (mqMobile.addEventListener) {
-            mqMobile.addEventListener('change', function(e) {
-                if (!e.matches) window.closeMobileSidebar();
-            });
+            mqMobile.addEventListener('change', function() { window.closeMobileSidebar(); });
+        }
+        if (mqTablet.addEventListener) {
+            mqTablet.addEventListener('change', function() { window.closeMobileSidebar(); });
         }
 
         // Mobile UX: auto-label stacked table cells from their column headers so
@@ -1121,8 +1193,8 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .admin-chat-widget {
-    width: 360px;
-    height: 520px;
+    width: min(360px, calc(100vw - 32px));
+    height: min(520px, calc(100dvh - 120px));
     background: #fff;
     border: 1px solid #e2e8f0;
     border-radius: 20px;
@@ -1318,7 +1390,7 @@ window.AdminChatManager = (function() {
         actions.className = 'acw-actions';
         
         const closeBtn = document.createElement('button');
-        closeBtn.innerHTML = '') }}<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+        closeBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
         closeBtn.title = '{{ __('ปิดหน้าต่างแชท') }}';
         closeBtn.onclick = function() {
             widget.remove();

@@ -93,10 +93,19 @@ html.dark .approval-row:hover {
     gap: 1.5rem;
     margin-bottom: 1.5rem;
 }
-@media (min-width: 1024px) {
+/* แท็บเล็ตแนวนอน (1024–1194) ยังคงเป็นคอลัมน์เดียว เพื่อให้ตาราง 5 คอลัมน์
+   อ่านได้เต็มความกว้าง ไม่ถูกบีบจนต้องเลื่อนแนวนอน */
+@media (min-width: 1200px) {
     .dashboard-grid-split {
         grid-template-columns: 1fr 1fr;
     }
+}
+
+/* แถวคิวอนุมัติ: บนแท็บเล็ตให้ข้อมูลขึ้นบรรทัดใหม่แทนการบีบชื่อ/ปุ่มจนล้น */
+@media (max-width: 1024px) {
+    .approval-row { flex-wrap: wrap; row-gap: .5rem; }
+    .approval-row > div:nth-child(2) { flex: 1 1 auto; min-width: 12rem; }
+    .approval-row > div:last-child { margin-left: auto; }
 }
 </style>
 @endsection
