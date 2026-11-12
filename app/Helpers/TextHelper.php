@@ -164,6 +164,9 @@ if (!function_exists('extract_hashtags')) {
             return [];
         }
 
+        // ตัด URL ออกก่อน: ไม่งั้น fragment อย่าง https://a.com/#top จะถูกนับเป็นแฮชแท็ก #top
+        $text = preg_replace('/(?:https?:\/\/|www\.)\S+/iu', ' ', $text) ?? $text;
+
         $pattern = '/(?<![\w#&;:=])#(?!(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\b)([a-zA-Z0-9_\x{0E00}-\x{0E7F}]+)/u';
         if (preg_match_all($pattern, $text, $matches)) {
             return array_values(array_unique($matches[1]));
